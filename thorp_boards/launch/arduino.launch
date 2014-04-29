@@ -1,0 +1,64 @@
+<!--
+ Interface to the Arduino board
+  - Static tf from base frame to ring center 
+  - Static tfs for the four IR sensors 
+  - Arduino interface node
+
+ To interface with thorp's Arduino Mega 2560 board, flash the firmware provided on Bosch drivers:
+
+  $ roscd arduino_interface
+  $ cd arduino_firmware
+  $ export BOARD=mega2560
+  $ export ARDUINO_DIR=/opt/arduino  # (or whatever you installed arduino software)
+  $ make upload
+
+ You must install the Arduino udev rule to make the board available on the default port "/dev/arduino":
+
+  $ roscd thorp_boards
+  $ sudo cp resources/ir_scan/58-arduino.rules /etc/udev/rules.d
+ 
+ and then replug the USB cable.
+-->
+<launch>
+  <arg name="base_link" default="base_link" />
+  <arg name="sonars_topic" default="sonars"/>
+
+  <node pkg="tf" type="static_transform_publisher" name="sonars_link_publisher"
+        args="0.0 0.0 0.09 0.0 0.0 0.0 $(arg base_link) /sonars_link 100"/>
+
+  <node pkg="tf" type="static_transform_publisher" name="ir_155_left_link_pub"
+        args="-0.08 0.12 0.2 0.0 0.0 2.70526034059 $(arg base_link) /ir_155_left_link 100"/>
+
+  <node pkg="tf" type="static_transform_publisher" name="ir_180_left_link_pub"
+        args="-0.10 0.08 0.2 0.0 0.0 rad(pi) $(arg base_link) /ir_180_left_link 100"/>
+
+  <node pkg="tf" type="static_transform_publisher" name="ir_180_right_link_pub"
+        args="-0.10 -0.08 0.2 0.0 0.0 rad(pi) $(arg base_link) /ir_180_right_link 100"/>
+
+  <node pkg="tf" type="static_transform_publisher" name="ir_155_right_link_pub"
+        args="-0.08 -0.12 0.2 0.0 0.0 -2.70526034059 $(arg base_link) /ir_155_right_link 100"/>
+
+  <node name="arduino_node" pkg="thorp_boards" type="arduino_node">
+    <rosparam>
+      arduino_port      : /dev/arduino
+      read_frequency    : 5.0
+      sonars :
+        maximum_range   : 6.5
+        minimum_range   : 0.1
+        infinity_range  : 10.0
+        range_variance  : 0.025
+        input_pins_map  : [ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10]
+        ctrl_pins_map   : [22, 28, 32, 36, 40, 44, 48, 39, 43, 47, 51]
+      infrared :
+        maximum_range   : 0.8
+        minimum_range   : 0.1
+        infinity_range  : 10.0
+        range_variance  : 0.025
+        input_pins_map  : [12, 13, 14, 15]
+        frame_ids_map   : ["ir_155_left_link",  "ir_180_left_link",  "ir_180_right_link",  "ir_155_right_link"]
+        topic_names_map : ["infrared/155_left", "infrared/180_left", "infrared/180_right", "infrared/155_right"]
+    </rosparam>
+
+    <remap from="sonars" to="$(arg sonars_topic)"/>
+  </node>
+</launch>

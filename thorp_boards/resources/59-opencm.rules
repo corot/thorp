@@ -1,0 +1,1 @@
+SUBSYSTEM=="tty", ATTRS{idVendor}=="fff1", ATTRS{idProduct}=="ff48", MODE:="0666", GROUP:="dialout", SYMLINK+="opencm" 

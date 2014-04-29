@@ -1,0 +1,254 @@
+/*
+ * arduino.cpp
+ *
+ *  Created on: Apr 28, 2014
+ *      Author: Jorge Santos
+ */
+
+#include "thorp_boards/arduino.hpp"
+
+namespace thorp
+{
+
+  ArduinoNode::ArduinoNode(ros::NodeHandle& n) : nh(n) { init(); }
+
+  ArduinoNode::~ArduinoNode() {}
+
+  bool ArduinoNode::spin()
+  {
+    unsigned long long i = 0;
+    ros::Rate rate(20.0);
+
+    scan.header.frame_id = ir_frame_id;
+int kk = 0;
+    while (ros::ok())
+    {
+      if(is_connected)
+      {
+        scan.header.seq = i++;
+        scan.header.stamp = ros::Time::now();
+
+        if (readRanges() == false)
+        {
+          ROS_WARN("Arduino interface: board disconnected");
+          is_connected = false;
+          continue;
+        }
+
+        sonars_pub.publish(scan);
+
+  //      if (kk%100 == 10){
+        triggerRangers();
+      //  ROS_WARN("TRIGGER");}
+     //   kk++;
+      }
+      else {
+        is_connected = connect();
+      }
+      ros::spinOnce();
+      rate.sleep();
+    }
+
+    return true;
+  }
+
+  /**
+   * Trigger one reading on all sonars
+   * @return True if there aren't IO failures. False otherwise.
+   */
+  bool ArduinoNode::triggerRangers()
+  {
+    for (unsigned int i = 0; i < sonars.size(); i++)
+    {
+      // Set ranger control pin (RX) to HIGH for at least 20μS to start one range reading
+      if (! sonars[i].gpio_driver->set(true))
+      {
+        ROS_WARN("Arduino interface: GPIO driver failed to set ranger %d control pin to HIGH", i);
+        return false;
+      }
+      ros::Duration(0.0001); // 100 μs
+      if (! sonars[i].gpio_driver->set(false))
+      {
+        ROS_WARN("Arduino interface: GPIO driver failed to set ranger %d control pin to LOW", i);
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Reads, linearizes and filters (KF) the full array of sonars.
+   * @return False if we must stop nod after many wrong readings. True otherwise.
+   */
+  bool ArduinoNode::readRanges()
+  {
+    for (unsigned int i = 0; i < sonars.size(); i++)
+    {
+      // Read ranger i digitized voltage
+      uint32_t reading = sonars[i].adc_driver->read();
+
+      // reading 0 means wrong reading...
+      if (reading == 0)
+      {
+        if ((++wrong_readings % 100) == 99)
+        {
+          // Retry reinitializing Arduino interface up to three times
+          ROS_WARN("Arduino interface: %d consecutive wrong readings; trying to reinitialize...", wrong_readings);
+          wrong_readings = 0;
+          arduino_iface.reset(new ArduinoInterface(arduino_port));
+          if (arduino_iface->initialize() == false)
+          {
+            ROS_ERROR("Arduino interface reinitialization failed on port %s", arduino_port.c_str());
+            return false;
+          }
+        }
+        continue;
+      }
+      wrong_readings = 0;
+
+      computeRangesAndIntensity(i, reading);
+    }
+    return true;
+  }
+
+  void ArduinoNode::computeRangesAndIntensity(unsigned int i, uint32_t reading)
+  {
+      // Linearize voltage and convert to range
+      double v = reading/1000000.0;
+      double r = v*2.59183673469;  // or 25.4/9.8, as sonar doc claims that it reports ~9.8mV/in
+
+//      double r = 1.06545479706866e-15*pow(v, 6) - 2.59219822235705e-12*pow(v, 5) + 2.52095247302813e-09*pow(v, 4)
+//               - 1.25091335895759e-06*pow(v, 3) + 0.000334991560873548*pow(v, 2) - 0.0469975280676629*v + 3.01895762047759;
+      //     double v = (reading*5.0)/1024.0;
+      //	double r = v/0.385826771654;//       *0.0012;//(v*(9.8/25.4))/1000.0;
+
+      // KF - estimate - prediction
+      sonars[i].P = sonars[i].P + sonars[i].Q;
+
+      // KF - correction
+      double z = r - sonars[i].last_range;
+      double Z = sonars[i].R + sonars[i].P;
+
+      double K = sonars[i].P/Z;
+
+      double distanceKF = sonars[i].last_range + K*z;
+      sonars[i].P = sonars[i].P - K*sonars[i].P;
+
+      // KF - collect data
+      sonars[i].last_range = distanceKF;
+
+      // Fill range/intensity vectors inverting readings, as laser scans add beams from right (angle_min)
+      // to left (angle_max), while our sensors are arranged from left (A0 port) to right (A10 port)
+//      scan.ranges[sonars.size() - (i + 1)] = distanceKF <= maximum_range ? distanceKF + ir_ring_radius : infinity_range;
+//      scan.intensities[sonars.size() - (i + 1)] = v;
+
+      scan.ranges[i] = r         + ir_ring_radius;
+      scan.intensities[i] = v;
+  }
+
+  void ArduinoNode::init()
+  {
+    // Parameters; note that for all maps, the default value is an empty list
+    std::string default_frame("/sonars_link");
+    std::string default_port("/dev/arduino");
+
+    nh.param("arduino_node/read_frequency",   read_frequency, 20.0);
+    nh.param("arduino_node/arduino_port",     arduino_port, default_port);
+
+    nh.param("arduino_node/sonars/rangers_count",    us_rangers_count,  11);
+    nh.param("arduino_node/sonars/range_variance",   us_range_variance,  0.025);
+    nh.param("arduino_node/sonars/maximum_range",    us_maximum_range,   6.5);
+    nh.param("arduino_node/sonars/minimum_range",    us_minimum_range,   0.1);
+    nh.param("arduino_node/sonars/infinity_range",   us_infinity_range, 20.0);
+    nh.param("arduino_node/sonars/ring_radius",      us_ring_radius,     0.155);
+    nh.param("arduino_node/sonars/frame_id",         us_frame_id, default_frame);
+    nh.param("arduino_node/sonars/ctrl_pins_map",    us_ctrl_pins_map,  us_ctrl_pins_map);
+    nh.param("arduino_node/sonars/input_pins_map",   us_input_pins_map, us_input_pins_map);
+
+    nh.param("arduino_node/infrared/rangers_count",  ir_rangers_count,   4);
+    nh.param("arduino_node/infrared/range_variance", ir_range_variance,  0.025);
+    nh.param("arduino_node/infrared/maximum_range",  ir_maximum_range,   0.8);
+    nh.param("arduino_node/infrared/minimum_range",  ir_minimum_range,   0.1);
+    nh.param("arduino_node/infrared/infinity_range", ir_infinity_range, 10.0);
+    nh.param("arduino_node/infrared/input_pins_map", ir_input_pins_map, ir_input_pins_map);
+    nh.param("arduino_node/infrared/frame_ids_map",  ir_frame_ids_map,  ir_frame_ids_map);
+
+    // Validate control pins map: it must be a list of integers if size sonars/rangers_count
+    if (ctrl_pins_map.valid() == true)
+    {
+      if (ctrl_pins_map.getType() != XmlRpc::XmlRpcValue::TypeArray)
+      {
+        ROS_WARN("Control pins map must be a list of integers");
+        ROS_WARN("We will ignore it and use the default map [0, 1, 2...] THAT WILL SURELY NOT WORK");
+        ctrl_pins_map.clear();
+      }
+      else if (ctrl_pins_map.size() != rangers_count)
+      {
+        ROS_WARN("Control pins map provided but size doesn't match rangers count (%d != %d)",
+                 ctrl_pins_map.size(), rangers_count);
+        ROS_WARN("We will ignore it and use the default map [0, 1, 2...] THAT WILL SURELY NOT WORK");
+        ctrl_pins_map.clear();
+      }
+    }
+
+    scan.ranges.resize(rangers_count, 0.0);
+    scan.intensities.resize(rangers_count, 0.0);
+
+    scan.angle_min = -M_PI/2.0;
+    scan.angle_max = +M_PI/2.0;
+    scan.angle_increment = M_PI/10.0;
+    scan.scan_time = 1.0 / read_frequency;
+    scan.range_min = 0.10 + ir_ring_radius;
+    scan.range_max = 11.00 + ir_ring_radius;
+
+    wrong_readings = 0;
+    is_connected = false;
+
+    // Publishers
+    sonars_pub = nh.advertise< sensor_msgs::LaserScan>("sonars", 1);
+  }
+
+  bool ArduinoNode::connect()
+  {
+    // Open an interface with the arduino board and create an ADC driver for every ranger
+    arduino_iface.reset(new ArduinoInterface(arduino_port));
+    if (arduino_iface->initialize() == false)
+    {
+      ROS_ERROR("Arduino interface initialization failed on port %s", arduino_port.c_str());
+      return false;
+    }
+
+    ROS_INFO("Arduino interface opened on port %s", arduino_iface->getID().c_str());
+
+    sonars.resize(us_rangers_count, Sonar());
+
+    for (unsigned int i = 0; i < sonars.size(); i++)
+    {
+      sonars[i].last_range = maximum_range;
+      sonars[i].Q = 0.001;
+      sonars[i].R = range_variance; //0.0288;
+      sonars[i].P = sonars[i].R;
+
+      sonars[i].adc_driver.reset(new AdcDriver(arduino_iface.get(), i));
+      sonars[i].adc_driver->setReference(5000); // can be also 1100 or 2560
+
+      if (ctrl_pins_map.valid() == true)
+      {
+        ROS_ASSERT(ctrl_pins_map[i].getType() == XmlRpc::XmlRpcValue::TypeInt);
+        sonars[i].ctrl_pin = static_cast<int>(ctrl_pins_map[i]);
+      }
+      else
+      {
+        sonars[i].ctrl_pin = i;
+      }
+      ROS_DEBUG("Control pin for ranger %d is %d", i, sonars[i].ctrl_pin);
+
+      sonars[i].gpio_driver.reset(new GpioDriver(arduino_iface.get(), sonars[i].ctrl_pin));
+    }
+
+    ROS_INFO("Arduino interface successfully initialized with %lu sonars", sonars.size());
+    return true;
+  }
+
+} // namespace thorp
+
