@@ -1,0 +1,12 @@
+- git: {local-name: thorp, uri: 'https://github.com/corot/thorp.git',
+    version: master}
+- git: {local-name: softkinetic, uri: 'https://github.com/ipa320/softkinetic.git',
+    version: hydro_dev}
+- git: {local-name: kobuki-x, uri: 'https://github.com/yujinrobot/kobuki-x.git',
+    version: hydro-devel}
+- git: {local-name: bosch_drivers, uri: 'https://github.com/corot/bosch_drivers.git',
+    version: master}
+- git: {local-name: eband_local_planner, uri: 'https://github.com/utexas-bwi/eband_local_planner.git',
+    version: devel}
+- git: {local-name: creative_interactive_gesture_camera, uri: 'https://github.com/corot/creative_interactive_gesture_camera',
+    version: master}
