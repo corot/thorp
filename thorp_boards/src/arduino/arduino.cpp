@@ -24,22 +24,31 @@ namespace thorp
 int kk = 0;
     while (ros::ok())
     {
-      if(is_connected)
+      if (is_connected)
       {
-        scan.header.seq = i++;
-        scan.header.stamp = ros::Time::now();
-
-        if (readRanges() == false)
+        if ((readSonars() == false) || (readIrSensors() == false))
         {
-          ROS_WARN("Arduino interface: board disconnected");
-          is_connected = false;
+          // Arduino returned 0 for a sonar or infrared sensor; normally this means we have reading
+          // problems: the board is disconnected, or serial communication is not well synchronized
+          if ((++wrong_readings % 10) == 9)
+          {
+            // Retry reinitializing Arduino interface
+            ROS_WARN("Arduino interface: %d consecutive wrong readings; trying to reinitialize...",
+                      wrong_readings);
+            wrong_readings = 0;
+            arduino_iface.reset(new ArduinoInterface(arduino_port));
+            if (arduino_iface->initialize() == false)
+            {
+              ROS_ERROR("Arduino interface reinitialization failed on port %s. Stopping node...",
+                         arduino_port.c_str());
+              return false;
+            }
+          }
           continue;
         }
-
-        sonars_pub.publish(scan);
-
+        wrong_readings = 0;
   //      if (kk%100 == 10){
-        triggerRangers();
+        triggerSonars();
       //  ROS_WARN("TRIGGER");}
      //   kk++;
       }
@@ -57,7 +66,7 @@ int kk = 0;
    * Trigger one reading on all sonars
    * @return True if there aren't IO failures. False otherwise.
    */
-  bool ArduinoNode::triggerRangers()
+  bool ArduinoNode::triggerSonars()
   {
     for (unsigned int i = 0; i < sonars.size(); i++)
     {
@@ -78,73 +87,67 @@ int kk = 0;
   }
 
   /**
-   * Reads, linearizes and filters (KF) the full array of sonars.
-   * @return False if we must stop nod after many wrong readings. True otherwise.
+   * Reads, linearizes, filters (KF) and publish the full array of sonars.
+   * @return False if we must stop node after many wrong readings. True otherwise.
    */
-  bool ArduinoNode::readRanges()
+  bool ArduinoNode::readSonars()
   {
     for (unsigned int i = 0; i < sonars.size(); i++)
     {
       // Read ranger i digitized voltage
       uint32_t reading = sonars[i].adc_driver->read();
 
-      // reading 0 means wrong reading...
-      if (reading == 0)
-      {
-        if ((++wrong_readings % 100) == 99)
-        {
-          // Retry reinitializing Arduino interface up to three times
-          ROS_WARN("Arduino interface: %d consecutive wrong readings; trying to reinitialize...", wrong_readings);
-          wrong_readings = 0;
-          arduino_iface.reset(new ArduinoInterface(arduino_port));
-          if (arduino_iface->initialize() == false)
-          {
-            ROS_ERROR("Arduino interface reinitialization failed on port %s", arduino_port.c_str());
-            return false;
-          }
-        }
-        continue;
-      }
-      wrong_readings = 0;
+      if (reading == 0)  // we never read 0 in normal operation
+        return false;
 
-      computeRangesAndIntensity(i, reading);
-    }
-    return true;
-  }
-
-  void ArduinoNode::computeRangesAndIntensity(unsigned int i, uint32_t reading)
-  {
-      // Linearize voltage and convert to range
+      // Convert voltage to range and fill range/intensity vectors
       double v = reading/1000000.0;
       double r = v*2.59183673469;  // or 25.4/9.8, as sonar doc claims that it reports ~9.8mV/in
 
-//      double r = 1.06545479706866e-15*pow(v, 6) - 2.59219822235705e-12*pow(v, 5) + 2.52095247302813e-09*pow(v, 4)
-//               - 1.25091335895759e-06*pow(v, 3) + 0.000334991560873548*pow(v, 2) - 0.0469975280676629*v + 3.01895762047759;
-      //     double v = (reading*5.0)/1024.0;
-      //	double r = v/0.385826771654;//       *0.0012;//(v*(9.8/25.4))/1000.0;
-
-      // KF - estimate - prediction
-      sonars[i].P = sonars[i].P + sonars[i].Q;
-
-      // KF - correction
-      double z = r - sonars[i].last_range;
-      double Z = sonars[i].R + sonars[i].P;
-
-      double K = sonars[i].P/Z;
-
-      double distanceKF = sonars[i].last_range + K*z;
-      sonars[i].P = sonars[i].P - K*sonars[i].P;
-
-      // KF - collect data
-      sonars[i].last_range = distanceKF;
-
-      // Fill range/intensity vectors inverting readings, as laser scans add beams from right (angle_min)
-      // to left (angle_max), while our sensors are arranged from left (A0 port) to right (A10 port)
+      /// TODO not bounding min/max ranges!!!
 //      scan.ranges[sonars.size() - (i + 1)] = distanceKF <= maximum_range ? distanceKF + sonar_ring_rad : infinity_range;
 //      scan.intensities[sonars.size() - (i + 1)] = v;
 
-      scan.ranges[i] = r         + sonar_ring_rad;
-      scan.intensities[i] = v;
+      scan.ranges[i] = sonars[i].updateFilter(r) + sonar_ring_rad;
+      scan.intensities[i] = r + sonar_ring_rad; ///////////////v;
+    }
+
+    // Update and publish laser scan message
+    scan.header.seq++;
+    scan.header.stamp = ros::Time::now();
+
+    sonars_pub.publish(scan);
+
+    return true;
+  }
+
+  /**
+   * Reads, linearizes, filters (KF) and publish the full array of IR sensors.
+   * @return False if we made a wrong reading (Arduino returned 0). True otherwise.
+   */
+  bool ArduinoNode::readIrSensors()
+  {
+    for (unsigned int i = 0; i < irSensors.size(); i++)
+    {
+      // Read ranger i digitized voltage
+      uint32_t reading = irSensors[i].adc_driver->read();
+
+      if (reading == 0)  // we never read 0 in normal operation
+        return false;
+
+      // Linearize voltage and convert to range
+      double v = reading/5000.0;
+      double r = 1.06545479706866e-15*pow(v, 6) - 2.59219822235705e-12*pow(v, 5) + 2.52095247302813e-09*pow(v, 4)
+               - 1.25091335895759e-06*pow(v, 3) + 0.000334991560873548*pow(v, 2) - 0.0469975280676629*v + 3.01895762047759;
+
+      // Update and publish range message
+      irSensors[i].msg.header.seq = irSensors[i].msg.header.seq + 1;
+      irSensors[i].msg.header.stamp = ros::Time::now();
+      irSensors[i].msg.range = irSensors[i].updateFilter(r); /// TODO not bounding min/max ranges!!!  distanceKF <= irSensors[i].msg.max_range ? distanceKF : irSensors[i].infinity_range;
+
+      irSensors[i].pub.publish(irSensors[i].msg);
+    }
+    return true;
   }
 
   bool ArduinoNode::init()
@@ -163,7 +166,7 @@ int kk = 0;
     double range_variance;
     double maximum_range;
     double minimum_range;
-    double infinity_range;
+    double infinity_range;  // TODO not used;  remove????
     std::string frame_id;   // Frame id for the output sonars' laser scan
     XmlRpc::XmlRpcValue input_pins_map;
     XmlRpc::XmlRpcValue ctrl_pins_map;
@@ -305,7 +308,7 @@ int kk = 0;
 
     // Create an ADC driver (reading range) for every IR sensor (Sharp sensors don't
     // need to be triggered; just operate continuously as long as current is provided)
-    for (unsigned int i = 0; i < sonars.size(); i++)
+    for (unsigned int i = 0; i < irSensors.size(); i++)
     {
       irSensors[i].adc_driver.reset(new AdcDriver(arduino_iface.get(), irSensors[i].input_pin));
       irSensors[i].adc_driver->setReference(5000); // can be also 1100 or 2560
@@ -345,6 +348,28 @@ int kk = 0;
     }
 
     return true;
+  }
+
+
+  double ArduinoNode::Ranger::updateFilter(double range)
+  {
+    // KF - estimate - prediction
+    P = P + Q;
+
+    // KF - correction
+    double z = range - last_range;
+    double Z = R + P;
+
+    double K = P/Z;
+
+    double rangeKF = last_range + K*z;
+    P = P - K*P;
+
+    // KF - collect data
+    last_range = rangeKF;
+
+    // Return filtered range
+    return rangeKF;
   }
 } // namespace thorp
 

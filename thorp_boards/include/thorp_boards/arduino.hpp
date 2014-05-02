@@ -23,30 +23,37 @@ namespace thorp
   class ArduinoNode
   {
     public:
-
       /**
-       * Inner class describing an individual sonar
+       * Inner class implementing the commons of any ranger (mostly the EKF filter)
        */
-      class Sonar
+      class Ranger
       {
         public:
-    	  int    ctrl_pin;
-          int    input_pin;
-          double Q, R, P;    // KF
+          double Q, R, P;    // KF values
           double last_range; /**< Internal field to store the latest reading */
+
+          double updateFilter(double range);
+      };
+
+      /**
+       * Inner class implementing an individual sonar
+       */
+      class Sonar : public Ranger
+      {
+        public:
+    	  int ctrl_pin;
+          int input_pin;
           boost::shared_ptr<AdcDriver> adc_driver;
           boost::shared_ptr<GpioDriver> gpio_driver;
       };
 
       /**
-       * Inner class describing an individual IR sensor
+       * Inner class implementing an individual IR sensor
        */
-      class IrSensor
+      class IrSensor : public Ranger
       {
         public:
-          int    input_pin;
-          double Q, R, P;    // KF
-          double last_range; /**< Internal field to store the latest reading */
+          int input_pin;
           ros::Publisher pub;
           sensor_msgs::Range msg;
           boost::shared_ptr<AdcDriver> adc_driver;
@@ -63,9 +70,9 @@ namespace thorp
 
     protected:
       bool connect();
-      bool readRanges();
-      bool triggerRangers();
-      void computeRangesAndIntensity(unsigned int i, uint32_t reading);
+      bool readSonars();
+      bool triggerSonars();
+      bool readIrSensors();
 
     private:
       ros::NodeHandle nh;
