@@ -1,4 +1,4 @@
-include "thorp_bringup.inc"
+include "thorp.inc"
 
 define floorplan model
 (
@@ -36,9 +36,9 @@ floorplan
 )
 
 # throw in a robot
-thorp_bringup
+thorp
 (
   pose [ 2.0 2.0 0.0 0.0 ]
-  name "thorp_bringup"
+  name "thorp"
   color "black"
 )

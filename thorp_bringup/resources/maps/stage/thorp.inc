@@ -11,7 +11,7 @@ define kinect ranger
   size [ 0.06 0.15 0.03 ]
 )
 
-define thorp_bringup position
+define thorp position
 (
   pose [ 0.0 0.0 0.0 0.0 ]
 
