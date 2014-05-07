@@ -1,0 +1,54 @@
+<!--
+  Thorp local navigation just with sonars and bumpers:
+  - turtlebot
+  - move_base
+  - arduino interface
+  - safety controller
+  - fake localization
+ -->
+
+<launch>
+
+  <!--  ****************** Turtlebot ******************  -->
+  <include file="$(find turtlebot_bringup)/launch/minimal.launch">
+    <arg name="battery" value="/sys/class/power_supply/BAT1" />
+  </include>
+
+  <!--  *********** Thorp specific hardware ***********  -->
+  <include file="$(find thorp_boards)/launch/arduino.launch"/>
+
+  <!--  ********** Kobuki mobile base extras **********  -->
+  <include file="$(find thorp_bringup)/launch/includes/_safety_ctrl.launch"/>
+  <param name="cmd_vel_mux/yaml_cfg_file" value="$(find thorp_bringup)/param/vel_multiplexer.yaml"/>
+
+  <!--  ************** Rosnav move base ***************  -->
+  <include file="$(find thorp_bringup)/launch/includes/_move_base.launch"/>
+  
+  <!--
+    Tweaks to adapt the move base node to local navigation:
+     - global costmap is also a rolling window, non-static map
+     - so it's referenced to odom, as the local costmap
+     - and it must be updated, dislike a static map
+     - we use a bigger costmap than that of the local planner
+     - replan each 2 seconds, as global costmap changes
+  -->
+  <param name="move_base/global_costmap/global_frame" value="odom"/>
+  <param name="move_base/global_costmap/update_frequency" value="1.0"/>
+  <param name="move_base/global_costmap/publish_frequency" value="1.0"/>
+  <param name="move_base/global_costmap/static_map" value="false"/>
+  <param name="move_base/global_costmap/rolling_window" value="true"/>
+  <param name="move_base/global_costmap/width" value="10.0"/>
+  <param name="move_base/global_costmap/height" value="10.0"/>
+  <param name="move_base/global_costmap/resolution" value="0.1"/>
+  <param name="move_base/global_costmap/origin_x" value="0.0"/>
+  <param name="move_base/global_costmap/origin_y" value="0.0"/>
+  <param name="move_base/global_costmap/obstacle_range" value="5.0"/>
+  <param name="move_base/global_costmap/raytrace_range" value="5.5"/>
+  <param name="move_base/global_costmap/observation_sources" value="sonars bumpers"/>
+  <param name="move_base/local_costmap/observation_sources" value="sonars bumpers"/>
+  <param name="move_base/planner_frequency" value="0.5"/>
+
+  <!--  ************** Fake Localization *************  -->
+  <node pkg="tf" type="static_transform_publisher" name="fake_localization"
+        args="0.0 0.0 0.0 0.0 0.0 0.0 /map /odom 10"/>
+</launch>

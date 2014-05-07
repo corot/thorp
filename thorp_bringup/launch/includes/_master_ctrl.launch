@@ -1,0 +1,44 @@
+<!-- 
+         thorp_bringup controller
+-->
+<launch>
+  <arg name="debug_mode" default="false" />
+
+  <!-- Velocity smoother nodelet; we must provide the absolute name of nodelet manager, as we can be in an application namespace -->
+  <node pkg="nodelet" type="nodelet" name="special_tasks_velocity_smoother" args="load yocs_velocity_smoother/VelocitySmootherNodelet /mobile_base_nodelet_manager">
+    <rosparam file="$(find thorp_bringup)/param/vel_smoother.yaml" command="load"/>
+    <remap from="special_tasks_velocity_smoother/smooth_cmd_vel" to="/cmd_vel_mux/input/special_task"/>
+    <remap from="special_tasks_velocity_smoother/robot_cmd_vel" to="/mobile_base/commands/velocity"/>
+    <remap from="special_tasks_velocity_smoother/odometry" to="/odom"/>
+  </node>
+
+  <!-- thorp_bringup main node -->
+  <node name="thorp_bringup" pkg="thorp_bringup" type="thorp_bringup_node" output="screen">
+    <param name="global_frame" value="/map"/>
+    <param name="odom_frame" value="odom"/>
+    <param name="base_frame" value="base_footprint"/>
+    <param name="resources_path" value="$(find thorp_bringup)/resources"/>
+    <param name="play_sounds" value="true"/>
+    <param name="debug_mode" value="$(arg debug_mode)"/>
+    
+    <rosparam file="$(find thorp_bringup)/param/nav_watchdog.yaml" command="load"/>
+    <rosparam file="$(find thorp_bringup)/param/navigator.yaml" command="load"/>
+    <rosparam file="$(find thorp_bringup)/param/ar_markers.yaml" command="load"/>
+
+    <!-- Incoming remaps -->
+    <remap from="new_goal"      to="move_base_simple/goal"/>
+    <remap from="amcl_init"     to="initialpose"/>
+    <remap from="amcl_pose"     to="amcl_pose"/>
+    <remap from="odometry"      to="/odom"/>
+    <remap from="digital_input" to="/mobile_base/events/digital_input"/>
+    <remap from="core_sensors"  to="/mobile_base/sensors/core"/>
+
+    <!-- Outgoing remaps -->
+    <remap from="issue_goal"    to="move_base_simple/goal"/>
+    <remap from="cancel_goal"   to="move_base/cancel"/>
+    <remap from="reset_pose"    to="initialpose"/>
+
+    <remap from="mobile_base/commands/velocity_" to="special_tasks_velocity_smoother/raw_cmd_vel"/>
+    <remap from="mobile_base/commands/motor_power" to="/mobile_base/commands/motor_power"/>
+  </node>
+</launch>

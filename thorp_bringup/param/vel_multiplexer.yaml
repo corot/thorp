@@ -1,0 +1,33 @@
+# Created on: Oct 29, 2012
+#     Author: jorge
+# Configuration for subscribers to multiple cmd_vel sources.
+#
+# Individual subscriber configuration:
+#   name:           Source name
+#   topic:          The topic that provides cmd_vel messages
+#   timeout:        Time in seconds without incoming messages to consider this topic inactive
+#   priority:       Priority: an UNIQUE unsigned integer from 0 (lowest) to MAX_INT 
+#   short_desc:     Short description (optional)
+
+subscribers:
+  - name:        "Safe reactive controller"
+    topic:       "input/safety_ctrl"
+    timeout:     0.2
+    priority:    10
+  - name:        "Teleoperation"
+    topic:       "input/teleoperation"
+    timeout:     1.0
+    priority:    8
+  - name:        "Thorp tasks control"
+    topic:       "input/special_task"
+    timeout:     1.0
+    priority:    6
+  - name:        "Auto-dock control"
+    topic:       "input/auto_docking"
+    timeout:     1.0
+    priority:    5
+  - name:        "Navigation"
+    topic:       "input/navigation"
+    timeout:     1.0
+    priority:    3
+publisher: "/mobile_base/commands/velocity"

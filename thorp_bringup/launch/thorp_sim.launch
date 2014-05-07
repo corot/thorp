@@ -1,0 +1,92 @@
+<!--
+  Thorp global navigation simulation:
+  - stage
+  - map_server
+  - move_base
+  - static map
+  - amcl
+  - rviz view
+ -->
+
+<launch>
+  <arg name="base"       value="$(optenv TURTLEBOT_BASE kobuki)"/>  <!-- create, rhoomba -->
+  <arg name="stacks"     value="$(optenv TURTLEBOT_STACKS hexagons)"/>  <!-- circles, hexagons -->
+  <arg name="3d_sensor"  value="$(optenv TURTLEBOT_3D_SENSOR kinect)"/>  <!-- kinect, asus_xtion_pro -->
+
+  <!-- Name of the map to use (without path nor extension) and initial position -->
+  <arg name="map_name"       default="maze"/>
+  <arg name="initial_pose_x" value="2.0"/>
+  <arg name="initial_pose_y" value="2.0"/>
+  <arg name="initial_pose_a" value="0.0"/>
+
+  <param name="/use_sim_time" value="true"/>
+
+  <!--  ******************** Stage ********************  -->
+  <!-- 
+        Publishes transforms:
+          /base_link -> /base_laser
+          /base_footprint -> /base_link (identity)
+          /odom -> base_footprint
+        Publishes topics:
+          /odom : odometry data from the simulated odometry
+          /base_scan : laser data from the simulated laser
+          /base_pose_ground_truth : the ground truth pose
+        Parameters:
+          base_watchdog_timeout : time (s) after receiving the last command on cmd_vel before stopping the robot
+        Args:
+          -g : run in headless mode.
+  --> 
+  <node pkg="stage_ros" type="stageros" name="stageros" args="$(find thorp_bringup)/resources/maps/stage/$(arg map_name).world">
+    <param name="base_watchdog_timeout" value="0.5"/>
+    <remap from="odom" to="odom"/>
+    <remap from="base_pose_ground_truth" to="base_pose_ground_truth"/>
+    <remap from="cmd_vel" to="mobile_base/commands/velocity"/>
+    <remap from="base_scan" to="scan"/>
+  </node>
+
+  <!--  ************** Additional sensors *************  -->
+  <include file="$(find thorp_bringup)/launch/includes/_virt_sensor.launch"/>
+
+  <!--  ***************** Robot Model *****************  -->
+  <include file="$(find turtlebot_bringup)/launch/includes/robot.launch.xml">
+    <arg name="base" value="$(arg base)" />
+    <arg name="stacks" value="$(arg stacks)" />
+    <arg name="3d_sensor" value="$(arg 3d_sensor)" />
+  </include>
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+    <param name="use_gui" value="true"/>
+  </node>
+
+  <!--  ********** Kobuki mobile base extras **********  -->
+  <include file="$(find thorp_bringup)/launch/includes/_safety_ctrl.launch"/>
+    <!-- velocity commands multiplexer -->
+  <node pkg="nodelet" type="nodelet" name="mobile_base_nodelet_manager" args="manager"/>
+  <node pkg="nodelet" type="nodelet" name="cmd_vel_mux" args="load yocs_cmd_vel_mux/CmdVelMuxNodelet mobile_base_nodelet_manager">
+    <param name="yaml_cfg_file" value="$(find thorp_bringup)/param/vel_multiplexer.yaml" />
+  </node>
+  
+  <!--  ************* Navigation manager **************
+  <include file="$(find thorp_bringup)/launch/includes/_master_ctrl.launch">
+    <arg name="debug_mode" value="true"/>
+  </include>  -->
+
+  <!--  ************** Rosnav move base ***************  -->
+  <include file="$(find thorp_bringup)/launch/includes/_move_base.launch"/>
+
+  <!--  ****** Geometric and semantic map servers *****  -->
+  <node name="map_server" pkg="map_server" type="map_server" args="$(find thorp_bringup)/resources/maps/$(arg map_name).yaml">
+    <param name="frame_id" value="/map"/>
+  </node>
+  <!-- <include file="$(find thorp_bringup)/launch/includes/_annotations_pub.launch"/> -->
+
+  <!--  ******************** Amcl *********************  -->
+  <include file="$(find thorp_bringup)/launch/includes/_amcl.launch">
+    <arg name="scan_topic" value="scan"/>
+    <arg name="initial_pose_x" value="$(arg initial_pose_x)"/>
+    <arg name="initial_pose_y" value="$(arg initial_pose_y)"/>
+    <arg name="initial_pose_a" value="$(arg initial_pose_a)"/>
+  </include>
+
+  <!--  **************** Visualisation ****************  -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_navigation.rviz"/>
+</launch>

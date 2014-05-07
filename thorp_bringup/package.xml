@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<package>
+  <name>thorp_bringup</name>
+  <version>0.1.0</version>
+  <description>Basic configuration and launch files for Thorp robot</description>
+  <maintainer email="jsantossimon@gmail.com">Jorge Santos Simón</maintainer>
+  <author email="jsantossimon@gmail.com">Jorge Santos Simón</author> 
+
+  <license>BSD</license>
+
+  <url type="bugtracker">https://github.com/corot/thorp/issues</url>
+  <url type="repository">https://github.com/corot/thorp</url>
+  <url type="website">http://wiki.ros.org/thorp_bringup</url> 
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>tf</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>actionlib</run_depend>
+  <run_depend>actionlib_msgs</run_depend>
+  <run_depend>move_base_msgs</run_depend>
+  <run_depend>kobuki_msgs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>yocs_msgs</run_depend>
+  <run_depend>yocs_math_toolkit</run_depend>
+
+  <run_depend>stage_ros</run_depend>
+  <run_depend>navigation</run_depend>
+  <run_depend>kobuki_auto_docking</run_depend>
+  <run_depend>kobuki_safety_controller</run_depend>
+  <run_depend>turtlebot_bringup</run_depend>
+  <run_depend>turtlebot_dashboard</run_depend>
+  <run_depend>yocs_virtual_sensor</run_depend>
+  <run_depend>yocs_velocity_smoother</run_depend>
+  
+  <export>
+  </export>
+</package>

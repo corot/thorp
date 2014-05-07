@@ -1,0 +1,77 @@
+<!--
+  Thorp global navigation:
+  - turtlebot
+  - 3d sensor
+  - arduino interface
+  - virtual sensor
+  - safety controller
+  - auto-docking
+  - move_base
+  - geometric map
+  - semantic map???
+  - amcl localization
+  - rviz view (optional)
+ -->
+
+<launch>
+  <!-- Name of the map to use (without path nor extension) and initial position -->
+  <arg name="map_name"       default="edu_room_cropped"/>
+  <arg name="initial_pose_x" value="2.0"/>
+  <arg name="initial_pose_y" value="2.0"/>
+  <arg name="initial_pose_a" value="0.0"/>
+
+  <!--  *********** Turtlebot and 3d sensor ***********  -->
+  <include file="$(find turtlebot_bringup)/launch/minimal.launch">
+    <arg name="battery" value="/sys/class/power_supply/BAT1" />
+  </include>
+  <include file="$(find turtlebot_bringup)/launch/3dsensor.launch">
+    <!-- We only need RGB images and pseudo laser scan -->
+    <arg name="depth_registration"              value="false"/>
+    <arg name="rgb_processing"                  value="true" />
+    <arg name="ir_processing"                   value="false"/>
+    <arg name="depth_processing"                value="false"/>
+    <arg name="depth_registered_processing"     value="false"/>
+    <arg name="disparity_processing"            value="false"/>
+    <arg name="disparity_registered_processing" value="false"/>
+    <arg name="scan_processing"                 value="true" />
+  </include>
+
+  <!--  ************** Additional sensors *************  -->
+  <include file="$(find thorp_bringup)/launch/includes/_virt_sensor.launch"/>
+
+  <!--  *********** Thorp specific hardware ***********  -->
+  <include file="$(find thorp_boards)/launch/arduino.launch"/>
+
+  <!--  ***** Kobuki mobile base safety controller ****  -->
+  <include file="$(find thorp_bringup)/launch/includes/_safety_ctrl.launch"/>
+
+  <!-- Reconfigure command velocity multiplexer to fit thorp_bringup needs. Just set the parameter doesn't work
+       if we start the thorp_bringup rapp with app manager; we must explicitly call the reconfigure service -->
+  <node pkg="rosservice" type="rosservice" name="reconfig_vel_mux" args="call --wait /cmd_vel_mux/set_parameters
+            '{config:{strs:[[yaml_cfg_file,$(find thorp_bringup)/param/vel_multiplexer.yaml]]}}'"/>
+
+  <!--  ******** Kobuki auto-docking controller *******  -->
+  <include file="$(find thorp_bringup)/launch/includes/_autodock.launch"/>
+
+  <!--  ************* Navigation manager **************
+  <include file="$(find thorp_bringup)/launch/includes/_master_ctrl.launch">
+    <arg name="debug_mode" value="true"/>
+  </include>  -->
+
+  <!--  ************** Rosnav move base ***************  -->
+  <include file="$(find thorp_bringup)/launch/includes/_move_base.launch"/>
+
+  <!--  ****** Geometric and semantic map servers *****  -->
+  <node name="map_server" pkg="map_server" type="map_server" args="$(find thorp_bringup)/resources/maps/$(arg map_name).yaml">
+    <param name="frame_id" value="/map"/>
+  </node>
+  <!-- <include file="$(find thorp_bringup)/launch/includes/_annotations_pub.launch"/> -->
+
+  <!--  ******************** Amcl *********************  -->
+  <include file="$(find thorp_bringup)/launch/includes/_amcl.launch">
+    <arg name="scan_topic" value="scan"/>
+    <arg name="initial_pose_x" value="$(arg initial_pose_x)"/>
+    <arg name="initial_pose_y" value="$(arg initial_pose_y)"/>
+    <arg name="initial_pose_a" value="$(arg initial_pose_a)"/>
+  </include>
+</launch>
