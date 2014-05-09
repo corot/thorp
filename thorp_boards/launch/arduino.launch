@@ -40,26 +40,6 @@
         args="-0.08 -0.12 0.2 -2.70526034059 0.0 0.0 $(arg base_link) /ir_155_right_link 100"/>
 
   <node name="arduino_node" pkg="thorp_boards" type="arduino_node">
-    <rosparam>
-      arduino_port      : /dev/arduino
-      read_frequency    : 20.0
-      sonars :
-        maximum_range   : 6.5
-        minimum_range   : 0.1
-        infinity_range  : 10.0
-        range_variance  : 0.005
-        input_pins_map  : [ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10]
-        ctrl_pins_map   : [22, 28, 32, 36, 40, 44, 48, 39, 43, 47, 51]
-      infrared :
-        maximum_range   : 0.8
-        minimum_range   : 0.1
-        infinity_range  : 10.0
-        range_variance  : 0.001
-        input_pins_map  : [12, 13, 14, 15]
-        frame_ids_map   : ["ir_155_left_link",  "ir_180_left_link",  "ir_180_right_link",  "ir_155_right_link"]
-        topic_names_map : ["infrared/155_left", "infrared/180_left", "infrared/180_right", "infrared/155_right"]
-    </rosparam>
-
-    <remap from="sonars" to="$(arg sonars_topic)"/>
+    <rosparam file="$(find thorp_boards)/param/arduino.yaml" command="load"/>
   </node>
 </launch>

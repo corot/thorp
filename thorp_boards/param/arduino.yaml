@@ -1,0 +1,24 @@
+arduino_port      : /dev/arduino
+read_frequency    : 20.0
+sonars :
+  rangers_count   : 11
+  maximum_range   : 6.5
+  minimum_range   : 0.15
+  field_of_view   : 0.62; # ~35.5 degrees
+  range_variance  : 0.005
+  input_pins_map  : [ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10]
+  ctrl_pins_map   : [22, 28, 32, 36, 40, 44, 48, 39, 43, 47, 51]
+  frame_ids_map   : ["s_m90_link", "s_m72_link", "s_m54_link", "s_m36_link", "s_m18_link", "s_0_link",
+                     "s_p18_link", "s_p36_link", "s_p54_link", "s_p72_link", "s_p90_link"]
+  topic_names_map : ["m90", "m72", "m54", "m36", "m18", "0", "p18", "p36", "p54", "p72", "p90"]
+  topic_namespace : /mobile_base/sensors/sonars
+infrared :
+  rangers_count   : 4
+  maximum_range   : 0.8
+  minimum_range   : 0.1
+  field_of_view   : 0.062; # ~3.5 degrees
+  range_variance  : 0.001
+  input_pins_map  : [12, 13, 14, 15]
+  frame_ids_map   : ["ir_l155_link",  "ir_l180_link",  "ir_r180_link",  "ir_r155_link"]
+  topic_names_map : ["l155", "l180", "r180", "r155"]
+  topic_namespace : /mobile_base/sensors/infrared
