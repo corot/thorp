@@ -1,9 +1,5 @@
 <!--
- Interface to the Arduino board
-  - Static tf from base frame to ring center 
-  - Static tfs for the four IR sensors (pointing at -155, pi, pi and 155 degrees)
-  - Arduino interface node
- TODO: move tfs to the robot description (whenever we have one)
+ Interface to the Arduino board.
 
  To interface with thorp's Arduino Mega 2560 board, flash the firmware provided on Bosch drivers:
 
@@ -21,23 +17,11 @@
  and then replug the USB cable.
 -->
 <launch>
-  <arg name="base_link" default="base_link" />
+<!--
   <arg name="sonars_topic" default="sonars"/>
-
   <node pkg="tf" type="static_transform_publisher" name="sonars_link_publisher"
         args="0.0 0.0 0.09 0.0 0.0 0.0 $(arg base_link) /sonars_link 100"/>
-
-  <node pkg="tf" type="static_transform_publisher" name="ir_155_left_link_pub"
-        args="-0.08  0.12 0.2  2.70526034059 0.0 0.0 $(arg base_link) /ir_155_left_link 100"/>
-
-  <node pkg="tf" type="static_transform_publisher" name="ir_180_left_link_pub"
-        args="-0.10  0.08 0.2  3.14159265359 0.0 0.0 $(arg base_link) /ir_180_left_link 100"/>
-
-  <node pkg="tf" type="static_transform_publisher" name="ir_180_right_link_pub"
-        args="-0.10 -0.08 0.2  3.14159265359 0.0 0.0 $(arg base_link) /ir_180_right_link 100"/>
-
-  <node pkg="tf" type="static_transform_publisher" name="ir_155_right_link_pub"
-        args="-0.08 -0.12 0.2 -2.70526034059 0.0 0.0 $(arg base_link) /ir_155_right_link 100"/>
+-->
 
   <node name="arduino_node" pkg="thorp_boards" type="arduino_node">
     <rosparam file="$(find thorp_boards)/param/arduino.yaml" command="load"/>
