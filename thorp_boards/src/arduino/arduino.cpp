@@ -212,7 +212,7 @@ namespace thorp
     // we must be connected to the Arduino before calling their constructor
     for (unsigned int i = 0; i < this->size(); i++)
     {
-      (*this)[i].last_range = maximum_range;
+      (*this)[i].last_range = 0.0;
       (*this)[i].Q = 0.001;
       (*this)[i].R = range_variance; //0.0288;
       (*this)[i].P = (*this)[i].R;
@@ -234,8 +234,11 @@ namespace thorp
       std::string topic_name = topic_namespace + "/" + static_cast<std::string>(topic_names_map[i]);
       (*this)[i].pub = nh.advertise<sensor_msgs::Range>(topic_name, 1);
 
-      ROS_DEBUG("%s %d: input port [A%d], topic [%s], frame [%s]", sonars?"Sonar":"IR sensor", i,
-                (*this)[i].input_pin, (*this)[i].pub.getTopic().c_str(),
+      char ctrl_pin_str[22];
+      sonars ? sprintf(ctrl_pin_str, "control pin [DIO%d], ", (*this)[i].ctrl_pin)
+             : sprintf(ctrl_pin_str, "");
+      ROS_DEBUG("%s %d: input pin [A%d], %stopic [%s], frame [%s]", sonars?"Sonar":"IR sensor", i,
+                (*this)[i].input_pin, ctrl_pin_str, (*this)[i].pub.getTopic().c_str(),
                 (*this)[i].msg.header.frame_id.c_str());
     }
 
