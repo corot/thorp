@@ -2,9 +2,9 @@ arduino_port      : /dev/arduino
 read_frequency    : 20.0
 sonars :
   rangers_count   : 11
-  maximum_range   : 6.5
+  maximum_range   : 0.80   # specs: 6.0 m
   minimum_range   : 0.15
-  field_of_view   : 0.62; # ~35.5 degrees
+  field_of_view   : 0.314  # specs: 0.62, ~35.5 degrees
   range_variance  : 0.005
   input_pins_map  : [ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10]
   ctrl_pins_map   : [22, 28, 32, 36, 40, 44, 48, 39, 43, 47, 51]
@@ -14,9 +14,9 @@ sonars :
   topic_namespace : /mobile_base/sensors/sonars
 infrared :
   rangers_count   : 4
-  maximum_range   : 0.8
-  minimum_range   : 0.1
-  field_of_view   : 0.062; # ~3.5 degrees
+  maximum_range   : 0.80
+  minimum_range   : 0.10
+  field_of_view   : 0.062  # ~3.5 degrees
   range_variance  : 0.001
   input_pins_map  : [12, 13, 14, 15]
   frame_ids_map   : ["ir_l155_link",  "ir_l180_link",  "ir_r180_link",  "ir_r155_link"]
