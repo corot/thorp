@@ -8,7 +8,6 @@
  -->
 
 <launch>
-
   <!--  ****************** Turtlebot ******************  -->
   <include file="$(find turtlebot_bringup)/launch/minimal.launch">
     <arg name="battery" value="/sys/class/power_supply/BAT1" />
@@ -39,5 +38,5 @@
 
   <!--  ************** Fake Localization *************  -->
   <node pkg="tf" type="static_transform_publisher" name="fake_localization"
-        args="0.0 0.0 0.0 0.0 0.0 0.0 /map /odom 10"/>
+        args="0.0 0.0 0.0 0.0 0.0 0.0 /map /odom 200"/>
 </launch>
