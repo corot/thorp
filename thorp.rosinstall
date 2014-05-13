@@ -10,3 +10,5 @@
     version: devel}
 - git: {local-name: creative_interactive_gesture_camera, uri: 'https://github.com/corot/creative_interactive_gesture_camera',
     version: master}
+- git: {local-name: turtlebot_arm, uri: 'https://github.com/corot/turtlebot_arm.git',
+    version: groovy-devel}
