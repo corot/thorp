@@ -5,7 +5,7 @@ sonars :
   maximum_range   : 0.8      # specs: 6.0 m
   minimum_range   : 0.1
   field_of_view   : 0.31416  # specs: 0.62, ~35.5 degrees
-  range_variance  : 0.005
+  range_variance  : 0.001
   input_pins_map  : [ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10]
   ctrl_pins_map   : [22, 28, 32, 36, 40, 44, 48, 39, 43, 47, 51]
   frame_ids_map   : ["s_m90_link", "s_m72_link", "s_m54_link", "s_m36_link", "s_m18_link", "s_0_link",
