@@ -22,3 +22,9 @@ obstacle_layer:
   sonars:  {data_type: LaserScan, topic: sonars, marking: true, clearing: true, min_obstacle_height: 0.1, max_obstacle_height: 0.2}
   virtual: {data_type: LaserScan, topic: virtual, marking: true, clearing: true, min_obstacle_height: 0.3, max_obstacle_height: 0.8}
   bumpers: {data_type: PointCloud2, topic: /mobile_base/sensors/bumper_pointcloud, marking: true, clearing: true, min_obstacle_height: 0.0, max_obstacle_height: 0.1}
+
+sonar_layer:
+  clear_threshold:  0.4
+  mark_threshold:   0.9
+  topics_namespace: /mobile_base/sensors/sonars
+  topic_names_list: ["m90", "m72", "m54", "m36", "m18", "0", "p18", "p36", "p54", "p72", "p90"]

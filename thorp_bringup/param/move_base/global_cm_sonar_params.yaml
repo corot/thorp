@@ -1,0 +1,21 @@
+move_base:
+  global_costmap:
+    global_frame: /odom
+    robot_base_frame: /base_footprint
+    update_frequency: 1.0
+    publish_frequency: 1.0
+    static_map: false
+    rolling_window: true
+    width: 10.0
+    height: 10.0
+    resolution: 0.1
+    origin_x: 0.0
+    origin_y: 0.0
+    obstacle_range: 5.0
+    raytrace_range: 5.5
+  
+    plugins:
+      - {name: sonar_layer,     type: "sonar_layer::SonarLayer"}
+      - {name: obstacle_layer,  type: "costmap_2d::VoxelLayer"}
+      - {name: inflation_layer, type: "costmap_2d::InflationLayer"}
+      - {name: footprint_layer, type: "costmap_2d::FootprintLayer"}

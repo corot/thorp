@@ -5,12 +5,8 @@ global_costmap:
   publish_frequency: 0.5
   static_map: true
   transform_tolerance: 0.5
-  
-#  static_layer:
-#    first_map_only: true   >>>   TODO pull req on ros-planning/navigation
 
   plugins: 
     - {name: static_layer,    type: "costmap_2d::StaticLayer"}
     - {name: obstacle_layer,  type: "costmap_2d::VoxelLayer"}
     - {name: inflation_layer, type: "costmap_2d::InflationLayer"}
-#    - {name: footprint_layer, type: "costmap_2d::FootprintLayer"}
