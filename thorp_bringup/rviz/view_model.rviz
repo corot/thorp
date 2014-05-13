@@ -6,7 +6,11 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-      Splitter Ratio: 0.5
+        - /RobotModel1
+        - /RobotModel1/Links1
+        - /TF1
+        - /TF1/Frames1
+      Splitter Ratio: 0.761246
     Tree Height: 706
   - Class: rviz/Selection
     Name: Selection
@@ -273,6 +277,26 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        pole_bottom_10_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_11_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_12_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_13_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         pole_bottom_1_link:
           Alpha: 1
           Show Axes: false
@@ -412,7 +436,7 @@ Visualization Manager:
       Enabled: false
       Frame Timeout: 15
       Frames:
-        All Enabled: true
+        All Enabled: false
       Marker Scale: 1
       Name: TF
       Show Arrows: true
@@ -446,22 +470,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 1.30872
+      Distance: 1.68044
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.0904023
-        Y: -0.0459868
-        Z: 0.129386
+        X: 0.126698
+        Y: 0.0644036
+        Z: 0.341094
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.915398
+      Pitch: 0.4652
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.410399
+      Yaw: 0.720402
     Saved: ~
 Window Geometry:
   Displays:
