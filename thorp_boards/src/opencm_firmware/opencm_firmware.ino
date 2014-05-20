@@ -20,28 +20,14 @@
  */
 
 #include <CM9_BC.h>
+
+#include "opencm_firmware.h"
+
 Dynamixel Dxl(1);
 Dynamixel *pDxl = &Dxl;
-#define MAX_NUM_SERVOS          5
 BioloidController bioloid;
 
-#define ARB_SIZE_POSE           7               // also initializes
-#define ARB_LOAD_POSE           8
-#define ARB_LOAD_SEQ            9
-#define ARB_PLAY_SEQ            10
-#define ARB_LOOP_SEQ            11
-#define ARB_TEST                25
-
-int mode = 0; // where we are in the frame
-
-unsigned char id = 0; // id of this frame
-unsigned char length = 0; // length of this frame
-unsigned char ins = 0; // instruction of this frame
-
-unsigned char params[143]; // parameters (match RX-64 buffer size)
-unsigned char index = 0; // index in param buffer
-
-int checksum; // checksum
+#define MAX_NUM_SERVOS          5
 
 typedef struct
 {
@@ -63,6 +49,94 @@ void blink(unsigned int times = 1)
   }
 }
 
+/*
+ * Handle a read from ArbotiX registers.
+ */
+int handleRead()
+{
+  int checksum = 0;
+  int addr = params[0];
+  int bytes = params[1];
+
+  unsigned char v;
+  while (bytes > 0)
+  {
+    if (addr == REG_MODEL_NUMBER_L)
+    {
+      v = 44;
+    }
+    else if (addr == REG_MODEL_NUMBER_H)
+    {
+      v = 1; // 300 
+    }
+    else if (addr == REG_VERSION)
+    {
+      v = 0;
+    }
+    else if (addr == REG_ID)
+    {
+      v = 253;
+    }
+    else if (addr == REG_BAUD_RATE)
+    {
+      v = 34; // 56700
+    }
+    else if (addr == REG_DIGITAL_IN0)
+    {
+      // digital 0-7
+//      v = PINB;
+    }
+    else if (addr == REG_DIGITAL_IN1)
+    {
+      // digital 8-15
+//      v = PIND;
+    }
+    else if (addr == REG_DIGITAL_IN2)
+    {
+      // digital 16-23
+//      v = PINC;
+    }
+    else if (addr == REG_DIGITAL_IN3)
+    {
+      // digital 24-31
+//      v = PINA;
+    }
+    else if (addr == REG_RETURN_LEVEL)
+    {
+//      v = ret_level;
+    }
+    else if (addr == REG_ALARM_LED)
+    {
+      // TODO
+    }
+    else if (addr < REG_SERVO_BASE)
+    {
+      // send analog reading
+      int x = analogRead(addr - REG_ANA_BASE);   // TODO : send as 2 bytes
+//      x += analogRead(addr - REG_ANA_BASE) >> 2;
+//      x += analogRead(addr - REG_ANA_BASE) >> 2;
+//      x += analogRead(addr - REG_ANA_BASE) >> 2;
+//      x += analogRead(addr - REG_ANA_BASE) >> 2;
+      v = x / 20;
+    }
+    else if (addr < REG_MOVING)
+    {
+      // send servo position
+      v = 0;
+    }
+    else
+    {
+      // v = userRead(addr);  
+    }
+    checksum += v;
+    SerialUSB.write(v);
+    addr++;
+    bytes--;
+  }
+
+  return checksum;
+}
+
 void setup()
 {
   Dxl.begin(1);
@@ -70,6 +144,19 @@ void setup()
 
   bioloid.setup(MAX_NUM_SERVOS);
   pinMode(BOARD_LED_PIN, OUTPUT);
+}
+
+/*
+ * Send status packet: FF FF id Len Err params=None checksum
+ */
+void statusPacket(int id, int err)
+{
+  SerialUSB.write(0xff);
+  SerialUSB.write(0xff);
+  SerialUSB.write(id);
+  SerialUSB.write(2);
+  SerialUSB.write(err);
+  SerialUSB.write(255 - ((id + 2 + err) % 256));
 }
 
 /*
@@ -87,10 +174,12 @@ void setup()
 
 void loop()
 {
+  int i, poseSize;
+
   // process messages
   while (SerialUSB.available() > 0)
   {
-    // We need to 0xFF at start of packet
+    // We need two 0xFF at start of packet
     if (mode == 0) // start of new packet
     {
       if (SerialUSB.read() == 0xff)
@@ -136,66 +225,71 @@ void loop()
         mode = 0;
         if ((checksum & 0xFF) != 255)
         {
-          // return a packet: FF FF id Len Err params=None check
-          SerialUSB.write(0xff);
-          SerialUSB.write(0xff);
-          SerialUSB.write(id);
-          SerialUSB.write(2);
-          SerialUSB.write(64);
-          SerialUSB.write(255 - ((66 + id) & 0xFF));
+          // return an error packet: FF FF id Len Err=bad checksum, params=None check
+          statusPacket(id, ERR_CHECKSUM);
         }
-        else
+        else if (id == 253) // ID = 253, ArbotiX instruction
         {
-          if (id == 253)
+          // ID = 253, ArbotiX special instructions
+          // Pose Size = 7, followed by single param: size of pose
+          // Load Pose = 8, followed by index, then pose positions (# of param = 2*pose_size+1)
+          // Load Seq = 9, followed by index/times (# of parameters = 3*seq_size)
+          // Play Seq = A, no params
+          switch (ins)
           {
-            // return a packet: FF FF id Len Err params=None check
-            SerialUSB.write(0xff);
-            SerialUSB.write(0xff);
-            SerialUSB.write(id);
-            SerialUSB.write(2);
-            SerialUSB.write((unsigned char)0);
-            SerialUSB.write(255 - ((2 + id) & 0xFF));
-        // SerialUSB.write(ins);
-        // SerialUSB.write(255-((2+ins+id)&0xFF));
-            // special ArbotiX instructions
-            // Pose Size = 7, followed by single param: size of pose
-            // Load Pose = 8, followed by index, then pose positions (# of param = 2*pose_size+1)
-            // Load Seq = 9, followed by index/times (# of parameters = 3*seq_size)
-            // Play Seq = A, no params
-            if (ins == ARB_SIZE_POSE)
-            {
+            case ARB_WRITE_DATA:
+              // send return packet
+              blink(3); // Not implemented!!!
+              //          statusPacket(id, handleWrite());
+              break;
+
+            case ARB_READ_DATA:
+              checksum = id + params[1] + 2;
+              SerialUSB.write(0xff);
+              SerialUSB.write(0xff);
+              SerialUSB.write(id);
+              SerialUSB.write((unsigned char)2 + params[1]);
+              SerialUSB.write((unsigned char)0);
+              // send actual data
+              checksum += handleRead();
+              SerialUSB.write(255 - ((checksum) % 256));
+              break;
+
+            case ARB_SIZE_POSE: // Pose Size = 7, followed by single param: size of pose
+              statusPacket(id, 0);
               bioloid.setPoseSize(params[0]);
               bioloid.readPose();
               //SerialUSB.println(poseSize);
-            }
-            else if (ins == ARB_LOAD_POSE)
-            {
-              int poseSize = bioloid.getPoseSize();
-              int iter;
+              break;
+
+            case ARB_LOAD_POSE: // Load Pose = 8, followed by index, then pose positions (# of param = 2*pose_size)
+              statusPacket(id, 0);
+              poseSize = bioloid.getPoseSize();
 //                                                      SerialUSB.print("New Pose:");
-              for (iter = 0; iter < poseSize; iter++)
+              for (i = 0; i < poseSize; i++)
               {
-                poses[params[0]][iter] = (params[(2 * iter) + 1] + (params[(2 * iter) + 2] << 8));
-//                                                              SerialUSB.print(poses[params[0]][iter]);
+                poses[params[0]][i] = (params[(2 * i) + 1] + (params[(2 * i) + 2] << 8));
+//                                                              SerialUSB.print(poses[params[0]][i]);
 //                                                              SerialUSB.print(",");
               }
 //                                                      SerialUSB.println("");
-            }
-            else if (ins == ARB_LOAD_SEQ)
-            {
-              int iter;
-              for (iter = 0; iter < (length - 2) / 3; iter++)
+              break;
+
+            case ARB_LOAD_SEQ: // Load Seq = 9, followed by index/times (# of parameters = 3*seq_size) 
+              statusPacket(id, 0);
+              for (i = 0; i < (length - 2) / 3; i++)
               {
-                sequence[iter].pose = params[(iter * 3)];
-                sequence[iter].time = params[(iter * 3) + 1] + (params[(iter * 3) + 2] << 8);
+                sequence[i].pose = params[(i * 3)];
+                sequence[i].time = params[(i * 3) + 1] + (params[(i * 3) + 2] << 8);
                 //SerialUSB.print("New Transition:");
-                //SerialUSB.print((int)sequence[iter].pose);
+                //SerialUSB.print((int)sequence[i].pose);
                 //SerialUSB.print(" in ");
-                //SerialUSB.println(sequence[iter].time);
+                //SerialUSB.println(sequence[i].time);
               }
-            }
-            else if (ins == ARB_PLAY_SEQ)
-            {
+              break;
+
+            case ARB_PLAY_SEQ: // Play Seq = A, no params   
+              statusPacket(id, 0);
               seqPos = 0;
               while (sequence[seqPos].pose != 0xff)
               {
@@ -203,17 +297,16 @@ void loop()
                 if (SerialUSB.available())
                 {
                   if (SerialUSB.read() == 'H')
-                    return;
+                    break;
                 }
 
                 int p = sequence[seqPos].pose;
                 int poseSize = bioloid.getPoseSize();
 
                 // load pose
-                int iter;
-                for (iter = 0; iter < poseSize; iter++)
+                for (i = 0; i < poseSize; i++)
                 {
-                  bioloid.setNextPose(iter + 1, poses[p][iter]);
+                  bioloid.setNextPose(i + 1, poses[p][i]);
                 }
                 // interpolate
                 bioloid.interpolateSetup(sequence[seqPos].time);
@@ -224,9 +317,10 @@ void loop()
                 // next transition
                 seqPos++;
               }
-            }
-            else if (ins == ARB_LOOP_SEQ)
-            {
+              break;
+
+            case ARB_LOOP_SEQ: // Play Seq until we recieve a 'H'alt
+              statusPacket(id, 0);
               while (1)
               {
                 seqPos = 0;
@@ -236,17 +330,16 @@ void loop()
                   if (SerialUSB.available())
                   {
                     if (SerialUSB.read() == 'H')
-                      return;
+                      break;
                   }
 
                   int p = sequence[seqPos].pose;
-                  int poseSize = bioloid.getPoseSize();
+                  poseSize = bioloid.getPoseSize();
 
                   // load pose
-                  int iter;
-                  for (iter = 0; iter < poseSize; iter++)
+                  for (i = 0; i < poseSize; i++)
                   {
-                    bioloid.setNextPose(iter + 1, poses[p][iter]);
+                    bioloid.setNextPose(i + 1, poses[p][i]);
                   }
                   // interpolate
                   bioloid.interpolateSetup(sequence[seqPos].time);
@@ -256,125 +349,81 @@ void loop()
                   seqPos++;
                 }
               }
-            }
-            else if (ins == ARB_TEST)
-            {
-              /*                                                      int i;
-               // Test Digital I/O
-               for(i=0;i<8;i++)
-               {
-               // test digital
-               pinMode(i,OUTPUT);
-               digitalWrite(i,HIGH);
-               // test analog
-               pinMode(31-i,OUTPUT);
-               digitalWrite(31-i,HIGH);
-               
-               delay(500);
-               digitalWrite(i,LOW);
-               digitalWrite(31-i,LOW);
-               }
-               // Test Ax-12
-               for(i=452;i<552;i+=20)
-               {
-               SetPosition(1,i);
-               delay(200);
-               }
-               // Test Motors
-               drive.set(-255,-255);
-               delay(500);
-               drive.set(0,0);
-               delay(1500);
-               drive.set(255,255);
-               delay(500);
-               drive.set(0,0);
-               delay(1500);
-               // Test Analog I/O
-               for(i=0;i<8;i++)
-               {
-               // test digital
-               pinMode(i,OUTPUT);
-               digitalWrite(i,HIGH);
-               // test analog
-               pinMode(31-i,OUTPUT);
-               digitalWrite(31-i,HIGH);
-               
-               delay(500);
-               digitalWrite(i,LOW);
-               digitalWrite(31-i,LOW);
-               }
-               */}
-          }
-          else
-          {
-            blink(1);
-            // pass thru
-            if (ins == INST_READ)
-            {
-              Dxl.setTxPacketId(id);
-              Dxl.setTxPacketInstruction(INST_READ);
-              Dxl.setTxPacketParameter(0, params[0]);
-              Dxl.setTxPacketParameter(1, params[1]);
-              Dxl.setTxPacketLength(2);
-              Dxl.txrxPacket();
-              // return a packet: FF FF id Len Err params check
-              if (Dxl.getResult() == (1 << COMM_RXSUCCESS))
-              {
-                int lennie = Dxl.getRxPacketLength() + 4;
-                if (lennie >= 6)
-                {
-                  int iter;
-                  for (iter = 0; iter < lennie; iter++)
-                  {
-                    SerialUSB.write(Dxl.getRxPacketParameter(iter - 5));
-                  }
-                }
-              }
-              else
-              {
-                SerialUSB.write(0xff);
-                SerialUSB.write(0xff);
-                SerialUSB.write(id);
-                SerialUSB.write(2);
-                SerialUSB.write(128);
-                SerialUSB.write(255 - ((130 + id) & 0xFF));
-              }
-            }
-            else if (ins == INST_WRITE)
-            {
-              if (length == 4)
-              {
-                Dxl.writeByte(id, params[0], params[1]);
-              }
-              else
-              {
-                int x = Dxl.makeWord(params[1], params[2]);
-                Dxl.writeWord(id, params[0], x);
-              }
-              // return a packet: FF FF id Len Err params check
-              if (Dxl.getResult() == (1 << COMM_RXSUCCESS))
-              {
-                int lennie = Dxl.getRxPacketLength() + 4;
-                if (lennie >= 6)
-                {
-                  int iter;
-                  for (iter = 0; iter < lennie; iter++)
-                  {
-                    SerialUSB.write(Dxl.getRxPacketParameter(iter - 5));
-                  }
-                }
-              }
-              else
-              {
-                SerialUSB.write(0xff);
-                SerialUSB.write(0xff);
-                SerialUSB.write(id);
-                SerialUSB.write(2);
-                SerialUSB.write(128);
-                SerialUSB.write(255 - ((130 + id) & 0xFF));
-              }
+              break;
 
+              // ARB_TEST is deprecated and removed
+
+            default:
+              blink(5); // Not implemented!!!  SEND ERROR  TODO
+              break;
+          }
+        }
+        else
+        {
+          // pass thru
+          if (ins == INST_READ)
+          {
+            Dxl.setTxPacketId(id);
+            Dxl.setTxPacketInstruction(INST_READ);
+            Dxl.setTxPacketParameter(0, params[0]);
+            Dxl.setTxPacketParameter(1, params[1]);
+            Dxl.setTxPacketLength(2);
+            Dxl.txrxPacket();
+            // return a packet: FF FF id Len Err params check
+            if (Dxl.getResult() == (1 << COMM_RXSUCCESS))
+            {
+              int lennie = Dxl.getRxPacketLength() + 4;
+              if (lennie >= 6)
+              {
+                for (i = 0; i < lennie; i++)
+                {
+                  SerialUSB.write(Dxl.getRxPacketParameter(i - 5));
+                }
+              }
             }
+            else
+            {
+              SerialUSB.write(0xff);
+              SerialUSB.write(0xff);
+              SerialUSB.write(id);
+              SerialUSB.write(2);
+              SerialUSB.write(128);
+              SerialUSB.write(255 - ((130 + id) & 0xFF));
+            }
+          }
+          else if (ins == INST_WRITE)
+          {
+            if (length == 4)
+            {
+              Dxl.writeByte(id, params[0], params[1]);
+            }
+            else
+            {
+              int x = Dxl.makeWord(params[1], params[2]);
+              Dxl.writeWord(id, params[0], x);
+            }
+            // return a packet: FF FF id Len Err params check
+            if (Dxl.getResult() == (1 << COMM_RXSUCCESS))
+            {
+              int lennie = Dxl.getRxPacketLength() + 4;
+              if (lennie >= 6)
+              {
+                for (i = 0; i < lennie; i++)
+                {
+                  SerialUSB.write(Dxl.getRxPacketParameter(i - 5));
+                }
+              }
+            }
+            else
+            {
+              SerialUSB.write(0xff);
+              SerialUSB.write(0xff);
+              SerialUSB.write(id);
+              SerialUSB.write(2);
+              SerialUSB.write(128);
+              SerialUSB.write(255 - ((130 + id) & 0xFF));
+            }
+
           }
         }
       }
@@ -384,3 +433,4 @@ void loop()
   // update joints
   bioloid.interpolateStep();
 }
+
