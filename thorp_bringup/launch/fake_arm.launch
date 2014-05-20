@@ -1,0 +1,15 @@
+<launch>
+
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find thorp_bringup)/urdf/thorp.urdf.xacro'"/>
+
+  <include file="$(find thorp_bringup)/launch/includes/_arm.launch">
+    <arg name="simulation" value="true"/>
+  </include>
+
+  <node name="robot_state_pub" pkg="robot_state_publisher" type="robot_state_publisher"/>
+  <node name="fake_joint_pub" pkg="thorp_bringup" type="fake_joint_pub.py"/>
+
+  <node name="arbotix_gui" pkg="arbotix_python" type="arbotix_gui" output="screen"/>
+  
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_model.rviz"/>
+</launch>
