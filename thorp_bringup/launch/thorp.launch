@@ -22,7 +22,10 @@
 
   <!--  *********** Turtlebot and 3d sensor ***********  -->
   <include file="$(find turtlebot_bringup)/launch/minimal.launch">
-    <arg name="battery" value="/sys/class/power_supply/BAT1" />
+    <arg name="base"      value="kobuki"/>
+    <arg name="stacks"    value="hexagons"/>
+    <arg name="3d_sensor" value="kinect"/>
+    <arg name="battery"   value="/sys/class/power_supply/BAT1"/>
   </include>
   <include file="$(find turtlebot_bringup)/launch/3dsensor.launch">
     <!-- We only need RGB images and pseudo laser scan -->
@@ -35,6 +38,9 @@
     <arg name="disparity_registered_processing" value="false"/>
     <arg name="scan_processing"                 value="true" />
   </include>
+
+  <!--Overwrite default Turtlebot 2 description with Thorp's one -->
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find thorp_bringup)/urdf/thorp.urdf.xacro'"/>
 
   <!--  ************** Additional sensors *************  -->
   <include file="$(find thorp_bringup)/launch/includes/_virt_sensor.launch"/>
