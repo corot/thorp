@@ -1,21 +1,13 @@
-<?xml version="1.0"?>
 <!--
-         Launch softkinetic camera driver
-         The argument 0 is the device index, as determined by the DepthSense deamon.
+  Launch softkinetic camera driver
+  The argument 0 is the device index, as determined by the DepthSense deamon.
 -->
 <launch>
-  <node name="senz3d" pkg="softkinetic_camera" type="softkinetic_bringup_node" args="0" output="screen" >
-    <param name="camera_link" type="string" value="/senz3d_camera_link" />
-    <param name="confidence_threshold" type="int" value="1000" />
-    <param name="use_radius_filter" type="bool" value="false" />
-    <param name="search_radius" type="double" value="0.05" />
-    <param name="minNeighboursInRadius" type="int" value="50" />
+  <node name="senz3d" pkg="softkinetic_camera" type="softkinetic_bringup_node" args="0" output="screen">
+    <param name="camera_link" type="string" value="/senz3d_camera_link"/>
+    <param name="confidence_threshold" type="int" value="1000"/>
+    <param name="use_radius_filter" type="bool" value="false"/>
+    <param name="search_radius" type="double" value="0.05"/>
+    <param name="minNeighboursInRadius" type="int" value="50"/>
   </node>
-
-<!--   <node pkg="tf" type="static_transform_publisher" name="softkinect_tf"
-        args="-0.85 0.062 0.29 0.0 0.523598775598 0.0 /base_link /senz3d_camera_link 40" />
- -->
-<!--   <node pkg="rviz" type="rviz" name="softkinect_rviz" respawn="false"  required="true"
-	args="-d $(find softkinetic_camera)/launch/softkinetic.rviz"  />
- -->  
 </launch>
