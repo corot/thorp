@@ -9,8 +9,11 @@
     - 11 sonar links
     - 4 IR sensor links
     - Turtlebot arm
+    - Senz3D camera
 -->
 <robot name="turtlebot" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:property name="pi" value="3.1415926535897931"/>
 
   <xacro:include filename="$(find turtlebot_description)/urdf/turtlebot_library.urdf.xacro"/>
   <xacro:include filename="$(find turtlebot_arm_description)/urdf/arm.xacro"/>
@@ -21,8 +24,8 @@
   <sensor_kinect  parent="base_link"/>
 
   <!-- Turtlebot arm plus mounting on Thorp -->
-  <turtlebot_arm parent="base_link" color="white" gripper_color="black">
-    <origin xyz="0.0985 0.0295 0.425"/>
+  <turtlebot_arm parent="plate_top_link" color="white" gripper_color="black">
+    <origin xyz="0.11214 0.0295 0.0284"/>
   </turtlebot_arm>
   
   <arm_mount parent="arm_base_link" name="arm_mount" color="black">
@@ -32,6 +35,27 @@
   <stack_bottom_pole parent="arm_base_link" number="11" x_loc= " 0.0"   y_loc= "-0.0288" z_loc="-0.0112"/>
   <stack_bottom_pole parent="arm_base_link" number="12" x_loc= "-0.038" y_loc= "-0.0288" z_loc="-0.0112"/>
   <stack_bottom_pole parent="arm_base_link" number="13" x_loc= "-0.038" y_loc= " 0.0288" z_loc="-0.0112"/>
+
+  <!-- Senz3D camera plus mounting on Thorp -->
+  <joint name="senz3d_camera_joint" type="fixed">
+    <origin xyz="-0.085 -0.082 0.28" rpy="${pi/2 + 0.907571211037} 0.0 ${pi/2}"/> <!-- 0,10471975512 -->
+    <parent link="plate_top_link"/>
+    <child link="senz3d_camera_link"/>
+  </joint>
+  <link name="senz3d_camera_link">
+<!--     <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      <geometry>
+        <mesh filename="package://thorp_bringup/resources/meshes/senz3d.stl" scale="1.0 1.0 1.0"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      <geometry>
+        <box size="0.025 0.038 0.004"/>
+      </geometry>
+    </collision> TODO peta RViz-->
+  </link>
 
   <!-- Sonar links forming a half ring centered on (and slightly above) base_link-->
   <joint name="s_m90_joint" type="fixed">
