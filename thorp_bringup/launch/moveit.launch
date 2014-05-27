@@ -12,7 +12,7 @@
 
   <node name="arbotix_gui" pkg="arbotix_python" type="arbotix_gui" output="screen"/>
   
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_model.rviz"/>
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_moveit.rviz"/>
 
 
   <!--  ************** Fake Localization *************  -->
@@ -33,11 +33,11 @@
   <!-- If needed, broadcast static tf for robot root -->
   
 
-  <!-- We do not have a robot connected, so publish fake joint states -->
+  <!-- We do not have a robot connected, so publish fake joint states 
   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
     <param name="/use_gui" value="false"/> 
     <rosparam param="/source_list">[/move_group/fake_controller_joint_states]</rosparam>
-  </node>
+  </node>-->
   
   <!-- Given the published joint states, publish tf for the robot links -->
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen" />
