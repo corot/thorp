@@ -6,9 +6,12 @@
     <param name="sim" value="$(arg simulation)"/>
   </node>
 
-  <node name="gripper_controller" pkg="arbotix_controllers" type="gripper_controller.py">
+  <node name="gripper_controller" pkg="arbotix_controllers" type="gripper_controller">
     <param name="model" value="singlesided"/>
     <param name="invert" value="true"/>
-    <param name="pad_width" value="0.0254"/>
+    <param name="pad_width" value="0.065"/>
+    <param name="finger_length" value="0.07"/>
+    <param name="min_opening" value="0.0"/>
+    <param name="max_opening" value="0.07"/>
   </node>
 </launch>
