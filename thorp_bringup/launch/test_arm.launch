@@ -1,9 +1,10 @@
 <launch>
+  <arg name="simulation" default="true"/>
 
   <param name="robot_description" command="$(find xacro)/xacro.py '$(find thorp_bringup)/urdf/thorp.urdf.xacro'"/>
 
   <include file="$(find thorp_bringup)/launch/includes/_arm.launch">
-    <arg name="simulation" value="true"/>
+    <arg name="simulation" value="$(arg simulation)"/>
   </include>
 
   <node name="robot_state_pub" pkg="robot_state_publisher" type="robot_state_publisher"/>

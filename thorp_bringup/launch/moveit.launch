@@ -1,53 +1,48 @@
 <launch>
+  <!-- By default, we are in simulation and not in debug mode -->
+  <arg name="debug" default="false"/>
+  <arg name="simulation" default="true"/>
+
+  <!--  ************* Thorp bringup stuff *************  -->
   <param name="robot_description" command="$(find xacro)/xacro.py '$(find thorp_bringup)/urdf/thorp.urdf.xacro'"/>
 
   <include file="$(find thorp_bringup)/launch/includes/_arm.launch">
-    <arg name="simulation" value="true"/>
+    <arg name="simulation" value="$(arg simulation)"/>
   </include>
 
   <include file="$(find thorp_bringup)/launch/includes/_softkinetic.launch"/>
   
-<!--   <node name="robot_state_pub" pkg="robot_state_publisher" type="robot_state_publisher"/>
- -->  <node name="fake_joint_pub" pkg="thorp_bringup" type="fake_joint_pub.py"/>
+  <node name="robot_state_pub" pkg="robot_state_publisher" type="robot_state_publisher"/>
+  <node name="fake_joint_pub" pkg="thorp_bringup" type="fake_joint_pub.py"/>
 
   <node name="arbotix_gui" pkg="arbotix_python" type="arbotix_gui" output="screen"/>
   
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_moveit.rviz"/>
 
 
-  <!--  ************** Fake Localization *************  -->
+  <!--  ************** Fake Localization *************  TODO do I really need this??? -->
   <node pkg="tf" type="static_transform_publisher" name="fake_localization"
         args="0.0 0.0 0.0 0.0 0.0 0.0 /map /base_footprint 200"/>
 
 
-
-
-  <!-- By default, we are not in debug mode -->
-  <arg name="debug" default="false" />
+  <!--  ************* Moveit config stuff *************  -->
 
   <!-- Load the URDF, SRDF and other .yaml configuration files on the param server -->
   <include file="$(find turtlebot_arm_moveit_config)/launch/planning_context.launch">
     <arg name="load_robot_description" value="false"/>
   </include>
 
-  <!-- If needed, broadcast static tf for robot root -->
-  
-
-  <!-- We do not have a robot connected, so publish fake joint states 
+  <!-- We do not have a robot connected, so publish fake joint states   TODO  maybe recover from fake_joint_pub.py
   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
     <param name="/use_gui" value="false"/> 
     <rosparam param="/source_list">[/move_group/fake_controller_joint_states]</rosparam>
   </node>-->
-  
-  <!-- Given the published joint states, publish tf for the robot links -->
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen" />
 
-  <!-- Run the main MoveIt executable without trajectory execution (we do not have controllers configured by default) -->
+  <!-- Run the main MoveIt executable -->
   <include file="$(find turtlebot_arm_moveit_config)/launch/move_group.launch">
     <arg name="allow_trajectory_execution" value="true"/>  
-    <arg name="fake_execution" value="true"/>
+    <arg name="fake_execution" value="$(arg simulation)"/>
     <arg name="info" value="true"/>
     <arg name="debug" value="$(arg debug)"/>
   </include>
-
 </launch>
