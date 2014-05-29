@@ -11,9 +11,7 @@
     - Turtlebot arm
     - Senz3D camera
 -->
-<robot name="turtlebot" xmlns:xacro="http://ros.org/wiki/xacro">
-
-  <xacro:property name="pi" value="3.1415926535897931"/>
+<robot name="Thorp" xmlns:xacro="http://ros.org/wiki/xacro">
 
   <xacro:include filename="$(find turtlebot_description)/urdf/turtlebot_library.urdf.xacro"/>
   <xacro:include filename="$(find turtlebot_arm_description)/urdf/arm.xacro"/>
@@ -31,30 +29,78 @@
   <arm_mount parent="arm_base_link" name="arm_mount" color="black">
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
   </arm_mount>
-  <stack_bottom_pole parent="arm_base_link" number="10" x_loc= " 0.0"   y_loc= " 0.0288" z_loc="-0.0112"/>
-  <stack_bottom_pole parent="arm_base_link" number="11" x_loc= " 0.0"   y_loc= "-0.0288" z_loc="-0.0112"/>
-  <stack_bottom_pole parent="arm_base_link" number="12" x_loc= "-0.038" y_loc= "-0.0288" z_loc="-0.0112"/>
-  <stack_bottom_pole parent="arm_base_link" number="13" x_loc= "-0.038" y_loc= " 0.0288" z_loc="-0.0112"/>
+  <stack_bottom_pole parent="arm_base_link" number="10" x_loc=" 0.0"   y_loc=" 0.0288" z_loc="-0.0112"/>
+  <stack_bottom_pole parent="arm_base_link" number="11" x_loc=" 0.0"   y_loc="-0.0288" z_loc="-0.0112"/>
+  <stack_bottom_pole parent="arm_base_link" number="12" x_loc="-0.038" y_loc="-0.0288" z_loc="-0.0112"/>
+  <stack_bottom_pole parent="arm_base_link" number="13" x_loc="-0.038" y_loc=" 0.0288" z_loc="-0.0112"/>
 
   <!-- Senz3D camera plus mounting on Thorp -->
+  
+  <!-- Mounting poles: we emulate one top and two middle poles overlapping two top poles -->
+  <!-- The Z loc of the upper poles is : 1/2*plate height + 1/2*top pole height + 2*middle pole height (without screw) -->
+  <stack_top_pole parent="plate_top_link" number="10" x_loc="-0.1024" y_loc=" 0.098" z_loc="${0.006/2 + 0.2032/2}"/>
+  <stack_top_pole parent="plate_top_link" number="11" x_loc="-0.1024" y_loc="-0.098" z_loc="${0.006/2 + 0.2032/2}"/>
+  <stack_top_pole parent="plate_top_link" number="12" x_loc="-0.1024" y_loc=" 0.098" z_loc="${0.006/2 + 0.2032/2 + 0.1}"/>
+  <stack_top_pole parent="plate_top_link" number="13" x_loc="-0.1024" y_loc="-0.098" z_loc="${0.006/2 + 0.2032/2 + 0.1}"/>
+  
+  <!-- Mounting plate; this structure is provisional -->
+  <joint name="senz3d_mount_joint" type="fixed">
+    <origin xyz="-0.1024 0.0 ${0.2032 + 0.006 + 0.1}" rpy="0.0 0.0 0.0"/>
+    <parent link="plate_top_link"/>
+    <child link="senz3d_mount_link"/>
+  </joint>
+  <link name="senz3d_mount_link">
+    <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <box size="0.02 0.24 0.006"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <box size="0.02 0.24 0.006"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.01"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0"
+        iyy="0.001" iyz="0.0"
+        izz="0.001"/>
+    </inertial>
+  </link>
+
+  <!-- Camera -->
   <joint name="senz3d_camera_joint" type="fixed">
-    <origin xyz="-0.085 -0.082 0.34" rpy="${pi/2 + 0.907571211037} 0.0 ${pi/2}"/> <!-- 0,10471975512 -->
+    <origin xyz="-0.065 -0.082 0.325" rpy="${M_PI/2 + 0.907571211037} 0.0 ${M_PI/2}"/>
     <parent link="plate_top_link"/>
     <child link="senz3d_camera_link"/>
   </joint>
   <link name="senz3d_camera_link">
-<!--     <visual>
-      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
       <geometry>
-        <mesh filename="package://thorp_bringup/resources/meshes/senz3d.stl" scale="1.0 1.0 1.0"/>
+        <!-- As we don't have a Senz3D mesh, use a deformed Asus Xtion Pro instead -->
+        <mesh filename="package://turtlebot_description/meshes/sensors/asus_xtion_pro_live.dae" scale="0.0006 0.0015 0.001"/>
       </geometry>
     </visual>
     <collision>
-      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      <origin xyz="0.0 0.0 -0.005" rpy="0 0 0"/>
       <geometry>
-        <box size="0.025 0.038 0.004"/>
-      </geometry>
-    </collision> TODO peta RViz-->
+      <box size="0.11 0.04 0.04"/>
+    </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.01"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0"
+        iyy="0.001" iyz="0.0"
+        izz="0.001"/>
+    </inertial>
   </link>
 
   <!-- Sonar links forming a half ring centered on (and slightly above) base_link-->
