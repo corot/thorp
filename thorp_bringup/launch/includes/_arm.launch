@@ -1,10 +1,9 @@
 <launch>
   <arg name="simulation" default="false" />
 
-  <node name="arbotix" pkg="arbotix_python" type="arbotix_driver" output="screen">
-    <rosparam file="$(find thorp_boards)/param/opencm.yaml" command="load" />
-    <param name="sim" value="$(arg simulation)"/>
-  </node>
+  <include file="$(find thorp_boards)/launch/opencm.launch">
+    <arg name="simulation" value="$(arg simulation)"/>
+  </include>
 
   <node name="gripper_controller" pkg="arbotix_controllers" type="gripper_controller">
     <param name="model" value="singlesided"/>
