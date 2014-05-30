@@ -12,17 +12,11 @@
  You must install the Arduino udev rule to make the board available on the default port "/dev/arduino":
 
   $ roscd thorp_boards
-  $ sudo cp resources/ir_scan/58-arduino.rules /etc/udev/rules.d
+  $ sudo cp resources/58-arduino.rules /etc/udev/rules.d
  
  and then replug the USB cable.
 -->
 <launch>
-<!--
-  <arg name="sonars_topic" default="sonars"/>
-  <node pkg="tf" type="static_transform_publisher" name="sonars_link_publisher"
-        args="0.0 0.0 0.09 0.0 0.0 0.0 $(arg base_link) /sonars_link 100"/>
--->
-
   <node name="arduino_node" pkg="thorp_boards" type="arduino_node">
     <rosparam file="$(find thorp_boards)/param/arduino.yaml" command="load"/>
   </node>
