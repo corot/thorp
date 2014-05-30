@@ -2,14 +2,24 @@ port: /dev/opencm
 baud: 38400
 sync_read: false
 sync_write: false
-read_rate: 50
-write_rate: 50
+read_rate: 40
+write_rate: 40
+
+# WARN about write_rate: 40 Hz turns to make much softer motions than typical
+# values (15, or the default 10). But if > 15 Hz , the servo controller fails
+# to reach the configured max speed and moves instead at ~ max_speed/pi.
+# No idea why!!!
+# Workaround is to set higher limits here and the desired ones on the robot
+# description xacro file 
 
 joints: {
-  arm_shoulder_pan_joint: {id: 1, neutral: 205, max_angle: 240, min_angle: -60, max_speed: 90},
-  arm_shoulder_lift_joint: {id: 2, max_angle: 125, min_angle: -125, max_speed: 90},
-  arm_elbow_flex_joint: {id: 3, max_angle: 150, min_angle: -150, max_speed: 90},
-  arm_wrist_flex_joint: {id: 4, max_angle: 100, min_angle: -100, max_speed: 90},
+  # max_speed: phisical limit of the AX-12 is 114 rpm (684 deg/s)
+  # operation angle is 300 deg, so (max_angle - min_angle) <= 300
+  # neutral point is specified in ticks, so 512 (150 deg) is the default
+  arm_shoulder_pan_joint: {id: 1, neutral: 205, max_angle: 240, min_angle: -60, max_speed: 180},
+  arm_shoulder_lift_joint: {id: 2, max_angle: 125, min_angle: -125, max_speed: 180},
+  arm_elbow_flex_joint: {id: 3, max_angle: 150, min_angle: -150, max_speed: 180},
+  arm_wrist_flex_joint: {id: 4, max_angle: 100, min_angle: -100, max_speed: 180},
   gripper_joint: {id: 5, max_speed: 90},
 }
 
