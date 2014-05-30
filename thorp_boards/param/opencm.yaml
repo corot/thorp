@@ -2,8 +2,8 @@ port: /dev/opencm
 baud: 38400
 sync_read: false
 sync_write: false
-read_rate: 15
-write_rate: 25
+read_rate: 50
+write_rate: 50
 
 joints: {
   arm_shoulder_pan_joint: {id: 1, neutral: 205, max_angle: 240, min_angle: -60, max_speed: 90},
