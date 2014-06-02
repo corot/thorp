@@ -13,6 +13,9 @@
     <arg name="battery" value="/sys/class/power_supply/BAT1" />
   </include>
 
+  <!--Overwrite default Turtlebot 2 description with Thorp's one -->
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find thorp_bringup)/urdf/thorp.urdf.xacro'"/>
+
   <!--  *********** Thorp specific hardware ***********  -->
   <include file="$(find thorp_boards)/launch/arduino.launch"/>
 
