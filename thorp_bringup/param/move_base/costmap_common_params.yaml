@@ -28,3 +28,4 @@ sonar_layer:
   mark_threshold:   0.98
   topics_namespace: /mobile_base/sensors/sonars
   topic_names_list: ["m90", "m72", "m54", "m36", "m18", "0", "p18", "p36", "p54", "p72", "p90"]
+  no_readings_timeout: 2.0
