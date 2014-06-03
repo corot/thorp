@@ -22,7 +22,8 @@
   <sensor_kinect  parent="base_link"/>
 
   <!-- Turtlebot arm plus mounting on Thorp -->
-  <turtlebot_arm parent="plate_top_link" color="white" gripper_color="black">
+  <turtlebot_arm parent="plate_top_link" color="white" gripper_color="black"
+                 joints_vlimit="0.3571" pan_llimit="-1.047" pan_ulimit="4.189">
     <origin xyz="0.11214 0.0295 0.0284"/>
   </turtlebot_arm>
   
