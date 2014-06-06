@@ -38,10 +38,11 @@
     <rosparam param="/source_list">[/move_group/fake_controller_joint_states]</rosparam>
   </node>-->
 
-  <!-- Run the main MoveIt executable -->
+  <!-- Run the main MoveIt executable; we don't use fake execution even on simulation, as the
+       arbotix controllers are already operating on simulation and so only move the robot model -->
   <include file="$(find turtlebot_arm_moveit_config)/launch/move_group.launch">
     <arg name="allow_trajectory_execution" value="true"/>  
-    <arg name="fake_execution" value="$(arg simulation)"/>
+    <arg name="fake_execution" value="false"/>
     <arg name="info" value="true"/>
     <arg name="debug" value="$(arg debug)"/>
   </include>
