@@ -48,7 +48,7 @@
 
   <!--  ********** Kobuki mobile base extras **********  -->
   <include file="$(find thorp_bringup)/launch/includes/_safety_ctrl.launch"/>
-    <!-- velocity commands multiplexer -->
+  <!-- velocity commands multiplexer -->
   <node pkg="nodelet" type="nodelet" name="mobile_base_nodelet_manager" args="manager"/>
   <node pkg="nodelet" type="nodelet" name="cmd_vel_mux" args="load yocs_cmd_vel_mux/CmdVelMuxNodelet mobile_base_nodelet_manager">
     <param name="yaml_cfg_file" value="$(find thorp_bringup)/param/vel_multiplexer.yaml"/>
@@ -61,6 +61,9 @@
 
   <!--  ************** Rosnav move base ***************  -->
   <include file="$(find thorp_bringup)/launch/includes/_move_base.launch"/>
+  <!-- we cannot simulate sonars on stage_ros, so disable sonar layer -->
+  <param name="move_base/global_costmap/sonar_layer/enabled" value="false"/>
+  <param name="move_base/local_costmap/sonar_layer/enabled" value="false"/>
 
   <!--  ****** Geometric and semantic map servers *****  -->
   <node name="map_server" pkg="map_server" type="map_server" args="$(find thorp_bringup)/resources/maps/$(arg map_name).yaml">
