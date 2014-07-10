@@ -6,8 +6,6 @@
     version: hydro-devel}
 - git: {local-name: bosch_drivers, uri: 'https://github.com/corot/bosch_drivers.git',
     version: master}
-- git: {local-name: eband_local_planner, uri: 'https://github.com/utexas-bwi/eband_local_planner.git',
-    version: devel}
 - git: {local-name: turtlebot_arm, uri: 'https://github.com/corot/turtlebot_arm.git',
     version: hydro-devel}
 - git: {local-name: arbotix_ros, uri: 'https://github.com/corot/arbotix_ros.git',
