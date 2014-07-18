@@ -1,12 +1,12 @@
 - git: {local-name: thorp, uri: 'https://github.com/corot/thorp.git',
     version: master}
-- git: {local-name: softkinetic, uri: 'https://github.com/ipa320/softkinetic.git',
-    version: hydro_dev}
+- git: {local-name: softkinetic, uri: 'https://github.com/corot/softkinetic.git',
+    version: indigo-devel}
 - git: {local-name: kobuki-x, uri: 'https://github.com/yujinrobot/kobuki-x.git',
-    version: hydro-devel}
+    version: indigo-devel}
 - git: {local-name: bosch_drivers, uri: 'https://github.com/corot/bosch_drivers.git',
     version: master}
 - git: {local-name: turtlebot_arm, uri: 'https://github.com/corot/turtlebot_arm.git',
-    version: hydro-devel}
+    version: indigo-devel}
 - git: {local-name: arbotix_ros, uri: 'https://github.com/corot/arbotix_ros.git',
-    version: hydro-devel}
+    version: indigo-devel}
