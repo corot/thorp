@@ -61,6 +61,36 @@ namespace thorp
 
           bool read();
           bool trigger();
+
+        private:
+          template <typename T>
+          bool getParam(const std::string& key, T& value)
+          {
+            if (ros::NodeHandle().getParam(key, value) == false)
+            {
+              ROS_ERROR("Missing mandatory parameter %s", key.c_str());
+              return false;
+            }
+            return true;
+          }
+
+          template <typename T>
+          bool getParam(const std::string& key, std::vector<T>& value, int size)
+          {
+            if (ros::NodeHandle().getParam(key, value) == false)
+            {
+              ROS_ERROR("Mandatory parameter %s must be a list of %s",
+                        key.c_str(), typeid(T) == typeid(int) ? "integers" : "strings");
+              return false;
+            }
+            if (value.size() != size)
+            {
+              ROS_ERROR("Invalid %s map: size doesn't match rangers count (%lu != %d)",
+                        key.c_str(), value.size(), size);
+              return false;
+            }
+            return true;
+          }
       };
 
 
@@ -85,9 +115,6 @@ namespace thorp
       boost::shared_ptr<ArduinoInterface> arduino_iface;
 
       bool is_connected;
-
-      static bool validMap(const XmlRpc::XmlRpcValue& map, const std::string& name,
-                           const XmlRpc::XmlRpcValue::Type type, int size);
   };
 
 } // namespace thorp

@@ -114,37 +114,6 @@ namespace thorp
     return true;
   }
 
-  bool ArduinoNode::validMap(const XmlRpc::XmlRpcValue& map, const std::string& name,
-                             const XmlRpc::XmlRpcValue::Type type, int size)
-  {
-    // Validate map: it must be a list of 'size' elements of type 'type'
-    if ((map.valid() == false) || (map.getType() != XmlRpc::XmlRpcValue::TypeArray))
-    {
-      ROS_ERROR("Invalid %s map: must be a list of %d %s", name.c_str(), size,
-                type == XmlRpc::XmlRpcValue::TypeInt ? "integers" : "strings");
-      return false;
-    }
-    if (map.size() != size)
-    {
-      ROS_ERROR("Invalid %s map: size doesn't match rangers count (%d != %d)",
-                name.c_str(), map.size(), size);
-      return false;
-    }
-
-    for (unsigned int i = 0; i < map.size(); i++)
-    {
-      if (map[i].getType() != type)
-      {
-        ROS_ERROR("Invalid %s map: element %d is not %s (%d != %d)", name.c_str(), i,
-                   type == XmlRpc::XmlRpcValue::TypeInt ? "an integer" : "a string",
-                   map[i].getType(), type);
-        return false;
-      }
-    }
-
-    return true;
-  }
-
 
   ///////////////////////////////////////
   // Rangers list class implementation //
@@ -157,53 +126,44 @@ namespace thorp
     ros::NodeHandle nh;
 
     // Rangers array parameters;
-    // note that for all maps, the default value is an empty list, what is invalid
-    int    rangers_count;
-    double range_variance;
-    double maximum_range;
-    double minimum_range;
-    double field_of_view;
-    XmlRpc::XmlRpcValue input_pins_map;
-    XmlRpc::XmlRpcValue ctrl_pins_map;
-    XmlRpc::XmlRpcValue frame_ids_map;
-    XmlRpc::XmlRpcValue topic_names_map;
-    std::string         topic_namespace;
+    // note that all parameters except ctrl_pins_map and topic_namespace are mandatory
+    int                      rangers_count;
+    double                   range_variance;
+    double                   maximum_range;
+    double                   minimum_range;
+    double                   field_of_view;
+    std::vector<int>         input_pins_map;
+    std::vector<int>         ctrl_pins_map;
+    std::vector<std::string> frame_ids_map;
+    std::vector<std::string> topic_names_map;
+    std::string              topic_namespace;
 
-    nh.param(params_namespace + "/rangers_count",   rangers_count,  -1);  // mandatory
-    nh.param(params_namespace + "/range_variance",  range_variance,  0.025);
-    nh.param(params_namespace + "/maximum_range",   maximum_range,   6.5);
-    nh.param(params_namespace + "/minimum_range",   minimum_range,   0.1);
-    nh.param(params_namespace + "/field_of_view",   field_of_view,   0.1);
-    nh.param(params_namespace + "/ctrl_pins_map",   ctrl_pins_map,   ctrl_pins_map);
-    nh.param(params_namespace + "/input_pins_map",  input_pins_map,  input_pins_map);
-    nh.param(params_namespace + "/frame_ids_map",   frame_ids_map,   frame_ids_map);
-    nh.param(params_namespace + "/topic_names_map", topic_names_map, topic_names_map);
-    nh.param(params_namespace + "/topic_namespace", topic_namespace, std::string());
+    // We must thoroughly validate rangers count and maps: missconfiguration in one of
+    // them will almost surely make something fail, so we abort if something is wrong
+    bool allOK = true;
+    allOK &= this->getParam(params_namespace + "/rangers_count",   rangers_count);
+    allOK &= this->getParam(params_namespace + "/range_variance",  range_variance);
+    allOK &= this->getParam(params_namespace + "/maximum_range",   maximum_range);
+    allOK &= this->getParam(params_namespace + "/minimum_range",   minimum_range);
+    allOK &= this->getParam(params_namespace + "/field_of_view",   field_of_view);
+    allOK &= this->getParam(params_namespace + "/input_pins_map",  input_pins_map,  rangers_count);
+    allOK &= this->getParam(params_namespace + "/frame_ids_map",   frame_ids_map,   rangers_count);
+    allOK &= this->getParam(params_namespace + "/topic_names_map", topic_names_map, rangers_count);
 
-    // Validate rangers count and maps: missconfiguration in one of them will
-    // almost surely make something fail, so we abort if something is wrong
-    if (rangers_count == -1)
+    if (sonars)
     {
-      ROS_ERROR("Missing mandatory parameter rangers count");
-      return false;
+      // ctrl_pins_map is only mandatory for sonars
+      allOK &= this->getParam(params_namespace + "/ctrl_pins_map", ctrl_pins_map,   rangers_count);
     }
 
-    if ((ArduinoNode::validMap(input_pins_map, params_namespace + "/input_pins_map",
-                               XmlRpc::XmlRpcValue::TypeInt, rangers_count) == false) ||
-        (ArduinoNode::validMap(frame_ids_map, params_namespace + "/frame_ids_map",
-                               XmlRpc::XmlRpcValue::TypeString, rangers_count) == false) ||
-        (ArduinoNode::validMap(topic_names_map, params_namespace + "/topic_names_map",
-                               XmlRpc::XmlRpcValue::TypeString, rangers_count) == false))
+    // Optional parameters
+    if (nh.getParam(params_namespace + "/topic_namespace", topic_namespace) == false)
     {
-      return false;
+      ROS_WARN("Topic namespace not specified; we set is as empty");
     }
 
-    if ((this->sonars == true) &&
-        (ArduinoNode::validMap(ctrl_pins_map, params_namespace + "/ctrl_pins_map",
-                               XmlRpc::XmlRpcValue::TypeInt, rangers_count) == false))
-    {
+    if (! allOK)
       return false;
-    }
 
     // Ready to initialize the ranger sensors list
     this->resize(rangers_count, Ranger());
@@ -216,13 +176,13 @@ namespace thorp
       (*this)[i].Q = 0.001;
       (*this)[i].R = range_variance; //0.0288;
       (*this)[i].P = (*this)[i].R;
-      (*this)[i].input_pin = static_cast<int>(input_pins_map[i]);
+      (*this)[i].input_pin = input_pins_map[i];
 
       if (this->sonars == true)
-        (*this)[i].ctrl_pin = static_cast<int>(ctrl_pins_map[i]);
+        (*this)[i].ctrl_pin = ctrl_pins_map[i];
 
       // Fill also all constant values on each range message
-      (*this)[i].msg.header.frame_id = static_cast<std::string>(frame_ids_map[i]);
+      (*this)[i].msg.header.frame_id = frame_ids_map[i];
       (*this)[i].msg.radiation_type = (sonars == true) ?
                                        static_cast<uint8_t>(sensor_msgs::Range::ULTRASOUND)
                                      : static_cast<uint8_t>(sensor_msgs::Range::INFRARED);
@@ -231,12 +191,12 @@ namespace thorp
       (*this)[i].msg.max_range = maximum_range;
 
       // We need individual publishers for each sensor
-      std::string topic_name = topic_namespace + "/" + static_cast<std::string>(topic_names_map[i]);
+      std::string topic_name = topic_namespace + "/" + topic_names_map[i];
       (*this)[i].pub = nh.advertise<sensor_msgs::Range>(topic_name, 1);
 
-      char ctrl_pin_str[22];
-      sonars ? sprintf(ctrl_pin_str, "control pin [DIO%d], ", (*this)[i].ctrl_pin)
-             : sprintf(ctrl_pin_str, "");
+      char ctrl_pin_str[22] = "";
+      if (sonars)
+        sprintf(ctrl_pin_str, "control pin [DIO%d], ", (*this)[i].ctrl_pin);
       ROS_DEBUG("%s %d: input pin [A%d], %stopic [%s], frame [%s]", sonars?"Sonar":"IR sensor", i,
                 (*this)[i].input_pin, ctrl_pin_str, (*this)[i].pub.getTopic().c_str(),
                 (*this)[i].msg.header.frame_id.c_str());
@@ -357,4 +317,3 @@ namespace thorp
     return rangeKF;
   }
 } // namespace thorp
-
