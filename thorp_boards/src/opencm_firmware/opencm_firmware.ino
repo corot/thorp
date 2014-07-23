@@ -27,7 +27,7 @@ Dynamixel Dxl(1);
 Dynamixel *pDxl = &Dxl;
 BioloidController bioloid;
 
-#define MAX_NUM_SERVOS          5
+#define MAX_NUM_SERVOS  5
 
 typedef struct
 {

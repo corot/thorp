@@ -34,7 +34,7 @@
 #define ARB_LOAD_SEQ        9    // seq size: a single param for the size of the seq
 #define ARB_PLAY_SEQ        10   // load seq: index/times (# of params = 3*seq_size)
 #define ARB_LOOP_SEQ        11   // play seq: no params
-//#define ARB_TEST          25   // hardware test: no params
+//#define ARB_TEST          25   // hardware test: no params. Deprecated and removed
 #define ARB_CONTROL_SETUP   26   // write ids: id of controller, params (usually ids of servos, # of params = pose_size + 1)
 #define ARB_CONTROL_WRITE   27   // write positions: positions in order of servos (# of params = 2*pose_size)
 #define ARB_CONTROL_STAT    28   // retrieve status: id of controller
