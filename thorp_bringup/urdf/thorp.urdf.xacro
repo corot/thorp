@@ -22,8 +22,11 @@
   <sensor_kinect  parent="base_link"/>
 
   <!-- Turtlebot arm plus mounting on Thorp -->
+  <!-- Note that the arm position is biased to the left of the robot, and the dead angle also
+       points to the left; with this configuration, the arm can reach most of the top plate -->
   <turtlebot_arm parent="plate_top_link" color="white" gripper_color="black"
-                 joints_vlimit="0.3571" pan_llimit="-1.047" pan_ulimit="4.189">
+                 joints_vlimit="0.3571" pan_llimit="-4.189" pan_ulimit="1.047">
+                 
     <origin xyz="0.11214 0.0295 0.0284"/>
   </turtlebot_arm>
   
@@ -77,7 +80,7 @@
 
   <!-- Camera -->
   <joint name="senz3d_camera_joint" type="fixed">
-    <origin xyz="-0.065 -0.082 0.325" rpy="${M_PI/2 + 0.907571211037} 0.0 ${M_PI/2}"/>
+    <origin xyz="-0.055 -0.062 0.355" rpy="${M_PI/2 + 0.907571211037} 0.0 ${M_PI/2}"/>
     <parent link="plate_top_link"/>
     <child link="senz3d_camera_link"/>
   </joint>
