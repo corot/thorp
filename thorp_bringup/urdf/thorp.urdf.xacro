@@ -38,18 +38,49 @@
   <stack_bottom_pole parent="arm_base_link" number="12" x_loc="-0.038" y_loc="-0.0288" z_loc="-0.0112"/>
   <stack_bottom_pole parent="arm_base_link" number="13" x_loc="-0.038" y_loc=" 0.0288" z_loc="-0.0112"/>
 
+  <!-- Emulate the OpenCM9.04 as a box -->
+  <joint name="opencm_joint" type="fixed">
+    <origin xyz="0.045 0.03 0.008" rpy="0.0 0.0 0.0"/>
+    <parent link="plate_top_link"/>
+    <child link="opencm_joint_link"/>
+  </joint>
+  <link name="opencm_joint_link">
+    <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <box size="0.027 0.0665 0.01"/>
+      </geometry>
+      <material name="green">
+        <color rgba="0.22 0.32 0.14 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <box size="0.027 0.0665 0.012"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.01"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0"
+        iyy="0.001" iyz="0.0"
+        izz="0.001"/>
+    </inertial>
+  </link>
+
   <!-- Senz3D camera plus mounting on Thorp -->
   
   <!-- Mounting poles: we emulate one top and two middle poles overlapping two top poles -->
   <!-- The Z loc of the upper poles is : 1/2*plate height + 1/2*top pole height + 2*middle pole height (without screw) -->
-  <stack_top_pole parent="plate_top_link" number="10" x_loc="-0.1024" y_loc=" 0.098" z_loc="${0.006/2 + 0.2032/2}"/>
-  <stack_top_pole parent="plate_top_link" number="11" x_loc="-0.1024" y_loc="-0.098" z_loc="${0.006/2 + 0.2032/2}"/>
-  <stack_top_pole parent="plate_top_link" number="12" x_loc="-0.1024" y_loc=" 0.098" z_loc="${0.006/2 + 0.2032/2 + 0.1}"/>
-  <stack_top_pole parent="plate_top_link" number="13" x_loc="-0.1024" y_loc="-0.098" z_loc="${0.006/2 + 0.2032/2 + 0.1}"/>
+  <stack_top_pole parent="plate_top_link" number="10" x_loc="-0.0874" y_loc=" 0.098" z_loc="${0.006/2 + 0.2032/2}"/>
+  <stack_top_pole parent="plate_top_link" number="11" x_loc="-0.0874" y_loc="-0.098" z_loc="${0.006/2 + 0.2032/2}"/>
+  <stack_top_pole parent="plate_top_link" number="12" x_loc="-0.0874" y_loc=" 0.098" z_loc="${0.006/2 + 0.2032/2 + 0.1}"/>
+  <stack_top_pole parent="plate_top_link" number="13" x_loc="-0.0874" y_loc="-0.098" z_loc="${0.006/2 + 0.2032/2 + 0.1}"/>
   
   <!-- Mounting plate; this structure is provisional -->
   <joint name="senz3d_mount_joint" type="fixed">
-    <origin xyz="-0.1024 0.0 ${0.2032 + 0.006 + 0.1}" rpy="0.0 0.0 0.0"/>
+    <origin xyz="-0.0874 0.0 ${0.2032 + 0.006 + 0.1}" rpy="0.0 0.0 0.0"/>
     <parent link="plate_top_link"/>
     <child link="senz3d_mount_link"/>
   </joint>
@@ -80,7 +111,7 @@
 
   <!-- Camera -->
   <joint name="senz3d_camera_joint" type="fixed">
-    <origin xyz="-0.055 -0.062 0.355" rpy="${M_PI/2 + 0.907571211037} 0.0 ${M_PI/2}"/>
+    <origin xyz="-0.045 -0.062 0.345" rpy="${M_PI/2 + 0.907571211037} 0.0 ${M_PI/2}"/>
     <parent link="plate_top_link"/>
     <child link="senz3d_camera_link"/>
   </joint>
