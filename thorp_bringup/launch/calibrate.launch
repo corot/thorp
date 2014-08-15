@@ -1,0 +1,35 @@
+<launch>
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find thorp_bringup)/urdf/thorp.urdf.xacro'"/>
+
+  <include file="$(find thorp_bringup)/launch/includes/_arm.launch">
+    <arg name="simulation" value="false"/>
+  </include>
+
+  <include file="$(find thorp_bringup)/launch/includes/_softkinetic.launch"/>
+  
+  <node name="robot_state_pub" pkg="robot_state_publisher" type="robot_state_publisher"/>
+  <node name="fake_joint_pub" pkg="thorp_bringup" type="fake_joint_pub.py"/>
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_model.rviz"/>
+
+  <node name="calibrate_kinect_checkerboard" pkg="turtlebot_kinect_arm_calibration" type="calibrate_kinect_checkerboard" output="screen">
+    <param name="fixed_frame" value="/plate_top_link"/>
+    <param name="camera_frame" value="/senz3d_camera_link"/>
+    <param name="target_frame" value="/calibration_pattern"/>
+    <param name="tip_frame" value="/gripper_link"/>
+    <param name="checkerboard_width" value="11"/>
+    <param name="checkerboard_height" value="7"/>
+    <param name="checkerboard_grid" value="0.02"/>
+    <param name="gripper_tip_x" value="-0.002"/>
+    <param name="gripper_tip_y" value="0.020"/>
+    <param name="gripper_tip_z" value="-0.0185"/>
+
+    <remap from="/camera/rgb/image_mono" to="/senz3d/rgb_data"/>
+    <remap from="/camera/rgb/camera_info" to="/senz3d/rgb_data/camera_info"/>
+  </node>
+
+  <node name="checkerboard_image_view" pkg="image_view" type="image_view">
+    <param name="autosize" value="true"/>
+    <remap from="image" to="/calibrate_kinect_checkerboard/calibration_pattern_out"/>
+  </node>
+</launch>
