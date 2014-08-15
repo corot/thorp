@@ -111,7 +111,8 @@
 
   <!-- Camera -->
   <joint name="senz3d_camera_joint" type="fixed">
-    <origin xyz="-0.045 -0.062 0.345" rpy="${M_PI/2 + 0.907571211037} 0.0 ${M_PI/2}"/>
+    <!-- <origin xyz="-0.045 -0.062 0.345" rpy="${M_PI/2 + 0.907571211037} 0.0 ${M_PI/2}"/> -->
+    <origin xyz="-0.0552702 -0.0411472 0.323393" rpy="2.3447 0.0160734 1.59265"/>
     <parent link="plate_top_link"/>
     <child link="senz3d_camera_link"/>
   </joint>
@@ -130,13 +131,40 @@
     </geometry>
     </collision>
     <inertial>
-      <mass value="0.01"/>
+      <mass value="0.271"/>
       <origin xyz="0 0 0"/>
       <inertia ixx="0.001" ixy="0.0" ixz="0.0"
         iyy="0.001" iyz="0.0"
         izz="0.001"/>
     </inertial>
   </link>
+
+  <!-- Add frames for RGB and depth optical axes -->
+  <joint name="senz3d_rgb_joint" type="fixed">
+    <origin xyz="0.0125 0.0 0.0" rpy="0.0 0.0 0.0"/>
+    <parent link="senz3d_camera_link"/>
+    <child link="senz3d_rgb_frame"/>
+  </joint>
+  <link name="senz3d_rgb_frame"/>
+  <joint name="senz3d_rgb_optical_joint" type="fixed">
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 ${M_PI}" />
+    <parent link="senz3d_rgb_frame"/>
+    <child link="senz3d_rgb_optical_frame"/>
+  </joint>
+  <link name="senz3d_rgb_optical_frame"/>
+
+  <joint name="senz3d_depth_joint" type="fixed">
+    <origin xyz="-0.0125 0.0 0.0" rpy="0.0 0.0 0.0"/>
+    <parent link="senz3d_camera_link"/>
+    <child link="senz3d_depth_frame"/>
+  </joint>
+  <link name="senz3d_depth_frame"/>
+  <joint name="senz3d_depth_optical_joint" type="fixed">
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 ${M_PI}" />
+    <parent link="senz3d_depth_frame"/>
+    <child link="senz3d_depth_optical_frame"/>
+  </joint>
+  <link name="senz3d_depth_optical_frame"/>
 
   <!-- Sonar links forming a half ring centered on (and slightly above) base_link-->
   <joint name="s_m90_joint" type="fixed">
