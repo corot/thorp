@@ -84,22 +84,22 @@ int handleRead()
     else if (addr == REG_DIGITAL_IN0)
     {
       // digital 0-7
-      v = digitalRead(addr - REG_DIGITAL_IN0)
+      v = digitalRead(addr - REG_DIGITAL_IN0);
     }
     else if (addr == REG_DIGITAL_IN1)
     {
       // digital 8-15
-      v = digitalRead(addr - REG_DIGITAL_IN0)
+      v = digitalRead(addr - REG_DIGITAL_IN0);
     }
     else if (addr == REG_DIGITAL_IN2)
     {
       // digital 16-23
-      v = digitalRead(addr - REG_DIGITAL_IN0)
+      v = digitalRead(addr - REG_DIGITAL_IN0);
     }
     else if (addr == REG_DIGITAL_IN3)
     {
       // digital 24-31
-      v = digitalRead(addr - REG_DIGITAL_IN0)
+      v = digitalRead(addr - REG_DIGITAL_IN0);
     }
     else if (addr == REG_RETURN_LEVEL)
     {
