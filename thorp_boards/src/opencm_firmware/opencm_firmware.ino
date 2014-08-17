@@ -84,22 +84,22 @@ int handleRead()
     else if (addr == REG_DIGITAL_IN0)
     {
       // digital 0-7
-//      v = PINB;
+      v = digitalRead(addr - REG_DIGITAL_IN0)
     }
     else if (addr == REG_DIGITAL_IN1)
     {
       // digital 8-15
-//      v = PIND;
+      v = digitalRead(addr - REG_DIGITAL_IN0)
     }
     else if (addr == REG_DIGITAL_IN2)
     {
       // digital 16-23
-//      v = PINC;
+      v = digitalRead(addr - REG_DIGITAL_IN0)
     }
     else if (addr == REG_DIGITAL_IN3)
     {
       // digital 24-31
-//      v = PINA;
+      v = digitalRead(addr - REG_DIGITAL_IN0)
     }
     else if (addr == REG_RETURN_LEVEL)
     {
@@ -111,13 +111,18 @@ int handleRead()
     }
     else if (addr < REG_SERVO_BASE)
     {
-      // send analog reading
-      int x = analogRead(addr - REG_ANA_BASE);   // TODO : send as 2 bytes
-//      x += analogRead(addr - REG_ANA_BASE) >> 2;
-//      x += analogRead(addr - REG_ANA_BASE) >> 2;
-//      x += analogRead(addr - REG_ANA_BASE) >> 2;
-//      x += analogRead(addr - REG_ANA_BASE) >> 2;
-      v = x / 20;
+      // send analog reading as 1 or 2 bytes
+      int x = analogRead(addr - REG_ANA_BASE);
+      if (bytes == 2)
+      {
+        v = x;
+        checksum += v;
+        SerialUSB.write(v);
+        bytes--;
+        v = x >> 8;
+      }
+      else
+        v = x / 20;
     }
     else if (addr < REG_MOVING)
     {
@@ -171,7 +176,6 @@ void statusPacket(int id, int err)
  * Play Seq = B, no params
  * Loop Seq = C, 
  */
-
 void loop()
 {
   int i, poseSize;
@@ -399,7 +403,7 @@ void loop()
             }
             else
             {
-              int x = Dxl.makeWord(params[1], params[2]);
+              int x = DXL_MAKEWORD(params[1], params[2]);
               Dxl.writeWord(id, params[0], x);
             }
             // return a packet: FF FF id Len Err params check
