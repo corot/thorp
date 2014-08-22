@@ -15,13 +15,17 @@
 
   <xacro:include filename="$(find turtlebot_description)/urdf/turtlebot_library.urdf.xacro"/>
   <xacro:include filename="$(find turtlebot_arm_description)/urdf/arm.xacro"/>
-  
+  <xacro:include filename="$(find softkinetic_camera)/urdf/senz3d.urdf.xacro"/>
+
+
   <!-- Plain Turtlebot 2 -->
   <kobuki/>
   <stack_hexagons parent="base_link"/>
   <sensor_kinect  parent="base_link"/>
 
-  <!-- Turtlebot arm plus mounting on Thorp -->
+
+  <!-- Turtlebot arm, its controller board and its mounting on Thorp -->
+
   <!-- Note that the arm position is biased to the left of the robot, and the dead angle also
        points to the left; with this configuration, the arm can reach most of the top plate -->
   <turtlebot_arm parent="plate_top_link" color="white" gripper_color="black"
@@ -38,7 +42,7 @@
   <stack_bottom_pole parent="arm_base_link" number="12" x_loc="-0.038" y_loc="-0.0288" z_loc="-0.0112"/>
   <stack_bottom_pole parent="arm_base_link" number="13" x_loc="-0.038" y_loc=" 0.0288" z_loc="-0.0112"/>
 
-  <!-- Emulate the OpenCM9.04 as a box -->
+  <!-- Emulate the OpenCM9.04 controller as a box -->
   <joint name="opencm_joint" type="fixed">
     <origin xyz="0.045 0.03 0.008" rpy="0.0 0.0 0.0"/>
     <parent link="plate_top_link"/>
@@ -68,6 +72,7 @@
         izz="0.001"/>
     </inertial>
   </link>
+
 
   <!-- Senz3D camera plus mounting on Thorp -->
   
@@ -109,62 +114,15 @@
     </inertial>
   </link>
 
-  <!-- Camera -->
-  <joint name="senz3d_camera_joint" type="fixed">
-    <!-- <origin xyz="-0.045 -0.062 0.345" rpy="${M_PI/2 + 0.907571211037} 0.0 ${M_PI/2}"/> -->
+  <!-- The camera itself -->
+  <sensor_senz3d parent="plate_top_link" name="senz3d_camera">
+    <!-- Extrinsic parameters obtained through arm-camera calibration:
+         http://wiki.ros.org/turtlebot_arm_kinect_calibration -->
     <origin xyz="-0.0552702 -0.0411472 0.323393" rpy="2.3447 0.0160734 1.59265"/>
-    <parent link="plate_top_link"/>
-    <child link="senz3d_camera_link"/>
-  </joint>
-  <link name="senz3d_camera_link">
-    <visual>
-      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
-      <geometry>
-        <!-- As we don't have a Senz3D mesh, use a deformed Asus Xtion Pro instead -->
-        <mesh filename="package://turtlebot_description/meshes/sensors/asus_xtion_pro_live.dae" scale="0.0006 0.0015 0.001"/>
-      </geometry>
-    </visual>
-    <collision>
-      <origin xyz="0.0 0.0 -0.005" rpy="0 0 0"/>
-      <geometry>
-      <box size="0.11 0.04 0.04"/>
-    </geometry>
-    </collision>
-    <inertial>
-      <mass value="0.271"/>
-      <origin xyz="0 0 0"/>
-      <inertia ixx="0.001" ixy="0.0" ixz="0.0"
-        iyy="0.001" iyz="0.0"
-        izz="0.001"/>
-    </inertial>
-  </link>
+  </sensor_senz3d>
 
-  <!-- Add frames for RGB and depth optical axes -->
-  <joint name="senz3d_rgb_joint" type="fixed">
-    <origin xyz="0.0125 0.0 0.0" rpy="0.0 0.0 0.0"/>
-    <parent link="senz3d_camera_link"/>
-    <child link="senz3d_rgb_frame"/>
-  </joint>
-  <link name="senz3d_rgb_frame"/>
-  <joint name="senz3d_rgb_optical_joint" type="fixed">
-    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 ${M_PI}" />
-    <parent link="senz3d_rgb_frame"/>
-    <child link="senz3d_rgb_optical_frame"/>
-  </joint>
-  <link name="senz3d_rgb_optical_frame"/>
 
-  <joint name="senz3d_depth_joint" type="fixed">
-    <origin xyz="-0.0125 0.0 0.0" rpy="0.0 0.0 0.0"/>
-    <parent link="senz3d_camera_link"/>
-    <child link="senz3d_depth_frame"/>
-  </joint>
-  <link name="senz3d_depth_frame"/>
-  <joint name="senz3d_depth_optical_joint" type="fixed">
-    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 ${M_PI}" />
-    <parent link="senz3d_depth_frame"/>
-    <child link="senz3d_depth_optical_frame"/>
-  </joint>
-  <link name="senz3d_depth_optical_frame"/>
+  <!-- Additional frames for range sensors -->
 
   <!-- Sonar links forming a half ring centered on (and slightly above) base_link-->
   <joint name="s_m90_joint" type="fixed">
