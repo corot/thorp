@@ -19,4 +19,10 @@
     <rosparam file="$(find thorp_boards)/param/opencm.yaml" command="load" />
     <param name="sim" value="$(arg simulation)"/>
   </node>
+
+  <node name="arm_ir_ranger" pkg="thorp_boards" type="ir_ranger.py" output="screen">
+    <param name="type" value="2Y0A21"/>
+    <param name="name" value="arm_ir_ranger"/>
+  	<remap from="ir_range" to="/mobile_base/sensors/infrared/arm"/>
+  </node>
 </launch>

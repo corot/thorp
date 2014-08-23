@@ -33,5 +33,5 @@ controllers: {
 }
 
 analog_sensors: {
-  arm_defender: {rate: 10, pin: 0, length: 2}
+  arm_ir_ranger: {rate: 10, pin: 0, length: 2}
 }

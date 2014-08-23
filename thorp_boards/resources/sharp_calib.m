@@ -9,7 +9,7 @@ for i = 1:s(2)
 end
 avg/s(2)
 
-format long
+format LONGE
 
 % GP2D120, Kobuki's analog port
 V = [  3000 2720 2330 2010 1780 1580 1400 1280 1080  920  800  720  620  510  410  380  310 ];
@@ -37,6 +37,17 @@ D = [  0.9 0.8 0.7 0.6 0.5 0.4 0.3 0.2 0.15 0.1 0.08 0.06 ];
 %D = D.*100
 
 %p = polyfit(V,D,6)
+f = polyval(p,V);
+
+figure
+plot(V,D,'o',V,f,'-')
+
+
+% GP2Y0A21, OpenCM's analog port
+V = [  3290 2920 2520 2020 1710 1390 1210 1080 1030  950  930 900];
+D = [  0.05 0.08 0.10 0.15 0.20 0.30 0.40 0.50 0.60 0.70 0.80 0.90];
+
+p = polyfit(V,D,6)
 f = polyval(p,V);
 
 figure
