@@ -1,10 +1,9 @@
 <!--
  Interface to the OpenCM9.04 board.
 
- To interface with thorp's Robotis OpenCM9.04 2560 board, flash the firmware provided on firmware:
+ To interface with thorp's Robotis OpenCM9.04 board, flash the firmware provided on src/opencm/firmware
+ directory, as explained in the README file.    
 
-    TODO
-    
  You must install the OpenCM udev rule to make the board available on the default port "/dev/opencm":
 
   $ roscd thorp_boards
