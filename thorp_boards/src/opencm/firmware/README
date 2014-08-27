@@ -1,4 +1,4 @@
-To flash the firmware, you need the [OpenCM IDE](http://www.robotis.com/xe/download_en/633740).
-Just open, compile, and upload it as any other project. However, you will see that the original
-CM9_BC.cpp/h files shipped with OpenCM-v1.0.2 don't compile. Replace by the modified versions
-available in this directory and retry.
+To flash the firmware, you need the [OpenCM IDE v1.0.1](http://support.robotis.com/beta/ko/product/opencm/robotis_opencm.htm).
+Just open, compile, and upload it as any other project.
+
+**WARNING:** For some reason I ignore, current OpenCM IDE version 1.0.2 doesn't work! Be sure you are using the one named v1.0.1 Fixed.

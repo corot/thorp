@@ -21,7 +21,7 @@
 
 #include <CM9_BC.h>
 
-#include "opencm_firmware.h"
+#include "firmware.h"
 
 Dynamixel Dxl(1);
 Dynamixel *pDxl = &Dxl;
