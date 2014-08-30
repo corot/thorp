@@ -35,6 +35,12 @@ class SharpIR:
     min_range = 0.0
     max_range = 1.0
 
+    # KF attributes
+    last_range = 0.0
+    Q = 0.001
+    R = 0.001
+    P = R
+
     def convert(self, raw):
         """ Convert raw analog (10-bit) to distance. """
         return raw
@@ -56,11 +62,22 @@ class GP2Y0A21(SharpIR):
     min_range = 0.05
     max_range = 0.90
 
-    def convert(self, raw):
+    def convert(self, raw, filter=False):
         """ Convert raw analog (10-bit) to distance. """
-        return 2.379969553375196e-19*pow(raw, 6) - 3.144914097302705e-15*pow(raw, 5) \
-             + 1.691657219972863e-11*pow(raw, 4) - 4.741736744245507e-08*pow(raw, 3) \
-             + 7.320206624754328e-05*pow(raw, 2) - 5.942752494308152e-02*pow(raw, 1) + 2.026895972545593e+01
+        range = 5.814231399133116e-20*pow(raw, 6) - 6.971848089438319e-16*pow(raw, 5) \
+              + 3.326993326614738e-12*pow(raw, 4) - 8.089370717494638e-09*pow(raw, 3) \
+              + 1.068629732268825e-05*pow(raw, 2) - 7.568670606650910e-03*pow(raw, 1) + 2.565216384775661
+        if filter:
+            # Apply KF
+            self.P = self.P + self.Q
+            z = range - self.last_range
+            Z = self.R + self.P
+            K = self.P/Z
+            range = self.last_range + K*z
+            self.P = self.P - K*self.P
+            self.last_range = range
+        return range
+
         
 class gpA02YK(SharpIR):
     min_range = 0.20

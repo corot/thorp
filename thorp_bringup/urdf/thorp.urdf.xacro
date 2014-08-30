@@ -73,6 +73,14 @@
     </inertial>
   </link>
 
+  <!-- Arm IR sensor link, mounted below the arm mount and pointing forward -->
+  <joint name="ir_arm_joint" type="fixed">
+    <origin xyz="0.02  0.0 0.01" rpy="0.0 0.0 0.0"/>
+    <parent link="arm_base_link"/>
+    <child link="ir_arm_link"/>
+  </joint>
+  <link name="ir_arm_link"/>
+
 
   <!-- Senz3D camera plus mounting on Thorp -->
   

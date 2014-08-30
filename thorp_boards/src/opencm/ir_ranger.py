@@ -50,6 +50,7 @@ class ir_ranger:
 
         # setup a range message to use
         self.msg = Range()
+        self.msg.header.frame_id = rospy.get_param("~frame", "")
         self.msg.radiation_type = self.sensor.radiation_type
         self.msg.field_of_view = self.sensor.field_of_view
         self.msg.min_range = self.sensor.min_range
@@ -64,7 +65,7 @@ class ir_ranger:
     def readingCb(self, msg):
         # convert msg.value into range.range
         self.msg.header.stamp = rospy.Time.now()
-        self.msg.range = self.sensor.convert(msg.value)
+        self.msg.range = self.sensor.convert(msg.value, filter=True)
         self.pub.publish(self.msg)
 
 if __name__=="__main__":

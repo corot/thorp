@@ -22,6 +22,7 @@
   <node name="arm_ir_ranger" pkg="thorp_boards" type="ir_ranger.py" output="screen">
     <param name="type" value="2Y0A21"/>
     <param name="name" value="arm_ir_ranger"/>
+    <param name="frame" value="ir_arm_link"/>
   	<remap from="ir_range" to="/mobile_base/sensors/infrared/arm"/>
   </node>
 </launch>

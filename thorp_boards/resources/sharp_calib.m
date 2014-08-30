@@ -1,14 +1,3 @@
-R = load('~/.ros/READINGS');
-
-s = size(R)
-cov(R(:,1))
-avg = 0;
-for i = 1:s(2)
-    cov(R(:,i))
-    avg = avg + cov(R(:,i));
-end
-avg/s(2)
-
 format LONGE
 
 % GP2D120, Kobuki's analog port
@@ -21,9 +10,9 @@ f = polyval(p,V);
 figure
 plot(V,D,'o',V,f,'-')
 
-% GP2Y0A21YK, Kobuki's analog port
-V = [  3140 3000 2300 1610 1310  930  740  610  510  450  410 ];
-D = [  0.06 0.08 0.10 0.15 0.20 0.30 0.40 0.50 0.60 0.70 0.80 ];
+% GP2Y0A21YK, OpenCM and Kobuki's analog port
+V = [  3140 3000 2300 1610 1310  930  740  610  510  450  410  360];
+D = [  0.06 0.08 0.10 0.15 0.20 0.30 0.40 0.50 0.60 0.70 0.80 0.90];
 
 p = polyfit(V,D,6)
 f = polyval(p,V);
@@ -43,12 +32,13 @@ figure
 plot(V,D,'o',V,f,'-')
 
 
-% GP2Y0A21, OpenCM's analog port
-V = [  3290 2920 2520 2020 1710 1390 1210 1080 1030  950  930 900];
-D = [  0.05 0.08 0.10 0.15 0.20 0.30 0.40 0.50 0.60 0.70 0.80 0.90];
+R = load('~/.ros/READINGS');
 
-p = polyfit(V,D,6)
-f = polyval(p,V);
-
-figure
-plot(V,D,'o',V,f,'-')
+s = size(R)
+cov(R(:,1))
+avg = 0;
+for i = 1:s(2)
+    cov(R(:,i))
+    avg = avg + cov(R(:,i));
+end
+avg/s(2)
