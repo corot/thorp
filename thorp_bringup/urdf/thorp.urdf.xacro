@@ -31,7 +31,7 @@
   <turtlebot_arm parent="plate_top_link" color="white" gripper_color="black"
                  joints_vlimit="0.3571" pan_llimit="-4.189" pan_ulimit="1.047">
                  
-    <origin xyz="0.11214 0.0295 0.0284"/>
+    <origin xyz="0.10914 0.0295 0.0284"/>
   </turtlebot_arm>
   
   <arm_mount parent="arm_base_link" name="arm_mount" color="black">
@@ -44,7 +44,7 @@
 
   <!-- Emulate the OpenCM9.04 controller as a box -->
   <joint name="opencm_joint" type="fixed">
-    <origin xyz="0.045 0.03 0.008" rpy="0.0 0.0 0.0"/>
+    <origin xyz="0.042 0.03 0.008" rpy="0.0 0.0 0.0"/>
     <parent link="plate_top_link"/>
     <child link="opencm_joint_link"/>
   </joint>
@@ -123,10 +123,26 @@
   </link>
 
   <!-- The camera itself -->
-  <sensor_senz3d parent="plate_top_link" name="senz3d_camera">
+  <joint name="senz3d_calib_joint" type="fixed">
     <!-- Extrinsic parameters obtained through arm-camera calibration:
          http://wiki.ros.org/turtlebot_arm_kinect_calibration -->
     <origin xyz="-0.0552702 -0.0411472 0.323393" rpy="2.3447 0.0160734 1.59265"/>
+    <parent link="plate_top_link"/>
+    <child link="senz3d_calib_link"/>
+  </joint>
+  <link name="senz3d_calib_link"/>
+  <!-- As the calibration process assumes we use a kinect, and provides as output the tf from fixed frame
+       to camera_link instead of to rgb_frame, we must "emulate" the kinect's tf scheme by reversing the
+       camera_link -> rgb_frame tf and add the Senz3D camera_link -> rgb_frame:
+        > Kinect camera_rgb_frame -> camera_link
+            -0.031, 0.013, -0.016, 0.000, 0.000, 0.000
+        > Rotate PI/2, 0.0, PI/2 to adapt to Senz3D frames
+             0.013, -0.016, -0.031, 0.000, 0.000, 0.000
+        > Remove Senz3D's camera_link -> rgb_frame tf (0.0125 on x-axis)
+             0.0005, -0.016, -0.031, 0.000, 0.000, 0.000
+    -->
+  <sensor_senz3d parent="senz3d_calib_link" name="senz3d_camera">
+    <origin xyz="0.0005 -0.016 -0.031" rpy="0.0 0.0 0.0"/>
   </sensor_senz3d>
 
 
