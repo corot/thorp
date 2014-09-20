@@ -13,19 +13,19 @@
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_model.rviz"/>
 
   <node name="calibrate_kinect_checkerboard" pkg="turtlebot_arm_kinect_calibration" type="calibrate_kinect_checkerboard" output="screen">
-    <param name="fixed_frame" value="/plate_top_link"/>
+    <param name="fixed_frame" value="/senz3d_mount_link"/>
     <param name="camera_frame" value="/senz3d_camera_link"/>
     <param name="target_frame" value="/calibration_pattern"/>
     <param name="tip_frame" value="/gripper_link"/>
-    <param name="checkerboard_width" value="11"/>
-    <param name="checkerboard_height" value="7"/>
-    <param name="checkerboard_grid" value="0.02"/>
+    <param name="checkerboard_width" value="7"/>
+    <param name="checkerboard_height" value="6"/>
+    <param name="checkerboard_grid" value="0.027"/>
     <param name="gripper_tip_x" value="-0.002"/>
     <param name="gripper_tip_y" value="0.020"/>
     <param name="gripper_tip_z" value="-0.0185"/>
 
-    <remap from="/camera/rgb/image_mono" to="/senz3d/rgb_data"/>
-    <remap from="/camera/rgb/camera_info" to="/senz3d/rgb_data/camera_info"/>
+    <remap from="/camera/rgb/image_mono" to="/senz3d/rgb/image_mono"/>
+    <remap from="/camera/rgb/camera_info" to="/senz3d/rgb/camera_info"/>
   </node>
 
   <node name="checkerboard_image_view" pkg="image_view" type="image_view">
