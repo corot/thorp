@@ -23,9 +23,11 @@
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find turtlebot_arm_moveit_config)/launch/moveit.rviz"/>
 
 
-  <!--  ************** Fake Localization *************  TODO do I really need this??? -->
+  <!--  ******* Fake localization and odometry ********  -->
   <node pkg="tf" type="static_transform_publisher" name="fake_localization"
-        args="0.0 0.0 0.0 0.0 0.0 0.0 /map /base_footprint 200"/>
+        args="0.0 0.0 0.0 0.0 0.0 0.0 /map /odom 200"/>
+  <node pkg="tf" type="static_transform_publisher" name="fake_odometry"
+        args="0.0 0.0 0.0 0.0 0.0 0.0 /odom /base_footprint 200"/>
 
 
   <!--  ************* Moveit config stuff *************  -->
