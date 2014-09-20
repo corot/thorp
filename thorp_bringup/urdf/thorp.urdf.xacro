@@ -22,7 +22,26 @@
   <kobuki/>
   <stack_hexagons parent="base_link"/>
   <sensor_kinect  parent="base_link"/>
+  
+<!--  playing around with an external kinect
 
+  <sensor_kinect  parent="fixed_external_camera_link"/>
+
+
+  <joint name="external_camera_joint" type="fixed">
+    <origin xyz="-0.117707 -0.732153 1.1196" rpy="-0.0205534 0.499254 0.901111"/>
+    <parent link="base_link"/>
+    <child link="external_camera_link"/>
+  </joint>
+  <link name="external_camera_link"/>
+
+  <joint name="fixed_external_camera_joint" type="fixed">
+    <origin xyz="0.0 -0.0125 0.025" rpy="0.0 0.0 0.0"/>
+    <parent link="external_camera_link"/>
+    <child link="fixed_external_camera_link"/>
+  </joint>
+  <link name="fixed_external_camera_link"/>
+-->
 
   <!-- Turtlebot arm, its controller board and its mounting on Thorp -->
 
@@ -126,23 +145,14 @@
   <joint name="senz3d_calib_joint" type="fixed">
     <!-- Extrinsic parameters obtained through arm-camera calibration:
          http://wiki.ros.org/turtlebot_arm_kinect_calibration -->
-    <origin xyz="-0.0552702 -0.0411472 0.323393" rpy="2.3447 0.0160734 1.59265"/>
-    <parent link="plate_top_link"/>
+    <origin xyz="0.0236345 -0.035567 0.0125611" rpy="2.36437 0.0326246 1.55928"/>
+    <parent link="senz3d_mount_link"/>
     <child link="senz3d_calib_link"/>
   </joint>
   <link name="senz3d_calib_link"/>
-  <!-- As the calibration process assumes we use a kinect, and provides as output the tf from fixed frame
-       to camera_link instead of to rgb_frame, we must "emulate" the kinect's tf scheme by reversing the
-       camera_link -> rgb_frame tf and add the Senz3D camera_link -> rgb_frame:
-        > Kinect camera_rgb_frame -> camera_link
-            -0.031, 0.013, -0.016, 0.000, 0.000, 0.000
-        > Rotate PI/2, 0.0, PI/2 to adapt to Senz3D frames
-             0.013, -0.016, -0.031, 0.000, 0.000, 0.000
-        > Remove Senz3D's camera_link -> rgb_frame tf (0.0125 on x-axis)
-             0.0005, -0.016, -0.031, 0.000, 0.000, 0.000
-    -->
+
   <sensor_senz3d parent="senz3d_calib_link" name="senz3d_camera">
-    <origin xyz="0.0005 -0.016 -0.031" rpy="0.0 0.0 0.0"/>
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
   </sensor_senz3d>
 
 

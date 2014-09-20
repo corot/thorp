@@ -1,0 +1,92 @@
+top plate -> camera link calibration
+====================================
+
+Resulting transform (camera frame -> fixed frame): 
+ 0.0218548  -0.999632  0.0160748 -0.0326226
+ -0.698518 -0.0267707  -0.715092   0.191547
+  0.715259 0.00439968  -0.698846   0.265715
+         0          0          0          1
+
+Resulting transform (fixed frame -> camera frame): 
+ -0.0218531    0.999632  -0.0160729   0.0451221
+   0.698518   0.0267678    0.715092   -0.191547
+   0.715259  0.00439966   -0.698846    0.265715
+4.59163e-41 4.56977e-41 4.56977e-41           1
+
+Static transform publisher (use for external kinect): 
+rosrun tf static_transform_publisher x y z qx qy qz qw frame_id child_frame_id period_in_ms
+rosrun tf static_transform_publisher -0.0552702 -0.0411472 0.323393 0.642305 0.660959 0.272139 0.276618 /plate_top_link /senz3d_camera_link 100
+
+URDF output (use for kinect on robot): 
+<?xml version="1.0"?>
+<robot>
+        <property name="turtlebot_calib_cam_x" value="-0.0552702" />
+        <property name="turtlebot_calib_cam_y" value="-0.0411472" />
+        <property name="turtlebot_calib_cam_z" value="0.323393" />
+        <property name="turtlebot_calib_cam_rr" value="2.3447" />
+        <property name="turtlebot_calib_cam_rp" value="0.0160734" />
+        <property name="turtlebot_calib_cam_ry" value="1.59265" />
+        <property name="turtlebot_kinect_frame_name" value="plate_top_link" />
+</robot>
+
+
+camera mount -> camera link calibration
+=======================================
+
+Resulting transform (camera frame -> fixed frame): 
+ -0.0115109   -0.999402    0.032619  -0.0231834
+  -0.698917  -0.0152879   -0.715039   0.0249565
+    0.71511  -0.0310288   -0.698323 -0.00923318
+          0           0           0           1
+
+Resulting transform (fixed frame -> camera frame): 
+  0.0115107    0.999402   -0.032619   0.0356834
+   0.698917   0.0152877    0.715039  -0.0249565
+    0.71511  -0.0310287   -0.698323 -0.00923318
+4.59163e-41 4.55912e-41 4.55912e-41           1
+
+Static transform publisher (use for external kinect): 
+rosrun tf static_transform_publisher x y z qx qy qz qw frame_id child_frame_id period_in_ms
+rosrun tf static_transform_publisher 0.0236345 -0.035567 0.0125611 0.650874 0.652323 0.262144 0.286564 /senz3d_mount_link /senz3d_camera_link 100
+
+URDF output (use for kinect on robot): 
+<?xml version="1.0"?>
+<robot>
+        <property name="turtlebot_calib_cam_x" value="0.0236345" />
+        <property name="turtlebot_calib_cam_y" value="-0.035567" />
+        <property name="turtlebot_calib_cam_z" value="0.0125611" />
+        <property name="turtlebot_calib_cam_rr" value="2.34437" />
+        <property name="turtlebot_calib_cam_rp" value="0.0326246" />
+        <property name="turtlebot_calib_cam_ry" value="1.55928" />
+        <property name="turtlebot_kinect_frame_name" value="senz3d_mount_link" />
+</robot>
+
+
+top plate -> external kinect link calibration
+=============================================
+
+Resulting transform (camera frame -> fixed frame): 
+  0.78996 -0.612894 0.0180437  -0.38845
+-0.281016 -0.388042 -0.877755  0.681546
+ 0.544973   0.68832 -0.478771   1.07313
+        0         0         0         1
+
+Resulting transform (fixed frame -> camera frame): 
+   0.544972     0.68832   -0.478771     1.10413
+   -0.78996    0.612894  -0.0180436     0.37595
+   0.281016    0.388043    0.877755   -0.665546
+4.59163e-41 4.55632e-41 4.55632e-41           1
+
+Static transform publisher (use for external kinect): 
+rosrun tf static_transform_publisher x y z qx qy qz qw frame_id child_frame_id period_in_ms
+rosrun tf static_transform_publisher -0.117707 -0.732153 1.1196 -0.116537 0.218041 0.424231 0.871152 /base_link /camera_link 100
+
+URDF output (use for kinect on robot): 
+<?xml version="1.0"?>
+<robot>
+        <property name="cam_px" value="-0.117707" />
+        <property name="cam_py" value="-0.732153" />
+        <property name="cam_pz" value="1.1196" />
+        <property name="cam_or" value="-0.0205534" />
+        <property name="cam_op" value="0.499254" />
+        <property name="cam_oy" value="0.901111" />
