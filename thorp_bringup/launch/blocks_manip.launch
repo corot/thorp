@@ -51,7 +51,7 @@
   </node>
 
   <!-- Run Rviz and load the default config to see the state of the move_group node and the block manipulation interactive markers -->
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find turtlebot_arm_block_manipulation)/demo/block_manipulation_demo.rviz"/>
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_manip.rviz"/>
 
 
   <!--  ************* Thorp bringup stuff *************  -->
