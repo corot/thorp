@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import roslib; roslib.load_manifest("thorp_bringup")
 import rospy
 from sensor_msgs.msg import JointState
 
