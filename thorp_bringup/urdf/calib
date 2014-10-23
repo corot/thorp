@@ -62,31 +62,34 @@ URDF output (use for kinect on robot):
 </robot>
 
 
-top plate -> external kinect link calibration
+base_link -> external kinect link calibration
 =============================================
 
 Resulting transform (camera frame -> fixed frame): 
-  0.78996 -0.612894 0.0180437  -0.38845
--0.281016 -0.388042 -0.877755  0.681546
- 0.544973   0.68832 -0.478771   1.07313
+ 0.996948 0.0181676 0.0759288 -0.191414
+0.0736511 -0.541482  -0.83748  0.486582
+0.0258991  0.840516 -0.541167   1.24433
         0         0         0         1
 
 Resulting transform (fixed frame -> camera frame): 
-   0.544972     0.68832   -0.478771     1.10413
-   -0.78996    0.612894  -0.0180436     0.37595
-   0.281016    0.388043    0.877755   -0.665546
-4.59163e-41 4.55632e-41 4.55632e-41           1
+  0.0258989    0.840516   -0.541167     1.24433
+  -0.996948  -0.0181677  -0.0759287    0.146414
+ -0.0736511    0.541482     0.83748   -0.486582
+4.59163e-41 4.56697e-41 4.56697e-41           1
 
 Static transform publisher (use for external kinect): 
 rosrun tf static_transform_publisher x y z qx qy qz qw frame_id child_frame_id period_in_ms
-rosrun tf static_transform_publisher -0.117707 -0.732153 1.1196 -0.116537 0.218041 0.424231 0.871152 /base_link /camera_link 100
+rosrun tf static_transform_publisher 0.0779029 -0.779742 1.09201 -0.227259 0.172085 0.676341 0.679193 /base_link /camera_link 100
 
 URDF output (use for kinect on robot): 
 <?xml version="1.0"?>
 <robot>
-        <property name="cam_px" value="-0.117707" />
-        <property name="cam_py" value="-0.732153" />
-        <property name="cam_pz" value="1.1196" />
-        <property name="cam_or" value="-0.0205534" />
-        <property name="cam_op" value="0.499254" />
-        <property name="cam_oy" value="0.901111" />
+        <property name="turtlebot_calib_cam_x" value="0.0779029" />
+        <property name="turtlebot_calib_cam_y" value="-0.779742" />
+        <property name="turtlebot_calib_cam_z" value="1.09201" />
+        <property name="turtlebot_calib_cam_rr" value="-0.0904161" />
+        <property name="turtlebot_calib_cam_rp" value="0.571825" />
+        <property name="turtlebot_calib_cam_ry" value="1.53999" />
+        <property name="turtlebot_kinect_frame_name" value="base_link" />
+</robot>
+
