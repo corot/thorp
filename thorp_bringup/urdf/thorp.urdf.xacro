@@ -15,6 +15,7 @@
 
   <xacro:include filename="$(find turtlebot_description)/urdf/turtlebot_library.urdf.xacro"/>
   <xacro:include filename="$(find turtlebot_arm_description)/urdf/arm.xacro"/>
+  <xacro:include filename="$(find thorp_bringup)/urdf/thorp_gazebo.urdf.xacro"/>
   <xacro:include filename="$(find softkinetic_camera)/urdf/senz3d.urdf.xacro"/>
 
 
@@ -47,13 +48,13 @@
 
   <!-- Note that the arm position is biased to the left of the robot, and the dead angle also
        points to the left; with this configuration, the arm can reach most of the top plate -->
-  <turtlebot_arm parent="plate_top_link" color="white" gripper_color="black"
+  <turtlebot_arm parent="plate_top_link" color="White" gripper_color="Black"
                  joints_vlimit="0.3571" pan_llimit="-4.189" pan_ulimit="1.047">
                  
     <origin xyz="0.10914 0.0295 0.0284"/>
   </turtlebot_arm>
   
-  <arm_mount parent="arm_base_link" name="arm_mount" color="black">
+  <arm_mount parent="arm_base_link" name="arm_mount" color="Black">
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
   </arm_mount>
   <stack_bottom_pole parent="arm_base_link" number="10" x_loc=" 0.0"   y_loc=" 0.0288" z_loc="-0.0112"/>
@@ -87,8 +88,8 @@
       <mass value="0.01"/>
       <origin xyz="0 0 0"/>
       <inertia ixx="0.001" ixy="0.0" ixz="0.0"
-        iyy="0.001" iyz="0.0"
-        izz="0.001"/>
+               iyy="0.001" iyz="0.0"
+               izz="0.001"/>
     </inertial>
   </link>
 
@@ -122,7 +123,7 @@
       <geometry>
         <box size="0.02 0.24 0.006"/>
       </geometry>
-      <material name="black">
+      <material name="Black">
         <color rgba="0.0 0.0 0.0 1.0"/>
       </material>
     </visual>
@@ -133,11 +134,11 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.01"/>
+      <mass value="0.04"/>
       <origin xyz="0 0 0"/>
       <inertia ixx="0.001" ixy="0.0" ixz="0.0"
-        iyy="0.001" iyz="0.0"
-        izz="0.001"/>
+               iyy="0.001" iyz="0.0"
+               izz="0.001"/>
     </inertial>
   </link>
 
