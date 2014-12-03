@@ -2,7 +2,7 @@
 <robot name="thorp_gazebo" xmlns:xacro="http://ros.org/wiki/xacro">
 
   <!-- Simulated Creative Senz3d camera -->
-  <gazebo reference="senz3d_camera">  
+  <gazebo reference="senz3d_camera_link">  
     <sensor type="depth" name="senz3d">
       <always_on>true</always_on>
       <update_rate>20.0</update_rate>
@@ -39,43 +39,106 @@
     </sensor>
   </gazebo>
 
-  <xacro:macro name="Sharp_GP2Y0A21_IR_sensor" params="name">  
-    <gazebo reference="${name}_link">
-      <sensor type="ray" name="${name}">
+  <!-- LV-MaxSonar-EZ2 ultrasound sensors -->
+  <xacro:macro name="LV_MaxSonar_EZ2_sim" params="name">  
+    <gazebo reference="s_${name}_link">
+      <sensor type="ray" name="s_${name}">
         <always_on>true</always_on>
         <update_rate>20</update_rate>
         <visualize>true</visualize>
         <ray>
           <scan>
             <horizontal>
-              <samples>50</samples>
-              <resolution>1.0</resolution>
-              <min_angle>-0.0436</min_angle>  <!-- -2.5 degree -->
-              <max_angle>0.0436</max_angle> <!-- 2.5 degree -->
+              <samples>6</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.3</min_angle>  <!-- -17 degree -->
+              <max_angle>+0.3</max_angle>  <!-- +17 degree -->
             </horizontal>
-<!--            Can't use vertical rays until this bug is resolved: -->
-<!--            https://bitbucket.org/osrf/gazebo/issue/509/vertical-sensor-doesnt-works -->
-<!--            <vertical> -->
-<!--              <samples>50</samples> -->
-<!--              <resolution>1.0</resolution> -->
-<!--              <min_angle>-0.0436</min_angle>  -2.5 degree -->
-<!--              <max_angle>0.0436</max_angle> 2.5 degree -->
-<!--            </vertical> -->
+            <vertical>
+              <samples>6</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.3</min_angle>  <!-- -17 degree -->
+              <max_angle>+0.3</max_angle>  <!-- +17 degree -->
+            </vertical>
           </scan>
           <range>
-            <min>0.01</min>
-            <max>0.80</max>
-            <resolution>1.0</resolution>
+            <min>0.1</min>
+            <max>6.0</max>
+            <resolution>0.01</resolution>
           </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>0.08</stddev>
+          </noise>
         </ray>
+        <plugin name="gazebo_ros_s_${name}_controller" filename="libhector_gazebo_ros_sonar.so">
+          <gaussianNoise>0.05</gaussianNoise>
+          <topicName>mobile_base/sensors/sonars/${name}</topicName>
+          <frameId>s_${name}_link</frameId>
+        </plugin>
       </sensor>
     </gazebo>
   </xacro:macro>
 
-  <Sharp_GP2Y0A21_IR_sensor name="ir_l155"/>
-  <Sharp_GP2Y0A21_IR_sensor name="ir_l180"/>
-  <Sharp_GP2Y0A21_IR_sensor name="ir_r180"/>
-  <Sharp_GP2Y0A21_IR_sensor name="ir_r155"/>
+  <LV_MaxSonar_EZ2_sim name="m90"/>
+  <LV_MaxSonar_EZ2_sim name="m72"/>
+  <LV_MaxSonar_EZ2_sim name="m54"/>
+  <LV_MaxSonar_EZ2_sim name="m36"/>
+  <LV_MaxSonar_EZ2_sim name="m18"/>
+  <LV_MaxSonar_EZ2_sim name="0"/>
+  <LV_MaxSonar_EZ2_sim name="p18"/>
+  <LV_MaxSonar_EZ2_sim name="p36"/>
+  <LV_MaxSonar_EZ2_sim name="p54"/>
+  <LV_MaxSonar_EZ2_sim name="p72"/>
+  <LV_MaxSonar_EZ2_sim name="p90"/>
+  
+  <!-- Sharp GP2Y0A21 IR sensors -->
+  <xacro:macro name="Sharp_GP2Y0A21_IR_sim" params="name">  
+    <gazebo reference="ir_${name}_link">
+      <sensor type="ray" name="ir_${name}">
+        <always_on>true</always_on>
+        <update_rate>20</update_rate>
+        <visualize>true</visualize>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>1</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.0436</min_angle>  <!-- -2.5 degree -->
+              <max_angle>+0.0436</max_angle>  <!-- +2.5 degree -->
+            </horizontal>
+            <vertical>
+              <samples>1</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.0436</min_angle>  <!-- -2.5 degree -->
+              <max_angle>+0.0436</max_angle>  <!-- +2.5 degree -->
+            </vertical>
+          </scan>
+          <range>
+            <min>0.01</min>
+            <max>0.80</max>
+            <resolution>0.01</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>0.02</stddev>
+          </noise>
+        </ray>
+        <plugin name="gazebo_ros_ir_${name}_controller" filename="libhector_gazebo_ros_sonar.so">
+          <gaussianNoise>0.005</gaussianNoise>
+          <topicName>mobile_base/sensors/infrared/${name}</topicName>
+          <frameId>ir_${name}_link</frameId>
+        </plugin>
+      </sensor>
+    </gazebo>
+  </xacro:macro>
+
+  <Sharp_GP2Y0A21_IR_sim name="l155"/>
+  <Sharp_GP2Y0A21_IR_sim name="l180"/>
+  <Sharp_GP2Y0A21_IR_sim name="r180"/>
+  <Sharp_GP2Y0A21_IR_sim name="r155"/>
 
   <!-- Gazebo configuration for other structural parts -->
   <gazebo reference="senz3d_mount_link">
@@ -85,7 +148,7 @@
   </gazebo>
 
   <gazebo reference="opencm_joint_link">
-    <material>Gazebo/Green</material>
+    <material>Gazebo/Black</material>
     <selfCollide>true</selfCollide>
     <gravity>true</gravity>
   </gazebo>

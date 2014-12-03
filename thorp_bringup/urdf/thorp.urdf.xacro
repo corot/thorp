@@ -156,86 +156,47 @@
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
   </sensor_senz3d>
 
+  <!-- Sonar sensors forming a half ring centered on (and slightly above) base_link-->
+  <LV_MaxSonar_EZ2_sensor name="m90" parent="base_link" x_loc="0.0"     y_loc="-0.15500" yaw="-1.57080"/>
+  <LV_MaxSonar_EZ2_sensor name="m72" parent="base_link" x_loc="0.04790" y_loc="-0.14741" yaw="-1.25664"/>
+  <LV_MaxSonar_EZ2_sensor name="m54" parent="base_link" x_loc="0.09111" y_loc="-0.12540" yaw="-0.94248"/>
+  <LV_MaxSonar_EZ2_sensor name="m36" parent="base_link" x_loc="0.12540" y_loc="-0.09111" yaw="-0.62832"/>
+  <LV_MaxSonar_EZ2_sensor name="m18" parent="base_link" x_loc="0.14741" y_loc="-0.04790" yaw="-0.31416"/>
+  <LV_MaxSonar_EZ2_sensor name="0"   parent="base_link" x_loc="0.155"   y_loc=" 0.0"     yaw=" 0.0"/>
+  <LV_MaxSonar_EZ2_sensor name="p18" parent="base_link" x_loc="0.14741" y_loc="+0.04790" yaw="+0.31416"/>
+  <LV_MaxSonar_EZ2_sensor name="p36" parent="base_link" x_loc="0.12540" y_loc="+0.09111" yaw="+0.62832"/>
+  <LV_MaxSonar_EZ2_sensor name="p54" parent="base_link" x_loc="0.09111" y_loc="+0.12540" yaw="+0.94248"/>
+  <LV_MaxSonar_EZ2_sensor name="p72" parent="base_link" x_loc="0.04790" y_loc="+0.14741" yaw="+1.25664"/>
+  <LV_MaxSonar_EZ2_sensor name="p90" parent="base_link" x_loc="0.0"     y_loc="+0.15500" yaw="+1.57080"/>
 
-  <!-- Additional frames for range sensors -->
-
-  <!-- Sonar links forming a half ring centered on (and slightly above) base_link-->
-  <joint name="s_m90_joint" type="fixed">
-    <origin xyz="0.0     -0.15500 0.09" rpy="0.0 0.0 -1.57080"/>
-    <parent link="base_link"/>
-    <child link="s_m90_link"/>
-  </joint>
-  <link name="s_m90_link"/>
-
-  <joint name="s_m72_joint" type="fixed">
-    <origin xyz="0.04790 -0.14741 0.09" rpy="0.0 0.0 -1.25664"/>
-    <parent link="base_link"/>
-    <child link="s_m72_link"/>
-  </joint>
-  <link name="s_m72_link"/>
-
-  <joint name="s_m54_joint" type="fixed">
-    <origin xyz="0.09111 -0.12540 0.09" rpy="0.0 0.0 -0.94248"/>
-    <parent link="base_link"/>
-    <child link="s_m54_link"/>
-  </joint>
-  <link name="s_m54_link"/>
-
-  <joint name="s_m36_joint" type="fixed">
-    <origin xyz="0.12540 -0.09111 0.09" rpy="0.0 0.0 -0.62832"/>
-    <parent link="base_link"/>
-    <child link="s_m36_link"/>
-  </joint>
-  <link name="s_m36_link"/>
-
-  <joint name="s_m18_joint" type="fixed">
-    <origin xyz="0.14741 -0.04790 0.09" rpy="0.0 0.0 -0.31416"/>
-    <parent link="base_link"/>
-    <child link="s_m18_link"/>
-  </joint>
-  <link name="s_m18_link"/>
-
-  <joint name="s_0_joint" type="fixed">
-    <origin xyz="0.155    0.0     0.09" rpy="0.0 0.0 0.0"/>
-    <parent link="base_link"/>
-    <child link="s_0_link"/>
-  </joint>
-  <link name="s_0_link"/>
-
-  <joint name="s_p18_joint" type="fixed">
-    <origin xyz="0.14741  0.04790 0.09" rpy="0.0 0.0 0.31416"/>
-    <parent link="base_link"/>
-    <child link="s_p18_link"/>
-  </joint>
-  <link name="s_p18_link"/>
-
-  <joint name="s_p36_joint" type="fixed">
-    <origin xyz="0.12540  0.09111 0.09" rpy="0.0 0.0 0.62832"/>
-    <parent link="base_link"/>
-    <child link="s_p36_link"/>
-  </joint>
-  <link name="s_p36_link"/>
-
-  <joint name="s_p54_joint" type="fixed">
-    <origin xyz="0.09111  0.12540 0.09" rpy="0.0 0.0 0.94248"/>
-    <parent link="base_link"/>
-    <child link="s_p54_link"/>
-  </joint>
-  <link name="s_p54_link"/>
-
-  <joint name="s_p72_joint" type="fixed">
-    <origin xyz="0.04790  0.14741 0.09" rpy="0.0 0.0 1.25664"/>
-    <parent link="base_link"/>
-    <child link="s_p72_link"/>
-  </joint>
-  <link name="s_p72_link"/>
-
-  <joint name="s_p90_joint" type="fixed">
-    <origin xyz="0.0      0.155   0.09" rpy="0.0 0.0 1.57080"/>
-    <parent link="base_link"/>
-    <child link="s_p90_link"/>
-  </joint>
-  <link name="s_p90_link"/>
+  <xacro:macro name="LV_MaxSonar_EZ2_sensor" params="name parent x_loc y_loc yaw">
+    <joint name="s_${name}_joint" type="fixed">
+      <origin xyz="${x_loc} ${y_loc} 0.105" rpy="0.0 0.0 ${yaw}"/>
+      <parent link="${parent}"/>
+      <child link="s_${name}_link"/>
+    </joint>
+    <link name="s_${name}_link">
+      <inertial>
+        <mass value="0.001"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <inertia ixx="0.001" ixy="0.0" ixz="0.0"
+                 iyy="0.001" iyz="0.0"
+                 izz="0.001"/>
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://hector_sensors_description/meshes/sonar_sensor/max_sonar_ez4.dae"/>
+        </geometry>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+  </xacro:macro>
 
   <!-- IR sensor links, pointing at -155, pi, pi and 155 degrees -->
   <joint name="ir_l155_joint" type="fixed">

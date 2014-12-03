@@ -1,0 +1,87 @@
+<!--
+  Thorp global navigation simulation:
+  - gazebo
+  - simulated robot
+  - move base
+  - static map
+  - amcl localization
+  - rviz view
+ -->
+
+<launch>
+  <!-- Name of the map to use (without path nor extension) and initial position -->
+  <arg name="map_name"       default="playground"/>
+  <arg name="initial_pose_x" value="0.0"/>
+  <arg name="initial_pose_y" value="0.0"/>
+  <arg name="initial_pose_a" value="0.0"/>
+
+  <!--  ******************** Gazebo *******************  -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="use_sim_time" value="true"/>
+    <arg name="debug" value="false"/>
+    <arg name="world_name" value="$(find thorp_bringup)/resources/worlds/$(arg map_name).world"/>
+  </include>
+
+  <!--  *************** Simulated Robot ***************  -->
+  <include file="$(find turtlebot_gazebo)/launch/includes/kobuki.launch.xml">
+    <arg name="base"      value="kobuki"/>
+    <arg name="stacks"    value="hexagons"/>
+    <arg name="3d_sensor" value="kinect"/>
+    <arg name="urdf_file" value="$(find xacro)/xacro.py '$(find thorp_bringup)/urdf/thorp.urdf.xacro'"/>
+  </include>
+  
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+    <param name="publish_frequency" type="double" value="30.0"/>
+  </node>
+
+  <!--  ****************** Fake laser *****************  -->
+  <node pkg="nodelet" type="nodelet" name="laserscan_nodelet_manager" args="manager"/>
+  <node pkg="nodelet" type="nodelet" name="depthimage_to_laserscan"
+        args="load depthimage_to_laserscan/DepthImageToLaserScanNodelet laserscan_nodelet_manager">
+    <param name="scan_height" value="10"/>
+    <param name="output_frame_id" value="/camera_depth_frame"/>
+    <param name="range_min" value="0.45"/>
+    <remap from="image" to="/camera/depth/image_raw"/>
+    <remap from="scan" to="/scan"/>
+  </node>
+
+  <!--  ************** Additional sensors *************  -->
+  <include file="$(find thorp_bringup)/launch/includes/_virt_sensor.launch"/>
+
+  <!--  ***************** Robot Model *****************  
+  <include file="$(find thorp_bringup)/launch/includes/_model.launch"/>
+  
+  already in turtlebot_gazebo/launch/includes/kobuki.launch.xml   ->  organize better
+  -->
+
+  <!--  ********** Kobuki mobile base extras **********  -->
+  <include file="$(find thorp_bringup)/launch/includes/_safety_ctrl.launch"/>
+  <!-- velocity commands multiplexer 
+  <node pkg="nodelet" type="nodelet" name="mobile_base_nodelet_manager" args="manager"/>
+  <node pkg="nodelet" type="nodelet" name="cmd_vel_mux" args="load yocs_cmd_vel_mux/CmdVelMuxNodelet mobile_base_nodelet_manager">
+    <param name="yaml_cfg_file" value="$(find thorp_bringup)/param/vel_multiplexer.yaml"/>
+  </node>
+  
+  already in turtlebot_gazebo/launch/includes/kobuki.launch.xml   ->  organize better
+  -->
+
+  <!--  ************** Rosnav move base ***************  -->
+  <include file="$(find thorp_bringup)/launch/includes/_move_base.launch"/>
+
+  <!--  ****** Geometric and semantic map servers *****  -->
+  <node name="map_server" pkg="map_server" type="map_server" args="$(find thorp_bringup)/resources/maps/$(arg map_name).yaml">
+    <param name="frame_id" value="/map"/>
+  </node>
+  <!-- <include file="$(find thorp_bringup)/launch/includes/_annotations_pub.launch"/> -->
+
+  <!--  ******************** Amcl *********************  -->
+  <include file="$(find thorp_bringup)/launch/includes/_amcl.launch">
+    <arg name="scan_topic" value="scan"/>
+    <arg name="initial_pose_x" value="$(arg initial_pose_x)"/>
+    <arg name="initial_pose_y" value="$(arg initial_pose_y)"/>
+    <arg name="initial_pose_a" value="$(arg initial_pose_a)"/>
+  </include>
+
+  <!--  **************** Visualisation ****************  -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_navigation.rviz"/>
+</launch>
