@@ -45,17 +45,17 @@
       <sensor type="ray" name="s_${name}">
         <always_on>true</always_on>
         <update_rate>20</update_rate>
-        <visualize>true</visualize>
+        <visualize>false</visualize>
         <ray>
           <scan>
             <horizontal>
-              <samples>6</samples>
+              <samples>5</samples>
               <resolution>1</resolution>
               <min_angle>-0.3</min_angle>  <!-- -17 degree -->
               <max_angle>+0.3</max_angle>  <!-- +17 degree -->
             </horizontal>
             <vertical>
-              <samples>6</samples>
+              <samples>1</samples>
               <resolution>1</resolution>
               <min_angle>-0.3</min_angle>  <!-- -17 degree -->
               <max_angle>+0.3</max_angle>  <!-- +17 degree -->
@@ -69,10 +69,11 @@
           <noise>
             <type>gaussian</type>
             <mean>0.0</mean>
-            <stddev>0.08</stddev>
+            <stddev>0.05</stddev>
           </noise>
         </ray>
         <plugin name="gazebo_ros_s_${name}_controller" filename="libhector_gazebo_ros_sonar.so">
+          <updateRate>20</updateRate>
           <gaussianNoise>0.05</gaussianNoise>
           <topicName>mobile_base/sensors/sonars/${name}</topicName>
           <frameId>s_${name}_link</frameId>
@@ -99,7 +100,7 @@
       <sensor type="ray" name="ir_${name}">
         <always_on>true</always_on>
         <update_rate>20</update_rate>
-        <visualize>true</visualize>
+        <visualize>false</visualize>
         <ray>
           <scan>
             <horizontal>
@@ -117,17 +118,18 @@
           </scan>
           <range>
             <min>0.01</min>
-            <max>0.80</max>
+            <max>0.90</max>
             <resolution>0.01</resolution>
           </range>
           <noise>
             <type>gaussian</type>
             <mean>0.0</mean>
-            <stddev>0.02</stddev>
+            <stddev>0.01</stddev>
           </noise>
         </ray>
         <plugin name="gazebo_ros_ir_${name}_controller" filename="libhector_gazebo_ros_sonar.so">
-          <gaussianNoise>0.005</gaussianNoise>
+          <updateRate>20</updateRate>
+          <gaussianNoise>0.01</gaussianNoise>
           <topicName>mobile_base/sensors/infrared/${name}</topicName>
           <frameId>ir_${name}_link</frameId>
         </plugin>
