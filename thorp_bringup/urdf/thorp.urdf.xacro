@@ -6,8 +6,8 @@
     - 3d Sensor : kinect
 
   Thorp addons
-    - 11 sonar links
-    - 4 IR sensor links
+    - 11 sonars
+    - 5 IR sensors
     - Turtlebot arm
     - Senz3D camera
 -->
@@ -23,26 +23,6 @@
   <kobuki/>
   <stack_hexagons parent="base_link"/>
   <sensor_kinect  parent="base_link"/>
-  
-<!--  playing around with an external kinect
-
-  <sensor_kinect  parent="fixed_external_camera_link"/>
-
-
-  <joint name="external_camera_joint" type="fixed">
-    <origin xyz="-0.117707 -0.732153 1.1196" rpy="-0.0205534 0.499254 0.901111"/>
-    <parent link="base_link"/>
-    <child link="external_camera_link"/>
-  </joint>
-  <link name="external_camera_link"/>
-
-  <joint name="fixed_external_camera_joint" type="fixed">
-    <origin xyz="0.0 -0.0125 0.025" rpy="0.0 0.0 0.0"/>
-    <parent link="external_camera_link"/>
-    <child link="fixed_external_camera_link"/>
-  </joint>
-  <link name="fixed_external_camera_link"/>
--->
 
   <!-- Turtlebot arm, its controller board and its mounting on Thorp -->
 
@@ -146,7 +126,7 @@
   <joint name="senz3d_calib_joint" type="fixed">
     <!-- Extrinsic parameters obtained through arm-camera calibration:
          http://wiki.ros.org/turtlebot_arm_kinect_calibration -->
-    <origin xyz="0.0236345 -0.035567 0.0125611" rpy="0.0326246 ${2.36437 - M_PI/2} ${1.55928 - M_PI/2}"/>
+    <origin xyz="0.0256095 -0.0275026 0.00772833" rpy="-0.0703076 0.788321 -0.0731844"/>
     <parent link="senz3d_mount_link"/>
     <child link="senz3d_calib_link"/>
   </joint>
