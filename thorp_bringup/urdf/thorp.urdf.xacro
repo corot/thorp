@@ -146,7 +146,7 @@
   <joint name="senz3d_calib_joint" type="fixed">
     <!-- Extrinsic parameters obtained through arm-camera calibration:
          http://wiki.ros.org/turtlebot_arm_kinect_calibration -->
-    <origin xyz="0.0236345 -0.035567 0.0125611" rpy="2.36437 0.0326246 1.55928"/>
+    <origin xyz="0.0236345 -0.035567 0.0125611" rpy="0.0326246 ${2.36437 - M_PI/2} ${1.55928 - M_PI/2}"/>
     <parent link="senz3d_mount_link"/>
     <child link="senz3d_calib_link"/>
   </joint>
