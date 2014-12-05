@@ -1,14 +1,17 @@
 <!--
-  Thorp global navigation simulation:
+  Thorp full simulation:
   - gazebo
   - simulated robot
   - move base
   - static map
   - amcl localization
+  - moveit arm control
   - rviz view
  -->
 
 <launch>
+  <arg name="debug"          default="false"/>
+
   <!-- Name of the map to use (without path nor extension) and initial position -->
   <arg name="map_name"       default="playground"/>
   <arg name="initial_pose_x" value="0.0"/>
@@ -57,6 +60,22 @@
     <arg name="initial_pose_a" value="$(arg initial_pose_a)"/>
   </include>
 
+  <!--  ************* Moveit config stuff *************  -->
+
+  <!-- Load the URDF, SRDF and other .yaml configuration files on the param server -->
+  <include file="$(find turtlebot_arm_moveit_config)/launch/planning_context.launch">
+    <arg name="load_robot_description" value="false"/>
+  </include>
+
+  <!-- Run the main MoveIt executable -->
+  <include file="$(find turtlebot_arm_moveit_config)/launch/move_group.launch">
+    <arg name="allow_trajectory_execution" value="true"/>  
+    <arg name="fake_execution" value="false"/>
+    <arg name="info" value="true"/>
+    <arg name="debug" value="$(arg debug)"/>
+  </include>
+
   <!--  **************** Visualisation ****************  -->
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_navigation.rviz"/>
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_manip.rviz"/>
+<!--   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_navigation.rviz"/> -->
 </launch>

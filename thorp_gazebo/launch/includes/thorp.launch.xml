@@ -9,7 +9,7 @@
   <node name="spawn_turtlebot_model" pkg="gazebo_ros" type="spawn_model"
         args="$(optenv ROBOT_INITIAL_POSE) -unpause -urdf -param robot_description -model mobile_base"/>
 
-  <!-- Fake laser -->
+  <!-- Fake laser from Kinect-->
   <node pkg="nodelet" type="nodelet" name="laserscan_nodelet_manager" args="manager"/>
   <node pkg="nodelet" type="nodelet" name="depthimage_to_laserscan"
         args="load depthimage_to_laserscan/DepthImageToLaserScanNodelet laserscan_nodelet_manager">
@@ -18,5 +18,25 @@
     <param name="range_min" value="0.45"/>
     <remap from="image" to="/camera/depth/image_raw"/>
     <remap from="scan" to="/scan"/>
+  </node>
+
+  <!-- Read the configuration and load controllers for the arm and gripper-->
+  <rosparam file="$(find thorp_gazebo)/param/arm_control.yaml" command="load"/>
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" output="screen"
+        args="joint_state_controller gripper_joint arm_controller"/>
+
+  <node name="gripper_controller" pkg="arbotix_controllers" type="gripper_controller">
+    <!--
+     Gripper controller parameters:
+     more than the physical properties of the gripper, these values are an ad-hoc configuration
+     that works with arbotix_ros/gripper_controller/OneSideGripperModel
+      -->
+    <param name="model" value="singlesided"/>
+    <param name="invert" value="true"/>
+    <param name="center" value="0.07"/>
+    <param name="pad_width" value="0.025"/>
+    <param name="finger_length" value="0.03"/>
+    <param name="min_opening" value="0.0"/>
+    <param name="max_opening" value="0.054"/>
   </node>
 </launch>
