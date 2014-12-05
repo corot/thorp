@@ -46,9 +46,9 @@
   <joint name="opencm_joint" type="fixed">
     <origin xyz="0.042 0.03 0.008" rpy="0.0 0.0 0.0"/>
     <parent link="plate_top_link"/>
-    <child link="opencm_joint_link"/>
+    <child link="opencm_link"/>
   </joint>
-  <link name="opencm_joint_link">
+  <link name="opencm_link">
     <visual>
       <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
       <geometry>
@@ -136,22 +136,53 @@
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
   </sensor_senz3d>
 
-  <!-- Sonar sensors forming a half ring centered on (and slightly above) base_link-->
-  <LV_MaxSonar_EZ2_sensor name="m90" parent="base_link" x_loc="0.0"     y_loc="-0.15500" yaw="-1.57080"/>
-  <LV_MaxSonar_EZ2_sensor name="m72" parent="base_link" x_loc="0.04790" y_loc="-0.14741" yaw="-1.25664"/>
-  <LV_MaxSonar_EZ2_sensor name="m54" parent="base_link" x_loc="0.09111" y_loc="-0.12540" yaw="-0.94248"/>
-  <LV_MaxSonar_EZ2_sensor name="m36" parent="base_link" x_loc="0.12540" y_loc="-0.09111" yaw="-0.62832"/>
-  <LV_MaxSonar_EZ2_sensor name="m18" parent="base_link" x_loc="0.14741" y_loc="-0.04790" yaw="-0.31416"/>
-  <LV_MaxSonar_EZ2_sensor name="0"   parent="base_link" x_loc="0.155"   y_loc=" 0.0"     yaw=" 0.0"/>
-  <LV_MaxSonar_EZ2_sensor name="p18" parent="base_link" x_loc="0.14741" y_loc="+0.04790" yaw="+0.31416"/>
-  <LV_MaxSonar_EZ2_sensor name="p36" parent="base_link" x_loc="0.12540" y_loc="+0.09111" yaw="+0.62832"/>
-  <LV_MaxSonar_EZ2_sensor name="p54" parent="base_link" x_loc="0.09111" y_loc="+0.12540" yaw="+0.94248"/>
-  <LV_MaxSonar_EZ2_sensor name="p72" parent="base_link" x_loc="0.04790" y_loc="+0.14741" yaw="+1.25664"/>
-  <LV_MaxSonar_EZ2_sensor name="p90" parent="base_link" x_loc="0.0"     y_loc="+0.15500" yaw="+1.57080"/>
+  <!-- Sonar sensors forming a half ring centered on (and slightly above) base_link -->
+  <joint name="sonars_joint" type="fixed">
+    <origin xyz="0.0 0.0 0.108" rpy="0.0 0.0 0.0"/>
+    <parent link="base_link"/>
+    <child link="sonars_mount_link"/>
+  </joint>
+
+  <link name="sonars_mount_link">
+    <inertial>
+      <mass value="0.22"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0"
+               iyy="1.0" iyz="0.0"
+               izz="1.0"/>
+    </inertial>
+
+    <visual>
+      <origin xyz="0.0 0.0 -0.058" rpy="${-M_PI/2} -${M_PI} ${-M_PI/2}"/>
+      <geometry>
+        <mesh filename="package://thorp_bringup/resources/meshes/sonar_array.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="Black"/>
+    </visual>
+
+    <collision>
+      <origin xyz="-0.01 0.0 0.0165" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <box size="0.074 0.074 0.004"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <LV_MaxSonar_EZ2_sensor name="m90" parent="sonars_mount_link" x_loc="0.0"    y_loc="-0.1380" yaw="-1.57080"/>
+  <LV_MaxSonar_EZ2_sensor name="m72" parent="sonars_mount_link" x_loc="0.0426" y_loc="-0.1312" yaw="-1.25664"/>
+  <LV_MaxSonar_EZ2_sensor name="m54" parent="sonars_mount_link" x_loc="0.0811" y_loc="-0.1116" yaw="-0.94248"/>
+  <LV_MaxSonar_EZ2_sensor name="m36" parent="sonars_mount_link" x_loc="0.1116" y_loc="-0.0811" yaw="-0.62832"/>
+  <LV_MaxSonar_EZ2_sensor name="m18" parent="sonars_mount_link" x_loc="0.1312" y_loc="-0.0426" yaw="-0.31416"/>
+  <LV_MaxSonar_EZ2_sensor name="0"   parent="sonars_mount_link" x_loc="0.138"  y_loc=" 0.0"    yaw=" 0.0"/>
+  <LV_MaxSonar_EZ2_sensor name="p18" parent="sonars_mount_link" x_loc="0.1312" y_loc="+0.0426" yaw="+0.31416"/>
+  <LV_MaxSonar_EZ2_sensor name="p36" parent="sonars_mount_link" x_loc="0.1116" y_loc="+0.0811" yaw="+0.62832"/>
+  <LV_MaxSonar_EZ2_sensor name="p54" parent="sonars_mount_link" x_loc="0.0811" y_loc="+0.1116" yaw="+0.94248"/>
+  <LV_MaxSonar_EZ2_sensor name="p72" parent="sonars_mount_link" x_loc="0.0426" y_loc="+0.1312" yaw="+1.25664"/>
+  <LV_MaxSonar_EZ2_sensor name="p90" parent="sonars_mount_link" x_loc="0.0"    y_loc="+0.1380" yaw="+1.57080"/>
 
   <xacro:macro name="LV_MaxSonar_EZ2_sensor" params="name parent x_loc y_loc yaw">
     <joint name="s_${name}_joint" type="fixed">
-      <origin xyz="${x_loc} ${y_loc} 0.105" rpy="0.0 0.0 ${yaw}"/>
+      <origin xyz="${x_loc} ${y_loc} 0.0" rpy="0.0 0.0 ${yaw}"/>
       <parent link="${parent}"/>
       <child link="s_${name}_link"/>
     </joint>
