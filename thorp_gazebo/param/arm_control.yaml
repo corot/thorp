@@ -1,37 +1,14 @@
-# Publish all joint states -----------------------------------
+# Publish all joint states
 joint_state_controller:
   type: joint_state_controller/JointStateController
   publish_rate: 40  
 
-# Position Controllers ---------------------------------------
-#arm_shoulder_pan_joint:
-#  type: effort_controllers/JointPositionController
-#  joint: arm_shoulder_pan_joint
-#  pid: {p: 100.0, i: 0.01, d: 10.0}
-#arm_shoulder_lift_joint:
-#  type: effort_controllers/JointPositionController
-#  joint: arm_shoulder_lift_joint
-#  pid: {p: 100.0, i: 0.01, d: 10.0}
-#arm_elbow_flex_joint:
-#  type: effort_controllers/JointPositionController
-#  joint: arm_elbow_flex_joint
-#  pid: {p: 100.0, i: 0.01, d: 10.0}
-#arm_wrist_flex_joint:
-#  type: effort_controllers/JointPositionController
-#  joint: arm_wrist_flex_joint
-#  pid: {p: 100.0, i: 0.01, d: 10.0}
-gripper_joint:
-  type: effort_controllers/JointPositionController
-  joint: gripper_joint
-  pid: {p: 100.0, i: 0.01, d: 10.0}
-
-# Full arm Controller ----------------------------------------
+# Arm Position Controller
 arm_controller:
-  type: effort_controllers/JointTrajectoryController
+  type: position_controllers/JointTrajectoryController
   joints: [arm_shoulder_pan_joint, arm_shoulder_lift_joint, arm_elbow_flex_joint, arm_wrist_flex_joint]
 
-  gains: # Required because we're controlling an effort interface
-    arm_shoulder_pan_joint:  {p: 100,  d: 10.0, i: 0.01, i_clamp: 1}
-    arm_shoulder_lift_joint: {p: 100,  d: 10.0, i: 0.01, i_clamp: 1}
-    arm_elbow_flex_joint:    {p: 100,  d: 10.0, i: 0.01, i_clamp: 1}
-    arm_wrist_flex_joint:    {p: 100,  d: 10.0, i: 0.01, i_clamp: 1}
+# Gripper Position Controller
+gripper_joint:
+  type: position_controllers/JointPositionController
+  joint: gripper_joint
