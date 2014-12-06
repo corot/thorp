@@ -20,7 +20,7 @@
     <remap from="scan" to="/scan"/>
   </node>
 
-  <!-- Read the configuration and load controllers for the arm and gripper-->
+  <!-- Read the configuration and load controllers for the arm and gripper -->
   <rosparam file="$(find thorp_gazebo)/param/arm_control.yaml" command="load"/>
   <node name="controller_spawner" pkg="controller_manager" type="spawner" output="screen"
         args="joint_state_controller gripper_joint arm_controller"/>
