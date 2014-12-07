@@ -47,7 +47,7 @@
   <include file="$(find thorp_bringup)/launch/includes/_move_base.launch"/>
 
   <!--  ****** Geometric and semantic map servers *****  -->
-  <node name="map_server" pkg="map_server" type="map_server" args="$(find thorp_gazebo)/maps/$(arg map_name).yaml">
+  <node name="map_server" pkg="map_server" type="map_server" args="$(find thorp_bringup)/resources/maps/$(arg map_name).yaml">
     <param name="frame_id" value="/map"/>
   </node>
   <!-- <include file="$(find thorp_bringup)/launch/includes/_annotations_pub.launch"/> -->
