@@ -5,10 +5,7 @@
   <arg name="use_joints_gui" default="false"/>
 
   <param name="robot_description" command="$(find xacro)/xacro.py '$(find thorp_bringup)/urdf/thorp.urdf.xacro'"/>
-
-  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
-    <param name="publish_frequency" type="double" value="5.0" />
-  </node>  
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher"/>
   
   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
     <param name="use_gui" value="$(arg use_joints_gui)"/>
