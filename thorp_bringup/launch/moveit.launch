@@ -33,7 +33,7 @@
   <!--  ************* Moveit config stuff *************  -->
 
   <!-- Load the URDF, SRDF and other .yaml configuration files on the param server -->
-  <include file="$(find turtlebot_arm_moveit_config)/launch/planning_context.launch">
+  <include file="$(find thorp_moveit_config)/launch/planning_context.launch">
     <arg name="load_robot_description" value="false"/>
   </include>
 
@@ -45,7 +45,7 @@
 
   <!-- Run the main MoveIt executable; we don't use fake execution even on simulation, as the
        arbotix controllers are already operating on simulation and so only move the robot model -->
-  <include file="$(find turtlebot_arm_moveit_config)/launch/move_group.launch">
+  <include file="$(find thorp_moveit_config)/launch/move_group.launch">
     <arg name="allow_trajectory_execution" value="true"/>  
     <arg name="fake_execution" value="false"/>
     <arg name="info" value="true"/>

@@ -1,0 +1,3 @@
+<launch>
+  <rosparam file="$(find thorp_moveit_config)/config/sensors.yaml"/>
+</launch>

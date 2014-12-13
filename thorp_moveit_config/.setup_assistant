@@ -1,0 +1,8 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: thorp_bringup
+    relative_path: urdf/thorp.urdf.xacro
+  SRDF:
+    relative_path: config/Thorp.srdf
+  CONFIG:
+    generated_timestamp: 1418466535
