@@ -1,6 +1,7 @@
 <launch>
-  <param name="robot_description" command="$(find xacro)/xacro.py '$(find thorp_bringup)/urdf/thorp.urdf.xacro'"/>
-  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher"/>
+  <include file="$(find thorp_bringup)/launch/includes/_state_publisher.launch">
+    <arg name="simulation" value="true"/>
+  </include>
     
   <!-- Gazebo model spawner -->
   <node name="spawn_turtlebot_model" pkg="gazebo_ros" type="spawn_model"

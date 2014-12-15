@@ -1,0 +1,11 @@
+<!--
+  Thorp state publisher.
+
+  When true, argument simulation tweaks the robot description for a simulated robot, using the ideal pose for cameras instead of calibrated ones
+ -->
+<launch>
+  <arg name="simulation" default="false"/>
+
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find thorp_bringup)/urdf/thorp.urdf.xacro' simulation:=$(arg simulation)"/>
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher"/>
+</launch>

@@ -41,7 +41,7 @@
   </include>
 
   <!--Overwrite default Turtlebot 2 description with Thorp's one -->
-  <param name="robot_description" command="$(find xacro)/xacro.py '$(find thorp_bringup)/urdf/thorp.urdf.xacro'"/>
+  <include file="$(find thorp_bringup)/launch/includes/_state_publisher.launch"/>
 
   <!--  ************** Additional sensors *************  -->
   <include file="$(find thorp_bringup)/launch/includes/_virt_sensor.launch"/>

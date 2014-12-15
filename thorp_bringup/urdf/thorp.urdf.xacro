@@ -126,7 +126,12 @@
   <joint name="senz3d_calib_joint" type="fixed">
     <!-- Extrinsic parameters obtained through arm-camera calibration:
          http://wiki.ros.org/turtlebot_arm_kinect_calibration -->
-    <origin xyz="0.0256095 -0.0275026 0.00772833" rpy="-0.0703076 0.788321 -0.0731844"/>
+    <xacro:if value="$(arg simulation)">
+      <origin xyz="0.0256095 -0.0275026 0.00772833" rpy="0.0 0.788321 0.0"/>
+    </xacro:if>
+    <xacro:unless value="$(arg simulation)">
+      <origin xyz="0.0256095 -0.0275026 0.00772833" rpy="-0.0703076 0.788321 -0.0731844"/>
+    </xacro:unless>
     <parent link="senz3d_mount_link"/>
     <child link="senz3d_calib_link"/>
   </joint>

@@ -79,6 +79,6 @@
     <arg name="initial_pose_a" value="$(arg initial_pose_a)"/>
   </include>
 
-  <!--  **************** Visualisation ****************  -->
+  <!--  **************** Visualization ****************  -->
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_navigation.rviz"/>
 </launch>

@@ -14,7 +14,7 @@
   </include>
 
   <!--Overwrite default Turtlebot 2 description with Thorp's one -->
-  <param name="robot_description" command="$(find xacro)/xacro.py '$(find thorp_bringup)/urdf/thorp.urdf.xacro'"/>
+  <include file="$(find thorp_bringup)/launch/includes/_state_publisher.launch"/>
 
   <!--  *********** Thorp specific hardware ***********  -->
   <include file="$(find thorp_boards)/launch/arduino.launch"/>

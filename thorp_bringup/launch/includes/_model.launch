@@ -4,8 +4,9 @@
 <launch>
   <arg name="use_joints_gui" default="false"/>
 
-  <param name="robot_description" command="$(find xacro)/xacro.py '$(find thorp_bringup)/urdf/thorp.urdf.xacro'"/>
-  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher"/>
+  <include file="$(find thorp_bringup)/launch/includes/_state_publisher.launch">
+    <arg name="simulation" value="true"/>
+  </include>
   
   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
     <param name="use_gui" value="$(arg use_joints_gui)"/>
