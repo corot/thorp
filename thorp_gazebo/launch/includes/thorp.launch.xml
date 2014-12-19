@@ -21,7 +21,7 @@
   <!-- Read the configuration and load controllers for the arm and gripper -->
   <rosparam file="$(find thorp_gazebo)/param/arm_control.yaml" command="load"/>
   <node name="controller_spawner" pkg="controller_manager" type="spawner" output="screen"
-        args="joint_state_controller gripper_joint arm_controller"/>
+        args="--timeout 120 joint_state_controller gripper_joint arm_controller"/>
 
   <node name="gripper_controller" pkg="arbotix_controllers" type="gripper_controller">
     <!--
