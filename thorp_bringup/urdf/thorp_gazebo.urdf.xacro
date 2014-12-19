@@ -37,6 +37,9 @@
         <pointCloudCutoff>0.15</pointCloudCutoff>
       </plugin>
     </sensor>
+
+    <selfCollide>true</selfCollide>
+    <gravity>true</gravity>
   </gazebo>
 
   <!-- LV-MaxSonar-EZ2 ultrasound sensors -->
@@ -79,6 +82,9 @@
           <frameId>s_${name}_link</frameId>
         </plugin>
       </sensor>
+
+      <selfCollide>true</selfCollide>
+      <gravity>true</gravity>
     </gazebo>
   </xacro:macro>
 
@@ -134,6 +140,9 @@
           <frameId>ir_${name}_link</frameId>
         </plugin>
       </sensor>
+
+      <selfCollide>true</selfCollide>
+      <gravity>true</gravity>
     </gazebo>
   </xacro:macro>
 
