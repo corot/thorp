@@ -1,0 +1,6 @@
+<!-- Patrol app -->
+<launch>
+  <node pkg="thorp_smach" type="patrol_sm.py" name="patrol_app"/>
+  
+  <node pkg="smach_viewer" type="smach_viewer.py" name="smach_viewer"/>
+</launch>

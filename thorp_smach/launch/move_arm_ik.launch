@@ -1,0 +1,5 @@
+<launch>
+  <group ns="korus">
+    <node pkg="thorp_smach" type="move_arm_ik_as.py" name="move_arm_ik"/>
+  </group>
+</launch>

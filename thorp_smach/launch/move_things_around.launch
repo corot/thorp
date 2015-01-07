@@ -1,0 +1,6 @@
+<!-- Move things around app -->
+<launch>
+  <group ns="korus">
+    <node pkg="thorp_smach" type="move_things_around.py" name="move_things_around_app"/>
+  </group>
+</launch>

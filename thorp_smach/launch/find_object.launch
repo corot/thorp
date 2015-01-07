@@ -1,0 +1,8 @@
+<launch>
+  <group ns="korus">
+    <!-- SMACH user interface -->
+    <node pkg="thorp_smach" type="find_object_as.py" name="find_object_server"/>
+    <!-- Object info server -->
+    <include file="$(find object_recognition_ros)/launch/object_information_server.launch"/>
+  </group>
+</launch>

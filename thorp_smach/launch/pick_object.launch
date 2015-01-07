@@ -1,0 +1,6 @@
+<launch>
+  <group ns="korus">
+    <!-- SMACH user interface -->
+    <node pkg="thorp_smach" type="pick_object_as.py" name="pick_object_server"/>
+  </group>
+</launch>
