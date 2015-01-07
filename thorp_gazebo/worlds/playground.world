@@ -473,9 +473,9 @@
         </link>
       </model>
       <model name='doll_table_0'>
-        <pose>0.57697 0 0 0 -0 0</pose>
+        <pose>0.45 0 0 0 -0 0</pose>
         <link name='link'>
-          <pose>0.57697 0 0 0 -0 0</pose>
+          <pose>0.45 0 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -509,27 +509,27 @@
         </link>
       </model>
       <model name='wood_cube_2_5cm_0'>
-        <pose>0.399395 0.017524 0.423961 -8.07794e-28 1e-06 -7e-06</pose>
+        <pose>0.279395 0.017524 0.423961 -8.07794e-28 1e-06 -7e-06</pose>
         <link name='link'>
-          <pose>0.399395 0.017524 0.436461 -8.07794e-28 1e-06 -7e-06</pose>
+          <pose>0.279395 0.017524 0.436461 -8.07794e-28 1e-06 -7e-06</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='wood_cube_2_5cm_1'>
-        <pose>0.477627 -0.037121 0.423961 -2e-06 2e-06 2e-06</pose>
+        <pose>0.357627 -0.037121 0.423961 -2e-06 2e-06 2e-06</pose>
         <link name='link'>
-          <pose>0.477627 -0.037121 0.436461 -2e-06 2e-06 2e-06</pose>
+          <pose>0.357627 -0.037121 0.436461 -2e-06 2e-06 2e-06</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='wood_cube_2_5cm_2'>
-        <pose>0.422415 -0.160046 0.423981 -2e-06 2e-06 2e-06</pose>
+        <pose>0.302415 -0.160046 0.423981 -2e-06 2e-06 2e-06</pose>
         <link name='link'>
-          <pose>0.422415 -0.160046 0.436481 -2e-06 2e-06 2e-06</pose>
+          <pose>0.302415 -0.160046 0.436481 -2e-06 2e-06 2e-06</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>

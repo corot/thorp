@@ -16,7 +16,7 @@
   <!--  *********** Block manipulation demo ***********  -->
 
   <node name="block_detection_action_server" pkg="turtlebot_arm_block_manipulation" type="block_detection_action_server" output="screen">
-    <rosparam param="table_pose">[0.09, 0.0, -0.035]</rosparam>
+    <rosparam param="table_pose">[0.09, 0.0, -0.015]</rosparam>
     <remap unless="$(arg external_camera)" from="/camera/depth_registered/points" to="/senz3d/depth/points"/>
   </node>
 
@@ -30,9 +30,9 @@
 
   <!--  ****** Executive smach and visualization ******  -->
 
-  <node name="block_manipulation_smach" pkg="thorp_smach" type="block_manip.py" output="screen">
+  <node name="block_manipulation_demo" pkg="thorp_smach" type="block_manip.py" output="screen">
     <param name="arm_link" value="/arm_base_link"/>
-    <param name="gripper_open" value="0.05"/>
+    <param name="gripper_open" value="0.045"/>
     <param name="gripper_closed" value="0.022"/>
     <param name="z_up" value="0.05"/>
     <param name="table_height" value="-0.03"/>
