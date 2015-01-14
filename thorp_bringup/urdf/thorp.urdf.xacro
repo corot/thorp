@@ -14,7 +14,7 @@
 <robot name="Thorp" xmlns:xacro="http://ros.org/wiki/xacro">
 
   <xacro:include filename="$(find turtlebot_description)/urdf/turtlebot_library.urdf.xacro"/>
-  <xacro:include filename="$(find turtlebot_arm_description)/urdf/arm.xacro"/>
+  <xacro:include filename="$(find turtlebot_arm_description)/urdf/turtlebot_arm.xacro"/>
   <xacro:include filename="$(find thorp_bringup)/urdf/thorp_gazebo.urdf.xacro"/>
   <xacro:include filename="$(find softkinetic_camera)/urdf/senz3d.urdf.xacro"/>
 
@@ -27,10 +27,20 @@
   <!-- Turtlebot arm, its controller board and its mounting on Thorp -->
 
   <!-- Note that the arm position is biased to the left of the robot, and the dead angle also
-       points to the left; with this configuration, the arm can reach most of the top plate -->
+       points to the left; with this configuration, the arm can reach most of the top plate.
+       We also use a deliberately low joints velocity limit to improve safety and precision -->
+  <xacro:property name="joints_vlimit" value="0.3571"/>
+  <xacro:property name="pan_llimit" value="-4.189"/>
+  <xacro:property name="pan_ulimit" value="1.047"/>
+  <xacro:property name="shoulder_llimit" value="-2.617"/>
+  <xacro:property name="shoulder_ulimit" value="2.617"/>
+  <xacro:property name="elbow_llimit" value="-2.617"/>
+  <xacro:property name="elbow_ulimit" value="2.617"/>
+  <xacro:property name="wrist_llimit" value="-1.745"/>
+  <xacro:property name="wrist_ulimit" value="1.745"/>
+
   <turtlebot_arm parent="plate_top_link" color="White" gripper_color="Black"
-                 joints_vlimit="0.3571" pan_llimit="-4.189" pan_ulimit="1.047">
-                 
+                 pincher_gripper="false" turtlebot_gripper="true">
     <origin xyz="0.10914 0.0295 0.0284"/>
   </turtlebot_arm>
   

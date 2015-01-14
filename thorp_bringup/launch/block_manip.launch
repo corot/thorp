@@ -74,7 +74,7 @@
 
   <node name="block_manipulation_demo" pkg="turtlebot_arm_block_manipulation" type="block_manipulation_demo" output="screen" >
     <param name="arm_link" value="/arm_base_link"/>
-    <param name="gripper_open" value="0.05"/>
+    <param name="gripper_open" value="0.045"/>
     <param name="gripper_closed" value="0.022"/>
     <param name="z_up" value="0.05"/>
     <param name="table_height" value="-0.03"/>
