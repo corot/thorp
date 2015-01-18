@@ -147,6 +147,17 @@
   </joint>
   <link name="senz3d_calib_link"/>
 
+  <!-- Seems like Gazebo kinect plugin needs to use a centered frame instead of separated rgb and depth.
+       No idea if this makes any sense, but it works! -->
+  <xacro:if value="$(arg simulation)">
+    <joint name="senz3d_camera_gazebo_optical_joint" type="fixed">
+      <origin xyz="0.0 0.0 0.0" rpy="${-M_PI/2} 0.0 ${-M_PI/2}"/>
+      <parent link="senz3d_camera_link"/>
+      <child link="senz3d_camera_gazebo_optical_frame"/>
+    </joint>
+    <link name="senz3d_camera_gazebo_optical_frame"/>
+  </xacro:if>
+
   <sensor_senz3d parent="senz3d_calib_link" name="senz3d_camera">
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
   </sensor_senz3d>
