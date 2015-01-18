@@ -47,6 +47,11 @@
     <!--PASSIVE JOINT: Purpose: this element is used to mark joints that are not actuated-->
     <passive_joint name="gripper_link_joint" />
     <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
+    
+    <!--Manually added to prevent a collision when gripper is fully opened -->
+    <disable_collisions link1="arm_wrist_flex_link" link2="gripper_active_link" reason="Adjacent" />
+    <disable_collisions link1="arm_wrist_flex_link" link2="gripper_active_finger_link" reason="Adjacent" />
+    
     <disable_collisions link1="arm_elbow_F10_0_link" link2="arm_elbow_F10_1_link" reason="Adjacent" />
     <disable_collisions link1="arm_elbow_F10_0_link" link2="arm_elbow_F10_2_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_0_link" link2="arm_elbow_F3_0_link" reason="Never" />
