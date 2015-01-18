@@ -75,6 +75,6 @@
     <arg name="debug" value="$(arg debug)"/>
   </include>
 
-  <!--  **************** Visualization ****************  -->
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_manip.rviz"/>
+  <!--  **** Full mobile manipulator visualization ****  -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_all.rviz"/>
 </launch>

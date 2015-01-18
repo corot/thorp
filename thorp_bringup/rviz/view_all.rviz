@@ -1,33 +1,26 @@
 Panels:
   - Class: rviz/Displays
-    Help Height: 76
+    Help Height: 84
     Name: Displays
     Property Tree Widget:
       Expanded:
+        - /DepthCloud1/Auto Size1
         - /TF1/Frames1
-        - /TF1/Tree1
-        - /Local Map1/Costmap1
-        - /Global Map1/Costmap1
-      Splitter Ratio: 0.5
-    Tree Height: 232
-  - Class: rviz/Selection
-    Name: Selection
-  - Class: rviz/Tool Properties
-    Expanded:
-      - /2D Pose Estimate1
-      - /2D Nav Goal1
-    Name: Tool Properties
-    Splitter Ratio: 0.588679
+      Splitter Ratio: 0.40146
+    Tree Height: 347
+  - Class: rviz/Help
+    Name: Help
   - Class: rviz/Views
     Expanded:
       - /Current View1
     Name: Views
     Splitter Ratio: 0.5
-  - Class: rviz/Time
-    Experimental: false
-    Name: Time
-    SyncMode: 0
-    SyncSource: LaserScan (kinect)
+  - Class: rviz/Tool Properties
+    Expanded:
+      - /2D Nav Goal1
+      - /2D Pose Estimate1
+    Name: Tool Properties
+    Splitter Ratio: 0.5
 Visualization Manager:
   Class: ""
   Displays:
@@ -65,27 +58,6 @@ Visualization Manager:
       Update Interval: 0
       Value: false
       Visual Enabled: true
-    - Alpha: 1
-      Class: rviz/Polygon
-      Color: 25; 255; 0
-      Enabled: true
-      Name: Footprint
-      Topic: /move_base/local_costmap/obstacle_layer_footprint/footprint_stamped
-      Value: true
-    - Class: rviz/TF
-      Enabled: false
-      Frame Timeout: 15
-      Frames:
-        All Enabled: false
-      Marker Scale: 1
-      Name: TF
-      Show Arrows: true
-      Show Axes: true
-      Show Names: false
-      Tree:
-        {}
-      Update Interval: 0
-      Value: false
     - Class: moveit_rviz_plugin/MotionPlanning
       Enabled: true
       Move Group Namespace: ""
@@ -571,7 +543,7 @@ Visualization Manager:
       Planning Scene Topic: /move_group/monitored_planning_scene
       Robot Description: robot_description
       Scene Geometry:
-        Scene Alpha: 0.9
+        Scene Alpha: 1
         Scene Color: 50; 230; 50
         Scene Display Time: 0.2
         Show Scene Geometry: true
@@ -1026,94 +998,21 @@ Visualization Manager:
             Value: true
         Robot Alpha: 0.5
         Show Robot Collision: false
-        Show Robot Visual: false
+        Show Robot Visual: true
       Value: true
     - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz/LaserScan
-      Color: 255; 255; 255
-      Color Transformer: Intensity
-      Decay Time: 0
+      Axes Length: 1
+      Axes Radius: 0.1
+      Class: rviz/Pose
+      Color: 220; 220; 220
       Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 1
-      Min Color: 0; 0; 0
-      Min Intensity: 1
-      Name: LaserScan (kinect)
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.01
-      Style: Squares
-      Topic: /scan
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: true
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz/LaserScan
-      Color: 255; 255; 255
-      Color Transformer: Intensity
-      Decay Time: 0
-      Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 1.26977
-      Min Color: 0; 0; 0
-      Min Intensity: 0.281676
-      Name: LaserScan (sonars)
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.05
-      Style: Flat Squares
-      Topic: /sonars
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: true
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz/LaserScan
-      Color: 255; 255; 255
-      Color Transformer: Intensity
-      Decay Time: 0
-      Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 4096
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: LaserScan (virtual sensor)
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.02
-      Style: Flat Squares
-      Topic: /virtual
-      Use Fixed Frame: true
-      Use rainbow: true
+      Head Length: 0.02
+      Head Radius: 0.02
+      Name: Pick/Place Pose
+      Shaft Length: 0.08
+      Shaft Radius: 0.01
+      Shape: Arrow
+      Topic: /gripper_pose
       Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
@@ -1124,8 +1023,8 @@ Visualization Manager:
       Axis: Z
       Channel Name: intensity
       Class: rviz/PointCloud2
-      Color: 255; 255; 255
-      Color Transformer: Intensity
+      Color: 71; 255; 15
+      Color Transformer: RGB8
       Decay Time: 0
       Enabled: true
       Invert Rainbow: false
@@ -1133,258 +1032,68 @@ Visualization Manager:
       Max Intensity: 4096
       Min Color: 0; 0; 0
       Min Intensity: 0
-      Name: PointCloud (bumpers)
+      Name: PointCloud2
       Position Transformer: XYZ
       Queue Size: 10
       Selectable: true
       Size (Pixels): 3
-      Size (m): 0.04
+      Size (m): 0.005
       Style: Flat Squares
-      Topic: /mobile_base/sensors/bumper_pointcloud
+      Topic: /senz3d/depth/points
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
-    - Class: rviz/Group
-      Displays:
-        - Alpha: 0.5
-          Buffer Length: 1
-          Class: rviz/Range
-          Color: 255; 255; 255
-          Enabled: true
-          Name: m90
-          Queue Size: 100
-          Topic: /mobile_base/sensors/sonars/m90
-          Value: true
-        - Alpha: 0.5
-          Buffer Length: 1
-          Class: rviz/Range
-          Color: 255; 255; 255
-          Enabled: true
-          Name: m72
-          Queue Size: 100
-          Topic: /mobile_base/sensors/sonars/m72
-          Value: true
-        - Alpha: 0.5
-          Buffer Length: 1
-          Class: rviz/Range
-          Color: 255; 255; 255
-          Enabled: true
-          Name: m54
-          Queue Size: 100
-          Topic: /mobile_base/sensors/sonars/m54
-          Value: true
-        - Alpha: 0.5
-          Buffer Length: 1
-          Class: rviz/Range
-          Color: 255; 255; 255
-          Enabled: true
-          Name: m36
-          Queue Size: 100
-          Topic: /mobile_base/sensors/sonars/m36
-          Value: true
-        - Alpha: 0.5
-          Buffer Length: 1
-          Class: rviz/Range
-          Color: 255; 255; 255
-          Enabled: true
-          Name: m18
-          Queue Size: 100
-          Topic: /mobile_base/sensors/sonars/m18
-          Value: true
-        - Alpha: 0.5
-          Buffer Length: 1
-          Class: rviz/Range
-          Color: 255; 255; 255
-          Enabled: true
-          Name: 0
-          Queue Size: 100
-          Topic: /mobile_base/sensors/sonars/0
-          Value: true
-        - Alpha: 0.5
-          Buffer Length: 1
-          Class: rviz/Range
-          Color: 255; 255; 255
-          Enabled: true
-          Name: p18
-          Queue Size: 100
-          Topic: /mobile_base/sensors/sonars/p18
-          Value: true
-        - Alpha: 0.5
-          Buffer Length: 1
-          Class: rviz/Range
-          Color: 255; 255; 255
-          Enabled: true
-          Name: p36
-          Queue Size: 100
-          Topic: /mobile_base/sensors/sonars/p36
-          Value: true
-        - Alpha: 0.5
-          Buffer Length: 1
-          Class: rviz/Range
-          Color: 255; 255; 255
-          Enabled: true
-          Name: p54
-          Queue Size: 100
-          Topic: /mobile_base/sensors/sonars/p54
-          Value: true
-        - Alpha: 0.5
-          Buffer Length: 1
-          Class: rviz/Range
-          Color: 255; 255; 255
-          Enabled: true
-          Name: p72
-          Queue Size: 100
-          Topic: /mobile_base/sensors/sonars/p72
-          Value: true
-        - Alpha: 0.5
-          Buffer Length: 1
-          Class: rviz/Range
-          Color: 255; 255; 255
-          Enabled: true
-          Name: p90
-          Queue Size: 100
-          Topic: /mobile_base/sensors/sonars/p90
-          Value: true
-      Enabled: false
-      Name: Sonars
-    - Class: rviz/Group
-      Displays:
-        - Alpha: 0.5
-          Buffer Length: 1
-          Class: rviz/Range
-          Color: 255; 255; 255
-          Enabled: true
-          Name: 155 left
-          Queue Size: 100
-          Topic: /mobile_base/sensors/infrared/l155
-          Value: true
-        - Alpha: 0.5
-          Buffer Length: 1
-          Class: rviz/Range
-          Color: 255; 255; 255
-          Enabled: true
-          Name: 180 left
-          Queue Size: 100
-          Topic: /mobile_base/sensors/infrared/l180
-          Value: true
-        - Alpha: 0.5
-          Buffer Length: 1
-          Class: rviz/Range
-          Color: 255; 255; 255
-          Enabled: true
-          Name: 180 right
-          Queue Size: 100
-          Topic: /mobile_base/sensors/infrared/r180
-          Value: true
-        - Alpha: 0.5
-          Buffer Length: 1
-          Class: rviz/Range
-          Color: 255; 255; 255
-          Enabled: true
-          Name: 155 right
-          Queue Size: 100
-          Topic: /mobile_base/sensors/infrared/r155
-          Value: true
-      Enabled: false
-      Name: IR sensors
-    - Alpha: 0.7
-      Class: rviz/Map
-      Color Scheme: map
-      Draw Behind: false
-      Enabled: true
-      Name: Map
-      Topic: /map
-      Value: true
-    - Class: rviz/Group
-      Displays:
-        - Alpha: 0.8
-          Class: rviz/Map
-          Color Scheme: costmap
-          Draw Behind: false
-          Enabled: true
-          Name: Costmap
-          Topic: /move_base/local_costmap/costmap
-          Value: true
-        - Alpha: 1
-          Buffer Length: 1
-          Class: rviz/Path
-          Color: 0; 12; 255
-          Enabled: true
-          Name: Planner
-          Topic: /move_base/TrajectoryPlannerROS/local_plan
-          Value: true
-      Enabled: true
-      Name: Local Map
-    - Class: rviz/Group
-      Displays:
-        - Alpha: 0.4
-          Class: rviz/Map
-          Color Scheme: costmap
-          Draw Behind: true
-          Enabled: true
-          Name: Costmap
-          Topic: /move_base/global_costmap/costmap
-          Value: true
-        - Alpha: 1
-          Buffer Length: 1
-          Class: rviz/Path
-          Color: 255; 0; 0
-          Enabled: true
-          Name: Planner
-          Topic: /move_base/TrajectoryPlannerROS/global_plan
-          Value: true
-      Enabled: true
-      Name: Global Map
     - Alpha: 1
-      Axes Length: 0.6
-      Axes Radius: 0.05
-      Class: rviz/Pose
-      Color: 255; 25; 0
-      Enabled: true
-      Head Length: 0.3
-      Head Radius: 0.1
-      Name: Pose (thorp_bringup)
-      Shaft Length: 1
-      Shaft Radius: 0.05
-      Shape: Axes
-      Topic: /goal_pose
-      Value: true
-    - Alpha: 1
-      Axes Length: 1
-      Axes Radius: 0.1
-      Class: rviz/Pose
-      Color: 255; 25; 0
-      Enabled: true
-      Head Length: 0.2
-      Head Radius: 0.1
-      Name: Pose (move_base)
-      Shaft Length: 1
-      Shaft Radius: 0.05
-      Shape: Arrow
-      Topic: /move_base/current_goal
-      Value: true
-    - Arrow Length: 0.2
+      Auto Size:
+        Auto Size Factor: 1
+        Value: true
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/DepthCloud
+      Color: 255; 255; 255
+      Color Image Topic: ""
+      Color Transformer: RGB8
+      Color Transport Hint: raw
+      Decay Time: 0
+      Depth Map Topic: /senz3d/depth/image_raw
+      Depth Map Transport Hint: raw
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: DepthCloud
+      Occlusion Compensation:
+        Occlusion Time-Out: 30
+        Value: false
+      Position Transformer: XYZ
+      Queue Size: 5
+      Selectable: true
+      Size (Pixels): 3
+      Style: Flat Squares
+      Topic Filter: true
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
+    - Arrow Length: 0.3
       Class: rviz/PoseArray
-      Color: 0; 192; 0
+      Color: 0; 0; 255
       Enabled: true
-      Name: ParticleCloud
-      Topic: /particlecloud
+      Name: Blocks Poses
+      Topic: /turtlebot_blocks
       Value: true
-    - Alpha: 1
-      Buffer Length: 1
-      Class: rviz/Path
-      Color: 25; 255; 0
+    - Arrow Length: 0.3
+      Class: rviz/PoseArray
+      Color: 255; 25; 0
       Enabled: true
-      Name: Path (global)
-      Topic: /move_base/NavfnROS/plan
-      Value: true
-    - Alpha: 1
-      Buffer Length: 1
-      Class: rviz/Path
-      Color: 255; 230; 117
-      Enabled: true
-      Name: Path (local)
-      Topic: /move_base/TrajectoryPlannerROS/local_plan
+      Name: Pick & Place Poses
+      Topic: /pick_and_place
       Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
@@ -1404,98 +1113,91 @@ Visualization Manager:
       Max Intensity: 4096
       Min Color: 0; 0; 0
       Min Intensity: 0
-      Name: PointCloud2
+      Name: Blocks PointCloud
       Position Transformer: XYZ
       Queue Size: 10
       Selectable: true
       Size (Pixels): 3
       Size (m): 0.01
       Style: Flat Squares
-      Topic: /senz3d/depth/points
+      Topic: /block_detection_action_server/block_output
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
-    - Angle Tolerance: 0.1
-      Class: rviz/Odometry
-      Color: 255; 25; 0
+    - Class: rviz/InteractiveMarkers
+      Enable Transparency: true
       Enabled: true
-      Keep: 100
-      Length: 1
-      Name: Odometry
-      Position Tolerance: 0.1
-      Topic: /icp_odom
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /move_base/EBandPlannerROS/eband_visualization_array
-      Name: EBand boubles
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /table_marker
-      Name: MarkerArray (tables)
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /column_marker
-      Name: MarkerArray (columns)
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /wall_marker
-      Name: MarkerArray (walls)
-      Namespaces:
-        {}
-      Queue Size: 100
+      Name: InteractiveMarkers
+      Show Axes: true
+      Show Descriptions: true
+      Show Visual Aids: true
+      Update Topic: /block_controls/update
       Value: true
     - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: goal_cost
-      Class: rviz/PointCloud2
-      Color: 255; 255; 255
-      Color Transformer: Intensity
-      Decay Time: 0
-      Enabled: false
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 107
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: Cost Cloud
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.06
-      Style: Flat Squares
-      Topic: /move_base/TrajectoryPlannerROS/cost_cloud
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: false
-    - Class: rviz/Image
+      Axes Length: 0.7
+      Axes Radius: 0.008
+      Class: rviz/Pose
+      Color: 255; 25; 0
       Enabled: true
-      Image Topic: /senz3d/rgb/image_color
-      Max Value: 1
-      Median window: 5
-      Min Value: 0
-      Name: Image
-      Normalize Range: true
-      Queue Size: 2
-      Transport Hint: raw
+      Head Length: 0.3
+      Head Radius: 0.1
+      Name: Pose
+      Shaft Length: 1
+      Shaft Radius: 0.05
+      Shape: Axes
+      Topic: /target_pose
+      Value: true
+    - Class: rviz/TF
+      Enabled: false
+      Frame Timeout: 15
+      Frames:
+        All Enabled: false
+      Marker Scale: 1
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+      Tree:
+        {}
+      Update Interval: 0
+      Value: false
+    - Alpha: 1
+      Axes Length: 1
+      Axes Radius: 0.1
+      Class: rviz/Pose
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.3
+      Head Radius: 0.1
+      Name: Pick/Place Pose
+      Shaft Length: 1
+      Shaft Radius: 0.05
+      Shape: Arrow
+      Topic: ""
+      Value: true
+    - Alpha: 0.7
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: true
+      Name: Map
+      Topic: /map
+      Value: true
+    - Alpha: 0.3
+      Class: rviz/Map
+      Color Scheme: costmap
+      Draw Behind: true
+      Enabled: true
+      Name: Global Costmap
+      Topic: /move_base/global_costmap/costmap
+      Value: true
+    - Alpha: 0.6
+      Class: rviz/Map
+      Color Scheme: costmap
+      Draw Behind: false
+      Enabled: true
+      Name: Local Costmap
+      Topic: /move_base/local_costmap/costmap
       Value: true
   Enabled: true
   Global Options:
@@ -1504,55 +1206,50 @@ Visualization Manager:
     Frame Rate: 30
   Name: root
   Tools:
-    - Class: rviz/MoveCamera
     - Class: rviz/Interact
       Hide Inactive Objects: true
+    - Class: rviz/MoveCamera
     - Class: rviz/Select
-    - Class: rviz/SetInitialPose
-      Topic: /initialpose
     - Class: rviz/SetGoal
       Topic: /move_base_simple/goal
-    - Class: rviz/Measure
+    - Class: rviz/SetInitialPose
+      Topic: /initialpose
   Value: true
   Views:
     Current:
-      Class: rviz/Orbit
-      Distance: 3.42133
+      Class: rviz/XYOrbit
+      Distance: 3.43217
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.161529
-        Y: -0.0473519
-        Z: -0.0458223
+        X: 0.540599
+        Y: -1.07103
+        Z: 8.08975e-07
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.869796
-      Target Frame: <Fixed Frame>
-      Value: Orbit (rviz)
-      Yaw: 1.44503
+      Pitch: 0.8348
+      Target Frame: base_link
+      Value: XYOrbit (rviz)
+      Yaw: 4.60811
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 990
+  Height: 953
+  Help:
+    collapsed: false
   Hide Left Dock: false
   Hide Right Dock: false
-  Image:
-    collapsed: false
   Motion Planning:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd00000004000000000000023b0000038efc0200000007fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006901000005fb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003300000171000000d801000005fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e006701000001a70000015f0000015601000005fb0000000a0049006d0061006700650100000309000000b80000001d01000005000000010000010b0000038bfc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a0056006900650077007300000000320000038b000000ab01000005fb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004a00000003efc0100000002fb0000000800540069006d00650000000000000004a00000027401000005fb0000000800540069006d00650100000000000004500000000000000000000005420000038e00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
-  Selection:
-    collapsed: false
-  Time:
-    collapsed: false
+  QMainWindow State: 000000ff00000000fd00000001000000000000022a00000369fc0200000007fb000000100044006900730070006c0061007900730100000033000001ec000000d801000005fb0000000800480065006c00700000000342000000bb0000007101000005fb0000000a0056006900650077007300000003b0000000b0000000ab01000005fb0000000c00430061006d00650072006100000002ff000001610000000000000000fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e006701000002220000017a0000017101000005fb0000000a0049006d006100670065000000030a000000b70000000000000000fb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000002f1000000ab00000069010000050000045f0000036900000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Tool Properties:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1920
+  Width: 1676
   X: 0
   Y: 35
