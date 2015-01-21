@@ -24,7 +24,7 @@
   </node>
   
   <node name="interactive_manipulation_action_server" pkg="turtlebot_arm_block_manipulation" type="interactive_manipulation_action_server" output="screen">
-    <param name="bump_size" value="0.025"/>
+    <param name="bump_size" value="0.01"/>
   </node>
 
 
