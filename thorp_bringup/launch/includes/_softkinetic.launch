@@ -16,7 +16,7 @@
     <param name="rgb_calibration_file"  type="string" value="$(find softkinetic_camera)/resources/senz3d.yaml"/>
     <param name="rgb_optical_frame"     type="string" value="/senz3d_camera_rgb_optical_frame"/>
     <param name="color_compression"     type="string" value="MJPEG"/>
-    <param name="color_frame_format"    type="string" value="WXGA"/>
+    <param name="color_frame_format"    type="string" value="VGA"/>
     <param name="color_frame_rate"      type="int"    value="25"/>
 
 	<!-- Cloud filtering -->
