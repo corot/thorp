@@ -4,8 +4,8 @@
   </include>
     
   <!-- Gazebo model spawner -->
-  <node name="spawn_turtlebot_model" pkg="gazebo_ros" type="spawn_model"
-        args="$(optenv ROBOT_INITIAL_POSE) -unpause -urdf -param robot_description -model mobile_base"/>
+  <node name="spawn_turtlebot_model" pkg="gazebo_ros" type="spawn_model" output="screen"
+        args="$(optenv ROBOT_INITIAL_POSE) -urdf -param robot_description -model thorp"/>
 
   <!-- Fake laser from Kinect -->
   <node pkg="nodelet" type="nodelet" name="laserscan_nodelet_manager" args="manager"/>
