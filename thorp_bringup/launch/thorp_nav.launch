@@ -41,16 +41,16 @@
   </include>
 
   <!--Overwrite default Turtlebot 2 description with Thorp's one -->
-  <include file="$(find thorp_bringup)/launch/includes/_state_publisher.launch"/>
+  <include file="$(find thorp_bringup)/launch/includes/state_publisher.launch.xml"/>
 
   <!--  ************** Additional sensors *************  -->
-  <include file="$(find thorp_bringup)/launch/includes/_virt_sensor.launch"/>
+  <include file="$(find thorp_bringup)/launch/includes/virt_sensor.launch.xml"/>
 
   <!--  *********** Thorp specific hardware ***********  -->
   <include file="$(find thorp_boards)/launch/arduino.launch"/>
 
   <!--  ***** Kobuki mobile base safety controller ****  -->
-  <include file="$(find thorp_bringup)/launch/includes/_safety_ctrl.launch"/>
+  <include file="$(find thorp_bringup)/launch/includes/safety_ctrl.launch.xml"/>
 
   <!-- Reconfigure command velocity multiplexer to fit thorp_bringup needs. Just set the parameter doesn't work
        if we start the thorp_bringup rapp with app manager; we must explicitly call the reconfigure service -->
@@ -58,24 +58,18 @@
             '{config:{strs:[[yaml_cfg_file,$(find thorp_bringup)/param/vel_multiplexer.yaml]]}}'"/>
 
   <!--  ******** Kobuki auto-docking controller *******  -->
-  <include file="$(find thorp_bringup)/launch/includes/_autodock.launch"/>
-
-  <!--  ************* Navigation manager **************
-  <include file="$(find thorp_bringup)/launch/includes/_master_ctrl.launch">
-    <arg name="debug_mode" value="true"/>
-  </include>  -->
+  <include file="$(find thorp_bringup)/launch/includes/autodock.launch.xml"/>
 
   <!--  ************** Rosnav move base ***************  -->
-  <include file="$(find thorp_bringup)/launch/includes/_move_base.launch"/>
+  <include file="$(find thorp_bringup)/launch/includes/move_base.launch.xml"/>
 
   <!--  ****** Geometric and semantic map servers *****  -->
   <node name="map_server" pkg="map_server" type="map_server" args="$(find thorp_bringup)/resources/maps/$(arg map_name).yaml">
     <param name="frame_id" value="/map"/>
   </node>
-  <!-- <include file="$(find thorp_bringup)/launch/includes/_annotations_pub.launch"/> -->
 
   <!--  ******************** Amcl *********************  -->
-  <include file="$(find thorp_bringup)/launch/includes/_amcl.launch">
+  <include file="$(find thorp_bringup)/launch/includes/amcl.launch.xml">
     <arg name="scan_topic" value="scan"/>
     <arg name="initial_pose_x" value="$(arg initial_pose_x)"/>
     <arg name="initial_pose_y" value="$(arg initial_pose_y)"/>

@@ -21,7 +21,6 @@
   <run_depend>move_base_msgs</run_depend>
   <run_depend>kobuki_msgs</run_depend>
   <run_depend>sensor_msgs</run_depend>
-  <run_depend>stage_ros</run_depend>
   <run_depend>navigation</run_depend>
   <run_depend>range_sensor_layer</run_depend>
   <run_depend>kobuki_auto_docking</run_depend>

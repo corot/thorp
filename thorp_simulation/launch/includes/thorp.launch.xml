@@ -1,5 +1,5 @@
 <launch>
-  <include file="$(find thorp_bringup)/launch/includes/_state_publisher.launch">
+  <include file="$(find thorp_bringup)/launch/includes/state_publisher.launch.xml">
     <arg name="simulation" value="true"/>
   </include>
     
@@ -19,7 +19,7 @@
   </node>
 
   <!-- Read the configuration and load controllers for the arm and gripper -->
-  <rosparam file="$(find thorp_gazebo)/param/arm_control.yaml" command="load"/>
+  <rosparam file="$(find thorp_simulation)/param/arm_control.yaml" command="load"/>
   <node name="controller_spawner" pkg="controller_manager" type="spawner" output="screen"
         args="--timeout 120 joint_state_controller gripper_joint arm_controller"/>
 

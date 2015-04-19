@@ -6,6 +6,6 @@
 
 <launch>
   <!--  ***************** Visualisation *****************  -->
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_navigation.rviz"/>
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_all.rviz"/>
   <include file="$(find turtlebot_dashboard)/launch/turtlebot_dashboard.launch"/>
 </launch>

@@ -14,17 +14,17 @@
   </include>
 
   <!--Overwrite default Turtlebot 2 description with Thorp's one -->
-  <include file="$(find thorp_bringup)/launch/includes/_state_publisher.launch"/>
+  <include file="$(find thorp_bringup)/launch/includes/state_publisher.launch.xml"/>
 
   <!--  *********** Thorp specific hardware ***********  -->
   <include file="$(find thorp_boards)/launch/arduino.launch"/>
 
   <!--  ********** Kobuki mobile base extras **********  -->
-  <include file="$(find thorp_bringup)/launch/includes/_safety_ctrl.launch"/>
+  <include file="$(find thorp_bringup)/launch/includes/safety_ctrl.launch.xml"/>
   <param name="cmd_vel_mux/yaml_cfg_file" value="$(find thorp_bringup)/param/vel_multiplexer.yaml"/>
 
   <!--  ************** Rosnav move base ***************  -->
-  <include file="$(find thorp_bringup)/launch/includes/_move_base.launch"/>
+  <include file="$(find thorp_bringup)/launch/includes/move_base.launch.xml"/>
   
   <!--
     Tweaks to adapt the move base node to local navigation just with sonars and bumpers:

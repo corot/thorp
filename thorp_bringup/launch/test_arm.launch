@@ -1,15 +1,15 @@
 <launch>
   <arg name="simulation" default="false"/>
 
-  <include file="$(find thorp_bringup)/launch/includes/_state_publisher.launch">
+  <include file="$(find thorp_bringup)/launch/includes/state_publisher.launch.xml">
     <arg name="simulation" value="$(arg simulation)"/>
   </include>
 
-  <include file="$(find thorp_bringup)/launch/includes/_arm.launch">
+  <include file="$(find thorp_bringup)/launch/includes/arm.launch.xml">
     <arg name="simulation" value="$(arg simulation)"/>
   </include>
 
-  <include file="$(find thorp_bringup)/launch/includes/_softkinetic.launch"/>
+  <include file="$(find thorp_bringup)/launch/includes/softkinetic.launch.xml"/>
 
   <node name="fake_joint_pub" pkg="thorp_bringup" type="fake_joint_pub.py"/>
 
