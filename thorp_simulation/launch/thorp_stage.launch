@@ -32,7 +32,7 @@
         Args:
           -g : run in headless mode.
   --> 
-  <node pkg="stage_ros" type="stageros" name="stageros" args="$(find thorp_bringup)/resources/maps/stage/$(arg map_name).world">
+  <node pkg="stage_ros" type="stageros" name="stageros" args="$(find thorp_simulation)/worlds/stage/$(arg map_name).world">
     <param name="base_watchdog_timeout" value="0.5"/>
     <remap from="odom" to="odom"/>
     <remap from="base_pose_ground_truth" to="base_pose_ground_truth"/>
@@ -53,11 +53,6 @@
   <node pkg="nodelet" type="nodelet" name="cmd_vel_mux" args="load yocs_cmd_vel_mux/CmdVelMuxNodelet mobile_base_nodelet_manager">
     <param name="yaml_cfg_file" value="$(find thorp_bringup)/param/vel_multiplexer.yaml"/>
   </node>
-  
-  <!--  ************* Navigation manager **************
-  <include file="$(find thorp_bringup)/launch/includes/_master_ctrl.launch">
-    <arg name="debug_mode" value="true"/>
-  </include>  -->
 
   <!--  ************** Rosnav move base ***************  -->
   <include file="$(find thorp_bringup)/launch/includes/_move_base.launch"/>
@@ -69,7 +64,6 @@
   <node name="map_server" pkg="map_server" type="map_server" args="$(find thorp_bringup)/resources/maps/$(arg map_name).yaml">
     <param name="frame_id" value="/map"/>
   </node>
-  <!-- <include file="$(find thorp_bringup)/launch/includes/_annotations_pub.launch"/> -->
 
   <!--  ******************** Amcl *********************  -->
   <include file="$(find thorp_bringup)/launch/includes/_amcl.launch">

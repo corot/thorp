@@ -10,7 +10,7 @@
 
   <!--  ***** Simulated mobile manipulator Thorp ******  -->
 
-  <include file="$(find thorp_gazebo)/launch/thorp.launch"/>
+  <include file="$(find thorp_simulation)/launch/thorp_gazebo.launch"/>
 
 
   <!--  *********** Block manipulation demo ***********  -->

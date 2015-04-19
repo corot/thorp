@@ -22,11 +22,11 @@
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="use_sim_time" value="true"/>
     <arg name="debug" value="false"/>
-    <arg name="world_name" value="$(find thorp_gazebo)/worlds/$(arg map_name).world"/>
+    <arg name="world_name" value="$(find thorp_simulation)/worlds/gazebo/$(arg map_name).world"/>
   </include>
 
   <!--  *************** Simulated Robot ***************  -->
-  <include file="$(find thorp_gazebo)/launch/includes/thorp.launch.xml"/>
+  <include file="$(find thorp_simulation)/launch/includes/thorp.launch.xml"/>
 
   <!--  ********** Kobuki mobile base extras **********  -->
   <include file="$(find thorp_bringup)/launch/includes/_safety_ctrl.launch"/>
