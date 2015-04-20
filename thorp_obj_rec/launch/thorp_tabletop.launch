@@ -1,0 +1,15 @@
+<launch>
+  <!--  ***** Thorp model and manipulation camera ****  -->
+  <include file="$(find thorp_bringup)/launch/includes/model.launch.xml"/>
+  <include file="$(find thorp_bringup)/launch/includes/softkinetic.launch.xml"/>
+
+  <!-- Run Rviz and load the default config to see recognized tabletop objects -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_obj_rec.rviz"/>
+
+  <!-- **************** ORK tabletop *****************  -->
+  <include file="$(find thorp_obj_rec)/launch/includes/tabletop.launch.xml">
+    <arg name="recognition_config_file" value="$(find thorp_obj_rec)/config/tabletop/thorp.detection.object.ros.ork"/>
+    <arg name="robot_frame"             value="base_footprint"/>
+    <arg name="sensor_frame"            value="senz3d_camera_rgb_optical_frame"/>
+  </include>
+</launch>
