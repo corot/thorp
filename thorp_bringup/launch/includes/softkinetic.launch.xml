@@ -8,16 +8,16 @@
 
 	<!-- Depth camera configuration -->
     <param name="depth_optical_frame"   type="string" value="/senz3d_camera_depth_optical_frame"/>
-    <param name="depth_mode"            type="string" value="close"/>
-    <param name="depth_frame_format"    type="string" value="QQVGA"/>
-    <param name="depth_frame_rate"      type="int"    value="25"/>
+    <param name="depth_mode"            type="string" value="close"/>  <!-- close, long -->
+    <param name="depth_frame_format"    type="string" value="QVGA"/>  <!-- ignored -->
+    <param name="depth_frame_rate"      type="int"    value="25"/>  <!-- 25, 30, 50, 60 -->
 
 	<!-- Color camera configuration -->
     <param name="rgb_calibration_file"  type="string" value="$(find softkinetic_camera)/resources/senz3d.yaml"/>
     <param name="rgb_optical_frame"     type="string" value="/senz3d_camera_rgb_optical_frame"/>
-    <param name="color_compression"     type="string" value="MJPEG"/>
-    <param name="color_frame_format"    type="string" value="VGA"/>
-    <param name="color_frame_rate"      type="int"    value="25"/>
+    <param name="color_compression"     type="string" value="MJPEG"/>  <!-- YUY2, MJPEG -->
+    <param name="color_frame_format"    type="string" value="VGA"/>  <!-- QQVGA, QVGA, VGA, WXGA, NHD -->
+    <param name="color_frame_rate"      type="int"    value="25"/>  <!-- 25, 30 -->
 
 	<!-- Cloud filtering -->
     <param name="confidence_threshold"  type="int"    value="200"/>
