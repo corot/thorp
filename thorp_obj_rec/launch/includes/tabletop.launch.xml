@@ -3,14 +3,17 @@
   <arg unless="$(arg debug)" name="launch_prefix" value=""/>
   <arg     if="$(arg debug)" name="launch_prefix" value="gdb --ex run --args"/>
   
-  <arg name="recognition_config_file"
-       default="$(find thorp_obj_rec)/config/tabletop/detection.object.ros.ork"/>
+  <arg name="as_server"    default="true"/>
+  <arg name="config_file"  default="$(find thorp_obj_rec)/config/tabletop/detection.object.ros.ork"/>
   <arg name="robot_frame"  default="base_footprint"/>
   <arg name="sensor_frame" default="senz3d_camera_rgb_optical_frame"/>
 
-  <node name="object_recognition_server" pkg="object_recognition_ros" type="server" 
-        args="--node_name tabletop_object_recognition_server -c $(arg recognition_config_file)"
-        launch-prefix="$(arg launch_prefix)">
+  <node if="$(arg as_server)" name="object_recognition_server" pkg="object_recognition_ros" type="server" 
+        args="--node_name tabletop_object_recognition_server -c $(arg config_file)" launch-prefix="$(arg launch_prefix)">
+  </node>
+
+  <node unless="$(arg as_server)" name="recognize_tabletop_objects" pkg="object_recognition_core" type="detection" 
+        args="-c $(arg config_file)" launch-prefix="$(arg launch_prefix)">
   </node>
 
   <param name="tabletop_object_recognition/robot_frame"       value="$(arg robot_frame)"/>
