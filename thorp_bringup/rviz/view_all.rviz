@@ -481,6 +481,10 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
+          senz3d_camera_gazebo_optical_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
           senz3d_camera_link:
             Alpha: 1
             Show Axes: false
@@ -517,7 +521,7 @@ Visualization Manager:
         Loop Animation: false
         Robot Alpha: 0.5
         Show Robot Collision: false
-        Show Robot Visual: true
+        Show Robot Visual: false
         Show Trail: false
         State Display Time: 0.05 s
         Trajectory Topic: /move_group/display_planned_path
@@ -535,7 +539,7 @@ Visualization Manager:
         Interactive Marker Size: 0
         Joint Violation Color: 255; 0; 255
         Planning Group: arm
-        Query Goal State: true
+        Query Goal State: false
         Query Start State: false
         Show Workspace: false
         Start State Alpha: 1
@@ -963,6 +967,10 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
+          senz3d_camera_gazebo_optical_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
           senz3d_camera_link:
             Alpha: 1
             Show Axes: false
@@ -1218,22 +1226,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 3.43217
+      Distance: 1.59085
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.540599
-        Y: -1.07103
-        Z: 8.08975e-07
+        X: -0.39796
+        Y: 0.433935
+        Z: 7.79173e-07
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.8348
+      Pitch: 0.2848
       Target Frame: base_link
       Value: XYOrbit (rviz)
-      Yaw: 4.60811
+      Yaw: 5.84811
     Saved: ~
 Window Geometry:
   Displays:

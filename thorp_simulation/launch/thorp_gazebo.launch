@@ -29,6 +29,7 @@
   <include file="$(find thorp_simulation)/launch/includes/thorp.launch.xml"/>
 
   <!--  ********** Kobuki mobile base extras **********  -->
+<<<<<<< HEAD
   <include file="$(find thorp_bringup)/launch/includes/safety_ctrl.launch.xml"/>
 
   <!-- Velocity commands multiplexer -->
@@ -53,6 +54,33 @@
 
   <!--  ******************** Amcl *********************  -->
   <include file="$(find thorp_bringup)/launch/includes/amcl.launch.xml">
+=======
+  <include file="$(find thorp_bringup)/launch/includes/_safety_ctrl.launch"/>
+
+  <!-- Velocity commands multiplexer -->
+  <node pkg="nodelet" type="nodelet" name="mobile_base_nodelet_manager" args="manager"/>
+  <node pkg="nodelet" type="nodelet" name="cmd_vel_mux" args="load yocs_cmd_vel_mux/CmdVelMuxNodelet mobile_base_nodelet_manager">
+    <param name="yaml_cfg_file" value="$(find thorp_bringup)/param/vel_multiplexer.yaml"/>
+  </node>
+
+  <!-- Bumper/cliff to pointcloud (not working, as it needs sensors/core messages) -->
+  <include file="$(find turtlebot_bringup)/launch/includes/kobuki/bumper2pc.launch.xml"/>
+
+  <!--  ************** Additional sensors *************  -->
+  <include file="$(find thorp_bringup)/launch/includes/_virt_sensor.launch"/>
+
+  <!--  ************** Rosnav move base ***************  -->
+  <include file="$(find thorp_bringup)/launch/includes/_move_base.launch"/>
+
+  <!--  ****** Geometric and semantic map servers *****  -->
+  <node name="map_server" pkg="map_server" type="map_server" args="$(find thorp_bringup)/resources/maps/$(arg map_name).yaml">
+    <param name="frame_id" value="/map"/>
+  </node>
+  <!-- <include file="$(find thorp_bringup)/launch/includes/_annotations_pub.launch"/> -->
+
+  <!--  ******************** Amcl *********************  -->
+  <include file="$(find thorp_bringup)/launch/includes/_amcl.launch">
+>>>>>>> branch 'master' of https://github.com/corot/thorp.git
     <arg name="scan_topic" value="scan"/>
     <arg name="initial_pose_x" value="$(arg initial_pose_x)"/>
     <arg name="initial_pose_y" value="$(arg initial_pose_y)"/>

@@ -1,5 +1,9 @@
 <launch>
+<<<<<<< HEAD
   <include file="$(find thorp_bringup)/launch/includes/state_publisher.launch.xml">
+=======
+  <include file="$(find thorp_bringup)/launch/includes/_state_publisher.launch">
+>>>>>>> branch 'master' of https://github.com/corot/thorp.git
     <arg name="simulation" value="true"/>
   </include>
     

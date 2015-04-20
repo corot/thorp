@@ -6,14 +6,21 @@ Panels:
       Expanded:
         - /DepthCloud1/Auto Size1
         - /TF1/Frames1
-      Splitter Ratio: 0.40146
-    Tree Height: 301
+        - /Camera1/Visibility1
+      Splitter Ratio: 0.609137
+    Tree Height: 384
   - Class: rviz/Help
     Name: Help
   - Class: rviz/Views
     Expanded:
       - /Current View1
     Name: Views
+    Splitter Ratio: 0.5
+  - Class: rviz/Tool Properties
+    Expanded:
+      - /2D Nav Goal1
+      - /2D Pose Estimate1
+    Name: Tool Properties
     Splitter Ratio: 0.5
 Visualization Manager:
   Class: ""
@@ -36,6 +43,22 @@ Visualization Manager:
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
       Value: true
+    - Alpha: 1
+      Class: rviz/RobotModel
+      Collision Enabled: false
+      Enabled: false
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+      Name: RobotModel
+      Robot Description: robot_description
+      TF Prefix: ""
+      Update Interval: 0
+      Value: false
+      Visual Enabled: true
     - Class: moveit_rviz_plugin/MotionPlanning
       Enabled: true
       Move Group Namespace: ""
@@ -1153,10 +1176,78 @@ Visualization Manager:
       Shape: Arrow
       Topic: ""
       Value: true
+    - Alpha: 0.7
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: true
+      Name: Map
+      Topic: /map
+      Value: true
+    - Alpha: 0.3
+      Class: rviz/Map
+      Color Scheme: costmap
+      Draw Behind: true
+      Enabled: true
+      Name: Global Costmap
+      Topic: /move_base/global_costmap/costmap
+      Value: true
+    - Alpha: 0.6
+      Class: rviz/Map
+      Color Scheme: costmap
+      Draw Behind: false
+      Enabled: true
+      Name: Local Costmap
+      Topic: /move_base/local_costmap/costmap
+      Value: true
+    - Class: rviz/Camera
+      Enabled: false
+      Image Rendering: background and overlay
+      Image Topic: /senz3d/rgb/image_color
+      Name: Camera
+      Overlay Alpha: 0.5
+      Queue Size: 2
+      Transport Hint: raw
+      Value: false
+      Visibility:
+        "": true
+        Blocks PointCloud: false
+        Blocks Poses: false
+        DepthCloud: true
+        Global Costmap: false
+        Grid: true
+        InteractiveMarkers: false
+        Local Costmap: false
+        Map: false
+        MotionPlanning: true
+        Pick & Place Poses: false
+        Pick/Place Pose: false
+        PointCloud2: true
+        Pose: false
+        RobotModel: true
+        TF: true
+        Value: true
+      Zoom Factor: 1
+    - Class: object_recognition_ros/OrkObject
+      Confidence: true
+      Enabled: true
+      ID: false
+      Name: OrkObject
+      Topic: ""
+      Value: true
+    - Bounding Box: false
+      Class: object_recognition_ros/OrkTable
+      Color: 0; 255; 255
+      Enabled: true
+      Hull: true
+      Name: OrkTable
+      Top: true
+      Topic: ""
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: base_link
+    Fixed Frame: map
     Frame Rate: 30
   Name: root
   Tools:
@@ -1164,40 +1255,48 @@ Visualization Manager:
       Hide Inactive Objects: true
     - Class: rviz/MoveCamera
     - Class: rviz/Select
+    - Class: rviz/SetGoal
+      Topic: /move_base_simple/goal
+    - Class: rviz/SetInitialPose
+      Topic: /initialpose
   Value: true
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 3.66467
+      Distance: 1.68539
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.432322
-        Y: 0.135766
-        Z: 8.08975e-07
+        X: 0.532186
+        Y: 0.0953242
+        Z: 9.73013e-07
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.494797
+      Pitch: 0.534796
       Target Frame: base_link
       Value: XYOrbit (rviz)
-      Yaw: 5.43811
+      Yaw: 4.8663
     Saved: ~
 Window Geometry:
+  Camera:
+    collapsed: false
   Displays:
     collapsed: false
-  Height: 953
+  Height: 990
   Help:
     collapsed: false
   Hide Left Dock: false
   Hide Right Dock: false
   Motion Planning:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd00000001000000000000023000000369fc0200000006fb000000100044006900730070006c0061007900730100000033000001be000000d801000005fb0000000800480065006c00700000000342000000bb0000007101000005fb0000000a0056006900650077007300000003b0000000b0000000ab01000005fb0000000c00430061006d00650072006100000002ff000001610000000000000000fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e006701000001f4000001a80000015601000005fb0000000a0049006d006100670065000000030a000000b70000000000000000000004590000036900000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000001000000000000022a0000038efc0200000008fb000000100044006900730070006c006100790073010000003300000211000000d801000005fb0000000800480065006c00700000000342000000bb0000007101000005fb0000000a0056006900650077007300000003b0000000b0000000ab01000005fb0000000c00430061006d00650072006100000002ff000001610000001d01000005fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e006701000002470000017a0000017101000005fb0000000a0049006d006100670065000000030a000000b70000000000000000fb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000002f1000000ab0000006901000005fb0000000c00430061006d00650072006102fffffe13000002e7000003b1000002c8000005530000038e00000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Tool Properties:
+    collapsed: false
   Views:
     collapsed: false
-  Width: 1676
+  Width: 1920
   X: 0
   Y: 35
