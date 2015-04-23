@@ -8,6 +8,9 @@
   <!-- Run Rviz and load the default config to see recognized tabletop objects -->
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_obj_rec.rviz"/>
 
+  <!-- Run dynamic reconfiguration to tweak the parameters of the camera filters -->
+  <node name="dyn_reconfigure" pkg="rqt_reconfigure" type="rqt_reconfigure"/>
+
   <!-- **************** ORK tabletop *****************  -->
   <include file="$(find thorp_obj_rec)/launch/includes/tabletop.launch.xml">
     <arg name="as_server"    value="$(arg as_server)"/>
