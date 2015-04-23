@@ -7,8 +7,8 @@ Panels:
         - /DepthCloud1/Auto Size1
         - /TF1/Frames1
         - /Camera1/Visibility1
-      Splitter Ratio: 0.609137
-    Tree Height: 765
+      Splitter Ratio: 0.766234
+    Tree Height: 393
   - Class: rviz/Help
     Name: Help
   - Class: rviz/Views
@@ -459,6 +459,10 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+        senz3d_camera_gazebo_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         senz3d_camera_link:
           Alpha: 1
           Show Axes: false
@@ -589,10 +593,12 @@ Visualization Manager:
       Transport Hint: raw
       Value: false
       Visibility:
+        "": true
         DepthCloud: true
         Grid: true
-        OrkObject: true
-        OrkTable: true
+        ORK Clusters: true
+        ORK Objects: true
+        ORK Tables: true
         PointCloud2: true
         RobotModel: true
         TF: true
@@ -602,7 +608,7 @@ Visualization Manager:
       Confidence: true
       Enabled: true
       ID: false
-      Name: OrkObject
+      Name: ORK Objects
       Topic: /recognized_object_array
       Value: true
     - Bounding Box: false
@@ -610,10 +616,54 @@ Visualization Manager:
       Color: 0; 255; 255
       Enabled: true
       Hull: true
-      Name: OrkTable
+      Name: ORK Tables
       Top: true
       Topic: /table_array
       Value: true
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /tabletop/clusters
+      Name: ORK Clusters
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/Image
+      Enabled: true
+      Image Topic: /senz3d/rgb/image_color
+      Max Value: 1
+      Median window: 5
+      Min Value: 0
+      Name: Image Color
+      Normalize Range: true
+      Queue Size: 2
+      Transport Hint: raw
+      Value: true
+    - Class: rviz/Image
+      Enabled: true
+      Image Topic: /senz3d/depth/image_raw
+      Max Value: 1
+      Median window: 5
+      Min Value: 0
+      Name: Image Depth
+      Normalize Range: true
+      Queue Size: 2
+      Transport Hint: raw
+      Value: true
+    - Class: rviz/TF
+      Enabled: false
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+      Marker Scale: 1
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+      Tree:
+        {}
+      Update Interval: 0
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -633,22 +683,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 1.68539
+      Distance: 1.56749
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.532186
-        Y: 0.0953242
-        Z: 9.73013e-07
+        X: 0.24561
+        Y: 0.22974
+        Z: 9.77497e-07
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.314796
+      Pitch: 1.17979
       Target Frame: base_link
       Value: XYOrbit (rviz)
-      Yaw: 5.2813
+      Yaw: 0.406284
     Saved: ~
 Window Geometry:
   Camera:
@@ -660,7 +710,11 @@ Window Geometry:
     collapsed: false
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd00000001000000000000022a0000038efc0200000008fb000000100044006900730070006c00610079007301000000330000038e000000d801000005fb0000000800480065006c00700000000342000000bb0000007101000005fb0000000a0056006900650077007300000003b0000000b0000000ab01000005fb0000000c00430061006d00650072006100000002ff000001610000001d01000005fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e006701000002470000017a0000000000000000fb0000000a0049006d006100670065000000030a000000b70000000000000000fb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000002f1000000ab0000006901000005fb0000000c00430061006d00650072006102fffffe13000002e7000003b1000002c8000005530000038e00000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Image Color:
+    collapsed: false
+  Image Depth:
+    collapsed: false
+  QMainWindow State: 000000ff00000000fd0000000100000000000001400000038efc020000000afb000000100044006900730070006c00610079007301000000330000021a000000d801000005fb0000000800480065006c00700000000342000000bb0000007101000005fb0000000a0056006900650077007300000003b0000000b0000000ab01000005fb0000000c00430061006d00650072006100000002ff000001610000001d01000005fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e006701000002470000017a0000000000000000fb0000000a0049006d006100670065000000030a000000b70000000000000000fb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000002f1000000ab0000006901000005fb0000000c00430061006d00650072006102fffffe13000002e7000003b1000002c8fb000000160049006d00610067006500200043006f006c006f007201000002500000009f0000001d01000005fb000000160049006d00610067006500200044006500700074006801000002f2000000cf0000001d010000050000063d0000038e00000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Tool Properties:
     collapsed: false
   Views:
