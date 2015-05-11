@@ -10,14 +10,17 @@
 <launch>
   <!--  ****************** Turtlebot ******************  -->
   <include file="$(find turtlebot_bringup)/launch/minimal.launch">
-    <arg name="battery" value="/sys/class/power_supply/BAT1" />
+    <arg name="battery" value="/sys/class/power_supply/BAT1"/>
   </include>
 
-  <!--Overwrite default Turtlebot 2 description with Thorp's one -->
-  <include file="$(find thorp_bringup)/launch/includes/state_publisher.launch.xml"/>
+  <!-- Overwrite default Turtlebot 2 description with Thorp's one -->
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find thorp_bringup)/urdf/thorp.urdf.xacro' simulation:=false"/>
 
   <!--  *********** Thorp specific hardware ***********  -->
   <include file="$(find thorp_boards)/launch/arduino.launch"/>
+  <include file="$(find thorp_boards)/launch/opencm.launch">
+    <arg name="simulation" value="true"/> <!-- just to provide arm's joint states -->
+  </include>
 
   <!--  ********** Kobuki mobile base extras **********  -->
   <include file="$(find thorp_bringup)/launch/includes/safety_ctrl.launch.xml"/>

@@ -28,7 +28,7 @@
     <arg name="battery"   value="/sys/class/power_supply/BAT1"/>
   </include>
   <include file="$(find turtlebot_bringup)/launch/3dsensor.launch">
-    <arg name="camera"                          value="kinect"/>
+    <arg name="camera"                          value="camera"/>
     <!-- We only need RGB images and pseudo laser scan -->
     <arg name="depth_registration"              value="false"/>
     <arg name="rgb_processing"                  value="true" />
@@ -40,14 +40,17 @@
     <arg name="scan_processing"                 value="true" />
   </include>
 
-  <!--Overwrite default Turtlebot 2 description with Thorp's one -->
-  <include file="$(find thorp_bringup)/launch/includes/state_publisher.launch.xml"/>
+  <!-- Overwrite default Turtlebot 2 description with Thorp's one -->
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find thorp_bringup)/urdf/thorp.urdf.xacro' simulation:=false"/>
 
   <!--  ************** Additional sensors *************  -->
   <include file="$(find thorp_bringup)/launch/includes/virt_sensor.launch.xml"/>
 
   <!--  *********** Thorp specific hardware ***********  -->
   <include file="$(find thorp_boards)/launch/arduino.launch"/>
+  <include file="$(find thorp_boards)/launch/opencm.launch">
+    <arg name="simulation" value="true"/> <!-- just to provide arm's joint states -->
+  </include>
 
   <!--  ***** Kobuki mobile base safety controller ****  -->
   <include file="$(find thorp_bringup)/launch/includes/safety_ctrl.launch.xml"/>
