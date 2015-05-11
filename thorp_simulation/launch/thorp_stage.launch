@@ -41,7 +41,6 @@
   </node>
 
   <!--  ************** Additional sensors *************  -->
-<<<<<<< HEAD
   <include file="$(find thorp_bringup)/launch/includes/virt_sensor.launch.xml"/>
 
   <!--  ***************** Robot Model *****************  -->
@@ -68,34 +67,6 @@
 
   <!--  ******************** Amcl *********************  -->
   <include file="$(find thorp_bringup)/launch/includes/amcl.launch.xml">
-=======
-  <include file="$(find thorp_bringup)/launch/includes/_virt_sensor.launch"/>
-
-  <!--  ***************** Robot Model *****************  -->
-  <include file="$(find thorp_bringup)/launch/includes/_model.launch"/>
-
-  <!--  ********** Kobuki mobile base extras **********  -->
-  <include file="$(find thorp_bringup)/launch/includes/_safety_ctrl.launch"/>
-  <!-- velocity commands multiplexer -->
-  <node pkg="nodelet" type="nodelet" name="mobile_base_nodelet_manager" args="manager"/>
-  <node pkg="nodelet" type="nodelet" name="cmd_vel_mux" args="load yocs_cmd_vel_mux/CmdVelMuxNodelet mobile_base_nodelet_manager">
-    <param name="yaml_cfg_file" value="$(find thorp_bringup)/param/vel_multiplexer.yaml"/>
-  </node>
-
-  <!--  ************** Rosnav move base ***************  -->
-  <include file="$(find thorp_bringup)/launch/includes/_move_base.launch"/>
-  <!-- we cannot simulate sonars on stage_ros, so disable sonar layer -->
-  <param name="move_base/global_costmap/range_sensor_layer/enabled" value="false"/>
-  <param name="move_base/local_costmap/range_sensor_layer/enabled" value="false"/>
-
-  <!--  ****** Geometric and semantic map servers *****  -->
-  <node name="map_server" pkg="map_server" type="map_server" args="$(find thorp_bringup)/resources/maps/$(arg map_name).yaml">
-    <param name="frame_id" value="/map"/>
-  </node>
-
-  <!--  ******************** Amcl *********************  -->
-  <include file="$(find thorp_bringup)/launch/includes/_amcl.launch">
->>>>>>> branch 'master' of https://github.com/corot/thorp.git
     <arg name="scan_topic" value="scan"/>
     <arg name="initial_pose_x" value="$(arg initial_pose_x)"/>
     <arg name="initial_pose_y" value="$(arg initial_pose_y)"/>
