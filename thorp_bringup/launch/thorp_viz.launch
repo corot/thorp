@@ -1,11 +1,18 @@
 <!--
-  Thorp global navigation visualization:
-  - rviz view
+  Thorp visualization:
+  - rviz view...
+    - all:   full mobile manipulator
+    - nav:   global navigation
+    - manip: static manipulation
+    - perc:  perception
+    - model: robot model visualization
   - dashboard
  -->
 
 <launch>
+  <arg name="target" default="all"/>
+
   <!--  ***************** Visualisation *****************  -->
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_all.rviz"/>
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_$(arg target).rviz"/>
   <include file="$(find turtlebot_dashboard)/launch/turtlebot_dashboard.launch"/>
 </launch>

@@ -74,5 +74,5 @@
   </include>
 
   <!--  **************** Visualization ****************  -->
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_navigation.rviz"/>
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_nav.rviz"/>
 </launch>
