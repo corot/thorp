@@ -19,7 +19,6 @@ namespace thorp
 
   bool ArduinoNode::spin()
   {
-    unsigned long long i = 0;
     ros::Rate rate(read_frequency);
 
     while (ros::ok())
@@ -30,19 +29,14 @@ namespace thorp
         {
           // Arduino returned 0 for a sonar or infrared sensor; normally this means we have reading
           // problems: the board is disconnected, or serial communication is not well synchronized
+          // Instead of killing the node, we keep trying to reconnect, same way kobuki base does
           if ((++wrong_readings % 10) == 9)
           {
             // Retry reinitializing Arduino interface
-            ROS_WARN("Arduino interface: %d consecutive wrong readings; trying to reinitialize...",
+            ROS_WARN("Arduino interface: %d consecutive wrong readings; trying to reconnect...",
                       wrong_readings);
             wrong_readings = 0;
-            arduino_iface.reset(new ArduinoInterface(arduino_port));
-            if (arduino_iface->initialize() == false)
-            {
-              ROS_ERROR("Arduino interface reinitialization failed on port %s. Stopping node...",
-                         arduino_port.c_str());
-              return false;
-            }
+            is_connected = false;
           }
           continue;
         }
@@ -51,6 +45,11 @@ namespace thorp
       }
       else {
         is_connected = connect();
+        if (! is_connected)
+        {
+          ROS_ERROR_THROTTLE(2.0, "Cannot connect to Arduino on port %s", arduino_port.c_str());
+          ros::Duration(0.1).sleep();
+        }
       }
       ros::spinOnce();
       rate.sleep();
