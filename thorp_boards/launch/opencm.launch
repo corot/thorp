@@ -25,4 +25,7 @@
     <param name="frame" value="ir_arm_link"/>
   	<remap from="ir_range" to="/mobile_base/sensors/infrared/arm"/>
   </node>
+
+  <!--  Fake gripper link joint state publisher  -->
+  <node name="fake_joint_pub" pkg="turtlebot_arm_bringup" type="fake_joint_pub.py"/>
 </launch>
