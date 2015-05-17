@@ -1,0 +1,34 @@
+### Unison preferences for Thorp robot ###
+# Unison parameters
+log = true
+# Paths & roots
+root = /home/jorge/workspaces/thorp/src/thorp/
+root = ssh://thorp//home/jorge/workspaces/thorp/src/thorp/
+# Ignores
+## General
+ignore = Name *.pdf
+ignore = Name *.gv
+ignore = Name *.md5sum
+## Compiling
+ignore = Name *.pyc
+ignore = Name *.hg
+ignore = Name *.git
+ignore = Name *.o
+ignore = Name *.cmake
+ignore = Name *.make
+ignore = Name *.makefile
+ignore = Name *.log
+ignore = Name build
+## Eclipse
+ignore = Name .project
+ignore = Name .cproject
+ignore = Name .pydevproject
+## VCS
+ignore = Name .git
+ignore = Name .svn
+## Custom
+ignore = Name eclipse
+ignore = Name gnome-terminal
+ignore = Name konsole
+ignore = Name .settings
+ignore = Name .rviz

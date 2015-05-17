@@ -15,9 +15,9 @@
 
 <launch>
   <!-- Name of the map to use (without path nor extension) and initial position -->
-  <arg name="map_name"       default="edu_room_cropped"/>
-  <arg name="initial_pose_x" value="2.0"/>
-  <arg name="initial_pose_y" value="2.0"/>
+  <arg name="map_name"       default="graz_home"/>
+  <arg name="initial_pose_x" value="0.0"/>
+  <arg name="initial_pose_y" value="0.0"/>
   <arg name="initial_pose_a" value="0.0"/>
 
   <!--  *********** Turtlebot and 3d sensor ***********  -->
