@@ -256,7 +256,10 @@ namespace thorp
       // Update and publish range message
       (*this)[i].msg.header.seq = (*this)[i].msg.header.seq + 1;
       (*this)[i].msg.header.stamp = ros::Time::now();
-      (*this)[i].msg.range = (*this)[i].updateFilter(r); /// TODO not bounding min/max ranges!!!  distanceKF <= (*this)[i].msg.max_range ? distanceKF : (*this)[i].infinity_range;
+      (*this)[i].msg.range = (*this)[i].updateFilter(r);
+      // Bound range with max range value     XXX I hate to do this...
+      // (see https://github.com/DLu/navigation_layers/issues/14 for an explanation of why is this needed)
+      (*this)[i].msg.range = std::min((*this)[i].msg.range, (*this)[i].msg.max_range);
 
       (*this)[i].pub.publish((*this)[i].msg);
     }
