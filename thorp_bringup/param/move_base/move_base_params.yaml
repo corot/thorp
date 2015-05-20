@@ -22,11 +22,21 @@ recovery_behaviors:
   - name: 'aggressive_reset'
     type: 'clear_costmap_recovery/ClearCostmapRecovery'
 
+# apply reset to obstacle and range sensor layers
 super_conservative_reset:
   reset_distance: 3.0
+  layer_names:
+    - obstacle_layer
+    - range_sensor_layer
 
 conservative_reset:
   reset_distance: 1.5
+  layer_names:
+    - obstacle_layer
+    - range_sensor_layer
 
 aggressive_reset:
   reset_distance: 0.5
+  layer_names:
+    - obstacle_layer
+    - range_sensor_layer
