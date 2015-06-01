@@ -180,11 +180,10 @@
     </inertial>
 
     <visual>
-      <origin xyz="0.0 0.0 -0.058" rpy="${-M_PI/2} -${M_PI} ${-M_PI/2}"/>
+      <origin xyz="0.0 0.0 -0.0586" rpy="${-M_PI/2} -${M_PI} ${-M_PI/2}"/>
       <geometry>
-        <mesh filename="package://thorp_bringup/resources/meshes/sonar_array.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://thorp_bringup/resources/meshes/sonar_array.dae" scale="0.001006 0.001006 0.001"/>
       </geometry>
-      <material name="Black"/>
     </visual>
 
     <collision>
@@ -224,7 +223,7 @@
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0" />
         <geometry>
-          <mesh filename="package://hector_sensors_description/meshes/sonar_sensor/max_sonar_ez4.dae"/>
+          <mesh filename="package://hector_sensors_description/meshes/sonar_sensor/max_sonar_ez4.dae" scale="1.1 1.1 1.1"/>/>
         </geometry>
       </visual>
       <collision>
