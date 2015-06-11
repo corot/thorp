@@ -101,7 +101,7 @@
   <stack_top_pole parent="plate_top_link" number="12" x_loc="-0.0874" y_loc=" 0.098" z_loc="${0.006/2 + 0.2032/2 + 0.1}"/>
   <stack_top_pole parent="plate_top_link" number="13" x_loc="-0.0874" y_loc="-0.098" z_loc="${0.006/2 + 0.2032/2 + 0.1}"/>
   
-  <!-- Mounting plate; this structure is provisional -->
+  <!-- Mounting plate -->
   <joint name="senz3d_mount_joint" type="fixed">
     <origin xyz="-0.0874 0.0 ${0.2032 + 0.006 + 0.1}" rpy="0.0 0.0 0.0"/>
     <parent link="plate_top_link"/>
@@ -109,18 +109,18 @@
   </joint>
   <link name="senz3d_mount_link">
     <visual>
-      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <origin xyz="0.0075 0.0 -0.003" rpy="0.0 0.0 0.0"/>
       <geometry>
-        <box size="0.02 0.24 0.006"/>
+        <mesh filename="package://thorp_bringup/resources/meshes/senz3d_mount.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="Black">
         <color rgba="0.0 0.0 0.0 1.0"/>
       </material>
     </visual>
     <collision>
-      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <origin xyz="-0.0075 0.0 0.0" rpy="0.0 0.0 0.0"/>
       <geometry>
-        <box size="0.02 0.24 0.006"/>
+        <box size="0.03 0.22 0.006"/>
       </geometry>
     </collision>
     <inertial>
