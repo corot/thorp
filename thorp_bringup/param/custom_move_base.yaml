@@ -1,0 +1,47 @@
+# move_base parameters
+
+# apply reset to obstacle and range sensor layers
+conservative_reset:
+  layer_names:
+    - obstacle_layer
+    - range_sensor_layer
+
+aggressive_reset:
+  layer_names:
+    - obstacle_layer
+    - range_sensor_layer
+
+# move_base costmaps parameters
+
+global_costmap:
+  plugins:
+    - {name: static_layer,       type: "costmap_2d::StaticLayer"}
+    - {name: obstacle_layer,     type: "costmap_2d::VoxelLayer"}
+    - {name: inflation_layer,    type: "costmap_2d::InflationLayer"}
+    - {name: footprint_layer,    type: "costmap_2d::FootprintLayer"}
+
+local_costmap:
+  plugins:
+    - {name: range_sensor_layer, type: "range_sensor_layer::RangeSensorLayer"}
+    - {name: obstacle_layer,     type: "costmap_2d::VoxelLayer"}
+    - {name: inflation_layer,    type: "costmap_2d::InflationLayer"}
+    - {name: footprint_layer,    type: "costmap_2d::FootprintLayer"}
+
+  range_sensor_layer:
+    clear_threshold:    0.46
+    mark_threshold:     0.98
+    no_readings_timeout: 2.0
+    clear_on_max_reading: true
+    ns:     /mobile_base/sensors/sonars
+    topics: ["m90", "m72", "m54", "m36", "m18", "0_IGNORE", "p18", "p36", "p54", "p72", "p90"]
+
+
+
+# move_base observation sources: we don use by now other than bumpers and kinect
+#  obstacle_layer:
+#    observation_sources: kinect virtual bumpers
+# 
+#    kinect:  {data_type: LaserScan, topic: scan, marking: true, clearing: true, min_obstacle_height: 0.2, max_obstacle_height: 0.4}
+#    virtual: {data_type: LaserScan, topic: virtual, marking: true, clearing: true, min_obstacle_height: 0.4, max_obstacle_height: 0.8}
+#    bumpers: {data_type: PointCloud2, topic: bumpers, marking: true, clearing: false, min_obstacle_height: 0.0, max_obstacle_height: 0.2}
+    
