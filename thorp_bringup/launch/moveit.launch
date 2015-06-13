@@ -12,8 +12,8 @@
   
   <include file="$(find thorp_bringup)/launch/includes/state_publisher.launch.xml"/>
 
-  <!-- Fake base's wheels joint state, as we are not running the full robot by now -->
-  <node name="fake_joint_pub" pkg="thorp_bringup" type="fake_joint_pub.py"/>
+  <!-- Fake base's wheels joint state, as here we are not running the full robot -->
+  <node name="fake_wheels_joints_pub" pkg="thorp_bringup" type="fake_joint_pub.py"/>
 
   <node name="arbotix_gui" pkg="arbotix_python" type="arbotix_gui" output="screen"/>
 

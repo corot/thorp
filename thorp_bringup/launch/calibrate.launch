@@ -5,7 +5,8 @@
   
   <include file="$(find thorp_bringup)/launch/includes/state_publisher.launch.xml"/>
 
-  <node name="fake_joint_pub" pkg="thorp_bringup" type="fake_joint_pub.py"/>
+  <!-- Fake base's wheels joint state, as here we are not running the full robot -->
+  <node name="fake_wheels_joints_pub" pkg="thorp_bringup" type="fake_joint_pub.py"/>
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_model.rviz"/>
 

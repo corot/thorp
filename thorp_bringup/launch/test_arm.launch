@@ -5,13 +5,14 @@
     <arg name="simulation" value="$(arg simulation)"/>
   </include>
 
+  <!-- Fake base's wheels joint state, as here we are not running the full robot -->
+  <node name="fake_wheels_joints_pub" pkg="thorp_bringup" type="fake_joint_pub.py"/>
+
   <include file="$(find thorp_bringup)/launch/includes/arm.launch.xml">
     <arg name="simulation" value="$(arg simulation)"/>
   </include>
 
   <include file="$(find thorp_bringup)/launch/includes/softkinetic.launch.xml"/>
-
-  <node name="fake_joint_pub" pkg="thorp_bringup" type="fake_joint_pub.py"/>
 
   <node name="arbotix_gui" pkg="arbotix_python" type="arbotix_gui" output="screen"/>
   
