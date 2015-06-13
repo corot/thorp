@@ -46,20 +46,21 @@
   <!--  ***************** Robot Model *****************  -->
   <include file="$(find thorp_bringup)/launch/includes/model.launch.xml"/>
 
-  <!--  ********** Kobuki mobile base extras **********  -->
-  <include file="$(find thorp_bringup)/launch/includes/safety_ctrl.launch.xml"/>
-  <!-- velocity commands multiplexer -->
+  <!--  ******** Velocity commands multiplexer ********  -->
   <node pkg="nodelet" type="nodelet" name="mobile_base_nodelet_manager" args="manager"/>
   <node pkg="nodelet" type="nodelet" name="cmd_vel_mux" args="load yocs_cmd_vel_mux/CmdVelMuxNodelet mobile_base_nodelet_manager">
     <param name="yaml_cfg_file" value="$(find thorp_bringup)/param/vel_multiplexer.yaml"/>
   </node>
 
-  <!--  ************** Rosnav move base ***************  -->
-  <include file="$(find thorp_bringup)/launch/includes/move_base.launch.xml"/>
+  <!--  ** Turtlebot 2 move base with custom tweaks ***  -->
+  <include file="$(find turtlebot_navigation)/launch/includes/move_base.launch.xml">
+    <arg name="custom_param_file" value="$(find thorp_bringup)/param/custom_move_base.yaml"/>
+  </include>
+  
   <!-- we cannot simulate sonars on stage_ros, so disable sonar layer -->
   <param name="move_base/global_costmap/range_sensor_layer/enabled" value="false"/>
   <param name="move_base/local_costmap/range_sensor_layer/enabled" value="false"/>
-
+  
   <!--  ****** Geometric and semantic map servers *****  -->
   <node name="map_server" pkg="map_server" type="map_server" args="$(find thorp_bringup)/resources/maps/$(arg map_name).yaml">
     <param name="frame_id" value="/map"/>

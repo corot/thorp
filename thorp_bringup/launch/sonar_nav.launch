@@ -24,12 +24,13 @@
     <arg name="simulation" value="true"/> <!-- just to provide arm's joint states -->
   </include>
 
-  <!--  ********** Kobuki mobile base extras **********  -->
-  <include file="$(find thorp_bringup)/launch/includes/safety_ctrl.launch.xml"/>
+  <!-- Reconfigure command velocity multiplexer to fit thorp_bringup needs -->
   <param name="cmd_vel_mux/yaml_cfg_file" value="$(find thorp_bringup)/param/vel_multiplexer.yaml"/>
-
-  <!--  ************** Rosnav move base ***************  -->
-  <include file="$(find thorp_bringup)/launch/includes/move_base.launch.xml"/>
+ 
+  <!--  ** Turtlebot 2 move base with custom tweaks ***  -->
+  <include file="$(find turtlebot_navigation)/launch/includes/move_base.launch.xml">
+    <arg name="custom_param_file" value="$(find thorp_bringup)/param/custom_move_base.yaml"/>
+  </include>
   
   <!--
     Tweaks to adapt the move base node to local navigation just with sonars and bumpers:
@@ -39,9 +40,9 @@
      - we use a bigger costmap than that of the local planner
      - replan every second, as global costmap changes
   -->
-  <rosparam file="$(find thorp_bringup)/param/move_base/global_cm_sonar_params.yaml" command="load"/>
-  <param name="move_base/global_costmap/obstacle_layer/observation_sources" value="sonars bumpers"/>
-  <param name="move_base/local_costmap/obstacle_layer/observation_sources" value="sonars bumpers"/>
+  <rosparam file="$(find thorp_bringup)/param/global_dynamic_costmap.yaml" command="load"/>
+  <param name="move_base/global_costmap/obstacle_layer/observation_sources" value="bump"/>
+  <param name="move_base/local_costmap/obstacle_layer/observation_sources" value="bump"/>
   <param name="move_base/planner_frequency" value="1.0"/>
 
   <!--  ************** Fake Localization *************  -->

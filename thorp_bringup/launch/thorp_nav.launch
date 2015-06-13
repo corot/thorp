@@ -54,9 +54,6 @@
     <arg name="simulation" value="true"/> <!-- just to provide arm's joint states -->
   </include>
 
-  <!--  ***** Kobuki mobile base safety controller ****  -->
-  <include file="$(find thorp_bringup)/launch/includes/safety_ctrl.launch.xml"/>
-
   <!-- Reconfigure command velocity multiplexer to fit thorp_bringup needs. Just set the parameter doesn't work
        if we start the thorp_bringup rapp with app manager; we must explicitly call the reconfigure service -->
   <node pkg="rosservice" type="rosservice" name="reconfig_vel_mux" args="call --wait /cmd_vel_mux/set_parameters
@@ -65,9 +62,12 @@
   <!--  ******** Kobuki auto-docking controller *******  -->
   <include file="$(find thorp_bringup)/launch/includes/autodock.launch.xml"/>
 
-  <!--  ************** Rosnav move base ***************  -->
-  <include file="$(find thorp_bringup)/launch/includes/move_base.launch.xml"/>
-
+  <!--  ** Turtlebot 2 move base with custom tweaks ***  -->
+  <include file="$(find turtlebot_navigation)/launch/includes/move_base.launch.xml">
+    <arg name="custom_param_file" value="$(find thorp_bringup)/param/custom_move_base.yaml"/>
+  </include>
+<!-- <include file="$(find thorp_bringup)/launch/includes/scan_matcher_2.launch.xml"/> -->
+  
   <!--  ****** Geometric and semantic map servers *****  -->
   <node name="map_server" pkg="map_server" type="map_server" args="$(find thorp_bringup)/resources/maps/$(arg map_name).yaml">
     <param name="frame_id" value="/map"/>
