@@ -240,8 +240,10 @@ namespace thorp
       if (this->sonars == true)
       {
         // Convert voltage to range for sonars
-        v = reading/1000000.0; // this is a magic number that works... but I cannot explain why!
-        r = v*2.59183673469;   // that is, 25.4/9.8, as sonar doc claims that it reports ~9.8mV/in
+        v = reading / 1000000.0; // this is a magic number that works... but I cannot explain why!
+        r = v * 2.59183673469;   // that is, 25.4/9.8, as sonar doc claims that it reports ~9.8mV/in
+        r += (0.06 + r / 40.0);  // XXX hackish compensation empirically devised
+                                 // TODO: estimate a polynom as on IR sensors
       }
       else
       {
