@@ -16,9 +16,18 @@ aggressive_reset:
 global_costmap:
   plugins:
     - {name: static_layer,       type: "costmap_2d::StaticLayer"}
+    - {name: range_sensor_layer, type: "range_sensor_layer::RangeSensorLayer"}
     - {name: obstacle_layer,     type: "costmap_2d::VoxelLayer"}
     - {name: inflation_layer,    type: "costmap_2d::InflationLayer"}
     - {name: footprint_layer,    type: "costmap_2d::FootprintLayer"}
+
+  range_sensor_layer:
+    clear_threshold:      0.46
+    mark_threshold:       0.98
+    no_readings_timeout:  2.0
+    clear_on_max_reading: true
+    ns:     /mobile_base/sensors/sonars
+    topics: ["m90", "m72", "m54", "m36", "m18", "0_IGNORE", "p18", "p36", "p54", "p72", "p90"]
 
 local_costmap:
   plugins:
@@ -28,9 +37,9 @@ local_costmap:
     - {name: footprint_layer,    type: "costmap_2d::FootprintLayer"}
 
   range_sensor_layer:
-    clear_threshold:    0.46
-    mark_threshold:     0.98
-    no_readings_timeout: 2.0
+    clear_threshold:      0.46
+    mark_threshold:       0.98
+    no_readings_timeout:  2.0
     clear_on_max_reading: true
     ns:     /mobile_base/sensors/sonars
     topics: ["m90", "m72", "m54", "m36", "m18", "0_IGNORE", "p18", "p36", "p54", "p72", "p90"]
