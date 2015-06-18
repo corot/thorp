@@ -14,17 +14,11 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   
-  <build_depend>adc_driver</build_depend>
-  <build_depend>gpio_driver</build_depend>
-  <build_depend>arduino_interface</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>sensor_msgs</build_depend>
-  <build_depend>yocs_math_toolkit</build_depend>
-  
-  <run_depend>adc_driver</run_depend>
-  <run_depend>gpio_driver</run_depend>
-  <run_depend>arduino_interface</run_depend>
+  <build_depend>uniserial</build_depend>
+
   <run_depend>roscpp</run_depend>
   <run_depend>sensor_msgs</run_depend>
-  <run_depend>yocs_math_toolkit</run_depend>
+  <run_depend>uniserial</run_depend>
 </package>

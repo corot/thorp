@@ -15,15 +15,9 @@ It interfaces with the half-ring of sonars and the four backward pointing IR sen
 
 ### Prerequirements
 
-To interface with Thorp's Arduino Mega 2560 board, flash the firmware provided on Bosch drivers:
-
-    $ roscd arduino_interface
-    $ cd arduino_firmware
-    $ export BOARD=mega2560
-    $ export ARDUINO_DIR=/opt/arduino  # (or whatever you installed arduino software)
-    $ make upload
-
-You must install the Arduino udev rule to make the board available on the default port "/dev/arduino":
+To interface with Thorp's Arduino Mega 2560 board, flash the provided firmware. Note that analog and trigger
+pins are hardcoded, so probably you need to adapt the first lines of the firmware to your needs.
+Tehn, you must install the Arduino udev rule to make the board available on the default port "/dev/arduino":
 
     $ roscd thorp_boards
     $ sudo cp resources/58-arduino.rules /etc/udev/rules.d

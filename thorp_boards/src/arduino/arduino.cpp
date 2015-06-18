@@ -5,8 +5,6 @@
  *      Author: Jorge Santos
  */
 
-#include <typeinfo>
-
 #include "thorp_boards/arduino.hpp"
 
 namespace thorp
@@ -21,35 +19,51 @@ namespace thorp
   {
     ros::Rate rate(read_frequency);
 
+    // Arduino send us all readings packed as consecutive 2 bytes raw values; the first two bytes
+    // signal the beginning of the buffer, so we can use them to deal with lost synchronization
+    uint8_t num_readings = (sonars.size() + irSensors.size());
+    uint8_t storage_buffer[(num_readings + 1) * sizeof(uint16_t)];
+
     while (ros::ok())
     {
       if (is_connected)
       {
-        if ((sonars.read() == false) || (irSensors.read() == false))
+        if (!serial_port.Read_Bytes(sizeof(storage_buffer), storage_buffer))
         {
-          // Arduino returned 0 for a sonar or infrared sensor; normally this means we have reading
-          // problems: the board is disconnected, or serial communication is not well synchronized
-          // Instead of killing the node, we keep trying to reconnect, same way kobuki base does
-          if ((++wrong_readings % 10) == 9)
+          // Read_Bytes failed; maybe the board is temporally disconnected...
+          // keep trying to reconnect every half second, as kobuki base does
+          if ((++wrong_readings % 10) == 0)
           {
-            // Retry reinitializing Arduino interface
-            ROS_WARN("Arduino interface: %d consecutive wrong readings; trying to reconnect...",
+            ROS_WARN("Arduino serial port: %d consecutive wrong readings; trying to reconnect...",
                       wrong_readings);
             wrong_readings = 0;
             is_connected = false;
           }
-          continue;
         }
-        wrong_readings = 0;
-        sonars.trigger();
+        else
+        {
+          wrong_readings = 0;
+          uint16_t* readings = reinterpret_cast<uint16_t*>(&storage_buffer);
+          if (readings[0] == 0xFFFF)
+          {
+            // Correct reading; feed it to our sensors
+            sonars.read(++readings);
+            irSensors.read(readings + sonars.size());
+          }
+          else
+          {
+            // Reading out of synchronization; consume available bytes to make next reading valid
+            uint8_t dump_buffer[serial_port.Available()];
+            ROS_WARN("Serial synchronization lost; reading %d bytes to clear pending data (ok? %d)",
+                     sizeof(dump_buffer), serial_port.Read_Bytes(sizeof(dump_buffer), dump_buffer));
+          }
+        }
       }
       else {
         is_connected = connect();
-        if (! is_connected)
-        {
-          ROS_ERROR_THROTTLE(2.0, "Cannot connect to Arduino on port %s", arduino_port.c_str());
-          ros::Duration(0.1).sleep();
-        }
+
+        // Wait a bit until first data gets available or before the next connection retry
+        ros::Duration(0.5).sleep();
       }
       ros::spinOnce();
       rate.sleep();
@@ -66,6 +80,8 @@ namespace thorp
     // General configuration
     nh.param("arduino_node/read_frequency", read_frequency, 20.0);
     nh.param("arduino_node/arduino_port", arduino_port, default_port);
+
+    serial_port.setPortName(arduino_port);
 
     // Sonars configuration
     if (sonars.init("arduino_node/sonars", true) == false)
@@ -86,30 +102,15 @@ namespace thorp
 
   bool ArduinoNode::connect()
   {
-    // Open an interface with the arduino board
-    arduino_iface.reset(new ArduinoInterface(arduino_port));
-    if (arduino_iface->initialize() == false)
+    // (Re)connect to Arduino serial port
+    if (! serial_port.initialize())
     {
-      ROS_ERROR("Arduino interface initialization failed on port %s", arduino_port.c_str());
+      ROS_ERROR("Unable to connect with Arduino on port %s", arduino_port.c_str());
       return false;
     }
 
-    ROS_INFO("Arduino interface opened on port %s", arduino_iface->getID().c_str());
-
-    if (sonars.connect(arduino_iface) == false)
-    {
-      ROS_ERROR("Connect sonar drivers failed");
-      return false;
-    }
-
-    if (irSensors.connect(arduino_iface) == false)
-    {
-      ROS_ERROR("Connect IR sensor drivers failed");
-      return false;
-    }
-
-    ROS_INFO("Arduino interface successfully initialized with %lu sonars and %lu IR sensors",
-             sonars.size(), irSensors.size());
+    ROS_INFO("Arduino connected on port %s; reading %lu sonars and %lu IR sensors",
+             arduino_port.c_str(), sonars.size(), irSensors.size());
     return true;
   }
 
@@ -126,6 +127,8 @@ namespace thorp
 
     // Rangers array parameters;
     // note that all parameters except ctrl_pins_map and topic_namespace are mandatory
+    // Actually, input and control pins maps are only to provide debug information and to
+    // validate against the hardcoded values in the firmware, the ones that really matter
     int                      rangers_count;
     double                   range_variance;
     double                   maximum_range;
@@ -167,8 +170,7 @@ namespace thorp
     // Ready to initialize the ranger sensors list
     this->resize(rangers_count, Ranger());
 
-    // Fill all fields on sensors array except the Bosch drivers, because
-    // we must be connected to the Arduino before calling their constructor
+    // Fill all constant fields on sensors array
     for (unsigned int i = 0; i < this->size(); i++)
     {
       (*this)[i].last_range = 0.0;
@@ -204,52 +206,30 @@ namespace thorp
     return true;
   }
 
-  bool ArduinoNode::RangersList::connect(const boost::shared_ptr<ArduinoInterface>& arduino_iface)
-  {
-    // Create an ADC driver (reading range) for every ranger
-    for (unsigned int i = 0; i < this->size(); i++)
-    {
-      (*this)[i].adc_driver.reset(new AdcDriver(arduino_iface.get(), (*this)[i].input_pin));
-      (*this)[i].adc_driver->setReference(5000); // can be also 1100 or 2560
-
-      // Sonars also need a GPIO driver to trigger readings (Sharp sensors don't need
-      // to be triggered; they just operate continuously as long as current is provided)
-      if (this->sonars == true)
-      {
-        (*this)[i].gpio_driver.reset(new GpioDriver(arduino_iface.get(), (*this)[i].ctrl_pin));
-      }
-    }
-    return true;
-  }
-
   /**
-   * Reads, linearizes, filters (KF) and publish the full array of range sensors.
-   * @return False if we made a wrong reading (Arduino returned 0). True otherwise.
+   * Converts to voltage, linearizes, filters (KF) and publish the full array of range sensors.
+   * @param readings Raw values for all sensors ranging from 0 to 1023
+   * @return False if there's any error. True otherwise.
    */
-  bool ArduinoNode::RangersList::read()
+  bool ArduinoNode::RangersList::read(uint16_t* readings)
   {
     for (unsigned int i = 0; i < this->size(); i++)
     {
-      // Read ranger i digitized voltage
-      uint32_t reading = (*this)[i].adc_driver->read();
-
-      if (reading == 0)  // we never read 0 in normal operation
-        return false;
-
       double v, r;
       if (this->sonars == true)
       {
-        // Convert voltage to range for sonars
-        v = reading / 1000000.0; // this is a magic number that works... but I cannot explain why!
-        r = v * 2.59183673469;   // that is, 25.4/9.8, as sonar doc claims that it reports ~9.8mV/in
-        r += (0.06 + r / 40.0);  // XXX hackish compensation empirically devised
+        // Convert the analog reading (which goes from 0 - 1023) to a voltage (0 - 5V), and then
+        // voltage to range multiplying by 25.4/9.8, as sonar doc claims that it reports ~9.8mV/in
+        v = readings[i] * (5.0 / 1023.0);
+        r = v * 2.59183673469;
+       //// r += (0.06 + r / 40.0);  // XXX hackish compensation empirically devised
                                  // TODO: estimate a polynom as on IR sensors
       }
       else
       {
         // Linearize voltage and convert to range for IR sensors. The 6th grade polynomial's
         // coefficients where calculated by feeding real data to Matlab function polyfit
-        v = reading/5000.0;    // I wonder if this is because the reference voltage is 5000...
+        v = readings[i];  // TODO: not good... I need new coefficients or reuse old ones
         r = 1.06545479706866e-15*pow(v, 6) - 2.59219822235705e-12*pow(v, 5)
           + 2.52095247302813e-09*pow(v, 4) - 1.25091335895759e-06*pow(v, 3)
           + 0.000334991560873548*pow(v, 2) - 0.0469975280676629*v + 3.01895762047759;
@@ -264,33 +244,6 @@ namespace thorp
       (*this)[i].msg.range = std::min((*this)[i].msg.range, (*this)[i].msg.max_range);
 
       (*this)[i].pub.publish((*this)[i].msg);
-    }
-    return true;
-  }
-
-  /**
-   * Trigger one reading on all sonars. Has no effect on IR sensors
-   * @return True if there aren't IO failures. False otherwise.
-   */
-  bool ArduinoNode::RangersList::trigger()
-  {
-    if (this->sonars == false)
-      return true;
-
-    for (unsigned int i = 0; i < this->size(); i++)
-    {
-      // Set sonar control pin (RX) to HIGH for at least 20μS to start one range reading
-      if (! (*this)[i].gpio_driver->set(true))
-      {
-        ROS_WARN("Arduino interface: GPIO driver failed to set sonar %d control pin to HIGH", i);
-        return false;
-      }
-      ros::Duration(0.0001); // 100 μs
-      if (! (*this)[i].gpio_driver->set(false))
-      {
-        ROS_WARN("Arduino interface: GPIO driver failed to set sonar %d control pin to LOW", i);
-        return false;
-      }
     }
     return true;
   }
@@ -320,4 +273,5 @@ namespace thorp
     // Return filtered range
     return rangeKF;
   }
+  
 } // namespace thorp

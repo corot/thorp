@@ -10,12 +10,9 @@
 
 
 #include <ros/ros.h>
-#include <arduino_interface.hpp>
-#include <adc_driver/adc_driver.h>
-#include <gpio_driver/gpio_driver.h>
+#include <uniserial.hpp>
 
 #include <sensor_msgs/Range.h>
-#include <sensor_msgs/LaserScan.h>
 
 namespace thorp
 {
@@ -37,8 +34,6 @@ namespace thorp
           int input_pin; /**< Analog input pin to which the ranger is connected */
           ros::Publisher pub;
           sensor_msgs::Range msg;
-          boost::shared_ptr<AdcDriver> adc_driver;   /**< Driver required to read an analog input */
-          boost::shared_ptr<GpioDriver> gpio_driver; /**< Driver required to write to a digital output */
 
           /**
            * @brief  Filter a range and update filter internal fields
@@ -57,10 +52,7 @@ namespace thorp
           bool sonars;
 
           bool init(const std::string& params_namespace, bool sonars = false);
-          bool connect(const boost::shared_ptr<ArduinoInterface>& arduino_iface);
-
-          bool read();
-          bool trigger();
+          bool read(uint16_t* readings);
 
         private:
           template <typename T>
@@ -105,16 +97,14 @@ namespace thorp
       bool connect();
 
     private:
+      bool   is_connected;
       int    wrong_readings;
       double read_frequency;
       std::string arduino_port;
+      uniserial serial_port;
 
       RangersList sonars;
       RangersList irSensors;
-
-      boost::shared_ptr<ArduinoInterface> arduino_iface;
-
-      bool is_connected;
   };
 
 } // namespace thorp
