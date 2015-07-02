@@ -28,6 +28,25 @@ namespace thorp
     {
       if (is_connected)
       {
+        if (serial_port.Available() < sizeof(storage_buffer))
+        {
+          // We are reading data faster than the Arduino provides it; not a big
+          // drama, we just wait a little bit so more bytes are received and retry
+          ROS_DEBUG_THROTTLE(2.0, "Not enough bytes available on serial port (%d < %lu)",
+                             serial_port.Available(), sizeof(storage_buffer));
+          ros::Duration(0.005).sleep();
+          continue;
+        }
+        else if (serial_port.Available() > sizeof(storage_buffer))
+        {
+          // We are reading data slower than the Arduino provides it; we are probably
+          // using outdated data, so we should increase this node's reading rate
+          ROS_WARN_THROTTLE(2.0, "Too much bytes available on serial port (%d > %lu)",
+                            serial_port.Available(), sizeof(storage_buffer));
+          // XXX we could consume the excess of bytes, but it is probably better to
+          // tweak frequencies instead, as a more stable and efficient solution
+        }
+
         if (!serial_port.Read_Bytes(sizeof(storage_buffer), storage_buffer))
         {
           // Read_Bytes failed; maybe the board is temporally disconnected...
@@ -54,7 +73,7 @@ namespace thorp
           {
             // Reading out of synchronization; consume available bytes to make next reading valid
             uint8_t dump_buffer[serial_port.Available()];
-            ROS_WARN("Serial synchronization lost; reading %d bytes to clear pending data (ok? %d)",
+            ROS_WARN("Serial synchronization lost; reading %lu bytes to clear pending data (ok? %d)",
                      sizeof(dump_buffer), serial_port.Read_Bytes(sizeof(dump_buffer), dump_buffer));
           }
         }
@@ -222,7 +241,7 @@ namespace thorp
         // voltage to range multiplying by 25.4/9.8, as sonar doc claims that it reports ~9.8mV/in
         v = readings[i] * (5.0 / 1023.0);
         r = v * 2.59183673469;
-       //// r += (0.06 + r / 40.0);  // XXX hackish compensation empirically devised
+        r += (0.06 + r / 40.0);  // XXX hackish compensation empirically devised
                                  // TODO: estimate a polynom as on IR sensors
       }
       else
@@ -239,9 +258,10 @@ namespace thorp
       (*this)[i].msg.header.seq = (*this)[i].msg.header.seq + 1;
       (*this)[i].msg.header.stamp = ros::Time::now();
       (*this)[i].msg.range = (*this)[i].updateFilter(r);
-      // Bound range with max range value     XXX I hate to do this...
+      // Bound range with min/max range values     XXX I hate to do this...
       // (see https://github.com/DLu/navigation_layers/issues/14 for an explanation of why is this needed)
-      (*this)[i].msg.range = std::min((*this)[i].msg.range, (*this)[i].msg.max_range);
+      (*this)[i].msg.range =
+          std::min(std::max((*this)[i].msg.range, (*this)[i].msg.min_range), (*this)[i].msg.max_range);
 
       (*this)[i].pub.publish((*this)[i].msg);
     }
@@ -273,5 +293,5 @@ namespace thorp
     // Return filtered range
     return rangeKF;
   }
-  
+
 } // namespace thorp
