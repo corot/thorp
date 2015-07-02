@@ -7,17 +7,15 @@ Software that interfaces with Thorp's boards:
 
 ## Arduino
 
-It interfaces with the half-ring of sonars and the four backward pointing IR sensors. Publishes:
-  * Static tf from base frame to ring center 
-  * Static tfs for the four IR sensors 
-  * Sonar readings as a single sensor_msgs/LaserScan
-  * IR readings as four sensor_msgs/Range
+It interfaces with the half-ring of sonars and the four backward pointing IR sensors. It publishes:
+  * 11 sonar readings as sensor_msgs/Range messages
+  * 4 IR sensor readings as sensor_msgs/Range messages
 
 ### Prerequirements
 
 To interface with Thorp's Arduino Mega 2560 board, flash the provided firmware. Note that analog and trigger
 pins are hardcoded, so probably you need to adapt the first lines of the firmware to your needs.
-Tehn, you must install the Arduino udev rule to make the board available on the default port "/dev/arduino":
+Then, you must install the Arduino udev rule to make the board available on the default port "/dev/arduino":
 
     $ roscd thorp_boards
     $ sudo cp resources/58-arduino.rules /etc/udev/rules.d
