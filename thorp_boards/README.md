@@ -13,8 +13,9 @@ It interfaces with the half-ring of sonars and the four backward pointing IR sen
 
 ### Prerequirements
 
-To interface with Thorp's Arduino Mega 2560 board, flash the provided firmware. Note that analog and trigger
-pins are hardcoded, so probably you need to adapt the first lines of the firmware to your needs.
+To interface with Thorp's Arduino Mega 2560 board, flash the provided firmware. You can use the Arduino IDE
+or use make commands (see [this document for details](http://ed.am/dev/make/arduino-mk)). Note that analog
+and trigger pins are hardcoded, so probably you need to adapt the first lines of the firmware to your needs.
 Then, you must install the Arduino udev rule to make the board available on the default port "/dev/arduino":
 
     $ roscd thorp_boards
