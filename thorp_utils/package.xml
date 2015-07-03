@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package>
+  <name>thorp_utils</name>
+  <version>0.1.0</version>
+  <description>Package containing convenience nodes and libs for Thorp robot</description>
+  <maintainer email="jsantossimon@gmail.com">Jorge Santos Simón</maintainer>
+  <author email="jsantossimon@gmail.com">Jorge Santos Simón</author> 
+
+  <license>BSD</license>
+
+  <url type="bugtracker">https://github.com/corot/thorp/issues</url>
+  <url type="repository">https://github.com/corot/thorp</url>
+  <url type="website">http://wiki.ros.org/thorp_utils</url> 
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>roscpp</build_depend>
+
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>roscpp</run_depend>
+
+  <export>
+  </export>
+</package>
