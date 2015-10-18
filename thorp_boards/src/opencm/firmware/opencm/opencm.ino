@@ -235,6 +235,7 @@ void loop()
         else if (id == 253) // ID = 253, ArbotiX instruction
         {
           // ID = 253, ArbotiX special instructions
+          // Read Pose = 6, read position for the first N servos  XXX experimental
           // Pose Size = 7, followed by single param: size of pose
           // Load Pose = 8, followed by index, then pose positions (# of param = 2*pose_size+1)
           // Load Seq = 9, followed by index/times (# of parameters = 3*seq_size)
@@ -256,6 +257,51 @@ void loop()
               SerialUSB.write((unsigned char)0);
               // send actual data
               checksum += handleRead();
+              SerialUSB.write(255 - ((checksum) % 256));
+              break;
+
+            case ARB_READ_POSE:
+              if (params[1] > MAX_NUM_SERVOS)
+              {
+                // return an error packet: FF FF id Len Err=wrong parameter, params=None check
+                statusPacket(id, ERR_WRONG_PARAM);
+                break;
+              }
+                
+              checksum = id + 2 + 2*params[1];
+              SerialUSB.write(0xff);
+              SerialUSB.write(0xff);
+              SerialUSB.write(id);
+              SerialUSB.write((unsigned char)2 + 2*params[1]); // id + err + 2 * <servos to read>
+              SerialUSB.write((unsigned char)0);
+              // read pose for servos from ID = 1 to ID = params[1]
+              for (int servo_id = 1; servo_id <= params[1]; servo_id++)
+              {
+                Dxl.setTxPacketId(servo_id);
+                Dxl.setTxPacketInstruction(INST_READ);
+                Dxl.setTxPacketParameter(0, P_PRESENT_POSITION_L);
+                Dxl.setTxPacketParameter(1, 2);
+                Dxl.setTxPacketLength(2);
+                Dxl.txrxPacket();
+                // return a packet: FF FF id Len Err params check
+                if ((Dxl.getResult() == (1 << COMM_RXSUCCESS)) &&
+                    (Dxl.getRxPacketLength() >= 2))
+                {
+                  unsigned char loByte = Dxl.getRxPacketParameter(0);
+                  unsigned char hiByte = Dxl.getRxPacketParameter(1);
+                  SerialUSB.write(loByte);
+                  SerialUSB.write(hiByte);
+                  checksum = (checksum + loByte) % 256;
+                  checksum = (checksum + hiByte) % 256;
+                }
+                else
+                {
+//                  // return an error packet: FF FF id Len Err=dlx read failed, params=None check
+//                  statusPacket(id, ERR_DLX_READ_FAILED);  // TODO cannot! already sent most of a packet!
+                  blink(4);
+                  break;
+                }
+              }
               SerialUSB.write(255 - ((checksum) % 256));
               break;
 
@@ -437,4 +483,5 @@ void loop()
   // update joints
   bioloid.interpolateStep();
 }
+
 

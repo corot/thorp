@@ -29,6 +29,7 @@
 /* ArbotiX (id:253) Instruction Definitions */
 #define ARB_READ_DATA       2
 #define ARB_WRITE_DATA      3
+#define ARB_READ_POSE       6    // experimental: read position for all servos
 #define ARB_SIZE_POSE       7    // pose size: a single param for size of pose
 #define ARB_LOAD_POSE       8    // load pose: index, then pose positions (# of params = 2*pose_size)
 #define ARB_LOAD_SEQ        9    // seq size: a single param for the size of the seq
@@ -67,6 +68,8 @@
 
 /* Error Codes */
 #define ERR_CHECKSUM        16
+#define ERR_WRONG_PARAM     17
+#define ERR_READ_FAILED     18
 
 /* Packet Decoding */
 int mode = 0;                   // where we are in the frame
