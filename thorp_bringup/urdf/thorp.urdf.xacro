@@ -134,13 +134,14 @@
 
   <!-- The camera itself -->
   <joint name="senz3d_calib_joint" type="fixed">
+    <!-- Ideal extrinsic parameters obtained from robot model -->
+    <xacro:if value="$(arg simulation)">
+      <origin xyz="0.02 -0.03 0.022" rpy="0.0 0.65 0.0"/>
+    </xacro:if>
     <!-- Extrinsic parameters obtained through arm-camera calibration:
          http://wiki.ros.org/turtlebot_arm_kinect_calibration -->
-    <xacro:if value="$(arg simulation)">
-      <origin xyz="0.0256095 -0.0275026 0.00772833" rpy="0.0 0.788321 0.0"/>
-    </xacro:if>
     <xacro:unless value="$(arg simulation)">
-      <origin xyz="0.0256095 -0.0275026 0.00772833" rpy="-0.0703076 0.788321 -0.0731844"/>
+      <origin xyz="0.0285866 -0.03 0.0224632" rpy="-0.0488757 0.65176 -0.0463025"/>
     </xacro:unless>
     <parent link="senz3d_mount_link"/>
     <child link="senz3d_calib_link"/>
