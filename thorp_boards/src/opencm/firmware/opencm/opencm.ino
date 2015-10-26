@@ -19,6 +19,9 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#define MAX_NUM_SERVOS  5
+
+
 #include <CM9_BC.h>
 
 #include "opencm.h"
@@ -26,8 +29,6 @@
 Dynamixel Dxl(1);
 Dynamixel *pDxl = &Dxl;
 BioloidController bioloid;
-
-#define MAX_NUM_SERVOS  5
 
 typedef struct
 {
@@ -169,16 +170,19 @@ void statusPacket(int id, int err)
  *   same as ax-12 table, except, we define new instructions for Arbotix
  *
  * ID = 253 for these special commands!
- * Pose Size = 7, followed by single param: size of pose
- * Load Pose = 8, followed by index, then pose positions (# of param = 2*pose_size+1)
- * Seq Size = 9, followed by single param: size of seq
- * Load Seq = A, followed by index/times (# of parameters = 3*seq_size) 
- * Play Seq = B, no params
- * Loop Seq = C, 
+ * Read Pose  = 4, read position for the first N servos  XXX experimental
+ * Write Pose = 5, write position for the first N servos  XXX experimental
+ * Pose Size  = 7, followed by single param: size of pose
+ * Load Pose  = 8, followed by index, then pose positions (# of param = 2*pose_size+1)
+ * Seq Size   = 9, followed by single param: size of seq
+ * Load Seq   = A, followed by index/times (# of parameters = 3*seq_size) 
+ * Play Seq   = B, no params
+ * Loop Seq   = C, 
  */
 void loop()
 {
   int i, poseSize;
+  bool error = false;
 
   // process messages
   while (SerialUSB.available() > 0)
@@ -235,16 +239,17 @@ void loop()
         else if (id == 253) // ID = 253, ArbotiX instruction
         {
           // ID = 253, ArbotiX special instructions
-          // Read Pose = 6, read position for the first N servos  XXX experimental
-          // Pose Size = 7, followed by single param: size of pose
-          // Load Pose = 8, followed by index, then pose positions (# of param = 2*pose_size+1)
-          // Load Seq = 9, followed by index/times (# of parameters = 3*seq_size)
-          // Play Seq = A, no params
+          // Read Pose  = 4, read position for the first N servos  XXX experimental
+          // Write Pose = 5, write position for the first N servos  XXX experimental
+          // Pose Size  = 7, followed by single param: size of pose
+          // Load Pose  = 8, followed by index, then pose positions (# of param = 2*pose_size+1)
+          // Load Seq   = 9, followed by index/times (# of parameters = 3*seq_size)
+          // Play Seq   = A, no params
           switch (ins)
           {
             case ARB_WRITE_DATA:
               // send return packet
-              blink(3); // Not implemented!!!
+              blink(2); // Not implemented!!!
               //          statusPacket(id, handleWrite());
               break;
 
@@ -254,7 +259,7 @@ void loop()
               SerialUSB.write(0xff);
               SerialUSB.write(id);
               SerialUSB.write((unsigned char)2 + params[1]);
-              SerialUSB.write((unsigned char)0);
+              SerialUSB.write((unsigned char)OK);
               // send actual data
               checksum += handleRead();
               SerialUSB.write(255 - ((checksum) % 256));
@@ -267,53 +272,112 @@ void loop()
                 statusPacket(id, ERR_WRONG_PARAM);
                 break;
               }
-                
+              
+              // read present position from each servos and send those for servos from ID = 1 to ID = params[1]
+              bioloid.readPose();
+
               checksum = id + 2 + 2*params[1];
               SerialUSB.write(0xff);
               SerialUSB.write(0xff);
               SerialUSB.write(id);
               SerialUSB.write((unsigned char)2 + 2*params[1]); // id + err + 2 * <servos to read>
-              SerialUSB.write((unsigned char)0);
-              // read pose for servos from ID = 1 to ID = params[1]
+              SerialUSB.write((unsigned char)OK);
               for (int servo_id = 1; servo_id <= params[1]; servo_id++)
               {
-                Dxl.setTxPacketId(servo_id);
-                Dxl.setTxPacketInstruction(INST_READ);
-                Dxl.setTxPacketParameter(0, P_PRESENT_POSITION_L);
-                Dxl.setTxPacketParameter(1, 2);
-                Dxl.setTxPacketLength(2);
-                Dxl.txrxPacket();
-                // return a packet: FF FF id Len Err params check
-                if ((Dxl.getResult() == (1 << COMM_RXSUCCESS)) &&
-                    (Dxl.getRxPacketLength() >= 2))
-                {
-                  unsigned char loByte = Dxl.getRxPacketParameter(0);
-                  unsigned char hiByte = Dxl.getRxPacketParameter(1);
-                  SerialUSB.write(loByte);
-                  SerialUSB.write(hiByte);
-                  checksum = (checksum + loByte) % 256;
-                  checksum = (checksum + hiByte) % 256;
-                }
-                else
-                {
-//                  // return an error packet: FF FF id Len Err=dlx read failed, params=None check
-//                  statusPacket(id, ERR_DLX_READ_FAILED);  // TODO cannot! already sent most of a packet!
-                  blink(4);
-                  break;
-                }
+                int pos = bioloid.getCurPose(servo_id);
+
+                checksum += DXL_LOBYTE(pos);
+                checksum += DXL_HIBYTE(pos);
+                SerialUSB.write(DXL_LOBYTE(pos));
+                SerialUSB.write(DXL_HIBYTE(pos));
               }
               SerialUSB.write(255 - ((checksum) % 256));
               break;
 
+            case ARB_WRITE_POSE:
+              if (params[1] > MAX_NUM_SERVOS)
+              {
+                // return an error packet: FF FF id Len Err=wrong parameter, params=None check
+                statusPacket(id, ERR_WRONG_PARAM);
+                break;
+              }
+
+              // write position for servos from ID = 1 to ID = params[1]; ignore negative values
+              for (int servo_id = 1; servo_id <= params[1]; servo_id++)
+              {
+                word pos = DXL_MAKEWORD(params[servo_id*2], params[servo_id*2 + 1]);
+                if (pos >= 0)
+                  Dxl.writeWord(servo_id, P_GOAL_POSITION_L, pos);
+              }
+              statusPacket(id, OK);
+              //  if (Dxl.getResult() == (1 << COMM_RXSUCCESS))  HINT: we don't check result because it always reports error!!!
+
+              break;
+
+            case ARB_WRITE_POSE+30: // attempt (failed) to reuse CM9_BC library to write; we lack a setCurPose function, and setNextPose is only used when interpolating
+              if (params[1] > MAX_NUM_SERVOS)
+              {
+                // return an error packet: FF FF id Len Err=wrong parameter, params=None check
+                statusPacket(id, ERR_WRONG_PARAM);
+                break;
+              }
+
+              // write position for servos from ID = 1 to ID = params[1]
+              for (int servo_id = 1; servo_id <= params[1]; servo_id++)
+              {
+                int pos = DXL_MAKEWORD(params[servo_id*2], params[servo_id*2 + 1]);
+                if (pos >= 0)
+                  bioloid.setNextPose(servo_id, pos);
+
+//                Dxl.writeWord(servo_id, P_GOAL_POSITION_L, x);
+//                unsigned char loByte = Dxl.getRxPacketParameter(0);
+//                unsigned char hiByte = Dxl.getRxPacketParameter(1);
+//
+              }
+              // update joints
+              /////bioloid.interpolateStep();
+              bioloid.writePose();
+
+//                if (Dxl.getResult() == (1 << COMM_RXSUCCESS))  FAIL: always reports error!!!
+//                {
+//                  int lennie = Dxl.getRxPacketLength() + 4;
+//                  if (lennie >= 6)
+//                  {
+//                    for (i = 0; i < lennie; i++)
+//                    {
+//                      Dxl.getRxPacketParameter(i - 5);
+//                    }
+//                  }
+//                }
+//                else
+//                {
+//                  wrong++;
+//                }
+//              }
+//              
+//              if (wrong)
+//              {
+//                // return an error packet: FF FF id Len Err=dlx write failed, params=None check
+//                statusPacket(id, ERR_WRITE_FAILED);
+//                blink(wrong);
+//              }
+//              else
+//              {
+//                statusPacket(id, OK);
+//              }
+
+              statusPacket(id, OK);
+              break;
+
             case ARB_SIZE_POSE: // Pose Size = 7, followed by single param: size of pose
-              statusPacket(id, 0);
+              statusPacket(id, OK);
               bioloid.setPoseSize(params[0]);
               bioloid.readPose();
               //SerialUSB.println(poseSize);
               break;
 
             case ARB_LOAD_POSE: // Load Pose = 8, followed by index, then pose positions (# of param = 2*pose_size)
-              statusPacket(id, 0);
+              statusPacket(id, OK);
               poseSize = bioloid.getPoseSize();
 //                                                      SerialUSB.print("New Pose:");
               for (i = 0; i < poseSize; i++)
@@ -326,7 +390,7 @@ void loop()
               break;
 
             case ARB_LOAD_SEQ: // Load Seq = 9, followed by index/times (# of parameters = 3*seq_size) 
-              statusPacket(id, 0);
+              statusPacket(id, OK);
               for (i = 0; i < (length - 2) / 3; i++)
               {
                 sequence[i].pose = params[(i * 3)];
@@ -339,7 +403,7 @@ void loop()
               break;
 
             case ARB_PLAY_SEQ: // Play Seq = A, no params   
-              statusPacket(id, 0);
+              statusPacket(id, OK);
               seqPos = 0;
               while (sequence[seqPos].pose != 0xff)
               {
@@ -370,7 +434,7 @@ void loop()
               break;
 
             case ARB_LOOP_SEQ: // Play Seq until we recieve a 'H'alt
-              statusPacket(id, 0);
+              statusPacket(id, OK);
               while (1)
               {
                 seqPos = 0;
