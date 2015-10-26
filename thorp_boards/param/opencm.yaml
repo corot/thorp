@@ -1,5 +1,7 @@
 port: /dev/opencm
 baud: 38400
+rate: 100
+timeout: 0.5
 sync_read: false
 sync_write: false
 read_rate: 40
@@ -33,5 +35,5 @@ controllers: {
 }
 
 analog_sensors: {
-  arm_ir_ranger: {rate: 10, pin: 0, length: 2}
+  arm_ir_ranger: {rate: 20, pin: 0, length: 2}
 }
