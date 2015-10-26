@@ -15,14 +15,14 @@
          for the first joint (arm_shoulder_pan) to allow accessing to different operational 
          areas, e.g. left handed vs. right handed robot -->
     <xacro:property name="joints_vlimit" value="0.3571"/>
-    <xacro:property name="pan_llimit" value="-4.189"/>
-    <xacro:property name="pan_ulimit" value="1.047"/>
+    <xacro:property name="pan_llimit" value="-2.617"/>
+    <xacro:property name="pan_ulimit" value=" 2.617"/>
     <xacro:property name="shoulder_llimit" value="-2.617"/>
-    <xacro:property name="shoulder_ulimit" value="2.617"/>
+    <xacro:property name="shoulder_ulimit" value=" 2.617"/>
     <xacro:property name="elbow_llimit" value="-2.617"/>
-    <xacro:property name="elbow_ulimit" value="2.617"/>
+    <xacro:property name="elbow_ulimit" value=" 2.617"/>
     <xacro:property name="wrist_llimit" value="-1.745"/>
-    <xacro:property name="wrist_ulimit" value="1.745"/>
+    <xacro:property name="wrist_ulimit" value=" 1.745"/>
 
     <turtlebot_arm parent="base_link" color="white" gripper_color="Green"
                    pincher_gripper="false" turtlebot_gripper="true">

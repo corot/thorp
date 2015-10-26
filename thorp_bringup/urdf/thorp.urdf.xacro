@@ -26,18 +26,19 @@
 
   <!-- Turtlebot arm, its controller board and its mounting on Thorp -->
 
-  <!-- Note that the arm position is biased to the left of the robot, and the dead angle also
-       points to the left; with this configuration, the arm can reach most of the top plate.
+  <!-- Note that the arm position is biased to the left of the robot, while the Senz3D camera
+       is biased to the right; with this configuration, the arm lefts doesn't block completely
+       camera view to the operation space.
        We also use a deliberately low joints velocity limit to improve safety and precision -->
   <xacro:property name="joints_vlimit" value="0.3571"/>
-  <xacro:property name="pan_llimit" value="-4.189"/>
-  <xacro:property name="pan_ulimit" value="1.047"/>
+  <xacro:property name="pan_llimit" value="-2.617"/>
+  <xacro:property name="pan_ulimit" value=" 2.617"/>
   <xacro:property name="shoulder_llimit" value="-2.617"/>
-  <xacro:property name="shoulder_ulimit" value="2.617"/>
+  <xacro:property name="shoulder_ulimit" value=" 2.617"/>
   <xacro:property name="elbow_llimit" value="-2.617"/>
-  <xacro:property name="elbow_ulimit" value="2.617"/>
+  <xacro:property name="elbow_ulimit" value=" 2.617"/>
   <xacro:property name="wrist_llimit" value="-1.745"/>
-  <xacro:property name="wrist_ulimit" value="1.745"/>
+  <xacro:property name="wrist_ulimit" value=" 1.745"/>
 
   <turtlebot_arm parent="plate_top_link" color="White" gripper_color="Black"
                  pincher_gripper="false" turtlebot_gripper="true">
