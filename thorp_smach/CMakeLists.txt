@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS actionlib
                                         smach_ros
                                         std_msgs
                                         std_srvs
+                                        keyboard
                                         rospy
                                         tf)
 

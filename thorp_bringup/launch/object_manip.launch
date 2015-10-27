@@ -1,0 +1,83 @@
+<launch>
+  <arg name="external_camera" default="false"/>
+
+  <!--  *********** 3D sensor (on/off-board) **********  -->
+
+  <include if="$(arg external_camera)" file="$(find turtlebot_bringup)/launch/3dsensor.launch"/>
+
+  <include file="$(find thorp_bringup)/launch/includes/softkinetic.launch.xml">
+    <arg name="config_file" value="$(find thorp_bringup)/param/senz3d/manipulation.yaml"/>
+  </include>
+
+  <!--  ************* Thorp bringup stuff *************  -->
+
+  <include file="$(find thorp_bringup)/launch/includes/state_publisher.launch.xml"/>
+
+  <include file="$(find thorp_bringup)/launch/includes/arm.launch.xml"/>
+
+  <!-- Fake base's wheels joint state, as we are not running the full robot by now -->
+  <node name="fake_wheels_joints_pub" pkg="thorp_bringup" type="fake_joint_pub.py"/>
+
+  <node name="arbotix_gui" pkg="arbotix_python" type="arbotix_gui" output="screen"/>
+
+
+  <!--  ************* Moveit config stuff *************  -->
+
+  <!-- Load the URDF, SRDF and other .yaml configuration files on the param server -->
+  <include file="$(find thorp_moveit_config)/launch/planning_context.launch">
+    <arg name="load_robot_description" value="false"/>
+  </include>
+
+  <!-- Run the main MoveIt executable to provide move groups -->
+  <include file="$(find thorp_moveit_config)/launch/move_group.launch">
+    <arg name="allow_trajectory_execution" value="true"/>  
+    <arg name="fake_execution" value="false"/>
+    <arg name="info" value="true"/>
+  </include>
+
+  <!--  Fake global reference to make Moveit octomap happy 
+  <node pkg="tf" type="static_transform_publisher" name="fake_global_reference"
+        args="0.0 0.0 0.0 0.0 0.0 0.0 /map /base_footprint 100"/>-->
+
+  <!--  *********** Object manipulation demo **********  -->
+
+  <node name="object_detection_action_server" pkg="turtlebot_arm_object_manipulation" type="object_detection_action_server" output="screen">
+    <rosparam param="table_pose">[0.09, 0.0, 0.015]</rosparam>
+    <remap unless="$(arg external_camera)" from="/camera/depth_registered/points" to="/senz3d/depth/points"/>
+  </node>
+
+  <node name="object_pick_and_place_action_server" pkg="turtlebot_arm_object_manipulation" type="object_pick_and_place_action_server" output="screen">
+  </node>
+  
+  <node name="object_interactive_manip_action_server" pkg="turtlebot_arm_object_manipulation" type="object_interactive_manip_action_server" output="screen">
+    <param name="bump_size" value="0.025"/>
+  </node>
+
+  <!--  ****** Executive smach and visualization ******     OJO  siempre SIGTERM - evitar -->
+
+  <node name="object_manipulation_smach" pkg="thorp_smach" type="object_manip.py" output="screen" >
+    <param name="arm_link" value="arm_base_link"/>
+    <param name="gripper_open" value="0.045"/>
+    <param name="gripper_closed" value="0.022"/>
+    <param name="z_up" value="0.10"/>
+    <param name="obj_size" value="0.025"/>
+  </node>
+
+  <node name="object_manip_smach_viewer" pkg="smach_viewer" type="smach_viewer.py" output="screen"/>
+
+  <node name="object_manipulation_keyboard" pkg="keyboard" type="keyboard" output="screen"/>
+  
+  <!-- **************** ORK tabletop *****************  -->
+
+  <include file="$(find thorp_obj_rec)/launch/includes/tabletop.launch.xml" ns="tabletop">
+    <arg name="as_server"    value="true"/>
+    <arg name="config_file"  value="$(find thorp_obj_rec)/config/tabletop/thorp.detection.object.ros.ork"/>
+    <arg name="robot_frame"  value="base_footprint"/>
+    <arg name="sensor_frame" value="senz3d_camera_depth_optical_frame"/>
+  </include>
+
+
+  <!-- Run Rviz and load the default config to see the state of the move_group node and the object manipulation interactive markers -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_manip.rviz"/>
+
+</launch>

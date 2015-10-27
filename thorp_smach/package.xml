@@ -27,6 +27,7 @@
   <run_depend>smach_viewer</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>std_srvs</run_depend>
+  <run_depend>keyboard</run_depend>
   <run_depend>rospy</run_depend>
   <run_depend>tf</run_depend>
 </package>
