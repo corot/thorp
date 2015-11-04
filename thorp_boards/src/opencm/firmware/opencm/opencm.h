@@ -68,11 +68,12 @@
 #define REG_USER            100 // 
 
 /* Error Codes */
-#define OK                   0
-#define ERR_CHECKSUM        16
-#define ERR_WRONG_PARAM     17
-#define ERR_READ_FAILED     18
-#define ERR_WRITE_FAILED    19
+#define OK                    0
+#define ERR_WRONG_CHECKSUM    16
+#define ERR_WRONG_PARAMETER   17
+#define ERR_DXL_READ_FAILED   18
+#define ERR_DXL_WRITE_FAILED  19
+#define ERR_NOT_IMPLEMENTED   20
 
 /* Packet Decoding */
 int mode = 0;                   // where we are in the frame

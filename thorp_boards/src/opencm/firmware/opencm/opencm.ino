@@ -143,13 +143,50 @@ int handleRead()
   return checksum;
 }
 
+
+/*
+ * Handle a write to ArbotiX registers.
+ */
+int handleWrite()
+{
+  int addr = params[0];
+  int bytes = params[1];
+  int value;
+
+  if (bytes == 1)
+  {
+    value = params[2];
+  }
+  else if (bytes == 2)
+  {
+    value = DXL_MAKEWORD(params[2], params[3]);
+  }
+  else
+  {
+    return ERR_WRONG_PARAMETER;
+  }
+  
+// TODO: not tested!!!               REG_DIGITAL_OUT0    47  // First digital pin to write
+//                                // base + index, bit 1 = value (0,1), bit 0 = direction (0,1)
+
+  if (addr >= REG_DIGITAL_OUT0 && addr < REG_RESERVED)
+  {
+    digitalWrite(addr - REG_DIGITAL_OUT0, value);
+  }
+
+  return OK;
+}
+
 void setup()
 {
-  Dxl.begin(1);
+  Dxl.begin(3);
   SerialUSB.begin();
 
   bioloid.setup(MAX_NUM_SERVOS);
   pinMode(BOARD_LED_PIN, OUTPUT);
+  
+  for (int id = 1; id <= MAX_NUM_SERVOS; id++)
+    Dxl.jointMode(id);
 }
 
 /*
@@ -192,9 +229,7 @@ void loop()
     {
       if (SerialUSB.read() == 0xff)
       {
-        // mode = 2;
         mode = 1;
-        // digitalWrite(0,HIGH-digitalRead(0));
       }
     }
     else if (mode == 1) // another start byte
@@ -234,7 +269,7 @@ void loop()
         if ((checksum & 0xFF) != 255)
         {
           // return an error packet: FF FF id Len Err=bad checksum, params=None check
-          statusPacket(id, ERR_CHECKSUM);
+          statusPacket(id, ERR_WRONG_CHECKSUM);
         }
         else if (id == 253) // ID = 253, ArbotiX instruction
         {
@@ -248,9 +283,7 @@ void loop()
           switch (ins)
           {
             case ARB_WRITE_DATA:
-              // send return packet
-              blink(2); // Not implemented!!!
-              //          statusPacket(id, handleWrite());
+              statusPacket(id, handleWrite());
               break;
 
             case ARB_READ_DATA:
@@ -269,23 +302,20 @@ void loop()
               if (params[1] > MAX_NUM_SERVOS)
               {
                 // return an error packet: FF FF id Len Err=wrong parameter, params=None check
-                statusPacket(id, ERR_WRONG_PARAM);
+                statusPacket(id, ERR_WRONG_PARAMETER);
                 break;
               }
               
               // read present position from each servos and send those for servos from ID = 1 to ID = params[1]
-              bioloid.readPose();
-
               checksum = id + 2 + 2*params[1];
               SerialUSB.write(0xff);
               SerialUSB.write(0xff);
               SerialUSB.write(id);
-              SerialUSB.write((unsigned char)2 + 2*params[1]); // id + err + 2 * <servos to read>
-              SerialUSB.write((unsigned char)OK);
+              SerialUSB.write((unsigned char)2 + 2*params[1]);  // id + err + 2 * <servos to read>
+              SerialUSB.write((unsigned char)OK);  // we report always OK, but wrong positions will be -1
               for (int servo_id = 1; servo_id <= params[1]; servo_id++)
               {
-                int pos = bioloid.getCurPose(servo_id);
-
+                int pos = Dxl.getPosition(servo_id);
                 checksum += DXL_LOBYTE(pos);
                 checksum += DXL_HIBYTE(pos);
                 SerialUSB.write(DXL_LOBYTE(pos));
@@ -298,7 +328,7 @@ void loop()
               if (params[1] > MAX_NUM_SERVOS)
               {
                 // return an error packet: FF FF id Len Err=wrong parameter, params=None check
-                statusPacket(id, ERR_WRONG_PARAM);
+                statusPacket(id, ERR_WRONG_PARAMETER);
                 break;
               }
 
@@ -307,65 +337,8 @@ void loop()
               {
                 word pos = DXL_MAKEWORD(params[servo_id*2], params[servo_id*2 + 1]);
                 if (pos >= 0)
-                  Dxl.writeWord(servo_id, P_GOAL_POSITION_L, pos);
+                  Dxl.goalPosition(servo_id, pos);
               }
-              statusPacket(id, OK);
-              //  if (Dxl.getResult() == (1 << COMM_RXSUCCESS))  HINT: we don't check result because it always reports error!!!
-
-              break;
-
-            case ARB_WRITE_POSE+30: // attempt (failed) to reuse CM9_BC library to write; we lack a setCurPose function, and setNextPose is only used when interpolating
-              if (params[1] > MAX_NUM_SERVOS)
-              {
-                // return an error packet: FF FF id Len Err=wrong parameter, params=None check
-                statusPacket(id, ERR_WRONG_PARAM);
-                break;
-              }
-
-              // write position for servos from ID = 1 to ID = params[1]
-              for (int servo_id = 1; servo_id <= params[1]; servo_id++)
-              {
-                int pos = DXL_MAKEWORD(params[servo_id*2], params[servo_id*2 + 1]);
-                if (pos >= 0)
-                  bioloid.setNextPose(servo_id, pos);
-
-//                Dxl.writeWord(servo_id, P_GOAL_POSITION_L, x);
-//                unsigned char loByte = Dxl.getRxPacketParameter(0);
-//                unsigned char hiByte = Dxl.getRxPacketParameter(1);
-//
-              }
-              // update joints
-              /////bioloid.interpolateStep();
-              bioloid.writePose();
-
-//                if (Dxl.getResult() == (1 << COMM_RXSUCCESS))  FAIL: always reports error!!!
-//                {
-//                  int lennie = Dxl.getRxPacketLength() + 4;
-//                  if (lennie >= 6)
-//                  {
-//                    for (i = 0; i < lennie; i++)
-//                    {
-//                      Dxl.getRxPacketParameter(i - 5);
-//                    }
-//                  }
-//                }
-//                else
-//                {
-//                  wrong++;
-//                }
-//              }
-//              
-//              if (wrong)
-//              {
-//                // return an error packet: FF FF id Len Err=dlx write failed, params=None check
-//                statusPacket(id, ERR_WRITE_FAILED);
-//                blink(wrong);
-//              }
-//              else
-//              {
-//                statusPacket(id, OK);
-//              }
-
               statusPacket(id, OK);
               break;
 
@@ -468,7 +441,8 @@ void loop()
               // ARB_TEST is deprecated and removed
 
             default:
-              blink(5); // Not implemented!!!  SEND ERROR  TODO
+              statusPacket(id, ERR_NOT_IMPLEMENTED);
+              blink(3); // Not implemented!!!  SEND ERROR  TODO
               break;
           }
         }
@@ -477,67 +451,101 @@ void loop()
           // pass thru
           if (ins == INST_READ)
           {
-            Dxl.setTxPacketId(id);
-            Dxl.setTxPacketInstruction(INST_READ);
-            Dxl.setTxPacketParameter(0, params[0]);
-            Dxl.setTxPacketParameter(1, params[1]);
-            Dxl.setTxPacketLength(2);
-            Dxl.txrxPacket();
-            // return a packet: FF FF id Len Err params check
-            if (Dxl.getResult() == (1 << COMM_RXSUCCESS))
+            if (params[1] == 1)
             {
-              int lennie = Dxl.getRxPacketLength() + 4;
-              if (lennie >= 6)
+              byte value = Dxl.readByte(id, params[0]);
+              if (value == 0xFF)
               {
-                for (i = 0; i < lennie; i++)
-                {
-                  SerialUSB.write(Dxl.getRxPacketParameter(i - 5));
-                }
+                statusPacket(id, Dxl.getResult());
+              }
+              else
+              {
+                checksum = id + 2 + 1;
+                SerialUSB.write(0xff);
+                SerialUSB.write(0xff);
+                SerialUSB.write(id);
+                SerialUSB.write((unsigned char)2 + 1); // id + err + 1 data byte
+                SerialUSB.write((unsigned char)OK);
+                checksum += value;
+                SerialUSB.write(value);
+                SerialUSB.write(255 - ((checksum) % 256));
+              }
+            }
+            else if (params[1] == 2)
+            {
+              word value = Dxl.readWord(id, params[0]);
+              if (value == 0xFFFF)
+              {
+                statusPacket(id, Dxl.getResult());
+              }
+              else
+              {
+                checksum = id + 2 + 2;
+                SerialUSB.write(0xff);
+                SerialUSB.write(0xff);
+                SerialUSB.write(id);
+                SerialUSB.write((unsigned char)2 + 2); // id + err + 2 data bytes
+                SerialUSB.write((unsigned char)OK);
+                checksum += DXL_LOBYTE(value);
+                checksum += DXL_HIBYTE(value);
+                SerialUSB.write(DXL_LOBYTE(value));
+                SerialUSB.write(DXL_HIBYTE(value));
+                SerialUSB.write(255 - ((checksum) % 256));
+              }
+            }
+            else if (params[1] == 4)
+            {
+              uint32 value = Dxl.readDword(id, params[0]);
+              if (value == 0xFFFFFFFF)
+              {
+                statusPacket(id, Dxl.getResult());
+              }
+              else
+              {
+                checksum = id + 2 + 4;
+                SerialUSB.write(0xff);
+                SerialUSB.write(0xff);
+                SerialUSB.write(id);
+                SerialUSB.write((unsigned char)2 + 4); // id + err + 4 data bytes
+                SerialUSB.write((unsigned char)OK);
+                checksum += DXL_LOBYTE(DXL_LOWORD(value));
+                checksum += DXL_HIBYTE(DXL_LOWORD(value));
+                checksum += DXL_LOBYTE(DXL_HIWORD(value));
+                checksum += DXL_HIBYTE(DXL_HIWORD(value));
+                SerialUSB.write(DXL_LOBYTE(DXL_LOWORD(value)));
+                SerialUSB.write(DXL_HIBYTE(DXL_LOWORD(value)));
+                SerialUSB.write(DXL_LOBYTE(DXL_HIWORD(value)));
+                SerialUSB.write(DXL_HIBYTE(DXL_HIWORD(value)));
+                SerialUSB.write(255 - ((checksum) % 256));
               }
             }
             else
             {
-              SerialUSB.write(0xff);
-              SerialUSB.write(0xff);
-              SerialUSB.write(id);
-              SerialUSB.write(2);
-              SerialUSB.write(128);
-              SerialUSB.write(255 - ((130 + id) & 0xFF));
+              statusPacket(id, ERR_WRONG_PARAMETER);
             }
           }
           else if (ins == INST_WRITE)
           {
             if (length == 4)
             {
-              Dxl.writeByte(id, params[0], params[1]);
+              statusPacket(id, Dxl.writeByte(id, params[0], params[1])
+                        ? OK : Dxl.getResult());
+            }
+            else if (length == 5)
+            {
+              statusPacket(id, Dxl.writeWord(id, params[0], DXL_MAKEWORD(params[1], params[2]))
+                        ? OK : Dxl.getResult());
+            }
+            else if (length == 7)
+            {
+              statusPacket(id, Dxl.writeDword(id, params[0], DXL_MAKEDWORD(DXL_MAKEWORD(params[1], params[2]),
+                                                                           DXL_MAKEWORD(params[3], params[4])))
+                        ? OK : Dxl.getResult());
             }
             else
             {
-              int x = DXL_MAKEWORD(params[1], params[2]);
-              Dxl.writeWord(id, params[0], x);
+              statusPacket(id, ERR_WRONG_PARAMETER);
             }
-            // return a packet: FF FF id Len Err params check
-            if (Dxl.getResult() == (1 << COMM_RXSUCCESS))
-            {
-              int lennie = Dxl.getRxPacketLength() + 4;
-              if (lennie >= 6)
-              {
-                for (i = 0; i < lennie; i++)
-                {
-                  SerialUSB.write(Dxl.getRxPacketParameter(i - 5));
-                }
-              }
-            }
-            else
-            {
-              SerialUSB.write(0xff);
-              SerialUSB.write(0xff);
-              SerialUSB.write(id);
-              SerialUSB.write(2);
-              SerialUSB.write(128);
-              SerialUSB.write(255 - ((130 + id) & 0xFF));
-            }
-
           }
         }
       }
@@ -547,5 +555,3 @@ void loop()
   // update joints
   bioloid.interpolateStep();
 }
-
-
