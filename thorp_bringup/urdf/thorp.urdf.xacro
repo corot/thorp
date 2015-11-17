@@ -29,8 +29,9 @@
   <!-- Note that the arm position is biased to the left of the robot, while the Senz3D camera
        is biased to the right; with this configuration, the arm lefts doesn't block completely
        camera view to the operation space.
-       We also use a deliberately low joints velocity limit to improve safety and precision -->
-  <xacro:property name="joints_vlimit" value="0.3571"/>
+       We also use a deliberately low joints velocity limit to improve safety and precision;
+       The phisical limit of the AX-12 is 114 rpm (684 deg/s) -->
+  <xacro:property name="joints_vlimit" value="0.8"/>
   <xacro:property name="pan_llimit" value="-2.617"/>
   <xacro:property name="pan_ulimit" value=" 2.617"/>
   <xacro:property name="shoulder_llimit" value="-2.617"/>
