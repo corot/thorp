@@ -19,9 +19,17 @@ USER_COMMANDS = {
     keyboard_msgs.Key.KEY_q: "quit"
 }
 
+app_started = False
+
+def started_cb(ud):
+    return app_started
+    
 def keydown_cb(ud, msg):
     rospy.loginfo("Key pressed: %s", msg.code)
-    if msg.code in USER_COMMANDS:
+    if msg.code == keyboard_msgs.Key.KEY_s:
+        global app_started
+        app_started = True
+    elif msg.code in USER_COMMANDS:
         om_sm.userdata['user_command'] = USER_COMMANDS[msg.code]
         om_sm.request_preempt()
    
@@ -29,11 +37,64 @@ def keydown_cb(ud, msg):
 
 def child_term_cb(states):
     rospy.loginfo("Concurrency child terminated: %s", states)
-   
+    if None not in states.values():
+        rospy.loginfo("All concurrency children terminated; shutdown executive SMACH")
+        rospy.signal_shutdown("All concurrency children done")
+
     # Preempt all other states 
     return True
 
-                                        
+
+class ObjDetectedCondition(smach.State):
+    '''Check for the object detection result to retry if no objects where detected'''
+    def __init__(self):
+        ''' '''
+        smach.State.__init__(self, outcomes=['preempted', 'satisfied', 'fold_arm', 'retry'],
+                                   input_keys=['od_attempt', 'obj_names'],
+                                   output_keys=['od_attempt'])
+
+    def execute(self, userdata):
+        rospy.sleep(2.0)
+        if self.preempt_requested():
+            self.service_preempt()
+            return 'preempted'
+        if len(userdata.obj_names) > 0:
+            userdata.od_attempt = 0
+            return 'satisfied'
+        userdata.od_attempt += 1
+        if userdata.od_attempt == 1:
+            return 'fold_arm'
+        return 'retry'
+
+class WaitCondition(smach.State):
+    '''Wait until a condition is satisfied. 
+    When the condition is satisfied, the value that matched the condition is stored in the userdata.
+    The callback must return that value or something that evaluates to False otherwise. 
+    The arguments to the callback are userdata, robot'''
+    def __init__(self, condition_callback, timeout):
+        ''' ''' 
+        smach.State.__init__(self,
+                             outcomes=['satisfied', 'timed_out', 'preempted'],
+                             output_keys=['trigger_value'])
+        self.condition_callback = condition_callback
+        self.timeout = timeout
+
+    def execute(self, userdata): 
+        start_time = rospy.Time.now()
+
+        while (rospy.Time.now() - start_time) < rospy.Duration(self.timeout) \
+          and not rospy.is_shutdown():
+            cb_output = self.condition_callback(userdata)
+            if cb_output:
+                userdata.trigger_value = cb_output
+                return 'satisfied'
+            if self.preempt_requested():
+                self.service_preempt()
+                return 'preempted'
+            rospy.sleep(0.1)
+        app_started = True
+        return 'timed_out'
+
 class ActionPreempted(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['reset', 'fold', 'quit'],
@@ -43,9 +104,9 @@ class ActionPreempted(smach.State):
         rospy.loginfo("Executing User Command '%s'", ud['user_command'])
         return ud['user_command']
 
-om_sm = smach.StateMachine(outcomes=['success',
-                                     'aborted',
-                                     'preempted'])
+# Object manipulation level sm; must be global so the concurrent USER_CMDS sm can signal to it the
+# commands received by keyboard.  TODO: there must be a better way to do this!!!
+om_sm = smach.StateMachine(outcomes=['quit', 'error'])
 
 def main():
     rospy.init_node('object_manipulation_smach')
@@ -55,79 +116,126 @@ def main():
         om_sm.userdata.true = True
         om_sm.userdata.false = False
         ''' table poses '''
+        om_sm.userdata.od_attempt     = 0
         om_sm.userdata.frame          = rospy.get_param('~arm_link', '/arm_link')
         om_sm.userdata.gripper_open   = rospy.get_param('~gripper_open', 0.042)
         om_sm.userdata.gripper_closed = rospy.get_param('~gripper_closed', 0.024)
-        om_sm.userdata.z_up           = rospy.get_param('~z_up', 0.12)
-        om_sm.userdata.block_size     = rospy.get_param('~block_size', 0.025)
-        om_sm.userdata.blocks         = geometry_msgs.msg.PoseArray()
-        om_sm.userdata.pickup_pose    = geometry_msgs.msg.Pose()
+        om_sm.userdata.obj_size       = rospy.get_param('~obj_size', 0.025)
+        om_sm.userdata.obj_poses      = geometry_msgs.msg.PoseArray()
+        om_sm.userdata.obj_names      = []
+        om_sm.userdata.obj_name       = std_msgs.msg.String()
+        om_sm.userdata.pick_pose      = geometry_msgs.msg.Pose()
         om_sm.userdata.place_pose     = geometry_msgs.msg.Pose()
-        om_sm.userdata.topic          = ''
+        om_sm.userdata.named_pose_target_type = 3  ### turtlebot_arm_object_manipulation.msg.MoveToTargetActionGoal.NAMED_TARGET
+        om_sm.userdata.arm_folded_named_pose = 'resting'
 
-        smach.StateMachine.add('BlockDetection',
-                               smach_ros.SimpleActionState('object_detection',
-                                                           ObjectDetectionAction,
-                                                           goal_slots=['frame'],
-                                                           result_slots=['blocks']),
-                               remapping={'frame':'frame',
-                                          'table_height':'table_height',
-                                          'block_size':'block_size',
-                                          'blocks':'blocks'},
-                               transitions={'succeeded':'InteractiveManip',
-                                            'aborted':'aborted',
+        smach.StateMachine.add('WaitForStartCmd', WaitCondition(started_cb, 30.0),
+                               transitions={'satisfied':'ObjectDetection', 
+                                            'timed_out':'ObjectDetection', 
                                             'preempted':'ActionPreempted'})
+
+        od_sm = smach.StateMachine(outcomes = ['succeeded','preempted','aborted'],
+                                   input_keys = ['od_attempt', 'frame', 'obj_size', 'obj_names',
+                                                 'named_pose_target_type', 'arm_folded_named_pose'],
+                                   output_keys = ['obj_poses', 'obj_names'])
+        with od_sm:
+            smach.StateMachine.add('ObjectDetectionOnce', smach_ros.SimpleActionState('object_detection',
+                                                           ObjectDetectionAction,
+                                                           goal_slots=['frame', 'obj_size'],
+                                                           result_slots=['obj_poses', 'obj_names']),
+                                remapping={'frame':'frame',
+                                           'obj_size':'obj_size',
+                                           'obj_poses':'obj_poses',
+                                           'obj_names':'obj_names'},
+                               transitions={'succeeded':'ObjDetectedCondition',
+                                            'preempted':'preempted',
+                                            'aborted':'aborted'})
+            
+            smach.StateMachine.add('ObjDetectedCondition', ObjDetectedCondition(),
+                                   remapping={'obj_names':'obj_names'},
+                                   transitions={'satisfied':'succeeded',
+                                                'preempted':'preempted',
+                                                'fold_arm':'ObjDetectionFoldArm',
+                                                'retry':'ObjectDetectionOnce'})
+
+            smach.StateMachine.add('ObjDetectionFoldArm',
+                                   smach_ros.SimpleActionState('move_to_target',
+                                                               MoveToTargetAction,
+                                                               goal_slots=['target_type', 'named_target']),
+                                   remapping={'target_type':'named_pose_target_type',
+                                              'named_target':'arm_folded_named_pose'},
+                                   transitions={'succeeded':'ObjectDetectionOnce',
+                                                'preempted':'preempted',
+                                                'aborted':'aborted'})
+
+        smach.StateMachine.add('ObjectDetection', od_sm,
+                                    remapping={'frame':'frame',
+                                               'obj_size':'obj_size',
+                                               'obj_poses':'obj_poses',
+                                               'obj_names':'obj_names'},
+                                    transitions={'succeeded':'InteractiveManip',
+                                                 'preempted':'ActionPreempted',
+                                                 'aborted':'error'})
 
         smach.StateMachine.add('InteractiveManip',
                                smach_ros.SimpleActionState('interactive_manipulation',
                                                            InteractiveManipAction,
-                                                           goal_slots=['frame', 'block_size'],
-                                                           result_slots=['pickup_pose', 'place_pose']),
+                                                           goal_slots=['frame', 'obj_size', 'obj_poses', 'obj_names'],
+                                                           result_slots=['obj_name', 'pick_pose', 'place_pose']),
                                remapping={'frame':'frame',
-                                          'block_size':'block_size',
-                                          'pickup_pose':'pickup_pose',
+                                          'obj_size':'obj_size',
+                                          'obj_poses':'obj_poses',
+                                          'obj_names':'obj_names',
+                                          'pick_pose':'pick_pose',
                                           'place_pose':'place_pose'},
                                transitions={'succeeded':'PickAndPlace',
-                                            'aborted':'BlockDetection',
-                                            'preempted':'ActionPreempted'})
+                                            'preempted':'ActionPreempted',
+                                            'aborted':'error'})
 
         smach.StateMachine.add('PickAndPlace',
                                smach_ros.SimpleActionState('pick_and_place',
                                                            PickAndPlaceAction,
-                                                           goal_slots=['frame', 'z_up',
-                                                                       'gripper_open', 'gripper_closed',
-                                                                       'pickup_pose', 'place_pose', 'topic'],
+                                                           goal_slots=['frame', 'gripper_open', 'gripper_closed',
+                                                                       'obj_name', 'pick_pose', 'place_pose'],
                                                            result_slots=[]),
                                remapping={'frame':'frame',
-                                          'z_up':'z_up',
                                           'gripper_open':'gripper_open',
                                           'gripper_closed':'gripper_closed',
-                                          'pickup_pose':'pickup_pose',
+                                          'pick_pose':'pick_pose',
                                           'place_pose':'place_pose'},
-                               transitions={'succeeded':'BlockDetection',
-                                            'aborted':'BlockDetection',
-                                            'preempted':'ActionPreempted'})
+                               transitions={'succeeded':'ObjectDetection',
+                                            'preempted':'ActionPreempted',
+                                            'aborted':'ObjectDetection'}) # back to the beginning... we should open the gripper, in case we have picked a block
+
+        smach.StateMachine.add('FoldArm',
+                               smach_ros.SimpleActionState('move_to_target',
+                                                           MoveToTargetAction,
+                                                           goal_slots=['target_type', 'named_target']),
+                               remapping={'target_type':'named_pose_target_type',
+                                          'named_target':'arm_folded_named_pose'},
+                               transitions={'succeeded':'ObjectDetection',
+                                            'preempted':'ActionPreempted',
+                                            'aborted':'error'})
 
         smach.StateMachine.add('ActionPreempted', ActionPreempted(),
-                               transitions={'reset':'BlockDetection', 
-                                            'fold':'BlockDetection', 
-                                            'quit':'aborted'})
+                               transitions={'reset':'ObjectDetection', 
+                                            'fold':'FoldArm', 
+                                            'quit':'quit'})
 
-    sm = smach.Concurrence(outcomes=['success', 'aborted', 'preempted'],
-                                        default_outcome='success',
+    sm = smach.Concurrence(outcomes=['quit', 'error',],
+                           default_outcome='error',
+                           outcome_map={'quit' : {'OBJ_MANIP':'quit'},
+                                        'error' : {'OBJ_MANIP':'error'}},
                                         child_termination_cb=child_term_cb)
 
     with sm:
         smach.set_shutdown_check(rospy.is_shutdown)
         smach.Concurrence.add('OBJ_MANIP', om_sm)
         smach.Concurrence.add('USER_CMDS', 
-                               smach_ros.MonitorState("/object_manipulation_keyboard/keydown", 
+                               smach_ros.MonitorState("object_manipulation_keyboard/keydown", 
                                                       keyboard_msgs.Key, 
                                                       keydown_cb,
-                                                      output_keys=['user_command'])) 
-#                                                       transitions={'valid':'KeyboardInput', 
-#                                                                    'invalid':'KeyboardInput', 
-#                                                                    'preempted':'KeyboardInput'}))
+                                                      output_keys=['user_command']))
 
     # Create and start the introspection server
     sis = smach_ros.IntrospectionServer('object_manipulation', sm, '/SM_ROOT')
