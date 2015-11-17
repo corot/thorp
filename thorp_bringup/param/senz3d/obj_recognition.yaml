@@ -5,13 +5,13 @@ depth_optical_frame : senz3d_camera_depth_optical_frame
 depth_mode          : close  # close or long
 depth_frame_format  : QVGA   # ignored
 depth_frame_rate    : 25     # 25, 30, 50, 60
-confidence_threshold: 700
+confidence_threshold: 440
 
 # Color camera configuration
 rgb_calibration_file: $(find softkinetic_camera)/resources/senz3d.yaml
 rgb_optical_frame:    senz3d_camera_rgb_optical_frame
 color_compression :   MJPEG  # MJPEG, YUY2
-color_frame_format:   VGA    # QQVGA, QVGA, VGA, WXGA, NHD
+color_frame_format:   VGA    # QQVGA, QVGA, VGA, NHD, WXGA_H
 color_frame_rate  :   25     # 25, 30
 
 # Downsampling (using PCL voxel grid filter)
