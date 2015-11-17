@@ -36,7 +36,7 @@
   <xacro:property name="pan_ulimit" value=" 2.617"/>
   <xacro:property name="shoulder_llimit" value="-2.617"/>
   <xacro:property name="shoulder_ulimit" value=" 2.617"/>
-  <xacro:property name="elbow_llimit" value="-2.617"/>
+  <xacro:property name="elbow_llimit" value=" 0.0"/>
   <xacro:property name="elbow_ulimit" value=" 2.617"/>
   <xacro:property name="wrist_llimit" value="-1.745"/>
   <xacro:property name="wrist_ulimit" value=" 1.745"/>
