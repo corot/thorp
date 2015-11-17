@@ -42,15 +42,14 @@
   <!--  *********** Object manipulation demo **********  -->
 
   <node name="object_detection_action_server" pkg="turtlebot_arm_object_manipulation" type="object_detection_action_server" output="screen">
-    <rosparam param="table_pose">[0.09, 0.0, 0.015]</rosparam>
     <remap unless="$(arg external_camera)" from="/camera/depth_registered/points" to="/senz3d/depth/points"/>
   </node>
 
   <node name="object_pick_and_place_action_server" pkg="turtlebot_arm_object_manipulation" type="object_pick_and_place_action_server" output="screen">
+    <param name="vertical_backlash" value="0.015"/>
   </node>
   
   <node name="object_interactive_manip_action_server" pkg="turtlebot_arm_object_manipulation" type="object_interactive_manip_action_server" output="screen">
-    <param name="bump_size" value="0.025"/>
   </node>
 
   <!--  ****** Executive smach and visualization ******     OJO  siempre SIGTERM - evitar -->
@@ -65,7 +64,15 @@
 
   <node name="object_manip_smach_viewer" pkg="smach_viewer" type="smach_viewer.py" output="screen"/>
 
-  <node name="object_manipulation_keyboard" pkg="keyboard" type="keyboard" output="screen"/>
+  <node name="object_manipulation_keyboard" pkg="keyboard" type="keyboard" output="screen">
+    <param name="window_width" value="320"/>
+    <param name="window_height" value="240"/>
+    <param name="window_caption" value="Object manipulation user commands"/>
+    <param name="shown_text" value="Available commands: &#10;  s:  start &#10;  r:  reset &#10;  f:  fold &#10;  q:  quit"/>
+    <param name="text_font" value="/usr/share/fonts/truetype/freefont/FreeMono.ttf"/>
+    <param name="font_size" value="22"/>
+  </node>
+  
   
   <!-- **************** ORK tabletop *****************  -->
 
