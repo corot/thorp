@@ -1,17 +1,16 @@
 port: /dev/opencm
-baud: 38400
+baud: 115200
 rate: 100
-timeout: 0.5
+timeout: 0.25
 sync_read: false
 sync_write: false
-read_rate: 40
-write_rate: 40
+read_rate: 30
+write_rate: 20
 
-# WARN about write_rate: 40 Hz turns to make much softer motions than typical
-# values (15, or the default 10). But if > 15 Hz , the servo controller fails
-# to reach the configured max speed and moves instead at ~ max_speed/pi.
-# No idea why!!!
-# Workaround is to set higher limits here and the desired ones on the robot
+# WARN about write_rate: the arbotix driver can hardly reach write frequencies of
+# 20 Hz, but this value is used for interpolation; the result is that it fails to
+# achieve the configured max speed (it reaches ~80% of it, it seems).
+# Easy workaround is to set higher limits here and the desired ones on the robot
 # description xacro file 
 
 joints: {
