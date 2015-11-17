@@ -142,7 +142,9 @@
     <!-- Extrinsic parameters obtained through arm-camera calibration:
          http://wiki.ros.org/turtlebot_arm_kinect_calibration -->
     <xacro:unless value="$(arg simulation)">
-      <origin xyz="0.0285866 -0.03 0.0224632" rpy="-0.0488757 0.65176 -0.0463025"/>
+      <!-- <origin xyz="0.0277244 -0.0265666 0.0112677" rpy="-0.0328226 0.623228 -0.0172978"/> -->
+      <!-- <origin xyz="0.0273934 -0.015 0.0128054" rpy="-0.0502534 0.629487 -0.05"/> -->
+      <origin xyz="0.0305095 -0.0164463 0.0134078" rpy="-0.0369783 0.634554 -0.000672493"/>
     </xacro:unless>
     <parent link="senz3d_mount_link"/>
     <child link="senz3d_calib_link"/>
