@@ -1,10 +1,12 @@
 <launch>
   <include file="$(find thorp_bringup)/launch/includes/arm.launch.xml"/>
 
-  <include file="$(find thorp_bringup)/launch/includes/softkinetic.launch.xml"/>
-  
   <include file="$(find thorp_bringup)/launch/includes/state_publisher.launch.xml"/>
 
+  <include file="$(find thorp_bringup)/launch/includes/softkinetic.launch.xml">
+    <arg name="config_file" value="$(find thorp_bringup)/param/senz3d/calibration.yaml"/>
+  </include>
+  
   <!-- Fake base's wheels joint state, as here we are not running the full robot -->
   <node name="fake_wheels_joints_pub" pkg="thorp_bringup" type="fake_joint_pub.py"/>
 
@@ -12,12 +14,12 @@
 
   <node name="calibrate_kinect_checkerboard" pkg="turtlebot_arm_kinect_calibration" type="calibrate_kinect_checkerboard" output="screen">
     <param name="fixed_frame" value="/senz3d_mount_link"/>
-    <param name="camera_frame" value="/senz3d_camera_link"/>
+    <param name="camera_frame" value="/senz3d_camera_rgb_frame"/>
     <param name="target_frame" value="/calibration_pattern"/>
     <param name="tip_frame" value="/gripper_link"/>
     <param name="checkerboard_width" value="7"/>
     <param name="checkerboard_height" value="6"/>
-    <param name="checkerboard_grid" value="0.027"/>
+    <param name="checkerboard_grid" value="0.025"/>
     <param name="gripper_tip_x" value="-0.002"/>
     <param name="gripper_tip_y" value="0.020"/>
     <param name="gripper_tip_z" value="-0.0185"/>
