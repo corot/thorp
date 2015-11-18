@@ -35,9 +35,9 @@
     <arg name="info" value="true"/>
   </include>
 
-  <!--  Fake global reference to make Moveit octomap happy 
+  <!--  Fake global reference to make Moveit octomap happy  -->
   <node pkg="tf" type="static_transform_publisher" name="fake_global_reference"
-        args="0.0 0.0 0.0 0.0 0.0 0.0 /map /base_footprint 100"/>-->
+        args="0.0 0.0 0.0 0.0 0.0 0.0 /map /base_footprint 100"/>
 
   <!--  *********** Object manipulation demo **********  -->
 

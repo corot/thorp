@@ -21,7 +21,7 @@ voxel_grid_size      : 0.0025
 # Outlier removal (using PCL radius outlier removal filter)
 use_radius_outlier_filter: true
 search_radius            : 0.025
-min_neighbours           : 80
+min_neighbours           : 120
 
 # PassThrough filter
 use_passthrough_filter: false
