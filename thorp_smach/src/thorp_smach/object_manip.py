@@ -4,6 +4,7 @@ import rospy
 import smach
 import smach_ros
 
+import std_srvs.srv as std_srvs
 import keyboard.msg as keyboard_msgs
 import geometry_msgs.msg as geometry_msgs
 import move_base_msgs.msg as move_base_msgs
@@ -11,6 +12,7 @@ import move_base_msgs.msg as move_base_msgs
 from actionlib import *
 from actionlib_msgs.msg import *
 from turtlebot_arm_object_manipulation.msg import *
+
 
 USER_COMMANDS = {
     keyboard_msgs.Key.KEY_s: "start",
@@ -129,34 +131,46 @@ def main():
         om_sm.userdata.named_pose_target_type = 3  ### turtlebot_arm_object_manipulation.msg.MoveToTargetActionGoal.NAMED_TARGET
         om_sm.userdata.arm_folded_named_pose = 'resting'
 
-        smach.StateMachine.add('WaitForStartCmd', WaitCondition(started_cb, 30.0),
+        smach.StateMachine.add('WaitForStartCmd',
+                               WaitCondition(started_cb, 30.0),
                                transitions={'satisfied':'ObjectDetection', 
                                             'timed_out':'ObjectDetection', 
                                             'preempted':'ActionPreempted'})
 
+        # Object detection sub state machine; iterates over object_detection action state and recovery
+        # mechanism until an object is detected, it's preempted or there's an error (aborted outcome)
         od_sm = smach.StateMachine(outcomes = ['succeeded','preempted','aborted'],
                                    input_keys = ['od_attempt', 'frame', 'obj_size', 'obj_names',
                                                  'named_pose_target_type', 'arm_folded_named_pose'],
                                    output_keys = ['obj_poses', 'obj_names'])
         with od_sm:
-            smach.StateMachine.add('ObjectDetectionOnce', smach_ros.SimpleActionState('object_detection',
-                                                           ObjectDetectionAction,
-                                                           goal_slots=['frame', 'obj_size'],
-                                                           result_slots=['obj_poses', 'obj_names']),
-                                remapping={'frame':'frame',
-                                           'obj_size':'obj_size',
-                                           'obj_poses':'obj_poses',
-                                           'obj_names':'obj_names'},
-                               transitions={'succeeded':'ObjDetectedCondition',
-                                            'preempted':'preempted',
-                                            'aborted':'aborted'})
+            smach.StateMachine.add('ObjDetectionClearOctomap',
+                                   smach_ros.ServiceState('clear_octomap',
+                                                          std_srvs.Empty),
+                                   transitions={'succeeded':'ObjectDetectionOnce',
+                                                'preempted':'ObjectDetectionOnce',
+                                                'aborted':'ObjectDetectionOnce'})
+
+            smach.StateMachine.add('ObjectDetectionOnce',
+                                   smach_ros.SimpleActionState('object_detection',
+                                                               ObjectDetectionAction,
+                                                               goal_slots=['frame', 'obj_size'],
+                                                               result_slots=['obj_poses', 'obj_names']),
+                                   remapping={'frame':'frame',
+                                              'obj_size':'obj_size',
+                                              'obj_poses':'obj_poses',
+                                              'obj_names':'obj_names'},
+                                   transitions={'succeeded':'ObjDetectedCondition',
+                                                'preempted':'preempted',
+                                                'aborted':'aborted'})
             
-            smach.StateMachine.add('ObjDetectedCondition', ObjDetectedCondition(),
+            smach.StateMachine.add('ObjDetectedCondition',
+                                   ObjDetectedCondition(),
                                    remapping={'obj_names':'obj_names'},
                                    transitions={'satisfied':'succeeded',
                                                 'preempted':'preempted',
                                                 'fold_arm':'ObjDetectionFoldArm',
-                                                'retry':'ObjectDetectionOnce'})
+                                                'retry':'ObjDetectionClearOctomap'})
 
             smach.StateMachine.add('ObjDetectionFoldArm',
                                    smach_ros.SimpleActionState('move_to_target',
@@ -164,18 +178,18 @@ def main():
                                                                goal_slots=['target_type', 'named_target']),
                                    remapping={'target_type':'named_pose_target_type',
                                               'named_target':'arm_folded_named_pose'},
-                                   transitions={'succeeded':'ObjectDetectionOnce',
+                                   transitions={'succeeded':'ObjDetectionClearOctomap',
                                                 'preempted':'preempted',
                                                 'aborted':'aborted'})
 
         smach.StateMachine.add('ObjectDetection', od_sm,
-                                    remapping={'frame':'frame',
-                                               'obj_size':'obj_size',
-                                               'obj_poses':'obj_poses',
-                                               'obj_names':'obj_names'},
-                                    transitions={'succeeded':'InteractiveManip',
-                                                 'preempted':'ActionPreempted',
-                                                 'aborted':'error'})
+                               remapping={'frame':'frame',
+                                          'obj_size':'obj_size',
+                                          'obj_poses':'obj_poses',
+                                          'obj_names':'obj_names'},
+                               transitions={'succeeded':'InteractiveManip',
+                                            'preempted':'ActionPreempted',
+                                            'aborted':'error'})
 
         smach.StateMachine.add('InteractiveManip',
                                smach_ros.SimpleActionState('interactive_manipulation',
@@ -217,10 +231,21 @@ def main():
                                             'preempted':'ActionPreempted',
                                             'aborted':'error'})
 
-        smach.StateMachine.add('ActionPreempted', ActionPreempted(),
+        smach.StateMachine.add('FoldArmAndQuit',
+                               smach_ros.SimpleActionState('move_to_target',
+                                                           MoveToTargetAction,
+                                                           goal_slots=['target_type', 'named_target']),
+                               remapping={'target_type':'named_pose_target_type',
+                                          'named_target':'arm_folded_named_pose'},
+                               transitions={'succeeded':'quit',
+                                            'preempted':'quit',
+                                            'aborted':'error'})
+
+        smach.StateMachine.add('ActionPreempted',
+                               ActionPreempted(),
                                transitions={'reset':'ObjectDetection', 
                                             'fold':'FoldArm', 
-                                            'quit':'quit'})
+                                            'quit':'FoldArmAndQuit'})
 
     sm = smach.Concurrence(outcomes=['quit', 'error',],
                            default_outcome='error',
