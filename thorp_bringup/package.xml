@@ -33,6 +33,7 @@
   <run_depend>yocs_virtual_sensor</run_depend>
   <run_depend>yocs_velocity_smoother</run_depend>
   <run_depend>hector_sensors_description</run_depend>
+  <run_depend>object_recognition_ros</run_depend>
   <export>
   </export>
 </package>
