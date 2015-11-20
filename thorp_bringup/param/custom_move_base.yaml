@@ -39,7 +39,7 @@ aggressive_reset2:
     - obstacle_layer
     - range_sensor_layer
 
-# move_base costmaps parameters
+# move_base costmaps parameters; must be duplicated for local and global
 
 global_costmap:
   robot_radius: 0.18
@@ -57,7 +57,8 @@ global_costmap:
     no_readings_timeout:  2.0
     clear_on_max_reading: true
     ns:     /mobile_base/sensors/sonars
-    topics: ["m90", "m72", "m54", "m36", "m18", "0_IGNORE", "p18", "p36", "p54", "p72", "p90"]
+    topics: ["m90_IGNORE", "m72", "m54", "m36", "m18", "0", "p18", "p36", "p54", "p72", "p90_IGNORE"]
+    # NOTE: we ignore p90 because it is an EZ1 sonar with very width fov, and m90 because is broken
 
 local_costmap:
   resolution: 0.02
@@ -75,7 +76,7 @@ local_costmap:
     no_readings_timeout:  2.0
     clear_on_max_reading: true
     ns:     /mobile_base/sensors/sonars
-    topics: ["m90", "m72", "m54", "m36", "m18", "0_IGNORE", "p18", "p36", "p54", "p72", "p90"]
+    topics: ["m90_IGNORE", "m72", "m54", "m36", "m18", "0", "p18", "p36", "p54", "p72", "p90_IGNORE"]
 
 
 
