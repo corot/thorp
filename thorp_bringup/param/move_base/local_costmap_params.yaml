@@ -14,4 +14,3 @@ local_costmap:
     - {name: range_sensor_layer, type: "range_sensor_layer::RangeSensorLayer"}
     - {name: obstacle_layer,     type: "costmap_2d::VoxelLayer"}
     - {name: inflation_layer,    type: "costmap_2d::InflationLayer"}
-    - {name: footprint_layer,    type: "costmap_2d::FootprintLayer"}
