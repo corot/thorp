@@ -38,10 +38,10 @@ pipeline1:
   outputs: [sink1]
   parameters:
     # table detector
-    min_table_size: 5000
-    plane_threshold: 0.01
-    table_cluster_tolerance: 0.01
-    vertical_frame_id: '/base_footprint'
+    min_table_size: 5000          # The minimum number of points deemed necessary to find a table (def. 10000)
+    plane_threshold: 0.01         # The distance used as a threshold when finding a plane (def. 0.02)
+    table_cluster_tolerance: 0.01 # The distance used when clustering a plane (def. 0.2)
+    vertical_frame_id: '/base_footprint' # The vertical frame id (def. '/map')
     # clusterer
     z_crop: 0.2    # The amount to keep in the z direction relative to the coordinate frame defined by the pose (def. 0.5)
     z_min:  0.005  # The amount to crop above the plane, in meters (def. 0.0075)
