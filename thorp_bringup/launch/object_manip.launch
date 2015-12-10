@@ -1,13 +1,19 @@
 <launch>
   <arg name="external_camera" default="false"/>
 
-  <!--  *********** 3D sensor (on/off-board) **********  -->
+  <!--  ********** 3D sensors (on/off-board) **********  -->
 
-  <include if="$(arg external_camera)" file="$(find turtlebot_bringup)/launch/3dsensor.launch"/>
+  <!-- <include if="$(arg external_camera)" file="$(find turtlebot_bringup)/launch/3dsensor.launch"/> -->
 
   <include file="$(find thorp_bringup)/launch/includes/softkinetic.launch.xml">
     <arg name="config_file" value="$(find thorp_bringup)/param/senz3d/manipulation.yaml"/>
   </include>
+<!--  
+  <include file="$(find openni2_launch)/launch/openni2.launch">
+    <arg name="camera" default="external_camera"/>
+    <arg name="publish_tf" value="true"/>
+    <arg name="depth_frame_id" value="external_camera_rgb_optical_frame"/>
+  </include> -->
 
   <!--  ************* Thorp bringup stuff *************  -->
 
@@ -43,12 +49,11 @@
 
   <node name="object_detection_action_server" pkg="turtlebot_arm_object_manipulation"
         type="object_detection_action_server" output="screen">
-    <remap unless="$(arg external_camera)" from="/camera/depth_registered/points" to="/senz3d/depth/points"/>
   </node>
 
   <node name="object_pick_and_place_action_server" pkg="turtlebot_arm_object_manipulation"
         type="object_pick_and_place_action_server" output="screen">
-    <param name="vertical_backlash" value="0.015"/>
+    <param name="vertical_backlash" value="0.018"/>
   </node>
   
   <node name="object_interactive_manip_action_server" pkg="turtlebot_arm_object_manipulation"
@@ -61,11 +66,10 @@
 
   <!--  ****** Executive smach and visualization ******     OJO  siempre SIGTERM - evitar -->
 
-  <node name="object_manipulation_smach" pkg="thorp_smach" type="object_manip.py" output="screen" >
+  <node name="object_manipulation_smach" pkg="thorp_smach" type="object_manip.py" output="screen" required="true">
     <param name="arm_link" value="arm_base_link"/>
     <param name="gripper_open" value="0.045"/>
     <param name="gripper_closed" value="0.022"/>
-    <param name="z_up" value="0.10"/>
     <param name="obj_size" value="0.025"/>
   </node>
 
@@ -83,7 +87,14 @@
   
   <!-- **************** ORK tabletop *****************  -->
 
-  <include file="$(find thorp_obj_rec)/launch/includes/tabletop.launch.xml" ns="tabletop">
+  <include if="$(arg external_camera)" file="$(find thorp_obj_rec)/launch/includes/tabletop.launch.xml" ns="tabletop">
+    <arg name="as_server"    value="true"/>
+    <arg name="config_file"  value="$(find thorp_obj_rec)/config/tabletop/external.detection.object.ros.ork"/>
+    <arg name="robot_frame"  value="base_footprint"/>
+    <arg name="sensor_frame" value="external_camera_depth_optical_frame"/>
+  </include>
+
+  <include unless="$(arg external_camera)" file="$(find thorp_obj_rec)/launch/includes/tabletop.launch.xml" ns="tabletop">
     <arg name="as_server"    value="true"/>
     <arg name="config_file"  value="$(find thorp_obj_rec)/config/tabletop/thorp.detection.object.ros.ork"/>
     <arg name="robot_frame"  value="base_footprint"/>
