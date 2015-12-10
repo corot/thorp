@@ -5,7 +5,7 @@
     <arg name="simulation" value="$(arg simulation)"/>
   </include>
 
-  <node name="gripper_controller" pkg="arbotix_controllers" type="gripper_controller">
+  <node name="gripper_controller" pkg="arbotix_controllers" type="gripper_controller.py">
     <!--
      Gripper controller parameters:
      more than the physical properties of the gripper, these values are an ad-hoc configuration
@@ -18,5 +18,6 @@
     <param name="finger_length" value="0.03"/>
     <param name="min_opening" value="0.001"/>
     <param name="max_opening" value="0.05"/>
+    <param name="stalled_time" value="0.2"/>
   </node>
 </launch>
