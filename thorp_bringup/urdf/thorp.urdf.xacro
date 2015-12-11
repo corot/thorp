@@ -29,11 +29,18 @@
   <!-- Note that the arm position is biased to the left of the robot, while the Senz3D camera
        is biased to the right; with this configuration, the arm lefts doesn't block completely
        camera view to the operation space.
+       We constrain the elbow lower limit and both shoulder limits to force the arm to operate 
+       always with the same gripper orientation, preventing the inefficient full turns.
+       TODO: I don't think we need to be that restrictive; do a better problem assessment.
        We also use a deliberately low joints velocity limit to improve safety and precision;
-       The phisical limit of the AX-12 is 114 rpm (684 deg/s) -->
+       The physical limit of the AX-12 is 114 rpm (684 deg/s) -->
   <xacro:property name="joints_vlimit" value="0.8"/>
+<!--
   <xacro:property name="pan_llimit" value="-2.617"/>
   <xacro:property name="pan_ulimit" value=" 2.617"/>
+ -->
+  <xacro:property name="pan_llimit" value="${-M_PI/2}"/>
+  <xacro:property name="pan_ulimit" value="${+M_PI/2}"/>
   <xacro:property name="shoulder_llimit" value="-2.617"/>
   <xacro:property name="shoulder_ulimit" value=" 2.617"/>
   <xacro:property name="elbow_llimit" value=" 0.0"/>
@@ -56,7 +63,7 @@
 
   <!-- Emulate the OpenCM9.04 controller as a box -->
   <joint name="opencm_joint" type="fixed">
-    <origin xyz="0.042 0.03 0.008" rpy="0.0 0.0 0.0"/>
+    <origin xyz="0.045 0.03 0.008" rpy="0.0 0.0 0.0"/>
     <parent link="plate_top_link"/>
     <child link="opencm_link"/>
   </joint>
