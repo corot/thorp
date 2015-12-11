@@ -3,33 +3,11 @@
 
   <!--  *********** 3D sensor (on/off-board) **********  -->
 
-  <include if="$(arg external_camera)" file="$(find turtlebot_bringup)/launch/3dsensor.launch"/>
+  <include if="$(arg external_camera)" file="$(find thorp_bringup)/launch/includes/xtion.launch.xml">
+    <arg name="camera_name" value="external_camera"/>
+  </include>
 
-  <node unless="$(arg external_camera)" name="senz3d" pkg="softkinetic_camera" type="softkinetic_bringup_node" args="0" output="screen">
-    <param name="camera_link"           type="string" value="/senz3d_camera_depth_frame"/>
-
-	<!-- Depth camera configuration -->
-    <param name="depth_optical_frame"   type="string" value="/senz3d_camera_depth_optical_frame"/>
-    <param name="depth_mode"            type="string" value="close"/>
-    <param name="depth_frame_format"    type="string" value="QQVGA"/>
-    <param name="depth_frame_rate"      type="int"    value="25"/>
-
-	<!-- Color camera configuration -->
-    <param name="rgb_calibration_file"  type="string" value="$(find softkinetic_camera)/resources/senz3d.yaml"/>
-    <param name="rgb_optical_frame"     type="string" value="/senz3d_camera_rgb_optical_frame"/>
-    <param name="color_compression"     type="string" value="MJPEG"/>
-    <param name="color_frame_format"    type="string" value="WXGA"/>
-    <param name="color_frame_rate"      type="int"    value="25"/>
-
-	<!-- Finer cloud filtering so we don't miss the blocks -->
-    <param name="confidence_threshold"  type="int"    value="500"/>
-    <param name="use_voxel_grid_filter" type="bool"   value="true"/>
-    <param name="use_radius_outlier_filter"     type="bool"   value="true"/>
-    <param name="voxel_grid_side"       type="double" value="0.0025"/>
-    <param name="search_radius"         type="double" value="0.025"/>
-    <param name="min_neighbours"        type="int"    value="80"/>
-  </node>
-
+  <include unless="$(arg external_camera)" file="$(find thorp_bringup)/launch/includes/xtion.launch.xml"/>
 
   <!--  ************* Thorp bringup stuff *************  -->
 
@@ -57,12 +35,17 @@
     <arg name="info" value="true"/>
   </include>
 
+  <!--  Fake global reference to make Moveit octomap happy  -->
+  <node pkg="tf" type="static_transform_publisher" name="fake_global_reference"
+        args="0.0 0.0 0.0 0.0 0.0 0.0 /map /base_footprint 100"/>
+
 
   <!--  *********** Block manipulation demo ***********  -->
 
   <node name="block_detection_action_server" pkg="turtlebot_arm_block_manipulation" type="block_detection_action_server" output="screen">
-    <rosparam param="table_pose">[0.09, 0.0, -0.035]</rosparam>
-    <remap unless="$(arg external_camera)" from="/camera/depth_registered/points" to="/senz3d/depth/points"/>
+    <rosparam param="table_pose">[0.09, 0.0, 0.015]</rosparam>
+    <remap if="$(arg external_camera)" from="/camera/depth_registered/points" to="/external_camera/depth_registered/points"/>
+    <remap unless="$(arg external_camera)" from="/camera/depth_registered/points" to="/xtion/depth_registered/points"/>
   </node>
 
   <node name="pick_and_place_action_server" pkg="turtlebot_arm_block_manipulation" type="pick_and_place_action_server" output="screen">
@@ -76,8 +59,8 @@
     <param name="arm_link" value="/arm_base_link"/>
     <param name="gripper_open" value="0.045"/>
     <param name="gripper_closed" value="0.022"/>
-    <param name="z_up" value="0.05"/>
-    <param name="table_height" value="-0.03"/>
+    <param name="z_up" value="0.08"/>
+    <param name="table_height" value="0.015"/>
     <param name="block_size" value="0.025"/>
   </node>
 

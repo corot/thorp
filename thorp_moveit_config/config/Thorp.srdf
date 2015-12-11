@@ -47,11 +47,6 @@
     <!--PASSIVE JOINT: Purpose: this element is used to mark joints that are not actuated-->
     <passive_joint name="gripper_link_joint" />
     <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
-    
-    <!--Manually added to prevent a collision when gripper is fully opened -->
-    <disable_collisions link1="arm_wrist_flex_link" link2="gripper_active_link" reason="Adjacent" />
-    <disable_collisions link1="arm_wrist_flex_link" link2="gripper_active_finger_link" reason="Adjacent" />
-    
     <disable_collisions link1="arm_elbow_F10_0_link" link2="arm_elbow_F10_1_link" reason="Adjacent" />
     <disable_collisions link1="arm_elbow_F10_0_link" link2="arm_elbow_F10_2_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_0_link" link2="arm_elbow_F3_0_link" reason="Never" />
@@ -68,7 +63,6 @@
     <disable_collisions link1="arm_elbow_F10_0_link" link2="arm_wrist_flex_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_0_link" link2="arm_wrist_flex_servo_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_0_link" link2="base_link" reason="Never" />
-    <disable_collisions link1="arm_elbow_F10_0_link" link2="camera_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_0_link" link2="caster_back_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_0_link" link2="caster_front_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_0_link" link2="gripper_active_finger_link" reason="Never" />
@@ -76,9 +70,13 @@
     <disable_collisions link1="arm_elbow_F10_0_link" link2="gripper_servo_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_0_link" link2="gripper_static_finger_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_0_link" link2="gripper_static_link" reason="Never" />
+    <disable_collisions link1="arm_elbow_F10_0_link" link2="kinect_link" reason="Never" />
+    <disable_collisions link1="arm_elbow_F10_0_link" link2="opencm_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_0_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_0_link" link2="plate_middle_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_0_link" link2="pole_bottom_0_link" reason="Never" />
+    <disable_collisions link1="arm_elbow_F10_0_link" link2="pole_bottom_12_link" reason="Never" />
+    <disable_collisions link1="arm_elbow_F10_0_link" link2="pole_bottom_13_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_0_link" link2="pole_bottom_1_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_0_link" link2="pole_bottom_2_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_0_link" link2="pole_bottom_3_link" reason="Never" />
@@ -108,11 +106,11 @@
     <disable_collisions link1="arm_elbow_F10_0_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_0_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_0_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="arm_elbow_F10_0_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="arm_elbow_F10_0_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_0_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_0_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_0_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="arm_elbow_F10_0_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="arm_elbow_F10_0_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_1_link" link2="arm_elbow_F10_2_link" reason="Adjacent" />
     <disable_collisions link1="arm_elbow_F10_1_link" link2="arm_elbow_F3_0_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_1_link" link2="arm_elbow_flex_link" reason="Never" />
@@ -128,7 +126,6 @@
     <disable_collisions link1="arm_elbow_F10_1_link" link2="arm_wrist_flex_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_1_link" link2="arm_wrist_flex_servo_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_1_link" link2="base_link" reason="Never" />
-    <disable_collisions link1="arm_elbow_F10_1_link" link2="camera_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_1_link" link2="caster_back_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_1_link" link2="caster_front_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_1_link" link2="gripper_active_finger_link" reason="Never" />
@@ -136,9 +133,13 @@
     <disable_collisions link1="arm_elbow_F10_1_link" link2="gripper_servo_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_1_link" link2="gripper_static_finger_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_1_link" link2="gripper_static_link" reason="Never" />
+    <disable_collisions link1="arm_elbow_F10_1_link" link2="kinect_link" reason="Never" />
+    <disable_collisions link1="arm_elbow_F10_1_link" link2="opencm_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_1_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_1_link" link2="plate_middle_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_1_link" link2="pole_bottom_0_link" reason="Never" />
+    <disable_collisions link1="arm_elbow_F10_1_link" link2="pole_bottom_12_link" reason="Never" />
+    <disable_collisions link1="arm_elbow_F10_1_link" link2="pole_bottom_13_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_1_link" link2="pole_bottom_1_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_1_link" link2="pole_bottom_2_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_1_link" link2="pole_bottom_3_link" reason="Never" />
@@ -168,11 +169,11 @@
     <disable_collisions link1="arm_elbow_F10_1_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_1_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_1_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="arm_elbow_F10_1_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="arm_elbow_F10_1_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_1_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_1_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_1_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="arm_elbow_F10_1_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="arm_elbow_F10_1_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_2_link" link2="arm_elbow_F3_0_link" reason="Adjacent" />
     <disable_collisions link1="arm_elbow_F10_2_link" link2="arm_elbow_flex_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_2_link" link2="arm_elbow_flex_servo_link" reason="Never" />
@@ -187,7 +188,6 @@
     <disable_collisions link1="arm_elbow_F10_2_link" link2="arm_wrist_flex_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_2_link" link2="arm_wrist_flex_servo_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_2_link" link2="base_link" reason="Never" />
-    <disable_collisions link1="arm_elbow_F10_2_link" link2="camera_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_2_link" link2="caster_back_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_2_link" link2="caster_front_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_2_link" link2="gripper_active_finger_link" reason="Never" />
@@ -195,9 +195,13 @@
     <disable_collisions link1="arm_elbow_F10_2_link" link2="gripper_servo_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_2_link" link2="gripper_static_finger_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_2_link" link2="gripper_static_link" reason="Never" />
+    <disable_collisions link1="arm_elbow_F10_2_link" link2="kinect_link" reason="Never" />
+    <disable_collisions link1="arm_elbow_F10_2_link" link2="opencm_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_2_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_2_link" link2="plate_middle_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_2_link" link2="pole_bottom_0_link" reason="Never" />
+    <disable_collisions link1="arm_elbow_F10_2_link" link2="pole_bottom_12_link" reason="Never" />
+    <disable_collisions link1="arm_elbow_F10_2_link" link2="pole_bottom_13_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_2_link" link2="pole_bottom_1_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_2_link" link2="pole_bottom_2_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_2_link" link2="pole_bottom_3_link" reason="Never" />
@@ -227,11 +231,11 @@
     <disable_collisions link1="arm_elbow_F10_2_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_2_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_2_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="arm_elbow_F10_2_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="arm_elbow_F10_2_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_2_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_2_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_2_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="arm_elbow_F10_2_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="arm_elbow_F10_2_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F3_0_link" link2="arm_elbow_flex_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F3_0_link" link2="arm_elbow_flex_servo_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F3_0_link" link2="arm_shoulder_F10_0_link" reason="Never" />
@@ -245,7 +249,6 @@
     <disable_collisions link1="arm_elbow_F3_0_link" link2="arm_wrist_flex_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F3_0_link" link2="arm_wrist_flex_servo_link" reason="Adjacent" />
     <disable_collisions link1="arm_elbow_F3_0_link" link2="base_link" reason="Never" />
-    <disable_collisions link1="arm_elbow_F3_0_link" link2="camera_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F3_0_link" link2="caster_back_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F3_0_link" link2="caster_front_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F3_0_link" link2="gripper_active_finger_link" reason="Never" />
@@ -253,9 +256,13 @@
     <disable_collisions link1="arm_elbow_F3_0_link" link2="gripper_servo_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F3_0_link" link2="gripper_static_finger_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F3_0_link" link2="gripper_static_link" reason="Never" />
+    <disable_collisions link1="arm_elbow_F3_0_link" link2="kinect_link" reason="Never" />
+    <disable_collisions link1="arm_elbow_F3_0_link" link2="opencm_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F3_0_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F3_0_link" link2="plate_middle_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F3_0_link" link2="pole_bottom_0_link" reason="Never" />
+    <disable_collisions link1="arm_elbow_F3_0_link" link2="pole_bottom_12_link" reason="Never" />
+    <disable_collisions link1="arm_elbow_F3_0_link" link2="pole_bottom_13_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F3_0_link" link2="pole_bottom_1_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F3_0_link" link2="pole_bottom_2_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F3_0_link" link2="pole_bottom_3_link" reason="Never" />
@@ -285,11 +292,11 @@
     <disable_collisions link1="arm_elbow_F3_0_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F3_0_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F3_0_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="arm_elbow_F3_0_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="arm_elbow_F3_0_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F3_0_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F3_0_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F3_0_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="arm_elbow_F3_0_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="arm_elbow_F3_0_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_link" link2="arm_elbow_flex_servo_link" reason="Adjacent" />
     <disable_collisions link1="arm_elbow_flex_link" link2="arm_shoulder_lift_servo_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_link" link2="arm_shoulder_pan_link" reason="Never" />
@@ -297,7 +304,6 @@
     <disable_collisions link1="arm_elbow_flex_link" link2="arm_wrist_flex_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_link" link2="arm_wrist_flex_servo_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_link" link2="base_link" reason="Never" />
-    <disable_collisions link1="arm_elbow_flex_link" link2="camera_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_link" link2="caster_back_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_link" link2="caster_front_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_link" link2="gripper_active_finger_link" reason="Never" />
@@ -305,6 +311,7 @@
     <disable_collisions link1="arm_elbow_flex_link" link2="gripper_servo_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_link" link2="gripper_static_finger_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_link" link2="gripper_static_link" reason="Never" />
+    <disable_collisions link1="arm_elbow_flex_link" link2="kinect_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_link" link2="plate_middle_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_link" link2="pole_bottom_0_link" reason="Never" />
@@ -337,11 +344,11 @@
     <disable_collisions link1="arm_elbow_flex_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="arm_elbow_flex_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="arm_elbow_flex_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="arm_elbow_flex_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="arm_elbow_flex_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_servo_link" link2="arm_shoulder_F10_0_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_servo_link" link2="arm_shoulder_F10_1_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_servo_link" link2="arm_shoulder_F10_2_link" reason="Never" />
@@ -353,7 +360,6 @@
     <disable_collisions link1="arm_elbow_flex_servo_link" link2="arm_wrist_flex_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_servo_link" link2="arm_wrist_flex_servo_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_servo_link" link2="base_link" reason="Never" />
-    <disable_collisions link1="arm_elbow_flex_servo_link" link2="camera_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_servo_link" link2="caster_back_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_servo_link" link2="caster_front_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_servo_link" link2="gripper_active_finger_link" reason="Never" />
@@ -361,6 +367,7 @@
     <disable_collisions link1="arm_elbow_flex_servo_link" link2="gripper_servo_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_servo_link" link2="gripper_static_finger_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_servo_link" link2="gripper_static_link" reason="Never" />
+    <disable_collisions link1="arm_elbow_flex_servo_link" link2="kinect_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_servo_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_servo_link" link2="plate_middle_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_servo_link" link2="pole_bottom_0_link" reason="Never" />
@@ -394,18 +401,18 @@
     <disable_collisions link1="arm_elbow_flex_servo_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_servo_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_servo_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="arm_elbow_flex_servo_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="arm_elbow_flex_servo_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_servo_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_servo_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="arm_elbow_flex_servo_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="arm_elbow_flex_servo_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="arm_elbow_flex_servo_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="arm_mount_link" link2="arm_shoulder_lift_servo_link" reason="Never" />
     <disable_collisions link1="arm_mount_link" link2="arm_shoulder_pan_link" reason="Never" />
     <disable_collisions link1="arm_mount_link" link2="arm_shoulder_pan_servo_link" reason="Adjacent" />
     <disable_collisions link1="arm_mount_link" link2="base_link" reason="Never" />
-    <disable_collisions link1="arm_mount_link" link2="camera_link" reason="Never" />
     <disable_collisions link1="arm_mount_link" link2="caster_back_link" reason="Never" />
     <disable_collisions link1="arm_mount_link" link2="caster_front_link" reason="Never" />
+    <disable_collisions link1="arm_mount_link" link2="kinect_link" reason="Never" />
     <disable_collisions link1="arm_mount_link" link2="opencm_link" reason="Never" />
     <disable_collisions link1="arm_mount_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="arm_mount_link" link2="plate_middle_link" reason="Never" />
@@ -445,11 +452,11 @@
     <disable_collisions link1="arm_mount_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="arm_mount_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="arm_mount_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="arm_mount_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="arm_mount_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="arm_mount_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="arm_mount_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="arm_mount_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="arm_mount_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="arm_mount_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_0_link" link2="arm_shoulder_F10_1_link" reason="Adjacent" />
     <disable_collisions link1="arm_shoulder_F10_0_link" link2="arm_shoulder_F10_2_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_0_link" link2="arm_shoulder_F3_0_link" reason="Never" />
@@ -460,7 +467,6 @@
     <disable_collisions link1="arm_shoulder_F10_0_link" link2="arm_wrist_flex_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_0_link" link2="arm_wrist_flex_servo_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_0_link" link2="base_link" reason="Never" />
-    <disable_collisions link1="arm_shoulder_F10_0_link" link2="camera_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_0_link" link2="caster_back_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_0_link" link2="caster_front_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_0_link" link2="gripper_active_finger_link" reason="Never" />
@@ -468,6 +474,7 @@
     <disable_collisions link1="arm_shoulder_F10_0_link" link2="gripper_servo_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_0_link" link2="gripper_static_finger_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_0_link" link2="gripper_static_link" reason="Never" />
+    <disable_collisions link1="arm_shoulder_F10_0_link" link2="kinect_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_0_link" link2="opencm_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_0_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_0_link" link2="plate_middle_link" reason="Never" />
@@ -503,11 +510,11 @@
     <disable_collisions link1="arm_shoulder_F10_0_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_0_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_0_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="arm_shoulder_F10_0_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="arm_shoulder_F10_0_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_0_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_0_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_0_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="arm_shoulder_F10_0_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="arm_shoulder_F10_0_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_1_link" link2="arm_shoulder_F10_2_link" reason="Adjacent" />
     <disable_collisions link1="arm_shoulder_F10_1_link" link2="arm_shoulder_F3_0_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_1_link" link2="arm_shoulder_lift_link" reason="Never" />
@@ -517,7 +524,6 @@
     <disable_collisions link1="arm_shoulder_F10_1_link" link2="arm_wrist_flex_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_1_link" link2="arm_wrist_flex_servo_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_1_link" link2="base_link" reason="Never" />
-    <disable_collisions link1="arm_shoulder_F10_1_link" link2="camera_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_1_link" link2="caster_back_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_1_link" link2="caster_front_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_1_link" link2="gripper_active_finger_link" reason="Never" />
@@ -525,6 +531,7 @@
     <disable_collisions link1="arm_shoulder_F10_1_link" link2="gripper_servo_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_1_link" link2="gripper_static_finger_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_1_link" link2="gripper_static_link" reason="Never" />
+    <disable_collisions link1="arm_shoulder_F10_1_link" link2="kinect_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_1_link" link2="opencm_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_1_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_1_link" link2="plate_middle_link" reason="Never" />
@@ -560,11 +567,11 @@
     <disable_collisions link1="arm_shoulder_F10_1_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_1_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_1_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="arm_shoulder_F10_1_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="arm_shoulder_F10_1_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_1_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_1_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_1_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="arm_shoulder_F10_1_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="arm_shoulder_F10_1_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_2_link" link2="arm_shoulder_F3_0_link" reason="Adjacent" />
     <disable_collisions link1="arm_shoulder_F10_2_link" link2="arm_shoulder_lift_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_2_link" link2="arm_shoulder_lift_servo_link" reason="Never" />
@@ -573,7 +580,6 @@
     <disable_collisions link1="arm_shoulder_F10_2_link" link2="arm_wrist_flex_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_2_link" link2="arm_wrist_flex_servo_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_2_link" link2="base_link" reason="Never" />
-    <disable_collisions link1="arm_shoulder_F10_2_link" link2="camera_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_2_link" link2="caster_back_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_2_link" link2="caster_front_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_2_link" link2="gripper_active_finger_link" reason="Never" />
@@ -581,6 +587,7 @@
     <disable_collisions link1="arm_shoulder_F10_2_link" link2="gripper_servo_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_2_link" link2="gripper_static_finger_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_2_link" link2="gripper_static_link" reason="Never" />
+    <disable_collisions link1="arm_shoulder_F10_2_link" link2="kinect_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_2_link" link2="opencm_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_2_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_2_link" link2="plate_middle_link" reason="Never" />
@@ -616,11 +623,11 @@
     <disable_collisions link1="arm_shoulder_F10_2_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_2_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_2_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="arm_shoulder_F10_2_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="arm_shoulder_F10_2_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_2_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_2_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_2_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="arm_shoulder_F10_2_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="arm_shoulder_F10_2_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F3_0_link" link2="arm_shoulder_lift_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F3_0_link" link2="arm_shoulder_lift_servo_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F3_0_link" link2="arm_shoulder_pan_link" reason="Never" />
@@ -628,7 +635,6 @@
     <disable_collisions link1="arm_shoulder_F3_0_link" link2="arm_wrist_flex_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F3_0_link" link2="arm_wrist_flex_servo_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F3_0_link" link2="base_link" reason="Never" />
-    <disable_collisions link1="arm_shoulder_F3_0_link" link2="camera_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F3_0_link" link2="caster_back_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F3_0_link" link2="caster_front_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F3_0_link" link2="gripper_active_finger_link" reason="Never" />
@@ -636,6 +642,7 @@
     <disable_collisions link1="arm_shoulder_F3_0_link" link2="gripper_servo_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F3_0_link" link2="gripper_static_finger_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F3_0_link" link2="gripper_static_link" reason="Never" />
+    <disable_collisions link1="arm_shoulder_F3_0_link" link2="kinect_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F3_0_link" link2="opencm_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F3_0_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F3_0_link" link2="plate_middle_link" reason="Never" />
@@ -671,19 +678,19 @@
     <disable_collisions link1="arm_shoulder_F3_0_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F3_0_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F3_0_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="arm_shoulder_F3_0_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="arm_shoulder_F3_0_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F3_0_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F3_0_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F3_0_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="arm_shoulder_F3_0_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="arm_shoulder_F3_0_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_lift_link" link2="arm_shoulder_lift_servo_link" reason="Adjacent" />
     <disable_collisions link1="arm_shoulder_lift_link" link2="arm_wrist_flex_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_lift_link" link2="arm_wrist_flex_servo_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_lift_link" link2="base_link" reason="Never" />
-    <disable_collisions link1="arm_shoulder_lift_link" link2="camera_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_lift_link" link2="caster_back_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_lift_link" link2="caster_front_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_lift_link" link2="gripper_static_link" reason="Never" />
+    <disable_collisions link1="arm_shoulder_lift_link" link2="kinect_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_lift_link" link2="opencm_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_lift_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_lift_link" link2="plate_middle_link" reason="Never" />
@@ -721,19 +728,19 @@
     <disable_collisions link1="arm_shoulder_lift_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_lift_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_lift_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="arm_shoulder_lift_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="arm_shoulder_lift_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_lift_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_lift_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_lift_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="arm_shoulder_lift_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="arm_shoulder_lift_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_lift_servo_link" link2="arm_shoulder_pan_link" reason="Adjacent" />
     <disable_collisions link1="arm_shoulder_lift_servo_link" link2="arm_shoulder_pan_servo_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_lift_servo_link" link2="arm_wrist_flex_servo_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_lift_servo_link" link2="base_link" reason="Never" />
-    <disable_collisions link1="arm_shoulder_lift_servo_link" link2="camera_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_lift_servo_link" link2="caster_back_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_lift_servo_link" link2="caster_front_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_lift_servo_link" link2="gripper_static_link" reason="Never" />
+    <disable_collisions link1="arm_shoulder_lift_servo_link" link2="kinect_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_lift_servo_link" link2="opencm_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_lift_servo_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_lift_servo_link" link2="plate_middle_link" reason="Never" />
@@ -773,17 +780,17 @@
     <disable_collisions link1="arm_shoulder_lift_servo_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_lift_servo_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_lift_servo_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="arm_shoulder_lift_servo_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="arm_shoulder_lift_servo_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_lift_servo_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_lift_servo_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_lift_servo_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="arm_shoulder_lift_servo_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="arm_shoulder_lift_servo_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_pan_link" link2="arm_shoulder_pan_servo_link" reason="Adjacent" />
     <disable_collisions link1="arm_shoulder_pan_link" link2="base_link" reason="Never" />
-    <disable_collisions link1="arm_shoulder_pan_link" link2="camera_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_pan_link" link2="caster_back_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_pan_link" link2="caster_front_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_pan_link" link2="gripper_static_link" reason="Never" />
+    <disable_collisions link1="arm_shoulder_pan_link" link2="kinect_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_pan_link" link2="opencm_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_pan_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_pan_link" link2="plate_middle_link" reason="Never" />
@@ -823,15 +830,15 @@
     <disable_collisions link1="arm_shoulder_pan_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_pan_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_pan_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="arm_shoulder_pan_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="arm_shoulder_pan_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_pan_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_pan_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_pan_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="arm_shoulder_pan_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="arm_shoulder_pan_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_pan_servo_link" link2="base_link" reason="Never" />
-    <disable_collisions link1="arm_shoulder_pan_servo_link" link2="camera_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_pan_servo_link" link2="caster_back_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_pan_servo_link" link2="caster_front_link" reason="Never" />
+    <disable_collisions link1="arm_shoulder_pan_servo_link" link2="kinect_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_pan_servo_link" link2="opencm_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_pan_servo_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_pan_servo_link" link2="plate_middle_link" reason="Never" />
@@ -871,11 +878,11 @@
     <disable_collisions link1="arm_shoulder_pan_servo_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_pan_servo_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_pan_servo_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="arm_shoulder_pan_servo_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="arm_shoulder_pan_servo_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_pan_servo_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_pan_servo_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_pan_servo_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="arm_shoulder_pan_servo_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="arm_shoulder_pan_servo_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="arm_wrist_F3_0_link" link2="arm_wrist_flex_link" reason="Adjacent" />
     <disable_collisions link1="arm_wrist_F3_0_link" link2="arm_wrist_flex_servo_link" reason="Never" />
     <disable_collisions link1="arm_wrist_F3_0_link" link2="base_link" reason="Never" />
@@ -886,6 +893,7 @@
     <disable_collisions link1="arm_wrist_F3_0_link" link2="gripper_servo_link" reason="Adjacent" />
     <disable_collisions link1="arm_wrist_F3_0_link" link2="gripper_static_finger_link" reason="Default" />
     <disable_collisions link1="arm_wrist_F3_0_link" link2="gripper_static_link" reason="Default" />
+    <disable_collisions link1="arm_wrist_F3_0_link" link2="kinect_link" reason="Never" />
     <disable_collisions link1="arm_wrist_F3_0_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="arm_wrist_F3_0_link" link2="plate_middle_link" reason="Never" />
     <disable_collisions link1="arm_wrist_F3_0_link" link2="pole_bottom_0_link" reason="Never" />
@@ -900,6 +908,7 @@
     <disable_collisions link1="arm_wrist_F3_0_link" link2="pole_middle_1_link" reason="Never" />
     <disable_collisions link1="arm_wrist_F3_0_link" link2="pole_middle_2_link" reason="Never" />
     <disable_collisions link1="arm_wrist_F3_0_link" link2="pole_middle_3_link" reason="Never" />
+    <disable_collisions link1="arm_wrist_F3_0_link" link2="pole_top_13_link" reason="Never" />
     <disable_collisions link1="arm_wrist_F3_0_link" link2="s_0_link" reason="Never" />
     <disable_collisions link1="arm_wrist_F3_0_link" link2="s_m18_link" reason="Never" />
     <disable_collisions link1="arm_wrist_F3_0_link" link2="s_m36_link" reason="Never" />
@@ -911,19 +920,19 @@
     <disable_collisions link1="arm_wrist_F3_0_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="arm_wrist_F3_0_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="arm_wrist_F3_0_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="arm_wrist_F3_0_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="arm_wrist_F3_0_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="arm_wrist_F3_0_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="arm_wrist_F3_0_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="arm_wrist_F3_0_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="arm_wrist_F3_0_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="arm_wrist_F3_0_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_link" link2="arm_wrist_flex_servo_link" reason="Adjacent" />
     <disable_collisions link1="arm_wrist_flex_link" link2="base_link" reason="Never" />
-    <disable_collisions link1="arm_wrist_flex_link" link2="camera_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_link" link2="caster_back_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_link" link2="caster_front_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_link" link2="gripper_servo_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_link" link2="gripper_static_finger_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_link" link2="gripper_static_link" reason="Never" />
+    <disable_collisions link1="arm_wrist_flex_link" link2="kinect_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_link" link2="plate_middle_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_link" link2="pole_bottom_0_link" reason="Never" />
@@ -938,6 +947,7 @@
     <disable_collisions link1="arm_wrist_flex_link" link2="pole_middle_1_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_link" link2="pole_middle_2_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_link" link2="pole_middle_3_link" reason="Never" />
+    <disable_collisions link1="arm_wrist_flex_link" link2="pole_top_13_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_link" link2="s_0_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_link" link2="s_m18_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_link" link2="s_m36_link" reason="Never" />
@@ -949,13 +959,12 @@
     <disable_collisions link1="arm_wrist_flex_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="arm_wrist_flex_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="arm_wrist_flex_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="arm_wrist_flex_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="arm_wrist_flex_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_servo_link" link2="base_link" reason="Never" />
-    <disable_collisions link1="arm_wrist_flex_servo_link" link2="camera_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_servo_link" link2="caster_back_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_servo_link" link2="caster_front_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_servo_link" link2="gripper_active_finger_link" reason="Never" />
@@ -963,6 +972,7 @@
     <disable_collisions link1="arm_wrist_flex_servo_link" link2="gripper_servo_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_servo_link" link2="gripper_static_finger_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_servo_link" link2="gripper_static_link" reason="Never" />
+    <disable_collisions link1="arm_wrist_flex_servo_link" link2="kinect_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_servo_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_servo_link" link2="plate_middle_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_servo_link" link2="pole_bottom_0_link" reason="Never" />
@@ -978,6 +988,7 @@
     <disable_collisions link1="arm_wrist_flex_servo_link" link2="pole_middle_2_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_servo_link" link2="pole_middle_3_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_servo_link" link2="pole_top_11_link" reason="Never" />
+    <disable_collisions link1="arm_wrist_flex_servo_link" link2="pole_top_12_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_servo_link" link2="pole_top_13_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_servo_link" link2="pole_top_3_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_servo_link" link2="s_0_link" reason="Never" />
@@ -991,12 +1002,11 @@
     <disable_collisions link1="arm_wrist_flex_servo_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_servo_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_servo_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="arm_wrist_flex_servo_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="arm_wrist_flex_servo_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_servo_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_servo_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_servo_link" link2="wheel_right_link" reason="Never" />
-    <disable_collisions link1="base_link" link2="camera_link" reason="Adjacent" />
+    <disable_collisions link1="arm_wrist_flex_servo_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="arm_wrist_flex_servo_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="base_link" link2="caster_back_link" reason="Adjacent" />
     <disable_collisions link1="base_link" link2="caster_front_link" reason="Adjacent" />
     <disable_collisions link1="base_link" link2="gripper_active_finger_link" reason="Never" />
@@ -1004,6 +1014,7 @@
     <disable_collisions link1="base_link" link2="gripper_servo_link" reason="Never" />
     <disable_collisions link1="base_link" link2="gripper_static_finger_link" reason="Never" />
     <disable_collisions link1="base_link" link2="gripper_static_link" reason="Never" />
+    <disable_collisions link1="base_link" link2="kinect_link" reason="Adjacent" />
     <disable_collisions link1="base_link" link2="opencm_link" reason="Never" />
     <disable_collisions link1="base_link" link2="plate_bottom_link" reason="Adjacent" />
     <disable_collisions link1="base_link" link2="plate_middle_link" reason="Adjacent" />
@@ -1043,63 +1054,18 @@
     <disable_collisions link1="base_link" link2="s_p54_link" reason="Default" />
     <disable_collisions link1="base_link" link2="s_p72_link" reason="Default" />
     <disable_collisions link1="base_link" link2="s_p90_link" reason="Default" />
-    <disable_collisions link1="base_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="base_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="base_link" link2="sonars_mount_link" reason="Adjacent" />
     <disable_collisions link1="base_link" link2="wheel_left_link" reason="Adjacent" />
     <disable_collisions link1="base_link" link2="wheel_right_link" reason="Adjacent" />
-    <disable_collisions link1="camera_link" link2="caster_back_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="caster_front_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="opencm_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="plate_bottom_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="plate_middle_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="plate_top_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="pole_bottom_0_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="pole_bottom_10_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="pole_bottom_11_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="pole_bottom_12_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="pole_bottom_13_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="pole_bottom_1_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="pole_bottom_2_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="pole_bottom_3_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="pole_bottom_4_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="pole_bottom_5_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="pole_kinect_0_link" reason="Default" />
-    <disable_collisions link1="camera_link" link2="pole_kinect_1_link" reason="Default" />
-    <disable_collisions link1="camera_link" link2="pole_middle_0_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="pole_middle_1_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="pole_middle_2_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="pole_middle_3_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="pole_top_0_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="pole_top_10_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="pole_top_11_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="pole_top_12_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="pole_top_13_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="pole_top_1_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="pole_top_2_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="pole_top_3_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="s_0_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="s_m18_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="s_m36_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="s_m54_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="s_m72_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="s_m90_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="s_p18_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="s_p36_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="s_p54_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="s_p72_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="senz3d_mount_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="sonars_mount_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="wheel_left_link" reason="Never" />
-    <disable_collisions link1="camera_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="base_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="base_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="caster_back_link" link2="caster_front_link" reason="Never" />
     <disable_collisions link1="caster_back_link" link2="gripper_active_finger_link" reason="Never" />
     <disable_collisions link1="caster_back_link" link2="gripper_active_link" reason="Never" />
     <disable_collisions link1="caster_back_link" link2="gripper_servo_link" reason="Never" />
     <disable_collisions link1="caster_back_link" link2="gripper_static_finger_link" reason="Never" />
     <disable_collisions link1="caster_back_link" link2="gripper_static_link" reason="Never" />
+    <disable_collisions link1="caster_back_link" link2="kinect_link" reason="Never" />
     <disable_collisions link1="caster_back_link" link2="opencm_link" reason="Never" />
     <disable_collisions link1="caster_back_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="caster_back_link" link2="plate_middle_link" reason="Never" />
@@ -1139,16 +1105,17 @@
     <disable_collisions link1="caster_back_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="caster_back_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="caster_back_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="caster_back_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="caster_back_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="caster_back_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="caster_back_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="caster_back_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="caster_back_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="caster_back_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="caster_front_link" link2="gripper_active_finger_link" reason="Never" />
     <disable_collisions link1="caster_front_link" link2="gripper_active_link" reason="Never" />
     <disable_collisions link1="caster_front_link" link2="gripper_servo_link" reason="Never" />
     <disable_collisions link1="caster_front_link" link2="gripper_static_finger_link" reason="Never" />
     <disable_collisions link1="caster_front_link" link2="gripper_static_link" reason="Never" />
+    <disable_collisions link1="caster_front_link" link2="kinect_link" reason="Never" />
     <disable_collisions link1="caster_front_link" link2="opencm_link" reason="Never" />
     <disable_collisions link1="caster_front_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="caster_front_link" link2="plate_middle_link" reason="Never" />
@@ -1188,11 +1155,11 @@
     <disable_collisions link1="caster_front_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="caster_front_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="caster_front_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="caster_front_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="caster_front_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="caster_front_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="caster_front_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="caster_front_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="caster_front_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="caster_front_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="gripper_active_finger_link" link2="gripper_active_link" reason="Adjacent" />
     <disable_collisions link1="gripper_active_finger_link" link2="gripper_servo_link" reason="Default" />
     <disable_collisions link1="gripper_active_finger_link" link2="gripper_static_finger_link" reason="Never" />
@@ -1204,6 +1171,7 @@
     <disable_collisions link1="gripper_active_finger_link" link2="pole_bottom_3_link" reason="Never" />
     <disable_collisions link1="gripper_active_finger_link" link2="pole_bottom_4_link" reason="Never" />
     <disable_collisions link1="gripper_active_finger_link" link2="pole_bottom_5_link" reason="Never" />
+    <disable_collisions link1="gripper_active_finger_link" link2="pole_middle_0_link" reason="Never" />
     <disable_collisions link1="gripper_active_finger_link" link2="pole_middle_1_link" reason="Never" />
     <disable_collisions link1="gripper_active_finger_link" link2="pole_middle_2_link" reason="Never" />
     <disable_collisions link1="gripper_active_finger_link" link2="pole_middle_3_link" reason="Never" />
@@ -1221,6 +1189,8 @@
     <disable_collisions link1="gripper_active_finger_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="gripper_active_finger_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="gripper_active_finger_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="gripper_active_finger_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="gripper_active_finger_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="gripper_active_link" link2="gripper_servo_link" reason="Adjacent" />
     <disable_collisions link1="gripper_active_link" link2="gripper_static_finger_link" reason="Never" />
     <disable_collisions link1="gripper_active_link" link2="gripper_static_link" reason="Never" />
@@ -1249,10 +1219,11 @@
     <disable_collisions link1="gripper_active_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="gripper_active_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="gripper_active_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="gripper_active_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="gripper_active_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="gripper_active_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="gripper_active_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="gripper_active_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="gripper_active_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="gripper_servo_link" link2="gripper_static_finger_link" reason="Default" />
     <disable_collisions link1="gripper_servo_link" link2="gripper_static_link" reason="Adjacent" />
     <disable_collisions link1="gripper_servo_link" link2="plate_bottom_link" reason="Never" />
@@ -1280,18 +1251,21 @@
     <disable_collisions link1="gripper_servo_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="gripper_servo_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="gripper_servo_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="gripper_servo_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="gripper_servo_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="gripper_servo_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="gripper_servo_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="gripper_servo_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="gripper_servo_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="gripper_static_finger_link" link2="gripper_static_link" reason="Adjacent" />
     <disable_collisions link1="gripper_static_finger_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="gripper_static_finger_link" link2="pole_bottom_0_link" reason="Never" />
+    <disable_collisions link1="gripper_static_finger_link" link2="pole_bottom_11_link" reason="Never" />
     <disable_collisions link1="gripper_static_finger_link" link2="pole_bottom_1_link" reason="Never" />
     <disable_collisions link1="gripper_static_finger_link" link2="pole_bottom_2_link" reason="Never" />
     <disable_collisions link1="gripper_static_finger_link" link2="pole_bottom_3_link" reason="Never" />
     <disable_collisions link1="gripper_static_finger_link" link2="pole_bottom_4_link" reason="Never" />
     <disable_collisions link1="gripper_static_finger_link" link2="pole_bottom_5_link" reason="Never" />
+    <disable_collisions link1="gripper_static_finger_link" link2="pole_middle_0_link" reason="Never" />
     <disable_collisions link1="gripper_static_finger_link" link2="pole_middle_1_link" reason="Never" />
     <disable_collisions link1="gripper_static_finger_link" link2="pole_middle_2_link" reason="Never" />
     <disable_collisions link1="gripper_static_finger_link" link2="pole_middle_3_link" reason="Never" />
@@ -1309,9 +1283,12 @@
     <disable_collisions link1="gripper_static_finger_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="gripper_static_finger_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="gripper_static_finger_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="gripper_static_finger_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="gripper_static_finger_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="gripper_static_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="gripper_static_link" link2="plate_middle_link" reason="Never" />
     <disable_collisions link1="gripper_static_link" link2="pole_bottom_0_link" reason="Never" />
+    <disable_collisions link1="gripper_static_link" link2="pole_bottom_11_link" reason="Never" />
     <disable_collisions link1="gripper_static_link" link2="pole_bottom_1_link" reason="Never" />
     <disable_collisions link1="gripper_static_link" link2="pole_bottom_2_link" reason="Never" />
     <disable_collisions link1="gripper_static_link" link2="pole_bottom_3_link" reason="Never" />
@@ -1334,10 +1311,55 @@
     <disable_collisions link1="gripper_static_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="gripper_static_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="gripper_static_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="gripper_static_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="gripper_static_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="gripper_static_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="gripper_static_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="gripper_static_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="gripper_static_link" link2="xtion_mount_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="opencm_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="plate_bottom_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="plate_middle_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="plate_top_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="pole_bottom_0_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="pole_bottom_10_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="pole_bottom_11_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="pole_bottom_12_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="pole_bottom_13_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="pole_bottom_1_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="pole_bottom_2_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="pole_bottom_3_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="pole_bottom_4_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="pole_bottom_5_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="pole_kinect_0_link" reason="Default" />
+    <disable_collisions link1="kinect_link" link2="pole_kinect_1_link" reason="Default" />
+    <disable_collisions link1="kinect_link" link2="pole_middle_0_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="pole_middle_1_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="pole_middle_2_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="pole_middle_3_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="pole_top_0_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="pole_top_10_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="pole_top_11_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="pole_top_12_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="pole_top_13_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="pole_top_1_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="pole_top_2_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="pole_top_3_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="s_0_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="s_m18_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="s_m36_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="s_m54_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="s_m72_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="s_m90_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="s_p18_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="s_p36_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="s_p54_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="s_p72_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="s_p90_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="sonars_mount_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="wheel_left_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="kinect_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="opencm_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="opencm_link" link2="plate_middle_link" reason="Never" />
     <disable_collisions link1="opencm_link" link2="plate_top_link" reason="Adjacent" />
@@ -1376,11 +1398,11 @@
     <disable_collisions link1="opencm_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="opencm_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="opencm_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="opencm_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="opencm_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="opencm_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="opencm_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="opencm_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="opencm_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="opencm_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="plate_bottom_link" link2="plate_middle_link" reason="Never" />
     <disable_collisions link1="plate_bottom_link" link2="plate_top_link" reason="Never" />
     <disable_collisions link1="plate_bottom_link" link2="pole_bottom_0_link" reason="Never" />
@@ -1395,10 +1417,10 @@
     <disable_collisions link1="plate_bottom_link" link2="pole_bottom_5_link" reason="Never" />
     <disable_collisions link1="plate_bottom_link" link2="pole_kinect_0_link" reason="Never" />
     <disable_collisions link1="plate_bottom_link" link2="pole_kinect_1_link" reason="Never" />
-    <disable_collisions link1="plate_bottom_link" link2="pole_middle_0_link" reason="Never" />
-    <disable_collisions link1="plate_bottom_link" link2="pole_middle_1_link" reason="Never" />
-    <disable_collisions link1="plate_bottom_link" link2="pole_middle_2_link" reason="Never" />
-    <disable_collisions link1="plate_bottom_link" link2="pole_middle_3_link" reason="Never" />
+    <disable_collisions link1="plate_bottom_link" link2="pole_middle_0_link" reason="Always" />
+    <disable_collisions link1="plate_bottom_link" link2="pole_middle_1_link" reason="Always" />
+    <disable_collisions link1="plate_bottom_link" link2="pole_middle_2_link" reason="Always" />
+    <disable_collisions link1="plate_bottom_link" link2="pole_middle_3_link" reason="Always" />
     <disable_collisions link1="plate_bottom_link" link2="pole_top_0_link" reason="Never" />
     <disable_collisions link1="plate_bottom_link" link2="pole_top_10_link" reason="Never" />
     <disable_collisions link1="plate_bottom_link" link2="pole_top_11_link" reason="Never" />
@@ -1418,11 +1440,11 @@
     <disable_collisions link1="plate_bottom_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="plate_bottom_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="plate_bottom_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="plate_bottom_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="plate_bottom_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="plate_bottom_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="plate_bottom_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="plate_bottom_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="plate_bottom_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="plate_bottom_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="plate_middle_link" link2="plate_top_link" reason="Never" />
     <disable_collisions link1="plate_middle_link" link2="pole_bottom_0_link" reason="Never" />
     <disable_collisions link1="plate_middle_link" link2="pole_bottom_10_link" reason="Never" />
@@ -1459,11 +1481,11 @@
     <disable_collisions link1="plate_middle_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="plate_middle_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="plate_middle_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="plate_middle_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="plate_middle_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="plate_middle_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="plate_middle_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="plate_middle_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="plate_middle_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="plate_middle_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="plate_top_link" link2="pole_bottom_0_link" reason="Never" />
     <disable_collisions link1="plate_top_link" link2="pole_bottom_10_link" reason="Adjacent" />
     <disable_collisions link1="plate_top_link" link2="pole_bottom_11_link" reason="Adjacent" />
@@ -1480,14 +1502,14 @@
     <disable_collisions link1="plate_top_link" link2="pole_middle_1_link" reason="Never" />
     <disable_collisions link1="plate_top_link" link2="pole_middle_2_link" reason="Never" />
     <disable_collisions link1="plate_top_link" link2="pole_middle_3_link" reason="Never" />
-    <disable_collisions link1="plate_top_link" link2="pole_top_0_link" reason="Never" />
+    <disable_collisions link1="plate_top_link" link2="pole_top_0_link" reason="Always" />
     <disable_collisions link1="plate_top_link" link2="pole_top_10_link" reason="Adjacent" />
     <disable_collisions link1="plate_top_link" link2="pole_top_11_link" reason="Adjacent" />
     <disable_collisions link1="plate_top_link" link2="pole_top_12_link" reason="Adjacent" />
     <disable_collisions link1="plate_top_link" link2="pole_top_13_link" reason="Adjacent" />
-    <disable_collisions link1="plate_top_link" link2="pole_top_1_link" reason="Never" />
-    <disable_collisions link1="plate_top_link" link2="pole_top_2_link" reason="Never" />
-    <disable_collisions link1="plate_top_link" link2="pole_top_3_link" reason="Never" />
+    <disable_collisions link1="plate_top_link" link2="pole_top_1_link" reason="Always" />
+    <disable_collisions link1="plate_top_link" link2="pole_top_2_link" reason="Always" />
+    <disable_collisions link1="plate_top_link" link2="pole_top_3_link" reason="Always" />
     <disable_collisions link1="plate_top_link" link2="s_0_link" reason="Never" />
     <disable_collisions link1="plate_top_link" link2="s_m18_link" reason="Never" />
     <disable_collisions link1="plate_top_link" link2="s_m36_link" reason="Never" />
@@ -1499,11 +1521,11 @@
     <disable_collisions link1="plate_top_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="plate_top_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="plate_top_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="plate_top_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="plate_top_link" link2="senz3d_mount_link" reason="Adjacent" />
     <disable_collisions link1="plate_top_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="plate_top_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="plate_top_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="plate_top_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="plate_top_link" link2="xtion_mount_link" reason="Adjacent" />
     <disable_collisions link1="pole_bottom_0_link" link2="pole_bottom_10_link" reason="Never" />
     <disable_collisions link1="pole_bottom_0_link" link2="pole_bottom_11_link" reason="Never" />
     <disable_collisions link1="pole_bottom_0_link" link2="pole_bottom_12_link" reason="Never" />
@@ -1538,11 +1560,11 @@
     <disable_collisions link1="pole_bottom_0_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="pole_bottom_0_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="pole_bottom_0_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="pole_bottom_0_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="pole_bottom_0_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="pole_bottom_0_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="pole_bottom_0_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="pole_bottom_0_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="pole_bottom_0_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="pole_bottom_0_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="pole_bottom_10_link" link2="pole_bottom_11_link" reason="Adjacent" />
     <disable_collisions link1="pole_bottom_10_link" link2="pole_bottom_12_link" reason="Adjacent" />
     <disable_collisions link1="pole_bottom_10_link" link2="pole_bottom_13_link" reason="Adjacent" />
@@ -1576,11 +1598,11 @@
     <disable_collisions link1="pole_bottom_10_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="pole_bottom_10_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="pole_bottom_10_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="pole_bottom_10_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="pole_bottom_10_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="pole_bottom_10_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="pole_bottom_10_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="pole_bottom_10_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="pole_bottom_10_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="pole_bottom_10_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="pole_bottom_11_link" link2="pole_bottom_12_link" reason="Adjacent" />
     <disable_collisions link1="pole_bottom_11_link" link2="pole_bottom_13_link" reason="Adjacent" />
     <disable_collisions link1="pole_bottom_11_link" link2="pole_bottom_1_link" reason="Never" />
@@ -1613,11 +1635,11 @@
     <disable_collisions link1="pole_bottom_11_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="pole_bottom_11_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="pole_bottom_11_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="pole_bottom_11_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="pole_bottom_11_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="pole_bottom_11_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="pole_bottom_11_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="pole_bottom_11_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="pole_bottom_11_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="pole_bottom_11_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="pole_bottom_12_link" link2="pole_bottom_13_link" reason="Adjacent" />
     <disable_collisions link1="pole_bottom_12_link" link2="pole_bottom_1_link" reason="Never" />
     <disable_collisions link1="pole_bottom_12_link" link2="pole_bottom_2_link" reason="Never" />
@@ -1649,11 +1671,11 @@
     <disable_collisions link1="pole_bottom_12_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="pole_bottom_12_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="pole_bottom_12_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="pole_bottom_12_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="pole_bottom_12_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="pole_bottom_12_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="pole_bottom_12_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="pole_bottom_12_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="pole_bottom_12_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="pole_bottom_12_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="pole_bottom_13_link" link2="pole_bottom_1_link" reason="Never" />
     <disable_collisions link1="pole_bottom_13_link" link2="pole_bottom_2_link" reason="Never" />
     <disable_collisions link1="pole_bottom_13_link" link2="pole_bottom_3_link" reason="Never" />
@@ -1684,11 +1706,11 @@
     <disable_collisions link1="pole_bottom_13_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="pole_bottom_13_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="pole_bottom_13_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="pole_bottom_13_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="pole_bottom_13_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="pole_bottom_13_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="pole_bottom_13_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="pole_bottom_13_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="pole_bottom_13_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="pole_bottom_13_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="pole_bottom_1_link" link2="pole_bottom_2_link" reason="Never" />
     <disable_collisions link1="pole_bottom_1_link" link2="pole_bottom_3_link" reason="Never" />
     <disable_collisions link1="pole_bottom_1_link" link2="pole_bottom_4_link" reason="Never" />
@@ -1718,11 +1740,11 @@
     <disable_collisions link1="pole_bottom_1_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="pole_bottom_1_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="pole_bottom_1_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="pole_bottom_1_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="pole_bottom_1_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="pole_bottom_1_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="pole_bottom_1_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="pole_bottom_1_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="pole_bottom_1_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="pole_bottom_1_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="pole_bottom_2_link" link2="pole_bottom_3_link" reason="Never" />
     <disable_collisions link1="pole_bottom_2_link" link2="pole_bottom_4_link" reason="Never" />
     <disable_collisions link1="pole_bottom_2_link" link2="pole_bottom_5_link" reason="Never" />
@@ -1751,11 +1773,11 @@
     <disable_collisions link1="pole_bottom_2_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="pole_bottom_2_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="pole_bottom_2_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="pole_bottom_2_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="pole_bottom_2_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="pole_bottom_2_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="pole_bottom_2_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="pole_bottom_2_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="pole_bottom_2_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="pole_bottom_2_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="pole_bottom_3_link" link2="pole_bottom_4_link" reason="Never" />
     <disable_collisions link1="pole_bottom_3_link" link2="pole_bottom_5_link" reason="Never" />
     <disable_collisions link1="pole_bottom_3_link" link2="pole_kinect_0_link" reason="Never" />
@@ -1783,11 +1805,11 @@
     <disable_collisions link1="pole_bottom_3_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="pole_bottom_3_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="pole_bottom_3_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="pole_bottom_3_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="pole_bottom_3_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="pole_bottom_3_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="pole_bottom_3_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="pole_bottom_3_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="pole_bottom_3_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="pole_bottom_3_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="pole_bottom_4_link" link2="pole_bottom_5_link" reason="Never" />
     <disable_collisions link1="pole_bottom_4_link" link2="pole_kinect_0_link" reason="Never" />
     <disable_collisions link1="pole_bottom_4_link" link2="pole_kinect_1_link" reason="Never" />
@@ -1814,11 +1836,11 @@
     <disable_collisions link1="pole_bottom_4_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="pole_bottom_4_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="pole_bottom_4_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="pole_bottom_4_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="pole_bottom_4_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="pole_bottom_4_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="pole_bottom_4_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="pole_bottom_4_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="pole_bottom_4_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="pole_bottom_4_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="pole_bottom_5_link" link2="pole_kinect_0_link" reason="Never" />
     <disable_collisions link1="pole_bottom_5_link" link2="pole_kinect_1_link" reason="Never" />
     <disable_collisions link1="pole_bottom_5_link" link2="pole_middle_0_link" reason="Never" />
@@ -1844,11 +1866,11 @@
     <disable_collisions link1="pole_bottom_5_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="pole_bottom_5_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="pole_bottom_5_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="pole_bottom_5_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="pole_bottom_5_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="pole_bottom_5_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="pole_bottom_5_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="pole_bottom_5_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="pole_bottom_5_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="pole_bottom_5_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="pole_kinect_0_link" link2="pole_kinect_1_link" reason="Never" />
     <disable_collisions link1="pole_kinect_0_link" link2="pole_middle_0_link" reason="Never" />
     <disable_collisions link1="pole_kinect_0_link" link2="pole_middle_1_link" reason="Never" />
@@ -1873,11 +1895,11 @@
     <disable_collisions link1="pole_kinect_0_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="pole_kinect_0_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="pole_kinect_0_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="pole_kinect_0_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="pole_kinect_0_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="pole_kinect_0_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="pole_kinect_0_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="pole_kinect_0_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="pole_kinect_0_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="pole_kinect_0_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="pole_kinect_1_link" link2="pole_middle_0_link" reason="Never" />
     <disable_collisions link1="pole_kinect_1_link" link2="pole_middle_1_link" reason="Never" />
     <disable_collisions link1="pole_kinect_1_link" link2="pole_middle_2_link" reason="Never" />
@@ -1901,11 +1923,11 @@
     <disable_collisions link1="pole_kinect_1_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="pole_kinect_1_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="pole_kinect_1_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="pole_kinect_1_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="pole_kinect_1_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="pole_kinect_1_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="pole_kinect_1_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="pole_kinect_1_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="pole_kinect_1_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="pole_kinect_1_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="pole_middle_0_link" link2="pole_middle_1_link" reason="Never" />
     <disable_collisions link1="pole_middle_0_link" link2="pole_middle_2_link" reason="Never" />
     <disable_collisions link1="pole_middle_0_link" link2="pole_middle_3_link" reason="Never" />
@@ -1928,11 +1950,11 @@
     <disable_collisions link1="pole_middle_0_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="pole_middle_0_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="pole_middle_0_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="pole_middle_0_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="pole_middle_0_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="pole_middle_0_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="pole_middle_0_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="pole_middle_0_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="pole_middle_0_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="pole_middle_0_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="pole_middle_1_link" link2="pole_middle_2_link" reason="Never" />
     <disable_collisions link1="pole_middle_1_link" link2="pole_middle_3_link" reason="Never" />
     <disable_collisions link1="pole_middle_1_link" link2="pole_top_0_link" reason="Never" />
@@ -1954,11 +1976,11 @@
     <disable_collisions link1="pole_middle_1_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="pole_middle_1_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="pole_middle_1_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="pole_middle_1_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="pole_middle_1_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="pole_middle_1_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="pole_middle_1_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="pole_middle_1_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="pole_middle_1_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="pole_middle_1_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="pole_middle_2_link" link2="pole_middle_3_link" reason="Never" />
     <disable_collisions link1="pole_middle_2_link" link2="pole_top_0_link" reason="Never" />
     <disable_collisions link1="pole_middle_2_link" link2="pole_top_10_link" reason="Never" />
@@ -1979,11 +2001,11 @@
     <disable_collisions link1="pole_middle_2_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="pole_middle_2_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="pole_middle_2_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="pole_middle_2_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="pole_middle_2_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="pole_middle_2_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="pole_middle_2_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="pole_middle_2_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="pole_middle_2_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="pole_middle_2_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="pole_middle_3_link" link2="pole_top_0_link" reason="Never" />
     <disable_collisions link1="pole_middle_3_link" link2="pole_top_10_link" reason="Never" />
     <disable_collisions link1="pole_middle_3_link" link2="pole_top_11_link" reason="Never" />
@@ -2003,11 +2025,11 @@
     <disable_collisions link1="pole_middle_3_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="pole_middle_3_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="pole_middle_3_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="pole_middle_3_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="pole_middle_3_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="pole_middle_3_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="pole_middle_3_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="pole_middle_3_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="pole_middle_3_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="pole_middle_3_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="pole_top_0_link" link2="pole_top_10_link" reason="Never" />
     <disable_collisions link1="pole_top_0_link" link2="pole_top_11_link" reason="Never" />
     <disable_collisions link1="pole_top_0_link" link2="pole_top_12_link" reason="Never" />
@@ -2026,13 +2048,13 @@
     <disable_collisions link1="pole_top_0_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="pole_top_0_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="pole_top_0_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="pole_top_0_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="pole_top_0_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="pole_top_0_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="pole_top_0_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="pole_top_0_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="pole_top_0_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="pole_top_0_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="pole_top_10_link" link2="pole_top_11_link" reason="Never" />
-    <disable_collisions link1="pole_top_10_link" link2="pole_top_12_link" reason="Default" />
+    <disable_collisions link1="pole_top_10_link" link2="pole_top_12_link" reason="Never" />
     <disable_collisions link1="pole_top_10_link" link2="pole_top_13_link" reason="Never" />
     <disable_collisions link1="pole_top_10_link" link2="pole_top_1_link" reason="Never" />
     <disable_collisions link1="pole_top_10_link" link2="pole_top_2_link" reason="Never" />
@@ -2048,13 +2070,13 @@
     <disable_collisions link1="pole_top_10_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="pole_top_10_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="pole_top_10_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="pole_top_10_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="pole_top_10_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="pole_top_10_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="pole_top_10_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="pole_top_10_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="pole_top_10_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="pole_top_10_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="pole_top_11_link" link2="pole_top_12_link" reason="Never" />
-    <disable_collisions link1="pole_top_11_link" link2="pole_top_13_link" reason="Default" />
+    <disable_collisions link1="pole_top_11_link" link2="pole_top_13_link" reason="Never" />
     <disable_collisions link1="pole_top_11_link" link2="pole_top_1_link" reason="Never" />
     <disable_collisions link1="pole_top_11_link" link2="pole_top_2_link" reason="Never" />
     <disable_collisions link1="pole_top_11_link" link2="pole_top_3_link" reason="Never" />
@@ -2069,11 +2091,11 @@
     <disable_collisions link1="pole_top_11_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="pole_top_11_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="pole_top_11_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="pole_top_11_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="pole_top_11_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="pole_top_11_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="pole_top_11_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="pole_top_11_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="pole_top_11_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="pole_top_11_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="pole_top_12_link" link2="pole_top_13_link" reason="Never" />
     <disable_collisions link1="pole_top_12_link" link2="pole_top_1_link" reason="Never" />
     <disable_collisions link1="pole_top_12_link" link2="pole_top_2_link" reason="Never" />
@@ -2089,11 +2111,11 @@
     <disable_collisions link1="pole_top_12_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="pole_top_12_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="pole_top_12_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="pole_top_12_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="pole_top_12_link" link2="senz3d_mount_link" reason="Default" />
     <disable_collisions link1="pole_top_12_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="pole_top_12_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="pole_top_12_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="pole_top_12_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="pole_top_12_link" link2="xtion_mount_link" reason="Default" />
     <disable_collisions link1="pole_top_13_link" link2="pole_top_1_link" reason="Never" />
     <disable_collisions link1="pole_top_13_link" link2="pole_top_2_link" reason="Never" />
     <disable_collisions link1="pole_top_13_link" link2="pole_top_3_link" reason="Never" />
@@ -2108,11 +2130,11 @@
     <disable_collisions link1="pole_top_13_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="pole_top_13_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="pole_top_13_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="pole_top_13_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="pole_top_13_link" link2="senz3d_mount_link" reason="Default" />
     <disable_collisions link1="pole_top_13_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="pole_top_13_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="pole_top_13_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="pole_top_13_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="pole_top_13_link" link2="xtion_mount_link" reason="Default" />
     <disable_collisions link1="pole_top_1_link" link2="pole_top_2_link" reason="Never" />
     <disable_collisions link1="pole_top_1_link" link2="pole_top_3_link" reason="Never" />
     <disable_collisions link1="pole_top_1_link" link2="s_0_link" reason="Never" />
@@ -2126,11 +2148,11 @@
     <disable_collisions link1="pole_top_1_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="pole_top_1_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="pole_top_1_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="pole_top_1_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="pole_top_1_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="pole_top_1_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="pole_top_1_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="pole_top_1_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="pole_top_1_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="pole_top_1_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="pole_top_2_link" link2="pole_top_3_link" reason="Never" />
     <disable_collisions link1="pole_top_2_link" link2="s_0_link" reason="Never" />
     <disable_collisions link1="pole_top_2_link" link2="s_m18_link" reason="Never" />
@@ -2143,11 +2165,11 @@
     <disable_collisions link1="pole_top_2_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="pole_top_2_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="pole_top_2_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="pole_top_2_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="pole_top_2_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="pole_top_2_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="pole_top_2_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="pole_top_2_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="pole_top_2_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="pole_top_2_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="pole_top_3_link" link2="s_0_link" reason="Never" />
     <disable_collisions link1="pole_top_3_link" link2="s_m18_link" reason="Never" />
     <disable_collisions link1="pole_top_3_link" link2="s_m36_link" reason="Never" />
@@ -2159,11 +2181,11 @@
     <disable_collisions link1="pole_top_3_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="pole_top_3_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="pole_top_3_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="pole_top_3_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="pole_top_3_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="pole_top_3_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="pole_top_3_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="pole_top_3_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="pole_top_3_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="pole_top_3_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="s_0_link" link2="s_m18_link" reason="Never" />
     <disable_collisions link1="s_0_link" link2="s_m36_link" reason="Never" />
     <disable_collisions link1="s_0_link" link2="s_m54_link" reason="Never" />
@@ -2174,11 +2196,11 @@
     <disable_collisions link1="s_0_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="s_0_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="s_0_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="s_0_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="s_0_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="s_0_link" link2="sonars_mount_link" reason="Adjacent" />
     <disable_collisions link1="s_0_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="s_0_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="s_0_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="s_0_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="s_m18_link" link2="s_m36_link" reason="Never" />
     <disable_collisions link1="s_m18_link" link2="s_m54_link" reason="Never" />
     <disable_collisions link1="s_m18_link" link2="s_m72_link" reason="Never" />
@@ -2188,11 +2210,11 @@
     <disable_collisions link1="s_m18_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="s_m18_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="s_m18_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="s_m18_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="s_m18_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="s_m18_link" link2="sonars_mount_link" reason="Adjacent" />
     <disable_collisions link1="s_m18_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="s_m18_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="s_m18_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="s_m18_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="s_m36_link" link2="s_m54_link" reason="Never" />
     <disable_collisions link1="s_m36_link" link2="s_m72_link" reason="Never" />
     <disable_collisions link1="s_m36_link" link2="s_m90_link" reason="Never" />
@@ -2201,11 +2223,11 @@
     <disable_collisions link1="s_m36_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="s_m36_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="s_m36_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="s_m36_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="s_m36_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="s_m36_link" link2="sonars_mount_link" reason="Adjacent" />
     <disable_collisions link1="s_m36_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="s_m36_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="s_m36_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="s_m36_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="s_m54_link" link2="s_m72_link" reason="Never" />
     <disable_collisions link1="s_m54_link" link2="s_m90_link" reason="Never" />
     <disable_collisions link1="s_m54_link" link2="s_p18_link" reason="Never" />
@@ -2213,75 +2235,75 @@
     <disable_collisions link1="s_m54_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="s_m54_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="s_m54_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="s_m54_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="s_m54_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="s_m54_link" link2="sonars_mount_link" reason="Adjacent" />
     <disable_collisions link1="s_m54_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="s_m54_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="s_m54_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="s_m54_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="s_m72_link" link2="s_m90_link" reason="Never" />
     <disable_collisions link1="s_m72_link" link2="s_p18_link" reason="Never" />
     <disable_collisions link1="s_m72_link" link2="s_p36_link" reason="Never" />
     <disable_collisions link1="s_m72_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="s_m72_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="s_m72_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="s_m72_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="s_m72_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="s_m72_link" link2="sonars_mount_link" reason="Adjacent" />
     <disable_collisions link1="s_m72_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="s_m72_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="s_m72_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="s_m72_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="s_m90_link" link2="s_p18_link" reason="Never" />
     <disable_collisions link1="s_m90_link" link2="s_p36_link" reason="Never" />
     <disable_collisions link1="s_m90_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="s_m90_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="s_m90_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="s_m90_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="s_m90_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="s_m90_link" link2="sonars_mount_link" reason="Adjacent" />
     <disable_collisions link1="s_m90_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="s_m90_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="s_m90_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="s_m90_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="s_p18_link" link2="s_p36_link" reason="Never" />
     <disable_collisions link1="s_p18_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="s_p18_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="s_p18_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="s_p18_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="s_p18_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="s_p18_link" link2="sonars_mount_link" reason="Adjacent" />
     <disable_collisions link1="s_p18_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="s_p18_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="s_p18_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="s_p18_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="s_p36_link" link2="s_p54_link" reason="Never" />
     <disable_collisions link1="s_p36_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="s_p36_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="s_p36_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="s_p36_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="s_p36_link" link2="sonars_mount_link" reason="Adjacent" />
     <disable_collisions link1="s_p36_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="s_p36_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="s_p36_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="s_p36_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="s_p54_link" link2="s_p72_link" reason="Never" />
     <disable_collisions link1="s_p54_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="s_p54_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="s_p54_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="s_p54_link" link2="sonars_mount_link" reason="Adjacent" />
     <disable_collisions link1="s_p54_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="s_p54_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="s_p54_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="s_p54_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="s_p72_link" link2="s_p90_link" reason="Never" />
-    <disable_collisions link1="s_p72_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="s_p72_link" link2="senz3d_mount_link" reason="Never" />
     <disable_collisions link1="s_p72_link" link2="sonars_mount_link" reason="Adjacent" />
     <disable_collisions link1="s_p72_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="s_p72_link" link2="wheel_right_link" reason="Never" />
-    <disable_collisions link1="s_p90_link" link2="senz3d_camera_link" reason="Never" />
-    <disable_collisions link1="s_p90_link" link2="senz3d_mount_link" reason="Never" />
+    <disable_collisions link1="s_p72_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="s_p72_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="s_p90_link" link2="sonars_mount_link" reason="Adjacent" />
     <disable_collisions link1="s_p90_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="s_p90_link" link2="wheel_right_link" reason="Never" />
-    <disable_collisions link1="senz3d_camera_link" link2="senz3d_mount_link" reason="Adjacent" />
-    <disable_collisions link1="senz3d_camera_link" link2="sonars_mount_link" reason="Never" />
-    <disable_collisions link1="senz3d_camera_link" link2="wheel_left_link" reason="Never" />
-    <disable_collisions link1="senz3d_camera_link" link2="wheel_right_link" reason="Never" />
-    <disable_collisions link1="senz3d_mount_link" link2="sonars_mount_link" reason="Never" />
-    <disable_collisions link1="senz3d_mount_link" link2="wheel_left_link" reason="Never" />
-    <disable_collisions link1="senz3d_mount_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="s_p90_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="s_p90_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="sonars_mount_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="sonars_mount_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="sonars_mount_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="sonars_mount_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="wheel_left_link" link2="wheel_right_link" reason="Never" />
+    <disable_collisions link1="wheel_left_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="wheel_left_link" link2="xtion_mount_link" reason="Never" />
+    <disable_collisions link1="wheel_right_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="wheel_right_link" link2="xtion_mount_link" reason="Never" />
+    <disable_collisions link1="xtion_link" link2="xtion_mount_link" reason="Adjacent" />
 </robot>

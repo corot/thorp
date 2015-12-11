@@ -3,9 +3,7 @@
   
   <!--  ***** Thorp model and manipulation camera ****  -->
   <include file="$(find thorp_bringup)/launch/includes/model.launch.xml"/>
-  <include file="$(find thorp_bringup)/launch/includes/softkinetic.launch.xml">
-    <arg name="config_file" value="$(find thorp_bringup)/param/senz3d/obj_recognition.yaml"/>
-  </include>
+  <include file="$(find thorp_bringup)/launch/includes/xtion.launch.xml"/>
 
   <!-- Run Rviz and load the default config to see recognized tabletop objects -->
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_perc.rviz"/>
@@ -18,6 +16,6 @@
     <arg name="as_server"    value="$(arg as_server)"/>
     <arg name="config_file"  value="$(find thorp_obj_rec)/config/tabletop/thorp.detection.object.ros.ork"/>
     <arg name="robot_frame"  value="base_footprint"/>
-    <arg name="sensor_frame" value="senz3d_camera_rgb_optical_frame"/>
+    <arg name="sensor_frame" value="xtion_rgb_optical_frame"/>
   </include>
 </launch>

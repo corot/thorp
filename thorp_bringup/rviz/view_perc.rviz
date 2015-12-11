@@ -4,11 +4,13 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
+        - /DepthCloud1
         - /DepthCloud1/Auto Size1
         - /TF1/Frames1
         - /Camera1/Visibility1
-      Splitter Ratio: 0.766234
-    Tree Height: 393
+        - /DepthCloud External Camera1/Auto Size1
+      Splitter Ratio: 0.570071
+    Tree Height: 388
   - Class: rviz/Help
     Name: Help
   - Class: rviz/Views
@@ -451,36 +453,36 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        senz3d_camera_depth_frame:
+        senz3d_depth_frame:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        senz3d_camera_depth_optical_frame:
+        senz3d_depth_optical_frame:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        senz3d_camera_gazebo_optical_frame:
+        senz3d_gazebo_optical_frame:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        senz3d_camera_link:
+        senz3d_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        senz3d_camera_rgb_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        senz3d_camera_rgb_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
         senz3d_mount_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
+        senz3d_rgb_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        senz3d_rgb_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         sonars_mount_link:
           Alpha: 1
           Show Axes: false
@@ -514,7 +516,7 @@ Visualization Manager:
       Color: 71; 255; 15
       Color Transformer: RGB8
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 4096
@@ -530,7 +532,7 @@ Visualization Manager:
       Topic: /senz3d/depth/points
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
+      Value: false
     - Alpha: 1
       Auto Size:
         Auto Size Factor: 1
@@ -544,13 +546,13 @@ Visualization Manager:
       Channel Name: intensity
       Class: rviz/DepthCloud
       Color: 255; 255; 255
-      Color Image Topic: ""
+      Color Image Topic: /senz3d/rgb/image_raw
       Color Transformer: RGB8
       Color Transport Hint: raw
       Decay Time: 0
-      Depth Map Topic: /senz3d/depth/image_raw
+      Depth Map Topic: /senz3d/depth_registered/image_raw
       Depth Map Transport Hint: raw
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 4096
@@ -568,7 +570,7 @@ Visualization Manager:
       Topic Filter: true
       Use Fixed Frame: true
       Use rainbow: true
-      Value: false
+      Value: true
     - Class: rviz/TF
       Enabled: false
       Frame Timeout: 15
@@ -593,13 +595,16 @@ Visualization Manager:
       Transport Hint: raw
       Value: false
       Visibility:
-        "": true
         DepthCloud: true
+        DepthCloud External Camera: true
         Grid: true
+        Image Color: true
+        Image Depth: true
         ORK Clusters: true
         ORK Objects: true
         ORK Tables: true
         PointCloud2: true
+        PointCloud2 External Camera: true
         RobotModel: true
         TF: true
         Value: true
@@ -630,7 +635,7 @@ Visualization Manager:
       Value: false
     - Class: rviz/Image
       Enabled: true
-      Image Topic: /senz3d/rgb/image_color
+      Image Topic: /senz3d/rgb/image_raw
       Max Value: 1
       Median window: 5
       Min Value: 0
@@ -664,6 +669,73 @@ Visualization Manager:
         {}
       Update Interval: 0
       Value: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: RGB8
+      Decay Time: 0
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: PointCloud2 External Camera
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.01
+      Style: Flat Squares
+      Topic: /external_camera/depth_registered/points
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
+    - Alpha: 1
+      Auto Size:
+        Auto Size Factor: 1
+        Value: true
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/DepthCloud
+      Color: 255; 255; 255
+      Color Image Topic: /external_camera/rgb/image_raw
+      Color Transformer: RGB8
+      Color Transport Hint: raw
+      Decay Time: 0
+      Depth Map Topic: /external_camera/depth_registered/image_raw
+      Depth Map Transport Hint: raw
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: DepthCloud External Camera
+      Occlusion Compensation:
+        Occlusion Time-Out: 30
+        Value: false
+      Position Transformer: XYZ
+      Queue Size: 5
+      Selectable: true
+      Size (Pixels): 3
+      Style: Flat Squares
+      Topic Filter: true
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -683,29 +755,29 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 1.56749
+      Distance: 1.57369
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.24561
-        Y: 0.22974
-        Z: 9.77497e-07
+        X: 0.222751
+        Y: 0.2228
+        Z: 8.69097e-07
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 1.17979
+      Pitch: 0.319796
       Target Frame: base_link
       Value: XYOrbit (rviz)
-      Yaw: 0.406284
+      Yaw: 4.60447
     Saved: ~
 Window Geometry:
   Camera:
     collapsed: false
   Displays:
     collapsed: false
-  Height: 990
+  Height: 981
   Help:
     collapsed: false
   Hide Left Dock: false
@@ -714,11 +786,11 @@ Window Geometry:
     collapsed: false
   Image Depth:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000100000000000001400000038efc020000000afb000000100044006900730070006c00610079007301000000330000021a000000d801000005fb0000000800480065006c00700000000342000000bb0000007101000005fb0000000a0056006900650077007300000003b0000000b0000000ab01000005fb0000000c00430061006d00650072006100000002ff000001610000001d01000005fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e006701000002470000017a0000000000000000fb0000000a0049006d006100670065000000030a000000b70000000000000000fb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000002f1000000ab0000006901000005fb0000000c00430061006d00650072006102fffffe13000002e7000003b1000002c8fb000000160049006d00610067006500200043006f006c006f007201000002500000009f0000001d01000005fb000000160049006d00610067006500200044006500700074006801000002f2000000cf0000001d010000050000063d0000038e00000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000100000000000001c000000385fc020000000afb000000100044006900730070006c006100790073010000003300000215000000d801000005fb0000000800480065006c00700000000342000000bb0000007101000005fb0000000a0056006900650077007300000003b0000000b0000000ab01000005fb0000000c00430061006d00650072006100000002ff000001610000001d01000005fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e006701000002470000017a0000000000000000fb0000000a0049006d006100670065000000030a000000b70000000000000000fb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000002f1000000ab0000006901000005fb0000000c00430061006d00650072006102fffffe13000002e7000003b1000002c8fb000000160049006d00610067006500200043006f006c006f0072010000024b0000009d0000001d01000005fb000000160049006d00610067006500200044006500700074006801000002eb000000cd0000001d01000005000005bd0000038500000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Tool Properties:
     collapsed: false
   Views:
     collapsed: false
   Width: 1920
   X: 0
-  Y: 35
+  Y: 44

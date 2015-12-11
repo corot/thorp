@@ -4,12 +4,14 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
+        - /Global Options1
+        - /Status1
         - /TF1/Frames1
         - /TF1/Tree1
         - /Local Map1/Costmap1
         - /Global Map1/Costmap1
       Splitter Ratio: 0.5
-    Tree Height: 459
+    Tree Height: 771
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -27,7 +29,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: LaserScan (kinect)
 Visualization Manager:
   Class: ""
   Displays:
@@ -258,7 +260,7 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        opencm_joint_link:
+        opencm_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -402,46 +404,57 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+          Value: true
         s_m18_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+          Value: true
         s_m36_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+          Value: true
         s_m54_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+          Value: true
         s_m72_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+          Value: true
         s_m90_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+          Value: true
         s_p18_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+          Value: true
         s_p36_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+          Value: true
         s_p54_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+          Value: true
         s_p72_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+          Value: true
         s_p90_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+          Value: true
         senz3d_calib_link:
           Alpha: 1
           Show Axes: false
@@ -468,6 +481,11 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
         senz3d_mount_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        sonars_mount_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -791,7 +809,13 @@ Visualization Manager:
           Class: rviz/Path
           Color: 0; 12; 255
           Enabled: true
+          Line Style: Lines
+          Line Width: 0.03
           Name: Planner
+          Offset:
+            X: 0
+            Y: 0
+            Z: 0
           Topic: /move_base/TrajectoryPlannerROS/local_plan
           Value: true
       Enabled: true
@@ -811,7 +835,13 @@ Visualization Manager:
           Class: rviz/Path
           Color: 255; 0; 0
           Enabled: true
+          Line Style: Lines
+          Line Width: 0.03
           Name: Planner
+          Offset:
+            X: 0
+            Y: 0
+            Z: 0
           Topic: /move_base/TrajectoryPlannerROS/global_plan
           Value: true
       Enabled: true
@@ -856,7 +886,13 @@ Visualization Manager:
       Class: rviz/Path
       Color: 25; 255; 0
       Enabled: true
+      Line Style: Lines
+      Line Width: 0.03
       Name: Path (global)
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
       Topic: /move_base/NavfnROS/plan
       Value: true
     - Alpha: 1
@@ -864,7 +900,13 @@ Visualization Manager:
       Class: rviz/Path
       Color: 255; 230; 117
       Enabled: true
+      Line Style: Lines
+      Line Width: 0.03
       Name: Path (local)
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
       Topic: /move_base/TrajectoryPlannerROS/local_plan
       Value: true
     - Alpha: 1
@@ -967,6 +1009,20 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
+    - Alpha: 1
+      Axes Length: 1
+      Axes Radius: 0.1
+      Class: rviz/Pose
+      Color: 255; 255; 0
+      Enabled: true
+      Head Length: 0.3
+      Head Radius: 0.1
+      Name: ScanMatcherPose
+      Shaft Length: 1
+      Shaft Radius: 0.05
+      Shape: Arrow
+      Topic: /scan_matcher_pose
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -987,30 +1043,30 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 1.15782
+      Distance: 5.54678
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 2.29607
-        Y: 2.30044
-        Z: 0.530921
+        X: 0.887992
+        Y: -0.11335
+        Z: 0.533716
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.389801
+      Pitch: 1.5698
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.945026
+      Yaw: 1.08503
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 678
+  Height: 990
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd0000000400000000000001e100000256fc0200000005fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006901000005fb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003300000256000000d801000005000000010000010b0000038bfc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a0056006900650077007300000000320000038b000000ab01000005fb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004a00000003efc0100000002fb0000000800540069006d00650000000000000004a00000027401000005fb0000000800540069006d00650100000000000004500000000000000000000003720000025600000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000400000000000001e10000038efc0200000005fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006901000005fb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c00610079007301000000330000038e000000d801000005000000010000010b0000038bfc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a0056006900650077007300000000320000038b000000ab01000005fb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004a00000003efc0100000002fb0000000800540069006d00650000000000000004a00000027401000005fb0000000800540069006d006501000000000000045000000000000000000000059c0000038e00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -1019,6 +1075,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1366
-  X: -2
-  Y: 32
+  Width: 1920
+  X: 0
+  Y: 35

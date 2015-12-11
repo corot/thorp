@@ -6,6 +6,7 @@ Panels:
       Expanded:
         - /DepthCloud1/Auto Size1
         - /TF1/Frames1
+        - /Range1
       Splitter Ratio: 0.40146
     Tree Height: 347
   - Class: rviz/Help
@@ -1207,6 +1208,15 @@ Visualization Manager:
       Name: Local Costmap
       Topic: /move_base/local_costmap/costmap
       Value: true
+    - Alpha: 0.5
+      Buffer Length: 1
+      Class: rviz/Range
+      Color: 255; 255; 255
+      Enabled: true
+      Name: Range
+      Queue Size: 100
+      Topic: /mobile_base/sensors/sonars/p72
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -1226,22 +1236,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 1.59085
+      Distance: 4.76496
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.39796
-        Y: 0.433935
-        Z: 7.79173e-07
+        X: 0.881264
+        Y: -0.378135
+        Z: -3.13349e-07
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.2848
+      Pitch: 0.6498
       Target Frame: base_link
       Value: XYOrbit (rviz)
-      Yaw: 5.84811
+      Yaw: 0.0499287
     Saved: ~
 Window Geometry:
   Displays:
