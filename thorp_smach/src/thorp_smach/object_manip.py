@@ -128,7 +128,7 @@ def main():
         om_sm.userdata.obj_name       = std_msgs.msg.String()
         om_sm.userdata.pick_pose      = geometry_msgs.msg.Pose()
         om_sm.userdata.place_pose     = geometry_msgs.msg.Pose()
-        om_sm.userdata.named_pose_target_type = 3  ### turtlebot_arm_object_manipulation.msg.MoveToTargetActionGoal.NAMED_TARGET
+        om_sm.userdata.named_pose_target_type = MoveToTargetGoal.NAMED_TARGET
         om_sm.userdata.arm_folded_named_pose = 'resting'
 
         smach.StateMachine.add('WaitForStartCmd',
@@ -180,7 +180,7 @@ def main():
                                               'named_target':'arm_folded_named_pose'},
                                    transitions={'succeeded':'ObjDetectionClearOctomap',
                                                 'preempted':'preempted',
-                                                'aborted':'aborted'})
+                                                'aborted':'ObjDetectionClearOctomap'})
 
         smach.StateMachine.add('ObjectDetection', od_sm,
                                remapping={'frame':'frame',
@@ -229,7 +229,7 @@ def main():
                                           'named_target':'arm_folded_named_pose'},
                                transitions={'succeeded':'ObjectDetection',
                                             'preempted':'ActionPreempted',
-                                            'aborted':'error'})
+                                            'aborted':'ObjectDetection'})
 
         smach.StateMachine.add('FoldArmAndQuit',
                                smach_ros.SimpleActionState('move_to_target',
