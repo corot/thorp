@@ -4,13 +4,12 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /DepthCloud1
         - /DepthCloud1/Auto Size1
         - /TF1/Frames1
         - /Camera1/Visibility1
         - /DepthCloud External Camera1/Auto Size1
-      Splitter Ratio: 0.570071
-    Tree Height: 388
+      Splitter Ratio: 0.65367
+    Tree Height: 233
   - Class: rviz/Help
     Name: Help
   - Class: rviz/Views
@@ -158,27 +157,6 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        camera_depth_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        camera_depth_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        camera_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        camera_rgb_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        camera_rgb_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
         caster_back_link:
           Alpha: 1
           Show Axes: false
@@ -251,6 +229,27 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
         ir_r180_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        kinect_depth_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        kinect_depth_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        kinect_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        kinect_rgb_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        kinect_rgb_optical_frame:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -339,7 +338,17 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        pole_middle_11_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         pole_middle_1_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_middle_21_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -364,22 +373,22 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        pole_top_11_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         pole_top_12_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        pole_top_13_link:
+        pole_top_1_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        pole_top_1_link:
+        pole_top_20_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_top_22_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -498,6 +507,36 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        xtion_depth_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        xtion_depth_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        xtion_gazebo_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        xtion_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        xtion_mount_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        xtion_rgb_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        xtion_rgb_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
       Name: RobotModel
       Robot Description: robot_description
       TF Prefix: ""
@@ -529,7 +568,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.0025
       Style: Flat Squares
-      Topic: /senz3d/depth/points
+      Topic: /xtion/depth_registered/points
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
@@ -546,11 +585,11 @@ Visualization Manager:
       Channel Name: intensity
       Class: rviz/DepthCloud
       Color: 255; 255; 255
-      Color Image Topic: /senz3d/rgb/image_raw
+      Color Image Topic: /xtion/rgb/image_raw
       Color Transformer: RGB8
       Color Transport Hint: raw
       Decay Time: 0
-      Depth Map Topic: /senz3d/depth_registered/image_raw
+      Depth Map Topic: /xtion/depth_registered/image_raw
       Depth Map Transport Hint: raw
       Enabled: true
       Invert Rainbow: false
@@ -635,7 +674,7 @@ Visualization Manager:
       Value: false
     - Class: rviz/Image
       Enabled: true
-      Image Topic: /senz3d/rgb/image_raw
+      Image Topic: /xtion/rgb/image_raw
       Max Value: 1
       Median window: 5
       Min Value: 0
@@ -646,7 +685,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Image
       Enabled: true
-      Image Topic: /senz3d/depth/image_raw
+      Image Topic: /xtion/depth_registered/image_raw
       Max Value: 1
       Median window: 5
       Min Value: 0
@@ -755,22 +794,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 1.57369
+      Distance: 0.897616
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.222751
-        Y: 0.2228
-        Z: 8.69097e-07
+        X: 0.42249
+        Y: -0.152793
+        Z: -1.48803e-06
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.319796
+      Pitch: 0.739797
       Target Frame: base_link
       Value: XYOrbit (rviz)
-      Yaw: 4.60447
+      Yaw: 2.86447
     Saved: ~
 Window Geometry:
   Camera:
@@ -786,7 +825,7 @@ Window Geometry:
     collapsed: false
   Image Depth:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000100000000000001c000000385fc020000000afb000000100044006900730070006c006100790073010000003300000215000000d801000005fb0000000800480065006c00700000000342000000bb0000007101000005fb0000000a0056006900650077007300000003b0000000b0000000ab01000005fb0000000c00430061006d00650072006100000002ff000001610000001d01000005fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e006701000002470000017a0000000000000000fb0000000a0049006d006100670065000000030a000000b70000000000000000fb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000002f1000000ab0000006901000005fb0000000c00430061006d00650072006102fffffe13000002e7000003b1000002c8fb000000160049006d00610067006500200043006f006c006f0072010000024b0000009d0000001d01000005fb000000160049006d00610067006500200044006500700074006801000002eb000000cd0000001d01000005000005bd0000038500000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000100000000000001c000000385fc020000000afb000000100044006900730070006c00610079007301000000330000017a000000d801000005fb0000000800480065006c00700000000342000000bb0000007101000005fb0000000a0056006900650077007301000001b000000102000000ab01000005fb0000000c00430061006d00650072006100000001ea0000011a0000001d01000005fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e006701000002470000017a0000000000000000fb0000000a0049006d006100670065000000030a000000b70000000000000000fb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000002f1000000ab0000006901000005fb0000000c00430061006d00650072006102fffffe13000002e7000003b1000002c8fb000000160049006d00610067006500200043006f006c006f007201000002b5000000700000001d01000005fb000000160049006d0061006700650020004400650070007400680100000328000000900000001d01000005000005bd0000038500000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Tool Properties:
     collapsed: false
   Views:

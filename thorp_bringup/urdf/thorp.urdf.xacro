@@ -3,28 +3,33 @@
   TurtleBot 2 configuration
     - Base      : kobuki
     - Stacks    : hexagons
-    - 3d Sensor : kinect
+    - 3D Sensor : kinect
 
   Thorp addons
     - 11 sonars
     - 5 IR sensors
     - Turtlebot arm
-    - Manipulation 3d sensor (Asus Xtion Pro)
+    - Auxiliary 3D sensor (Creative Senz3D)
+    - Manipulation 3D sensor (Asus Xtion Pro)
 -->
+
 <robot name="Thorp" xmlns:xacro="http://ros.org/wiki/xacro">
 
   <xacro:include filename="$(find turtlebot_description)/urdf/turtlebot_library.urdf.xacro"/>
   <xacro:include filename="$(find turtlebot_arm_description)/urdf/turtlebot_arm.xacro"/>
+  <xacro:include filename="$(find softkinetic_camera)/urdf/senz3d.urdf.xacro"/>
   <xacro:include filename="$(find thorp_bringup)/urdf/thorp_gazebo.urdf.xacro"/>
   <xacro:include filename="$(find thorp_bringup)/urdf/kinect.urdf.xacro"/>
   <xacro:include filename="$(find thorp_bringup)/urdf/xtion.urdf.xacro"/>
 
   <xacro:arg name="simulation" default="false"/>
 
+
   <!-- Plain Turtlebot 2 -->
   <kobuki/>
   <stack_hexagons parent="base_link"/>
   <kinect_camera parent="base_link" name="kinect"/>
+
 
   <!-- Turtlebot arm, its controller board and its mounting on Thorp -->
 
@@ -103,32 +108,107 @@
   <link name="ir_arm_link"/>
 
 
-  <!-- Asus Xtion Pro camera plus mounting on Thorp -->
+  <!-- Auxiliary Senz3D camera plus mounting on Thorp -->
   
-  <!-- Mounting poles: two pairs of stacked top poles -->
+  <!-- Mounting poles: two columns made with one top and one middle poles stacked -->
+  <!-- The Z loc of the upper poles is : 1/2*plate height + top pole height + 1/2*middle pole height (without screw) -->
+  <stack_top_pole parent="plate_top_link" number="10" x_loc="-0.1124" y_loc=" 0.098" z_loc="${0.006/2 + 0.2032/2}"/>
+  <stack_top_pole parent="plate_top_link" number="20" x_loc="-0.1124" y_loc="-0.098" z_loc="${0.006/2 + 0.2032/2}"/>
+  <stack_middle_pole parent="plate_top_link" number="11" x_loc="-0.1124" y_loc=" 0.098" z_loc="${0.006/2 + 0.2032 + 0.0608/2}"/>
+  <stack_middle_pole parent="plate_top_link" number="21" x_loc="-0.1124" y_loc="-0.098" z_loc="${0.006/2 + 0.2032 + 0.0608/2}"/>
+  
+  <!-- Mounting plate -->
+  <joint name="senz3d_mount_joint" type="fixed">
+    <origin xyz="-0.1124 0.0 ${0.2032 + 0.006 + 0.0515}" rpy="0.0 0.0 0.0"/>
+    <parent link="plate_top_link"/>
+    <child link="senz3d_mount_link"/>
+  </joint>
+  <link name="senz3d_mount_link">
+    <visual>
+      <origin xyz="0.0075 0.0 -0.003" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <mesh filename="package://thorp_bringup/resources/meshes/senz3d_mount.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="Black">
+        <color rgba="0.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.0075 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <box size="0.03 0.22 0.006"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.040"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.0001" ixy="0.0" ixz="0.0"
+               iyy="0.0001" iyz="0.0"
+               izz="0.0001"/>
+    </inertial>
+  </link>
+
+  <!-- The camera itself -->
+  <joint name="senz3d_calib_joint" type="fixed">
+    <!-- Ideal extrinsic parameters obtained from robot model -->
+    <xacro:if value="$(arg simulation)">
+      <origin xyz="0.02 0.013 0.022" rpy="0.0 0.0 0.0"/>
+    </xacro:if>
+    <!-- Extrinsic parameters obtained through arm-camera calibration:
+         http://wiki.ros.org/turtlebot_arm_kinect_calibration -->
+    <!-- NOTE: Not required by now in its role of auxiliary camera -->
+    <xacro:unless value="$(arg simulation)">
+      <origin xyz="0.02 0.013 0.022" rpy="0.0 0.0 0.0"/>
+    </xacro:unless>
+    <parent link="senz3d_mount_link"/>
+    <child link="senz3d_calib_link"/>
+  </joint>
+  <link name="senz3d_calib_link"/>
+
+  <!-- Seems like Gazebo kinect plugin needs to use a centered frame instead of separated rgb and depth.
+       No idea if this makes any sense, but it works! I also move the optical tf a bit forward to make
+       pointcloud match better the model; this is absolutely arbitrary... -->
+  <xacro:if value="$(arg simulation)">
+    <joint name="senz3d_gazebo_optical_joint" type="fixed">
+      <origin xyz="0.004 0.0 0.0" rpy="${-M_PI/2} 0.0 ${-M_PI/2}"/>
+      <parent link="senz3d_link"/>
+      <child link="senz3d_gazebo_optical_frame"/>
+    </joint>
+    <link name="senz3d_gazebo_optical_frame"/>
+  </xacro:if>
+
+  <sensor_senz3d parent="senz3d_calib_link" name="senz3d">
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+  </sensor_senz3d>
+
+
+  <!-- Manipulation Asus Xtion Pro camera mounted on top of the Senz3D's mounting plate-->
+  
+  <!-- Mounting poles: a pair of top poles -->
   <!-- The Z loc of the upper poles is : 1/2*plate height + 3/2*top pole height -->
-  <stack_top_pole parent="plate_top_link" number="10" x_loc="-0.0874" y_loc=" 0.098" z_loc="${0.006/2 + 0.2032*(1/2)}"/>
-  <stack_top_pole parent="plate_top_link" number="11" x_loc="-0.0874" y_loc="-0.098" z_loc="${0.006/2 + 0.2032*(1/2)}"/>
-  <stack_top_pole parent="plate_top_link" number="12" x_loc="-0.0874" y_loc=" 0.098" z_loc="${0.006/2 + 0.2032*(3/2)}"/>
-  <stack_top_pole parent="plate_top_link" number="13" x_loc="-0.0874" y_loc="-0.098" z_loc="${0.006/2 + 0.2032*(3/2)}"/>
+  <stack_top_pole parent="senz3d_mount_link" number="12" x_loc="0.0" y_loc=" 0.098" z_loc="${0.006/2 + 0.2032/2}"/>
+  <stack_top_pole parent="senz3d_mount_link" number="22" x_loc="0.0" y_loc="-0.098" z_loc="${0.006/2 + 0.2032/2}"/>
   
   <!-- Mounting plate -->
   <joint name="xtion_mount_joint" type="fixed">
-    <origin xyz="-0.0874 0.0 ${0.2032*2 + 0.006}" rpy="0.0 ${M_PI/4} 0.0"/>
-    <parent link="plate_top_link"/>
+    <origin xyz="0.0 0.0 ${0.2032 + 0.006}" rpy="0.0 0.0 0.0"/>
+    <parent link="senz3d_mount_link"/>
     <child link="xtion_mount_link"/>
   </joint>
   <link name="xtion_mount_link">
     <visual>
-      <origin xyz="0.0 0.0 0.0" rpy="${-M_PI/2} 0.0 0.0"/>
+      <origin xyz="0.0 0 0.0" rpy="${M_PI*(3/4)} 0.0 ${M_PI/2}"/>
       <geometry>
-        <mesh filename="package://turtlebot_description/meshes/sensors/xtion_pro_stack.dae"/>
+        <mesh filename="package://thorp_bringup/resources/meshes/xtion_mount_a45.stl" scale="0.001 0.001 0.001"/>
       </geometry>
+      <material name="Black">
+        <color rgba="0.0 0.0 0.0 1.0"/>
+      </material>
     </visual>
     <collision>
       <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
       <geometry>
-        <box size="0.028 0.225 0.012"/>
+        <box size="0.02 0.225 0.025"/>
       </geometry>
     </collision>
     <inertial>
@@ -144,19 +224,24 @@
   <xtion_camera parent="xtion_mount_link" name="xtion">
     <!-- Ideal extrinsic parameters obtained from robot model -->
     <xacro:if value="$(arg simulation)">
-      <!-- <origin xyz="0.0 -0.025 0.015" rpy="0.0 0.0 0.0"/> -->
-      <origin xyz="0.015 0.01 0.015" rpy="0.0 0.0 0.0"/>
+      <!-- <origin xyz="0.022 0.003 0.002" rpy="0.0 ${M_PI/4} 0.0"/> -->
+      <origin xyz="-0.012 0.003 -0.012" rpy="0.0 0.711982 0.0"/>
     </xacro:if>
     <!-- Extrinsic parameters obtained through arm-camera calibration:
          http://wiki.ros.org/turtlebot_arm_kinect_calibration -->
     <xacro:unless value="$(arg simulation)">
-      <origin xyz="0.015 0.01 0.015" rpy="0.0 0.0 0.0"/>
+      <!-- <origin xyz="-0.0179751 0.0118658 0.022709" rpy="-0.0549698 0.711982 0.00994433"/> -->
+      <!-- <origin xyz="-0.018 0.003 -0.008" rpy="0.0 0.711982 0.0"/> -->
+      <origin xyz="-0.012 0.003 -0.012" rpy="0.0 0.711982 0.0"/>
     </xacro:unless>
   </xtion_camera>
-
+        
   <!-- Seems like Gazebo kinect plugin needs to use a centered frame instead of separated rgb and depth.
        No idea if this makes any sense, but it works! I also move the optical tf a bit forward to make
-       pointcloud match better the model; this is absolutely arbitrary... -->
+       pointcloud match better the model; this is absolutely arbitrary...
+       
+       TODO: I think I can remove this because I use registered depth images
+        -->
   <xacro:if value="$(arg simulation)">
     <joint name="xtion_gazebo_optical_joint" type="fixed">
       <origin xyz="0.004 0.0 0.0" rpy="${-M_PI/2} 0.0 ${-M_PI/2}"/>
@@ -165,6 +250,7 @@
     </joint>
     <link name="xtion_gazebo_optical_frame"/>
   </xacro:if>
+
 
   <!-- Sonar sensors forming a half ring centered on (and slightly above) base_link -->
   <joint name="sonars_joint" type="fixed">

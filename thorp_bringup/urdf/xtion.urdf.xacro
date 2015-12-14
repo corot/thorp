@@ -31,7 +31,7 @@
     </joint>
     <link name="${name}_link">
       <visual>
-        <origin xyz="-0.015 0.0035 0.004" rpy="0 0 0"/>
+        <origin xyz="0.0 0.0035 0.0375" rpy="0 0 0"/>
         <geometry>
           <mesh filename="package://turtlebot_description/meshes/sensors/xtion_pro_camera.dae"/>
         </geometry>
