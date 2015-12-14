@@ -8,6 +8,5 @@
     <arg name="camera" value="$(arg camera_name)"/>
     <arg name="publish_tf" value="false"/>
     <arg name="depth_registration" value="true"/>
-    <arg name="depth_frame_id" value="$(arg camera_name)_rgb_optical_frame"/>
   </include>
 </launch>
