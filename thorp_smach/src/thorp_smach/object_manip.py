@@ -126,6 +126,7 @@ def main():
         om_sm.userdata.obj_poses      = geometry_msgs.msg.PoseArray()
         om_sm.userdata.obj_names      = []
         om_sm.userdata.obj_name       = std_msgs.msg.String()
+        om_sm.userdata.header         = std_msgs.msg.Header()
         om_sm.userdata.pick_pose      = geometry_msgs.msg.Pose()
         om_sm.userdata.place_pose     = geometry_msgs.msg.Pose()
         om_sm.userdata.named_pose_target_type = MoveToTargetGoal.NAMED_TARGET
@@ -195,11 +196,12 @@ def main():
                                smach_ros.SimpleActionState('interactive_manipulation',
                                                            InteractiveManipAction,
                                                            goal_slots=['frame', 'obj_size', 'obj_poses', 'obj_names'],
-                                                           result_slots=['obj_name', 'pick_pose', 'place_pose']),
+                                                           result_slots=['obj_name', 'header', 'pick_pose', 'place_pose']),
                                remapping={'frame':'frame',
                                           'obj_size':'obj_size',
                                           'obj_poses':'obj_poses',
                                           'obj_names':'obj_names',
+                                          'header':'header',
                                           'pick_pose':'pick_pose',
                                           'place_pose':'place_pose'},
                                transitions={'succeeded':'PickAndPlace',
@@ -210,11 +212,12 @@ def main():
                                smach_ros.SimpleActionState('pick_and_place',
                                                            PickAndPlaceAction,
                                                            goal_slots=['frame', 'gripper_open', 'gripper_closed',
-                                                                       'obj_name', 'pick_pose', 'place_pose'],
+                                                                       'obj_name', 'header', 'pick_pose', 'place_pose'],
                                                            result_slots=[]),
                                remapping={'frame':'frame',
                                           'gripper_open':'gripper_open',
                                           'gripper_closed':'gripper_closed',
+                                          'header':'header',
                                           'pick_pose':'pick_pose',
                                           'place_pose':'place_pose'},
                                transitions={'succeeded':'ObjectDetection',
