@@ -120,10 +120,6 @@ def main():
         ''' table poses '''
         om_sm.userdata.od_attempt     = 0
         om_sm.userdata.frame          = rospy.get_param('~arm_link', '/arm_link')
-        om_sm.userdata.gripper_open   = rospy.get_param('~gripper_open', 0.042)
-        om_sm.userdata.gripper_closed = rospy.get_param('~gripper_closed', 0.024)
-        om_sm.userdata.obj_size       = rospy.get_param('~obj_size', 0.025)
-        om_sm.userdata.obj_poses      = geometry_msgs.msg.PoseArray()
         om_sm.userdata.obj_names      = []
         om_sm.userdata.obj_name       = std_msgs.msg.String()
         om_sm.userdata.header         = std_msgs.msg.Header()
@@ -141,9 +137,9 @@ def main():
         # Object detection sub state machine; iterates over object_detection action state and recovery
         # mechanism until an object is detected, it's preempted or there's an error (aborted outcome)
         od_sm = smach.StateMachine(outcomes = ['succeeded','preempted','aborted'],
-                                   input_keys = ['od_attempt', 'frame', 'obj_size', 'obj_names',
+                                   input_keys = ['od_attempt', 'frame', 'obj_names',
                                                  'named_pose_target_type', 'arm_folded_named_pose'],
-                                   output_keys = ['obj_poses', 'obj_names'])
+                                   output_keys = ['obj_names'])
         with od_sm:
             smach.StateMachine.add('ObjDetectionClearOctomap',
                                    smach_ros.ServiceState('clear_octomap',
@@ -155,11 +151,9 @@ def main():
             smach.StateMachine.add('ObjectDetectionOnce',
                                    smach_ros.SimpleActionState('object_detection',
                                                                ObjectDetectionAction,
-                                                               goal_slots=['frame', 'obj_size'],
-                                                               result_slots=['obj_poses', 'obj_names']),
+                                                               goal_slots=['frame'],
+                                                               result_slots=['obj_names']),
                                    remapping={'frame':'frame',
-                                              'obj_size':'obj_size',
-                                              'obj_poses':'obj_poses',
                                               'obj_names':'obj_names'},
                                    transitions={'succeeded':'ObjDetectedCondition',
                                                 'preempted':'preempted',
@@ -184,10 +178,7 @@ def main():
                                                 'aborted':'ObjDetectionClearOctomap'})
 
         smach.StateMachine.add('ObjectDetection', od_sm,
-                               remapping={'frame':'frame',
-                                          'obj_size':'obj_size',
-                                          'obj_poses':'obj_poses',
-                                          'obj_names':'obj_names'},
+                               remapping={'frame':'frame'},
                                transitions={'succeeded':'InteractiveManip',
                                             'preempted':'ActionPreempted',
                                             'aborted':'error'})
@@ -195,12 +186,10 @@ def main():
         smach.StateMachine.add('InteractiveManip',
                                smach_ros.SimpleActionState('interactive_manipulation',
                                                            InteractiveManipAction,
-                                                           goal_slots=['frame', 'obj_size', 'obj_poses', 'obj_names'],
+                                                           goal_slots=['frame'],
                                                            result_slots=['obj_name', 'header', 'pick_pose', 'place_pose']),
                                remapping={'frame':'frame',
-                                          'obj_size':'obj_size',
-                                          'obj_poses':'obj_poses',
-                                          'obj_names':'obj_names',
+                                          'obj_name':'obj_name',
                                           'header':'header',
                                           'pick_pose':'pick_pose',
                                           'place_pose':'place_pose'},
@@ -211,18 +200,15 @@ def main():
         smach.StateMachine.add('PickAndPlace',
                                smach_ros.SimpleActionState('pick_and_place',
                                                            PickAndPlaceAction,
-                                                           goal_slots=['frame', 'gripper_open', 'gripper_closed',
-                                                                       'obj_name', 'header', 'pick_pose', 'place_pose'],
+                                                           goal_slots=['frame', 'obj_name', 'header', 'pick_pose', 'place_pose'],
                                                            result_slots=[]),
                                remapping={'frame':'frame',
-                                          'gripper_open':'gripper_open',
-                                          'gripper_closed':'gripper_closed',
                                           'header':'header',
                                           'pick_pose':'pick_pose',
                                           'place_pose':'place_pose'},
                                transitions={'succeeded':'ObjectDetection',
                                             'preempted':'ActionPreempted',
-                                            'aborted':'ObjectDetection'}) # back to the beginning... we should open the gripper, in case we have picked a block
+                                            'aborted':'ObjectDetection'}) # back to the beginning... we should open the gripper, in case we have picked an object (TODO)
 
         smach.StateMachine.add('FoldArm',
                                smach_ros.SimpleActionState('move_to_target',
