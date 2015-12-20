@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
 <robot name="kinect_camera" xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:include filename="$(find turtlebot_description)/urdf/turtlebot_gazebo.urdf.xacro"/>
   <xacro:include filename="$(find turtlebot_description)/urdf/turtlebot_properties.urdf.xacro"/>
   
   <xacro:property name="kinect_cam_py" value="-0.0125"/>
@@ -66,7 +65,7 @@
 	</joint>
 	<link name="${name}_depth_optical_frame"/>
 	
-	<!-- Kinect sensor for simulation -->
-	<turtlebot_sim_3dsensor/>
+    <!-- RGBD sensor for simulation -->
+    <thorp_sim_3dsensor name="${name}" depth_registration="false"/>
   </xacro:macro>
 </robot>

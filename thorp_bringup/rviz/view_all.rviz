@@ -4,9 +4,8 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /DepthCloud1/Auto Size1
+        - /Senz3D DepthCloud1/Auto Size1
         - /TF1/Frames1
-        - /Range1
       Splitter Ratio: 0.40146
     Tree Height: 347
   - Class: rviz/Help
@@ -68,8 +67,18 @@ Visualization Manager:
       MoveIt_Use_Constraint_Aware_IK: true
       MoveIt_Warehouse_Host: 127.0.0.1
       MoveIt_Warehouse_Port: 33829
+      MoveIt_Workspace:
+        Center:
+          X: 0
+          Y: 0
+          Z: 0
+        Size:
+          X: 2
+          Y: 2
+          Z: 2
       Name: MotionPlanning
       Planned Path:
+        Interrupt Display: false
         Links:
           All Links Enabled: true
           Expand Joint Details: false
@@ -179,27 +188,6 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
-          camera_depth_frame:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-          camera_depth_optical_frame:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-          camera_link:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          camera_rgb_frame:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-          camera_rgb_optical_frame:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
           caster_back_link:
             Alpha: 1
             Show Axes: false
@@ -272,6 +260,27 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
           ir_r180_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          kinect_depth_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          kinect_depth_optical_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          kinect_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          kinect_rgb_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          kinect_rgb_optical_frame:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -360,7 +369,17 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          pole_middle_11_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
           pole_middle_1_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          pole_middle_21_link:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -385,22 +404,22 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
-          pole_top_11_link:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
           pole_top_12_link:
             Alpha: 1
             Show Axes: false
             Show Trail: false
             Value: true
-          pole_top_13_link:
+          pole_top_1_link:
             Alpha: 1
             Show Axes: false
             Show Trail: false
             Value: true
-          pole_top_1_link:
+          pole_top_20_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          pole_top_22_link:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -474,36 +493,36 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-          senz3d_camera_depth_frame:
+          senz3d_depth_frame:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-          senz3d_camera_depth_optical_frame:
+          senz3d_depth_optical_frame:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-          senz3d_camera_gazebo_optical_frame:
+          senz3d_gazebo_optical_frame:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-          senz3d_camera_link:
+          senz3d_link:
             Alpha: 1
             Show Axes: false
             Show Trail: false
             Value: true
-          senz3d_camera_rgb_frame:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-          senz3d_camera_rgb_optical_frame:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
           senz3d_mount_link:
             Alpha: 1
             Show Axes: false
             Show Trail: false
             Value: true
+          senz3d_rgb_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          senz3d_rgb_optical_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
           sonars_mount_link:
             Alpha: 1
             Show Axes: false
@@ -519,6 +538,36 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          xtion_depth_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          xtion_depth_optical_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          xtion_gazebo_optical_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          xtion_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          xtion_mount_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          xtion_rgb_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          xtion_rgb_optical_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
         Loop Animation: false
         Robot Alpha: 0.5
         Show Robot Collision: false
@@ -665,27 +714,6 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
-          camera_depth_frame:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-          camera_depth_optical_frame:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-          camera_link:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          camera_rgb_frame:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-          camera_rgb_optical_frame:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
           caster_back_link:
             Alpha: 1
             Show Axes: false
@@ -758,6 +786,27 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
           ir_r180_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          kinect_depth_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          kinect_depth_optical_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          kinect_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          kinect_rgb_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          kinect_rgb_optical_frame:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -846,7 +895,17 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          pole_middle_11_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
           pole_middle_1_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          pole_middle_21_link:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -871,22 +930,22 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
-          pole_top_11_link:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
           pole_top_12_link:
             Alpha: 1
             Show Axes: false
             Show Trail: false
             Value: true
-          pole_top_13_link:
+          pole_top_1_link:
             Alpha: 1
             Show Axes: false
             Show Trail: false
             Value: true
-          pole_top_1_link:
+          pole_top_20_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          pole_top_22_link:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -960,36 +1019,36 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-          senz3d_camera_depth_frame:
+          senz3d_depth_frame:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-          senz3d_camera_depth_optical_frame:
+          senz3d_depth_optical_frame:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-          senz3d_camera_gazebo_optical_frame:
+          senz3d_gazebo_optical_frame:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-          senz3d_camera_link:
+          senz3d_link:
             Alpha: 1
             Show Axes: false
             Show Trail: false
             Value: true
-          senz3d_camera_rgb_frame:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-          senz3d_camera_rgb_optical_frame:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
           senz3d_mount_link:
             Alpha: 1
             Show Axes: false
             Show Trail: false
             Value: true
+          senz3d_rgb_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          senz3d_rgb_optical_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
           sonars_mount_link:
             Alpha: 1
             Show Axes: false
@@ -1005,7 +1064,37 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
-        Robot Alpha: 0.5
+          xtion_depth_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          xtion_depth_optical_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          xtion_gazebo_optical_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          xtion_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          xtion_mount_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          xtion_rgb_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          xtion_rgb_optical_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+        Robot Alpha: 1
         Show Robot Collision: false
         Show Robot Visual: true
       Value: true
@@ -1035,23 +1124,158 @@ Visualization Manager:
       Color: 71; 255; 15
       Color Transformer: RGB8
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 4096
       Min Color: 0; 0; 0
       Min Intensity: 0
-      Name: PointCloud2
+      Name: Xtion PointCloud2
       Position Transformer: XYZ
       Queue Size: 10
       Selectable: true
       Size (Pixels): 3
       Size (m): 0.005
       Style: Flat Squares
-      Topic: /senz3d/depth/points
+      Topic: /xtion/depth_registered/points
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
+    - Alpha: 1
+      Auto Size:
+        Auto Size Factor: 1
+        Value: true
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/DepthCloud
+      Color: 255; 255; 255
+      Color Image Topic: /xtion/rgb/image_raw
+      Color Transformer: RGB8
+      Color Transport Hint: raw
+      Decay Time: 0
+      Depth Map Topic: /xtion/depth_registered/image_raw
+      Depth Map Transport Hint: raw
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: Xtion DepthCloud
+      Occlusion Compensation:
+        Occlusion Time-Out: 30
+        Value: false
+      Position Transformer: XYZ
+      Queue Size: 5
+      Selectable: true
+      Size (Pixels): 3
+      Style: Flat Squares
+      Topic Filter: true
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: RGB8
+      Decay Time: 0
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: Kinect PointCloud2
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.01
+      Style: Flat Squares
+      Topic: /kinect/depth/points
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
+    - Alpha: 0
+      Auto Size:
+        Auto Size Factor: 1
+        Value: false
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/DepthCloud
+      Color: 255; 255; 255
+      Color Image Topic: /kinect/rgb/image_raw
+      Color Transformer: RGB8
+      Color Transport Hint: raw
+      Decay Time: 0
+      Depth Map Topic: /kinect/depth/image_raw
+      Depth Map Transport Hint: raw
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: Kinect DepthCloud
+      Occlusion Compensation:
+        Occlusion Time-Out: 30
+        Value: false
+      Position Transformer: XYZ
+      Queue Size: 5
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.0001
+      Style: Points
+      Topic Filter: true
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: RGB8
+      Decay Time: 0
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: Senz3D PointCloud2
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.01
+      Style: Flat Squares
+      Topic: /senz3d/depth/points
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
     - Alpha: 1
       Auto Size:
         Auto Size Factor: 1
@@ -1077,7 +1301,7 @@ Visualization Manager:
       Max Intensity: 4096
       Min Color: 0; 0; 0
       Min Intensity: 0
-      Name: DepthCloud
+      Name: Senz3D DepthCloud
       Occlusion Compensation:
         Occlusion Time-Out: 30
         Value: false
@@ -1208,15 +1432,44 @@ Visualization Manager:
       Name: Local Costmap
       Topic: /move_base/local_costmap/costmap
       Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/LaserScan
+      Color: 255; 255; 255
+      Color Transformer: Intensity
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: LaserScan
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.01
+      Style: Flat Squares
+      Topic: /scan
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
     - Alpha: 0.5
       Buffer Length: 1
       Class: rviz/Range
       Color: 255; 255; 255
-      Enabled: true
+      Enabled: false
       Name: Range
       Queue Size: 100
       Topic: /mobile_base/sensors/sonars/p72
-      Value: true
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -1236,22 +1489,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 4.76496
+      Distance: 1.75328
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.881264
-        Y: -0.378135
-        Z: -3.13349e-07
+        X: 0.993339
+        Y: 0.296359
+        Z: -1.51095e-06
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.6498
+      Pitch: 0.7898
       Target Frame: base_link
       Value: XYOrbit (rviz)
-      Yaw: 0.0499287
+      Yaw: 5.42315
     Saved: ~
 Window Geometry:
   Displays:
@@ -1270,4 +1523,4 @@ Window Geometry:
     collapsed: false
   Width: 1676
   X: 0
-  Y: 35
+  Y: 44
