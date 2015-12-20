@@ -119,7 +119,7 @@
   
   <!-- Mounting plate -->
   <joint name="senz3d_mount_joint" type="fixed">
-    <origin xyz="-0.1124 0.0 ${0.2032 + 0.006 + 0.0515}" rpy="0.0 0.0 0.0"/>
+    <origin xyz="-0.1124 0.0 ${0.006/2 + 0.2032 + 0.0515 + 0.005/2}" rpy="0.0 0.0 0.0"/>
     <parent link="plate_top_link"/>
     <child link="senz3d_mount_link"/>
   </joint>
@@ -167,7 +167,7 @@
 
   <!-- Seems like Gazebo kinect plugin needs to use a centered frame instead of separated rgb and depth.
        No idea if this makes any sense, but it works! I also move the optical tf a bit forward to make
-       pointcloud match better the model; this is absolutely arbitrary... -->
+       pointcloud match better the model; this is absolutely arbitrary...  TODO sure???  -->
   <xacro:if value="$(arg simulation)">
     <joint name="senz3d_gazebo_optical_joint" type="fixed">
       <origin xyz="0.004 0.0 0.0" rpy="${-M_PI/2} 0.0 ${-M_PI/2}"/>
@@ -186,12 +186,12 @@
   
   <!-- Mounting poles: a pair of top poles -->
   <!-- The Z loc of the upper poles is : 1/2*plate height + 3/2*top pole height -->
-  <stack_top_pole parent="senz3d_mount_link" number="12" x_loc="0.0" y_loc=" 0.098" z_loc="${0.006/2 + 0.2032/2}"/>
-  <stack_top_pole parent="senz3d_mount_link" number="22" x_loc="0.0" y_loc="-0.098" z_loc="${0.006/2 + 0.2032/2}"/>
+  <stack_top_pole parent="senz3d_mount_link" number="12" x_loc="0.0" y_loc=" 0.098" z_loc="${0.005/2 + 0.2032/2}"/>
+  <stack_top_pole parent="senz3d_mount_link" number="22" x_loc="0.0" y_loc="-0.098" z_loc="${0.005/2 + 0.2032/2}"/>
   
   <!-- Mounting plate -->
   <joint name="xtion_mount_joint" type="fixed">
-    <origin xyz="0.0 0.0 ${0.2032 + 0.006}" rpy="0.0 0.0 0.0"/>
+    <origin xyz="0.0 0.0 ${0.2032 + 0.005/2 + 0.005}" rpy="0.0 0.0 0.0"/>
     <parent link="senz3d_mount_link"/>
     <child link="xtion_mount_link"/>
   </joint>
@@ -224,15 +224,20 @@
   <xtion_camera parent="xtion_mount_link" name="xtion">
     <!-- Ideal extrinsic parameters obtained from robot model -->
     <xacro:if value="$(arg simulation)">
-      <!-- <origin xyz="0.022 0.003 0.002" rpy="0.0 ${M_PI/4} 0.0"/> -->
-      <origin xyz="-0.012 0.003 -0.012" rpy="0.0 0.711982 0.0"/>
+      <origin xyz="0.022 0.003 0.002" rpy="0.0 ${M_PI/4} 0.0"/>
+      <origin xyz="-0.015 0.0035 0.004" rpy="0 0 0"/>    <!-- Visual origin -->
     </xacro:if>
     <!-- Extrinsic parameters obtained through arm-camera calibration:
          http://wiki.ros.org/turtlebot_arm_kinect_calibration -->
     <xacro:unless value="$(arg simulation)">
-      <!-- <origin xyz="-0.0179751 0.0118658 0.022709" rpy="-0.0549698 0.711982 0.00994433"/> -->
-      <!-- <origin xyz="-0.018 0.003 -0.008" rpy="0.0 0.711982 0.0"/> -->
-      <origin xyz="-0.012 0.003 -0.012" rpy="0.0 0.711982 0.0"/>
+      <origin xyz="0.01 0.0 -0.01" rpy="0.0 0.711982 0.02"/>  <!-- p&p try and error  OK for right-side... :o  -->
+      <origin xyz="-0.015 0.007 0.021" rpy="0 0 0"/>    <!-- Visual origin -->
+
+      <!-- <origin xyz="0.022 0.003 0.002" rpy="0.0 0.711982 0.00994433"/>  ideal from robot model KO -->
+      <!-- <origin xyz="-0.012 -0.006 -0.012" rpy="0.0 0.711982 0.01"/> Fitting pc to robot model  KO -->
+      <!-- <origin xyz="-0.0179751 0.0118658 0.022709" rpy="-0.0549698 0.711982 0.00994433"/>   calib R and T  KO- -->
+      <!-- <origin xyz="0.022 0.0225 0.0" rpy="-0.0292745 0.682572 0.0222799"/>  calib R, measured T  KO-->
+      <!-- <origin xyz="0 0.000831867 0" rpy="-0.0292745 0.682572 0.0222799"/>  calib R, zero T  KO-->
     </xacro:unless>
   </xtion_camera>
         
@@ -240,8 +245,6 @@
        No idea if this makes any sense, but it works! I also move the optical tf a bit forward to make
        pointcloud match better the model; this is absolutely arbitrary...
        
-       TODO: I think I can remove this because I use registered depth images
-        -->
   <xacro:if value="$(arg simulation)">
     <joint name="xtion_gazebo_optical_joint" type="fixed">
       <origin xyz="0.004 0.0 0.0" rpy="${-M_PI/2} 0.0 ${-M_PI/2}"/>
@@ -249,7 +252,7 @@
       <child link="xtion_gazebo_optical_frame"/>
     </joint>
     <link name="xtion_gazebo_optical_frame"/>
-  </xacro:if>
+  </xacro:if>        TODO: I think I can remove this because I use registered depth images        -->
 
 
   <!-- Sonar sensors forming a half ring centered on (and slightly above) base_link -->
