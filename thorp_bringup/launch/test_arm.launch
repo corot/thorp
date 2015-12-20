@@ -12,7 +12,7 @@
     <arg name="simulation" value="$(arg simulation)"/>
   </include>
 
-  <include file="$(find thorp_bringup)/launch/includes/softkinetic.launch.xml"/>
+  <include file="$(find thorp_bringup)/launch/includes/xtion.launch.xml"/>
 
   <node name="arbotix_gui" pkg="arbotix_python" type="arbotix_gui" output="screen"/>
   
