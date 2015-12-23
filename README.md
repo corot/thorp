@@ -3,6 +3,11 @@ THORP
 
 Software for a lowcost mobile manipulation: a TurtleBot2 with an arm, a second 3D camera, and some extra junk
 
+Example demo
+------------
+
+[Turtlebot arm object manipulation demo](https://github.com/corot/turtlebot_arm/tree/indigo-devel/turtlebot_arm_object_manipulation) ( [video](https://drive.google.com/file/d/0BzYjlgbSZJSWaVRVQmVKTVczY00/view?usp=sharing)).
+
 Bringup
 -------
 
