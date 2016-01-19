@@ -49,7 +49,7 @@
     </gazebo>
   </xacro:macro>
 
-  <!-- Simulated Creative Senz3d camera -->
+  <!-- Simulated Creative Senz3d camera  DISABLE by now as Gazebo2 cannot handle 3 instances of this plugin!  TODO: retry with Gazebo5
   <gazebo reference="senz3d_link">  
     <sensor type="depth" name="senz3d">
       <always_on>true</always_on>
@@ -89,7 +89,7 @@
 
     <selfCollide>true</selfCollide>
     <gravity>true</gravity>
-  </gazebo>
+  </gazebo>   DISABLED -->
 
   <!-- LV-MaxSonar-EZ2 ultrasound sensors -->
   <xacro:macro name="LV_MaxSonar_EZ2_sim" params="name">  
