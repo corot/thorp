@@ -1,0 +1,9 @@
+sonar_specifications:
+  cone_angle: 0.6
+  max_range: 6.0
+  min_range: 0.1
+  frequency: 20
+  noise:
+    noise_specifications:
+      noise_mean: 0.0
+      noise_std: 0.05

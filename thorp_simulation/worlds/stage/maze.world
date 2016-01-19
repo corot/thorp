@@ -1,4 +1,4 @@
-include "thorp.inc"
+include "../../robots/thorp.inc"
 
 define floorplan model
 (

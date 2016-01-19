@@ -1,0 +1,28 @@
+ <!-- 
+   runs relays to remap topics from STDR nomenclature to Stage nomenclature
+ -->
+<launch>
+  <node name="relay_laser_data" pkg="topic_tools" type="relay" args="robot0/laser scan"/>
+  <node name="relay_odom_data" pkg="topic_tools" type="relay" args="robot0/odom odom"/>
+  <node name="relay_cmd_data" pkg="topic_tools" type="relay" args="mobile_base/commands/velocity robot0/cmd_vel"/>
+    
+  <!-- LV-MaxSonar-EZ2 ultrasound sensors -->
+  <node name="relay_s_m90_data" pkg="topic_tools" type="relay" args="robot0/sonars/m90 mobile_base/sensors/sonars/m90"/>
+  <node name="relay_s_m72_data" pkg="topic_tools" type="relay" args="robot0/sonars/m72 mobile_base/sensors/sonars/m72"/>
+  <node name="relay_s_m54_data" pkg="topic_tools" type="relay" args="robot0/sonars/m54 mobile_base/sensors/sonars/m54"/>
+  <node name="relay_s_m36_data" pkg="topic_tools" type="relay" args="robot0/sonars/m36 mobile_base/sensors/sonars/m36"/>
+  <node name="relay_s_m18_data" pkg="topic_tools" type="relay" args="robot0/sonars/m18 mobile_base/sensors/sonars/m18"/>
+  <node name="relay_s_0_data"   pkg="topic_tools" type="relay" args="robot0/sonars/0   mobile_base/sensors/sonars/0"/>
+  <node name="relay_s_p18_data" pkg="topic_tools" type="relay" args="robot0/sonars/p18 mobile_base/sensors/sonars/p18"/>
+  <node name="relay_s_p36_data" pkg="topic_tools" type="relay" args="robot0/sonars/p36 mobile_base/sensors/sonars/p36"/>
+  <node name="relay_s_p54_data" pkg="topic_tools" type="relay" args="robot0/sonars/p54 mobile_base/sensors/sonars/p54"/>
+  <node name="relay_s_p72_data" pkg="topic_tools" type="relay" args="robot0/sonars/p72 mobile_base/sensors/sonars/p72"/>
+  <node name="relay_s_p90_data" pkg="topic_tools" type="relay" args="robot0/sonars/p90 mobile_base/sensors/sonars/p90"/>
+
+  <!-- Sharp_GP2Y0A21_IR sensors -->
+  <node name="relay_ir_arm_data"  pkg="topic_tools" type="relay" args="robot0/infrared/arm  mobile_base/sensors/infrared/arm"/>
+  <node name="relay_ir_l155_data" pkg="topic_tools" type="relay" args="robot0/infrared/l155 mobile_base/sensors/infrared/l155"/>
+  <node name="relay_ir_l180_data" pkg="topic_tools" type="relay" args="robot0/infrared/l180 mobile_base/sensors/infrared/l180"/>
+  <node name="relay_ir_r180_data" pkg="topic_tools" type="relay" args="robot0/infrared/r180 mobile_base/sensors/infrared/r180"/>
+  <node name="relay_ir_r155_data" pkg="topic_tools" type="relay" args="robot0/infrared/r155 mobile_base/sensors/infrared/r155"/>
+</launch>

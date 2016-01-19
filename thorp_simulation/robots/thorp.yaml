@@ -1,0 +1,160 @@
+robot:
+  robot_specifications:
+    - footprint:
+        footprint_specifications:
+          radius: 0.2552
+          points:
+            []
+    - initial_pose:
+        x: 2.0
+        y: 2.0
+        theta: 0.0
+    - laser:
+        laser_specifications:
+          max_angle: 0.5
+          min_angle: -0.5
+          max_range: 6.0
+          min_range: 0.4
+          num_rays: 640
+          frequency: 15
+          frame_id: laser
+          pose:
+            x: -0.1
+            y: 0.0
+            theta: 0.0
+          noise:
+            noise_specifications:
+              noise_mean: 0.001
+              noise_std: 0.00001
+
+    # LV-MaxSonar-EZ2 ultrasound sensors
+    - sonar:
+        sonar_specifications:
+          filename: sensors/EZ2_sonar.yaml
+          frame_id: sonars/m90
+          pose:
+            x: 0.0
+            y: -0.1380
+            theta: -1.57080
+    - sonar:
+        sonar_specifications:
+          filename: sensors/EZ2_sonar.yaml
+          frame_id: sonars/m72
+          pose:
+            x: 0.0426
+            y: -0.1312
+            theta: -1.25664
+    - sonar:
+        sonar_specifications:
+          filename: sensors/EZ2_sonar.yaml
+          frame_id: sonars/m54
+          pose:
+            x: 0.0811
+            y: -0.1116
+            theta: -0.94248
+    - sonar:
+        sonar_specifications:
+          filename: sensors/EZ2_sonar.yaml
+          frame_id: sonars/m36
+          pose:
+            x: 0.1116
+            y: -0.0811
+            theta: -0.62832
+    - sonar:
+        sonar_specifications:
+          filename: sensors/EZ2_sonar.yaml
+          frame_id: sonars/m18
+          pose:
+            x: 0.1312
+            y: -0.0426
+            theta: -0.31416
+    - sonar:
+        sonar_specifications:
+          filename: sensors/EZ2_sonar.yaml
+          frame_id: sonars/0
+          pose:
+            x: 0.138
+            y: 0.0
+            theta: 0.0
+    - sonar:
+        sonar_specifications:
+          filename: sensors/EZ2_sonar.yaml
+          frame_id: sonars/p18
+          pose:
+            x: 0.1312
+            y: 0.0426
+            theta: 0.31416
+    - sonar:
+        sonar_specifications:
+          filename: sensors/EZ2_sonar.yaml
+          frame_id: sonars/p36
+          pose:
+            x: 0.1116
+            y: 0.0811
+            theta: 0.62832
+    - sonar:
+        sonar_specifications:
+          filename: sensors/EZ2_sonar.yaml
+          frame_id: sonars/p54
+          pose:
+            x: 0.0811
+            y: 0.1116
+            theta: 0.94248
+    - sonar:
+        sonar_specifications:
+          filename: sensors/EZ2_sonar.yaml
+          frame_id: sonars/p72
+          pose:
+            x: 0.0426
+            y: 0.1312
+            theta: 1.25664
+    - sonar:
+        sonar_specifications:
+          filename: sensors/EZ2_sonar.yaml
+          frame_id: sonars/p90
+          pose:
+            x: 0.0
+            y: 0.1380
+            theta: 1.57080
+
+    # Sharp GP2Y0A21 IR sensors
+    - sonar:
+        sonar_specifications:
+          filename: sensors/GP2Y0A21_ir.yaml
+          frame_id: infrared/arm
+          pose:
+            x: 0.116
+            y: 0.029
+            theta: 0.0
+    - sonar:
+        sonar_specifications:
+          filename: sensors/GP2Y0A21_ir.yaml
+          frame_id: infrared/l155
+          pose:
+            x: -0.08
+            y: 0.12
+            theta: 2.70526034059
+    - sonar:
+        sonar_specifications:
+          filename: sensors/GP2Y0A21_ir.yaml
+          frame_id: infrared/l180
+          pose:
+            x: -0.10
+            y: 0.08
+            theta: 3.14159265359
+    - sonar:
+        sonar_specifications:
+          filename: sensors/GP2Y0A21_ir.yaml
+          frame_id: infrared/r180
+          pose:
+            x: -0.10
+            y: -0.08
+            theta: 3.14159265359
+    - sonar:
+        sonar_specifications:
+          filename: sensors/GP2Y0A21_ir.yaml
+          frame_id: infrared/r155
+          pose:
+            x: -0.08
+            y: -0.12
+            theta: -2.70526034059

@@ -1,4 +1,4 @@
-include "thorp.inc"
+include "../../robots/thorp.inc"
 
 # Definition for an obstacle placed on the map.
 define block model

@@ -1,0 +1,105 @@
+<!--
+  Thorp global navigation simulation:
+  - stdr simulator
+  - robot model
+  - move base
+  - static map
+  - amcl localization
+  - rviz view
+ -->
+
+<launch>
+<!--   <arg name="laser_topic" default="robot0/laser_0"/> default laser topic in stdr for 1 robot
+  <arg name="odom_topic" default="robot0/odom"/> -->
+  <arg name="odom_frame_id" default="map"/> 
+  <arg name="base_frame_id" default="robot0"/>  
+  <arg name="global_frame_id" default="world"/> 
+  <!-- Name of the map to use (without path nor extension) and initial position -->
+  <arg name="map_file"       default="$(env TURTLEBOT_STDR_MAP_FILE)"/>
+  <arg name="initial_pose_x" default="2.0"/>
+  <arg name="initial_pose_y" default="2.0"/>
+  <arg name="initial_pose_a" default="0.0"/>
+  <arg name="min_obstacle_height" default="0.0"/>
+  <arg name="max_obstacle_height" default="5.0"/>
+
+  <!--  ******************** STDR ********************  -->
+  <include file="$(find stdr_robot)/launch/robot_manager.launch"/>
+<!--  
+  <node pkg="nodelet" type="nodelet" name="robot_manager" args="manager">
+    <remap from="robot0/odom" to="/odom"/>
+    <remap from="robot0/laser" to="/scan"/>
+    <remap from="robot0/cmd_vel" to="mobile_base/commands/velocity"/>
+    <remap from="robot0/sonars/m90" to="mobile_base/sensors/sonars/m90"/>
+    <remap from="robot0/sonars/m72" to="mobile_base/sensors/sonars/m72"/>
+    <remap from="robot0/sonars/m54" to="mobile_base/sensors/sonars/m54"/>
+    <remap from="robot0/sonars/m36" to="mobile_base/sensors/sonars/m36"/>
+    <remap from="robot0/sonars/m18" to="mobile_base/sensors/sonars/m18"/>
+    <remap from="robot0/sonars/0"   to="mobile_base/sensors/sonars/0"  />
+    <remap from="robot0/sonars/p18" to="mobile_base/sensors/sonars/p18"/>
+    <remap from="robot0/sonars/p36" to="mobile_base/sensors/sonars/p36"/>
+    <remap from="robot0/sonars/p54" to="mobile_base/sensors/sonars/p54"/>
+    <remap from="robot0/sonars/p72" to="mobile_base/sensors/sonars/p72"/>
+    <remap from="robot0/sonars/p90" to="mobile_base/sensors/sonars/p90"/>
+  </node> -->
+  <!-- Run STDR server with a predefined map -->
+  <node pkg="stdr_server" type="stdr_server_node" name="stdr_server" output="screen" args="$(arg map_file)"/>
+  <!-- Spawn new robot at init position 2 2 0 -->
+  <node pkg="stdr_robot" type="robot_handler" name="$(anon robot_spawn)"
+       args="add $(find thorp_simulation)/robots/thorp.yaml $(arg initial_pose_x) $(arg initial_pose_y) $(arg initial_pose_a)"/>
+  <!-- Run STDR GUI -->
+  <include file="$(find stdr_gui)/launch/stdr_gui.launch"/>
+  <!-- Run the relay to duplicate STDR topics with common Thorp names -->
+  <include file="$(find thorp_simulation)/launch/includes/stdr_relays.launch.xml"/>
+  
+  <!--  ***************** Robot Model *****************  -->
+  <include file="$(find thorp_bringup)/launch/includes/model.launch.xml"/>
+
+  <!--  ******** Velocity commands multiplexer ********  -->
+  <node pkg="nodelet" type="nodelet" name="mobile_base_nodelet_manager" args="manager"/>
+  <node pkg="nodelet" type="nodelet" name="cmd_vel_mux" args="load yocs_cmd_vel_mux/CmdVelMuxNodelet mobile_base_nodelet_manager">
+    <param name="yaml_cfg_file" value="$(find thorp_bringup)/param/vel_multiplexer.yaml"/>
+  </node>
+
+  <!--  ******************** Maps *********************  --> 	
+  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)"> 	
+    <param name="frame_id" value="$(arg global_frame_id)"/> 	
+  </node> 	
+
+
+  <!--  *** Turtlebot 2 move base with custom tweaks **  -->
+  <include file="$(find turtlebot_navigation)/launch/includes/move_base.launch.xml">
+<!--     <arg name="odom_topic" value="$(arg odom_topic)"/>
+    <arg name="laser_topic" value="$(arg laser_topic)"/> -->
+    <arg name="odom_frame_id"   value="$(arg odom_frame_id)"/>
+    <arg name="base_frame_id"   value="$(arg base_frame_id)"/>
+    <arg name="global_frame_id" value="$(arg global_frame_id)"/>
+    <arg name="custom_param_file" value="$(find thorp_bringup)/param/custom_move_base.yaml"/>
+  </include>
+
+  <!--  ****** Manually setting some parameters *******  -->
+    <param name="move_base/local_costmap/obstacle_layer/scan/min_obstacle_height" value="$(arg min_obstacle_height)"/>
+    <param name="move_base/local_costmap/obstacle_layer/scan/max_obstacle_height" value="$(arg max_obstacle_height)"/>
+    <param name="move_base/global_costmap/obstacle_layer/scan/min_obstacle_height" value="$(arg min_obstacle_height)"/>
+    <param name="move_base/global_costmap/obstacle_layer/scan/max_obstacle_height" value="$(arg max_obstacle_height)"/>
+
+  <!-- Small tf tree connector between robot0 and base_footprint -->
+  <node name="tf_connector" pkg="thorp_simulation" type="tf_connector.py" output="screen"/>
+  
+  <!--  ******************** Amcl *********************  -->
+  <include file="$(find thorp_bringup)/launch/includes/amcl.launch.xml">
+    <!-- <arg name="scan_topic" value="$(arg laser_topic)"/> -->
+    <arg name="use_map_topic" value="true"/>
+    <arg name="odom_frame_id" value="$(arg odom_frame_id)"/>
+    <arg name="base_frame_id" value="$(arg base_frame_id)"/>
+    <arg name="global_frame_id" value="$(arg global_frame_id)"/>
+    <arg name="initial_pose_x" value="$(arg initial_pose_x)"/>
+    <arg name="initial_pose_y" value="$(arg initial_pose_y)"/>
+    <arg name="initial_pose_a" value="$(arg initial_pose_a)"/>
+  </include>
+  
+  <!--  ***** Watchdog to keep the pose on reboot *****  -->
+  <node name="save_amcl_pose" pkg="thorp_utils" type="save_pose_node"/>
+
+  <!--  **************** Visualization ****************  -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_nav.rviz"/>
+</launch>

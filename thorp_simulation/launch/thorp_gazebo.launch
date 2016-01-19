@@ -26,7 +26,7 @@
   </include>
 
   <!--  *************** Simulated Robot ***************  -->
-  <include file="$(find thorp_simulation)/launch/includes/thorp.launch.xml"/>
+  <include file="$(find thorp_simulation)/launch/includes/thorp_gazebo.launch.xml"/>
 
   <!--  ******** Velocity commands multiplexer ********  -->
   <node pkg="nodelet" type="nodelet" name="mobile_base_nodelet_manager" args="manager"/>

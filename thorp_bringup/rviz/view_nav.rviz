@@ -4,14 +4,12 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /Global Options1
-        - /Status1
         - /TF1/Frames1
         - /TF1/Tree1
         - /Local Map1/Costmap1
         - /Global Map1/Costmap1
       Splitter Ratio: 0.5
-    Tree Height: 771
+    Tree Height: 762
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -164,27 +162,6 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        camera_depth_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        camera_depth_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        camera_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        camera_rgb_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        camera_rgb_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
         caster_back_link:
           Alpha: 1
           Show Axes: false
@@ -257,6 +234,27 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
         ir_r180_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        kinect_depth_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        kinect_depth_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        kinect_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        kinect_rgb_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        kinect_rgb_optical_frame:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -345,7 +343,17 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        pole_middle_11_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         pole_middle_1_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_middle_21_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -370,22 +378,22 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        pole_top_11_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         pole_top_12_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        pole_top_13_link:
+        pole_top_1_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        pole_top_1_link:
+        pole_top_20_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_top_22_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -459,32 +467,36 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        senz3d_camera_depth_frame:
+        senz3d_depth_frame:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        senz3d_camera_depth_optical_frame:
+        senz3d_depth_optical_frame:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        senz3d_camera_link:
+        senz3d_gazebo_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        senz3d_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        senz3d_camera_rgb_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        senz3d_camera_rgb_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
         senz3d_mount_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
+        senz3d_rgb_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        senz3d_rgb_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         sonars_mount_link:
           Alpha: 1
           Show Axes: false
@@ -500,6 +512,32 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        xtion_depth_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        xtion_depth_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        xtion_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        xtion_mount_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        xtion_rgb_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        xtion_rgb_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
       Name: RobotModel
       Robot Description: robot_description
       TF Prefix: ""
@@ -553,35 +591,6 @@ Visualization Manager:
       Size (m): 0.01
       Style: Squares
       Topic: /scan
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: true
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz/LaserScan
-      Color: 255; 255; 255
-      Color Transformer: Intensity
-      Decay Time: 0
-      Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 1.26977
-      Min Color: 0; 0; 0
-      Min Intensity: 0.281676
-      Name: LaserScan (sonars)
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.05
-      Style: Flat Squares
-      Topic: /sonars
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
@@ -748,6 +757,15 @@ Visualization Manager:
       Name: Sonars
     - Class: rviz/Group
       Displays:
+        - Alpha: 0.5
+          Buffer Length: 1
+          Class: rviz/Range
+          Color: 255; 255; 255
+          Enabled: true
+          Name: arm
+          Queue Size: 100
+          Topic: /mobile_base/sensors/infrared/arm
+          Value: true
         - Alpha: 0.5
           Buffer Length: 1
           Class: rviz/Range
@@ -1043,30 +1061,30 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 5.54678
+      Distance: 5.86222
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.887992
-        Y: -0.11335
-        Z: 0.533716
+        X: 3.29877
+        Y: 2.93213
+        Z: 0.529655
       Name: Current View
       Near Clip Distance: 0.01
       Pitch: 1.5698
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.08503
+      Yaw: 6.12321
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 990
+  Height: 981
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd0000000400000000000001e10000038efc0200000005fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006901000005fb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c00610079007301000000330000038e000000d801000005000000010000010b0000038bfc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a0056006900650077007300000000320000038b000000ab01000005fb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004a00000003efc0100000002fb0000000800540069006d00650000000000000004a00000027401000005fb0000000800540069006d006501000000000000045000000000000000000000059c0000038e00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000400000000000001e100000385fc0200000005fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006901000005fb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003300000385000000d801000005000000010000010b0000038bfc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a0056006900650077007300000000320000038b000000ab01000005fb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004a00000003efc0100000002fb0000000800540069006d00650000000000000004a00000027401000005fb0000000800540069006d006501000000000000045000000000000000000000059c0000038500000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -1077,4 +1095,4 @@ Window Geometry:
     collapsed: false
   Width: 1920
   X: 0
-  Y: 35
+  Y: 44
