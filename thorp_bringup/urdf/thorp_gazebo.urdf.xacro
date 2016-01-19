@@ -195,6 +195,7 @@
     </gazebo>
   </xacro:macro>
 
+  <Sharp_GP2Y0A21_IR_sim name="arm"/>
   <Sharp_GP2Y0A21_IR_sim name="l155"/>
   <Sharp_GP2Y0A21_IR_sim name="l180"/>
   <Sharp_GP2Y0A21_IR_sim name="r180"/>
