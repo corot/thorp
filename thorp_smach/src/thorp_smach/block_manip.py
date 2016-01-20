@@ -30,7 +30,7 @@ def main():
         sm.userdata.gripper_open   = rospy.get_param('~gripper_open', 0.042)
         sm.userdata.gripper_closed = rospy.get_param('~gripper_closed', 0.024)
         sm.userdata.z_up           = rospy.get_param('~z_up', 0.12)
-        sm.userdata.table_height   = rospy.get_param('~table_height', 0.01)
+        sm.userdata.table_height   = rospy.get_param('~table_height', 0.1)
         sm.userdata.block_size     = rospy.get_param('~block_size', 0.025)
         sm.userdata.blocks         = geometry_msgs.msg.PoseArray()
         sm.userdata.pickup_pose    = geometry_msgs.msg.Pose()

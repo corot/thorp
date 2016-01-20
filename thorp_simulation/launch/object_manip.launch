@@ -1,43 +1,17 @@
+<!--
+  Simulated version of Thorp's blocks manipulation demo using SMACH instead of C++ block_manipulation_demo node:
+  - Full Thorp Gazebo simulation
+  - Block manipulation stuff
+  - Executive SMACH and visualization
+ -->
+
 <launch>
   <arg name="external_camera" default="false"/>
 
-  <!--  ********** 3D sensors (on/off-board) **********  -->
+  <!--  ***** Simulated mobile manipulator Thorp ******  -->
 
-  <include if="$(arg external_camera)" file="$(find thorp_bringup)/launch/includes/xtion.launch.xml">
-    <arg name="camera_name" value="external_camera"/>
-  </include>
+  <include file="$(find thorp_simulation)/launch/thorp_gazebo.launch"/>
 
-  <include unless="$(arg external_camera)" file="$(find thorp_bringup)/launch/includes/xtion.launch.xml"/>
-
-  <!--  ************* Thorp bringup stuff *************  -->
-
-  <include file="$(find thorp_bringup)/launch/includes/state_publisher.launch.xml"/>
-
-  <include file="$(find thorp_bringup)/launch/includes/arm.launch.xml"/>
-
-  <!-- Fake base's wheels joint state, as we are not running the full robot by now -->
-  <node name="fake_wheels_joints_pub" pkg="thorp_bringup" type="fake_joint_pub.py"/>
-
-  <node name="arbotix_gui" pkg="arbotix_python" type="arbotix_gui" output="screen"/>
-
-
-  <!--  ************* Moveit config stuff *************  -->
-
-  <!-- Load the URDF, SRDF and other .yaml configuration files on the param server -->
-  <include file="$(find thorp_moveit_config)/launch/planning_context.launch">
-    <arg name="load_robot_description" value="false"/>
-  </include>
-
-  <!-- Run the main MoveIt executable to provide move groups -->
-  <include file="$(find thorp_moveit_config)/launch/move_group.launch">
-    <arg name="allow_trajectory_execution" value="true"/>  
-    <arg name="fake_execution" value="false"/>
-    <arg name="info" value="true"/>
-  </include>
-
-  <!--  Fake global reference to make Moveit octomap happy  -->
-  <node pkg="tf" type="static_transform_publisher" name="fake_global_reference"
-        args="0.0 0.0 0.0 0.0 0.0 0.0 /map /base_footprint 100"/>
 
   <!--  *********** Object manipulation demo **********  -->
 
@@ -95,7 +69,6 @@
   </include>
 
 
-  <!-- Run Rviz and load the default config to see the state of the move_group node and the object manipulation interactive markers -->
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_manip.rviz"/>
-
+  <!-- Run Rviz and load the default config to see the state of the move_group node and the object manipulation interactive markers 
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_manip.rviz"/>-->
 </launch>

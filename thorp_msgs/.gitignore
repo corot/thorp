@@ -1,0 +1,6 @@
+bin
+build
+lib
+msg_gen
+src/thorp_msgs
+msg/AutoDocking*.msg

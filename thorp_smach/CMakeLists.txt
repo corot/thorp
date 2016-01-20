@@ -10,11 +10,11 @@ find_package(catkin REQUIRED COMPONENTS actionlib
                                         moveit_msgs
                                         sensor_msgs
                                         shape_msgs
+                                        thorp_msgs
                                         smach
                                         smach_ros
                                         std_msgs
                                         std_srvs
-                                        keyboard
                                         rospy
                                         tf)
 
