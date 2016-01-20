@@ -50,6 +50,10 @@
   <include file="$(find stdr_gui)/launch/stdr_gui.launch"/>
   <!-- Run the relay to duplicate STDR topics with common Thorp names -->
   <include file="$(find thorp_simulation)/launch/includes/stdr_relays.launch.xml"/>
+
+  <!-- Connect STDR's robot0 and base_footprint tf trees -->
+  <node pkg="tf" type="static_transform_publisher" name="fake_global_reference"
+        args="0.0 0.0 0.0 0.0 0.0 0.0 robot0 base_footprint 100"/>
   
   <!--  ***************** Robot Model *****************  -->
   <include file="$(find thorp_bringup)/launch/includes/model.launch.xml"/>
@@ -77,13 +81,10 @@
   </include>
 
   <!--  ****** Manually setting some parameters *******  -->
-    <param name="move_base/local_costmap/obstacle_layer/scan/min_obstacle_height" value="$(arg min_obstacle_height)"/>
-    <param name="move_base/local_costmap/obstacle_layer/scan/max_obstacle_height" value="$(arg max_obstacle_height)"/>
-    <param name="move_base/global_costmap/obstacle_layer/scan/min_obstacle_height" value="$(arg min_obstacle_height)"/>
-    <param name="move_base/global_costmap/obstacle_layer/scan/max_obstacle_height" value="$(arg max_obstacle_height)"/>
-
-  <!-- Small tf tree connector between robot0 and base_footprint -->
-  <node name="tf_connector" pkg="thorp_simulation" type="tf_connector.py" output="screen"/>
+  <param name="move_base/local_costmap/obstacle_layer/scan/min_obstacle_height" value="$(arg min_obstacle_height)"/>
+  <param name="move_base/local_costmap/obstacle_layer/scan/max_obstacle_height" value="$(arg max_obstacle_height)"/>
+  <param name="move_base/global_costmap/obstacle_layer/scan/min_obstacle_height" value="$(arg min_obstacle_height)"/>
+  <param name="move_base/global_costmap/obstacle_layer/scan/max_obstacle_height" value="$(arg max_obstacle_height)"/>
   
   <!--  ******************** Amcl *********************  -->
   <include file="$(find thorp_bringup)/launch/includes/amcl.launch.xml">

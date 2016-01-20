@@ -14,6 +14,3 @@ install(DIRECTORY worlds
 
 install(DIRECTORY robots
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
-
-install(PROGRAMS nodes/tf_connector.py    
-        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
