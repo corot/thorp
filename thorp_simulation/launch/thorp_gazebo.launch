@@ -34,7 +34,9 @@
     <param name="yaml_cfg_file" value="$(find thorp_bringup)/param/vel_multiplexer.yaml"/>
   </node>
 
-  <!-- Bumper/cliff to pointcloud (not working, as it needs sensors/core messages) -->
+  <!-- Bumper/cliff events to pointcloud, so can be integrated on move_base's costmaps  -->
+  <!-- TODO (not working, as it needs sensors/core messages and kobuki plugin only provides the events)
+       Make a new nodelet bumper2range and PR to Yujin -->
   <include file="$(find turtlebot_bringup)/launch/includes/kobuki/bumper2pc.launch.xml"/>
 
   <!--  ************** Additional sensors *************  -->
