@@ -29,8 +29,10 @@
 /* ArbotiX (id:253) Instruction Definitions */
 #define ARB_READ_DATA       2
 #define ARB_WRITE_DATA      3
-#define ARB_READ_POSE       4    // experimental: read position for all servos
-#define ARB_WRITE_POSE      5    // experimental: write position for all servos
+#define ARB_READ_POSE       40   // experimental: read position for all servos
+#define ARB_READ_P_E        41   // experimental: read position and effort for all servos
+#define ARB_READ_P_V_E      42   // experimental: read position, velocity and effort for all servos
+#define ARB_WRITE_POSE      50   // experimental: write position for all servos
 #define ARB_SIZE_POSE       7    // pose size: a single param for size of pose
 #define ARB_LOAD_POSE       8    // load pose: index, then pose positions (# of params = 2*pose_size)
 #define ARB_LOAD_SEQ        9    // seq size: a single param for the size of the seq

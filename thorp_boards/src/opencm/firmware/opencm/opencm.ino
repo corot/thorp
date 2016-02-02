@@ -202,6 +202,15 @@ void statusPacket(int id, int err)
   SerialUSB.write(255 - ((id + 2 + err) % 256));
 }
 
+void writeWord(int value, int &checksum)
+{
+  checksum += DXL_LOBYTE(value);
+  checksum += DXL_HIBYTE(value);
+  SerialUSB.write(DXL_LOBYTE(value));
+  SerialUSB.write(DXL_HIBYTE(value));
+}
+
+
 /*
  * packet: ff ff id length ins params checksum
  *   same as ax-12 table, except, we define new instructions for Arbotix
@@ -275,7 +284,8 @@ void loop()
         {
           // ID = 253, ArbotiX special instructions
           // Read Pose  = 4, read position for the first N servos  XXX experimental
-          // Write Pose = 5, write position for the first N servos  XXX experimental
+          // Read P/V/E = 5, read position, velocity and effort for the first N servos  XXX experimental
+          // Write Pose = 6, write position for the first N servos  XXX experimental
           // Pose Size  = 7, followed by single param: size of pose
           // Load Pose  = 8, followed by index, then pose positions (# of param = 2*pose_size+1)
           // Load Seq   = 9, followed by index/times (# of parameters = 3*seq_size)
@@ -306,7 +316,7 @@ void loop()
                 break;
               }
               
-              // read present position from each servos and send those for servos from ID = 1 to ID = params[1]
+              // read present position for servos from ID = 1 to ID = params[1]
               checksum = id + 2 + 2*params[1];
               SerialUSB.write(0xff);
               SerialUSB.write(0xff);
@@ -315,11 +325,54 @@ void loop()
               SerialUSB.write((unsigned char)OK);  // we report always OK, but wrong positions will be -1
               for (int servo_id = 1; servo_id <= params[1]; servo_id++)
               {
-                int pos = Dxl.getPosition(servo_id);
-                checksum += DXL_LOBYTE(pos);
-                checksum += DXL_HIBYTE(pos);
-                SerialUSB.write(DXL_LOBYTE(pos));
-                SerialUSB.write(DXL_HIBYTE(pos));
+                writeWord(Dxl.getPosition(servo_id), checksum);
+              }
+              SerialUSB.write(255 - ((checksum) % 256));
+              break;
+
+            case ARB_READ_P_E:
+              if (params[1] > MAX_NUM_SERVOS)
+              {
+                // return an error packet: FF FF id Len Err=wrong parameter, params=None check
+                statusPacket(id, ERR_WRONG_PARAMETER);
+                break;
+              }
+              
+              // read present position and effort for servos from ID = 1 to ID = params[1]
+              checksum = id + 2 + 4*params[1];
+              SerialUSB.write(0xff);
+              SerialUSB.write(0xff);
+              SerialUSB.write(id);
+              SerialUSB.write((unsigned char)2 + 4*params[1]);  // id + err + 4 * <servos to read>
+              SerialUSB.write((unsigned char)OK);  // we report always OK, but wrong values will be -1
+              for (int servo_id = 1; servo_id <= params[1]; servo_id++)
+              {
+                writeWord(Dxl.getPosition(servo_id), checksum);
+                writeWord(Dxl.getLoad(servo_id), checksum);
+              }
+              SerialUSB.write(255 - ((checksum) % 256));
+              break;
+
+            case ARB_READ_P_V_E:
+              if (params[1] > MAX_NUM_SERVOS)
+              {
+                // return an error packet: FF FF id Len Err=wrong parameter, params=None check
+                statusPacket(id, ERR_WRONG_PARAMETER);
+                break;
+              }
+              
+              // read present position, velocity and effort for servos from ID = 1 to ID = params[1]
+              checksum = id + 2 + 6*params[1];
+              SerialUSB.write(0xff);
+              SerialUSB.write(0xff);
+              SerialUSB.write(id);
+              SerialUSB.write((unsigned char)2 + 6*params[1]);  // id + err + 6 * <servos to read>
+              SerialUSB.write((unsigned char)OK);  // we report always OK, but wrong values will be -1
+              for (int servo_id = 1; servo_id <= params[1]; servo_id++)
+              {
+                writeWord(Dxl.getPosition(servo_id), checksum);
+                writeWord(Dxl.getSpeed(servo_id), checksum);
+                writeWord(Dxl.getLoad(servo_id), checksum);
               }
               SerialUSB.write(255 - ((checksum) % 256));
               break;
