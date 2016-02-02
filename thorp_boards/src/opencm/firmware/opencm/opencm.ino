@@ -210,20 +210,23 @@ void writeWord(int value, int &checksum)
   SerialUSB.write(DXL_HIBYTE(value));
 }
 
-
 /*
  * packet: ff ff id length ins params checksum
  *   same as ax-12 table, except, we define new instructions for Arbotix
  *
  * ID = 253 for these special commands!
- * Read Pose  = 4, read position for the first N servos  XXX experimental
- * Write Pose = 5, write position for the first N servos  XXX experimental
  * Pose Size  = 7, followed by single param: size of pose
  * Load Pose  = 8, followed by index, then pose positions (# of param = 2*pose_size+1)
  * Seq Size   = 9, followed by single param: size of seq
  * Load Seq   = A, followed by index/times (# of parameters = 3*seq_size) 
  * Play Seq   = B, no params
  * Loop Seq   = C, 
+ * 
+ * XXX experimental commands; not implemented in the released ArbotiX package:
+ * Read Pose  = 40, read position for the first N servos
+ * Read P/E   = 41, read position and effort for the first N servos
+ * Read P/V/E = 42, read position, velocity and effort for the first N servos
+ * Write Pose = 50, write position for the first N servos
  */
 void loop()
 {
@@ -539,10 +542,7 @@ void loop()
                 SerialUSB.write(id);
                 SerialUSB.write((unsigned char)2 + 2); // id + err + 2 data bytes
                 SerialUSB.write((unsigned char)OK);
-                checksum += DXL_LOBYTE(value);
-                checksum += DXL_HIBYTE(value);
-                SerialUSB.write(DXL_LOBYTE(value));
-                SerialUSB.write(DXL_HIBYTE(value));
+                writeWord(value, checksum);
                 SerialUSB.write(255 - ((checksum) % 256));
               }
             }
@@ -561,14 +561,8 @@ void loop()
                 SerialUSB.write(id);
                 SerialUSB.write((unsigned char)2 + 4); // id + err + 4 data bytes
                 SerialUSB.write((unsigned char)OK);
-                checksum += DXL_LOBYTE(DXL_LOWORD(value));
-                checksum += DXL_HIBYTE(DXL_LOWORD(value));
-                checksum += DXL_LOBYTE(DXL_HIWORD(value));
-                checksum += DXL_HIBYTE(DXL_HIWORD(value));
-                SerialUSB.write(DXL_LOBYTE(DXL_LOWORD(value)));
-                SerialUSB.write(DXL_HIBYTE(DXL_LOWORD(value)));
-                SerialUSB.write(DXL_LOBYTE(DXL_HIWORD(value)));
-                SerialUSB.write(DXL_HIBYTE(DXL_HIWORD(value)));
+                writeWord(DXL_LOWORD(value), checksum);
+                writeWord(DXL_HIWORD(value), checksum);
                 SerialUSB.write(255 - ((checksum) % 256));
               }
             }
