@@ -2,6 +2,9 @@
 # This isn't used by minimal.launch per se, rather by everything
 # which runs on top.
 
+# NOTE: not used right now, as we use TB2 move_base launcher, so
+# we load turtlebot_bringup/param/defaults/smoother.yaml instead
+
 # Mandatory parameters
 speed_lim_v: 0.7
 speed_lim_w: 3.3
@@ -11,7 +14,7 @@ accel_lim_w: 1.0
 
 # Optional parameters
 frequency: 20.0
-decel_factor: 1.5
+decel_factor: 1.5  # brake 50% faster than accelerate
 
 # Robot velocity feedback type:
 #  0 - none 
