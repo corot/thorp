@@ -4,11 +4,9 @@
     version: indigo-devel}
 - git: {local-name: kobuki-x, uri: 'https://github.com/yujinrobot/kobuki-x.git',
     version: indigo-devel}
-- git: {local-name: bosch_drivers, uri: 'https://github.com/corot/bosch_drivers.git',
-    version: master}
 - git: {local-name: turtlebot_arm, uri: 'https://github.com/corot/turtlebot_arm.git',
     version: indigo-devel}
 - git: {local-name: arbotix_ros, uri: 'https://github.com/corot/arbotix_ros.git',
     version: indigo-devel}
 - git: {local-name: navigation_layers, uri: 'https://github.com/corot/navigation_layers.git',
-    version: hydro}
+    version: indigo}
