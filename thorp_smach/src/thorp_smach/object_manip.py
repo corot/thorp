@@ -55,8 +55,8 @@ sm = smach.StateMachine(outcomes=['quit', 'error', 'aborted', 'preempted'],
                         input_keys = ['user_command'], output_keys = ['ucmd_outcome'])
 with sm:
     ''' User data '''
-    sm.userdata.user_command   = thorp_msg.SmachCtrlGoal()
-    sm.userdata.ucmd_outcome   = thorp_msg.SmachCtrlResult()
+    sm.userdata.user_command   = thorp_msg.UserCommandGoal()
+    sm.userdata.ucmd_outcome   = thorp_msg.UserCommandResult()
     sm.userdata.od_attempt     = 0
     sm.userdata.frame          = rospy.get_param('~arm_link', '/arm_link')
     sm.userdata.obj_names      = []
@@ -173,7 +173,7 @@ with sm:
 
     # Construct action server wrapper
     asw = smach_ros.ActionServerWrapper(
-        'user_commands_action_server', thorp_msg.SmachCtrlAction,
+        'user_commands_action_server', thorp_msg.UserCommandAction,
         wrapped_container = sm,
         succeeded_outcomes = ['quit'],
         aborted_outcomes = ['aborted'],

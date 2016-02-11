@@ -27,7 +27,7 @@ def on_key_press(event):
         text.insert('end', "\n\n'%s' command selected" % USER_COMMANDS[event.char])
     
         # Creates a goal to send to the action server.
-        goal = thorp_msgs.SmachCtrlGoal(command=USER_COMMANDS[event.char])
+        goal = thorp_msgs.UserCommandGoal(command=USER_COMMANDS[event.char])
     
         # Sends the goal to the action server.
         client.send_goal(goal)
@@ -49,8 +49,8 @@ if __name__ == '__main__':
         rospy.init_node('object_manipulation_key_ctrl')
 
         # Creates the SimpleActionClient, passing the type of the action
-        # (SmachCtrlAction) to the constructor.
-        client = SimpleActionClient('user_commands_action_server', thorp_msgs.SmachCtrlAction)
+        # (UserCommandAction) to the constructor.
+        client = SimpleActionClient('user_commands_action_server', thorp_msgs.UserCommandAction)
     
         # Waits until the action server has started up and started listening for goals.
         client.wait_for_server()
