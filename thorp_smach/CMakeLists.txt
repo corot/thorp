@@ -4,6 +4,7 @@ project(thorp_smach)
 find_package(catkin REQUIRED COMPONENTS actionlib
                                         actionlib_msgs
                                         control_msgs
+                                        arbotix_msgs
                                         geometry_msgs
                                         manipulation_msgs
                                         trajectory_msgs

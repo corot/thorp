@@ -7,6 +7,7 @@ import smach_ros
 import std_msgs.msg as std_msg
 import std_srvs.srv as std_srv
 import thorp_msgs.msg as thorp_msg
+import arbotix_msgs.srv as arbotix_srv
 import geometry_msgs.msg as geometry_msg
 
 from actionlib import *
@@ -70,7 +71,7 @@ with sm:
                            transitions={'start':'ObjectDetection', 
                                         'reset':'ObjectDetection', 
                                         'fold':'FoldArm', 
-                                        'quit':'FoldArmAndQuit'})
+                                        'quit':'FoldArmAndRelax'})
 
     # Object detection sub state machine; iterates over object_detection action state and recovery
     # mechanism until an object is detected, it's preempted or there's an error (aborted outcome)
@@ -171,12 +172,19 @@ with sm:
                                         'preempted':'preempted',
                                         'aborted':'ObjectDetection'})
 
-    smach.StateMachine.add('FoldArmAndQuit',
+    smach.StateMachine.add('FoldArmAndRelax',
                            smach_ros.SimpleActionState('move_to_target',
                                                        thorp_msg.MoveToTargetAction,
                                                        goal_slots=['target_type', 'named_target']),
                            remapping={'target_type':'named_pose_target_type',
                                       'named_target':'arm_folded_named_pose'},
+                           transitions={'succeeded':'RelaxArmAndQuit',
+                                        'preempted':'preempted',
+                                        'aborted':'error'})
+
+    smach.StateMachine.add('RelaxArmAndQuit',
+                           smach_ros.ServiceState('servos/relax_all',
+                                                  arbotix_srv.Relax),
                            transitions={'succeeded':'quit',
                                         'preempted':'quit',
                                         'aborted':'error'})
