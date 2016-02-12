@@ -286,13 +286,15 @@ void loop()
         else if (id == 253) // ID = 253, ArbotiX instruction
         {
           // ID = 253, ArbotiX special instructions
-          // Read Pose  = 4, read position for the first N servos  XXX experimental
-          // Read P/V/E = 5, read position, velocity and effort for the first N servos  XXX experimental
-          // Write Pose = 6, write position for the first N servos  XXX experimental
           // Pose Size  = 7, followed by single param: size of pose
           // Load Pose  = 8, followed by index, then pose positions (# of param = 2*pose_size+1)
           // Load Seq   = 9, followed by index/times (# of parameters = 3*seq_size)
           // Play Seq   = A, no params
+          // XXX experimental commands; not implemented in the released ArbotiX package:
+          // Read Pose  = 40, read position for the first N servos
+          // Read P/E   = 41, read position and effort for the first N servos
+          // Read P/V/E = 42, read position, velocity and effort for the first N servos
+          // Write Pose = 50, write position for the first N servos
           switch (ins)
           {
             case ARB_WRITE_DATA:
