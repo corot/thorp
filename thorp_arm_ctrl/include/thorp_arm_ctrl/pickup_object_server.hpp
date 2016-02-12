@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include <ros/ros.h>
 
 // action servers
 #include <actionlib/server/simple_action_server.h>
@@ -52,22 +51,7 @@ private:
   thorp_msgs::PickupObjectResult       result_;
   thorp_msgs::PickupObjectGoalConstPtr goal_;
 
-  // Move groups to control arm and gripper with MoveIt!
-//  moveit::planning_interface::MoveGroup arm_;
-//  moveit::planning_interface::MoveGroup gripper_;
-//
-//  // We use the planning scene to gather information of tabletop/attached objects
-//  moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
-//
-//  // Pick and place parameters
-//  std::string arm_link;
-//  double gripper_open;
-//  double attach_time;
-//  double detach_time;
-//  double z_backlash;
-
   const int PICK_ATTEMPTS = 5;
-  const int PLACE_ATTEMPTS = PICK_ATTEMPTS;
 
 public:
   PickupObjectServer(const std::string name);
@@ -77,7 +61,7 @@ public:
   void preemptCB();
 
 private:
-  bool pickup(const std::string& obj_name);
+  bool pickup(const std::string& obj_name, const std::string& surface);
 };
 
 };

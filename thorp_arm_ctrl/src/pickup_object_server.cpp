@@ -72,10 +72,8 @@ void PickupObjectServer::goalCB()
   ROS_INFO("[pickup object] Received goal!");
 
   goal_ = as_.acceptNewGoal();
-  arm_link = "arm_base_link";  //TODO???
 
-  arm_.setPoseReferenceFrame(arm_link);
-  arm_.setSupportSurfaceName("table");
+  arm_.setSupportSurfaceName(goal_->support_surf);
 
   // Allow some leeway in position (meters) and orientation (radians)
   arm_.setGoalPositionTolerance(0.001);
@@ -84,13 +82,7 @@ void PickupObjectServer::goalCB()
   // Allow replanning to increase the odds of a solution
   arm_.allowReplanning(true);
 
-//  geometry_msgs::PoseStamped pick_pose, place_pose;
-//  pick_pose.header = goal_->header;
-//  pick_pose.pose = goal_->pick_pose;
-//  place_pose.header = goal_->header;
-//  place_pose.pose = goal_->place_pose;
-
-  if (pickup(goal_->obj_name))
+  if (pickup(goal_->object_name, goal_->support_surf))
   {
     as_.setSucceeded(result_);
   }
@@ -110,7 +102,7 @@ void PickupObjectServer::preemptCB()
   as_.setPreempted();
 }
 
-bool PickupObjectServer::pickup(const std::string& obj_name)
+bool PickupObjectServer::pickup(const std::string& obj_name, const std::string& surface)
 {
   // Look for obj_name in the list of available objects
   std::map<std::string, moveit_msgs::CollisionObject> objects =
@@ -211,7 +203,7 @@ bool PickupObjectServer::pickup(const std::string& obj_name)
     g.grasp_posture.points[0].positions.push_back(tco_size.minCoeff() - 0.002);
 
     g.allowed_touch_objects.push_back(obj_name);
-    g.allowed_touch_objects.push_back("table");
+    g.allowed_touch_objects.push_back(surface);
 
     g.id = attempt;
 

@@ -61,7 +61,7 @@
   <!--  ****** Executive smach and visualization ******  -->
 
   <node name="object_manipulation_smach" pkg="thorp_smach" type="object_manip_thorp.py" output="screen">   <!-- required="true" -->
-    <param name="arm_link" value="arm_base_link"/>
+    <param name="rec_objects_frame" value="map"/>
   </node>
 
   <node name="object_manip_smach_viewer" pkg="smach_viewer" type="smach_viewer.py" output="screen"/>

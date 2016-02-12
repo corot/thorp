@@ -1,6 +1,7 @@
 # goal definition
 
-string obj_name
+string object_name
+string support_surf
 
 ---
 

@@ -52,15 +52,16 @@ public:
   {
     ros::NodeHandle nh("~");
 
-    // Read specific pick and place parameters
+    // Read arm control parameters
+    nh.param("arm_ctrl_ref_frame", arm_ref_frame, std::string("arm_base_link"));
     nh.param("grasp_attach_time", attach_time, 0.8);
     nh.param("grasp_detach_time", detach_time, 0.6);
     nh.param("vertical_backlash", z_backlash, 0.01);
     nh.param("/gripper_controller/max_opening", gripper_open, 0.045);
 
-
-    // We will clear the octomap and retry whenever a pick/place fails
-//    clear_octomap_srv_ = nh.serviceClient<std_srvs::Empty>("/clear_octomap");
+    // Default target poses reference frame: we normally work relative to
+    // the arm base, so our calculated roll/pitch/yaw angles make sense
+    arm_.setPoseReferenceFrame(arm_ref_frame);
 
     // We publish the pick and place poses for debugging purposes
     target_pose_pub_ = nh.advertise<geometry_msgs::PoseStamped>("/target_pose", 1, true);
@@ -71,10 +72,7 @@ public:
   }
 
 protected:
-
-  //  std_srvs::Empty empty_srv_;
     ros::Publisher target_pose_pub_;
-  //  ros::ServiceClient clear_octomap_srv_;
 
     tf::TransformListener tf_listener_;
 
@@ -86,14 +84,12 @@ protected:
     moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
 
     // Pick and place parameters
-    std::string arm_link;
-    double gripper_open;
-    double attach_time;
-    double detach_time;
-    double z_backlash;
-  //
-  //  const int PICK_ATTEMPTS = 5;
-  //  const int PLACE_ATTEMPTS = PICK_ATTEMPTS;
+    std::string arm_ref_frame;
+    double      gripper_open;
+    double      attach_time;
+    double      detach_time;
+    double      z_backlash;
+
 
   /**
    * Convert a simple 3D point into a valid pick/place pose. The orientation Euler angles
@@ -107,9 +103,9 @@ protected:
   bool validateTargetPose(geometry_msgs::PoseStamped& target, bool compensate_backlash, int attempt = 0)
   {
     // We always work relative to the arm base, so roll/pitch/yaw angles calculation make sense
-    if (target.header.frame_id != arm_link)
+    if (target.header.frame_id != arm_ref_frame)
     {
-      transformPose(target.header.frame_id, arm_link, target, target);
+      transformPose(target.header.frame_id, arm_ref_frame, target, target);
     }
 
     double x = target.pose.position.x;

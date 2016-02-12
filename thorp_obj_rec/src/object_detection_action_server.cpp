@@ -112,9 +112,9 @@ private:
   tf::TransformListener tf_listener_;
 
   // Parameters from goal
-  std::string arm_link_;
+  std::string output_frame_;
   
-  // Object detection and classification constants
+  // Object detection and classification constants         TODO make parameters
   const double   CONFIDENCE_THRESHOLD  = 0.85;   // minimum confidence required to accept an object
   const double   CLUSTERING_THRESHOLD  = 0.05;   // maximum acceptable distance to assign an object to a bin
   const unsigned CALLS_TO_ORK_TABLETOP = 10;
@@ -168,12 +168,13 @@ public:
     // Accept the new goal
     goal_ = od_as_.acceptNewGoal();
     
-    arm_link_ = goal_->frame;
+    output_frame_ = goal_->output_frame;
 
     // Clear results from previous goals
     table_poses_.clear();
     table_params_.clear();
-    result_.obj_names.clear();
+    result_.object_names.clear();
+    result_.support_surf.clear();
 
     planning_scene_interface_.removeCollisionObjects(planning_scene_interface_.getKnownObjectNames());
 
@@ -255,8 +256,8 @@ public:
       object_recognition_msgs::RecognizedObjectArray roa;
       object_recognition_msgs::TableArray ta;
 
-      roa.header.frame_id = arm_link_;
-      ta.header.frame_id = arm_link_;
+      roa.header.frame_id = output_frame_;
+      ta.header.frame_id = output_frame_;
 
       clear_objs_pub_.publish(roa);
       clear_table_pub_.publish(ta);
@@ -299,7 +300,7 @@ public:
       return;
     }
 
-    if (! transformPose(msg.header.frame_id, arm_link_, table.pose, table_pose))
+    if (! transformPose(msg.header.frame_id, output_frame_, table.pose, table_pose))
     {
       return;
     }
@@ -352,17 +353,15 @@ private:
                    bin.id, mtk::pose2str3D(bin.getCentroid()).c_str(), bin.countObjects(), obj_name.c_str());
 
         geometry_msgs::Pose out_pose;
-        transformPose(bin.getCentroid().header.frame_id, arm_link_, bin.getCentroid().pose, out_pose);
+        transformPose(bin.getCentroid().header.frame_id, output_frame_, bin.getCentroid().pose, out_pose);
         ROS_INFO("[object detection] Adding '%s' object at %s",
                  obj_name.c_str(), mtk::point2str3D(out_pose.position).c_str());
 
-        result_.obj_names.push_back(obj_name);
+        result_.object_names.push_back(obj_name);
 
         moveit_msgs::CollisionObject co;
         co.id = obj_name;
-        co.header.frame_id = arm_link_;
-        ROS_DEBUG_STREAM( "creo q puedo pasar de frames!!!  convierte todo a /map!!! (xq moveit planea en map, creo)               \n"<<co.header.frame_id << "               \n"<<bin.getCentroid().header.frame_id << "               \n"<<arm_link_);
-
+        co.header.frame_id = output_frame_;
         co.operation = moveit_msgs::CollisionObject::ADD;
 
         if (obj_name.find("cube 2.5") != std::string::npos)
@@ -429,7 +428,7 @@ private:
 
     moveit_msgs::CollisionObject co;
     co.header.stamp = ros::Time::now();
-    co.header.frame_id = arm_link_;
+    co.header.frame_id = output_frame_;
     co.id = "table";
 
     co.operation = moveit_msgs::CollisionObject::ADD;
@@ -468,6 +467,9 @@ private:
     ROS_INFO("[object detection] Adding a table at %s as a collision object, based on %lu observations",
              mtk::point2str3D(co.primitive_poses[0].position).c_str(), table_poses.size());
     planning_scene_interface_.addCollisionObjects(std::vector<moveit_msgs::CollisionObject>(1, co));
+
+    // Add "table" as the support surface on action result
+    result_.support_surf = co.id;
   }
 
   TableDescriptor getTableParams(std::vector<geometry_msgs::Point> convex_hull)
@@ -475,7 +477,7 @@ private:
     // Calculate centroid, size and orientation for the given 2D convex hull
     // Algorithm adapted from here: http://www.geometrictools.com/Documentation/MinimumAreaRectangle.pdf
     TableDescriptor table;
-    double min_area = std::numeric_limits<double>::max()                          ,table___yaw;
+    double min_area = std::numeric_limits<double>::max();
 
     for (size_t i0 = convex_hull.size() - 1, i1 = 0; i1 < convex_hull.size(); i0 = i1++)
     {
@@ -518,12 +520,10 @@ private:
         if (table.yaw > 0.0)
           table.yaw -= M_PI;
         min_area = area;
-
-        table___yaw = std::atan2(-U1.x(), U1.y());
-
       }
     }
-    ROS_DEBUG("Table parameters: pose [%f, %f, %f   %f], size [%f, %f]", table.center_x, table.center_y, table.yaw,table___yaw, table.size_x, table.size_y);
+    ROS_DEBUG("Table parameters: pose [%f, %f, %f], size [%f, %f]",
+              table.center_x, table.center_y, table.yaw, table.size_x, table.size_y);
 
     return table;
   }

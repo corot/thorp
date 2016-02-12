@@ -89,7 +89,7 @@ public:
     goal_ = as_.acceptNewGoal();
     
     ROS_INFO("[interactive manip] Received goal! Adding markers for objects in the word other than the table");
-    addObjects();
+    addObjects(goal_->object_names, goal_->support_surf);
   }
 
   void preemptCB()
@@ -126,7 +126,7 @@ public:
   void moveObject(const std::string& marker_name, const std_msgs::Header& poses_header,
                   const geometry_msgs::Pose& start_pose, const geometry_msgs::Pose& end_pose)
   {
-    result_.obj_name = marker_name;
+    result_.object_name = marker_name;
     result_.pick_pose.header = poses_header;
     result_.place_pose.header = poses_header;
     result_.pick_pose.pose = start_pose;
@@ -139,21 +139,17 @@ public:
   }
 
   // Add an interactive marker for any object in the word other than the table
-  void addObjects()
+  void addObjects(const std::vector<std::string> &object_names, const std::string &support_surf)
   {
     server_.clear();
     server_.applyChanges();
 
     bool active = as_.isActive();
 
-    std::map<std::string, moveit_msgs::CollisionObject> objects =
-        planning_scene_interface_.getObjects(planning_scene_interface_.getKnownObjectNames());
+    std::map<std::string, moveit_msgs::CollisionObject> objects = planning_scene_interface_.getObjects(object_names);
     for (const std::pair<std::string, moveit_msgs::CollisionObject>& obj: objects)
     {
-      if (obj.first != "table")
-      {
-        addMarker(obj.second, active);
-      }
+      addMarker(obj.second, active);
     }
 
     server_.applyChanges();

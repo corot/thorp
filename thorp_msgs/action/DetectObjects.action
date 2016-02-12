@@ -1,12 +1,13 @@
 # goal definition
 
-string frame
+string output_frame
 
 ---
 
 # result definition
 
-string[] obj_names
+string[] object_names
+string   support_surf
 
 ---
 

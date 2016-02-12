@@ -18,7 +18,7 @@ class ObjDetectedCondition(smach.State):
     def __init__(self):
         ''' '''
         smach.State.__init__(self, outcomes=['preempted', 'satisfied', 'fold_arm', 'retry'],
-                                   input_keys=['od_attempt', 'obj_names'],
+                                   input_keys=['od_attempt', 'object_names'],
                                    output_keys=['od_attempt'])
 
     def execute(self, userdata):
@@ -26,7 +26,7 @@ class ObjDetectedCondition(smach.State):
         if self.preempt_requested():
             self.service_preempt()
             return 'preempted'
-        if len(userdata.obj_names) > 0:
+        if len(userdata.object_names) > 0:
             userdata.od_attempt = 0
             return 'satisfied'
         userdata.od_attempt += 1
@@ -48,8 +48,7 @@ class ExecuteUserCommand(smach.State):
 
 rospy.init_node('object_manipulation_smach')
 
-# Object manipulation level sm; must be global so the concurrent USER_CMDS sm can signal to it the
-# commands received by keyboard.  TODO: there must be a better way to do this!!!
+# Object manipulation top-level sm
 sm = smach.StateMachine(outcomes=['quit', 'error', 'aborted', 'preempted'],
                         input_keys = ['user_command'], output_keys = ['ucmd_outcome'])
 with sm:
@@ -57,10 +56,10 @@ with sm:
     sm.userdata.user_command   = thorp_msg.UserCommandGoal()
     sm.userdata.ucmd_outcome   = thorp_msg.UserCommandResult()
     sm.userdata.od_attempt     = 0
-    sm.userdata.frame          = rospy.get_param('~arm_link', '/arm_link')
-    sm.userdata.obj_names      = []
-    sm.userdata.obj_name       = std_msg.String()
-    sm.userdata.header         = std_msg.Header()
+    sm.userdata.output_frame   = rospy.get_param('~rec_objects_frame', '/map')
+    sm.userdata.object_names   = []
+    sm.userdata.support_surf   = std_msg.String()
+    sm.userdata.object_name    = std_msg.String()
     sm.userdata.pick_pose      = geometry_msg.PoseStamped()
     sm.userdata.place_pose     = geometry_msg.PoseStamped()
     sm.userdata.named_pose_target_type = thorp_msg.MoveToTargetGoal.NAMED_TARGET
@@ -76,9 +75,9 @@ with sm:
     # Object detection sub state machine; iterates over object_detection action state and recovery
     # mechanism until an object is detected, it's preempted or there's an error (aborted outcome)
     od_sm = smach.StateMachine(outcomes = ['succeeded','preempted','aborted'],
-                               input_keys = ['od_attempt', 'frame', 'obj_names',
+                               input_keys = ['od_attempt', 'output_frame',
                                              'named_pose_target_type', 'arm_folded_named_pose'],
-                               output_keys = ['obj_names'])
+                               output_keys = ['object_names', 'support_surf'])
     with od_sm:
         smach.StateMachine.add('ObjDetectionClearOctomap',
                                smach_ros.ServiceState('clear_octomap',
@@ -90,17 +89,18 @@ with sm:
         smach.StateMachine.add('ObjectDetectionOnce',
                                smach_ros.SimpleActionState('object_detection',
                                                            thorp_msg.DetectObjectsAction,
-                                                           goal_slots=['frame'],
-                                                           result_slots=['obj_names']),
-                               remapping={'frame':'frame',
-                                          'obj_names':'obj_names'},
+                                                           goal_slots=['output_frame'],
+                                                           result_slots=['object_names', 'support_surf']),
+                               remapping={'output_frame':'output_frame',
+                                          'object_names':'object_names',
+                                          'support_surf':'support_surf'},
                                transitions={'succeeded':'ObjDetectedCondition',
                                             'preempted':'preempted',
                                             'aborted':'aborted'})
         
         smach.StateMachine.add('ObjDetectedCondition',
                                ObjDetectedCondition(),
-                               remapping={'obj_names':'obj_names'},
+                               remapping={'object_names':'object_names'},
                                transitions={'satisfied':'succeeded',
                                             'preempted':'preempted',
                                             'fold_arm':'ObjDetectionFoldArm',
@@ -117,7 +117,9 @@ with sm:
                                             'aborted':'ObjDetectionClearOctomap'})
 
     smach.StateMachine.add('ObjectDetection', od_sm,
-                           remapping={'frame':'frame'},
+                           remapping={'output_frame':'output_frame',
+                                      'object_names':'object_names',
+                                      'support_surf':'support_surf'},
                            transitions={'succeeded':'InteractiveManip',
                                         'preempted':'preempted',
                                         'aborted':'error'})
@@ -125,11 +127,11 @@ with sm:
     smach.StateMachine.add('InteractiveManip',
                            smach_ros.SimpleActionState('interactive_manipulation',
                                                        thorp_msg.InteractiveManipAction,
-                                                       goal_slots=['frame'],
-                                                       result_slots=['obj_name', 'pick_pose', 'place_pose']),
-                           remapping={'frame':'frame',
-                                      'obj_name':'obj_name',
-                                      'header':'header',
+                                                       goal_slots=['object_names', 'support_surf'],
+                                                       result_slots=['object_name', 'pick_pose', 'place_pose']),
+                           remapping={'object_names':'object_names',
+                                      'support_surf':'support_surf',
+                                      'object_name':'object_name',
                                       'pick_pose':'pick_pose',
                                       'place_pose':'place_pose'},
                            transitions={'succeeded':'PickupObject',
@@ -139,9 +141,10 @@ with sm:
     smach.StateMachine.add('PickupObject',
                            smach_ros.SimpleActionState('pickup_object',
                                                        thorp_msg.PickupObjectAction,
-                                                       goal_slots=['obj_name'],
+                                                       goal_slots=['object_name', 'support_surf'],
                                                        result_slots=[]),
-                           remapping={'obj_name':'obj_name'},
+                           remapping={'object_name':'object_name',
+                                      'support_surf':'support_surf'},
                            transitions={'succeeded':'PlaceObject',
                                         'preempted':'preempted',
                                         'aborted':'ObjectDetection'}) # back to the beginning... we should open the gripper, in case we have picked an object (TODO)
@@ -149,10 +152,11 @@ with sm:
     smach.StateMachine.add('PlaceObject',
                            smach_ros.SimpleActionState('place_object',
                                                        thorp_msg.PlaceObjectAction,
-                                                       goal_slots=['obj_name', 'pose'],
+                                                       goal_slots=['object_name', 'support_surf', 'place_pose'],
                                                        result_slots=[]),
-                           remapping={'obj_name':'obj_name',
-                                      'pose':'place_pose'},
+                           remapping={'object_name':'object_name',
+                                      'support_surf':'support_surf',
+                                      'place_pose':'place_pose'},
                            transitions={'succeeded':'ObjectDetection',
                                         'preempted':'preempted',
                                         'aborted':'ObjectDetection'}) # back to the beginning... we should open the gripper, in case we have picked an object (TODO)
@@ -178,7 +182,7 @@ with sm:
                                         'aborted':'error'})
 
 
-    # Construct action server wrapper
+    # Construct action server wrapper for top-level sm to control it with keyboard commands
     asw = smach_ros.ActionServerWrapper(
         'user_commands_action_server', thorp_msg.UserCommandAction,
         wrapped_container = sm,

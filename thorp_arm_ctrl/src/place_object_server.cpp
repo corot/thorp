@@ -28,11 +28,8 @@
  * Author: Jorge Santos
  */
 
-#include <ros/ros.h>
 #include <tf/tf.h>
-#include <tf/transform_listener.h>
-
-#include <std_srvs/Empty.h>
+#include <ros/ros.h>
 
 // auxiliary libraries
 #include <yocs_math_toolkit/common.hpp>
@@ -51,14 +48,6 @@ namespace thorp_arm_ctrl
 PlaceObjectServer::PlaceObjectServer(const std::string name) :
   as_(name, false), action_name_(name)
 {
-//  ros::NodeHandle nh("~");
-//
-//  // Read specific pick and place parameters
-//  nh.param("grasp_attach_time", attach_time, 0.8);
-//  nh.param("grasp_detach_time", detach_time, 0.6);
-//  nh.param("vertical_backlash", z_backlash, 0.01);
-//  nh.param("/gripper_controller/max_opening", gripper_open, 0.045);
-
   // Register the goal and feedback callbacks
   as_.registerGoalCallback(boost::bind(&PlaceObjectServer::goalCB, this));
   as_.registerPreemptCallback(boost::bind(&PlaceObjectServer::preemptCB, this));
@@ -75,10 +64,8 @@ void PlaceObjectServer::goalCB()
   ROS_INFO("[place object] Received goal!");
 
   goal_ = as_.acceptNewGoal();
-  arm_link = "arm_base_link";  //TODO???
 
-  arm_.setPoseReferenceFrame(arm_link);
-  arm_.setSupportSurfaceName("table");
+  arm_.setSupportSurfaceName(goal_->support_surf);
 
   // Allow some leeway in position (meters) and orientation (radians)
   arm_.setGoalPositionTolerance(0.001);
@@ -87,20 +74,14 @@ void PlaceObjectServer::goalCB()
   // Allow replanning to increase the odds of a solution
   arm_.allowReplanning(true);
 
-//  geometry_msgs::PoseStamped pick_pose, place_pose;
-//  pick_pose.header = goal_->header;
-//  pick_pose.pose = goal_->pick_pose;
-//  place_pose.header = goal_->header;
-//  place_pose.pose = goal_->pose;
-
-  if (place(goal_->obj_name, goal_->pose))
+  if (place(goal_->object_name, goal_->support_surf, goal_->place_pose))
   {
     as_.setSucceeded(result_);
   }
   else
   {
     // Ensure we don't retain any object attached to the gripper
-    arm_.detachObject(goal_->obj_name);
+    arm_.detachObject(goal_->object_name);
     setGripper(gripper_open, false);
 
     as_.setAborted(result_);
@@ -117,7 +98,8 @@ void PlaceObjectServer::preemptCB()
   as_.setPreempted();
 }
 
-bool PlaceObjectServer::place(const std::string& obj_name, const geometry_msgs::PoseStamped& pose)
+bool PlaceObjectServer::place(const std::string& obj_name, const std::string& surface,
+                              const geometry_msgs::PoseStamped& pose)
 {
   // Look for obj_name in the list of attached objects
   std::map<std::string, moveit_msgs::AttachedCollisionObject> objects =
@@ -199,7 +181,7 @@ bool PlaceObjectServer::place(const std::string& obj_name, const geometry_msgs::
     l.post_place_posture.points[0].positions.push_back(gripper_open);
 
     l.allowed_touch_objects.push_back(obj_name);
-    l.allowed_touch_objects.push_back("table");
+    l.allowed_touch_objects.push_back(surface);
 
     l.id = attempt;
 

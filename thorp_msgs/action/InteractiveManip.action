@@ -1,12 +1,13 @@
 # goal definition
 
-string frame
+string[] object_names
+string   support_surf
 
 ---
 
 # result definition
 
-string obj_name
+string object_name
 geometry_msgs/PoseStamped pick_pose
 geometry_msgs/PoseStamped place_pose
 
