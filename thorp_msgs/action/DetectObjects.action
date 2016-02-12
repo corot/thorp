@@ -1,0 +1,13 @@
+# goal definition
+
+string frame
+
+---
+
+# result definition
+
+string[] obj_names
+
+---
+
+# feedback

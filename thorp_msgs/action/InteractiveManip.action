@@ -1,0 +1,15 @@
+# goal definition
+
+string frame
+
+---
+
+# result definition
+
+string obj_name
+geometry_msgs/PoseStamped pick_pose
+geometry_msgs/PoseStamped place_pose
+
+---
+
+# feedback

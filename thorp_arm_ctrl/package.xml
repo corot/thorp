@@ -1,8 +1,10 @@
 <?xml version="1.0"?>
 <package>
-  <name>thorp_obj_rec</name>
+  <name>thorp_arm_ctrl</name>
   <version>0.1.0</version>
-  <description>Thorp-specific launchers and configuration for the object recognition tools</description>
+  <description>
+   The thorp_arm_ctrl package handles Thorp's arm move groups and provides a simple ROS interface to use them.
+  </description>
   <maintainer email="jsantossimon@gmail.com">Jorge Santos Simón</maintainer>
   <author email="jsantossimon@gmail.com">Jorge Santos Simón</author> 
 
@@ -10,33 +12,39 @@
 
   <url type="bugtracker">https://github.com/corot/thorp/issues</url>
   <url type="repository">https://github.com/corot/thorp</url>
-  <url type="website">http://wiki.ros.org/thorp_obj_rec</url> 
+  <url type="website">http://wiki.ros.org/thorp_arm_ctrl</url> 
 
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>tf</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>actionlib</build_depend>
-  <build_depend>thorp_msgs</build_depend>
-  <build_depend>shape_msgs</build_depend>
-  <build_depend>object_recognition_msgs</build_depend>
+  <build_depend>actionlib_msgs</build_depend>
+  <build_depend>arbotix_msgs</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>moveit_msgs</build_depend>
+  <build_depend>moveit_core</build_depend>
   <build_depend>moveit_ros_planning_interface</build_depend>
   <build_depend>yocs_math_toolkit</build_depend>
+  <build_depend>geometric_shapes</build_depend>
+  <build_depend>interactive_markers</build_depend>
+  <build_depend>visualization_msgs</build_depend>
+  <build_depend>thorp_msgs</build_depend>
 
   <run_depend>tf</run_depend>
+  <run_depend>rospy</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>actionlib</run_depend>
-  <run_depend>thorp_msgs</run_depend>
-  <run_depend>shape_msgs</run_depend>
-  <run_depend>object_recognition_msgs</run_depend>
+  <run_depend>actionlib_msgs</run_depend>
+  <run_depend>arbotix_msgs</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>moveit_msgs</run_depend>
+  <run_depend>moveit_core</run_depend>
+  <run_depend>moveit_commander</run_depend>
   <run_depend>moveit_ros_planning_interface</run_depend>
   <run_depend>yocs_math_toolkit</run_depend>
-
-  <run_depend>thorp_bringup</run_depend>
-  <run_depend>object_recognition_ros</run_depend>
-  <run_depend>object_recognition_tabletop</run_depend>
+  <run_depend>geometric_shapes</run_depend>
+  <run_depend>interactive_markers</run_depend>
+  <run_depend>visualization_msgs</run_depend>
+  <run_depend>thorp_msgs</run_depend>
 </package>
