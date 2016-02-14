@@ -23,7 +23,6 @@ class ObjDetectedCondition(smach.State):
                                    output_keys=['od_attempt'])
 
     def execute(self, userdata):
-        rospy.sleep(2.0)
         if self.preempt_requested():
             self.service_preempt()
             return 'preempted'
@@ -209,6 +208,31 @@ with sm:
 
     # Wait for control-c
     rospy.spin()
+
+    rospy.loginfo("Stopping '%s' node...", rospy.get_name())
+    sis.stop()
+
+    rospy.signal_shutdown('All done.')
+    
+    # Request the container to preempt
+#    rospy.logerr(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>   REQUEST PREEMPT")
+#     stop_goal = thorp_msg.UserCommandGoal()
+#     stop_goal.command = 'stop'
+#     asw.execute_cb(stop_goal)
+
+
+##    asw._action_server.set_aborted(thorp_msg.UserCommandResult())
+ #   sm.request_preempt()
+ #   sm.close()
+#     while sm.is_running():
+#         rospy.spin()
+#         rospy.logerr(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>   still running...")
+#         rospy.sleep(0.5)
+        
+     
+
+    # Wait for control-c
+#    rospy.spin()
         
 #     sm = smach.Concurrence(outcomes=['quit', 'error',],
 #                            default_outcome='error',
