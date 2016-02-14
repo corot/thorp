@@ -39,7 +39,7 @@ class ExecuteUserCommand(smach.State):
     '''Different starts of the SM depending on the command provided when calling
        the actionlib wrapper. TODO: I think this can be done w/o creating a class...'''
     def __init__(self):
-        smach.State.__init__(self, outcomes=['start', 'reset', 'fold', 'quit'],
+        smach.State.__init__(self, outcomes=['start', 'stop', 'reset', 'fold'],
                                    input_keys=['user_command'])
 
     def execute(self, ud):
@@ -50,7 +50,7 @@ class ExecuteUserCommand(smach.State):
 rospy.init_node('object_manipulation_smach')
 
 # Object manipulation top-level sm
-sm = smach.StateMachine(outcomes=['quit', 'error', 'aborted', 'preempted'],
+sm = smach.StateMachine(outcomes=['stop', 'error', 'aborted', 'preempted'],
                         input_keys = ['user_command'], output_keys = ['ucmd_outcome'])
 with sm:
     ''' User data '''
@@ -71,7 +71,7 @@ with sm:
                            transitions={'start':'ObjectDetection', 
                                         'reset':'ObjectDetection', 
                                         'fold':'FoldArm', 
-                                        'quit':'FoldArmAndRelax'})
+                                        'stop':'FoldArmAndRelax'})
 
     # Object detection sub state machine; iterates over object_detection action state and recovery
     # mechanism until an object is detected, it's preempted or there's an error (aborted outcome)
@@ -178,15 +178,15 @@ with sm:
                                                        goal_slots=['target_type', 'named_target']),
                            remapping={'target_type':'named_pose_target_type',
                                       'named_target':'arm_folded_named_pose'},
-                           transitions={'succeeded':'RelaxArmAndQuit',
+                           transitions={'succeeded':'RelaxArmAndStop',
                                         'preempted':'preempted',
                                         'aborted':'error'})
 
-    smach.StateMachine.add('RelaxArmAndQuit',
+    smach.StateMachine.add('RelaxArmAndStop',
                            smach_ros.ServiceState('servos/relax_all',
                                                   arbotix_srv.Relax),
-                           transitions={'succeeded':'quit',
-                                        'preempted':'quit',
+                           transitions={'succeeded':'stop',
+                                        'preempted':'stop',
                                         'aborted':'error'})
 
 
@@ -194,7 +194,7 @@ with sm:
     asw = smach_ros.ActionServerWrapper(
         'user_commands_action_server', thorp_msg.UserCommandAction,
         wrapped_container = sm,
-        succeeded_outcomes = ['quit'],
+        succeeded_outcomes = ['stop'],
         aborted_outcomes = ['aborted'],
         preempted_outcomes = ['error'],
         goal_key = 'user_command',

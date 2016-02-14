@@ -10,9 +10,10 @@ from actionlib import *
 
 USER_COMMANDS = {
     's': "start",
+    'x': "stop",
     'r': "reset",
     'f': "fold",
-    'q': "quit"
+    'e': "exit"
 }
 
 def on_key_press(event):
@@ -26,6 +27,10 @@ def on_key_press(event):
         # Show the valid command about to execute
         text.insert('end', "\n\n'%s' command selected" % USER_COMMANDS[event.char])
     
+        if USER_COMMANDS[event.char] == 'exit':
+            quit_tk()
+            return
+
         # Creates a goal to send to the action server.
         goal = thorp_msgs.UserCommandGoal(command=USER_COMMANDS[event.char])
     
@@ -42,11 +47,15 @@ def on_key_press(event):
         # Invalid command; nothing to do
         text.insert('end', "\n\n'%s' is not a valid command" % event.char)
 
-
+def quit_tk():
+    window.quit()
 
 if __name__ == '__main__':
     try:
         rospy.init_node('object_manipulation_key_ctrl')
+        
+        # window.mainloop() will block, ignoring Ctrl+C signal, so we stop it manually on ROS shutdown
+        rospy.on_shutdown(quit_tk)
 
         # Creates the SimpleActionClient, passing the type of the action
         # (UserCommandAction) to the constructor.

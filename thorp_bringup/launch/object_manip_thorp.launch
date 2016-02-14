@@ -60,17 +60,18 @@
 
   <!--  ****** Executive smach and visualization ******  -->
 
-  <node name="object_manipulation_smach" pkg="thorp_smach" type="object_manip_thorp.py" output="screen">   <!-- required="true" -->
+  <node name="object_manipulation_smach" pkg="thorp_smach" type="object_manip_thorp.py" output="screen">
     <param name="rec_objects_frame" value="map"/>
   </node>
 
   <node name="object_manip_smach_viewer" pkg="smach_viewer" type="smach_viewer.py" output="screen"/>
 
   <!--  ******* Keyboard interaction with smach *******  -->
-  <node name="object_manipulation_key_ctrl" pkg="thorp_smach" type="keyboard_ctrl.py" output="screen">
+  <!-- We do it required so it will shutdown the whole demo on exit -->
+  <node name="object_manipulation_key_ctrl" pkg="thorp_smach" type="keyboard_ctrl.py" output="screen" required="true">
     <param name="window_geometry" value="360x240"/>
     <param name="window_caption" value="Object manipulation user commands"/>
-    <param name="shown_text" value="Available commands: &#10;  s:  start &#10;  r:  reset &#10;  f:  fold &#10;  q:  quit"/>
+    <param name="shown_text" value="Available commands: &#10;  s:  start &#10;  x:  stop &#10;  r:  reset &#10;  f:  fold &#10;  e:  exit"/>
     <param name="text_font" value="Comic Sans MS"/>
     <param name="font_size" value="12"/>
   </node>
