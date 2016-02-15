@@ -10,8 +10,7 @@
 namespace thorp
 {
 
-  ArduinoNode::ArduinoNode(ros::NodeHandle& n)
-             : wrong_readings(0), read_frequency(0.0), is_connected(false) {}
+  ArduinoNode::ArduinoNode(ros::NodeHandle& n) {}
 
   ArduinoNode::~ArduinoNode() {}
 
@@ -26,60 +25,67 @@ namespace thorp
 
     while (ros::ok())
     {
-      if (is_connected)
+      if (serial_port.isOpen())
       {
-        if (serial_port.Available() < sizeof(storage_buffer))
+        try
         {
-          // We are reading data faster than the Arduino provides it; not a big
-          // drama, we just wait a little bit so more bytes are received and retry
-          ROS_DEBUG_THROTTLE(2.0, "Not enough bytes available on serial port (%d < %lu)",
-                             serial_port.Available(), sizeof(storage_buffer));
-          ros::Duration(0.005).sleep();
-          continue;
-        }
-        else if (serial_port.Available() > sizeof(storage_buffer))
-        {
-          // We are reading data slower than the Arduino provides it; we are probably
-          // using outdated data, so we should increase this node's reading rate
-          ROS_WARN_THROTTLE(2.0, "Too much bytes available on serial port (%d > %lu)",
-                            serial_port.Available(), sizeof(storage_buffer));
-          // XXX we could consume the excess of bytes, but it is probably better to
-          // tweak frequencies instead, as a more stable and efficient solution
-        }
-
-        if (!serial_port.Read_Bytes(sizeof(storage_buffer), storage_buffer))
-        {
-          // Read_Bytes failed; maybe the board is temporally disconnected...
-          // keep trying to reconnect every half second, as kobuki base does
-          if ((++wrong_readings % 10) == 0)
+          size_t bytes_read = serial_port.read(storage_buffer, sizeof(storage_buffer));
+          if (bytes_read < sizeof(storage_buffer))
           {
-            ROS_WARN("Arduino serial port: %d consecutive wrong readings; trying to reconnect...",
-                      wrong_readings);
-            wrong_readings = 0;
-            is_connected = false;
-          }
-        }
-        else
-        {
-          wrong_readings = 0;
-          uint16_t* readings = reinterpret_cast<uint16_t*>(&storage_buffer);
-          if (readings[0] == 0xFFFF)
-          {
-            // Correct reading; feed it to our sensors
-            sonars.read(++readings);
-            irSensors.read(readings + sonars.size());
+            // We are reading data faster than the Arduino provides it; not a big
+            // drama, we just wait a little bit so more bytes are received and retry
+            ROS_WARN("Timeout while reading serial port (%lu bytes read out of %lu)",
+                     bytes_read, sizeof(storage_buffer));
           }
           else
           {
-            // Reading out of synchronization; consume available bytes to make next reading valid
-            uint8_t dump_buffer[serial_port.Available()];
-            ROS_WARN("Serial synchronization lost; reading %lu bytes to clear pending data (ok? %d)",
-                     sizeof(dump_buffer), serial_port.Read_Bytes(sizeof(dump_buffer), dump_buffer));
+            // Enough data available to fill our buffer; cast it to a 2-bytes words array
+            uint16_t* readings = reinterpret_cast<uint16_t*>(&storage_buffer);
+            if (readings[0] == 0xFFFF)
+            {
+              // Synchronization code 0xFFFF found; correct reading. Feed it to our sensors
+              sonars.read(++readings);
+              irSensors.read(readings + sonars.size());
+
+              if (serial_port.available() > sizeof(storage_buffer))
+              {
+                // We are reading data slower than the Arduino provides it; flush the excess of bytes
+                // to avoid using outdated data; but we should better increase this node's reading rate
+                ROS_WARN("Too much bytes available (%lu > %lu); flushing input to clear pending data",
+                         serial_port.available(), sizeof(storage_buffer));
+                serial_port.flushInput();
+              }
+            }
+            else
+            {
+              // Reading out of synchronization; consume available bytes to make next reading valid
+              ROS_WARN("Serial synchronization lost; flushing input to clear pending data");
+              serial_port.flushInput();
+            }
           }
+        }
+        catch (serial::PortNotOpenedException &e)
+        {
+          ROS_ERROR("Arduino serial %s; trying to reconnect...", e.what());
+          connect();
+        }
+        catch (serial::SerialException &e)
+        {
+          // Serial read failed; maybe the board is temporally disconnected...
+          // keep trying to reconnect every half second, as kobuki base does
+          ROS_ERROR("Arduino serial %s; trying to reconnect...", e.what());
+          serial_port.close();
+        }
+        catch (serial::IOException &e)
+        {
+          // Serial read failed; maybe the board is temporally disconnected...
+          // keep trying to reconnect every half second, as kobuki base does
+          ROS_ERROR("Arduino serial %s; trying to reconnect...", e.what());
+          serial_port.close();
         }
       }
       else {
-        is_connected = connect();
+        connect();
 
         // Wait a bit until first data gets available or before the next connection retry
         ros::Duration(0.5).sleep();
@@ -94,13 +100,16 @@ namespace thorp
   bool ArduinoNode::init()
   {
     ros::NodeHandle nh;
-    std::string default_port("/dev/arduino");
 
     // General configuration
     nh.param("arduino_node/read_frequency", read_frequency, 20.0);
-    nh.param("arduino_node/arduino_port", arduino_port, default_port);
+    nh.param("arduino_node/read_timeout", (int&)read_timeout, 0);
+    nh.param("arduino_node/arduino_port", arduino_port, std::string("/dev/arduino"));
 
-    serial_port.setPortName(arduino_port);
+    serial::Timeout timeout = serial::Timeout::simpleTimeout(read_timeout);
+    serial_port.setPort(arduino_port);
+    serial_port.setBaudrate(115200);
+    serial_port.setTimeout(timeout);
 
     // Sonars configuration
     if (sonars.init("arduino_node/sonars", true) == false)
@@ -121,16 +130,19 @@ namespace thorp
 
   bool ArduinoNode::connect()
   {
-    // (Re)connect to Arduino serial port
-    if (! serial_port.initialize())
+    try
     {
-      ROS_ERROR("Unable to connect with Arduino on port %s", arduino_port.c_str());
+      // (Re)connect to Arduino serial port
+      serial_port.open();
+      ROS_INFO("Arduino connected on port %s; reading %lu sonars and %lu IR sensors",
+               arduino_port.c_str(), sonars.size(), irSensors.size());
+      return true;
+    }
+    catch (std::exception &e)
+    {
+      ROS_ERROR("Unable to connect with Arduino on port %s; %s", arduino_port.c_str(), e.what());
       return false;
     }
-
-    ROS_INFO("Arduino connected on port %s; reading %lu sonars and %lu IR sensors",
-             arduino_port.c_str(), sonars.size(), irSensors.size());
-    return true;
   }
 
 
@@ -161,20 +173,20 @@ namespace thorp
 
     // We must thoroughly validate rangers count and maps: missconfiguration in one of
     // them will almost surely make something fail, so we abort if something is wrong
-    bool allOK = true;
-    allOK &= this->getParam(params_namespace + "/rangers_count",   rangers_count);
-    allOK &= this->getParam(params_namespace + "/range_variance",  range_variance);
-    allOK &= this->getParam(params_namespace + "/maximum_range",   maximum_range);
-    allOK &= this->getParam(params_namespace + "/minimum_range",   minimum_range);
-    allOK &= this->getParam(params_namespace + "/field_of_view",   field_of_view);
-    allOK &= this->getParam(params_namespace + "/input_pins_map",  input_pins_map,  rangers_count);
-    allOK &= this->getParam(params_namespace + "/frame_ids_map",   frame_ids_map,   rangers_count);
-    allOK &= this->getParam(params_namespace + "/topic_names_map", topic_names_map, rangers_count);
+    bool all_ok = true;
+    all_ok &= this->getParam(params_namespace + "/rangers_count",   rangers_count);
+    all_ok &= this->getParam(params_namespace + "/range_variance",  range_variance);
+    all_ok &= this->getParam(params_namespace + "/maximum_range",   maximum_range);
+    all_ok &= this->getParam(params_namespace + "/minimum_range",   minimum_range);
+    all_ok &= this->getParam(params_namespace + "/field_of_view",   field_of_view);
+    all_ok &= this->getParam(params_namespace + "/input_pins_map",  input_pins_map,  rangers_count);
+    all_ok &= this->getParam(params_namespace + "/frame_ids_map",   frame_ids_map,   rangers_count);
+    all_ok &= this->getParam(params_namespace + "/topic_names_map", topic_names_map, rangers_count);
 
     if (sonars)
     {
       // ctrl_pins_map is only mandatory for sonars
-      allOK &= this->getParam(params_namespace + "/ctrl_pins_map", ctrl_pins_map,   rangers_count);
+      all_ok &= this->getParam(params_namespace + "/ctrl_pins_map", ctrl_pins_map,   rangers_count);
     }
 
     // Optional parameters
@@ -183,7 +195,7 @@ namespace thorp
       ROS_WARN("Topic namespace not specified; we set is as empty");
     }
 
-    if (! allOK)
+    if (! all_ok)
       return false;
 
     // Ready to initialize the ranger sensors list

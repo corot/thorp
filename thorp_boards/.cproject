@@ -21,6 +21,16 @@
 							<builder id="cdt.managedbuild.target.gnu.builder.base.1229994639" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1788364659" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.1764820819" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
+								<option id="gnu.cpp.compiler.option.include.paths.1082760385" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="/home/jorge/workspaces/thorp/devel/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/workspaces/turtlebot/devel/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/workspaces/ork/devel/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/workspaces/moveit/devel/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/workspaces/navigation/devel/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/workspaces/rviz/devel/include"/>
+									<listOptionValue builtIn="false" value="/opt/ros/indigo/include"/>
+									<listOptionValue builtIn="false" value="/opt/OpenCM-v1.0.2/hardware/robotis/cores/robotis"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.712716253" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.1208007472" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
@@ -46,9 +56,16 @@
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
 		<project id="thorp_boards.null.652791808" name="thorp_boards"/>
 	</storageModule>
-	<storageModule moduleId="scannerConfiguration">
-		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+	<storageModule moduleId="scannerConfiguration">
+		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.638270053;cdt.managedbuild.toolchain.gnu.base.638270053.224614083;cdt.managedbuild.tool.gnu.cpp.compiler.base.1764820819;cdt.managedbuild.tool.gnu.cpp.compiler.input.712716253">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.638270053;cdt.managedbuild.toolchain.gnu.base.638270053.224614083;cdt.managedbuild.tool.gnu.c.compiler.base.1208007472;cdt.managedbuild.tool.gnu.c.compiler.input.2022230994">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+	</storageModule>
+	<storageModule moduleId="refreshScope"/>
 </cproject>

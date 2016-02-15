@@ -1,4 +1,5 @@
 arduino_port      : /dev/arduino
+read_timeout      : 1000     # in milliseconds
 read_frequency    : 20.0
 sonars :
   rangers_count   : 11
