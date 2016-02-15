@@ -6,8 +6,8 @@ project(thorp_boards)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  serial
   sensor_msgs
-  uniserial
 )
 
 find_package(Boost REQUIRED COMPONENTS system)
@@ -18,7 +18,7 @@ find_package(Boost REQUIRED COMPONENTS system)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES thorp_boards
-  CATKIN_DEPENDS roscpp sensor_msgs uniserial
+  CATKIN_DEPENDS roscpp serial sensor_msgs
   DEPENDS Boost
 )
 

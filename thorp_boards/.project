@@ -3,7 +3,6 @@
 	<name>thorp_boards</name>
 	<comment></comment>
 	<projects>
-		<project>uniserial</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

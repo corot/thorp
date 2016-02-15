@@ -10,7 +10,7 @@
 
 
 #include <ros/ros.h>
-#include <uniserial.hpp>
+#include <serial/serial.h>
 
 #include <sensor_msgs/Range.h>
 
@@ -97,11 +97,9 @@ namespace thorp
       bool connect();
 
     private:
-      bool   is_connected;
-      int    wrong_readings;
       double read_frequency;
       std::string arduino_port;
-      uniserial serial_port;
+      serial::Serial serial_port;
 
       RangersList sonars;
       RangersList irSensors;
