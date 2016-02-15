@@ -80,8 +80,8 @@ void MoveToTargetServer::goalCB()
 void MoveToTargetServer::preemptCB()
 {
   ROS_INFO("[move to target] %s: Preempted", action_name_.c_str());
-  gripper_.stop();
-  arm_.stop();
+  gripper().stop();
+  arm().stop();
 
   // set the action state to preempted
   as_.setPreempted();
@@ -93,13 +93,13 @@ bool MoveToTargetServer::moveArmTo(const std::string& target)
     setGripper(0.002, false);
 
   ROS_DEBUG("[move to target] Move arm to '%s' position", target.c_str());
-  if (arm_.setNamedTarget(target) == false)
+  if (arm().setNamedTarget(target) == false)
   {
     ROS_ERROR("[move to target] Set named target '%s' failed", target.c_str());
     return false;
   }
 
-  moveit::planning_interface::MoveItErrorCode result = arm_.move();
+  moveit::planning_interface::MoveItErrorCode result = arm().move();
   if (bool(result) == true)
   {
     ROS_INFO("[move to target] Move to target \"%s\" completed", target.c_str());
@@ -122,36 +122,43 @@ bool MoveToTargetServer::moveArmTo(const geometry_msgs::PoseStamped& target)
   while (attempts < 5)
   {
     geometry_msgs::PoseStamped modiff_target = target;
-
-    double x = modiff_target.pose.position.x;
-    double y = modiff_target.pose.position.y;
-    double z = modiff_target.pose.position.z;
-    double d = sqrt(x*x + y*y);
-    if (d > 0.3)
+    if (!validateTargetPose(modiff_target, true, attempts))
     {
-      // Maximum reachable distance by the turtlebot arm is 30 cm
-      ROS_ERROR("[move to target] Target pose out of reach [%f > %f]", d, 0.3);
       return false;
     }
-    // Pitch is 90 (vertical) at 10 cm from the arm base; the farther the target is, the closer to horizontal
-    // we point the gripper. Yaw is the direction to the target. We also try some random variations of both to
-    // increase the chances of successful planning.
-    double rp = M_PI_2 - std::asin((d - 0.1)/0.205); // 0.205 = arm's max reach - vertical pitch distance + ε
-    double ry = std::atan2(y, x);
+//
+//    geometry_msgs::PoseStamped modiff_target = target;
+//
+//
+//    double x = modiff_target.pose.position.x;
+//    double y = modiff_target.pose.position.y;
+//    double z = modiff_target.pose.position.z;
+//    double d = sqrt(x*x + y*y);
+//    if (d > 0.3)
+//    {
+//      // Maximum reachable distance by the turtlebot arm is 30 cm
+//      ROS_ERROR("[move to target] Target pose out of reach [%f > %f]", d, 0.3);
+//      return false;
+//    }
+//    // Pitch is 90 (vertical) at 10 cm from the arm base; the farther the target is, the closer to horizontal
+//    // we point the gripper. Yaw is the direction to the target. We also try some random variations of both to
+//    // increase the chances of successful planning.
+//    double rp = M_PI_2 - std::asin((d - 0.1)/0.205); // 0.205 = arm's max reach - vertical pitch distance + ε
+//    double ry = std::atan2(y, x);
+//
+//    tf::Quaternion q = tf::createQuaternionFromRPY(0.0,
+//                                                   attempts*fRand(-0.05, +0.05) + rp,
+//                                                   attempts*fRand(-0.05, +0.05) + ry);
+//    tf::quaternionTFToMsg(q, modiff_target.pose.orientation);
+//
+//    // Slightly increase z proportionally to pitch to avoid hitting the table with the lower gripper corner
+//    ROS_DEBUG("[move to target] Z increase:  %f  +  %f", modiff_target.pose.position.z, std::abs(std::cos(rp))/50.0);
+//    modiff_target.pose.position.z += std::abs(std::cos(rp))/50.0;
+//
+//    ROS_DEBUG("[move to target] Set pose target [%.2f, %.2f, %.2f] [d: %.2f, p: %.2f, y: %.2f]", x, y, z, d, rp, ry);
+//    target_pose_pub_.publish(modiff_target);
 
-    tf::Quaternion q = tf::createQuaternionFromRPY(0.0,
-                                                   attempts*fRand(-0.05, +0.05) + rp,
-                                                   attempts*fRand(-0.05, +0.05) + ry);
-    tf::quaternionTFToMsg(q, modiff_target.pose.orientation);
-
-    // Slightly increase z proportionally to pitch to avoid hitting the table with the lower gripper corner
-    ROS_DEBUG("[move to target] Z increase:  %f  +  %f", modiff_target.pose.position.z, std::abs(std::cos(rp))/50.0);
-    modiff_target.pose.position.z += std::abs(std::cos(rp))/50.0;
-
-    ROS_DEBUG("[move to target] Set pose target [%.2f, %.2f, %.2f] [d: %.2f, p: %.2f, y: %.2f]", x, y, z, d, rp, ry);
-    target_pose_pub_.publish(modiff_target);
-
-    if (arm_.setPoseTarget(modiff_target) == false)
+    if (arm().setPoseTarget(modiff_target) == false)
     {
       ROS_ERROR("[move to target] Set pose target [%.2f, %.2f, %.2f, %.2f] failed",
                 modiff_target.pose.position.x, modiff_target.pose.position.y, modiff_target.pose.position.z,
@@ -159,7 +166,7 @@ bool MoveToTargetServer::moveArmTo(const geometry_msgs::PoseStamped& target)
       return false;
     }
 
-    moveit::planning_interface::MoveItErrorCode result = arm_.move();
+    moveit::planning_interface::MoveItErrorCode result = arm().move();
     if (bool(result) == true)
     {
       ROS_INFO("[move to target] Move to target [%.2f, %.2f, %.2f, %.2f] completed",
@@ -169,8 +176,8 @@ bool MoveToTargetServer::moveArmTo(const geometry_msgs::PoseStamped& target)
     }
     else
     {
-      ROS_ERROR("[move to target] Move to target failed (error %d) at attempt %d",
-                result.val, attempts + 1);
+      ROS_ERROR("[move to target] Move to target failed at attempt %d: %s",
+                attempts + 1, mec2str(result));
     }
     attempts++;
   }
@@ -182,14 +189,14 @@ bool MoveToTargetServer::moveArmTo(const geometry_msgs::PoseStamped& target)
 bool MoveToTargetServer::setGripper(float opening, bool wait_for_complete)
 {
   ROS_DEBUG("[move to target] Set gripper opening to %f", opening);
-  if (gripper_.setJointValueTarget("gripper_joint", opening) == false)
+  if (gripper().setJointValueTarget("gripper_joint", opening) == false)
   {
     ROS_ERROR("[move to target] Set gripper opening to %f failed", opening);
     return false;
   }
 
   moveit::planning_interface::MoveItErrorCode result =
-      wait_for_complete ? gripper_.move() : gripper_.asyncMove();
+      wait_for_complete ? gripper().move() : gripper().asyncMove();
   if (result == true)
   {
     return true;

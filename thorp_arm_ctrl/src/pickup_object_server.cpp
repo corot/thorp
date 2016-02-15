@@ -73,14 +73,14 @@ void PickupObjectServer::goalCB()
 
   goal_ = as_.acceptNewGoal();
 
-  arm_.setSupportSurfaceName(goal_->support_surf);
+  arm().setSupportSurfaceName(goal_->support_surf);
 
   // Allow some leeway in position (meters) and orientation (radians)
-  arm_.setGoalPositionTolerance(0.001);
-  arm_.setGoalOrientationTolerance(0.02);
+  arm().setGoalPositionTolerance(0.001);
+  arm().setGoalOrientationTolerance(0.02);
 
   // Allow replanning to increase the odds of a solution
-  arm_.allowReplanning(true);
+  arm().allowReplanning(true);
 
   if (pickup(goal_->object_name, goal_->support_surf))
   {
@@ -95,8 +95,8 @@ void PickupObjectServer::goalCB()
 void PickupObjectServer::preemptCB()
 {
   ROS_WARN("[pickup object] %s: Preempted", action_name_.c_str());
-  gripper_.stop();
-  arm_.stop();
+  gripper().stop();
+  arm().stop();
 
   // set the action state to preempted
   as_.setPreempted();
@@ -106,7 +106,7 @@ bool PickupObjectServer::pickup(const std::string& obj_name, const std::string& 
 {
   // Look for obj_name in the list of available objects
   std::map<std::string, moveit_msgs::CollisionObject> objects =
-      planning_scene_interface_.getObjects(std::vector<std::string>(1, obj_name));
+      planningScene().getObjects(std::vector<std::string>(1, obj_name));
   if (objects.size() == 0)
   {
     // Maybe the object's interactive marker name is wrong?
@@ -183,11 +183,11 @@ bool PickupObjectServer::pickup(const std::string& obj_name, const std::string& 
     g.grasp_pose = p;
 
     g.pre_grasp_approach.direction.vector.x = 0.5;
-    g.pre_grasp_approach.direction.header.frame_id = arm_.getEndEffectorLink();
+    g.pre_grasp_approach.direction.header.frame_id = arm().getEndEffectorLink();
     g.pre_grasp_approach.min_distance = 0.005;
     g.pre_grasp_approach.desired_distance = 0.1;
 
-    g.post_grasp_retreat.direction.header.frame_id = arm_.getEndEffectorLink();
+    g.post_grasp_retreat.direction.header.frame_id = arm().getEndEffectorLink();
     g.post_grasp_retreat.direction.vector.x = -0.5;
     g.post_grasp_retreat.min_distance = 0.005;
     g.post_grasp_retreat.desired_distance = 0.1;
@@ -209,7 +209,7 @@ bool PickupObjectServer::pickup(const std::string& obj_name, const std::string& 
 
     std::vector<moveit_msgs::Grasp> grasps(1, g);
 
-    moveit::planning_interface::MoveItErrorCode result = arm_.pick(obj_name, grasps);
+    moveit::planning_interface::MoveItErrorCode result = arm().pick(obj_name, grasps);
     if (result)
     {
       ROS_INFO("[pickup object] Pick successfully completed");

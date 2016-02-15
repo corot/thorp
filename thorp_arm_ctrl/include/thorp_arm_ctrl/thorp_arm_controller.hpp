@@ -45,10 +45,16 @@
 namespace thorp_arm_ctrl
 {
 
+/**
+ * Base class for all controllers intended to operate Thorp's arm.
+ * Note that we use the Construct On First Use idiom to allow using static attributes for move groups and
+ * planning scene interface while avoiding the static initialization disaster (the three attributes cannot
+ * be initialized until ROS is up and running).
+ */
 class ThorpArmController
 {
 public:
-  ThorpArmController() : arm_("arm"), gripper_("gripper")
+  ThorpArmController()
   {
     ros::NodeHandle nh("~");
 
@@ -61,10 +67,7 @@ public:
 
     // Default target poses reference frame: we normally work relative to
     // the arm base, so our calculated roll/pitch/yaw angles make sense
-    arm_.setPoseReferenceFrame(arm_ref_frame);
-
-    // We publish the pick and place poses for debugging purposes
-    target_pose_pub_ = nh.advertise<geometry_msgs::PoseStamped>("/target_pose", 1, true);
+    arm().setPoseReferenceFrame(arm_ref_frame);
   }
 
   ~ThorpArmController()
@@ -72,16 +75,25 @@ public:
   }
 
 protected:
-    ros::Publisher target_pose_pub_;
-
-    tf::TransformListener tf_listener_;
-
     // Move groups to control arm and gripper with MoveIt!
-    moveit::planning_interface::MoveGroup arm_;
-    moveit::planning_interface::MoveGroup gripper_;
+    moveit::planning_interface::MoveGroup& arm()
+    {
+      static moveit::planning_interface::MoveGroup arm("arm");
+      return arm;
+    }
+
+    moveit::planning_interface::MoveGroup& gripper()
+    {
+      static moveit::planning_interface::MoveGroup gripper("gripper");
+      return gripper;
+    }
 
     // We use the planning scene to gather information of tabletop/attached objects
-    moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
+    moveit::planning_interface::PlanningSceneInterface& planningScene()
+    {
+      static moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
+      return planning_scene_interface;
+    }
 
     // Pick and place parameters
     std::string arm_ref_frame;
@@ -102,6 +114,14 @@ protected:
    */
   bool validateTargetPose(geometry_msgs::PoseStamped& target, bool compensate_backlash, int attempt = 0)
   {
+    static ros::Publisher target_pose_pub;
+    if (target_pose_pub.getTopic().empty())
+    {
+      // We publish the pick and place poses for debugging purposes; advertise topic just once!
+      ros::NodeHandle nh;
+      target_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("target_pose", 1, true);
+    }
+
     // We always work relative to the arm base, so roll/pitch/yaw angles calculation make sense
     if (target.header.frame_id != arm_ref_frame)
     {
@@ -143,11 +163,16 @@ protected:
     }
 
     ROS_DEBUG("[pick and place] Target pose [%s] [d: %.2f]", mtk::pose2str3D(target.pose).c_str(), d);
-    target_pose_pub_.publish(target);
+    target_pose_pub.publish(target);
 
     return true;
   }
 
+  /**
+   * Provide a meaningful text for each MoveIt error code.
+   * @param mec MoveIt error code
+   * @return meaningful text
+   */
   const char* mec2str(const moveit::planning_interface::MoveItErrorCode& mec)
   {
     switch (mec.val)
@@ -211,6 +236,7 @@ protected:
   {
     try
     {
+      static tf::TransformListener tf_listener_;
       tf_listener_.waitForTransform(in_frame, out_frame, ros::Time(0.0), ros::Duration(1.0));
       tf_listener_.transformPose(out_frame, in_pose, out_pose);
 
@@ -237,14 +263,14 @@ protected:
   bool setGripper(float opening, bool wait_for_complete = true)
   {
     ROS_DEBUG("[move to target] Set gripper opening to %f", opening);
-    if (gripper_.setJointValueTarget("gripper_joint", opening) == false)
+    if (gripper().setJointValueTarget("gripper_joint", opening) == false)
     {
       ROS_ERROR("[move to target] Set gripper opening to %f failed", opening);
       return false;
     }
 
     moveit::planning_interface::MoveItErrorCode result =
-        wait_for_complete ? gripper_.move() : gripper_.asyncMove();
+        wait_for_complete ? gripper().move() : gripper().asyncMove();
     if (result == true)
     {
       return true;

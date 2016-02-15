@@ -65,14 +65,14 @@ void PlaceObjectServer::goalCB()
 
   goal_ = as_.acceptNewGoal();
 
-  arm_.setSupportSurfaceName(goal_->support_surf);
+  arm().setSupportSurfaceName(goal_->support_surf);
 
   // Allow some leeway in position (meters) and orientation (radians)
-  arm_.setGoalPositionTolerance(0.001);
-  arm_.setGoalOrientationTolerance(0.02);
+  arm().setGoalPositionTolerance(0.001);
+  arm().setGoalOrientationTolerance(0.02);
 
   // Allow replanning to increase the odds of a solution
-  arm_.allowReplanning(true);
+  arm().allowReplanning(true);
 
   if (place(goal_->object_name, goal_->support_surf, goal_->place_pose))
   {
@@ -81,7 +81,7 @@ void PlaceObjectServer::goalCB()
   else
   {
     // Ensure we don't retain any object attached to the gripper
-    arm_.detachObject(goal_->object_name);
+    arm().detachObject(goal_->object_name);
     setGripper(gripper_open, false);
 
     as_.setAborted(result_);
@@ -91,8 +91,8 @@ void PlaceObjectServer::goalCB()
 void PlaceObjectServer::preemptCB()
 {
   ROS_WARN("[place object] %s: Preempted", action_name_.c_str());
-  gripper_.stop();
-  arm_.stop();
+  gripper().stop();
+  arm().stop();
 
   // set the action state to preempted
   as_.setPreempted();
@@ -103,7 +103,7 @@ bool PlaceObjectServer::place(const std::string& obj_name, const std::string& su
 {
   // Look for obj_name in the list of attached objects
   std::map<std::string, moveit_msgs::AttachedCollisionObject> objects =
-      planning_scene_interface_.getAttachedObjects(std::vector<std::string>(1, obj_name));
+      planningScene().getAttachedObjects(std::vector<std::string>(1, obj_name));
 
   if (objects.size() == 0)
   {
@@ -167,12 +167,12 @@ bool PlaceObjectServer::place(const std::string& obj_name, const std::string& su
     l.place_pose = p;
 
     l.pre_place_approach.direction.vector.x = 0.5;
-    l.pre_place_approach.direction.header.frame_id = arm_.getEndEffectorLink();
+    l.pre_place_approach.direction.header.frame_id = arm().getEndEffectorLink();
     l.pre_place_approach.min_distance = 0.005;
     l.pre_place_approach.desired_distance = 0.1;
 
     l.post_place_retreat.direction.vector.x = -0.5;
-    l.post_place_retreat.direction.header.frame_id = arm_.getEndEffectorLink();
+    l.post_place_retreat.direction.header.frame_id = arm().getEndEffectorLink();
     l.post_place_retreat.min_distance = 0.005;
     l.post_place_retreat.desired_distance = 0.1;
 
@@ -187,7 +187,7 @@ bool PlaceObjectServer::place(const std::string& obj_name, const std::string& su
 
     std::vector<moveit_msgs::PlaceLocation> locs(1, l);
 
-    moveit::planning_interface::MoveItErrorCode result = arm_.place(obj_name, locs);
+    moveit::planning_interface::MoveItErrorCode result = arm().place(obj_name, locs);
     if (result)
     {
       ROS_INFO("[place object] Place successfully completed");
