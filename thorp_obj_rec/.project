@@ -3,6 +3,8 @@
 	<name>thorp_obj_rec</name>
 	<comment></comment>
 	<projects>
+		<project>moveit_ros</project>
+		<project>yocs_math_toolkit</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

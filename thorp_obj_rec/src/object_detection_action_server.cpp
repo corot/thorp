@@ -74,8 +74,6 @@ private:
 
   // Action client for the ORK object recognition and server
   actionlib::SimpleActionClient<object_recognition_msgs::ObjectRecognitionAction> ork_ac_;
-  ros::Duration ork_execute_timeout_;
-  ros::Duration ork_preempt_timeout_;
 
   // Action server to handle it conveniently for our object manipulation demo
   actionlib::SimpleActionServer<thorp_msgs::DetectObjectsAction> od_as_;
@@ -109,22 +107,27 @@ private:
   // We use the planning_scene_interface::PlanningSceneInterface to manipulate the world
   moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
 
-  tf::TransformListener tf_listener_;
-
   // Parameters from goal
   std::string output_frame_;
   
-  // Object detection and classification constants         TODO make parameters
-  const double   CONFIDENCE_THRESHOLD  = 0.85;   // minimum confidence required to accept an object
-  const double   CLUSTERING_THRESHOLD  = 0.05;   // maximum acceptable distance to assign an object to a bin
-  const unsigned CALLS_TO_ORK_TABLETOP = 10;
+  // Object detection and classification parameters
+  double ork_execute_timeout_;
+  double ork_preempt_timeout_;
+  double confidence_threshold_;   // minimum confidence required to accept an object
+  double clustering_threshold_;   // maximum acceptable distance to assign an object to a bin
+  int    recognize_objs_calls_;
 
 public:
   ObjectDetectionServer(const std::string name) :
-    pnh_("~"), ork_ac_("tabletop/recognize_objects", true), od_as_(name, false), action_name_(name),
-    ork_execute_timeout_(5.0), ork_preempt_timeout_(1.0)
+    pnh_("~"), ork_ac_("tabletop/recognize_objects", true), od_as_(name, false), action_name_(name)
   {
     // Create the action client; spin its own thread
+
+    pnh_.param("ork_execute_timeout",  ork_execute_timeout_,  5.0);
+    pnh_.param("ork_preempt_timeout",  ork_preempt_timeout_,  1.0);
+    pnh_.param("confidence_threshold", confidence_threshold_, 0.85);
+    pnh_.param("clustering_threshold", clustering_threshold_, 0.05);
+    pnh_.param("recognize_objs_calls", recognize_objs_calls_, 10);
 
     // Wait for the tabletop/recognize_objects action server to start before we provide our own service
     ROS_INFO("[object detection] Waiting for tabletop/recognize_objects action server to start...");
@@ -184,12 +187,12 @@ public:
     std::vector<DetectionBin> detection_bins;
 
     ROS_INFO("[object detection] Sending %d goals to tabletop/recognize_objects action server...",
-             CALLS_TO_ORK_TABLETOP);
+             recognize_objs_calls_);
     object_recognition_msgs::ObjectRecognitionGoal goal;
-    for (int i = 0; i < CALLS_TO_ORK_TABLETOP; ++i)
+    for (int i = 0; i < recognize_objs_calls_; ++i)
     {
       actionlib::SimpleClientGoalState state =
-          ork_ac_.sendGoalAndWait(goal, ork_execute_timeout_, ork_preempt_timeout_);
+          ork_ac_.sendGoalAndWait(goal, ros::Duration(ork_execute_timeout_), ros::Duration(ork_preempt_timeout_));
 
       if (state == actionlib::SimpleClientGoalState::SUCCEEDED)
       {
@@ -208,13 +211,13 @@ public:
       // Classify objects detected in each call to tabletop into bins based on distance to bin's centroid
       for (const object_recognition_msgs::RecognizedObject& obj: result->recognized_objects.objects)
       {
-        if (obj.confidence < CONFIDENCE_THRESHOLD)
+        if (obj.confidence < confidence_threshold_)
           continue;
 
         bool assigned = false;
         for (DetectionBin& bin: detection_bins)
         {
-          if (mtk::distance3D(bin.getCentroid().pose, obj.pose.pose.pose) <= CLUSTERING_THRESHOLD)
+          if (mtk::distance3D(bin.getCentroid().pose, obj.pose.pose.pose) <= clustering_threshold_)
           {
             ROS_DEBUG("Object with pose [%s] added to bin %d with centroid [%s] with distance [%f]",
                       mtk::pose2str3D(obj.pose.pose.pose).c_str(), bin.id, mtk::pose2str3D(bin.getCentroid()).c_str(),
@@ -333,10 +336,10 @@ private:
     // Only bins receiving detections on most of the ORK tabletop calls are considered consistent enough
     for (const DetectionBin& bin: detection_bins)
     {
-      if (bin.countObjects() < CALLS_TO_ORK_TABLETOP/1.5)
+      if (bin.countObjects() < recognize_objs_calls_/1.5)
       {
         ROS_DEBUG("Bin %d with centroid [%s] discarded as it received %d objects out of %d attempts",
-                   bin.id, mtk::pose2str3D(bin.getCentroid()).c_str(), bin.countObjects(), CALLS_TO_ORK_TABLETOP);
+                   bin.id, mtk::pose2str3D(bin.getCentroid()).c_str(), bin.countObjects(), recognize_objs_calls_);
         continue;
       }
 
@@ -530,6 +533,7 @@ private:
     in_stamped.pose = in_pose;
     try
     {
+      static tf::TransformListener tf_listener_;
       tf_listener_.waitForTransform(in_frame, out_frame, ros::Time(0.0), ros::Duration(1.0));
       tf_listener_.transformPose(out_frame, in_stamped, out_stamped);
       out_pose = out_stamped.pose;

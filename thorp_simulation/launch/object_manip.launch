@@ -52,23 +52,23 @@
   </node>
   
   
-  <!--  **************** ORK tabletop *****************  -->
+  <!--  **************** ORK pipeline *****************  -->
 
-  <include if="$(arg external_camera)" file="$(find thorp_obj_rec)/launch/includes/tabletop.launch.xml" ns="tabletop">
+  <include if="$(arg external_camera)" file="$(find thorp_obj_rec)/launch/includes/obj_rec.launch.xml" ns="tabletop">
     <arg name="as_server"    value="true"/>
-    <arg name="config_file"  value="$(find thorp_obj_rec)/config/tabletop/external.detection.object.ros.ork"/>
+    <arg name="config_file"  value="$(find thorp_obj_rec)/config/ork/external.tabletop.detection.ros.ork"/>
     <arg name="robot_frame"  value="base_footprint"/>
     <arg name="sensor_frame" value="external_camera_depth_optical_frame"/>
   </include>
 
-  <include unless="$(arg external_camera)" file="$(find thorp_obj_rec)/launch/includes/tabletop.launch.xml" ns="tabletop">
+  <include unless="$(arg external_camera)" file="$(find thorp_obj_rec)/launch/includes/obj_rec.launch.xml" ns="tabletop">
     <arg name="as_server"    value="true"/>
-    <arg name="config_file"  value="$(find thorp_obj_rec)/config/tabletop/thorp.detection.object.ros.ork"/>
+    <arg name="config_file"  value="$(find thorp_obj_rec)/config/ork/tabletop.detection.ros.ork"/>
     <arg name="robot_frame"  value="base_footprint"/>
     <arg name="sensor_frame" value="xtion_depth_optical_frame"/>
   </include>
 
 
-  <!-- Run Rviz and load the default config to see the state of the move_group node and the object manipulation interactive markers 
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_manip.rviz"/>-->
+  <!-- Run Rviz and load the default config to see the state of the move_group node and the object manipulation interactive markers -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_manip.rviz"/>
 </launch>

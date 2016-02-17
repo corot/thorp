@@ -46,8 +46,15 @@
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
 		<project id="thorp_obj_rec.null.1789567145" name="thorp_obj_rec"/>
 	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+	<storageModule moduleId="refreshScope"/>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.2032485526;cdt.managedbuild.toolchain.gnu.base.2032485526.1610900148;cdt.managedbuild.tool.gnu.cpp.compiler.base.959695658;cdt.managedbuild.tool.gnu.cpp.compiler.input.1057289454">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.2032485526;cdt.managedbuild.toolchain.gnu.base.2032485526.1610900148;cdt.managedbuild.tool.gnu.c.compiler.base.1640731833;cdt.managedbuild.tool.gnu.c.compiler.input.1819309518">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
 	</storageModule>
-	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 </cproject>
