@@ -363,25 +363,8 @@ private:
         co.id = obj_name;
         co.header.frame_id = output_frame_;
         co.operation = moveit_msgs::CollisionObject::ADD;
-
-        if (obj_name.find("cube 2.5") != std::string::npos)
-        {
-          // XXX, TODO :  temporal hack because bloody cube meshes don't clean the octomap!  (anyway, as I support both mechanism, it's also useful for debug)
-          // Problem discussed in this moveit-users group thread: https://groups.google.com/forum/?fromgroups#!topic/moveit-users/-GuBSnvCYbM
-          co.primitives.resize(1);
-          co.primitives[0].type = shape_msgs::SolidPrimitive::BOX;
-          co.primitives[0].dimensions.resize(shape_tools::SolidPrimitiveDimCount<shape_msgs::SolidPrimitive::BOX>::value);
-          co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_X] = 0.025;
-          co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Y] = 0.025;
-          co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Z] = 0.025;
-          out_pose.position.z += 0.0125;
-          co.primitive_poses.push_back(out_pose);
-        }
-        else
-        {
-          co.meshes.resize(1, obj_info.ground_truth_mesh);
-          co.mesh_poses.push_back(out_pose);
-        }
+        co.meshes.resize(1, obj_info.ground_truth_mesh);
+        co.mesh_poses.push_back(out_pose);
 
         collision_objects.push_back(co);
 
