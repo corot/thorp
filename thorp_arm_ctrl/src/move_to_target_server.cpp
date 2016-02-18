@@ -89,9 +89,6 @@ void MoveToTargetServer::preemptCB()
 
 bool MoveToTargetServer::moveArmTo(const std::string& target)
 {
-  if (target == "resting")  // XXX temporal cheat... blocks less fov to the camera
-    setGripper(0.002, false);
-
   ROS_DEBUG("[move to target] Move arm to '%s' position", target.c_str());
   if (arm().setNamedTarget(target) == false)
   {
