@@ -1,0 +1,15 @@
+<launch>
+  <node name="orb_track" pkg="object_recognition_capture" type="orb_track_ros" args="--track_directory dot_pattern" output="screen">
+    <remap from="/camera/rgb/image_color" to="/senz3d/rgb/image_color"/>
+    <remap from="/camera/rgb/camera_info" to="/senz3d/rgb/camera_info"/>
+    <remap from="/camera/depth_registered/image_raw" to="/senz3d/depth_registered/image_raw"/>
+    <remap from="/camera/depth_registered/camera_info" to="/senz3d/depth/camera_info"/>
+
+<!--
+    <remap from="/camera/rgb/image_color" to="/camera/rgb/image_color"/>
+    <remap from="/camera/rgb/camera_info" to="/camera/rgb/camera_info"/>
+    <remap from="/camera/depth_registered/image_raw" to="/camera/depth/image_raw"/>
+    <remap from="/camera/depth_registered/camera_info" to="/camera/depth/camera_info"/>
+ -->
+  </node>
+</launch>

@@ -1,0 +1,30 @@
+<!--
+  Launch softkinetic camera driver
+  The argument 0 is the device index, as determined by the DepthSense deamon.
+-->
+<launch>
+  <node name="senz3d" pkg="softkinetic_camera" type="softkinetic_bringup_node" args="0   27  28  235  179" output="screen"  >
+    <param name="camera_link"           type="string" value="/senz3d_camera_depth_frame"/>
+
+	<!-- Depth camera configuration -->
+    <param name="depth_optical_frame"   type="string" value="/senz3d_camera_depth_optical_frame"/>
+    <param name="depth_mode"            type="string" value="close"/>
+    <param name="depth_frame_format"    type="string" value="QVGA"/>
+    <param name="depth_frame_rate"      type="int"    value="25"/>
+
+	<!-- Color camera configuration -->
+    <param name="rgb_calibration_file"  type="string" value="$(find softkinetic_camera)/resources/senz3d.yaml_"/>
+    <param name="rgb_optical_frame"     type="string" value="/senz3d_camera_rgb_optical_frame"/>
+    <param name="color_compression"     type="string" value="MJPEG"/>
+    <param name="color_frame_format"    type="string" value="VGA"/>
+    <param name="color_frame_rate"      type="int"    value="25"/>
+
+	<!-- Cloud filtering -->
+    <param name="confidence_threshold"  type="int"    value="200"/>
+    <param name="use_voxel_grid_filter" type="bool"   value="true"/>
+    <param name="use_radius_filter"     type="bool"   value="true"/>
+    <param name="voxel_grid_side"       type="double" value="0.01"/>
+    <param name="search_radius"         type="double" value="0.025"/>
+    <param name="min_neighbours"        type="int"    value="30"/>
+  </node>
+</launch>

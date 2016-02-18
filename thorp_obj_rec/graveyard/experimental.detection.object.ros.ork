@@ -1,0 +1,176 @@
+source1:
+  type: RosKinect
+  module: 'object_recognition_ros.io'
+  #
+  # Example parameters to set (the default settings are using the ros topics starting with /camera/....) 
+  #  
+  parameters:
+    rgb_frame_id:      senz3d_camera_rgb_optical_frame
+    rgb_image_topic:   senz3d/rgb/image_color
+    rgb_camera_info:   senz3d/rgb/camera_info
+    depth_image_topic: senz3d/depth/image_raw
+    depth_camera_info: senz3d/depth/camera_info
+    crop_enabled: False  # Use to filter out very close/out of reach objects
+    x_min: 0.0
+    x_max: 1.0
+    y_min: -1.0
+    y_max: 1.0
+    z_min: 0.3
+    z_max: 0.8
+  
+sink1:
+  type: TablePublisher
+  module: 'object_recognition_tabletop'
+  inputs: [source1]
+
+sink2:
+  type: Publisher
+  module: 'object_recognition_ros.io'
+  inputs: [source1]
+
+#sink_0:
+#   type: TablePublisher
+#   module: object_recognition_tabletop.table_publisher
+#   parameters:
+#      #  Determines if the topics will be latched.
+#      latched: True
+#      #  The ROS topic to use for the markers of the clusters.
+#      marker_array_clusters: tabletop/clusters2
+#      #  The array of found tables.
+#      table_array: table_array2
+#
+#sink_4:
+#   type: Publisher
+#   module: object_recognition_ros.io.sink.publisher
+#   parameters:
+#      #  The DB parameters
+#      #db_params: <object_recognition_core.boost.interface.ObjectDbParameters object at 0x2b987285e578>
+#      #  Determines if the topics will be latched.
+#      latched: True
+#      #  The ROS topic to use for the marker array.
+#      markers_topic: markers2
+#      #  The ROS topic to use for the object meta info string
+#      object_ids_topic: object_ids2
+#      #  The ROS topic to use for the pose array.
+#      pose_topic: poses2
+#      #  Sets whether the point cloud clusters have to be published or not
+#      publish_clusters: True
+#      #  The ROS topic to use for the recognized object
+#      recognized_object_array_topic: recognized_object_array
+
+
+pipeline1:
+  type: TabletopTableDetector
+  module: object_recognition_tabletop.detector
+  inputs: [source1]
+  outputs: [sink1]
+  parameters:
+    # table detector
+    min_table_size: 5000
+    plane_threshold: 0.01
+    table_cluster_tolerance: 0.01
+    vertical_frame_id: '/map'
+    # clusterer
+    z_crop: 0.25  # The amount to keep in the z direction relative to the coordinate frame defined by the pose (def. 0.5)
+    z_min:  0.002 # The amount to crop above the plane, in meters (def. 0.0075)
+    cluster_distance: 0.01  # The maximum distance between a point and the cluster it belongs to (def. 0.02)
+    min_cluster_size: 300   # Min number of points for a cluster (def. 300)
+
+
+#pipeline2:
+#  type: TabletopObjectDetector
+#  module: object_recognition_tabletop.detector
+#  inputs: [source1, pipeline1]
+#  #inputs: [pipeline1]
+#  outputs: [sink2]
+#  parameters:
+#    object_ids: 'all'
+#    tabletop_object_ids: 'REDUCED_MODEL_SET'
+#    db:
+#      type: CouchDB
+#      root: http://localhost:5984
+#      collection: object_recognition
+
+
+#pipeline3:
+#  type: LinemodDetector
+#  module: 'object_recognition_linemod'
+#  inputs: [source1]
+#  outputs: [sink2]
+#  parameters:
+#    use_rgb: 1
+#    use_depth: 1
+#    verbose: 1
+#    visualize: 0
+#    threshold: 91.6 #82.9 #91.6 
+#    th_obj_dist: 0.1
+#    icp_dist_min: 0.05 #0.06
+#    px_match_min: 0.25 #0.5
+#    depth_frame_id: 'senz3d_depth_optical_frame' #CameraDepth_frame
+#    # The list of object_ids to analyze
+#    object_ids: 'all'
+#    #object_ids: ['40e80ed031909d89f9e7412bf4000de5']
+#    db:
+#      type: 'CouchDB'
+#      root: 'http://localhost:5984'
+#      collection: 'object_recognition'
+
+detection_pipeline_4:
+   type: TodDetector
+   module: object_recognition_tod.detector
+   inputs: [source1]
+   outputs: [sink2]
+   parameters:
+      #  The DB to get data from as a JSON string
+      json_db: {}
+      #  Parameters for the descriptor as a JSON string. It should have the format:
+      # "{"type":"ORB/SIFT whatever", "module":"where_it_is", "param_1":val1, ....}
+      json_descriptor_params: {"type": "ORB", "module": "ecto_opencv.features2d"}
+      #  Parameters for the feature as a JSON string. It should have the format: "{"type":"ORB/SIFT
+      # whatever", "module":"where_it_is", "param_1":val1, ....}
+      json_feature_params: {"type": "ORB", "module": "ecto_opencv.features2d"}
+      #  The ids of the objects to find as a JSON list or the keyword "all".
+      json_object_ids: all
+      #  Minimum number of inliers
+      min_inliers: 15
+      #  Number of RANSAC iterations.
+      n_ransac_iterations: 1000
+      #  The search parameters as a JSON string
+      search: {}
+      #  The error (in meters) from the Kinect
+      sensor_error: 0.00999999977648
+      #  If true, some windows pop up to see the progress
+      visualize: False
+
+#detection_pipeline_0:
+#   type: TabletopObjectDetector
+#   module: object_recognition_tabletop.detector
+#   inputs: [source1]
+#   outputs: [sink_4]
+#   
+#   parameters:
+#      #  The DB configuration parameters as a JSON string
+#      json_db: 
+#      #  A set of object ids as a JSON string: '["1576f162347dbe1f95bd675d3c00ec6a"]' or 'all'
+#      json_object_ids: all
+#      #  The method the models were computed with
+#      method: mesh
+#      #  The object_ids set as defined by the household object database.
+#      tabletop_object_ids: REDUCED_MODEL_SET
+
+#detection_pipeline_2:
+#   type: LinemodDetector
+#   module: object_recognition_linemod.detector
+#   inputs: [source1]
+#   outputs: [sink_4]
+#   parameters:
+#      #  The DB configuration parameters as a JSON string
+#      json_db: 
+#      #  A set of object ids as a JSON string: '["1576f162347dbe1f95bd675d3c00ec6a"]' or 'all'
+#      json_object_ids: all
+#      #  The method the models were computed with
+#      method: LINEMOD
+#      #  Matching threshold, as a percentage
+#      threshold: 93.0
+#      #  If True, visualize the output.
+#      visualize: False
