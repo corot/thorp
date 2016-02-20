@@ -82,5 +82,5 @@
   </include>
   
   <!--  ***** Watchdog to keep the pose on reboot *****  -->
-  <node name="save_amcl_pose" pkg="thorp_utils" type="save_pose_node"/>
+  <node name="save_amcl_pose" pkg="thorp_toolkit" type="save_pose_node"/>
 </launch>
