@@ -176,6 +176,7 @@ public:
     // Clear results from previous goals
     table_poses_.clear();
     table_params_.clear();
+    result_.objects.clear();
     result_.object_names.clear();
     result_.support_surf.clear();
 
@@ -328,7 +329,6 @@ private:
   int addObjects(const std::vector<DetectionBin>& detection_bins)
   {
     std::map<std::string, unsigned int> obj_name_occurences;
-    std::vector<moveit_msgs::CollisionObject> collision_objects;
     moveit_msgs::PlanningScene ps;
     ps.is_diff = true;
 
@@ -360,8 +360,6 @@ private:
         ROS_INFO("[object detection] Adding '%s' object at %s",
                  obj_name.c_str(), mtk::point2str3D(out_pose.position).c_str());
 
-        result_.object_names.push_back(obj_name);
-
         moveit_msgs::CollisionObject co;
         co.id = obj_name;
         co.header.frame_id = output_frame_;
@@ -369,7 +367,8 @@ private:
         co.meshes.resize(1, obj_info.ground_truth_mesh);
         co.mesh_poses.push_back(out_pose);
 
-        collision_objects.push_back(co);
+        result_.object_names.push_back(obj_name);
+        result_.objects.push_back(co);
 
         // Provide a random color to the collision object
         moveit_msgs::ObjectColor oc;
@@ -383,12 +382,12 @@ private:
       }
     }
 
-    if (collision_objects.size() > 0)
+    if (result_.objects.size() > 0)
     {
-      planning_scene_interface_.addCollisionObjects(collision_objects, ps.object_colors);
+      planning_scene_interface_.addCollisionObjects(result_.objects, ps.object_colors);
     }
 
-    return collision_objects.size();
+    return result_.objects.size();
   }
 
   void addTable(const std::vector<geometry_msgs::Pose>& table_poses,

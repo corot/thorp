@@ -6,6 +6,7 @@ string output_frame
 
 # result definition
 
+moveit_msgs/CollisionObject[] objects
 string[] object_names
 string   support_surf
 
