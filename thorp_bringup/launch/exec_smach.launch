@@ -1,4 +1,13 @@
+<!--
+  Make Thorp execute a specific SMACH application
+    TODO 1: still not launching the whole robot; lacks navigation
+    TODO 2: this is not fully generic, as keyboard_ctrl is obj manip specific; idea: make it issue generic commands and show "not apply" when the SM rejects it
+ -->
+
 <launch>
+  <arg name="smach_app"/>
+  <arg name="keyboard_ctrl" default="true"/>
+
   <arg name="external_camera" default="false"/>
 
   <!--  ********** 3D sensors (on/off-board) **********  -->
@@ -39,7 +48,7 @@
   <node pkg="tf" type="static_transform_publisher" name="fake_global_reference"
         args="0.0 0.0 0.0 0.0 0.0 0.0 /map /base_footprint 100"/>
 
-  <!--  *********** Object manipulation demo **********  -->
+  <!--  ****** Thorp perception and manipulation ******  -->
 
   <node name="thorp_arm_ctrl_server" pkg="thorp_arm_ctrl"
         type="thorp_arm_ctrl_server" output="screen">
@@ -61,15 +70,15 @@
 
   <!--  ****** Executive smach and visualization ******  -->
 
-  <node name="object_manipulation_smach" pkg="thorp_smach" type="object_manip_thorp.py" output="screen">
+  <node name="$(arg smach_app)_smach" pkg="thorp_smach" type="$(arg smach_app).py" output="screen">
     <param name="rec_objects_frame" value="map"/>
   </node>
 
-  <node name="object_manip_smach_viewer" pkg="smach_viewer" type="smach_viewer.py" output="screen"/>
+  <node name="$(arg smach_app)_smach_viewer" pkg="smach_viewer" type="smach_viewer.py" output="screen"/>
 
   <!--  ******* Keyboard interaction with smach *******  -->
   <!-- We do it required so it will shutdown the whole demo on exit -->
-  <node name="object_manipulation_key_ctrl" pkg="thorp_smach" type="keyboard_ctrl.py" output="screen" required="true">
+  <node if="$(arg keyboard_ctrl)" name="$(arg smach_app)_key_ctrl" pkg="thorp_smach" type="keyboard_ctrl.py" output="screen" required="true">
     <param name="window_geometry" value="360x240"/>
     <param name="window_caption" value="Object manipulation user commands"/>
     <param name="shown_text" value="Available commands: &#10;  s:  start &#10;  x:  stop &#10;  r:  reset &#10;  f:  fold &#10;  e:  exit"/>
@@ -95,7 +104,7 @@
   </include>
 
 
-  <!-- Run Rviz and load the default config to see the state of the move_group node and the object manipulation interactive markers -->
+  <!-- Run Rviz and load the default config to see the state of the move_group node and the scene interaction markers -->
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_manip.rviz"/>
 
 </launch>
