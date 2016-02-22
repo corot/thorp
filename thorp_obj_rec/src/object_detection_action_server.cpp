@@ -29,12 +29,8 @@
  * Author: Jorge Santos
  */
 
-#include <cmath>
-#include <algorithm>
-
 #include <ros/ros.h>
 #include <tf/tf.h>
-#include <tf/transform_listener.h>
 
 // auxiliary libraries
 #include <yocs_math_toolkit/common.hpp>
@@ -58,6 +54,8 @@
 #include <moveit_msgs/PlanningScene.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 
+#include <thorp_toolkit/common.hpp>
+
 
 namespace thorp_obj_rec
 {
@@ -77,9 +75,6 @@ private:
 
   // Action server to handle it conveniently for our object manipulation demo
   actionlib::SimpleActionServer<thorp_msgs::DetectObjectsAction> od_as_;
-  thorp_msgs::DetectObjectsFeedback feedback_;
-  thorp_msgs::DetectObjectsResult result_;
-  thorp_msgs::DetectObjectsGoalConstPtr goal_;
   std::string action_name_;
 
   // Get object information from database service and keep in a map
@@ -169,19 +164,15 @@ public:
     ROS_INFO("[object detection] Received goal!");
 
     // Accept the new goal
-    goal_ = od_as_.acceptNewGoal();
-    
-    output_frame_ = goal_->output_frame;
+    thorp_msgs::DetectObjectsGoal::ConstPtr goal = od_as_.acceptNewGoal();
+    output_frame_ = goal->output_frame;
 
     // Clear results from previous goals
     table_poses_.clear();
     table_params_.clear();
-    result_.objects.clear();
-    result_.object_names.clear();
-    result_.support_surf.clear();
-
     planning_scene_interface_.removeCollisionObjects(planning_scene_interface_.getKnownObjectNames());
 
+    thorp_msgs::DetectObjectsResult result;
 
     // Call ORK tabletop action server and wait for the action to return
     // We do it CALLS_TO_TABLETOP times and accumulate the results on bins to provide more reliable results
@@ -189,11 +180,11 @@ public:
 
     ROS_INFO("[object detection] Sending %d goals to tabletop/recognize_objects action server...",
              recognize_objs_calls_);
-    object_recognition_msgs::ObjectRecognitionGoal goal;
+    object_recognition_msgs::ObjectRecognitionGoal ork_goal;
     for (int i = 0; i < recognize_objs_calls_; ++i)
     {
       actionlib::SimpleClientGoalState state =
-          ork_ac_.sendGoalAndWait(goal, ros::Duration(ork_execute_timeout_), ros::Duration(ork_preempt_timeout_));
+          ork_ac_.sendGoalAndWait(ork_goal, ros::Duration(ork_execute_timeout_), ros::Duration(ork_preempt_timeout_));
 
       if (state == actionlib::SimpleClientGoalState::SUCCEEDED)
       {
@@ -203,7 +194,7 @@ public:
       {
         ROS_WARN("[object detection] Tabletop/recognize_objects action did not finish before the time out: %s",
                  state.toString().c_str());
-        od_as_.setAborted(result_, "Tabletop/recognize_objects action did not finish before the time out");
+        od_as_.setAborted(result, "Tabletop/recognize_objects action did not finish before the time out");
         continue;
       }
 
@@ -244,14 +235,14 @@ public:
     }  // loop up to CALLS_TO_ORK_TABLETOP
 
     // Add a detected object per bin to the goal result, if the bin is consistent enough
-    int added_objects = addObjects(detection_bins);
+    int added_objects = addObjects(detection_bins, result);
     if (added_objects > 0)
     {
       ROS_INFO("[object detection] Succeeded! %d objects detected", added_objects);
 
       // Add also the table as a collision object, so it gets filtered out from MoveIt! octomap
       if (table_poses_.size() > 0)
-        addTable(table_poses_, table_params_);
+        addTable(table_poses_, table_params_, result);
       else
         ROS_WARN("[object detection] No near-horizontal table detected!");
 
@@ -271,7 +262,7 @@ public:
       ROS_INFO("[object detection] Succeeded, but couldn't find any object");
     }
 
-    od_as_.setSucceeded(result_);
+    od_as_.setSucceeded(result);
   }
 
   void preemptCB()
@@ -304,7 +295,7 @@ public:
       return;
     }
 
-    if (! transformPose(msg.header.frame_id, output_frame_, table.pose, table_pose))
+    if (! thorp_toolkit::transformPose(msg.header.frame_id, output_frame_, table.pose, table_pose))
     {
       return;
     }
@@ -326,7 +317,7 @@ public:
 
 private:
 
-  int addObjects(const std::vector<DetectionBin>& detection_bins)
+  int addObjects(const std::vector<DetectionBin>& detection_bins, thorp_msgs::DetectObjectsResult& result)
   {
     std::map<std::string, unsigned int> obj_name_occurences;
     moveit_msgs::PlanningScene ps;
@@ -356,7 +347,8 @@ private:
                    bin.id, mtk::pose2str3D(bin.getCentroid()).c_str(), bin.countObjects(), obj_name.c_str());
 
         geometry_msgs::Pose out_pose;
-        transformPose(bin.getCentroid().header.frame_id, output_frame_, bin.getCentroid().pose, out_pose);
+        thorp_toolkit::transformPose(bin.getCentroid().header.frame_id, output_frame_,
+                                     bin.getCentroid().pose, out_pose);
         ROS_INFO("[object detection] Adding '%s' object at %s",
                  obj_name.c_str(), mtk::point2str3D(out_pose.position).c_str());
 
@@ -367,8 +359,8 @@ private:
         co.meshes.resize(1, obj_info.ground_truth_mesh);
         co.mesh_poses.push_back(out_pose);
 
-        result_.object_names.push_back(obj_name);
-        result_.objects.push_back(co);
+        result.object_names.push_back(obj_name);
+        result.objects.push_back(co);
 
         // Provide a random color to the collision object
         moveit_msgs::ObjectColor oc;
@@ -382,16 +374,16 @@ private:
       }
     }
 
-    if (result_.objects.size() > 0)
+    if (result.objects.size() > 0)
     {
-      planning_scene_interface_.addCollisionObjects(result_.objects, ps.object_colors);
+      planning_scene_interface_.addCollisionObjects(result.objects, ps.object_colors);
     }
 
-    return result_.objects.size();
+    return result.objects.size();
   }
 
   void addTable(const std::vector<geometry_msgs::Pose>& table_poses,
-                const std::vector<TableDescriptor>& table_params)
+                const std::vector<TableDescriptor>& table_params, thorp_msgs::DetectObjectsResult& result)
   {
     // Add the table as a collision object into the world, so it gets excluded from the collision map
 
@@ -420,8 +412,8 @@ private:
     co.primitives.resize(1);
     co.primitives[0].type = shape_msgs::SolidPrimitive::BOX;
     co.primitives[0].dimensions.resize(shape_tools::SolidPrimitiveDimCount<shape_msgs::SolidPrimitive::BOX>::value);
-    co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_X] = median(table_size_x);
-    co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Y] = median(table_size_y);
+    co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_X] = mtk::median(table_size_x);
+    co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Y] = mtk::median(table_size_y);
     co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Z] = 0.01;  // arbitrarily set to 1 cm
     co.primitive_poses.resize(1);
 
@@ -443,10 +435,10 @@ private:
     co.primitive_poses[0].position.z = co.primitive_poses[0].position.z / (double)table_poses.size();
     co.primitive_poses[0].orientation = tf::createQuaternionMsgFromRollPitchYaw(roll_acc/(double)table_poses.size(),
                                                                                 pitch_acc/(double)table_poses.size(),
-                                                                                median(table_yaw));
+                                                                                mtk::median(table_yaw));
     // Displace the table center according to the centroid of its convex hull
-    co.primitive_poses[0].position.x += median(table_center_x);
-    co.primitive_poses[0].position.y += median(table_center_y);
+    co.primitive_poses[0].position.x += mtk::median(table_center_x);
+    co.primitive_poses[0].position.y += mtk::median(table_center_y);
     co.primitive_poses[0].position.z -= co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Z]/2.0;
 
     ROS_INFO("[object detection] Adding a table at %s as a collision object, based on %lu observations",
@@ -454,7 +446,7 @@ private:
     planning_scene_interface_.addCollisionObjects(std::vector<moveit_msgs::CollisionObject>(1, co));
 
     // Add "table" as the support surface on action result
-    result_.support_surf = co.id;
+    result.support_surf = co.id;
   }
 
   TableDescriptor getTableParams(std::vector<geometry_msgs::Point> convex_hull)
@@ -513,52 +505,6 @@ private:
     return table;
   }
 
-  double median(std::vector<double>& values)
-  {
-    std::vector<double>::iterator first = values.begin();
-    std::vector<double>::iterator last = values.end();
-    std::vector<double>::iterator middle = first + (last - first) / 2;
-    std::nth_element(first, middle, last); // short values till middle one
-    return *middle;
-  }
-
-  bool transformPose(const std::string& in_frame, const std::string& out_frame,
-                     const geometry_msgs::Pose& in_pose, geometry_msgs::Pose& out_pose)
-  {
-    geometry_msgs::PoseStamped in_stamped;
-    geometry_msgs::PoseStamped out_stamped;
-
-    in_stamped.header.frame_id = in_frame;
-    in_stamped.pose = in_pose;
-    try
-    {
-      static tf::TransformListener tf_listener_;
-      tf_listener_.waitForTransform(in_frame, out_frame, ros::Time(0.0), ros::Duration(1.0));
-      tf_listener_.transformPose(out_frame, in_stamped, out_stamped);
-      out_pose = out_stamped.pose;
-
-//      // Some verifications...
-//      // tables sometimes have orientations with all-nan values, but assertQuaternionValid lets them go!
-//      tf::assertQuaternionValid(out_stamped.pose.orientation);
-//      if (std::isnan(out_pose.orientation.x) ||
-//          std::isnan(out_pose.orientation.y) ||
-//          std::isnan(out_pose.orientation.z) ||
-//          std::isnan(out_pose.orientation.w))
-//        throw tf::InvalidArgument("Quaternion contains nan values");
-
-      return true;
-    }
-    catch (tf::InvalidArgument& e)
-    {
-      ROS_ERROR("[object detection] Transformed pose has invalid orientation: %s", e.what());
-      return false;
-    }
-    catch (tf::TransformException& e)
-    {
-      ROS_ERROR("[object detection] Could not get sensor to arm transform: %s", e.what());
-      return false;
-    }
-  }
 
   const object_recognition_msgs::ObjectInformation& getObjInfo(const object_recognition_msgs::ObjectType& obj_type)
   {
