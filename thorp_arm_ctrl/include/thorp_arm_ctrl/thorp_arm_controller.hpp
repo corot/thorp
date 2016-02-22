@@ -36,6 +36,7 @@
 
 // auxiliary libraries
 #include <yocs_math_toolkit/common.hpp>
+#include <yocs_math_toolkit/geometry.hpp>
 
 // MoveIt!
 #include <moveit/move_group_interface/move_group.h>
@@ -102,6 +103,10 @@ protected:
     double      detach_time;
     double      z_backlash;
 
+    // Arm's physical reach limitations
+    double const MAX_DISTANCE = 0.30;
+    double const MAX_HEIGHT   = 0.20;
+
 
   /**
    * Convert a simple 3D point into a valid pick/place pose. The orientation Euler angles
@@ -128,26 +133,41 @@ protected:
       transformPose(target.header.frame_id, arm_ref_frame, target, target);
     }
 
+//    rosrun  tf tf_echo /arm_base_link /arm_shoulder_lift_servo_link
+//    At time 1456156899.841
+//    - Translation: [0.000, -0.000, 0.060]
+//    - Rotation: in Quaternion [0.000, 0.000, 0.000, 1.000]
+//                in RPY (radian) [0.000, 0.000, 0.000]
+//                in RPY (degree) [0.000, 0.000, 0.000]
+
+
     double x = target.pose.position.x;
     double y = target.pose.position.y;
-    double z = target.pose.position.z;
-    double d = sqrt(x*x + y*y);
-    if (d > 0.3)
+    double z = target.pose.position.z - 0.06;
+    double d = sqrt(x*x + y*y + z*z);
+    ///double d = mtk::distance3D(target.pose);
+    if (d > MAX_DISTANCE)
     {
       // Maximum reachable distance by the turtlebot arm is 30 cm, but above twenty something the arm makes
       // strange and ugly contortions, and overcomes the reduced elbow lower limit we have to operate always
       // with the same gripper orientation
       // XXX solved constraining also both shoulder limits (180 deg. operation); we get back the 30 cm limit
-      ROS_ERROR("[pick and place] Target pose out of reach [%f > %f]", d, 0.3);
+      ROS_ERROR("[arm controller] Target pose out of reach [%f > %f]", d, MAX_DISTANCE);
       return false;
     }
 
     // Pitch is 90 (vertical) at 10 cm from the arm base; the farther the target is, the closer to horizontal
-    // we point the gripper (0.22 = arm's max reach - vertical pitch distance + ε). We also try some random
+    // we point the gripper (0.22 = arm's max reach - vertical pitch distance + ε). We also add a correction
+    // when trying to reach targets above the arm operation plane, ranging from zero correction to set the
+    // gripper horizontal when reaching a target at MAX_HEIGHT (I never tried it!). Finally, try some random
     // variations to increase the chances of successful planning. Yaw is the direction to the target, and so
     // must be fixed. Roll is plainly ignored, as our arm lacks that dof.
-    double rp = M_PI_2 - std::asin((d - 0.1)/0.22) + ((attempt%2)*2 - 1)*(std::ceil(attempt/2.0)*0.05);
-    double ry = std::atan2(y, x);
+    double pitch_delta1 = (z > 0.0 ? -M_PI_2*(z/MAX_HEIGHT) : 0.0);
+    double pitch_delta2 = ((attempt%2)*2 - 1)*(std::ceil(attempt/2.0)*0.05);
+    ROS_DEBUG("[arm controller] Pitch high target correction: %f;  random variation: %f", pitch_delta1, pitch_delta2);
+
+    double rp = (M_PI_2 - std::asin((d - 0.1)/0.22)) + pitch_delta1 + pitch_delta2;
+    double ry = mtk::heading(target.pose);
     double rr = 0.0;
     target.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(rr, rp, ry);
 
@@ -157,12 +177,12 @@ protected:
       // a bit extra to compensate the effect of the arm's backlash in the height of the gripper over the table
       double z_delta1 = std::abs(std::cos(rp))/50.0;
       double z_delta2 = z_backlash;
-      ROS_DEBUG("[pick and place] Z increase:  %f  +  %f  +  %f", target.pose.position.z, z_delta1, z_delta2);
+      ROS_DEBUG("[arm controller] Z increases:  %f  +  %f  +  %f", target.pose.position.z, z_delta1, z_delta2);
       target.pose.position.z += z_delta1;
       target.pose.position.z += z_delta2;
     }
 
-    ROS_DEBUG("[pick and place] Target pose [%s] [d: %.2f]", mtk::pose2str3D(target.pose).c_str(), d);
+    ROS_DEBUG("[arm controller] Target pose [%s] [d: %.2f]", mtk::pose2str3D(target.pose).c_str(), d);
     target_pose_pub.publish(target);
 
     return true;
@@ -244,12 +264,12 @@ protected:
     }
     catch (tf::InvalidArgument& e)
     {
-      ROS_ERROR("[pick and place] Transformed pose has invalid orientation: %s", e.what());
+      ROS_ERROR("[arm controller] Transformed pose has invalid orientation: %s", e.what());
       return false;
     }
     catch (tf::TransformException& e)
     {
-      ROS_ERROR("[pick and place] Could not get sensor to arm transform: %s", e.what());
+      ROS_ERROR("[arm controller] Could not get sensor to arm transform: %s", e.what());
       return false;
     }
   }
@@ -262,10 +282,10 @@ protected:
    */
   bool setGripper(float opening, bool wait_for_complete = true)
   {
-    ROS_DEBUG("[move to target] Set gripper opening to %f", opening);
+    ROS_DEBUG("[arm controller] Set gripper opening to %f", opening);
     if (gripper().setJointValueTarget("gripper_joint", opening) == false)
     {
-      ROS_ERROR("[move to target] Set gripper opening to %f failed", opening);
+      ROS_ERROR("[arm controller] Set gripper opening to %f failed", opening);
       return false;
     }
 
@@ -277,7 +297,7 @@ protected:
     }
     else
     {
-      ROS_ERROR("[move to target] Set gripper opening failed (error %d)", result.val);
+      ROS_ERROR("[arm controller] Set gripper opening failed (error %d)", result.val);
       return false;
     }
   }
