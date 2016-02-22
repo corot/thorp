@@ -18,34 +18,12 @@
 					<folderInfo id="cdt.managedbuild.toolchain.gnu.base.1449558327.1393247695" name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.base.635171341" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.base">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.target.gnu.platform.base.671344357" name="Debug Platform" osList="linux,hpux,aix,qnx" superClass="cdt.managedbuild.target.gnu.platform.base"/>
-							<builder id="cdt.managedbuild.target.gnu.builder.base.730266703" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.base">
-								<outputEntries>
-									<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="outputPath" name=""/>
-								</outputEntries>
-							</builder>
+							<builder id="cdt.managedbuild.target.gnu.builder.base.730266703" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1380821366" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.860751002" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
-								<option id="gnu.cpp.compiler.option.include.paths.1506443484" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="/home/jorge/workspaces/thorp/devel/include"/>
-									<listOptionValue builtIn="false" value="/home/jorge/workspaces/turtlebot/devel/include"/>
-									<listOptionValue builtIn="false" value="/home/jorge/workspaces/ork/devel/include"/>
-									<listOptionValue builtIn="false" value="/home/jorge/workspaces/moveit/devel/include"/>
-									<listOptionValue builtIn="false" value="/home/jorge/workspaces/navigation/devel/include"/>
-									<listOptionValue builtIn="false" value="/home/jorge/workspaces/rviz/devel/include"/>
-									<listOptionValue builtIn="false" value="/opt/ros/indigo/include"/>
-								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1141077969" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.498091373" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
-								<option id="gnu.c.compiler.option.include.paths.493309655" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="/home/jorge/workspaces/thorp/devel/include"/>
-									<listOptionValue builtIn="false" value="/home/jorge/workspaces/turtlebot/devel/include"/>
-									<listOptionValue builtIn="false" value="/home/jorge/workspaces/ork/devel/include"/>
-									<listOptionValue builtIn="false" value="/home/jorge/workspaces/moveit/devel/include"/>
-									<listOptionValue builtIn="false" value="/home/jorge/workspaces/navigation/devel/include"/>
-									<listOptionValue builtIn="false" value="/home/jorge/workspaces/rviz/devel/include"/>
-									<listOptionValue builtIn="false" value="/opt/ros/indigo/include"/>
-								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.603355091" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.base.752144590" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.base"/>
@@ -56,23 +34,10 @@
 								</inputType>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.assembler.base.647601625" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.base">
-								<option id="gnu.both.asm.option.include.paths.1974007916" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="/home/jorge/workspaces/thorp/devel/include"/>
-									<listOptionValue builtIn="false" value="/home/jorge/workspaces/turtlebot/devel/include"/>
-									<listOptionValue builtIn="false" value="/home/jorge/workspaces/ork/devel/include"/>
-									<listOptionValue builtIn="false" value="/home/jorge/workspaces/moveit/devel/include"/>
-									<listOptionValue builtIn="false" value="/home/jorge/workspaces/navigation/devel/include"/>
-									<listOptionValue builtIn="false" value="/home/jorge/workspaces/rviz/devel/include"/>
-									<listOptionValue builtIn="false" value="/opt/ros/indigo/include"/>
-								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.810849250" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
 						</toolChain>
 					</folderInfo>
-					<sourceEntries>
-						<entry excluding="lib|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
-					</sourceEntries>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
@@ -81,14 +46,8 @@
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
 		<project id="thorp_toolkit.null.986678864" name="thorp_toolkit"/>
 	</storageModule>
-	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.1449558327;cdt.managedbuild.toolchain.gnu.base.1449558327.1393247695;cdt.managedbuild.tool.gnu.c.compiler.base.498091373;cdt.managedbuild.tool.gnu.c.compiler.input.603355091">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.1449558327;cdt.managedbuild.toolchain.gnu.base.1449558327.1393247695;cdt.managedbuild.tool.gnu.cpp.compiler.base.860751002;cdt.managedbuild.tool.gnu.cpp.compiler.input.1141077969">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
 	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 </cproject>
