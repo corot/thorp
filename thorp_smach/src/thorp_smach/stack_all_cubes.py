@@ -18,34 +18,38 @@ import geometry_msgs.msg as geometry_msgs
 from actionlib import *
 from actionlib_msgs.msg import *
 
+
 class GetDetectedCubes(smach.State):
     ''' Check for the object detection result to extract only the cubes and select one as the stack base '''
     def __init__(self):
         ''' '''
         smach.State.__init__(self, outcomes=['succeeded', 'retry'],
-                                   input_keys=['objects', 'object_names', 'arm_ref_frame', 'base_cube_name', 'other_cubes'],
+                                   input_keys=['objects', 'object_names', 'arm_ref_frame'],
                                    output_keys=['base_cube_pose', 'base_cube_name', 'other_cubes'])
 
     def execute(self, userdata):
-        if len(userdata.objects) > 1:
-            best_aligned_heading = math.pi
-            for obj in userdata.objects:
-                if not obj.id.startswith('cube'):
-                    continue
-                obj_pose = ttk.get_pose_from_co(obj, stamped=True)
-                ttk.transform_pose(userdata.arm_ref_frame, obj_pose)
-                if ttk.distance_2d(obj_pose.pose) > 0.3:
-                    rospy.logdebug("'%s' is out of reach (%d > %d)",  obj.id, ttk.distance_2d(obj_pose.pose), 0.3)
-                    continue
-                obj_heading = ttk.heading(obj_pose.pose)
-                if abs(obj_heading) < abs(best_aligned_heading):
-                    best_aligned_heading = obj_heading
-                    userdata.base_cube_pose = obj_pose
-                    userdata.base_cube_name = obj.id
-                userdata.other_cubes.append(obj.id)
-            userdata.other_cubes.remove(userdata.base_cube_name)
-            return 'succeeded'
-        return 'retry'
+        # Compose a list containing id, pose, distance and heading for all cubes within arm reach
+        objects = []
+        for obj in userdata.objects:
+            if not obj.id.startswith('cube'):
+                continue
+            obj_pose = ttk.get_pose_from_co(obj, stamped=True)
+            obj_pose = ttk.transform_pose(userdata.arm_ref_frame, obj_pose)
+            distance = ttk.distance_2d(obj_pose.pose)
+            if distance > 0.3:
+                rospy.logdebug("'%s' is out of reach (%d > %d)",  obj.id, distance, 0.3)
+                continue
+            heading = ttk.heading(obj_pose.pose)
+            objects.append((obj.id, obj_pose, distance, heading))
+        # Check if we have at least 2 cubes to stack 
+        if len(objects) < 2:
+            return 'retry'
+        # Sort them by increasing heading; we stack over the one most in front of the arm, called base
+        objects = sorted(objects, key=lambda x: abs(x[-1]))
+        userdata.base_cube_name = objects[0][0]
+        userdata.base_cube_pose = objects[0][1]
+        userdata.other_cubes = [str(obj[0]) for obj in objects[1:]]
+        return 'succeeded'
 
 class ObjDetectedCondition(smach.State):
     ''' Check for the object detection result to retry if no objects where detected '''
@@ -98,27 +102,22 @@ rospy.init_node('stack_all_cubes_smach')
 sm = smach.StateMachine(outcomes=['stop', 'error', 'aborted', 'preempted'],
                         input_keys = ['user_command'], output_keys = ['ucmd_outcome'])
 with sm:
-    ''' User data '''
+    ''' User data at startup '''
     sm.userdata.user_command   = thorp_msgs.UserCommandGoal()
     sm.userdata.ucmd_outcome   = thorp_msgs.UserCommandResult()
     sm.userdata.od_attempt     = 0
     sm.userdata.arm_ref_frame  = rospy.get_param('~arm_ctrl_ref_frame', 'arm_base_link')
     sm.userdata.output_frame   = rospy.get_param('~rec_objects_frame', 'map')
-    sm.userdata.objects        = []
-    sm.userdata.object_names   = []
-    sm.userdata.object_name    = ''
-    sm.userdata.base_cube_pose = None
-    sm.userdata.base_cube_name = ''
-    sm.userdata.other_cubes    = []
     sm.userdata.cube_height    = 0.025  # TODO get from Collision object!
-    sm.userdata.pick_pose      = geometry_msgs.PoseStamped()
-    sm.userdata.place_pose     = geometry_msgs.PoseStamped()
     sm.userdata.named_pose_target_type = thorp_msgs.MoveToTargetGoal.NAMED_TARGET
     sm.userdata.arm_folded_named_pose = 'resting'
     sm.userdata.close_gripper  = control_msgs.GripperCommand()
     sm.userdata.close_gripper.position = 0.0
     sm.userdata.open_gripper   = control_msgs.GripperCommand()
     sm.userdata.open_gripper.position = 0.05
+    
+    # Other fields created at runtime are objects, object_names, object_name, base_cube_name, base_cube_pose and other_cubes
+
 
     smach.StateMachine.add('ExecuteUserCommand',
                            ExecuteUserCommand(),
@@ -198,21 +197,17 @@ with sm:
                                         'aborted':'error'})
 
         
-    # Stack cubes sub state machine; iterates over the detected cubes and stack them over the one most in front of the arm
-#     sc_sm = smach.StateMachine(outcomes = ['succeeded','preempted','aborted'],
-#                                input_keys=['objects', 'object_names', 'arm_ref_frame'],
-#                                output_keys=[])
-#     with sc_sm:
     smach.StateMachine.add('GetDetectedCubes',
                            GetDetectedCubes(),
                            remapping={'object_names':'object_names'},
                            transitions={'succeeded':'StackCubes',
                                         'retry':'ObjectDetection'})
 
+    # Stack cubes sub state machine; iterates over the detected cubes and stack them over the one most in front of the arm
     sc_it = smach.Iterator(outcomes = ['succeeded','preempted','aborted'],
                            input_keys = ['base_cube_pose', 'base_cube_name', 'other_cubes', 'cube_height'],
-                           it = sm.userdata.other_cubes,
                            output_keys = [],
+                           it = lambda: sm.userdata.other_cubes,  # must be a lambda because we destroy the list
                            it_label = 'object_name',
                            exhausted_outcome = 'succeeded')
     with sc_it:
