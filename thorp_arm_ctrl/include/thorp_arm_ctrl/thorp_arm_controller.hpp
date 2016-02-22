@@ -35,6 +35,7 @@
 #include <tf/transform_listener.h>
 
 // auxiliary libraries
+#include <thorp_toolkit/common.hpp>
 #include <yocs_math_toolkit/common.hpp>
 #include <yocs_math_toolkit/geometry.hpp>
 
@@ -130,22 +131,22 @@ protected:
     // We always work relative to the arm base, so roll/pitch/yaw angles calculation make sense
     if (target.header.frame_id != arm_ref_frame)
     {
-      transformPose(target.header.frame_id, arm_ref_frame, target, target);
+      thorp_toolkit::transformPose(target.header.frame_id, arm_ref_frame, target, target);
     }
 
-//    rosrun  tf tf_echo /arm_base_link /arm_shoulder_lift_servo_link
-//    At time 1456156899.841
-//    - Translation: [0.000, -0.000, 0.060]
-//    - Rotation: in Quaternion [0.000, 0.000, 0.000, 1.000]
-//                in RPY (radian) [0.000, 0.000, 0.000]
-//                in RPY (degree) [0.000, 0.000, 0.000]
-
-
+    // We work on arm_ref_frame, but it's useful to set z relative to arm_shoulder_lift_servo_link, to
+    // calculate the target 3D distance and the high target correction, as that's the arm's operation
+    // plane (the height at which it can reach further), 6cm above arm_base_link. I got it with:
+    //    rosrun  tf tf_echo /arm_base_link /arm_shoulder_lift_servo_link
+    //    At time 1456156899.841
+    //    - Translation: [0.000, -0.000, 0.060]
+    //    - Rotation: in Quaternion [0.000, 0.000, 0.000, 1.000]
+    //                in RPY (radian) [0.000, 0.000, 0.000]
+    //                in RPY (degree) [0.000, 0.000, 0.000]
     double x = target.pose.position.x;
     double y = target.pose.position.y;
     double z = target.pose.position.z - 0.06;
     double d = sqrt(x*x + y*y + z*z);
-    ///double d = mtk::distance3D(target.pose);
     if (d > MAX_DISTANCE)
     {
       // Maximum reachable distance by the turtlebot arm is 30 cm, but above twenty something the arm makes
@@ -250,29 +251,6 @@ protected:
     }
   }
 
-
-  bool transformPose(const std::string& in_frame, const std::string& out_frame,
-                     const geometry_msgs::PoseStamped& in_pose, geometry_msgs::PoseStamped& out_pose)
-  {
-    try
-    {
-      static tf::TransformListener tf_listener_;
-      tf_listener_.waitForTransform(in_frame, out_frame, ros::Time(0.0), ros::Duration(1.0));
-      tf_listener_.transformPose(out_frame, in_pose, out_pose);
-
-      return true;
-    }
-    catch (tf::InvalidArgument& e)
-    {
-      ROS_ERROR("[arm controller] Transformed pose has invalid orientation: %s", e.what());
-      return false;
-    }
-    catch (tf::TransformException& e)
-    {
-      ROS_ERROR("[arm controller] Could not get sensor to arm transform: %s", e.what());
-      return false;
-    }
-  }
 
   /**
    * Set gripper opening.
