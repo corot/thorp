@@ -13,7 +13,7 @@
     <!-- Publish scans from best pose at a max of 10 Hz -->
     <param name="odom_model_type"           value="diff"/>
     <param name="odom_alpha5"               value="0.1"/>
-    <param name="gui_publish_rate"          value="10.0"/>
+    <param name="gui_publish_rate"          value="-1.0"/> <!-- disabled -->
     <param name="laser_max_beams"           value="60"/>
     <param name="laser_max_range"           value="12.0"/>
     <param name="min_particles"             value="500"/>
