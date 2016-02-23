@@ -52,6 +52,7 @@
 
   <node name="thorp_arm_ctrl_server" pkg="thorp_arm_ctrl"
         type="thorp_arm_ctrl_server" output="screen">
+    <param name="arm_ctrl_ref_frame" value="arm_base_link"/>
     <param name="vertical_backlash" value="0.01"/>
   </node>
   
@@ -61,7 +62,7 @@
 
   <node name="object_detection_server" pkg="thorp_obj_rec"
         type="object_detection_server" output="screen">
-    <param name="ork_execute_timeout" value="60.0"/>
+    <param name="ork_execute_timeout" value="5.0"/>
   </node>
   
   <node name="object_information_server" pkg="object_recognition_ros"

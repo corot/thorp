@@ -1,7 +1,7 @@
 <launch>
   <arg name="external_camera" default="false"/>
 
-  <!--  *********** 3D sensor (on/off-board) **********  -->
+  <!--  ********** 3D sensors (on/off-board) **********  -->
 
   <include if="$(arg external_camera)" file="$(find thorp_bringup)/launch/includes/xtion.launch.xml">
     <arg name="camera_name" value="external_camera"/>
@@ -43,7 +43,7 @@
   <!--  *********** Block manipulation demo ***********  -->
 
   <node name="block_detection_action_server" pkg="turtlebot_arm_block_manipulation" type="block_detection_action_server" output="screen">
-    <rosparam param="table_pose">[0.09, 0.0, 0.015]</rosparam>
+    <rosparam param="table_pose">[0.09, 0.0, 0.035]</rosparam>
     <remap if="$(arg external_camera)" from="/camera/depth_registered/points" to="/external_camera/depth_registered/points"/>
     <remap unless="$(arg external_camera)" from="/camera/depth_registered/points" to="/xtion/depth_registered/points"/>
   </node>
@@ -59,8 +59,8 @@
     <param name="arm_link" value="/arm_base_link"/>
     <param name="gripper_open" value="0.045"/>
     <param name="gripper_closed" value="0.022"/>
-    <param name="z_up" value="0.08"/>
-    <param name="table_height" value="0.015"/>
+    <param name="z_up" value="0.1"/>
+    <param name="table_height" value="0.035"/>
     <param name="block_size" value="0.025"/>
   </node>
 
