@@ -3,6 +3,8 @@
 	<name>thorp_smach</name>
 	<comment></comment>
 	<projects>
+		<project>thorp_msgs</project>
+		<project>thorp_toolkit</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
