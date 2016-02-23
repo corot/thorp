@@ -80,6 +80,13 @@ private:
   bool moveArmTo(const std::string& target);
 
   /**
+   * Move arm to a given configuration.
+   * @param target joint state configuration to achieve
+   * @return True of success, false otherwise
+   */
+  bool moveArmTo(const sensor_msgs::JointState& target);
+
+  /**
    * Move arm to a target pose. Only position coordinates are taken into account; the
    * orientation is calculated according to the direction and distance to the target.
    * @param target Pose target to achieve
