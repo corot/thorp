@@ -128,10 +128,15 @@ protected:
       target_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("target_pose", 1, true);
     }
 
-    // We always work relative to the arm base, so roll/pitch/yaw angles calculation make sense
+    // We always work relative to the arm base, so we can calculate meaningful roll/pitch/yaw angles; as
+    // given values are ignored, replace them with an identity quaternion to allow position-only targets
     if (target.header.frame_id != arm_ref_frame)
     {
-      thorp_toolkit::transformPose(target.header.frame_id, arm_ref_frame, target, target);
+      // Target's timestamp is irrelevant, and can trigger a TransformException if very recent; zero it!
+      target.header.stamp = ros::Time(0.0);
+      tf::quaternionTFToMsg(tf::createIdentityQuaternion(), target.pose.orientation);
+      if (!thorp_toolkit::transformPose(target.header.frame_id, arm_ref_frame, target, target))
+        return false;
     }
 
     // We work on arm_ref_frame, but it's useful to set z relative to arm_shoulder_lift_servo_link, to
@@ -176,7 +181,7 @@ protected:
     {
       // Slightly increase z proportionally to pitch to avoid hitting the table with the lower gripper corner and
       // a bit extra to compensate the effect of the arm's backlash in the height of the gripper over the table
-      double z_delta1 = std::abs(std::cos(rp))/50.0;
+      double z_delta1 = (1.0 - std::abs(std::sin(rp)))/(10.0*M_PI_2);
       double z_delta2 = z_backlash;
       ROS_DEBUG("[arm controller] Z increases:  %f  +  %f  +  %f", target.pose.position.z, z_delta1, z_delta2);
       target.pose.position.z += z_delta1;

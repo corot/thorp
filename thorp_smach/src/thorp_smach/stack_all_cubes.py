@@ -7,13 +7,10 @@ import smach_ros
 
 import thorp_toolkit as ttk
 
-import std_msgs.msg as std_msgs
 import std_srvs.srv as std_srvs
 import thorp_msgs.msg as thorp_msgs
-import moveit_msgs.msg as moveit_msgs
 import control_msgs.msg as control_msgs
 import arbotix_msgs.srv as arbotix_srvs
-import geometry_msgs.msg as geometry_msgs
 
 from actionlib import *
 from actionlib_msgs.msg import *
@@ -33,7 +30,9 @@ class GetDetectedCubes(smach.State):
         for obj in userdata.objects:
             if not obj.id.startswith('cube'):
                 continue
+            # Object's timestamp is irrelevant, and can trigger a TransformException if very recent; zero it!
             obj_pose = ttk.get_pose_from_co(obj, stamped=True)
+            obj_pose.header.stamp = rospy.Time(0.0)
             obj_pose = ttk.transform_pose(userdata.arm_ref_frame, obj_pose)
             distance = ttk.distance_2d(obj_pose.pose)
             if distance > 0.3:
@@ -223,7 +222,14 @@ with sm:
                                    remapping={'object_name':'object_name'},
                                    transitions={'succeeded':'IncreasePlaceHeight',
                                                 'preempted':'preempted',
-                                                'aborted':'aborted'}) # back to the beginning... we should open the gripper, in case we have picked an object (TODO)
+                                                'aborted':'PickupClearOctomap'}) # back to the beginning... we should open the gripper, in case we have picked an object (TODO)
+
+            smach.StateMachine.add('PickupClearOctomap',
+                                   smach_ros.ServiceState('clear_octomap',
+                                                          std_srvs.Empty),
+                                   transitions={'succeeded':'PickupObject',
+                                                'preempted':'preempted',
+                                                'aborted':'aborted'})
 
             smach.StateMachine.add('IncreasePlaceHeight',
                                    IncreasePlaceHeight(),
@@ -238,7 +244,14 @@ with sm:
                                               'place_pose':'base_cube_pose'},
                                    transitions={'succeeded':'continue',
                                                 'preempted':'preempted',
-                                                'aborted':'aborted'}) # back to the beginning... we should open the gripper, in case we have picked an object (TODO)
+                                                'aborted':'PlaceClearOctomap'}) # back to the beginning... we should open the gripper, in case we have picked an object (TODO)
+
+            smach.StateMachine.add('PlaceClearOctomap',
+                                   smach_ros.ServiceState('clear_octomap',
+                                                          std_srvs.Empty),
+                                   transitions={'succeeded':'PlaceObject',
+                                                'preempted':'preempted',
+                                                'aborted':'aborted'})
 
         smach.Iterator.set_contained_state('', sc_sm, loop_outcomes=['continue'])
 

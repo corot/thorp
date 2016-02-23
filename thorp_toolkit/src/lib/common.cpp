@@ -24,7 +24,7 @@ bool transformPose(const std::string& in_frame, const std::string& out_frame,
   }
   catch (tf::InvalidArgument& e)
   {
-    ROS_ERROR("[thorp toolkit] Transformed pose has invalid orientation: %s", e.what());
+    ROS_ERROR("[thorp toolkit] Pose to transform has invalid orientation: %s", e.what());
     return false;
   }
   catch (tf::TransformException& e)
