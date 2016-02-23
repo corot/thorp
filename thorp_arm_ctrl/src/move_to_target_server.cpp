@@ -61,7 +61,11 @@ void MoveToTargetServer::goalCB()
       result = moveArmTo(goal_->named_target);
       break;
     case thorp_msgs::MoveToTargetGoal::JOINT_STATE:
+      result = moveArmTo(goal_->joint_state);
+      break;
     case thorp_msgs::MoveToTargetGoal::POSE_TARGET:
+      result = moveArmTo(goal_->pose_target);
+      break;
     default:
       ROS_ERROR("[move to target] Move to target of type %d not implemented", goal_->target_type);
       break;
@@ -109,6 +113,28 @@ bool MoveToTargetServer::moveArmTo(const std::string& target)
   }
 }
 
+bool MoveToTargetServer::moveArmTo(const sensor_msgs::JointState& target)
+{
+  int attempts = 0;
+  ROS_DEBUG_STREAM("[move to target] Move arm to target configuration: " << target);
+  if (arm().setJointValueTarget(target) == false)
+  {
+    ROS_ERROR_STREAM("[move to target] Set joint value target failed: " << target);
+    return false;
+  }
+
+  moveit::planning_interface::MoveItErrorCode result = arm().move();
+  if (result)
+  {
+    ROS_INFO("[move to target] Move to joint value target completed");
+    return true;
+  }
+  else
+  {
+    ROS_ERROR("[move to target] Move to joint value target failed: %s", mec2str(result));
+    return false;
+  }
+}
 
 bool MoveToTargetServer::moveArmTo(const geometry_msgs::PoseStamped& target)
 {
@@ -123,37 +149,6 @@ bool MoveToTargetServer::moveArmTo(const geometry_msgs::PoseStamped& target)
     {
       return false;
     }
-//
-//    geometry_msgs::PoseStamped modiff_target = target;
-//
-//
-//    double x = modiff_target.pose.position.x;
-//    double y = modiff_target.pose.position.y;
-//    double z = modiff_target.pose.position.z;
-//    double d = sqrt(x*x + y*y);
-//    if (d > 0.3)
-//    {
-//      // Maximum reachable distance by the turtlebot arm is 30 cm
-//      ROS_ERROR("[move to target] Target pose out of reach [%f > %f]", d, 0.3);
-//      return false;
-//    }
-//    // Pitch is 90 (vertical) at 10 cm from the arm base; the farther the target is, the closer to horizontal
-//    // we point the gripper. Yaw is the direction to the target. We also try some random variations of both to
-//    // increase the chances of successful planning.
-//    double rp = M_PI_2 - std::asin((d - 0.1)/0.205); // 0.205 = arm's max reach - vertical pitch distance + ε
-//    double ry = std::atan2(y, x);
-//
-//    tf::Quaternion q = tf::createQuaternionFromRPY(0.0,
-//                                                   attempts*fRand(-0.05, +0.05) + rp,
-//                                                   attempts*fRand(-0.05, +0.05) + ry);
-//    tf::quaternionTFToMsg(q, modiff_target.pose.orientation);
-//
-//    // Slightly increase z proportionally to pitch to avoid hitting the table with the lower gripper corner
-//    ROS_DEBUG("[move to target] Z increase:  %f  +  %f", modiff_target.pose.position.z, std::abs(std::cos(rp))/50.0);
-//    modiff_target.pose.position.z += std::abs(std::cos(rp))/50.0;
-//
-//    ROS_DEBUG("[move to target] Set pose target [%.2f, %.2f, %.2f] [d: %.2f, p: %.2f, y: %.2f]", x, y, z, d, rp, ry);
-//    target_pose_pub_.publish(modiff_target);
 
     if (arm().setPoseTarget(modiff_target) == false)
     {
@@ -164,7 +159,7 @@ bool MoveToTargetServer::moveArmTo(const geometry_msgs::PoseStamped& target)
     }
 
     moveit::planning_interface::MoveItErrorCode result = arm().move();
-    if (bool(result) == true)
+    if (result)
     {
       ROS_INFO("[move to target] Move to target [%.2f, %.2f, %.2f, %.2f] completed",
                modiff_target.pose.position.x, modiff_target.pose.position.y, modiff_target.pose.position.z,

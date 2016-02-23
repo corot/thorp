@@ -5,9 +5,9 @@ uint8 NAMED_TARGET = 3
 # goal definition
 uint8 target_type
 
-# TODO  sensor_msgs/JointState joint_state
-# TODO  geometry_msgs/PoseStamped pose_target
 string named_target
+sensor_msgs/JointState joint_state
+geometry_msgs/PoseStamped pose_target
 
 ---
 
