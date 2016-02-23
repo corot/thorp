@@ -87,12 +87,18 @@ class ExecuteUserCommand(smach.State):
     ''' Different starts of the SM depending on the command provided when calling
         the actionlib wrapper. TODO: I think this can be done w/o creating a class... '''
     def __init__(self):
-        smach.State.__init__(self, outcomes=['start', 'stop', 'reset', 'fold'],
-                                   input_keys=['user_command'])
+        smach.State.__init__(self, outcomes=['start', 'stop', 'fold', 'invalid_command'],
+                                   input_keys=['user_command'],
+                                   output_keys=['ucmd_outcome'])
 
     def execute(self, ud):
         rospy.loginfo("Executing User Command '%s'", ud['user_command'].command)
-        return ud['user_command'].command
+        if ud['user_command'].command in self.get_registered_outcomes():
+            ud['ucmd_outcome'] = thorp_msgs.UserCommandResult('executing_command')
+            return ud['user_command'].command
+        else:
+            ud['ucmd_outcome'] = thorp_msgs.UserCommandResult('invalid_command')
+            return 'invalid_command'
 
 
 rospy.init_node('stack_all_cubes_smach')
@@ -121,9 +127,10 @@ with sm:
     smach.StateMachine.add('ExecuteUserCommand',
                            ExecuteUserCommand(),
                            transitions={'start':'ObjectDetection', 
-                                        'reset':'ObjectDetection', 
+#                                        'reset':'ObjectDetection', 
                                         'fold':'FoldArm', 
-                                        'stop':'FoldArmAndRelax'})
+                                        'stop':'FoldArmAndRelax',
+                                        'invalid_command':'error'})
 
     # Concurrently fold arm and close the gripper
     fa_cc = smach.Concurrence(outcomes = ['succeeded', 'preempted', 'aborted'],

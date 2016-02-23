@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import sys
 import rospy
 
 import Tkinter as tk
@@ -16,16 +17,20 @@ USER_COMMANDS = {
     'e': "exit"
 }
 
-def on_key_press(event):
+def set_window_text(new_text):
     # Clean text and reinsert the header
     text.delete('1.0', 'end')
     text.insert('end', text_header)
+    text.insert('end', new_text)
+    
+
+def on_key_press(event):
 
     try:
         rospy.loginfo("Key pressed: %s -> command: %s", event.char, USER_COMMANDS[event.char])
         
         # Show the valid command about to execute
-        text.insert('end', "\n\n'%s' command selected" % USER_COMMANDS[event.char])
+        set_window_text("\n\n'%s' command selected" % USER_COMMANDS[event.char])
     
         if USER_COMMANDS[event.char] == 'exit':
             quit_tk()
@@ -37,6 +42,14 @@ def on_key_press(event):
         # Sends the goal to the action server.
         client.send_goal(goal)
 
+        # Waits for the server to finish performing the action.
+        if client.wait_for_result(rospy.Duration(0.5)):
+            # If finished very fast, probably the app doesn't support the selected command
+            if client.get_result().outcome == 'invalid_command':
+                set_window_text("\n\n'%s' command not supported\non '%s' app" \
+                                % (USER_COMMANDS[event.char], app_name))
+        # TODO: provide messages for the other cases!
+        
         # TODO: Maybe I should call this in a separated thread... just for information
         #     # Waits for the server to finish performing the action.
         #     client.wait_for_result()
@@ -52,7 +65,11 @@ def quit_tk():
 
 if __name__ == '__main__':
     try:
-        rospy.init_node('object_manipulation_key_ctrl')
+        if len(sys.argv) > 1:
+            app_name = sys.argv[1]
+            rospy.init_node(app_name + '_key_ctrl')
+        else:
+            rospy.init_node('smach_app_key_ctrl')
         
         # window.mainloop() will block, ignoring Ctrl+C signal, so we stop it manually on ROS shutdown
         rospy.on_shutdown(quit_tk)
