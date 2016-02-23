@@ -48,12 +48,14 @@ def get_pose_from_co(co, stamped=False):
     pose_stamped.header = co.header
     pose_stamped.pose = pose
     return pose_stamped
+
+tf_listener = None
     
 def transform_pose(target_frame, pose_stamped):
-    transform_pose.tf_listener = tf.TransformListener()
-    transform_pose.tf_listener.waitForTransform(target_frame, pose_stamped.header.frame_id,
-                                                rospy.Time(), rospy.Duration(30.0))
-    return transform_pose.tf_listener.transformPose(target_frame, pose_stamped)
-#     if tf_listener.frameExists("/base_link") and tf_listener.frameExists("/map"):
-#         t = tf_listener.getLatestCommonTime("/base_link", "/map")
-#         position, quaternion = tf_listener.lookupTransform("/base_link", "/map", t)
+    global tf_listener
+    if not tf_listener:
+        tf_listener = tf.TransformListener()
+
+    tf_listener.waitForTransform(target_frame, pose_stamped.header.frame_id,
+                                 rospy.Time(), rospy.Duration(30.0))
+    return tf_listener.transformPose(target_frame, pose_stamped)
