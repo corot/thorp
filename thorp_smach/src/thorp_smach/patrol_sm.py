@@ -39,7 +39,7 @@ def main():
         sm.userdata.pose_table_b.pose.orientation.y = 0.0
         sm.userdata.pose_table_b.pose.orientation.z = -0.509
         sm.userdata.pose_table_b.pose.orientation.w = 0.861
-        ''' Korus base pose '''
+        ''' Thorp base pose '''
         sm.userdata.base_position = geometry_msgs.PoseStamped()
 
         smach.StateMachine.add('MoveToTableA',
