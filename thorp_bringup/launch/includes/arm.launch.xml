@@ -18,6 +18,6 @@
     <param name="finger_length" value="0.03"/>
     <param name="min_opening" value="0.001"/>
     <param name="max_opening" value="0.05"/>
-    <param name="stalled_time" value="0.2"/>
+    <param name="stalled_time" value="0.5"/>
   </node>
 </launch>
