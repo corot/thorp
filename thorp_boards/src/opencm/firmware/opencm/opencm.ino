@@ -236,6 +236,11 @@ void loop()
   // process messages
   while (SerialUSB.available() > 0)
   {
+    // Make LED blink to show we are alive
+    static int count = 0;
+    if (++count%200 == 0)
+      toggleLED();
+
     // We need two 0xFF at start of packet
     if (mode == 0) // start of new packet
     {
@@ -597,6 +602,10 @@ void loop()
             }
           }
         }
+      }
+      else if (index + 1 > length)
+      {
+        blink(1);
       }
     }
   }
