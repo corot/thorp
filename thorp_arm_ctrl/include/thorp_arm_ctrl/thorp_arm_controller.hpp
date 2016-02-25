@@ -1,30 +1,4 @@
 /*
- * Copyright (c) 2016, Jorge Santos
- * All Rights Reserved
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of Vanadium Labs LLC nor the names of its
- *       contributors may be used to endorse or promote products derived
- *       from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL VANADIUM LABS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
- * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
- * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
  * Author: Jorge Santos
  */
 
@@ -42,6 +16,11 @@
 // MoveIt!
 #include <moveit/move_group_interface/move_group.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
+
+// Thorp messages
+#include <thorp_msgs/MoveToTargetResult.h>
+#include <thorp_msgs/PickupObjectResult.h>
+#include <thorp_msgs/PlaceObjectResult.h>
 
 
 namespace thorp_arm_ctrl
@@ -161,6 +140,12 @@ protected:
       ROS_ERROR("[arm controller] Target pose out of reach [%f > %f]", d, MAX_DISTANCE);
       return false;
     }
+    if (std::abs(z) > MAX_HEIGHT)
+    {
+      // Maximum reachable height by the turtlebot arm is around +/-20 cm from arm_shoulder_lift_servo_link
+      ROS_ERROR("[arm controller] Target pose out of reach [%f > %f]", std::abs(z), MAX_HEIGHT);
+      return false;
+    }
 
     // Pitch is 90 (vertical) at 10 cm from the arm base; the farther the target is, the closer to horizontal
     // we point the gripper (0.22 = arm's max reach - vertical pitch distance + ε). We also add a correction
@@ -201,7 +186,47 @@ protected:
    */
   const char* mec2str(const moveit::planning_interface::MoveItErrorCode& mec)
   {
-    switch (mec.val)
+    return mec2str(mec.val);
+  }
+
+  /**
+   * Provide a meaningful text for each pickup object error code.
+   * @param pec pickup object error code
+   * @return meaningful text
+   */
+  const char* mec2str(const thorp_msgs::PickupObjectResult& pec)
+  {
+    return mec2str(pec.error_code);
+  }
+
+  /**
+   * Provide a meaningful text for each move to target error code.
+   * @param mec move to target error code
+   * @return meaningful text
+   */
+  const char* mec2str(const thorp_msgs::MoveToTargetResult& mec)
+  {
+    return mec2str(mec.error_code);
+  }
+
+  /**
+   * Provide a meaningful text for each place object error code.
+   * @param pec place object error code
+   * @return meaningful text
+   */
+  const char* mec2str(const thorp_msgs::PlaceObjectResult& pec)
+  {
+    return mec2str(pec.error_code);
+  }
+
+  /**
+   * Provide a meaningful text for MoveIt, pick, place, move arm, etc. error codes.
+   * @param error_code MoveIt, pick, place, etc. error code
+   * @return meaningful text
+   */
+  const char* mec2str(int32_t error_code)
+  {
+    switch (error_code)
     {
       case moveit::planning_interface::MoveItErrorCode::SUCCESS:
         return "success";
@@ -251,11 +276,26 @@ protected:
         return "sensor info stale";
       case moveit::planning_interface::MoveItErrorCode::NO_IK_SOLUTION:
         return "no ik solution";
+
+      case thorp_msgs::PickupObjectResult::OBJECT_NOT_FOUND:
+        return "object not found";
+      case thorp_msgs::PickupObjectResult::OBJECT_POSE_NOT_FOUND:
+        return "object pose not found";
+      case thorp_msgs::PickupObjectResult::OBJECT_SIZE_NOT_FOUND:
+        return "object meshes or primitives not found";
+      case thorp_msgs::PickupObjectResult::INVALID_TARGET_POSE:
+        return "invalid target pose";
+      case thorp_msgs::PickupObjectResult::INVALID_TARGET_TYPE:
+        return "invalid target type";
+      case thorp_msgs::PickupObjectResult::INVALID_NAMED_TARGET:
+        return "invalid named target";
+      case thorp_msgs::PickupObjectResult::INVALID_JOINT_STATE:
+        return "invalid joint state";
+
       default:
         return "unrecognized error code";
     }
   }
-
 
   /**
    * Set gripper opening.

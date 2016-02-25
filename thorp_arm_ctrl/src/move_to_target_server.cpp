@@ -52,32 +52,35 @@ MoveToTargetServer::~MoveToTargetServer()
 void MoveToTargetServer::goalCB()
 {
   ROS_INFO("[move to target] Received goal!");
-  goal_ = as_.acceptNewGoal();
-  bool result = false;
+  
+  thorp_msgs::MoveToTargetGoalConstPtr goal = as_.acceptNewGoal();
+  thorp_msgs::MoveToTargetResult result;
 
-  switch (goal_->target_type)
+  switch (goal->target_type)
   {
     case thorp_msgs::MoveToTargetGoal::NAMED_TARGET:
-      result = moveArmTo(goal_->named_target);
+      result.error_code = moveArmTo(goal->named_target);
       break;
     case thorp_msgs::MoveToTargetGoal::JOINT_STATE:
-      result = moveArmTo(goal_->joint_state);
+      result.error_code = moveArmTo(goal->joint_state);
       break;
     case thorp_msgs::MoveToTargetGoal::POSE_TARGET:
-      result = moveArmTo(goal_->pose_target);
+      result.error_code = moveArmTo(goal->pose_target);
       break;
     default:
-      ROS_ERROR("[move to target] Move to target of type %d not implemented", goal_->target_type);
+      result.error_code = thorp_msgs::MoveToTargetResult::INVALID_TARGET_TYPE;
+      ROS_ERROR("[move to target] Move to target of type %d not implemented", goal->target_type);
       break;
   }
 
-  if (result)
+  result.error_text = mec2str(result);
+  if (result.error_code == moveit_msgs::MoveItErrorCodes::SUCCESS)
   {
-    as_.setSucceeded(result_);
+    as_.setSucceeded(result);
   }
   else
   {
-    as_.setAborted(result_);
+    as_.setAborted(result);
   }
 }
 
@@ -91,92 +94,80 @@ void MoveToTargetServer::preemptCB()
   as_.setPreempted();
 }
 
-bool MoveToTargetServer::moveArmTo(const std::string& target)
+int32_t MoveToTargetServer::moveArmTo(const std::string& target)
 {
   ROS_DEBUG("[move to target] Move arm to '%s' position", target.c_str());
   if (arm().setNamedTarget(target) == false)
   {
     ROS_ERROR("[move to target] Set named target '%s' failed", target.c_str());
-    return false;
+    return thorp_msgs::MoveToTargetResult::INVALID_NAMED_TARGET;
   }
 
   moveit::planning_interface::MoveItErrorCode result = arm().move();
-  if (bool(result) == true)
+  if (result)
   {
-    ROS_INFO("[move to target] Move to target \"%s\" completed", target.c_str());
-    return true;
+    ROS_INFO("[move to target] Move to target '%s' completed", target.c_str());
   }
   else
   {
-    ROS_ERROR("[move to target] Move to target \"%s\" failed (error %d)", target.c_str(), result.val);
-    return false;
+    ROS_ERROR("[move to target] Move to target '%s' failed: %s", target.c_str(), mec2str(result));
   }
+
+  return result.val;
 }
 
-bool MoveToTargetServer::moveArmTo(const sensor_msgs::JointState& target)
+int32_t MoveToTargetServer::moveArmTo(const sensor_msgs::JointState& target)
 {
-  int attempts = 0;
-  ROS_DEBUG_STREAM("[move to target] Move arm to target configuration: " << target);
+  ROS_DEBUG_STREAM("[move to target] Move arm to target configuration:\n" << target);
   if (arm().setJointValueTarget(target) == false)
   {
-    ROS_ERROR_STREAM("[move to target] Set joint value target failed: " << target);
-    return false;
+    ROS_ERROR_STREAM("[move to target] Set joint value target failed:\n" << target);
+    return thorp_msgs::MoveToTargetResult::INVALID_JOINT_STATE;
   }
 
   moveit::planning_interface::MoveItErrorCode result = arm().move();
   if (result)
   {
     ROS_INFO("[move to target] Move to joint value target completed");
-    return true;
   }
   else
   {
     ROS_ERROR("[move to target] Move to joint value target failed: %s", mec2str(result));
-    return false;
   }
+
+  return result.val;
 }
 
-bool MoveToTargetServer::moveArmTo(const geometry_msgs::PoseStamped& target)
+int32_t MoveToTargetServer::moveArmTo(const geometry_msgs::PoseStamped& target)
 {
-  int attempts = 0;
-  ROS_DEBUG("[move to target] Move arm to [%.2f, %.2f, %.2f, %.2f]",
-           target.pose.position.x, target.pose.position.y, target.pose.position.z,
-           tf::getYaw(target.pose.orientation));
-  while (attempts < 5)
+  ROS_DEBUG("[move to target] Move arm to [%s]", mtk::pose2str3D(target.pose).c_str());
+
+  geometry_msgs::PoseStamped modiff_target = target;
+  if (!validateTargetPose(modiff_target, true))
   {
-    geometry_msgs::PoseStamped modiff_target = target;
-    if (!validateTargetPose(modiff_target, true, attempts))
-    {
-      return false;
-    }
-
-    if (arm().setPoseTarget(modiff_target) == false)
-    {
-      ROS_ERROR("[move to target] Set pose target [%.2f, %.2f, %.2f, %.2f] failed",
-                modiff_target.pose.position.x, modiff_target.pose.position.y, modiff_target.pose.position.z,
-                tf::getYaw(modiff_target.pose.orientation));
-      return false;
-    }
-
-    moveit::planning_interface::MoveItErrorCode result = arm().move();
-    if (result)
-    {
-      ROS_INFO("[move to target] Move to target [%.2f, %.2f, %.2f, %.2f] completed",
-               modiff_target.pose.position.x, modiff_target.pose.position.y, modiff_target.pose.position.z,
-               tf::getYaw(modiff_target.pose.orientation));
-      return true;
-    }
-    else
-    {
-      ROS_ERROR("[move to target] Move to target failed at attempt %d: %s",
-                attempts + 1, mec2str(result));
-    }
-    attempts++;
+    return thorp_msgs::MoveToTargetResult::INVALID_TARGET_POSE;
   }
 
-  ROS_ERROR("[move to target] Move to target failed after %d attempts", attempts);
-  return false;
+  if (arm().setPoseTarget(modiff_target) == false)
+  {
+    ROS_ERROR("[move to target] Set pose target [%s] failed", mtk::pose2str3D(modiff_target.pose).c_str());
+    return thorp_msgs::MoveToTargetResult::INVALID_TARGET_POSE;
+  }
+
+  moveit::planning_interface::MoveItErrorCode result = arm().move();
+  if (result)
+  {
+    ROS_INFO("[move to target] Move to target [%s] completed", mtk::pose2str3D(modiff_target.pose).c_str());
+  }
+  else
+  {
+    ROS_ERROR("[move to target] Move to target [%s] failed: %s", mtk::pose2str3D(modiff_target.pose).c_str(),
+              mec2str(result));
+  }
+
+  return result.val;
 }
+
 
 bool MoveToTargetServer::setGripper(float opening, bool wait_for_complete)
 {

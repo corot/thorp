@@ -55,12 +55,17 @@ if __name__ == '__main__':
         print "Result: ",  result
         result = move_to_target_client('resting')
         print "Result: ",  result
-        result = move_to_target_client((0.08, 0.0, 0.01))
-        result = move_to_target_client((0.10, 0.0, 0.01))
-        result = move_to_target_client((0.15, 0.0, 0.01))
-        result = move_to_target_client((0.20, 0.0, 0.01))
-        result = move_to_target_client((0.25, 0.0, 0.01))
-        result = move_to_target_client((0.29, 0.0, 0.01))
+        result = move_to_target_client((0.08, 0.0, 0.101))
+        print "Result: ",  result
+        result = move_to_target_client((0.10, 0.0, 0.101))
+        print "Result: ",  result
+        result = move_to_target_client((0.15, 0.0, 0.101))
+        print "Result: ",  result
+        result = move_to_target_client((0.20, 0.0, 0.101))
+        print "Result: ",  result
+        result = move_to_target_client((0.25, 0.0, 0.101))
+        print "Result: ",  result
+        result = move_to_target_client((0.29, 0.0, 0.101))
         print "Result: ",  result
     except rospy.ROSInterruptException:
         print "program interrupted before completion"

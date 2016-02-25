@@ -6,6 +6,7 @@
 		<project>geometric_shapes</project>
 		<project>moveit_core</project>
 		<project>moveit_ros</project>
+		<project>thorp_toolkit</project>
 		<project>yocs_math_toolkit</project>
 	</projects>
 	<buildSpec>

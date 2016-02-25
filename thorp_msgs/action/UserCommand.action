@@ -5,4 +5,4 @@ string command
 string outcome
 ---
 #feedback
-string status
+string progress

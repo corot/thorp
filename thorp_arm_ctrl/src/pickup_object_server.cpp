@@ -28,8 +28,8 @@
  * Author: Jorge Santos
  */
 
-#include <ros/ros.h>
 #include <tf/tf.h>
+#include <ros/ros.h>
 
 // auxiliary libraries
 #include <yocs_math_toolkit/common.hpp>
@@ -38,7 +38,7 @@
 // MoveIt!
 #include <moveit_msgs/Grasp.h>
 
-
+// Thorp stuff
 #include "thorp_arm_ctrl/pickup_object_server.hpp"
 
 
@@ -48,14 +48,6 @@ namespace thorp_arm_ctrl
 PickupObjectServer::PickupObjectServer(const std::string name) :
   as_(name, false), action_name_(name)
 {
-//  ros::NodeHandle nh("~");
-//
-//  // Read specific pick and place parameters
-//  nh.param("grasp_attach_time", attach_time, 0.8);
-//  nh.param("grasp_detach_time", detach_time, 0.6);
-//  nh.param("vertical_backlash", z_backlash, 0.01);
-//  nh.param("/gripper_controller/max_opening", gripper_open, 0.045);
-
   // Register the goal and feedback callbacks
   as_.registerGoalCallback(boost::bind(&PickupObjectServer::goalCB, this));
   as_.registerPreemptCallback(boost::bind(&PickupObjectServer::preemptCB, this));
@@ -71,9 +63,9 @@ void PickupObjectServer::goalCB()
 {
   ROS_INFO("[pickup object] Received goal!");
 
-  goal_ = as_.acceptNewGoal();
+  thorp_msgs::PickupObjectGoalConstPtr goal = as_.acceptNewGoal();
 
-  arm().setSupportSurfaceName(goal_->support_surf);
+  arm().setSupportSurfaceName(goal->support_surf);
 
   // Allow some leeway in position (meters) and orientation (radians)
   arm().setGoalPositionTolerance(0.001);
@@ -82,13 +74,16 @@ void PickupObjectServer::goalCB()
   // Allow replanning to increase the odds of a solution
   arm().allowReplanning(true);
 
-  if (pickup(goal_->object_name, goal_->support_surf))
+  thorp_msgs::PickupObjectResult result;
+  result.error_code = pickup(goal->object_name, goal->support_surf);
+  result.error_text = mec2str(result);
+  if (result.error_code == moveit_msgs::MoveItErrorCodes::SUCCESS)
   {
-    as_.setSucceeded(result_);
+    as_.setSucceeded(result);
   }
   else
   {
-    as_.setAborted(result_);
+    as_.setAborted(result);
   }
 }
 
@@ -102,22 +97,21 @@ void PickupObjectServer::preemptCB()
   as_.setPreempted();
 }
 
-bool PickupObjectServer::pickup(const std::string& obj_name, const std::string& surface)
+int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::string& surface)
 {
-  // Look for obj_name in the list of available objects
+  // Look for obj_name in the list of collision objects
   std::map<std::string, moveit_msgs::CollisionObject> objects =
       planningScene().getObjects(std::vector<std::string>(1, obj_name));
   if (objects.size() == 0)
   {
-    // Maybe the object's interactive marker name is wrong?
-    ROS_ERROR("[pickup object] Tabletop collision object '%s' not found", obj_name.c_str());
-    return false;
+    ROS_ERROR("[pickup object] Collision object '%s' not found", obj_name.c_str());
+    return thorp_msgs::PickupObjectResult::OBJECT_NOT_FOUND;
   }
 
   if (objects.size() > 1)
   {
     // This should not happen, as object detection tries to provide unique names to all objects...
-    ROS_WARN("[pickup object] More than one (%d) tabletop collision objects with name '%s' found!",
+    ROS_WARN("[pickup object] More than one (%d) collision objects with name '%s' found!",
              objects.size(), obj_name.c_str());
   }
 
@@ -142,8 +136,8 @@ bool PickupObjectServer::pickup(const std::string& obj_name, const std::string& 
     }
     else
     {
-      ROS_ERROR("[pickup object] Tabletop collision object '%s' has no meshes", obj_name.c_str());
-      return false;
+      ROS_ERROR("[pickup object] Collision object '%s' has no meshes", obj_name.c_str());
+      return thorp_msgs::PickupObjectResult::OBJECT_SIZE_NOT_FOUND;
     }
   }
   else if (tco.primitive_poses.size() > 0)
@@ -155,26 +149,28 @@ bool PickupObjectServer::pickup(const std::string& obj_name, const std::string& 
     }
     else
     {
-      ROS_ERROR("[pickup object] Tabletop collision object '%s' has no primitives", obj_name.c_str());
-      return false;
+      ROS_ERROR("[pickup object] Collision object '%s' has no primitives", obj_name.c_str());
+      return thorp_msgs::PickupObjectResult::OBJECT_SIZE_NOT_FOUND;
     }
   }
   else
   {
-    ROS_ERROR("[pickup object] Tabletop collision object '%s' has no mesh/primitive poses", obj_name.c_str());
-    return false;
+    ROS_ERROR("[pickup object] Collision object '%s' has no mesh/primitive poses", obj_name.c_str());
+    return thorp_msgs::PickupObjectResult::OBJECT_POSE_NOT_FOUND;
   }
 
   ROS_INFO("[pickup object] Picking object '%s' with size [%.3f, %.3f, %.3f] at location [%s]...",
            obj_name.c_str(), tco_size[0], tco_size[1], tco_size[2], mtk::point2str2D(tco_pose.pose.position).c_str());
 
   // Try up to PICK_ATTEMPTS grasps with slightly different poses
+  moveit::planning_interface::MoveItErrorCode result;
+
   for (int attempt = 0; attempt < PICK_ATTEMPTS; ++attempt)
   {
     geometry_msgs::PoseStamped p = tco_pose;
     if (!validateTargetPose(p, true, attempt))
     {
-      return false;
+      return thorp_msgs::PickupObjectResult::INVALID_TARGET_POSE;
     }
 
     ROS_DEBUG("[pickup object] Pick attempt %d at pose [%s]...", attempt, mtk::pose2str3D(p).c_str());
@@ -209,18 +205,17 @@ bool PickupObjectServer::pickup(const std::string& obj_name, const std::string& 
 
     std::vector<moveit_msgs::Grasp> grasps(1, g);
 
-    moveit::planning_interface::MoveItErrorCode result = arm().pick(obj_name, grasps);
-    if (result)
+    if ((result = arm().pick(obj_name, grasps)))
     {
       ROS_INFO("[pickup object] Pick successfully completed");
-      return true;
+      return result.val;
     }
 
     ROS_DEBUG("[pickup object] Pick attempt %d failed: %s", attempt, mec2str(result));
   }
 
   ROS_ERROR("[pickup object] Pick failed after %d attempts", PICK_ATTEMPTS);
-  return false;
+  return result.val;
 }
 
 };

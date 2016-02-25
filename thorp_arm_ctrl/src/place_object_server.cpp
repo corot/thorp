@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Jorge Santos
+ * Copyright (c) 2016, Jorge Santos
  * All Rights Reserved
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,9 +36,9 @@
 #include <geometric_shapes/shape_operations.h>
 
 // MoveIt!
-#include <moveit_msgs/Grasp.h>
 #include <moveit_msgs/PlaceLocation.h>
 
+// Thorp stuff
 #include "thorp_arm_ctrl/place_object_server.hpp"
 
 
@@ -63,9 +63,9 @@ void PlaceObjectServer::goalCB()
 {
   ROS_INFO("[place object] Received goal!");
 
-  goal_ = as_.acceptNewGoal();
+  thorp_msgs::PlaceObjectGoalConstPtr goal = as_.acceptNewGoal();
 
-  arm().setSupportSurfaceName(goal_->support_surf);
+  arm().setSupportSurfaceName(goal->support_surf);
 
   // Allow some leeway in position (meters) and orientation (radians)
   arm().setGoalPositionTolerance(0.001);
@@ -74,17 +74,20 @@ void PlaceObjectServer::goalCB()
   // Allow replanning to increase the odds of a solution
   arm().allowReplanning(true);
 
-  if (place(goal_->object_name, goal_->support_surf, goal_->place_pose))
+  thorp_msgs::PlaceObjectResult result;
+  result.error_code = place(goal->object_name, goal->support_surf, goal->place_pose);
+  result.error_text = mec2str(result);
+  if (result.error_code == moveit_msgs::MoveItErrorCodes::SUCCESS)
   {
-    as_.setSucceeded(result_);
+    as_.setSucceeded(result);
   }
   else
   {
     // Ensure we don't retain any object attached to the gripper
-    arm().detachObject(goal_->object_name);
+    arm().detachObject(goal->object_name);
     setGripper(gripper_open, false);
 
-    as_.setAborted(result_);
+    as_.setAborted(result);
   }
 }
 
@@ -98,7 +101,7 @@ void PlaceObjectServer::preemptCB()
   as_.setPreempted();
 }
 
-bool PlaceObjectServer::place(const std::string& obj_name, const std::string& surface,
+int32_t PlaceObjectServer::place(const std::string& obj_name, const std::string& surface,
                               const geometry_msgs::PoseStamped& pose)
 {
   // Look for obj_name in the list of attached objects
@@ -109,7 +112,7 @@ bool PlaceObjectServer::place(const std::string& obj_name, const std::string& su
   {
     // Maybe pick failed; we will not continue because place will surely fail without knowing the attaching pose
     ROS_ERROR("[place object] Attached collision object '%s' not found", obj_name.c_str());
-    return false;
+    return thorp_msgs::PickupObjectResult::OBJECT_NOT_FOUND;
   }
 
   if (objects.size() > 1)
@@ -134,18 +137,20 @@ bool PlaceObjectServer::place(const std::string& obj_name, const std::string& su
   else
   {
     ROS_ERROR("[place object] Attached collision object '%s' has no pose!", obj_name.c_str());
-    return false;
+    return thorp_msgs::PlaceObjectResult::OBJECT_POSE_NOT_FOUND;
   }
 
   ROS_INFO("[place object] Placing object '%s' at pose [%s]...", obj_name.c_str(), mtk::pose2str3D(pose).c_str());
 
   // Try up to PLACE_ATTEMPTS place locations with slightly different poses
+  moveit::planning_interface::MoveItErrorCode result;
+
   for (int attempt = 0; attempt < PLACE_ATTEMPTS; ++attempt)
   {
     geometry_msgs::PoseStamped p = pose;
     if (!validateTargetPose(p, true, attempt))
     {
-      return false;
+      return thorp_msgs::PlaceObjectResult::INVALID_TARGET_POSE;
     }
 
     // MoveGroup::place will transform the provided place pose with the attached body pose, so the object retains
@@ -158,7 +163,7 @@ bool PlaceObjectServer::place(const std::string& obj_name, const std::string& su
     tf::poseMsgToTF(aco_pose, aco_tf);
     tf::poseTFToMsg(place_tf * aco_tf, p.pose);
 
-    ROS_DEBUG("Compensate place pose with the attached object pose [%s]. Results: [%s]",
+    ROS_DEBUG("[place object] Compensate place pose with the attached object pose [%s]. Results: [%s]",
               mtk::pose2str3D(aco_pose).c_str(), mtk::pose2str3D(p.pose).c_str());
 
     ROS_DEBUG("[place object] Place attempt %d at pose [%s]...", attempt, mtk::pose2str3D(p).c_str());
@@ -187,18 +192,17 @@ bool PlaceObjectServer::place(const std::string& obj_name, const std::string& su
 
     std::vector<moveit_msgs::PlaceLocation> locs(1, l);
 
-    moveit::planning_interface::MoveItErrorCode result = arm().place(obj_name, locs);
-    if (result)
+    if ((result = arm().place(obj_name, locs)))
     {
       ROS_INFO("[place object] Place successfully completed");
-      return true;
+      return result.val;
     }
 
     ROS_DEBUG("[place object] Place attempt %d failed: %s", attempt, mec2str(result));
   }
 
   ROS_ERROR("[place object] Place failed after %d attempts", PLACE_ATTEMPTS);
-  return false;
+  return result.val;
 }
 
 };
