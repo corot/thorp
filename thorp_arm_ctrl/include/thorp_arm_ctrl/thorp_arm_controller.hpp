@@ -18,9 +18,7 @@
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 
 // Thorp messages
-#include <thorp_msgs/MoveToTargetResult.h>
-#include <thorp_msgs/PickupObjectResult.h>
-#include <thorp_msgs/PlaceObjectResult.h>
+#include <thorp_msgs/ThorpError.h>
 
 
 namespace thorp_arm_ctrl
@@ -190,33 +188,13 @@ protected:
   }
 
   /**
-   * Provide a meaningful text for each pickup object error code.
-   * @param pec pickup object error code
+   * Provide a meaningful text for each Thorp error code.
+   * @param error Thorp error code
    * @return meaningful text
    */
-  const char* mec2str(const thorp_msgs::PickupObjectResult& pec)
+  const char* mec2str(const thorp_msgs::ThorpError& error)
   {
-    return mec2str(pec.error_code);
-  }
-
-  /**
-   * Provide a meaningful text for each move to target error code.
-   * @param mec move to target error code
-   * @return meaningful text
-   */
-  const char* mec2str(const thorp_msgs::MoveToTargetResult& mec)
-  {
-    return mec2str(mec.error_code);
-  }
-
-  /**
-   * Provide a meaningful text for each place object error code.
-   * @param pec place object error code
-   * @return meaningful text
-   */
-  const char* mec2str(const thorp_msgs::PlaceObjectResult& pec)
-  {
-    return mec2str(pec.error_code);
+    return mec2str(error.code);
   }
 
   /**
@@ -277,19 +255,19 @@ protected:
       case moveit::planning_interface::MoveItErrorCode::NO_IK_SOLUTION:
         return "no ik solution";
 
-      case thorp_msgs::PickupObjectResult::OBJECT_NOT_FOUND:
+      case thorp_msgs::ThorpError::OBJECT_NOT_FOUND:
         return "object not found";
-      case thorp_msgs::PickupObjectResult::OBJECT_POSE_NOT_FOUND:
+      case thorp_msgs::ThorpError::OBJECT_POSE_NOT_FOUND:
         return "object pose not found";
-      case thorp_msgs::PickupObjectResult::OBJECT_SIZE_NOT_FOUND:
+      case thorp_msgs::ThorpError::OBJECT_SIZE_NOT_FOUND:
         return "object meshes or primitives not found";
-      case thorp_msgs::PickupObjectResult::INVALID_TARGET_POSE:
+      case thorp_msgs::ThorpError::INVALID_TARGET_POSE:
         return "invalid target pose";
-      case thorp_msgs::PickupObjectResult::INVALID_TARGET_TYPE:
+      case thorp_msgs::ThorpError::INVALID_TARGET_TYPE:
         return "invalid target type";
-      case thorp_msgs::PickupObjectResult::INVALID_NAMED_TARGET:
+      case thorp_msgs::ThorpError::INVALID_NAMED_TARGET:
         return "invalid named target";
-      case thorp_msgs::PickupObjectResult::INVALID_JOINT_STATE:
+      case thorp_msgs::ThorpError::INVALID_JOINT_STATE:
         return "invalid joint state";
 
       default:

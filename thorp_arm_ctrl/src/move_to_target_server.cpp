@@ -1,30 +1,4 @@
 /*
- * Copyright (c) 2015, Jorge Santos
- * All Rights Reserved
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of Vanadium Labs LLC nor the names of its
- *       contributors may be used to endorse or promote products derived
- *       from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL VANADIUM LABS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
- * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
- * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
  * Author: Jorge Santos
  */
 
@@ -59,22 +33,22 @@ void MoveToTargetServer::goalCB()
   switch (goal->target_type)
   {
     case thorp_msgs::MoveToTargetGoal::NAMED_TARGET:
-      result.error_code = moveArmTo(goal->named_target);
+      result.error.code = moveArmTo(goal->named_target);
       break;
     case thorp_msgs::MoveToTargetGoal::JOINT_STATE:
-      result.error_code = moveArmTo(goal->joint_state);
+      result.error.code = moveArmTo(goal->joint_state);
       break;
     case thorp_msgs::MoveToTargetGoal::POSE_TARGET:
-      result.error_code = moveArmTo(goal->pose_target);
+      result.error.code = moveArmTo(goal->pose_target);
       break;
     default:
-      result.error_code = thorp_msgs::MoveToTargetResult::INVALID_TARGET_TYPE;
+      result.error.code = thorp_msgs::ThorpError::INVALID_TARGET_TYPE;
       ROS_ERROR("[move to target] Move to target of type %d not implemented", goal->target_type);
       break;
   }
 
-  result.error_text = mec2str(result);
-  if (result.error_code == moveit_msgs::MoveItErrorCodes::SUCCESS)
+  result.error.text = mec2str(result.error);
+  if (result.error.code == moveit_msgs::MoveItErrorCodes::SUCCESS)
   {
     as_.setSucceeded(result);
   }
@@ -100,7 +74,7 @@ int32_t MoveToTargetServer::moveArmTo(const std::string& target)
   if (arm().setNamedTarget(target) == false)
   {
     ROS_ERROR("[move to target] Set named target '%s' failed", target.c_str());
-    return thorp_msgs::MoveToTargetResult::INVALID_NAMED_TARGET;
+    return thorp_msgs::ThorpError::INVALID_NAMED_TARGET;
   }
 
   moveit::planning_interface::MoveItErrorCode result = arm().move();
@@ -122,7 +96,7 @@ int32_t MoveToTargetServer::moveArmTo(const sensor_msgs::JointState& target)
   if (arm().setJointValueTarget(target) == false)
   {
     ROS_ERROR_STREAM("[move to target] Set joint value target failed:\n" << target);
-    return thorp_msgs::MoveToTargetResult::INVALID_JOINT_STATE;
+    return thorp_msgs::ThorpError::INVALID_JOINT_STATE;
   }
 
   moveit::planning_interface::MoveItErrorCode result = arm().move();
@@ -145,13 +119,13 @@ int32_t MoveToTargetServer::moveArmTo(const geometry_msgs::PoseStamped& target)
   geometry_msgs::PoseStamped modiff_target = target;
   if (!validateTargetPose(modiff_target, true))
   {
-    return thorp_msgs::MoveToTargetResult::INVALID_TARGET_POSE;
+    return thorp_msgs::ThorpError::INVALID_TARGET_POSE;
   }
 
   if (arm().setPoseTarget(modiff_target) == false)
   {
     ROS_ERROR("[move to target] Set pose target [%s] failed", mtk::pose2str3D(modiff_target.pose).c_str());
-    return thorp_msgs::MoveToTargetResult::INVALID_TARGET_POSE;
+    return thorp_msgs::ThorpError::INVALID_TARGET_POSE;
   }
 
   moveit::planning_interface::MoveItErrorCode result = arm().move();

@@ -1,30 +1,4 @@
 /*
- * Copyright (c) 2015, Jorge Santos
- * All Rights Reserved
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of Vanadium Labs LLC nor the names of its
- *       contributors may be used to endorse or promote products derived
- *       from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL VANADIUM LABS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
- * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
- * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
  * Author: Jorge Santos
  */
 
@@ -75,9 +49,9 @@ void PickupObjectServer::goalCB()
   arm().allowReplanning(true);
 
   thorp_msgs::PickupObjectResult result;
-  result.error_code = pickup(goal->object_name, goal->support_surf);
-  result.error_text = mec2str(result);
-  if (result.error_code == moveit_msgs::MoveItErrorCodes::SUCCESS)
+  result.error.code = pickup(goal->object_name, goal->support_surf);
+  result.error.text = mec2str(result.error.code);
+  if (result.error.code == moveit_msgs::MoveItErrorCodes::SUCCESS)
   {
     as_.setSucceeded(result);
   }
@@ -105,7 +79,7 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
   if (objects.size() == 0)
   {
     ROS_ERROR("[pickup object] Collision object '%s' not found", obj_name.c_str());
-    return thorp_msgs::PickupObjectResult::OBJECT_NOT_FOUND;
+    return thorp_msgs::ThorpError::OBJECT_NOT_FOUND;
   }
 
   if (objects.size() > 1)
@@ -137,7 +111,7 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
     else
     {
       ROS_ERROR("[pickup object] Collision object '%s' has no meshes", obj_name.c_str());
-      return thorp_msgs::PickupObjectResult::OBJECT_SIZE_NOT_FOUND;
+      return thorp_msgs::ThorpError::OBJECT_SIZE_NOT_FOUND;
     }
   }
   else if (tco.primitive_poses.size() > 0)
@@ -150,13 +124,13 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
     else
     {
       ROS_ERROR("[pickup object] Collision object '%s' has no primitives", obj_name.c_str());
-      return thorp_msgs::PickupObjectResult::OBJECT_SIZE_NOT_FOUND;
+      return thorp_msgs::ThorpError::OBJECT_SIZE_NOT_FOUND;
     }
   }
   else
   {
     ROS_ERROR("[pickup object] Collision object '%s' has no mesh/primitive poses", obj_name.c_str());
-    return thorp_msgs::PickupObjectResult::OBJECT_POSE_NOT_FOUND;
+    return thorp_msgs::ThorpError::OBJECT_POSE_NOT_FOUND;
   }
 
   ROS_INFO("[pickup object] Picking object '%s' with size [%.3f, %.3f, %.3f] at location [%s]...",
@@ -170,7 +144,7 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
     geometry_msgs::PoseStamped p = tco_pose;
     if (!validateTargetPose(p, true, attempt))
     {
-      return thorp_msgs::PickupObjectResult::INVALID_TARGET_POSE;
+      return thorp_msgs::ThorpError::INVALID_TARGET_POSE;
     }
 
     ROS_DEBUG("[pickup object] Pick attempt %d at pose [%s]...", attempt, mtk::pose2str3D(p).c_str());

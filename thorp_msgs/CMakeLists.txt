@@ -4,6 +4,7 @@ find_package(catkin REQUIRED COMPONENTS std_msgs moveit_msgs geometry_msgs actio
 
 add_message_files(DIRECTORY msg
                       FILES KeyboardInput.msg
+                            ThorpError.msg
                  )
 
 add_action_files(DIRECTORY action
