@@ -4,6 +4,7 @@
 	<comment></comment>
 	<projects>
 		<project>moveit_ros</project>
+		<project>thorp_toolkit</project>
 		<project>yocs_math_toolkit</project>
 	</projects>
 	<buildSpec>
