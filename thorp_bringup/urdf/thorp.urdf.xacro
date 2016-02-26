@@ -40,20 +40,20 @@
        always with the same gripper orientation, preventing the inefficient full turns.
        TODO: I don't think we need to be that restrictive; do a better problem assessment.
        We also use a deliberately low joints velocity limit to improve safety and precision;
-       The physical limit of the AX-12 is 114 rpm (684 deg/s) -->
+       the physical limit of the AX-12 is 114 rpm (684 deg/s) -->
   <xacro:property name="joints_vlimit" value="0.8"/>
-<!--
-  <xacro:property name="pan_llimit" value="-2.617"/>
-  <xacro:property name="pan_ulimit" value=" 2.617"/>
- -->
+
+  <!-- <xacro:property name="pan_llimit" value="-2.617"/> -->
+  <!-- <xacro:property name="pan_ulimit" value=" 2.617"/> -->
   <xacro:property name="pan_llimit" value="${-M_PI/2}"/>
   <xacro:property name="pan_ulimit" value="${+M_PI/2}"/>
-  <xacro:property name="shoulder_llimit" value="-2.617"/>
-  <xacro:property name="shoulder_ulimit" value=" 2.617"/>
-  <xacro:property name="elbow_llimit" value=" 0.0"/>
-  <xacro:property name="elbow_ulimit" value=" 2.617"/>
-  <xacro:property name="wrist_llimit" value="-1.745"/>
-  <xacro:property name="wrist_ulimit" value=" 1.745"/>
+  <xacro:property name="shoulder_llimit" value="-2.617"/>  <!-- -150 deg, but physical limit is -2.18 rad (-125 deg) -->
+  <xacro:property name="shoulder_ulimit" value=" 2.617"/>  <!-- +150 deg, but physical limit is +2.18 rad (+125 deg) -->
+  <!-- <xacro:property name="elbow_llimit" value=" -2.617"/> -->
+  <xacro:property name="elbow_llimit" value=" 0.0"/>       <!-- -150 deg, but physical limit is -2.41 rad (-138 deg) -->
+  <xacro:property name="elbow_ulimit" value=" 2.617"/>     <!-- +150 deg, but physical limit is +2.41 rad (+138 deg) -->
+  <xacro:property name="wrist_llimit" value="-1.745"/>     <!-- -100 deg -->
+  <xacro:property name="wrist_ulimit" value=" 1.745"/>     <!-- +100 deg -->
 
   <turtlebot_arm parent="plate_top_link" color="White" gripper_color="Black"
                  pincher_gripper="false" turtlebot_gripper="true">
