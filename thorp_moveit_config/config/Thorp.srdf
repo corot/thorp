@@ -56,6 +56,11 @@
     <disable_collisions link1="arm_shoulder_F10_1_link" link2="arm_mount_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F10_2_link" link2="arm_mount_link" reason="Never" />
 
+    <!--Manually added to prevent collisions produced when arm is relaxed in resting state and some
+        links get in contact. These must be collisions unlikely to happen during normal operation -->
+    <disable_collisions link1="arm_shoulder_lift_link" link2="gripper_active_link" reason="Never" />
+
+    <!-- Automatically added by MoveIt! Setup Assistant -->
     <disable_collisions link1="arm_elbow_F10_0_link" link2="arm_elbow_F10_1_link" reason="Adjacent" />
     <disable_collisions link1="arm_elbow_F10_0_link" link2="arm_elbow_F10_2_link" reason="Never" />
     <disable_collisions link1="arm_elbow_F10_0_link" link2="arm_elbow_F3_0_link" reason="Never" />
