@@ -1,12 +1,12 @@
 - git: {local-name: thorp, uri: 'https://github.com/corot/thorp.git',
     version: master}
 - git: {local-name: softkinetic, uri: 'https://github.com/corot/softkinetic.git',
-    version: indigo-devel}
+    version: master}
 - git: {local-name: kobuki-x, uri: 'https://github.com/yujinrobot/kobuki-x.git',
-    version: indigo-devel}
+    version: waiterbot-indigo}
 - git: {local-name: turtlebot_arm, uri: 'https://github.com/corot/turtlebot_arm.git',
     version: indigo-devel}
 - git: {local-name: arbotix_ros, uri: 'https://github.com/corot/arbotix_ros.git',
     version: indigo-devel}
 - git: {local-name: navigation_layers, uri: 'https://github.com/corot/navigation_layers.git',
-    version: indigo}
+    version: master}
