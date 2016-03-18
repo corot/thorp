@@ -20,7 +20,7 @@ sudo pip install -U yujin_tools
 #### Installation ####
 
 ```
-yujin_init_workspace -j10 --track=indigo ~/thorp https://raw.github.com/yujinrobot/kobuki-x/hydro-devel/thorp_bringup/thorp_bringup.rosinstall
+yujin_init_workspace -j10 --track=indigo ~/thorp https://raw.githubusercontent.com/corot/thorp/master/thorp.rosinstall
 cd ~/thorp
 source /opt/ros/indigo/setup.bash
 rosdep update
