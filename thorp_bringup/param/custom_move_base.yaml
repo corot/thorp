@@ -73,8 +73,9 @@ local_costmap:
     mark_threshold:       0.98
     no_readings_timeout:  2.0
     clear_on_max_reading: true
-    ns:     /mobile_base/sensors/sonars
-    topics: ["m90_IGNORE", "m72", "m54", "m36", "m18", "0", "p18", "p36", "p54", "p72", "p90_IGNORE"]
+    ns:     /mobile_base/sensors
+    topics: ["sonars/m90_IGNORE, snars/m72, sonars/m54, sonars/m36, sonars/m18, sonars/0, sonars/p18, sonars/p36, sonars/p54, sonars/p72, sonars/p90_IGNORE,
+             infrared/arm, infrared/l155, infrared/l180, infrared/r180, infrared/r155]
 
 
 
