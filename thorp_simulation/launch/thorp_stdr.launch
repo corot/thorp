@@ -9,11 +9,17 @@
  -->
 
 <launch>
-<!--   <arg name="laser_topic" default="robot0/laser_0"/> default laser topic in stdr for 1 robot
+<!-- 
+  <arg name="laser_topic" default="robot0/laser_0"/> default laser topic in stdr for 1 robot
   <arg name="odom_topic" default="robot0/odom"/> -->
-  <arg name="odom_frame_id" default="map"/> 
+
+  <!-- Frames: I subvert stdr frames system to into our old good map -> odom -> base, but here odom
+       is named map_static and base robot0. To make this work, I must prevent stdr_server to publish
+       map -> map_static, as amcl already does:
+       Comment https://github.com/stdr-simulator-ros-pkg/stdr_simulator/blob/indigo-devel/stdr_server/src/map_server.cpp#L93  -->
+  <arg name="odom_frame_id" default="map_static"/> 
   <arg name="base_frame_id" default="robot0"/>  
-  <arg name="global_frame_id" default="world"/> 
+  <arg name="global_frame_id" default="map"/> 
   <!-- Name of the map to use (without path nor extension) and initial position -->
   <arg name="map_file"       default="$(env TURTLEBOT_STDR_MAP_FILE)"/>
   <arg name="initial_pose_x" default="2.0"/>
@@ -24,11 +30,17 @@
 
   <!--  ******************** STDR ********************  -->
   <include file="$(find stdr_robot)/launch/robot_manager.launch"/>
-<!--  
+
+<!--
+cannot use because if so data is not visualized in the simulator
+TODO: I can recover this if I can rename the robot and once I start using a thorp namespace:
+   https://github.com/corot/thorp/issues/5
   <node pkg="nodelet" type="nodelet" name="robot_manager" args="manager">
     <remap from="robot0/odom" to="/odom"/>
     <remap from="robot0/laser" to="/scan"/>
     <remap from="robot0/cmd_vel" to="mobile_base/commands/velocity"/>
+    
+    LV-MaxSonar-EZ2 ultrasound sensors
     <remap from="robot0/sonars/m90" to="mobile_base/sensors/sonars/m90"/>
     <remap from="robot0/sonars/m72" to="mobile_base/sensors/sonars/m72"/>
     <remap from="robot0/sonars/m54" to="mobile_base/sensors/sonars/m54"/>
@@ -40,7 +52,15 @@
     <remap from="robot0/sonars/p54" to="mobile_base/sensors/sonars/p54"/>
     <remap from="robot0/sonars/p72" to="mobile_base/sensors/sonars/p72"/>
     <remap from="robot0/sonars/p90" to="mobile_base/sensors/sonars/p90"/>
-  </node> -->
+    
+    Sharp_GP2Y0A21_IR sensors
+    <remap from="robot0/infrared/arm"  to="mobile_base/sensors/infrared/arm" />
+    <remap from="robot0/infrared/l155" to="mobile_base/sensors/infrared/l155"/>
+    <remap from="robot0/infrared/l180" to="mobile_base/sensors/infrared/l180"/>
+    <remap from="robot0/infrared/r180" to="mobile_base/sensors/infrared/r180"/>
+    <remap from="robot0/infrared/r155" to="mobile_base/sensors/infrared/r155"/>
+  </node>
+ -->
   <!-- Run STDR server with a predefined map -->
   <node pkg="stdr_server" type="stdr_server_node" name="stdr_server" output="screen" args="$(arg map_file)"/>
   <!-- Spawn new robot at init position 2 2 0 -->
@@ -51,7 +71,7 @@
   <!-- Run the relay to duplicate STDR topics with common Thorp names -->
   <include file="$(find thorp_simulation)/launch/includes/stdr_relays.launch.xml"/>
 
-  <!-- Connect STDR's robot0 and base_footprint tf trees -->
+  <!-- Connect STDR's thorp and base_footprint tf trees -->
   <node pkg="tf" type="static_transform_publisher" name="fake_global_reference"
         args="0.0 0.0 0.0 0.0 0.0 0.0 robot0 base_footprint 100"/>
   
@@ -72,8 +92,6 @@
 
   <!--  *** Turtlebot 2 move base with custom tweaks **  -->
   <include file="$(find turtlebot_navigation)/launch/includes/move_base.launch.xml">
-<!--     <arg name="odom_topic" value="$(arg odom_topic)"/>
-    <arg name="laser_topic" value="$(arg laser_topic)"/> -->
     <arg name="odom_frame_id"   value="$(arg odom_frame_id)"/>
     <arg name="base_frame_id"   value="$(arg base_frame_id)"/>
     <arg name="global_frame_id" value="$(arg global_frame_id)"/>
