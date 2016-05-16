@@ -10,6 +10,7 @@
 #include <geometric_shapes/shape_operations.h>
 
 // MoveIt!
+#include <moveit/move_group_pick_place_capability/capability_names.h>
 #include <moveit_msgs/PlaceLocation.h>
 
 // Thorp stuff
@@ -20,10 +21,16 @@ namespace thorp_arm_ctrl
 {
 
 PlaceObjectServer::PlaceObjectServer(const std::string name) :
-  as_(name, false), action_name_(name)
+  action_name_(name),
+  as_(name, boost::bind(&PlaceObjectServer::executeCB, this, _1), false),
+  ac_(move_group::PLACE_ACTION, true)
 {
-  // Register the goal and feedback callbacks
-  as_.registerGoalCallback(boost::bind(&PlaceObjectServer::goalCB, this));
+  // Wait for MoveIt! place action server
+  ROS_INFO("[place object] Waiting for MoveIt! place action server...");
+  ac_.waitForServer();
+  ROS_INFO("[place object] Available! Starting our own server...");
+
+  // Register feedback callback for our server; executeCB is run on a separated thread, so it can be cancelled
   as_.registerPreemptCallback(boost::bind(&PlaceObjectServer::preemptCB, this));
   as_.start();
 }
@@ -33,20 +40,10 @@ PlaceObjectServer::~PlaceObjectServer()
   as_.shutdown();
 }
 
-void PlaceObjectServer::goalCB()
+void PlaceObjectServer::executeCB(const thorp_msgs::PlaceObjectGoal::ConstPtr& goal)
 {
-  ROS_INFO("[place object] Received goal!");
-
-  thorp_msgs::PlaceObjectGoalConstPtr goal = as_.acceptNewGoal();
-
-  arm().setSupportSurfaceName(goal->support_surf);
-
-  // Allow some leeway in position (meters) and orientation (radians)
-  arm().setGoalPositionTolerance(0.001);
-  arm().setGoalOrientationTolerance(0.02);
-
-  // Allow replanning to increase the odds of a solution
-  arm().allowReplanning(true);
+  ROS_INFO("[place object] Execute goal: place object '%s' on support surface '%s' at pose [%s]...",
+           goal->object_name.c_str(), goal->support_surf.c_str(), mtk::pose2str3D(goal->place_pose).c_str());
 
   thorp_msgs::PlaceObjectResult result;
   result.error.code = place(goal->object_name, goal->support_surf, goal->place_pose);
@@ -55,29 +52,37 @@ void PlaceObjectServer::goalCB()
   {
     as_.setSucceeded(result);
   }
+  else if (result.error.code == moveit_msgs::MoveItErrorCodes::PREEMPTED)
+  {
+    as_.setPreempted(result);
+  }
   else
   {
-    // Ensure we don't retain any object attached to the gripper
-    arm().detachObject(goal->object_name);
-    setGripper(gripper_open, false);
-
     as_.setAborted(result);
+
+    // Ensure we don't retain any object attached to the gripper
+//    arm().detachObject(goal->object_name);
+  //  setGripper(gripper_open, false);
+
   }
 }
 
 void PlaceObjectServer::preemptCB()
 {
-  ROS_WARN("[place object] %s: Preempted", action_name_.c_str());
+  ROS_WARN("[place object] Action preempted; cancel all movement");
   gripper().stop();
   arm().stop();
-
-  // set the action state to preempted
-  as_.setPreempted();
 }
 
 int32_t PlaceObjectServer::place(const std::string& obj_name, const std::string& surface,
-                              const geometry_msgs::PoseStamped& pose)
+                                 const geometry_msgs::PoseStamped& pose)
 {
+  if (!ac_.isServerConnected())
+  {
+    ROS_ERROR("[place object] MoveIt! place action server not connected");
+    return thorp_msgs::ThorpError::SERVER_NOT_AVAILABLE;
+  }
+
   // Look for obj_name in the list of attached objects
   std::map<std::string, moveit_msgs::AttachedCollisionObject> objects =
       planningScene().getAttachedObjects(std::vector<std::string>(1, obj_name));
@@ -116,16 +121,71 @@ int32_t PlaceObjectServer::place(const std::string& obj_name, const std::string&
 
   ROS_INFO("[place object] Placing object '%s' at pose [%s]...", obj_name.c_str(), mtk::pose2str3D(pose).c_str());
 
+  moveit_msgs::PlaceGoal goal;
+  goal.attached_object_name = obj_name;
+  goal.group_name = arm().getName();
+  goal.allowed_planning_time = arm().getPlanningTime();
+  goal.support_surface_name = surface;
+  goal.allow_gripper_support_collision = true;
+  goal.planning_options.plan_only = false;
+  goal.planning_options.look_around = false;
+  goal.planning_options.replan = true;
+  goal.planning_options.replan_delay = 0.1;
+  goal.planning_options.planning_scene_diff.is_diff = true;
+  goal.planning_options.planning_scene_diff.robot_state.is_diff = true;
+
+  int32_t result = makePlaceLocations(pose, aco_pose, obj_name, surface, goal.place_locations);
+  if (result < 0)
+  {
+    // Error occurred while making grasps...
+    return result;
+  }
+
+  ac_.sendGoal(goal);
+
+  while (!ac_.waitForResult(ros::Duration(0.1)))
+  {
+    ROS_WARN("[place object] NOT");
+    if (as_.isPreemptRequested())
+    {
+      ROS_WARN("[place object] preempt.................................");
+      ac_.cancelAllGoals();
+      ROS_WARN("[place object] Place action preempted    %d", ac_.getResult()->error_code.val);
+      ///return ac_.getResult()->error_code.val;
+      return moveit::planning_interface::MoveItErrorCode::PREEMPTED;
+    }
+  }
+
+  ROS_WARN("[place object] DONE");
+  if (ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+  {
+    ROS_INFO("[place object] Place succeeded!");
+  }
+  else
+  {
+    ROS_ERROR("[place object] Place fail with error code [%d] (%s): %s",
+              ac_.getResult()->error_code.val, ac_.getState().toString().c_str(), ac_.getState().getText().c_str());
+  }
+
+  return ac_.getResult()->error_code.val;
+}
+
+int32_t PlaceObjectServer::makePlaceLocations(const geometry_msgs::PoseStamped& target_pose,
+                                              const geometry_msgs::Pose& attached_obj_pose,
+                                              const std::string& obj_name, const std::string& surface,
+                                              std::vector<moveit_msgs::PlaceLocation>& place_locations)
+{
   // Try up to PLACE_ATTEMPTS place locations with slightly different poses
-  moveit::planning_interface::MoveItErrorCode result;
 
   for (int attempt = 0; attempt < PLACE_ATTEMPTS; ++attempt)
   {
-    geometry_msgs::PoseStamped p = pose;
+    geometry_msgs::PoseStamped p = target_pose;
     if (!validateTargetPose(p, true, attempt))
     {
       return thorp_msgs::ThorpError::INVALID_TARGET_POSE;
     }
+
+    ROS_DEBUG("[place object] Place attempt %d at pose [%s]...", attempt, mtk::pose2str3D(p).c_str());
 
     // MoveGroup::place will transform the provided place pose with the attached body pose, so the object retains
     // the orientation it had when picked. However, with our 4-dofs arm this is infeasible (nor we care about the
@@ -134,13 +194,11 @@ int32_t PlaceObjectServer::place(const std::string& obj_name, const std::string&
     // More details on this issue: https://github.com/ros-planning/moveit_ros/issues/577
     tf::Transform place_tf, aco_tf;
     tf::poseMsgToTF(p.pose, place_tf);
-    tf::poseMsgToTF(aco_pose, aco_tf);
+    tf::poseMsgToTF(attached_obj_pose, aco_tf);
     tf::poseTFToMsg(place_tf * aco_tf, p.pose);
 
     ROS_DEBUG("[place object] Compensate place pose with the attached object pose [%s]. Results: [%s]",
-              mtk::pose2str3D(aco_pose).c_str(), mtk::pose2str3D(p.pose).c_str());
-
-    ROS_DEBUG("[place object] Place attempt %d at pose [%s]...", attempt, mtk::pose2str3D(p).c_str());
+              mtk::pose2str3D(attached_obj_pose).c_str(), mtk::pose2str3D(p.pose).c_str());
 
     moveit_msgs::PlaceLocation l;
     l.place_pose = p;
@@ -164,19 +222,10 @@ int32_t PlaceObjectServer::place(const std::string& obj_name, const std::string&
 
     l.id = attempt;
 
-    std::vector<moveit_msgs::PlaceLocation> locs(1, l);
-
-    if ((result = arm().place(obj_name, locs)))
-    {
-      ROS_INFO("[place object] Place successfully completed");
-      return result.val;
-    }
-
-    ROS_DEBUG("[place object] Place attempt %d failed: %s", attempt, mec2str(result));
+    place_locations.push_back(l);
   }
 
-  ROS_ERROR("[place object] Place failed after %d attempts", PLACE_ATTEMPTS);
-  return result.val;
+  return place_locations.size();
 }
 
 };

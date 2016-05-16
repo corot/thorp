@@ -31,7 +31,7 @@ public:
   MoveToTargetServer(const std::string name);
   ~MoveToTargetServer();
 
-  void goalCB();
+  void executeCB(const thorp_msgs::MoveToTargetGoal::ConstPtr& goal);
   void preemptCB();
 
 private:

@@ -47,6 +47,13 @@ public:
     // Default target poses reference frame: we normally work relative to
     // the arm base, so our calculated roll/pitch/yaw angles make sense
     arm().setPoseReferenceFrame(arm_ref_frame);
+
+    // Allow some leeway in position (meters) and orientation (radians)
+    arm().setGoalPositionTolerance(0.001);
+    arm().setGoalOrientationTolerance(0.02);
+
+    // Allow replanning to increase the odds of a solution
+    arm().allowReplanning(true);
   }
 
   ~ThorpArmController()
@@ -269,6 +276,8 @@ protected:
         return "invalid named target";
       case thorp_msgs::ThorpError::INVALID_JOINT_STATE:
         return "invalid joint state";
+      case thorp_msgs::ThorpError::SERVER_NOT_AVAILABLE:
+        return "server not available";
 
       default:
         return "unrecognized error code";

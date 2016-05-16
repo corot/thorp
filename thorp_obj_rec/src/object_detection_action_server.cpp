@@ -38,16 +38,11 @@ class ObjectDetectionServer
 
 private:
 
-  // ROS interface
-  ros::NodeHandle nh_;
-  ros::NodeHandle pnh_;
-
   // Action client for the ORK object recognition and server
   actionlib::SimpleActionClient<object_recognition_msgs::ObjectRecognitionAction> ork_ac_;
 
   // Action server to handle it conveniently for our object manipulation demo
   actionlib::SimpleActionServer<thorp_msgs::DetectObjectsAction> od_as_;
-  std::string action_name_;
 
   // Get object information from database service and keep in a map
   ros::ServiceClient obj_info_srv_;
@@ -86,15 +81,16 @@ private:
 
 public:
   ObjectDetectionServer(const std::string name) :
-    pnh_("~"), ork_ac_("tabletop/recognize_objects", true), od_as_(name, false), action_name_(name)
+    od_as_(name, boost::bind(&ObjectDetectionServer::executeCB, this, _1), false),
+    ork_ac_("tabletop/recognize_objects", true)
   {
     // Create the action client; spin its own thread
-
-    pnh_.param("ork_execute_timeout",  ork_execute_timeout_,  5.0);
-    pnh_.param("ork_preempt_timeout",  ork_preempt_timeout_,  1.0);
-    pnh_.param("confidence_threshold", confidence_threshold_, 0.85);
-    pnh_.param("clustering_threshold", clustering_threshold_, 0.05);
-    pnh_.param("recognize_objs_calls", recognize_objs_calls_, 10);
+    ros::NodeHandle pnh("~");
+    pnh.param("ork_execute_timeout",  ork_execute_timeout_,  5.0);
+    pnh.param("ork_preempt_timeout",  ork_preempt_timeout_,  1.0);
+    pnh.param("confidence_threshold", confidence_threshold_, 0.85);
+    pnh.param("clustering_threshold", clustering_threshold_, 0.05);
+    pnh.param("recognize_objs_calls", recognize_objs_calls_, 10);
 
     // Wait for the tabletop/recognize_objects action server to start before we provide our own service
     ROS_INFO("[object detection] Waiting for tabletop/recognize_objects action server to start...");
@@ -108,7 +104,8 @@ public:
     ROS_INFO("[object detection] tabletop/recognize_objects action server started; ready for sending goals.");
 
     // Wait for the get object information service (mandatory, as we need to know objects' mesh)
-    obj_info_srv_ = nh_.serviceClient<object_recognition_msgs::GetObjectInformation>("get_object_info");
+    ros::NodeHandle nh;
+    obj_info_srv_ = nh.serviceClient<object_recognition_msgs::GetObjectInformation>("get_object_info");
     if (! obj_info_srv_.waitForExistence(ros::Duration(60.0)))
     {
       ROS_ERROR("[object detection] Get object information service not available after 1 minute");
@@ -116,27 +113,24 @@ public:
       throw;
     }
 
-    // Register the goal and feedback callbacks.
-    od_as_.registerGoalCallback(boost::bind(&ObjectDetectionServer::goalCB, this));
+    // Register feedback callback for our server; executeCB is run on a separated thread, so it can be cancelled
     od_as_.registerPreemptCallback(boost::bind(&ObjectDetectionServer::preemptCB, this));
     od_as_.start();
     
     // Subscribe to detected tables array
-    table_sub_ = nh_.subscribe("tabletop/table_array", 1, &ObjectDetectionServer::tableCb, this);
+    table_sub_ = nh.subscribe("tabletop/table_array", 1, &ObjectDetectionServer::tableCb, this);
 
     // Publish empty objects and table to clear ORK RViz visualizations
     clear_objs_pub_ =
-        nh_.advertise<object_recognition_msgs::RecognizedObjectArray>("/tabletop/recognized_object_array", 1, true);
+        nh.advertise<object_recognition_msgs::RecognizedObjectArray>("/tabletop/recognized_object_array", 1, true);
     clear_table_pub_ =
-        nh_.advertise<object_recognition_msgs::TableArray>("/tabletop/table_array", 1, true);
+        nh.advertise<object_recognition_msgs::TableArray>("/tabletop/table_array", 1, true);
   }
 
-  void goalCB()
+  void executeCB(const thorp_msgs::DetectObjectsGoal::ConstPtr& goal)
   {
     ROS_INFO("[object detection] Received goal!");
 
-    // Accept the new goal
-    thorp_msgs::DetectObjectsGoal::ConstPtr goal = od_as_.acceptNewGoal();
     output_frame_ = goal->output_frame;
 
     // Clear results from previous goals
@@ -155,6 +149,13 @@ public:
     object_recognition_msgs::ObjectRecognitionGoal ork_goal;
     for (int i = 0; i < recognize_objs_calls_; ++i)
     {
+      if (od_as_.isPreemptRequested())
+      {
+        // set the action state to preempted
+        od_as_.setPreempted();
+        return;
+      }
+
       actionlib::SimpleClientGoalState state =
           ork_ac_.sendGoalAndWait(ork_goal, ros::Duration(ork_execute_timeout_), ros::Duration(ork_preempt_timeout_));
 
@@ -239,9 +240,7 @@ public:
 
   void preemptCB()
   {
-    ROS_WARN("[object detection] %s: Preempted", action_name_.c_str());
-    // set the action state to preempted
-    od_as_.setPreempted();
+    ROS_WARN("[object detection] Action preempted; cancel detection in course");
   }
 
   void tableCb(const object_recognition_msgs::TableArray& msg)

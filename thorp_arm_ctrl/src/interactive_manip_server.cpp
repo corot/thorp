@@ -28,18 +28,12 @@ namespace thorp_arm_ctrl
 class InteractiveManipulationServer
 {
 private:
-  ros::NodeHandle nh_;
-
-  interactive_markers::InteractiveMarkerServer server_;
-  
+  // Thorp interactive manipulation action server
   actionlib::SimpleActionServer<thorp_msgs::InteractiveManipAction> as_;
-  std::string action_name_;
 
+  // Interactive markers server and associated data
+  interactive_markers::InteractiveMarkerServer im_;
   geometry_msgs::Pose old_pose_;
-  
-  thorp_msgs::InteractiveManipFeedback     feedback_;
-  thorp_msgs::InteractiveManipResult       result_;
-  thorp_msgs::InteractiveManipGoalConstPtr goal_;
 
   // We use the planning_scene_interface::PlanningSceneInterface to retrieve world objects
   moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
@@ -47,27 +41,27 @@ private:
 public:
 
   InteractiveManipulationServer(const std::string name) : 
-     nh_("~"), server_("move_objects"), as_(name, false), action_name_(name)
+    im_("move_objects"),
+    as_(name, false)
   {
-    // Register the goal and feedback callbacks.
+    // Register the goal and feedback callbacks
     as_.registerGoalCallback(boost::bind(&InteractiveManipulationServer::goalCB, this));
     as_.registerPreemptCallback(boost::bind(&InteractiveManipulationServer::preemptCB, this));
-    
     as_.start();
   }
   
   void goalCB()
   {
-    // accept the new goal
-    goal_ = as_.acceptNewGoal();
-    
+    thorp_msgs::InteractiveManipGoal::ConstPtr goal = as_.acceptNewGoal();
+
     ROS_INFO("[interactive manip] Received goal! Adding markers for objects in the word other than the table");
-    addObjects(goal_->object_names, goal_->support_surf);
+    addObjects(goal->object_names, goal->support_surf);
   }
 
   void preemptCB()
   {
-    ROS_WARN("[interactive manip] %s: Preempted", action_name_.c_str());
+    ROS_WARN("[interactive manip] Action preempted");
+
     // set the action state to preempted
     as_.setPreempted();
   }
@@ -93,29 +87,30 @@ public:
         break;
     }
     
-    server_.applyChanges(); 
+    im_.applyChanges();
   }
   
   void moveObject(const std::string& marker_name, const std_msgs::Header& poses_header,
                   const geometry_msgs::Pose& start_pose, const geometry_msgs::Pose& end_pose)
   {
-    result_.object_name = marker_name;
-    result_.pick_pose.header = poses_header;
-    result_.place_pose.header = poses_header;
-    result_.pick_pose.pose = start_pose;
-    result_.place_pose.pose = end_pose;
-    
-    as_.setSucceeded(result_);
-    
-    server_.clear();
-    server_.applyChanges();
+    thorp_msgs::InteractiveManipResult result;
+    result.object_name = marker_name;
+    result.pick_pose.header = poses_header;
+    result.place_pose.header = poses_header;
+    result.pick_pose.pose = start_pose;
+    result.place_pose.pose = end_pose;
+
+    as_.setSucceeded(result);
+
+    im_.clear();
+    im_.applyChanges();
   }
 
   // Add an interactive marker for any object in the word other than the table
   void addObjects(const std::vector<std::string> &object_names, const std::string &support_surf)
   {
-    server_.clear();
-    server_.applyChanges();
+    im_.clear();
+    im_.applyChanges();
 
     bool active = as_.isActive();
 
@@ -125,7 +120,7 @@ public:
       addMarker(obj.second, active);
     }
 
-    server_.applyChanges();
+    im_.applyChanges();
   }
 
   // Add an interactive marker for the given object
@@ -190,8 +185,8 @@ public:
     control.always_visible = true;
     marker.controls.push_back(control);
     
-    server_.insert(marker);
-    server_.setCallback(marker.name, boost::bind(&InteractiveManipulationServer::feedbackCb, this, _1));
+    im_.insert(marker);
+    im_.setCallback(marker.name, boost::bind(&InteractiveManipulationServer::feedbackCb, this, _1));
 
     ROS_INFO("[interactive manip] Added interactive marker for object '%s' at [%s] and scale [%f]",
              marker.name.c_str(), mtk::pose2str3D(marker.pose).c_str(), marker.scale);
@@ -251,4 +246,3 @@ int main(int argc, char** argv)
 
   return 0;
 }
-

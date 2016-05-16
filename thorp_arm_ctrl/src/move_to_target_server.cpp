@@ -10,10 +10,9 @@ namespace thorp_arm_ctrl
 
 
 MoveToTargetServer::MoveToTargetServer(const std::string name) :
-  as_(name, false), action_name_(name)
+    action_name_(name), as_(name, boost::bind(&MoveToTargetServer::executeCB, this, _1), false)
 {
-  // Register the goal and feedback callbacks
-  as_.registerGoalCallback(boost::bind(&MoveToTargetServer::goalCB, this));
+  // Register feedback callback for our server; executeCB is run on a separated thread, so it can be cancelled
   as_.registerPreemptCallback(boost::bind(&MoveToTargetServer::preemptCB, this));
   as_.start();
 }
@@ -23,11 +22,10 @@ MoveToTargetServer::~MoveToTargetServer()
   as_.shutdown();
 }
 
-void MoveToTargetServer::goalCB()
+void MoveToTargetServer::executeCB(const thorp_msgs::MoveToTargetGoal::ConstPtr& goal)
 {
   ROS_INFO("[move to target] Received goal!");
-  
-  thorp_msgs::MoveToTargetGoalConstPtr goal = as_.acceptNewGoal();
+
   thorp_msgs::MoveToTargetResult result;
 
   switch (goal->target_type)
@@ -50,22 +48,26 @@ void MoveToTargetServer::goalCB()
   result.error.text = mec2str(result.error);
   if (result.error.code == moveit_msgs::MoveItErrorCodes::SUCCESS)
   {
+    ROS_ERROR("SUCCCCCCCCCCCCCCCCCCC   %d", result.error.code);
     as_.setSucceeded(result);
+  }
+  else if (result.error.code == moveit_msgs::MoveItErrorCodes::PREEMPTED)
+  {
+    ROS_ERROR("PREEEEEEEEEEEEEEEEMPT   %d", result.error.code);
+    as_.setPreempted();
   }
   else
   {
+    ROS_ERROR("ABOOOOOOOOOOOOOOOOORT   %d", result.error.code);
     as_.setAborted(result);
   }
 }
 
 void MoveToTargetServer::preemptCB()
 {
-  ROS_INFO("[move to target] %s: Preempted", action_name_.c_str());
+  ROS_INFO("[move to target] Action preempted; cancel all movement");
   gripper().stop();
   arm().stop();
-
-  // set the action state to preempted
-  as_.setPreempted();
 }
 
 int32_t MoveToTargetServer::moveArmTo(const std::string& target)
@@ -81,6 +83,11 @@ int32_t MoveToTargetServer::moveArmTo(const std::string& target)
   if (result)
   {
     ROS_INFO("[move to target] Move to target '%s' completed", target.c_str());
+  }
+  else if (as_.isPreemptRequested())
+  {
+    ROS_WARN("[move to target] Move to target '%s' preempted", target.c_str());
+    result.val = moveit::planning_interface::MoveItErrorCode::PREEMPTED;
   }
   else
   {
@@ -103,6 +110,11 @@ int32_t MoveToTargetServer::moveArmTo(const sensor_msgs::JointState& target)
   if (result)
   {
     ROS_INFO("[move to target] Move to joint value target completed");
+  }
+  else if (as_.isPreemptRequested())
+  {
+    ROS_WARN("[move to target] Move to joint value target preempted");
+    result.val = moveit::planning_interface::MoveItErrorCode::PREEMPTED;
   }
   else
   {
@@ -132,6 +144,11 @@ int32_t MoveToTargetServer::moveArmTo(const geometry_msgs::PoseStamped& target)
   if (result)
   {
     ROS_INFO("[move to target] Move to target [%s] completed", mtk::pose2str3D(modiff_target.pose).c_str());
+  }
+  else if (as_.isPreemptRequested())
+  {
+    ROS_WARN("[move to target] Move to target [%s] preempted", mtk::pose2str3D(modiff_target.pose).c_str());
+    result.val = moveit::planning_interface::MoveItErrorCode::PREEMPTED;
   }
   else
   {
