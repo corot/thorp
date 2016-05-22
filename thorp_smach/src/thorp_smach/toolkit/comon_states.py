@@ -76,7 +76,7 @@ def ObjectDetection():
  
     sm = smach.StateMachine(outcomes = ['succeeded','preempted','aborted'],
                             input_keys = ['od_attempt', 'output_frame'],
-                            output_keys = ['objects', 'object_names'])
+                            output_keys = ['objects', 'object_names', 'support_surf'])
  
     with sm:
         smach.StateMachine.add('ClearOctomap',
@@ -90,9 +90,10 @@ def ObjectDetection():
                                smach_ros.SimpleActionState('object_detection',
                                                            thorp_msgs.DetectObjectsAction,
                                                            goal_slots=['output_frame'],
-                                                           result_slots=['objects', 'object_names']),
+                                                           result_slots=['objects', 'object_names', 'support_surf']),
                                remapping={'output_frame':'output_frame',
-                                          'object_names':'object_names'},
+                                          'object_names':'object_names',
+                                          'support_surf':'support_surf'},
                                transitions={'succeeded':'ObjDetectedCondition',
                                             'preempted':'preempted',
                                             'aborted':'aborted'})
@@ -117,7 +118,7 @@ def ObjectDetection():
 def PickupObject(attempts=3):
     '''  Pickup a given object, retrying up to a given number of times  '''
     it = smach.Iterator(outcomes = ['succeeded','preempted','aborted'],
-                        input_keys = ['object_name'],
+                        input_keys = ['object_name', 'support_surf'],
                         output_keys = [],
                         it = lambda: range(0, attempts),
                         it_label = 'attempt',
@@ -125,15 +126,16 @@ def PickupObject(attempts=3):
 
     with it:    
         sm = smach.StateMachine(outcomes = ['succeeded','preempted','aborted','continue'],
-                                input_keys = ['object_name'],
+                                input_keys = ['object_name', 'support_surf'],
                                 output_keys = [])
         with sm:
             smach.StateMachine.add('PickupObject',
                                    smach_ros.SimpleActionState('pickup_object',
                                                                thorp_msgs.PickupObjectAction,
-                                                               goal_slots=['object_name'],
+                                                               goal_slots=['object_name', 'support_surf'],
                                                                result_slots=[]),
-                                   remapping={'object_name':'object_name'},
+                                   remapping={'object_name':'object_name',
+                                              'support_surf':'support_surf'},
                                    transitions={'succeeded':'succeeded',
                                                 'preempted':'preempted',
                                                 'aborted':'ClearOctomap'})
@@ -161,7 +163,7 @@ def PickupObject(attempts=3):
 def PlaceObject(attempts=3):
     '''  Place a given object, retrying up to a given number of times  '''
     it = smach.Iterator(outcomes = ['succeeded','preempted','aborted'],
-                        input_keys=['object_name', 'place_pose'],
+                        input_keys=['object_name', 'support_surf', 'place_pose'],
                         output_keys = [],
                         it = lambda: range(0, attempts),
                         it_label = 'attempt',
@@ -169,15 +171,16 @@ def PlaceObject(attempts=3):
 
     with it:    
         sm = smach.StateMachine(outcomes = ['succeeded','preempted','aborted','continue'],
-                                input_keys = ['object_name', 'place_pose'],
+                                input_keys = ['object_name', 'support_surf', 'place_pose'],
                                 output_keys = [])
         with sm:
             smach.StateMachine.add('PlaceObject',
                                    smach_ros.SimpleActionState('place_object',
                                                                thorp_msgs.PlaceObjectAction,
-                                                               goal_slots=['object_name', 'place_pose'],
+                                                               goal_slots=['object_name', 'support_surf', 'place_pose'],
                                                                result_slots=[]),
                                    remapping={'object_name':'object_name',
+                                              'support_surf':'support_surf',
                                               'place_pose':'place_pose'},
                                    transitions={'succeeded':'succeeded',
                                                 'preempted':'preempted',

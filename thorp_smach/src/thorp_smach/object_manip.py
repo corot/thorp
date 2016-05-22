@@ -53,7 +53,8 @@ with sm:
     smach.StateMachine.add('ObjectDetection',
                            ObjectDetection(),
                            remapping={'output_frame':'output_frame',
-                                      'object_names':'object_names'},
+                                      'object_names':'object_names',
+                                      'support_surf':'support_surf'},
                            transitions={'succeeded':'InteractiveManip',
                                         'preempted':'preempted',
                                         'aborted':'error'})
@@ -73,7 +74,8 @@ with sm:
 
     smach.StateMachine.add('PickupObject',
                            PickupObject(),
-                           remapping={'object_name':'object_name'},
+                           remapping={'object_name':'object_name',
+                                      'support_surf':'support_surf'},
                            transitions={'succeeded':'PlaceObject',
                                         'preempted':'preempted',
                                         'aborted':'ObjectDetection'})
