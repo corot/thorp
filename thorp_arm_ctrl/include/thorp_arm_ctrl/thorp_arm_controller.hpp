@@ -6,7 +6,6 @@
 
 #include <ros/ros.h>
 #include <tf/tf.h>
-#include <tf/transform_listener.h>
 
 // auxiliary libraries
 #include <thorp_toolkit/common.hpp>
@@ -15,7 +14,6 @@
 
 // MoveIt!
 #include <moveit/move_group_interface/move_group.h>
-#include <moveit/planning_scene_interface/planning_scene_interface.h>
 
 // Thorp messages
 #include <thorp_msgs/ThorpError.h>
@@ -26,9 +24,8 @@ namespace thorp_arm_ctrl
 
 /**
  * Base class for all controllers intended to operate Thorp's arm.
- * Note that we use the Construct On First Use idiom to allow using static attributes for move groups and
- * planning scene interface while avoiding the static initialization disaster (the three attributes cannot
- * be initialized until ROS is up and running).
+ * Note that we use the Construct On First Use idiom to allow using static attributes for move groups while
+ * avoiding the static initialization disaster (these attributes cannot be initialized until ROS is running).
  */
 class ThorpArmController
 {
@@ -75,13 +72,6 @@ protected:
     {
       static moveit::planning_interface::MoveGroup gripper("gripper");
       return gripper;
-    }
-
-    // We use the planning scene to gather information of tabletop/attached objects
-    moveit::planning_interface::PlanningSceneInterface& planningScene()
-    {
-      static moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
-      return planning_scene_interface;
     }
 
     // Pick and place parameters

@@ -9,6 +9,7 @@ file(GLOB SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 ##############################################################################
 
 add_library(${PROJECT_NAME} ${SOURCES})
+add_dependencies(${PROJECT_NAME} thorp_msgs_gencpp)
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} )
 
 ##############################################################################

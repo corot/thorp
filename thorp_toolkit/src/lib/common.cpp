@@ -52,5 +52,45 @@ bool transformPose(const std::string& in_frame, const std::string& out_frame,
   return false;
 }
 
+double min_dim(const geometry_msgs::Vector3& v)
+{
+  return std::min(std::min(v.x, v.y), v.z);
+}
+
+double max_dim(const geometry_msgs::Vector3& v)
+{
+  return std::max(std::max(v.x, v.y), v.z);
+}
+
+
+/* TODO REVIEW THESE FUNS */
+float area(int x1, int y1, int x2, int y2, int x3, int y3)
+{
+   return fabs((x1*(y2-y3) + x2*(y3-y1)+ x3*(y1-y2))/2.0);
+}
+
+bool isInside(int x1, int y1, int x2, int y2, int x3, int y3, int x, int y)
+{
+   /* Calculate area of triangle ABC */
+   float A = area (x1, y1, x2, y2, x3, y3);
+
+   /* Calculate area of triangle PBC */
+   float A1 = area (x, y, x2, y2, x3, y3);
+
+   /* Calculate area of triangle PAC */
+   float A2 = area (x1, y1, x, y, x3, y3);
+
+   /* Calculate area of triangle PAB */
+   float A3 = area (x1, y1, x2, y2, x, y);
+
+   /* Check if sum of A1, A2 and A3 is same as A */
+   return (A == A1 + A2 + A3);
+}
+
+int orient2d(int Ax, int Ay, int Bx, int By, int Cx, int Cy)
+{
+    return (Bx-Ax)*(Cy-Ay) - (By-Ay)*(Cx-Ax);
+}
+
 
 } /* namespace thorp_toolkit */

@@ -7,13 +7,14 @@
 
 // auxiliary libraries
 #include <yocs_math_toolkit/common.hpp>
-#include <geometric_shapes/shape_operations.h>
 
 // MoveIt!
 #include <moveit/move_group_pick_place_capability/capability_names.h>
 #include <moveit_msgs/Grasp.h>
 
 // Thorp stuff
+#include <thorp_toolkit/planning_scene.hpp>
+
 #include "thorp_arm_ctrl/pickup_object_server.hpp"
 
 
@@ -82,70 +83,19 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
     return thorp_msgs::ThorpError::SERVER_NOT_AVAILABLE;
   }
 
-  // Look for obj_name in the list of collision objects
-  std::map<std::string, moveit_msgs::CollisionObject> objects =
-      planningScene().getObjects(std::vector<std::string>(1, obj_name));
-  if (objects.size() == 0)
+  // Look for obj_name in the planning scene's list of collision objects
+  geometry_msgs::PoseStamped obj_pose; geometry_msgs::Vector3 obj_size;
+  int32_t result = thorp_toolkit::getObjectData(obj_name, obj_pose, obj_size);
+  if (result < 0)
   {
-    ROS_ERROR("[pickup object] Collision object '%s' not found", obj_name.c_str());
-    return thorp_msgs::ThorpError::OBJECT_NOT_FOUND;
+    // Error occurred while getting object data...
+    return result;
   }
 
-  if (objects.size() > 1)
-  {
-    // This should not happen, as object detection tries to provide unique names to all objects...
-    ROS_WARN("[pickup object] More than one (%d) collision objects with name '%s' found!",
-             objects.size(), obj_name.c_str());
-  }
+  ROS_INFO("[pickup object] Picking object '%s' with size [%s] at location [%s]...",
+           obj_name.c_str(), mtk::vector2str3D(obj_size).c_str(), mtk::point2str2D(obj_pose.pose.position).c_str());
 
-  // We need object's pose and size for picking
-  Eigen::Vector3d tco_size;
-  geometry_msgs::PoseStamped tco_pose;
-  const moveit_msgs::CollisionObject& tco = objects[obj_name];
-
-  tco_pose.header = tco.header;
-
-  // We get object's pose from the mesh/primitive poses; try first with the meshes
-  if (tco.mesh_poses.size() > 0)
-  {
-    tco_pose.pose = tco.mesh_poses[0];
-    if (tco.meshes.size() > 0)
-    {
-      tco_size = shapes::computeShapeExtents(tco.meshes[0]);
-
-      // We assume meshes laying in the floor, so we bump its pose by half z-dimension to
-      // grasp the object at mid-height. TODO: we could try something more sophisticated...
-      tco_pose.pose.position.z += tco_size[2]/2.0;
-    }
-    else
-    {
-      ROS_ERROR("[pickup object] Collision object '%s' has no meshes", obj_name.c_str());
-      return thorp_msgs::ThorpError::OBJECT_SIZE_NOT_FOUND;
-    }
-  }
-  else if (tco.primitive_poses.size() > 0)
-  {
-    tco_pose.pose = tco.primitive_poses[0];
-    if (tco.primitives.size() > 0)
-    {
-      tco_size = shapes::computeShapeExtents(tco.primitives[0]);
-    }
-    else
-    {
-      ROS_ERROR("[pickup object] Collision object '%s' has no primitives", obj_name.c_str());
-      return thorp_msgs::ThorpError::OBJECT_SIZE_NOT_FOUND;
-    }
-  }
-  else
-  {
-    ROS_ERROR("[pickup object] Collision object '%s' has no mesh/primitive poses", obj_name.c_str());
-    return thorp_msgs::ThorpError::OBJECT_POSE_NOT_FOUND;
-  }
-
-  ROS_INFO("[pickup object] Picking object '%s' with size [%.3f, %.3f, %.3f] at location [%s]...",
-           obj_name.c_str(), tco_size[0], tco_size[1], tco_size[2], mtk::point2str2D(tco_pose.pose.position).c_str());
-
-
+  // Prepare and send pick goal
   moveit_msgs::PickupGoal goal;
   goal.target_name = obj_name;
   goal.group_name = arm().getName();
@@ -160,7 +110,7 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
   goal.planning_options.planning_scene_diff.is_diff = true;
   goal.planning_options.planning_scene_diff.robot_state.is_diff = true;
 
-  int32_t result = makeGrasps(tco_pose, tco_size, obj_name, surface, goal.possible_grasps);
+  result = makeGrasps(obj_pose, obj_size, obj_name, surface, goal.possible_grasps);
   if (result < 0)
   {
     // Error occurred while making grasps...
@@ -196,20 +146,6 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
 //
 //  // Allow replanning to increase the odds of a solution
 //  arm().allowReplanning(true);
-
-  // Try up to PICK_ATTEMPTS grasps with slightly different poses
-
-
-
-//  moveit_msgs::PickupGoal goal;
-//  constructGoal(goal, object);
-//  goal.possible_grasps = grasps;
-//  goal.planning_options.plan_only = false;
-//  goal.planning_options.look_around = can_look_;
-//  goal.planning_options.replan = can_replan_;
-//  goal.planning_options.replan_delay = replan_delay_;
-//  goal.planning_options.planning_scene_diff.is_diff = true;
-//  goal.planning_options.planning_scene_diff.robot_state.is_diff = true;
 
   ac_.sendGoal(goal);
 
@@ -263,7 +199,7 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
 
 
 int32_t PickupObjectServer::makeGrasps(const geometry_msgs::PoseStamped& target_pose,
-                                       const Eigen::Vector3d& target_size,
+                                       const geometry_msgs::Vector3& target_size,
                                        const std::string& obj_name, const std::string& surface,
                                        std::vector<moveit_msgs::Grasp>& grasps)
 {
@@ -300,7 +236,7 @@ int32_t PickupObjectServer::makeGrasps(const geometry_msgs::PoseStamped& target_
     // gripper position and the smallest dimension minus a small "tightening" epsilon as the closed position
     g.grasp_posture.joint_names.push_back("gripper_joint");
     g.grasp_posture.points.resize(1);
-    g.grasp_posture.points[0].positions.push_back(target_size.minCoeff() - 0.002);
+    g.grasp_posture.points[0].positions.push_back(std::min(target_size.x, target_size.y) - 0.002);
 
     g.allowed_touch_objects.push_back(obj_name);
     g.allowed_touch_objects.push_back(surface);

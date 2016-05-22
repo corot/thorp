@@ -13,6 +13,7 @@
 
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/Vector3.h>
 
 
 namespace thorp_toolkit
@@ -57,6 +58,21 @@ T median(const std::vector<T>& v) {
 //  std::nth_element(first, middle, last); // short values till middle one
 //  return *middle;
 //}
+
+double min_dim(const geometry_msgs::Vector3& v);
+
+double max_dim(const geometry_msgs::Vector3& v);
+
+float area(int x1, int y1, int x2, int y2, int x3, int y3);
+
+/* A function to check whether point P(x, y) lies inside the triangle formed
+   by A(x1, y1), B(x2, y2) and C(x3, y3) */
+bool isInside(int x1, int y1, int x2, int y2, int x3, int y3, int x, int y);
+
+/*
+ * Determine barycentric coordinates
+ */
+int orient2d(int Ax, int Ay, int Bx, int By, int Cx, int Cy);
 
 
 } /* namespace thorp_toolkit */

@@ -41,7 +41,7 @@ public:
 private:
   int32_t pickup(const std::string& obj_name, const std::string& surface);
 
-  int32_t makeGrasps(const geometry_msgs::PoseStamped& target_pose, const Eigen::Vector3d& target_size,
+  int32_t makeGrasps(const geometry_msgs::PoseStamped& target_pose, const geometry_msgs::Vector3& target_size,
                      const std::string& target_name, const std::string& surface,
                      std::vector<moveit_msgs::Grasp>& grasps);
 };

@@ -7,13 +7,14 @@
 
 // auxiliary libraries
 #include <yocs_math_toolkit/common.hpp>
-#include <geometric_shapes/shape_operations.h>
 
 // MoveIt!
 #include <moveit/move_group_pick_place_capability/capability_names.h>
 #include <moveit_msgs/PlaceLocation.h>
 
 // Thorp stuff
+#include <thorp_toolkit/planning_scene.hpp>
+
 #include "thorp_arm_ctrl/place_object_server.hpp"
 
 
@@ -82,40 +83,13 @@ int32_t PlaceObjectServer::place(const std::string& obj_name, const std::string&
     return thorp_msgs::ThorpError::SERVER_NOT_AVAILABLE;
   }
 
-  // Look for obj_name in the list of attached objects
-  std::map<std::string, moveit_msgs::AttachedCollisionObject> objects =
-      planningScene().getAttachedObjects(std::vector<std::string>(1, obj_name));
-
-  if (objects.size() == 0)
+  // Look for obj_name in the planning scene's list of attached collision objects
+  geometry_msgs::Pose attached_pose;
+  int32_t result = thorp_toolkit::getAttachedObjectPose(obj_name, attached_pose);
+  if (result < 0)
   {
-    // Maybe pick failed; we will not continue because place will surely fail without knowing the attaching pose
-    ROS_ERROR("[place object] Attached collision object '%s' not found", obj_name.c_str());
-    return thorp_msgs::ThorpError::OBJECT_NOT_FOUND;
-  }
-
-  if (objects.size() > 1)
-  {
-    // This should not happen... we grasped two objects with the same name???
-    ROS_WARN("[place object] More than one (%d) attached collision objects with name '%s' found!",
-             objects.size(), obj_name.c_str());
-  }
-
-  // We just need object's pose so we can subtract its pose from the place location poses
-  geometry_msgs::Pose aco_pose;  // No stamped; it's relative to attaching frame (gripper_link)
-  const moveit_msgs::AttachedCollisionObject& aco = objects[obj_name];
-
-  if (aco.object.primitive_poses.size() > 0)
-  {
-    aco_pose = aco.object.primitive_poses[0];
-  }
-  else if (aco.object.mesh_poses.size() > 0)
-  {
-    aco_pose = aco.object.mesh_poses[0];
-  }
-  else
-  {
-    ROS_ERROR("[place object] Attached collision object '%s' has no pose!", obj_name.c_str());
-    return thorp_msgs::ThorpError::OBJECT_POSE_NOT_FOUND;
+    // Error occurred while getting object data...
+    return result;
   }
 
   ROS_INFO("[place object] Placing object '%s' at pose [%s]...", obj_name.c_str(), mtk::pose2str3D(pose).c_str());
@@ -133,7 +107,7 @@ int32_t PlaceObjectServer::place(const std::string& obj_name, const std::string&
   goal.planning_options.planning_scene_diff.is_diff = true;
   goal.planning_options.planning_scene_diff.robot_state.is_diff = true;
 
-  int32_t result = makePlaceLocations(pose, aco_pose, obj_name, surface, goal.place_locations);
+  result = makePlaceLocations(pose, attached_pose, obj_name, surface, goal.place_locations);
   if (result < 0)
   {
     // Error occurred while making grasps...

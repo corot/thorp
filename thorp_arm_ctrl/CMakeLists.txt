@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(thorp_arm_ctrl)
 
-find_package(catkin REQUIRED roscpp actionlib actionlib_msgs arbotix_msgs geometry_msgs moveit_msgs moveit_core moveit_ros_planning_interface
-                             thorp_msgs thorp_toolkit yocs_math_toolkit geometric_shapes interactive_markers visualization_msgs)
+find_package(catkin REQUIRED roscpp actionlib actionlib_msgs arbotix_msgs geometry_msgs moveit_msgs moveit_core
+                             thorp_msgs thorp_toolkit yocs_math_toolkit interactive_markers visualization_msgs)
                              
 link_directories(${catkin_LIBRARY_DIRS})
 include_directories(include
@@ -10,8 +10,8 @@ include_directories(include
                     ${catkin_INCLUDE_DIRS}
                    )
 
-catkin_package(DEPENDS roscpp actionlib actionlib_msgs arbotix_msgs geometry_msgs moveit_msgs moveit_core moveit_ros_planning_interface
-                       thorp_msgs thorp_toolkit yocs_math_toolkit geometric_shapes interactive_markers visualization_msgs)
+catkin_package(DEPENDS roscpp actionlib actionlib_msgs arbotix_msgs geometry_msgs moveit_msgs moveit_core
+                       thorp_msgs thorp_toolkit yocs_math_toolkit interactive_markers visualization_msgs)
 
 
 # nodes

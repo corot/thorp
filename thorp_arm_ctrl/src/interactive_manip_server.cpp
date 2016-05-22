@@ -12,11 +12,8 @@
 
 // auxiliary libraries
 #include <yocs_math_toolkit/common.hpp>
-#include <geometric_shapes/shape_operations.h>
-
-// MoveIt!
-#include <moveit_msgs/CollisionObject.h>
-#include <moveit/planning_scene_interface/planning_scene_interface.h>
+#include <thorp_toolkit/common.hpp>
+#include <thorp_toolkit/planning_scene.hpp>
 
 
 using namespace visualization_msgs;
@@ -114,61 +111,29 @@ public:
 
     bool active = as_.isActive();
 
-    std::map<std::string, moveit_msgs::CollisionObject> objects = planning_scene_interface_.getObjects(object_names);
-    for (const std::pair<std::string, moveit_msgs::CollisionObject>& obj: objects)
+///    std::map<std::string, moveit_msgs::CollisionObject> objects = planning_scene_interface_.getObjects(object_names);
+    for (const std::string& obj_name: object_names)
     {
-      addMarker(obj.second, active);
+      geometry_msgs::PoseStamped obj_pose; geometry_msgs::Vector3 obj_size;
+      if (thorp_toolkit::getObjectData(obj_name, obj_pose, obj_size) > 0)
+        addMarker(obj_name, obj_pose, obj_size, active);
     }
 
     im_.applyChanges();
   }
 
+
   // Add an interactive marker for the given object
-  bool addMarker(const moveit_msgs::CollisionObject& obj, bool active)
+  bool addMarker(const std::string& obj_name,
+                 const geometry_msgs::PoseStamped& obj_pose, const geometry_msgs::Vector3& obj_size, bool active)
   {
     InteractiveMarker marker;
-    marker.header = obj.header;
-    marker.name = obj.id;
+    marker.name = obj_name;
+    marker.pose = obj_pose.pose;
+    marker.header = obj_pose.header;
 
-    // We get object's pose from the mesh/primitive poses; try first with the meshes
-    if (obj.mesh_poses.size() > 0)
-    {
-      marker.pose = obj.mesh_poses[0];
-      if (obj.meshes.size() > 0)
-      {
-        Eigen::Vector3d obj_size = shapes::computeShapeExtents(obj.meshes[0]);
-
-        // We use the biggest dimension of the mesh to scale the marker
-        marker.scale = obj_size.maxCoeff();
-
-        // We assume meshes laying in the floor (well, table), so we bump up marker pose by half z-dimension
-        marker.pose.position.z += obj_size[2]/2.0;
-      }
-      else
-      {
-        ROS_ERROR("[interactive manip] Collision object has no meshes");
-        return false;
-      }
-    }
-    else if (obj.primitive_poses.size() > 0)
-    {
-      marker.pose = obj.primitive_poses[0];
-      if (obj.primitives.size() > 0)
-      {
-        // We use the biggest dimension of the primitive to scale the marker
-        marker.scale = shapes::computeShapeExtents(obj.primitives[0]).maxCoeff();
-      }
-      else
-      {
-        ROS_ERROR("[interactive manip] Collision object has no primitives");
-        return false;
-      }
-    }
-    else
-    {
-      ROS_ERROR("[interactive manip] Collision object has no mesh/primitive poses");
-      return false;
-    }
+    // We use the biggest dimension of the mesh to scale the marker
+    marker.scale = thorp_toolkit::max_dim(obj_size);
 
     InteractiveMarkerControl control;
     control.orientation.w = 1;
@@ -176,15 +141,15 @@ public:
     control.orientation.y = 1;
     control.orientation.z = 0;
     control.interaction_mode = InteractiveMarkerControl::MOVE_PLANE;
-    
+
     if (active)
       marker.controls.push_back(control);
-    
+
     control.markers.push_back(makeBox(marker, 0.5, 0.5, 0.5));
     control.markers.push_back(makeLabel(marker, 0.5, 0.5, 0.5));
     control.always_visible = true;
     marker.controls.push_back(control);
-    
+
     im_.insert(marker);
     im_.setCallback(marker.name, boost::bind(&InteractiveManipulationServer::feedbackCb, this, _1));
 
