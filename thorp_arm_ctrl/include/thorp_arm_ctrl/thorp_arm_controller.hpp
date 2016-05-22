@@ -41,7 +41,10 @@ public:
     nh.param("arm_ctrl_ref_frame", arm_ref_frame, std::string("arm_base_link"));
     nh.param("grasp_attach_time", attach_time, 0.8);
     nh.param("grasp_detach_time", detach_time, 0.6);
-    nh.param("vertical_backlash", z_backlash, 0.01);
+    nh.param("vertical_backlash_delta", vertical_backlash_delta, 0.01);
+    nh.param("fall_short_distance_delta", fall_short_distance_delta, 0.008);
+    nh.param("gripper_asymmetry_yaw_delta", gripper_asymmetry_yaw_delta, 0.05);
+
     nh.param("/gripper_controller/max_opening", gripper_open, 0.045);
 
     // Default target poses reference frame: we normally work relative to
@@ -86,7 +89,9 @@ protected:
     double      gripper_open;
     double      attach_time;
     double      detach_time;
-    double      z_backlash;
+    double      vertical_backlash_delta;
+    double      gripper_asymmetry_yaw_delta;
+    double      fall_short_distance_delta;
 
     // Arm's physical reach limitations
     double const MAX_DISTANCE = 0.30;
@@ -102,7 +107,9 @@ protected:
    * @param attempt The actual attempts number
    * @return True of success, false otherwise
    */
-  bool validateTargetPose(geometry_msgs::PoseStamped& target, bool compensate_backlash, int attempt = 0)
+  bool validateTargetPose(geometry_msgs::PoseStamped& target, bool compensate_vertical_backlash,
+                          bool compensate_gripper_asymmetry, bool compensate_distance_fall_short,
+                          int attempt = 0)
   {
     static ros::Publisher target_pose_pub;
     if (target_pose_pub.getTopic().empty())
@@ -167,15 +174,33 @@ protected:
     double rr = 0.0;
     target.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(rr, rp, ry);
 
-    if (compensate_backlash)
+    // Rather ad hoc compensations for our arm deficiencies:
+    if (compensate_vertical_backlash)
     {
       // Slightly increase z proportionally to pitch to avoid hitting the table with the lower gripper corner and
       // a bit extra to compensate the effect of the arm's backlash in the height of the gripper over the table
-      double z_delta1 = (1.0 - std::abs(std::sin(rp)))/(10.0*M_PI_2);
-      double z_delta2 = z_backlash;
+      double z_delta1 = (1.0 - std::abs(std::sin(rp)))/(M_PI*M_PI);
+      double z_delta2 = vertical_backlash_delta;
       ROS_DEBUG("[arm controller] Z increases:  %f  +  %f  +  %f", target.pose.position.z, z_delta1, z_delta2);
       target.pose.position.z += z_delta1;
       target.pose.position.z += z_delta2;
+    }
+
+    if (compensate_gripper_asymmetry)
+    {
+      // Slightly increase the yaw because only the right finger opens, and so there's more grasping room on the right
+      target.pose.position.x = d*std::cos(ry + gripper_asymmetry_yaw_delta);
+      target.pose.position.y = d*std::sin(ry + gripper_asymmetry_yaw_delta);
+      target.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(rr, rp, ry + gripper_asymmetry_yaw_delta);
+      ROS_DEBUG("[arm controller] Compensate gripper asymmetry increasing yaw by %frad", gripper_asymmetry_yaw_delta);
+    }
+
+    if (compensate_distance_fall_short)
+    {
+      // Slightly increase distance... no justification, really. It just put the target in the center of the gripper!
+      target.pose.position.x += fall_short_distance_delta*std::cos(ry);
+      target.pose.position.y += fall_short_distance_delta*std::sin(ry);
+      ROS_DEBUG("[arm controller] Compensate distance fall short increasing distance by %fm", fall_short_distance_delta);
     }
 
     ROS_DEBUG("[arm controller] Target pose [%s] [d: %.2f]", mtk::pose2str3D(target.pose).c_str(), d);

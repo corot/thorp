@@ -129,7 +129,7 @@ int32_t MoveToTargetServer::moveArmTo(const geometry_msgs::PoseStamped& target)
   ROS_DEBUG("[move to target] Move arm to [%s]", mtk::pose2str3D(target.pose).c_str());
 
   geometry_msgs::PoseStamped modiff_target = target;
-  if (!validateTargetPose(modiff_target, true))
+  if (!validateTargetPose(modiff_target, true, false, false))
   {
     return thorp_msgs::ThorpError::INVALID_TARGET_POSE;
   }

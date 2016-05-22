@@ -62,8 +62,7 @@ void PlaceObjectServer::executeCB(const thorp_msgs::PlaceObjectGoal::ConstPtr& g
 
     // Ensure we don't retain any object attached to the gripper
 //    arm().detachObject(goal->object_name);
-  //  setGripper(gripper_open, false);
-
+//    setGripper(gripper_open, false);
   }
 }
 
@@ -180,7 +179,7 @@ int32_t PlaceObjectServer::makePlaceLocations(const geometry_msgs::PoseStamped& 
   for (int attempt = 0; attempt < PLACE_ATTEMPTS; ++attempt)
   {
     geometry_msgs::PoseStamped p = target_pose;
-    if (!validateTargetPose(p, true, attempt))
+    if (!validateTargetPose(p, true, false, false, attempt))
     {
       return thorp_msgs::ThorpError::INVALID_TARGET_POSE;
     }
