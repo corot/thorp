@@ -2,64 +2,31 @@ Xtion mount -> camera link calibration
 =======================================
 
 Resulting transform (camera frame -> fixed frame): 
-  0.045823  -0.998083   0.041595  0.0117222
-  -0.65177 -0.0614265  -0.755925 0.00617953
-  0.757031 0.00752841  -0.653336  0.0283549
-         0          0          0          1
-
-Resulting transform (fixed frame -> camera frame): 
-   0.757031  0.00752841   -0.653336   0.0283549
-  -0.045823    0.998083   -0.041595  -0.0117222
-    0.65177   0.0614265    0.755925 -0.00617953
-4.59163e-41 4.56697e-41 4.56697e-41           1
-
-Static transform publisher (use for external kinect): 
-rosrun tf static_transform_publisher x y z qx qy qz qw frame_id child_frame_id period_in_ms
-rosrun tf static_transform_publisher -0.0179751 0.0118658 0.022709 -0.0274903 0.348255 0.0142363 0.936888 /xtion_mount_link /xtion_rgb_frame 100
-
-URDF output (use for kinect on robot): 
-<?xml version="1.0"?>
-<robot>
-        <property name="turtlebot_calib_cam_x" value="-0.0179751" />
-        <property name="turtlebot_calib_cam_y" value="0.0118658" />
-        <property name="turtlebot_calib_cam_z" value="0.022709" />
-        <property name="turtlebot_calib_cam_rr" value="-0.0549698" />
-        <property name="turtlebot_calib_cam_rp" value="0.711982" />
-        <property name="turtlebot_calib_cam_ry" value="0.00994433" />
-        <property name="turtlebot_kinect_frame_name" value="xtion_mount_link" />
-</robot>
-
-
-
-camera mount -> camera link calibration
-=======================================
-
-Resulting transform (camera frame -> fixed frame): 
-   0.0212444    -0.999331    0.0297732   -0.0174827
-   -0.592438   -0.0365715    -0.804786    0.0282639
-    0.805336 -0.000541572    -0.592818   -0.0166309
+   0.0103284    -0.999685    0.0228549 -0.000235827
+   -0.699418   -0.0235571    -0.714325    0.0144784
+    0.714638  -0.00860731    -0.699441   -0.0129629
            0            0            0            1
 
 Resulting transform (fixed frame -> camera frame): 
-    0.805336 -0.000541579    -0.592818   -0.0166309
-  -0.0212444     0.999331   -0.0297732    0.0174827
-    0.592438    0.0365715     0.804786   -0.0282639
- 4.59135e-41  4.58463e-41  4.58463e-41            1
+   0.714638 -0.00860731   -0.699441  -0.0129629
+ -0.0103284    0.999685  -0.0228549 0.000235827
+   0.699418   0.0235571    0.714325  -0.0144784
+4.59135e-41 4.57019e-41 4.57019e-41           1
 
 Static transform publisher (use for external kinect): 
 rosrun tf static_transform_publisher x y z qx qy qz qw frame_id child_frame_id period_in_ms
-rosrun tf static_transform_publisher 0.0305095 -0.0164463 0.0134078 -0.0174605 0.311933 0.00544852 0.949928 /senz3d_mount_link /senz3d_camera_rgb_frame 100
+rosrun tf static_transform_publisher 0.0193927 -6.25956e-06 0.00128084 -0.0125325 0.377731 0.000464743 0.925831 /xtion_mount_link /xtion_rgb_frame 100
 
 URDF output (use for kinect on robot): 
 <?xml version="1.0"?>
 <robot>
-        <property name="turtlebot_calib_cam_x" value="0.0305095" />
-        <property name="turtlebot_calib_cam_y" value="-0.0164463" />
-        <property name="turtlebot_calib_cam_z" value="0.0134078" />
-        <property name="turtlebot_calib_cam_rr" value="-0.0369783" />
-        <property name="turtlebot_calib_cam_rp" value="0.634554" />
-        <property name="turtlebot_calib_cam_ry" value="-0.000672493" />
-        <property name="turtlebot_kinect_frame_name" value="senz3d_mount_link" />
+        <property name="turtlebot_calib_cam_x" value="0.0193927" />
+        <property name="turtlebot_calib_cam_y" value="-6.25956e-06" />
+        <property name="turtlebot_calib_cam_z" value="0.00128084" />
+        <property name="turtlebot_calib_cam_rr" value="-0.0319842" />
+        <property name="turtlebot_calib_cam_rp" value="0.774615" />
+        <property name="turtlebot_calib_cam_ry" value="-0.0120437" />
+        <property name="turtlebot_kinect_frame_name" value="xtion_mount_link" />
 </robot>
 
 

@@ -230,9 +230,13 @@
     <!-- Extrinsic parameters obtained through arm-camera calibration:
          http://wiki.ros.org/turtlebot_arm_kinect_calibration -->
     <xacro:unless value="$(arg simulation)">
-      <origin xyz="0.01 0.0 -0.01" rpy="0.0 0.711982 0.02"/>  <!-- p&p try and error  OK for right-side... :o  -->
-      <origin xyz="-0.015 0.007 0.021" rpy="0 0 0"/>    <!-- Visual origin -->
+      <!-- Values obtained by calibtrin but compensated after visualization: xyz=-0.01 0.0 -0.003 -->
+      <origin xyz="0.01 -6.25956e-06 0.001" rpy="-0.0319842 0.774615 -0.0120437"/>
 
+      <!-- Visual origin corrections: undo the rotations for better aesthetics  -->
+      <origin xyz="-0.005 0.006 0.012" rpy="0.0319842 ${M_PI/4 - 0.774615} 0.0120437"/>
+
+      <!-- <origin xyz="0.01 0.0 -0.01" rpy="0.0 0.711982 0.02"/>  p&p try and error  OK for right-side... :o  -->
       <!-- <origin xyz="0.022 0.003 0.002" rpy="0.0 0.711982 0.00994433"/>  ideal from robot model KO -->
       <!-- <origin xyz="-0.012 -0.006 -0.012" rpy="0.0 0.711982 0.01"/> Fitting pc to robot model  KO -->
       <!-- <origin xyz="-0.0179751 0.0118658 0.022709" rpy="-0.0549698 0.711982 0.00994433"/>   calib R and T  KO- -->
