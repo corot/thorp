@@ -1,38 +1,23 @@
 <!--
   Make Thorp execute a specific SMACH application
-    TODO 1: still not launching the whole robot; lacks navigation
+    TODO 1: still not launching the whole stuff; navigation is missing
     TODO 2: this is not fully generic, as keyboard_ctrl is obj manip specific; idea: make it issue generic commands and show "not apply" when the SM rejects it
  -->
 
 <launch>
   <arg name="smach_app"/>
   <arg name="keyboard_ctrl" default="true"/>
-
   <arg name="external_camera" default="false"/>
 
-  <!--  ********** 3D sensors (on/off-board) **********  -->
+  <!--  ******** External 3D camera (optional) ********  -->
 
   <include if="$(arg external_camera)" file="$(find thorp_bringup)/launch/includes/xtion.launch.xml">
     <arg name="camera_name" value="external_camera"/>
   </include>
 
-  <include unless="$(arg external_camera)" file="$(find thorp_bringup)/launch/includes/xtion.launch.xml"/>
-<!-- 
-   <include file="$(find realsense_camera)/launch/realsense_camera.launch">
-    <arg name="camera" value="xtion"/>
-  </include>
- -->  
-  
-  <!--  ************* Thorp bringup stuff *************  -->
 
-  <include file="$(find thorp_bringup)/launch/includes/state_publisher.launch.xml"/>
-
-  <include file="$(find thorp_bringup)/launch/includes/arm.launch.xml"/>
-
-  <!-- Fake base's wheels joint state, as we are not running the full robot by now -->
-  <node name="fake_wheels_joints_pub" pkg="thorp_bringup" type="fake_joint_pub.py"/>
-
-  <node name="arbotix_gui" pkg="arbotix_python" type="arbotix_gui" output="screen"/>
+  <!--  *********** Thorp robot standalone ************  -->
+  <include file="$(find thorp_bringup)/launch/thorp_robot.launch"/>
 
 
   <!--  ************* Moveit config stuff *************  -->
@@ -51,7 +36,7 @@
 
   <!--  Fake global reference to make Moveit octomap happy  -->
   <node pkg="tf" type="static_transform_publisher" name="fake_global_reference"
-        args="0.0 0.0 0.0 0.0 0.0 0.0 /map /base_footprint 100"/>
+        args="0.0 0.0 0.0 0.0 0.0 0.0 map odom 100"/>
 
   <!--  ****** Thorp perception and manipulation ******  -->
 

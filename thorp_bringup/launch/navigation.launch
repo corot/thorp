@@ -1,0 +1,46 @@
+<!--
+  Thorp global navigation:
+  - Thorp robot
+  - virtual sensor
+  - move_base
+  - geometric map
+  - semantic map???
+  - amcl localization
+  - rviz view (optional)
+ -->
+
+<launch>
+  <!-- Name of the map to use (without path nor extension) and initial position -->
+  <arg name="map_name"       default="graz_home"/>
+  <arg name="initial_pose_x" value="0.0"/>
+  <arg name="initial_pose_y" value="0.0"/>
+  <arg name="initial_pose_a" value="0.0"/>
+
+  <!--  *********** Thorp robot standalone ************  -->
+  <include file="$(find thorp_bringup)/launch/thorp_robot.launch"/>
+
+  <!--  ************** Additional sensors *************  -->
+  <include file="$(find thorp_bringup)/launch/includes/virt_sensor.launch.xml"/>
+
+  <!--  ** Turtlebot 2 move base with custom tweaks ***  -->
+  <include file="$(find turtlebot_navigation)/launch/includes/move_base.launch.xml">
+    <arg name="custom_param_file" value="$(find thorp_bringup)/param/custom_move_base.yaml"/>
+  </include>
+<!-- <include file="$(find thorp_bringup)/launch/includes/scan_matcher_2.launch.xml"/> -->
+  
+  <!--  ****** Geometric and semantic map servers *****  -->
+  <node name="map_server" pkg="map_server" type="map_server" args="$(find thorp_bringup)/resources/maps/$(arg map_name).yaml">
+    <param name="frame_id" value="/map"/>
+  </node>
+
+  <!--  ******************** Amcl *********************  -->
+  <include file="$(find thorp_bringup)/launch/includes/amcl.launch.xml">
+    <arg name="scan_topic" value="scan"/>
+    <arg name="initial_pose_x" value="$(arg initial_pose_x)"/>
+    <arg name="initial_pose_y" value="$(arg initial_pose_y)"/>
+    <arg name="initial_pose_a" value="$(arg initial_pose_a)"/>
+  </include>
+  
+  <!--  ***** Watchdog to keep the pose on reboot *****  -->
+  <node name="save_amcl_pose" pkg="thorp_toolkit" type="save_pose_node"/>
+</launch>

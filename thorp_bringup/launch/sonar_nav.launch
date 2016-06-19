@@ -1,31 +1,13 @@
 <!--
   Thorp local navigation just with sonars and bumpers:
-  - turtlebot
+  - Thorp robot
   - move_base
-  - arduino interface
-  - safety controller
   - fake localization
  -->
 
 <launch>
-  <!--  ****************** Turtlebot ******************  -->
-  <include file="$(find turtlebot_bringup)/launch/minimal.launch">
-    <arg name="battery" value="/sys/class/power_supply/BAT1"/>
-  </include>
-
-  <!-- Overwrite default Turtlebot 2 description with Thorp's one -->
-  <param name="robot_description" command="$(find xacro)/xacro.py '$(find thorp_bringup)/urdf/thorp.urdf.xacro' simulation:=false"/>
-  <!--  Also increase the publishing frequency so the arm doesn't jump when moving -->
-  <param name="robot_state_publisher/publish_frequency" value="20.0"/>
-
-  <!--  *********** Thorp specific hardware ***********  -->
-  <include file="$(find thorp_boards)/launch/arduino.launch"/>
-  <include file="$(find thorp_boards)/launch/opencm.launch">
-    <arg name="simulation" value="true"/> <!-- just to provide arm's joint states -->
-  </include>
-
-  <!-- Reconfigure command velocity multiplexer to fit thorp_bringup needs -->
-  <param name="cmd_vel_mux/yaml_cfg_file" value="$(find thorp_bringup)/param/vel_multiplexer.yaml"/>
+  <!--  *********** Thorp robot standalone ************  -->
+  <include file="$(find thorp_bringup)/launch/thorp_robot.launch"/>
  
   <!--  ** Turtlebot 2 move base with custom tweaks ***  -->
   <include file="$(find turtlebot_navigation)/launch/includes/move_base.launch.xml">

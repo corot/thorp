@@ -33,6 +33,10 @@ controllers: {
   }
 }
 
+digital_servos: {
+  cannon_servo: {rate: 20, pin: 2, length: 2}
+}
+
 analog_sensors: {
   arm_ir_ranger: {rate: 20, pin: 0, length: 2}
 }

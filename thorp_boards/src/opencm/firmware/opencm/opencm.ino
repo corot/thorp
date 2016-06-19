@@ -22,6 +22,7 @@
 #define MAX_NUM_SERVOS  5
 
 
+#include <Servo.h> 
 #include <CM9_BC.h>
 
 #include "opencm.h"
@@ -40,6 +41,11 @@ typedef struct
 bc_pose_t poses[30][MAX_NUM_SERVOS]; // poses [index][servo_id-1]
 sp_trans_t sequence[50]; // sequence
 int seqPos; // step in current sequence     
+
+int servo_pos = 0;
+Servo myservo;  // create servo object to control a servo
+                // a maximum of eight servo objects can be created
+// TODO:  can i do this reasonably generic ???
 
 void blink(unsigned int times = 1)
 {
@@ -150,16 +156,16 @@ int handleRead()
 int handleWrite()
 {
   int addr = params[0];
-  int bytes = params[1];
+///  int bytes = params[1];
   int value;
 
-  if (bytes == 1)
+  if (length == 4)
   {
-    value = params[2];
+    value = params[1];
   }
-  else if (bytes == 2)
+  else if (length == 5)
   {
-    value = DXL_MAKEWORD(params[2], params[3]);
+    value = DXL_MAKEWORD(params[1], params[2]);
   }
   else
   {
@@ -169,24 +175,17 @@ int handleWrite()
 // TODO: not tested!!!               REG_DIGITAL_OUT0    47  // First digital pin to write
 //                                // base + index, bit 1 = value (0,1), bit 0 = direction (0,1)
 
-  if (addr >= REG_DIGITAL_OUT0 && addr < REG_RESERVED)
+  if (addr >= REG_SERVO_BASE && addr < REG_SERVO_BASE + 10)
+  {
+    servo_pos = value;
+//    pwmWrite(addr - REG_SERVO_BASE, value);
+  }
+  else if (addr >= REG_DIGITAL_OUT0 && addr < REG_RESERVED)
   {
     digitalWrite(addr - REG_DIGITAL_OUT0, value);
   }
 
   return OK;
-}
-
-void setup()
-{
-  Dxl.begin(3);
-  SerialUSB.begin();
-
-  bioloid.setup(MAX_NUM_SERVOS);
-  pinMode(BOARD_LED_PIN, OUTPUT);
-  
-  for (int id = 1; id <= MAX_NUM_SERVOS; id++)
-    Dxl.jointMode(id);
 }
 
 /*
@@ -208,6 +207,23 @@ void writeWord(int value, int &checksum)
   checksum += DXL_HIBYTE(value);
   SerialUSB.write(DXL_LOBYTE(value));
   SerialUSB.write(DXL_HIBYTE(value));
+}
+
+void setup()
+{
+  Dxl.begin(3);
+  SerialUSB.begin();
+
+  bioloid.setup(MAX_NUM_SERVOS);
+  pinMode(BOARD_LED_PIN, OUTPUT);
+  
+  pinMode(2, PWM);
+  pwmWrite(2, 0);
+  
+  for (int id = 1; id <= MAX_NUM_SERVOS; id++)
+    Dxl.jointMode(id);
+
+  myservo.attach(2);  // attaches the servo on pin 2 to the servo object 
 }
 
 /*
@@ -233,14 +249,31 @@ void loop()
   int i, poseSize;
   bool error = false;
 
+  myservo.write(servo_pos);// tell servo to go to position in variable 'pos' 
+
   // process messages
   while (SerialUSB.available() > 0)
   {
     // Make LED blink to show we are alive
     static int count = 0;
     if (++count%200 == 0)
+    {
       toggleLED();
+    }
 
+//    if (++count%200 == 100)
+//    {
+//      val = 40000;
+//      toggleLED();
+//    }
+//    pwmWrite(2, val);
+
+//    if (++count%2000 == 0)
+//    {
+//      digitalWrite(16, HIGH);
+//      delay(50);
+//    }
+    
     // We need two 0xFF at start of packet
     if (mode == 0) // start of new packet
     {

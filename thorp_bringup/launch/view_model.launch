@@ -3,7 +3,9 @@
  -->
 
 <launch>
-  <include file="$(find thorp_bringup)/launch/includes/model.launch.xml"/>
-  
+  <include file="$(find thorp_bringup)/launch/includes/model.launch.xml">
+    <arg name="use_joints_gui" value="true"/>
+  </include>
+
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_model.rviz"/>
 </launch>

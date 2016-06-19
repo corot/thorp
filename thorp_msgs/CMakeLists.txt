@@ -7,6 +7,10 @@ add_message_files(DIRECTORY msg
                             ThorpError.msg
                  )
 
+add_service_files(DIRECTORY srv
+                     FILES CannonCmd.srv
+                )
+
 add_action_files(DIRECTORY action
                      FILES DetectObjects.action
                            MoveToTarget.action

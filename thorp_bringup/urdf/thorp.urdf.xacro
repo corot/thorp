@@ -18,6 +18,7 @@
   <xacro:include filename="$(find turtlebot_description)/urdf/turtlebot_library.urdf.xacro"/>
   <xacro:include filename="$(find turtlebot_arm_description)/urdf/turtlebot_arm.xacro"/>
   <xacro:include filename="$(find softkinetic_camera)/urdf/senz3d.urdf.xacro"/>
+  <xacro:include filename="$(find thorp_cannon)/urdf/cannon.urdf.xacro"/>
   <xacro:include filename="$(find thorp_bringup)/urdf/thorp_gazebo.urdf.xacro"/>
   <xacro:include filename="$(find thorp_bringup)/urdf/kinect.urdf.xacro"/>
   <xacro:include filename="$(find thorp_bringup)/urdf/xtion.urdf.xacro"/>
@@ -60,13 +61,21 @@
     <origin xyz="0.10914 0.0295 0.0284"/>
   </turtlebot_arm>
   
-  <arm_mount parent="arm_base_link" name="arm_mount" color="Black">
+  <arm_mount parent="plate_top_link" name="arm_mount" color="Black">
+    <origin xyz="0.10914 0.0 0.0284" rpy="0.0 0.0 0.0"/>
+  </arm_mount>
+  <arm_mount parent="arm_base_link" name="arm_mount1" color="Black">
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
   </arm_mount>
+  <arm_mount parent="arm_base_link" name="arm_mount2" color="Black">
+    <origin xyz="0.0 -0.0576 0.0" rpy="0.0 0.0 0.0"/>
+  </arm_mount>
   <stack_bottom_pole parent="arm_base_link" number="10" x_loc=" 0.0"   y_loc=" 0.0288" z_loc="-0.0112"/>
-  <stack_bottom_pole parent="arm_base_link" number="11" x_loc=" 0.0"   y_loc="-0.0288" z_loc="-0.0112"/>
-  <stack_bottom_pole parent="arm_base_link" number="12" x_loc="-0.038" y_loc="-0.0288" z_loc="-0.0112"/>
+  <stack_bottom_pole parent="arm_base_link" number="11" x_loc=" 0.015" y_loc="-0.0288" z_loc="-0.0112"/>
+  <stack_bottom_pole parent="arm_base_link" number="12" x_loc=" 0.0"   y_loc="-0.0864" z_loc="-0.0112"/>
   <stack_bottom_pole parent="arm_base_link" number="13" x_loc="-0.038" y_loc=" 0.0288" z_loc="-0.0112"/>
+  <stack_bottom_pole parent="arm_base_link" number="14" x_loc="-0.038" y_loc="-0.0288" z_loc="-0.0112"/>
+  <stack_bottom_pole parent="arm_base_link" number="15" x_loc="-0.038" y_loc="-0.0864" z_loc="-0.0112"/>
 
   <!-- Emulate the OpenCM9.04 controller as a box -->
   <joint name="opencm_joint" type="fixed">
