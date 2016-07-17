@@ -201,7 +201,13 @@
   <Sharp_GP2Y0A21_IR_sim name="r180"/>
   <Sharp_GP2Y0A21_IR_sim name="r155"/>
 
-  <!-- Gazebo configuration for other structural parts -->  
+  <!-- Gazebo configuration for other structural parts -->
+  <gazebo reference="arm_mount_link">
+    <material>Gazebo/Balck</material>
+    <selfCollide>true</selfCollide>
+    <gravity>true</gravity>
+  </gazebo>  
+
   <gazebo reference="sonars_mount_link">
     <material>Gazebo/Black</material>
     <selfCollide>true</selfCollide>

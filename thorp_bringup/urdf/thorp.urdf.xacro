@@ -60,16 +60,39 @@
                  pincher_gripper="false" turtlebot_gripper="true">
     <origin xyz="0.10914 0.0295 0.0284"/>
   </turtlebot_arm>
-  
-  <arm_mount parent="plate_top_link" name="arm_mount" color="Black">
-    <origin xyz="0.10914 0.0 0.0284" rpy="0.0 0.0 0.0"/>
-  </arm_mount>
-  <arm_mount parent="arm_base_link" name="arm_mount1" color="Black">
-    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
-  </arm_mount>
-  <arm_mount parent="arm_base_link" name="arm_mount2" color="Black">
-    <origin xyz="0.0 -0.0576 0.0" rpy="0.0 0.0 0.0"/>
-  </arm_mount>
+
+  <!-- Mount for arm and cannon, set on top of six small poles -->
+  <joint name="arm_mount_joint" type="fixed">
+    <origin xyz="0.10914 0.0 0.042" rpy="0.0 0.0 0.0"/>
+    <parent link="plate_top_link"/>
+    <child link="arm_mount_link"/>
+  </joint>
+
+  <link name="arm_mount_link">
+    <inertial>
+      <mass value="0.018"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.000001" ixy="0.0" ixz="0.0"
+               iyy="0.000001" iyz="0.0"
+               izz="0.000001"/>
+    </inertial>
+
+    <visual>
+      <origin xyz="-0.028 0.0 0.0" rpy="0.0 0.0 -${M_PI/2}"/>
+      <geometry>
+        <mesh filename="package://thorp_bringup/resources/meshes/arm_mount.stl" scale="${M_SCALE} ${M_SCALE} ${M_SCALE}"/>
+      </geometry>
+      <material name="Black"/>
+    </visual>
+
+    <collision>
+      <origin xyz="-0.01 0.0 0.002" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <box size="0.074 0.132 0.004"/>
+      </geometry>
+    </collision>
+  </link>
+
   <stack_bottom_pole parent="arm_base_link" number="10" x_loc=" 0.0"   y_loc=" 0.0288" z_loc="-0.0112"/>
   <stack_bottom_pole parent="arm_base_link" number="11" x_loc=" 0.015" y_loc="-0.0288" z_loc="-0.0112"/>
   <stack_bottom_pole parent="arm_base_link" number="12" x_loc=" 0.0"   y_loc="-0.0864" z_loc="-0.0112"/>
