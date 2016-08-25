@@ -94,7 +94,7 @@
   </link>
 
   <stack_bottom_pole parent="arm_base_link" number="10" x_loc=" 0.0"   y_loc=" 0.0288" z_loc="-0.0112"/>
-  <stack_bottom_pole parent="arm_base_link" number="11" x_loc=" 0.015" y_loc="-0.0288" z_loc="-0.0112"/>
+  <stack_bottom_pole parent="arm_base_link" number="11" x_loc=" 0.014" y_loc="-0.0288" z_loc="-0.0112"/>
   <stack_bottom_pole parent="arm_base_link" number="12" x_loc=" 0.0"   y_loc="-0.0864" z_loc="-0.0112"/>
   <stack_bottom_pole parent="arm_base_link" number="13" x_loc="-0.038" y_loc=" 0.0288" z_loc="-0.0112"/>
   <stack_bottom_pole parent="arm_base_link" number="14" x_loc="-0.038" y_loc="-0.0288" z_loc="-0.0112"/>
