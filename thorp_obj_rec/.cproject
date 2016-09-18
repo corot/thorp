@@ -5,12 +5,12 @@
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.toolchain.gnu.base.2032485526" moduleId="org.eclipse.cdt.core.settings" name="Default">
 				<externalSettings/>
 				<extensions>
+					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
-					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
@@ -21,6 +21,18 @@
 							<builder id="cdt.managedbuild.target.gnu.builder.base.319646594" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1090630834" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.959695658" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
+								<option id="gnu.cpp.compiler.option.include.paths.1253745446" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="/opt/ros/kinetic/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/turtlebot/devel/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/ork/devel/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/moveit/devel/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/navigation/devel/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/ork/src/ork_core/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/turtlebot/src/yujin_ocs/yocs_math_toolkit/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/thorp/devel/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/moveit/src/moveit/moveit_ros/planning_interface/move_group_interface/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/moveit/src/moveit/moveit_ros/planning_interface/planning_scene_interface/include"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1057289454" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.1640731833" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">

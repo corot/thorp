@@ -28,7 +28,7 @@
 									<listOptionValue builtIn="false" value="/home/jorge/workspaces/moveit/devel/include"/>
 									<listOptionValue builtIn="false" value="/home/jorge/workspaces/navigation/devel/include"/>
 									<listOptionValue builtIn="false" value="/home/jorge/workspaces/rviz/devel/include"/>
-									<listOptionValue builtIn="false" value="/opt/ros/indigo/include"/>
+									<listOptionValue builtIn="false" value="/opt/ros/kinetic/include"/>
 									<listOptionValue builtIn="false" value="/opt/OpenCM-v1.0.2/hardware/robotis/cores/robotis"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.712716253" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>

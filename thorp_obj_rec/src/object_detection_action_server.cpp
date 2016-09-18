@@ -9,7 +9,6 @@
 #include <thorp_toolkit/common.hpp>
 #include <yocs_math_toolkit/common.hpp>
 #include <yocs_math_toolkit/geometry.hpp>
-#include <shape_tools/solid_primitive_dims.h>
 
 // action client: ORK's tabletop object recognition
 #include <actionlib/client/simple_action_client.h>
@@ -257,10 +256,10 @@ public:
     object_recognition_msgs::Table table = msg.tables[0];
     geometry_msgs::Pose table_pose = table.pose;
     // Tables often have orientations with all-nan values, but assertQuaternionValid lets them go!
-    if (isnan(table.pose.orientation.x) ||
-        isnan(table.pose.orientation.y) ||
-        isnan(table.pose.orientation.z) ||
-        isnan(table.pose.orientation.w))
+    if (std::isnan(table.pose.orientation.x) ||
+        std::isnan(table.pose.orientation.y) ||
+        std::isnan(table.pose.orientation.z) ||
+        std::isnan(table.pose.orientation.w))
     {
       ROS_WARN("[object detection] Table discarded as its orientation has nan values");
       return;
@@ -382,7 +381,7 @@ private:
     co.operation = moveit_msgs::CollisionObject::ADD;
     co.primitives.resize(1);
     co.primitives[0].type = shape_msgs::SolidPrimitive::BOX;
-    co.primitives[0].dimensions.resize(shape_tools::SolidPrimitiveDimCount<shape_msgs::SolidPrimitive::BOX>::value);
+    co.primitives[0].dimensions.resize(3);
     co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_X] = mtk::median(table_size_x);
     co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Y] = mtk::median(table_size_y);
     co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Z] = 0.01;  // arbitrarily set to 1 cm

@@ -19,7 +19,7 @@
     <arg name="battery"   value="/sys/class/power_supply/BAT1"/>
   </include>
   <include file="$(find turtlebot_bringup)/launch/3dsensor.launch">
-    <arg name="camera"                          value="camera"/>
+    <arg name="camera"                          value="kinect"/>
     <!-- We only need RGB images and pseudo laser scan -->
     <arg name="depth_registration"              value="false"/>
     <arg name="rgb_processing"                  value="true" />

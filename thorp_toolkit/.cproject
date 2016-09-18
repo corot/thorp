@@ -21,6 +21,18 @@
 							<builder id="cdt.managedbuild.target.gnu.builder.base.730266703" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1380821366" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.860751002" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
+								<option id="gnu.cpp.compiler.option.include.paths.1457926459" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="/opt/ros/kinetic/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/turtlebot/devel/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/ork/devel/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/moveit/devel/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/navigation/devel/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/ork/src/ork_core/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/turtlebot/src/yujin_ocs/yocs_math_toolkit/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/thorp/devel/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/moveit/src/moveit/moveit_ros/planning_interface/move_group_interface/include"/>
+									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/moveit/src/moveit/moveit_ros/planning_interface/planning_scene_interface/include"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1141077969" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.498091373" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
