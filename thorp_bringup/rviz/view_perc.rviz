@@ -8,8 +8,8 @@ Panels:
         - /TF1/Frames1
         - /Camera1/Visibility1
         - /DepthCloud External Camera1/Auto Size1
-      Splitter Ratio: 0.65367
-    Tree Height: 233
+      Splitter Ratio: 0.653670013
+    Tree Height: 261
   - Class: rviz/Help
     Name: Help
   - Class: rviz/Views
@@ -32,7 +32,7 @@ Visualization Manager:
       Color: 160; 160; 164
       Enabled: true
       Line Style:
-        Line Width: 0.03
+        Line Width: 0.0299999993
         Value: Lines
       Name: Grid
       Normal Cell Count: 0
@@ -153,6 +153,81 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
         base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_servo_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_shaft_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube1_hollow_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube1_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube2_hollow_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube2_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube3_hollow_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube3_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube4_hollow_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube4_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube5_hollow_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube5_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube6_hollow_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube6_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -294,6 +369,16 @@ Visualization Manager:
           Show Trail: false
           Value: true
         pole_bottom_13_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_14_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_15_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -515,10 +600,6 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        xtion_gazebo_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
         xtion_link:
           Alpha: 1
           Show Axes: false
@@ -566,9 +647,10 @@ Visualization Manager:
       Queue Size: 10
       Selectable: true
       Size (Pixels): 3
-      Size (m): 0.0025
+      Size (m): 0.00249999994
       Style: Flat Squares
       Topic: /xtion/depth_registered/points
+      Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
@@ -632,6 +714,7 @@ Visualization Manager:
       Overlay Alpha: 0.5
       Queue Size: 2
       Transport Hint: raw
+      Unreliable: false
       Value: false
       Visibility:
         DepthCloud: true
@@ -654,6 +737,7 @@ Visualization Manager:
       ID: false
       Name: ORK Objects
       Topic: /recognized_object_array
+      Unreliable: false
       Value: true
     - Bounding Box: false
       Class: object_recognition_ros/OrkTable
@@ -663,6 +747,7 @@ Visualization Manager:
       Name: ORK Tables
       Top: true
       Topic: /table_array
+      Unreliable: false
       Value: true
     - Class: rviz/MarkerArray
       Enabled: false
@@ -682,6 +767,7 @@ Visualization Manager:
       Normalize Range: true
       Queue Size: 2
       Transport Hint: raw
+      Unreliable: false
       Value: true
     - Class: rviz/Image
       Enabled: true
@@ -693,6 +779,7 @@ Visualization Manager:
       Normalize Range: true
       Queue Size: 2
       Transport Hint: raw
+      Unreliable: false
       Value: true
     - Class: rviz/TF
       Enabled: false
@@ -731,9 +818,10 @@ Visualization Manager:
       Queue Size: 10
       Selectable: true
       Size (Pixels): 3
-      Size (m): 0.01
+      Size (m): 0.00999999978
       Style: Flat Squares
       Topic: /external_camera/depth_registered/points
+      Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
@@ -794,29 +882,29 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 0.897616
+      Distance: 1.41242003
       Enable Stereo Rendering:
-        Stereo Eye Separation: 0.06
+        Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.42249
-        Y: -0.152793
-        Z: -1.48803e-06
+        X: 0.35966599
+        Y: 0.0189011991
+        Z: -1.34409004e-06
       Name: Current View
-      Near Clip Distance: 0.01
-      Pitch: 0.739797
+      Near Clip Distance: 0.00999999978
+      Pitch: 0.739796996
       Target Frame: base_link
       Value: XYOrbit (rviz)
-      Yaw: 2.86447
+      Yaw: 4.79446983
     Saved: ~
 Window Geometry:
   Camera:
     collapsed: false
   Displays:
     collapsed: false
-  Height: 981
+  Height: 1056
   Help:
     collapsed: false
   Hide Left Dock: false
@@ -825,11 +913,11 @@ Window Geometry:
     collapsed: false
   Image Depth:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000100000000000001c000000385fc020000000afb000000100044006900730070006c00610079007301000000330000017a000000d801000005fb0000000800480065006c00700000000342000000bb0000007101000005fb0000000a0056006900650077007301000001b000000102000000ab01000005fb0000000c00430061006d00650072006100000001ea0000011a0000001d01000005fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e006701000002470000017a0000000000000000fb0000000a0049006d006100670065000000030a000000b70000000000000000fb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000002f1000000ab0000006901000005fb0000000c00430061006d00650072006102fffffe13000002e7000003b1000002c8fb000000160049006d00610067006500200043006f006c006f007201000002b5000000700000001d01000005fb000000160049006d0061006700650020004400650070007400680100000328000000900000001d01000005000005bd0000038500000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000100000000000001c0000003dafc020000000afb000000100044006900730070006c00610079007301000000280000019a000000dd00fffffffb0000000800480065006c00700000000342000000bb0000007600fffffffb0000000a0056006900650077007301000001c800000118000000b000fffffffb0000000c00430061006d00650072006100000001ea0000011a0000001600fffffffb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e006701000002470000017a0000000000000000fb0000000a0049006d006100670065000000030a000000b70000000000000000fb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000002f1000000ab0000006400fffffffb0000000c00430061006d00650072006102fffffe13000002e7000003b1000002c8fb000000160049006d00610067006500200043006f006c006f007201000002e60000007a0000001600fffffffb000000160049006d00610067006500200044006500700074006801000003660000009c0000001600ffffff00000579000003da00000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Tool Properties:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1920
-  X: 0
-  Y: 44
+  Width: 1855
+  X: 65
+  Y: 24

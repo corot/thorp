@@ -7,7 +7,7 @@ Panels:
         - /Senz3D DepthCloud1/Auto Size1
         - /TF1/Frames1
       Splitter Ratio: 0.40146
-    Tree Height: 347
+    Tree Height: 260
   - Class: rviz/Help
     Name: Help
   - Class: rviz/Views
@@ -501,10 +501,6 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-          senz3d_gazebo_optical_frame:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
           senz3d_link:
             Alpha: 1
             Show Axes: false
@@ -543,10 +539,6 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
           xtion_depth_optical_frame:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-          xtion_gazebo_optical_frame:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -1027,10 +1019,6 @@ Visualization Manager:
             Alpha: 1
             Show Axes: false
             Show Trail: false
-          senz3d_gazebo_optical_frame:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
           senz3d_link:
             Alpha: 1
             Show Axes: false
@@ -1069,10 +1057,6 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
           xtion_depth_optical_frame:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-          xtion_gazebo_optical_frame:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -1135,8 +1119,8 @@ Visualization Manager:
       Queue Size: 10
       Selectable: true
       Size (Pixels): 3
-      Size (m): 0.005
-      Style: Flat Squares
+      Size (m): 0.2
+      Style: Spheres
       Topic: /xtion/depth_registered/points
       Use Fixed Frame: true
       Use rainbow: true
@@ -1364,17 +1348,17 @@ Visualization Manager:
       Show Axes: true
       Show Descriptions: true
       Show Visual Aids: true
-      Update Topic: /block_controls/update
+      Update Topic: /move_objects/update
       Value: true
     - Alpha: 1
-      Axes Length: 0.7
+      Axes Length: 0.1
       Axes Radius: 0.008
       Class: rviz/Pose
       Color: 255; 25; 0
       Enabled: true
       Head Length: 0.3
       Head Radius: 0.1
-      Name: Pose
+      Name: Pick/Place Pose
       Shaft Length: 1
       Shaft Radius: 0.05
       Shape: Axes
@@ -1394,20 +1378,6 @@ Visualization Manager:
         {}
       Update Interval: 0
       Value: false
-    - Alpha: 1
-      Axes Length: 1
-      Axes Radius: 0.1
-      Class: rviz/Pose
-      Color: 255; 25; 0
-      Enabled: true
-      Head Length: 0.3
-      Head Radius: 0.1
-      Name: Pick/Place Pose
-      Shaft Length: 1
-      Shaft Radius: 0.05
-      Shape: Arrow
-      Topic: ""
-      Value: true
     - Alpha: 0.7
       Class: rviz/Map
       Color Scheme: map
@@ -1489,22 +1459,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 1.75328
+      Distance: 1.43402
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.993339
-        Y: 0.296359
-        Z: -1.51095e-06
+        X: 0.323955
+        Y: -0.126171
+        Z: 0.010197
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.7898
-      Target Frame: base_link
+      Pitch: 1.0998
+      Target Frame: <Fixed Frame>
       Value: XYOrbit (rviz)
-      Yaw: 5.42315
+      Yaw: 4.56814
     Saved: ~
 Window Geometry:
   Displays:
@@ -1516,7 +1486,7 @@ Window Geometry:
   Hide Right Dock: false
   Motion Planning:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd00000001000000000000022a00000369fc0200000007fb000000100044006900730070006c0061007900730100000033000001ec000000d801000005fb0000000800480065006c00700000000342000000bb0000007101000005fb0000000a0056006900650077007300000003b0000000b0000000ab01000005fb0000000c00430061006d00650072006100000002ff000001610000000000000000fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e006701000002220000017a0000017101000005fb0000000a0049006d006100670065000000030a000000b70000000000000000fb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000002f1000000ab00000069010000050000045f0000036900000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000001000000000000022a00000369fc0200000007fb000000100044006900730070006c006100790073010000003300000195000000d801000005fb0000000800480065006c00700000000342000000bb0000007101000005fb0000000a005600690065007700730000000178000000b0000000ab01000005fb0000000c00430061006d00650072006100000002ff000001610000000000000000fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e006701000001cb000001d10000018c01000005fb0000000a0049006d006100670065000000030a000000b70000000000000000fb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000002f1000000ab00000069010000050000045f0000036900000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Tool Properties:
     collapsed: false
   Views:

@@ -23,7 +23,7 @@ def main():
     get_object_info_srv = rospy.ServiceProxy('get_object_info', object_recognition_srvs.GetObjectInformation)
     try:
         object_type = object_recognition_msgs.ObjectType
-        object_type.key = '18800'
+        object_type.key = '287a5469653342f90445c3b70100b7ad'
         object_type.db = '{"host":"localhost","module":"object_recognition_tabletop","name":"household_objects-0.6","password":"yujin","port":"5432","type":"ObjectDbSqlHousehold","user":"yujin"'
         req = object_recognition_srvs.GetObjectInformationRequest(object_type)
         resp = get_object_info_srv(req)

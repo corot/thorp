@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package>
+  <name>thorp_description</name>
+  <version>0.1.0</version>
+  <description>Robot description files and meshes for Thorp robot</description>
+  <maintainer email="jsantossimon@gmail.com">Jorge Santos Simón</maintainer>
+  <author email="jsantossimon@gmail.com">Jorge Santos Simón</author> 
+
+  <license>BSD</license>
+
+  <url type="bugtracker">https://github.com/corot/thorp/issues</url>
+  <url type="repository">https://github.com/corot/thorp</url>
+  <url type="website">http://wiki.ros.org/thorp_description</url> 
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>urdf</build_depend>
+  <build_depend>xacro</build_depend>
+
+  <run_depend>urdf</run_depend>
+  <run_depend>xacro</run_depend>
+  <run_depend>kobuki_description</run_depend>
+  <run_depend>turtlebot_description</run_depend>
+</package>

@@ -38,6 +38,7 @@
   <run_depend>thorp_msgs</run_depend>
   <run_depend>thorp_boards</run_depend>
   <run_depend>thorp_obj_rec</run_depend>
+  <run_depend>thorp_description</run_depend>
   <run_depend>thorp_moveit_config</run_depend>
   <export>
   </export>

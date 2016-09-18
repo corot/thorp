@@ -1,0 +1,394 @@
+<?xml version="1.0"?>
+<!--
+  TurtleBot 2 configuration
+    - Base      : kobuki
+    - Stacks    : hexagons
+    - 3D Sensor : kinect
+
+  Thorp addons
+    - 11 sonars
+    - 5 IR sensors
+    - Turtlebot arm
+    - Auxiliary 3D sensor (Creative Senz3D)
+    - Manipulation 3D sensor (Asus Xtion Pro)
+-->
+
+<robot name="Thorp" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:include filename="$(find turtlebot_description)/urdf/turtlebot_library.urdf.xacro"/>
+  <xacro:include filename="$(find turtlebot_arm_description)/urdf/turtlebot_arm.xacro"/>
+  <xacro:include filename="$(find softkinetic_camera)/urdf/senz3d.urdf.xacro"/>
+  <xacro:include filename="$(find thorp_cannon)/urdf/cannon.urdf.xacro"/>
+  <xacro:include filename="$(find thorp_description)/urdf/thorp_gazebo.urdf.xacro"/>
+  <xacro:include filename="$(find thorp_description)/urdf/kinect.urdf.xacro"/>
+  <xacro:include filename="$(find thorp_description)/urdf/xtion.urdf.xacro"/>
+
+  <xacro:arg name="simulation" default="false"/>
+
+
+  <!-- Plain Turtlebot 2 -->
+  <kobuki/>
+  <stack_hexagons parent="base_link"/>
+  <kinect_camera parent="base_link" name="kinect"/>
+
+
+  <!-- Turtlebot arm, its controller board and its mounting on Thorp -->
+
+  <!-- Note that the arm position is biased to the left of the robot, while the manipulation
+       camera is biased to the right; with this configuration, the arm doesn't block completely
+       the camera vision of the operation space.
+       We constrain the elbow lower limit and both shoulder limits to force the arm to operate 
+       always with the same gripper orientation, preventing the inefficient full turns.
+       TODO: I don't think we need to be that restrictive; do a better problem assessment.
+       We also use a deliberately low joints velocity limit to improve safety and precision;
+       the physical limit of the AX-12 is 114 rpm (684 deg/s) -->
+  <xacro:property name="joints_vlimit" value="0.8"/>
+
+  <!-- <xacro:property name="pan_llimit" value="-2.617"/> -->
+  <!-- <xacro:property name="pan_ulimit" value=" 2.617"/> -->
+  <xacro:property name="pan_llimit" value="${-M_PI/2}"/>
+  <xacro:property name="pan_ulimit" value="${+M_PI/2}"/>
+  <xacro:property name="shoulder_llimit" value="-2.617"/>  <!-- -150 deg, but physical limit is -2.18 rad (-125 deg) -->
+  <xacro:property name="shoulder_ulimit" value=" 2.617"/>  <!-- +150 deg, but physical limit is +2.18 rad (+125 deg) -->
+  <!-- <xacro:property name="elbow_llimit" value=" -2.617"/> -->
+  <xacro:property name="elbow_llimit" value=" 0.0"/>       <!-- -150 deg, but physical limit is -2.41 rad (-138 deg) -->
+  <xacro:property name="elbow_ulimit" value=" 2.617"/>     <!-- +150 deg, but physical limit is +2.41 rad (+138 deg) -->
+  <xacro:property name="wrist_llimit" value="-1.745"/>     <!-- -100 deg -->
+  <xacro:property name="wrist_ulimit" value=" 1.745"/>     <!-- +100 deg -->
+
+  <turtlebot_arm parent="plate_top_link" color="White" gripper_color="Black"
+                 pincher_gripper="false" turtlebot_gripper="true">
+    <origin xyz="0.10914 0.0295 0.0284"/>
+  </turtlebot_arm>
+
+  <!-- Mount for arm and cannon, set on top of six small poles -->
+  <joint name="arm_mount_joint" type="fixed">
+    <origin xyz="0.10914 0.0 0.042" rpy="0.0 0.0 0.0"/>
+    <parent link="plate_top_link"/>
+    <child link="arm_mount_link"/>
+  </joint>
+
+  <link name="arm_mount_link">
+    <inertial>
+      <mass value="0.018"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.000001" ixy="0.0" ixz="0.0"
+               iyy="0.000001" iyz="0.0"
+               izz="0.000001"/>
+    </inertial>
+
+    <visual>
+      <origin xyz="-0.028 0.0 0.0" rpy="0.0 0.0 -${M_PI/2}"/>
+      <geometry>
+        <mesh filename="package://thorp_description/meshes/arm_mount.stl" scale="${M_SCALE} ${M_SCALE} ${M_SCALE}"/>
+      </geometry>
+      <material name="Black"/>
+    </visual>
+
+    <collision>
+      <origin xyz="-0.01 0.0 0.002" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <box size="0.074 0.132 0.004"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <stack_bottom_pole parent="arm_base_link" number="10" x_loc=" 0.0"   y_loc=" 0.0288" z_loc="-0.0112"/>
+  <stack_bottom_pole parent="arm_base_link" number="11" x_loc=" 0.014" y_loc="-0.0288" z_loc="-0.0112"/>
+  <stack_bottom_pole parent="arm_base_link" number="12" x_loc=" 0.0"   y_loc="-0.0864" z_loc="-0.0112"/>
+  <stack_bottom_pole parent="arm_base_link" number="13" x_loc="-0.038" y_loc=" 0.0288" z_loc="-0.0112"/>
+  <stack_bottom_pole parent="arm_base_link" number="14" x_loc="-0.038" y_loc="-0.0288" z_loc="-0.0112"/>
+  <stack_bottom_pole parent="arm_base_link" number="15" x_loc="-0.038" y_loc="-0.0864" z_loc="-0.0112"/>
+
+  <!-- Emulate the OpenCM9.04 controller as a box -->
+  <joint name="opencm_joint" type="fixed">
+    <origin xyz="0.045 0.03 0.008" rpy="0.0 0.0 0.0"/>
+    <parent link="plate_top_link"/>
+    <child link="opencm_link"/>
+  </joint>
+  <link name="opencm_link">
+    <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <box size="0.027 0.0665 0.01"/>
+      </geometry>
+      <material name="green">
+        <color rgba="0.22 0.32 0.14 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <box size="0.027 0.0665 0.012"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.01"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.0001" ixy="0.0" ixz="0.0"
+               iyy="0.0001" iyz="0.0"
+               izz="0.0001"/>
+    </inertial>
+  </link>
+
+  <!-- Arm IR sensor link, mounted below the arm mount and pointing forward -->
+  <joint name="ir_arm_joint" type="fixed">
+    <origin xyz="0.02  0.0 0.01" rpy="0.0 0.0 0.0"/>
+    <parent link="arm_base_link"/>
+    <child link="ir_arm_link"/>
+  </joint>
+  <link name="ir_arm_link"/>
+
+
+  <!-- Auxiliary Senz3D camera plus mounting on Thorp -->
+  
+  <!-- Mounting poles: two columns made with one top and one middle poles stacked -->
+  <!-- The Z loc of the upper poles is : 1/2*plate height + top pole height + 1/2*middle pole height (without screw) -->
+  <stack_top_pole parent="plate_top_link" number="10" x_loc="-0.1124" y_loc=" 0.098" z_loc="${0.006/2 + 0.2032/2}"/>
+  <stack_top_pole parent="plate_top_link" number="20" x_loc="-0.1124" y_loc="-0.098" z_loc="${0.006/2 + 0.2032/2}"/>
+  <stack_middle_pole parent="plate_top_link" number="11" x_loc="-0.1124" y_loc=" 0.098" z_loc="${0.006/2 + 0.2032 + 0.0608/2}"/>
+  <stack_middle_pole parent="plate_top_link" number="21" x_loc="-0.1124" y_loc="-0.098" z_loc="${0.006/2 + 0.2032 + 0.0608/2}"/>
+  
+  <!-- Mounting plate -->
+  <joint name="senz3d_mount_joint" type="fixed">
+    <origin xyz="-0.1124 0.0 ${0.006/2 + 0.2032 + 0.0515 + 0.005/2}" rpy="0.0 0.0 0.0"/>
+    <parent link="plate_top_link"/>
+    <child link="senz3d_mount_link"/>
+  </joint>
+  <link name="senz3d_mount_link">
+    <visual>
+      <origin xyz="0.0075 0.0 -0.003" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <mesh filename="package://thorp_description/meshes/senz3d_mount.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="Black">
+        <color rgba="0.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.0075 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <box size="0.03 0.22 0.006"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.040"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.0001" ixy="0.0" ixz="0.0"
+               iyy="0.0001" iyz="0.0"
+               izz="0.0001"/>
+    </inertial>
+  </link>
+
+  <!-- The camera itself -->
+  <joint name="senz3d_calib_joint" type="fixed">
+    <!-- Ideal extrinsic parameters obtained from robot model -->
+    <xacro:if value="$(arg simulation)">
+      <origin xyz="0.02 0.013 0.022" rpy="0.0 0.0 0.0"/>
+    </xacro:if>
+    <!-- Extrinsic parameters obtained through arm-camera calibration:
+         http://wiki.ros.org/turtlebot_arm_kinect_calibration -->
+    <!-- NOTE: Not required by now in its role of auxiliary camera -->
+    <xacro:unless value="$(arg simulation)">
+      <origin xyz="0.02 0.013 0.022" rpy="0.0 0.0 0.0"/>
+    </xacro:unless>
+    <parent link="senz3d_mount_link"/>
+    <child link="senz3d_calib_link"/>
+  </joint>
+  <link name="senz3d_calib_link"/>
+
+  <!-- Seems like Gazebo kinect plugin needs to use a centered frame instead of separated rgb and depth.
+       No idea if this makes any sense, but it works! I also move the optical tf a bit forward to make
+       pointcloud match better the model; this is absolutely arbitrary...  TODO sure???  -->
+  <xacro:if value="$(arg simulation)">
+    <joint name="senz3d_gazebo_optical_joint" type="fixed">
+      <origin xyz="0.004 0.0 0.0" rpy="${-M_PI/2} 0.0 ${-M_PI/2}"/>
+      <parent link="senz3d_link"/>
+      <child link="senz3d_gazebo_optical_frame"/>
+    </joint>
+    <link name="senz3d_gazebo_optical_frame"/>
+  </xacro:if>
+
+  <sensor_senz3d parent="senz3d_calib_link" name="senz3d">
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+  </sensor_senz3d>
+
+
+  <!-- Manipulation Asus Xtion Pro camera mounted on top of the Senz3D's mounting plate-->
+  
+  <!-- Mounting poles: a pair of top poles -->
+  <!-- The Z loc of the upper poles is : 1/2*plate height + 3/2*top pole height -->
+  <stack_top_pole parent="senz3d_mount_link" number="12" x_loc="0.0" y_loc=" 0.098" z_loc="${0.005/2 + 0.2032/2}"/>
+  <stack_top_pole parent="senz3d_mount_link" number="22" x_loc="0.0" y_loc="-0.098" z_loc="${0.005/2 + 0.2032/2}"/>
+  
+  <!-- Mounting plate -->
+  <joint name="xtion_mount_joint" type="fixed">
+    <origin xyz="0.0 0.0 ${0.2032 + 0.005/2 + 0.005}" rpy="0.0 0.0 0.0"/>
+    <parent link="senz3d_mount_link"/>
+    <child link="xtion_mount_link"/>
+  </joint>
+  <link name="xtion_mount_link">
+    <visual>
+      <origin xyz="0.0 0 0.0" rpy="${M_PI*(3/4)} 0.0 ${M_PI/2}"/>
+      <geometry>
+        <mesh filename="package://thorp_description/meshes/xtion_mount_a45.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="Black">
+        <color rgba="0.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <box size="0.02 0.225 0.025"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.040"/>
+      <origin xyz="0 0 0"/>
+        <inertia ixx="0.0001" ixy="0.0" ixz="0.0"
+                 iyy="0.0001" iyz="0.0"
+                 izz="0.0001"/>
+    </inertial>
+  </link>
+
+  <!-- The camera itself -->
+  <xtion_camera parent="xtion_mount_link" name="xtion">
+    <!-- Ideal extrinsic parameters obtained from robot model -->
+    <xacro:if value="$(arg simulation)">
+      <origin xyz="0.022 0.003 0.002" rpy="0.0 ${M_PI/4} 0.0"/>
+      <origin xyz="-0.015 0.0035 0.004" rpy="0 0 0"/>    <!-- Visual origin -->
+    </xacro:if>
+    <!-- Extrinsic parameters obtained through arm-camera calibration:
+         http://wiki.ros.org/turtlebot_arm_kinect_calibration -->
+    <xacro:unless value="$(arg simulation)">
+      <!-- Values obtained by calibtrin but compensated after visualization: xyz=-0.01 0.0 -0.003 -->
+      <origin xyz="0.01 -6.25956e-06 0.001" rpy="-0.0319842 0.774615 -0.0120437"/>
+
+      <!-- Visual origin corrections: undo the rotations for better aesthetics  -->
+      <origin xyz="-0.005 0.006 0.012" rpy="0.0319842 ${M_PI/4 - 0.774615} 0.0120437"/>
+
+      <!-- <origin xyz="0.01 0.0 -0.01" rpy="0.0 0.711982 0.02"/>  p&p try and error  OK for right-side... :o  -->
+      <!-- <origin xyz="0.022 0.003 0.002" rpy="0.0 0.711982 0.00994433"/>  ideal from robot model KO -->
+      <!-- <origin xyz="-0.012 -0.006 -0.012" rpy="0.0 0.711982 0.01"/> Fitting pc to robot model  KO -->
+      <!-- <origin xyz="-0.0179751 0.0118658 0.022709" rpy="-0.0549698 0.711982 0.00994433"/>   calib R and T  KO- -->
+      <!-- <origin xyz="0.022 0.0225 0.0" rpy="-0.0292745 0.682572 0.0222799"/>  calib R, measured T  KO-->
+      <!-- <origin xyz="0 0.000831867 0" rpy="-0.0292745 0.682572 0.0222799"/>  calib R, zero T  KO-->
+    </xacro:unless>
+  </xtion_camera>
+        
+  <!-- Seems like Gazebo kinect plugin needs to use a centered frame instead of separated rgb and depth.
+       No idea if this makes any sense, but it works! I also move the optical tf a bit forward to make
+       pointcloud match better the model; this is absolutely arbitrary...
+       
+  <xacro:if value="$(arg simulation)">
+    <joint name="xtion_gazebo_optical_joint" type="fixed">
+      <origin xyz="0.004 0.0 0.0" rpy="${-M_PI/2} 0.0 ${-M_PI/2}"/>
+      <parent link="xtion_link"/>
+      <child link="xtion_gazebo_optical_frame"/>
+    </joint>
+    <link name="xtion_gazebo_optical_frame"/>
+  </xacro:if>        TODO: I think I can remove this because I use registered depth images        -->
+
+
+  <!-- Sonar sensors forming a half ring centered on (and slightly above) base_link -->
+  <joint name="sonars_joint" type="fixed">
+    <origin xyz="0.0 0.0 0.108" rpy="0.0 0.0 0.0"/>
+    <parent link="base_link"/>
+    <child link="sonars_mount_link"/>
+  </joint>
+
+  <link name="sonars_mount_link">
+    <inertial>
+      <mass value="0.22"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.0001" ixy="0.0" ixz="0.0"
+               iyy="0.0001" iyz="0.0"
+               izz="0.0001"/>
+    </inertial>
+
+    <visual>
+      <origin xyz="0.0 0.0 -0.0586" rpy="${-M_PI/2} -${M_PI} ${-M_PI/2}"/>
+      <geometry>
+        <mesh filename="package://thorp_description/meshes/sonar_array.dae" scale="0.001006 0.001006 0.001"/>
+      </geometry>
+    </visual>
+
+    <collision>
+      <origin xyz="-0.01 0.0 0.0165" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <box size="0.074 0.074 0.004"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <LV_MaxSonar_EZ2_sensor name="m90" parent="sonars_mount_link" x_loc="0.0"    y_loc="-0.1380" yaw="-1.57080"/>
+  <LV_MaxSonar_EZ2_sensor name="m72" parent="sonars_mount_link" x_loc="0.0426" y_loc="-0.1312" yaw="-1.25664"/>
+  <LV_MaxSonar_EZ2_sensor name="m54" parent="sonars_mount_link" x_loc="0.0811" y_loc="-0.1116" yaw="-0.94248"/>
+  <LV_MaxSonar_EZ2_sensor name="m36" parent="sonars_mount_link" x_loc="0.1116" y_loc="-0.0811" yaw="-0.62832"/>
+  <LV_MaxSonar_EZ2_sensor name="m18" parent="sonars_mount_link" x_loc="0.1312" y_loc="-0.0426" yaw="-0.31416"/>
+  <LV_MaxSonar_EZ2_sensor name="0"   parent="sonars_mount_link" x_loc="0.138"  y_loc=" 0.0"    yaw=" 0.0"/>
+  <LV_MaxSonar_EZ2_sensor name="p18" parent="sonars_mount_link" x_loc="0.1312" y_loc="+0.0426" yaw="+0.31416"/>
+  <LV_MaxSonar_EZ2_sensor name="p36" parent="sonars_mount_link" x_loc="0.1116" y_loc="+0.0811" yaw="+0.62832"/>
+  <LV_MaxSonar_EZ2_sensor name="p54" parent="sonars_mount_link" x_loc="0.0811" y_loc="+0.1116" yaw="+0.94248"/>
+  <LV_MaxSonar_EZ2_sensor name="p72" parent="sonars_mount_link" x_loc="0.0426" y_loc="+0.1312" yaw="+1.25664"/>
+  <LV_MaxSonar_EZ2_sensor name="p90" parent="sonars_mount_link" x_loc="0.0"    y_loc="+0.1380" yaw="+1.57080"/>
+
+  <xacro:macro name="LV_MaxSonar_EZ2_sensor" params="name parent x_loc y_loc yaw">
+    <joint name="s_${name}_joint" type="fixed">
+      <origin xyz="${x_loc} ${y_loc} 0.0" rpy="0.0 0.0 ${yaw}"/>
+      <parent link="${parent}"/>
+      <child link="s_${name}_link"/>
+    </joint>
+    <link name="s_${name}_link">
+      <inertial>
+        <mass value="0.001"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <inertia ixx="0.000001" ixy="0.0" ixz="0.0"
+                 iyy="0.000001" iyz="0.0"
+                 izz="0.000001"/>
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://hector_sensors_description/meshes/sonar_sensor/max_sonar_ez4.dae" scale="1.1 1.1 1.1"/>/>
+        </geometry>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link>
+  </xacro:macro>
+
+  <!-- IR sensor links, pointing at -155, pi, pi and 155 degrees -->
+  <joint name="ir_l155_joint" type="fixed">
+    <origin xyz="-0.08  0.12 0.2" rpy="0.0 0.0 2.70526034059"/>
+    <parent link="base_link"/>
+    <child link="ir_l155_link"/>
+  </joint>
+  <link name="ir_l155_link"/>
+
+  <joint name="ir_l180_joint" type="fixed">
+    <origin xyz="-0.10  0.08 0.2" rpy="0.0 0.0 3.14159265359"/>
+    <parent link="base_link"/>
+    <child link="ir_l180_link"/>
+  </joint>
+  <link name="ir_l180_link"/>
+
+  <joint name="ir_r180_joint" type="fixed">
+    <origin xyz="-0.10 -0.08 0.2" rpy="0.0 0.0 3.14159265359"/>
+    <parent link="base_link"/>
+    <child link="ir_r180_link"/>
+  </joint>
+  <link name="ir_r180_link"/>
+
+  <joint name="ir_r155_joint" type="fixed">
+    <origin xyz="-0.08 -0.12 0.2" rpy="0.0 0.0 -2.70526034059"/>
+    <parent link="base_link"/>
+    <child link="ir_r155_link"/>
+  </joint>
+  <link name="ir_r155_link"/>
+</robot>

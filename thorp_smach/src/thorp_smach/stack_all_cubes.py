@@ -98,7 +98,8 @@ with sm:
     smach.StateMachine.add('ObjectDetection',
                            ObjectDetection(),
                            remapping={'output_frame':'output_frame',
-                                      'object_names':'object_names'},
+                                      'object_names':'object_names',
+                                      'support_surf':'support_surf'},
                            transitions={'succeeded':'GetDetectedCubes',
                                         'preempted':'preempted',
                                         'aborted':'error'})
@@ -111,18 +112,20 @@ with sm:
 
     # Stack cubes sub state machine; iterates over the detected cubes and stack them over the one most in front of the arm
     sc_it = smach.Iterator(outcomes = ['succeeded','preempted','aborted'],
-                           input_keys = ['base_cube_pose', 'base_cube_name', 'other_cubes', 'cube_height'],
+                           input_keys = ['base_cube_pose', 'base_cube_name', 'other_cubes', 'cube_height', 'support_surf'],
                            output_keys = [],
                            it = lambda: sm.userdata.other_cubes,  # must be a lambda because we destroy the list
                            it_label = 'object_name',
                            exhausted_outcome = 'succeeded')
     with sc_it:
         sc_sm = smach.StateMachine(outcomes = ['succeeded','preempted','aborted','continue'],
-                                   input_keys = ['base_cube_pose', 'object_name', 'other_cubes', 'cube_height'],
+                                   input_keys = ['base_cube_pose', 'object_name', 'support_surf', 'cube_height'],
                                    output_keys = [])
         with sc_sm:
             smach.StateMachine.add('PickupObject',
                                    PickupObject(),
+                                   remapping={'object_name':'object_name',
+                                              'support_surf':'support_surf'},
                                    transitions={'succeeded':'IncreasePlaceHeight',
                                                 'preempted':'preempted',
                                                 'aborted':'aborted'})
@@ -134,6 +137,7 @@ with sm:
             smach.StateMachine.add('PlaceObject',
                                    PlaceObject(),
                                    remapping={'object_name':'object_name',
+                                              'support_surf':'support_surf',
                                               'place_pose':'base_cube_pose'},
                                    transitions={'succeeded':'continue',
                                                 'preempted':'preempted',

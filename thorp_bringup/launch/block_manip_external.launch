@@ -13,7 +13,7 @@
 
   <!--  ************* Arm bringup stuff ************* -->
 
-  <param name="robot_description" command="$(find xacro)/xacro.py '$(find thorp_bringup)/urdf/standalone_arm.urdf.xacro'"/>
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find thorp_description)/urdf/standalone_arm.urdf.xacro'"/>
   <node name="robot_state_pub" pkg="robot_state_publisher" type="robot_state_publisher"/>
   <node name="fake_joint_pub" pkg="turtlebot_arm_bringup" type="fake_joint_pub.py"/>
 
