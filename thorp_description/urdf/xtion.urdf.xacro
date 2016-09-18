@@ -8,7 +8,7 @@
   <!-- 3D sensor macro -->
   <xacro:macro name="xtion_camera" params="parent name *origin *visual_origin">
     <joint name="${name}_rgb_joint" type="fixed">
-      <insert_block name="origin"/>
+      <xacro:insert_block name="origin"/>
       <parent link="${parent}"/>
       <child link="${name}_rgb_frame"/>
     </joint>
@@ -31,7 +31,7 @@
       <visual>
         <!-- Visual origin is parameterized because the "ideal" pose used on
              simulation and the "working" pose used with the real robot differ -->
-        <insert_block name="visual_origin"/>
+        <xacro:insert_block name="visual_origin"/>
         <geometry>
           <mesh filename="package://turtlebot_description/meshes/sensors/xtion_pro_camera.dae"/>
         </geometry>

@@ -203,10 +203,10 @@
 
   <!-- Gazebo configuration for other structural parts -->
   <gazebo reference="arm_mount_link">
-    <material>Gazebo/Balck</material>
+    <material>Gazebo/Black</material>
     <selfCollide>true</selfCollide>
     <gravity>true</gravity>
-  </gazebo>  
+  </gazebo>
 
   <gazebo reference="sonars_mount_link">
     <material>Gazebo/Black</material>
@@ -227,6 +227,12 @@
   </gazebo>
 
   <gazebo reference="opencm_link">
+    <material>Gazebo/Black</material>
+    <selfCollide>true</selfCollide>
+    <gravity>true</gravity>
+  </gazebo>
+
+  <gazebo reference="cannon_link">
     <material>Gazebo/Black</material>
     <selfCollide>true</selfCollide>
     <gravity>true</gravity>

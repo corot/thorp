@@ -32,7 +32,7 @@
   </include>
 
   <!-- Overwrite default Turtlebot 2 description with Thorp's one -->
-  <param name="robot_description" command="$(find xacro)/xacro.py '$(find thorp_description)/urdf/thorp.urdf.xacro' simulation:=false"/>
+  <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find thorp_description)/urdf/thorp.urdf.xacro' simulation:=false"/>
   <!--  Also increase the publishing frequency so the arm doesn't jump when moving -->
   <param name="robot_state_publisher/publish_frequency" value="20.0"/>
 

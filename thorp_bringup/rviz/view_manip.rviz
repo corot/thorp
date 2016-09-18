@@ -10,8 +10,8 @@ Panels:
         - /Camera1/Visibility1
         - /Onboard Camera1
         - /DepthCloud External Camera1/Auto Size1
-      Splitter Ratio: 0.609137
-    Tree Height: 290
+      Splitter Ratio: 0.609136999
+    Tree Height: 321
   - Class: rviz/Help
     Name: Help
   - Class: rviz/Views
@@ -34,7 +34,7 @@ Visualization Manager:
       Color: 160; 160; 164
       Enabled: true
       Line Style:
-        Line Width: 0.03
+        Line Width: 0.0299999993
         Value: Lines
       Name: Grid
       Normal Cell Count: 0
@@ -192,6 +192,81 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          cannon_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          cannon_servo_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          cannon_shaft_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          cannon_tube1_hollow_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          cannon_tube1_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          cannon_tube2_hollow_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          cannon_tube2_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          cannon_tube3_hollow_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          cannon_tube3_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          cannon_tube4_hollow_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          cannon_tube4_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          cannon_tube5_hollow_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          cannon_tube5_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          cannon_tube6_hollow_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          cannon_tube6_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
           caster_back_link:
             Alpha: 1
             Show Axes: false
@@ -329,6 +404,16 @@ Visualization Manager:
             Show Trail: false
             Value: true
           pole_bottom_13_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          pole_bottom_14_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          pole_bottom_15_link:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -577,7 +662,7 @@ Visualization Manager:
         Show Manipulability: false
         Show Manipulability Index: false
         Show Weight Limit: false
-        TextHeight: 0.08
+        TextHeight: 0.0799999982
       Planning Request:
         Colliding Link Color: 255; 0; 0
         Goal State Alpha: 1
@@ -595,7 +680,7 @@ Visualization Manager:
       Scene Geometry:
         Scene Alpha: 1
         Scene Color: 50; 230; 50
-        Scene Display Time: 0.2
+        Scene Display Time: 0.200000003
         Show Scene Geometry: true
         Voxel Coloring: Z-Axis
         Voxel Rendering: Occupied Voxels
@@ -706,6 +791,81 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
           base_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          cannon_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          cannon_servo_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          cannon_shaft_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          cannon_tube1_hollow_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          cannon_tube1_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          cannon_tube2_hollow_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          cannon_tube2_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          cannon_tube3_hollow_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          cannon_tube3_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          cannon_tube4_hollow_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          cannon_tube4_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          cannon_tube5_hollow_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          cannon_tube5_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          cannon_tube6_hollow_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          cannon_tube6_link:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -847,6 +1007,16 @@ Visualization Manager:
             Show Trail: false
             Value: true
           pole_bottom_13_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          pole_bottom_14_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          pole_bottom_15_link:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -1088,17 +1258,18 @@ Visualization Manager:
       Value: true
     - Alpha: 1
       Axes Length: 1
-      Axes Radius: 0.1
+      Axes Radius: 0.100000001
       Class: rviz/Pose
       Color: 220; 220; 220
       Enabled: false
-      Head Length: 0.02
-      Head Radius: 0.02
+      Head Length: 0.0199999996
+      Head Radius: 0.0199999996
       Name: Pick/Place Pose
-      Shaft Length: 0.08
-      Shaft Radius: 0.01
+      Shaft Length: 0.0799999982
+      Shaft Radius: 0.00999999978
       Shape: Arrow
       Topic: /gripper_pose
+      Unreliable: false
       Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
@@ -1123,9 +1294,10 @@ Visualization Manager:
       Queue Size: 10
       Selectable: true
       Size (Pixels): 3
-      Size (m): 0.0025
+      Size (m): 0.00249999994
       Style: Flat Squares
       Topic: /senz3d/depth/points
+      Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
@@ -1167,19 +1339,21 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
-    - Arrow Length: 0.3
+    - Arrow Length: 0.300000012
       Class: rviz/PoseArray
       Color: 0; 0; 255
       Enabled: false
       Name: Blocks Poses
       Topic: /turtlebot_blocks
+      Unreliable: false
       Value: false
-    - Arrow Length: 0.3
+    - Arrow Length: 0.300000012
       Class: rviz/PoseArray
       Color: 255; 25; 0
       Enabled: false
       Name: Pick & Place Poses
       Topic: /pick_and_place
+      Unreliable: false
       Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
@@ -1204,9 +1378,10 @@ Visualization Manager:
       Queue Size: 10
       Selectable: true
       Size (Pixels): 3
-      Size (m): 0.005
+      Size (m): 0.00499999989
       Style: Flat Squares
       Topic: /block_detection_action_server/block_output
+      Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
@@ -1220,18 +1395,19 @@ Visualization Manager:
       Update Topic: /move_objects/update
       Value: true
     - Alpha: 1
-      Axes Length: 0.08
-      Axes Radius: 0.008
+      Axes Length: 0.0799999982
+      Axes Radius: 0.00800000038
       Class: rviz/Pose
       Color: 255; 25; 0
       Enabled: true
-      Head Length: 0.3
-      Head Radius: 0.1
+      Head Length: 0.300000012
+      Head Radius: 0.100000001
       Name: Pick/Place Pose
       Shaft Length: 1
-      Shaft Radius: 0.05
+      Shaft Radius: 0.0500000007
       Shape: Axes
       Topic: /target_pose
+      Unreliable: false
       Value: true
     - Class: rviz/TF
       Enabled: false
@@ -1255,6 +1431,7 @@ Visualization Manager:
       Overlay Alpha: 0.5
       Queue Size: 2
       Transport Hint: raw
+      Unreliable: false
       Value: false
       Visibility:
         Blocks PointCloud: false
@@ -1283,6 +1460,7 @@ Visualization Manager:
       ID: false
       Name: OrkObject
       Topic: /tabletop/recognized_object_array
+      Unreliable: false
       Value: true
     - Bounding Box: false
       Class: object_recognition_ros/OrkTable
@@ -1292,6 +1470,7 @@ Visualization Manager:
       Name: OrkTable
       Top: true
       Topic: /tabletop/table_array
+      Unreliable: false
       Value: true
     - Class: rviz/MarkerArray
       Enabled: false
@@ -1311,6 +1490,7 @@ Visualization Manager:
       Normalize Range: true
       Queue Size: 2
       Transport Hint: raw
+      Unreliable: false
       Value: false
     - Class: rviz/Image
       Enabled: false
@@ -1322,6 +1502,7 @@ Visualization Manager:
       Normalize Range: true
       Queue Size: 2
       Transport Hint: raw
+      Unreliable: false
       Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
@@ -1346,9 +1527,10 @@ Visualization Manager:
       Queue Size: 10
       Selectable: true
       Size (Pixels): 3
-      Size (m): 0.01
+      Size (m): 0.00999999978
       Style: Flat Squares
       Topic: /external_camera/depth_registered/points
+      Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
@@ -1409,22 +1591,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 1.15619
+      Distance: 1.45032477
       Enable Stereo Rendering:
-        Stereo Eye Separation: 0.06
+        Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.271577
+        X: 0.271577001
         Y: 0.0760196
-        Z: 3.20638e-07
+        Z: 3.20638009e-07
       Name: Current View
-      Near Clip Distance: 0.01
-      Pitch: 0.730199
+      Near Clip Distance: 0.00999999978
+      Pitch: 0.730198979
       Target Frame: base_link
       Value: XYOrbit (rviz)
-      Yaw: 4.71588
+      Yaw: 4.71587992
     Saved: ~
 Window Geometry:
   Camera:
@@ -1433,7 +1615,7 @@ Window Geometry:
     collapsed: false
   External Camera:
     collapsed: false
-  Height: 981
+  Height: 1056
   Help:
     collapsed: false
   Hide Left Dock: false
@@ -1442,11 +1624,11 @@ Window Geometry:
     collapsed: false
   Onboard Camera:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd00000002000000000000022a00000385fc0200000007fb000000100044006900730070006c0061007900730100000033000001b3000000d801000005fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e006701000001e9000001cf0000018c01000005fb0000000800480065006c00700000000342000000bb0000007101000005fb0000000a0056006900650077007300000003b0000000b0000000ab01000005fb0000000a0049006d006100670065000000030a000000b70000000000000000fb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000002f1000000ab0000006901000005fb0000000c00430061006d006500720061020000000000000170000003b1000002c800000001000001ea00000385fc0200000002fb0000001c004f006e0062006f006100720064002000430061006d0065007200610000000033000003850000001d01000005fc00000305000000b30000000000fffffffa000000010100000002fb0000001e00450078007400650072006e0061006c002000430061006d0065007200610000000000ffffffff0000009201000005fb0000000c00430061006d0065007200610000000596000001ea0000000000000000000005530000038500000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000200000000000002b8000003dafc0200000007fb000000100044006900730070006c0061007900730100000028000001d6000000dd00fffffffb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e00670100000204000001fe000001cc00fffffffb0000000800480065006c00700000000342000000bb0000007600fffffffb0000000a0056006900650077007300000003b0000000b0000000b000fffffffb0000000a0049006d006100670065000000030a000000b70000000000000000fb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000002f1000000ab0000006400fffffffb0000000c00430061006d006500720061020000000000000170000003b1000002c800000001000001ea00000385fc0200000002fb0000001c004f006e0062006f006100720064002000430061006d0065007200610000000033000003850000001600fffffffc00000305000000b30000000000fffffffa000000010100000002fb0000001e00450078007400650072006e0061006c002000430061006d0065007200610000000000ffffffff000000a300fffffffb0000000c00430061006d0065007200610000000596000001ea000000000000000000000481000003da00000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Tool Properties:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1920
-  X: 0
-  Y: 44
+  Width: 1855
+  X: 65
+  Y: 24

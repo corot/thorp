@@ -9,6 +9,7 @@
     - 11 sonars
     - 5 IR sensors
     - Turtlebot arm
+    - Rocket launcher
     - Auxiliary 3D sensor (Creative Senz3D)
     - Manipulation 3D sensor (Asus Xtion Pro)
 -->
@@ -18,8 +19,8 @@
   <xacro:include filename="$(find turtlebot_description)/urdf/turtlebot_library.urdf.xacro"/>
   <xacro:include filename="$(find turtlebot_arm_description)/urdf/turtlebot_arm.xacro"/>
   <xacro:include filename="$(find softkinetic_camera)/urdf/senz3d.urdf.xacro"/>
-  <xacro:include filename="$(find thorp_cannon)/urdf/cannon.urdf.xacro"/>
   <xacro:include filename="$(find thorp_description)/urdf/thorp_gazebo.urdf.xacro"/>
+  <xacro:include filename="$(find thorp_description)/urdf/cannon.urdf.xacro"/>
   <xacro:include filename="$(find thorp_description)/urdf/kinect.urdf.xacro"/>
   <xacro:include filename="$(find thorp_description)/urdf/xtion.urdf.xacro"/>
 
@@ -322,18 +323,6 @@
     </collision>
   </link>
 
-  <LV_MaxSonar_EZ2_sensor name="m90" parent="sonars_mount_link" x_loc="0.0"    y_loc="-0.1380" yaw="-1.57080"/>
-  <LV_MaxSonar_EZ2_sensor name="m72" parent="sonars_mount_link" x_loc="0.0426" y_loc="-0.1312" yaw="-1.25664"/>
-  <LV_MaxSonar_EZ2_sensor name="m54" parent="sonars_mount_link" x_loc="0.0811" y_loc="-0.1116" yaw="-0.94248"/>
-  <LV_MaxSonar_EZ2_sensor name="m36" parent="sonars_mount_link" x_loc="0.1116" y_loc="-0.0811" yaw="-0.62832"/>
-  <LV_MaxSonar_EZ2_sensor name="m18" parent="sonars_mount_link" x_loc="0.1312" y_loc="-0.0426" yaw="-0.31416"/>
-  <LV_MaxSonar_EZ2_sensor name="0"   parent="sonars_mount_link" x_loc="0.138"  y_loc=" 0.0"    yaw=" 0.0"/>
-  <LV_MaxSonar_EZ2_sensor name="p18" parent="sonars_mount_link" x_loc="0.1312" y_loc="+0.0426" yaw="+0.31416"/>
-  <LV_MaxSonar_EZ2_sensor name="p36" parent="sonars_mount_link" x_loc="0.1116" y_loc="+0.0811" yaw="+0.62832"/>
-  <LV_MaxSonar_EZ2_sensor name="p54" parent="sonars_mount_link" x_loc="0.0811" y_loc="+0.1116" yaw="+0.94248"/>
-  <LV_MaxSonar_EZ2_sensor name="p72" parent="sonars_mount_link" x_loc="0.0426" y_loc="+0.1312" yaw="+1.25664"/>
-  <LV_MaxSonar_EZ2_sensor name="p90" parent="sonars_mount_link" x_loc="0.0"    y_loc="+0.1380" yaw="+1.57080"/>
-
   <xacro:macro name="LV_MaxSonar_EZ2_sensor" params="name parent x_loc y_loc yaw">
     <joint name="s_${name}_joint" type="fixed">
       <origin xyz="${x_loc} ${y_loc} 0.0" rpy="0.0 0.0 ${yaw}"/>
@@ -362,6 +351,18 @@
       </collision>
     </link>
   </xacro:macro>
+
+  <LV_MaxSonar_EZ2_sensor name="m90" parent="sonars_mount_link" x_loc="0.0"    y_loc="-0.1380" yaw="-1.57080"/>
+  <LV_MaxSonar_EZ2_sensor name="m72" parent="sonars_mount_link" x_loc="0.0426" y_loc="-0.1312" yaw="-1.25664"/>
+  <LV_MaxSonar_EZ2_sensor name="m54" parent="sonars_mount_link" x_loc="0.0811" y_loc="-0.1116" yaw="-0.94248"/>
+  <LV_MaxSonar_EZ2_sensor name="m36" parent="sonars_mount_link" x_loc="0.1116" y_loc="-0.0811" yaw="-0.62832"/>
+  <LV_MaxSonar_EZ2_sensor name="m18" parent="sonars_mount_link" x_loc="0.1312" y_loc="-0.0426" yaw="-0.31416"/>
+  <LV_MaxSonar_EZ2_sensor name="0"   parent="sonars_mount_link" x_loc="0.138"  y_loc=" 0.0"    yaw=" 0.0"/>
+  <LV_MaxSonar_EZ2_sensor name="p18" parent="sonars_mount_link" x_loc="0.1312" y_loc="+0.0426" yaw="+0.31416"/>
+  <LV_MaxSonar_EZ2_sensor name="p36" parent="sonars_mount_link" x_loc="0.1116" y_loc="+0.0811" yaw="+0.62832"/>
+  <LV_MaxSonar_EZ2_sensor name="p54" parent="sonars_mount_link" x_loc="0.0811" y_loc="+0.1116" yaw="+0.94248"/>
+  <LV_MaxSonar_EZ2_sensor name="p72" parent="sonars_mount_link" x_loc="0.0426" y_loc="+0.1312" yaw="+1.25664"/>
+  <LV_MaxSonar_EZ2_sensor name="p90" parent="sonars_mount_link" x_loc="0.0"    y_loc="+0.1380" yaw="+1.57080"/>
 
   <!-- IR sensor links, pointing at -155, pi, pi and 155 degrees -->
   <joint name="ir_l155_joint" type="fixed">
