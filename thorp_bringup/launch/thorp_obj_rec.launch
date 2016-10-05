@@ -1,0 +1,22 @@
+<launch>
+  <arg name="pipeline" default="tabletop"/>
+  <arg name="as_server" default="false"/>
+  
+  <!--  ***** Thorp model and manipulation camera ****  -->
+  <include file="$(find thorp_bringup)/launch/includes/model.launch.xml"/>
+  <include file="$(find thorp_bringup)/launch/includes/xtion.launch.xml"/>
+
+  <!-- Run Rviz and load the default config to see recognized tabletop objects -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_perc.rviz"/>
+
+  <!-- Run dynamic reconfiguration to tweak the parameters of the camera filters -->
+  <node name="dyn_reconfigure" pkg="rqt_reconfigure" type="rqt_reconfigure"/>
+
+  <!-- **************** ORK tabletop *****************  -->
+  <include file="$(find thorp_obj_rec)/launch/obj_rec.launch.xml">
+    <arg name="as_server"    value="$(arg as_server)"/>
+    <arg name="config_file"  value="$(find thorp_obj_rec)/config/ork/$(arg pipeline).detection.ros.ork"/>
+    <arg name="robot_frame"  value="base_footprint"/>
+    <arg name="sensor_frame" value="xtion_rgb_optical_frame"/>
+  </include>
+</launch>
