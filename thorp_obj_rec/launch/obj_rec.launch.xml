@@ -1,7 +1,7 @@
 <launch>
   <arg name="debug" default="false"/>
   <arg unless="$(arg debug)" name="launch_prefix" value=""/>
-  <arg     if="$(arg debug)" name="launch_prefix" value="gdb --ex run --args"/>
+  <arg     if="$(arg debug)" name="launch_prefix" value="gdb --args /usr/bin/python"/>
   
   <arg name="as_server"    default="true"/>
   <arg name="config_file"  default="$(find thorp_obj_rec)/config/ork/tabletop.detection.ros.ork"/>
