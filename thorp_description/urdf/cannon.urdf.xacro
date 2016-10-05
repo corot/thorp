@@ -5,7 +5,7 @@
 
 <robot name="Thorp" xmlns:xacro="http://ros.org/wiki/xacro">
 
-  <!-- Emulate the servo as a box and the cannon as a cylinder -->
+  <!-- Emulate the servo as a box and the cannon core as a cylinder -->
   <joint name="cannon_servo_joint" type="fixed">
     <origin xyz="-0.009 -0.002 -0.0195" rpy="0.0 0.0 0.0"/>
     <parent link="arm_mount_link"/>
@@ -93,14 +93,8 @@
                izz="0.0001"/>
     </inertial>
   </link>
-  
-  <cannon_tube parent="cannon_link" number="1" y_loc=" 0.004400" z_loc=" 0.000000"/>
-  <cannon_tube parent="cannon_link" number="2" y_loc=" 0.002200" z_loc=" 0.003811"/>
-  <cannon_tube parent="cannon_link" number="3" y_loc="-0.002200" z_loc=" 0.003811"/>
-  <cannon_tube parent="cannon_link" number="4" y_loc="-0.004400" z_loc=" 0.000000"/>
-  <cannon_tube parent="cannon_link" number="5" y_loc="-0.002200" z_loc="-0.003811"/>
-  <cannon_tube parent="cannon_link" number="6" y_loc=" 0.002200" z_loc="-0.003811"/>
 
+  <!-- Emulate the six cannon tubes with two cylinders, the second a bit smaller and transparent -->
   <xacro:macro name="cannon_tube" params="parent number y_loc z_loc">
     <joint name="cannon_tube${number}_joint" type="fixed">
       <origin xyz="0.035 ${y_loc} ${z_loc}"/>
@@ -136,4 +130,11 @@
       </visual>
     </link>
   </xacro:macro>
+  
+  <cannon_tube parent="cannon_link" number="1" y_loc=" 0.004400" z_loc=" 0.000000"/>
+  <cannon_tube parent="cannon_link" number="2" y_loc=" 0.002200" z_loc=" 0.003811"/>
+  <cannon_tube parent="cannon_link" number="3" y_loc="-0.002200" z_loc=" 0.003811"/>
+  <cannon_tube parent="cannon_link" number="4" y_loc="-0.004400" z_loc=" 0.000000"/>
+  <cannon_tube parent="cannon_link" number="5" y_loc="-0.002200" z_loc="-0.003811"/>
+  <cannon_tube parent="cannon_link" number="6" y_loc=" 0.002200" z_loc="-0.003811"/>
 </robot>
