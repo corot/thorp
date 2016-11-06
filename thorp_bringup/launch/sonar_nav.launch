@@ -8,12 +8,12 @@
 <launch>
   <!--  *********** Thorp robot standalone ************  -->
   <include file="$(find thorp_bringup)/launch/thorp_robot.launch"/>
- 
+
   <!--  ** Turtlebot 2 move base with custom tweaks ***  -->
   <include file="$(find turtlebot_navigation)/launch/includes/move_base.launch.xml">
     <arg name="custom_param_file" value="$(find thorp_bringup)/param/custom_move_base.yaml"/>
   </include>
-  
+
   <!--
     Tweaks to adapt the move base node to local navigation just with sonars and bumpers:
      - global costmap is also a rolling window, non-static map

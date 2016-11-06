@@ -201,55 +201,12 @@
   <Sharp_GP2Y0A21_IR_sim name="r180"/>
   <Sharp_GP2Y0A21_IR_sim name="r155"/>
 
-  <!-- Gazebo configuration for other structural parts -->
-  <gazebo reference="arm_mount_link">
-    <material>Gazebo/Black</material>
-    <selfCollide>true</selfCollide>
-    <gravity>true</gravity>
-  </gazebo>
-
-  <gazebo reference="sonars_mount_link">
-    <material>Gazebo/Black</material>
-    <selfCollide>true</selfCollide>
-    <gravity>true</gravity>
-  </gazebo>
-
-  <gazebo reference="senz3d_mount_link">
-    <material>Gazebo/Black</material>
-    <selfCollide>true</selfCollide>
-    <gravity>true</gravity>
-  </gazebo>
-
-  <gazebo reference="xtion_mount_link">
-    <material>Gazebo/Black</material>
-    <selfCollide>true</selfCollide>
-    <gravity>true</gravity>
-  </gazebo>
-
-  <gazebo reference="opencm_link">
-    <material>Gazebo/Black</material>
-    <selfCollide>true</selfCollide>
-    <gravity>true</gravity>
-  </gazebo>
-
-  <gazebo reference="cannon_link">
-    <material>Gazebo/Black</material>
-    <selfCollide>true</selfCollide>
-    <gravity>true</gravity>
-  </gazebo>
-
-  <!-- Gazebo configuration for arm control -->
+  <!-- Gazebo configuration for arm and cannon servos control -->
   <gazebo>
     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so"/>
   </gazebo>
 
-  <AX12_transmission name="arm_shoulder_pan"/>
-  <AX12_transmission name="arm_shoulder_lift"/>
-  <AX12_transmission name="arm_elbow_flex"/>
-  <AX12_transmission name="arm_wrist_flex"/>
-  <AX12_transmission name="gripper"/>
-
-  <xacro:macro name="AX12_transmission" params="name">
+  <xacro:macro name="servo_transmission" params="name">
     <transmission name="${name}_trans">
       <type>transmission_interface/SimpleTransmission</type>
       <joint name="${name}_joint">
@@ -260,4 +217,36 @@
       </actuator>
     </transmission>
   </xacro:macro>
+
+  <servo_transmission name="arm_shoulder_pan"/>
+  <servo_transmission name="arm_shoulder_lift"/>
+  <servo_transmission name="arm_elbow_flex"/>
+  <servo_transmission name="arm_wrist_flex"/>
+  <servo_transmission name="gripper"/>
+
+  <servo_transmission name="cannon"/>
+
+  <!-- Gazebo configuration for other structural parts -->
+  <xacro:macro name="structural_part" params="name color">
+    <gazebo reference="${name}_link">
+      <material>Gazebo/${color}</material>
+      <selfCollide>true</selfCollide>
+      <gravity>true</gravity>
+    </gazebo>
+  </xacro:macro>
+
+  <structural_part name="sonars_mount" color="Black"/>
+  <structural_part name="senz3d_mount" color="Black"/>
+  <structural_part name="xtion_mount"  color="Black"/>
+  <structural_part name="arm_mount"    color="Black"/>
+  <structural_part name="opencm"       color="Black"/>
+  <structural_part name="cannon"       color="Black"/>
+  <structural_part name="cannon_servo" color="Black"/>
+  <structural_part name="cannon_shaft" color="Black"/>
+  <structural_part name="cannon_tube1" color="Black"/>
+  <structural_part name="cannon_tube2" color="Black"/>
+  <structural_part name="cannon_tube3" color="Black"/>
+  <structural_part name="cannon_tube4" color="Black"/>
+  <structural_part name="cannon_tube5" color="Black"/>
+  <structural_part name="cannon_tube6" color="Black"/>
 </robot>
