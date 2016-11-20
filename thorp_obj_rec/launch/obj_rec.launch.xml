@@ -21,7 +21,7 @@
   <param name="tabletop_object_recognition/filter_planes"     value="true"/>
   <param name="tabletop_object_recognition/min_table_height"  value="0.25"/>
   <param name="tabletop_object_recognition/max_table_height"  value="0.55"/>
-  <param name="tabletop_object_recognition/max_angle_diff"    value="0.15"/>
+  <param name="tabletop_object_recognition/max_angle_diff"    value="0.1"/>
   <param name="tabletop_object_recognition/table_normal_x"    value="0"/>
   <param name="tabletop_object_recognition/table_normal_y"    value="0"/>
   <param name="tabletop_object_recognition/table_normal_z"    value="1"/>
