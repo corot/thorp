@@ -1,5 +1,5 @@
 <!--
-  Make Thorp execute a specific SMACH application
+  Make Thorp execute a specific SMACH application on Gazebo
     TODO 1: still not launching the whole stuff; navigation is missing
     TODO 2: this is not fully generic, as keyboard_ctrl is obj manip specific; idea: make it issue generic commands and show "not apply" when the SM rejects it
  -->
@@ -9,34 +9,9 @@
   <arg name="keyboard_ctrl" default="true"/>
   <arg name="external_camera" default="false"/>
 
-  <!--  ******** External 3D camera (optional) ********  -->
+  <!--  ***** Simulated mobile manipulator Thorp ******  -->
 
-  <include if="$(arg external_camera)" file="$(find thorp_bringup)/launch/includes/xtion.launch.xml">
-    <arg name="camera_name" value="external_camera"/>
-  </include>
-
-
-  <!--  *********** Thorp robot standalone ************  -->
-  <include file="$(find thorp_bringup)/launch/thorp_robot.launch"/>
-
-
-  <!--  ************* Moveit config stuff *************  -->
-
-  <!-- Load the URDF, SRDF and other .yaml configuration files on the param server -->
-  <include file="$(find thorp_moveit_config)/launch/planning_context.launch">
-    <arg name="load_robot_description" value="false"/>
-  </include>
-
-  <!-- Run the main MoveIt executable to provide move groups -->
-  <include file="$(find thorp_moveit_config)/launch/move_group.launch">
-    <arg name="allow_trajectory_execution" value="true"/>
-    <arg name="fake_execution" value="false"/>
-    <arg name="info" value="true"/>
-  </include>
-
-  <!--  Fake global reference to make Moveit octomap happy  -->
-  <node pkg="tf" type="static_transform_publisher" name="fake_global_reference"
-        args="0.0 0.0 0.0 0.0 0.0 0.0 map odom 100"/>
+  <include file="$(find thorp_simulation)/launch/thorp_gazebo.launch"/>
 
 
   <!--  ****** Thorp perception and manipulation ******  -->
@@ -57,7 +32,7 @@
         type="object_detection_server" output="screen" respawn="true">
     <param name="ork_execute_timeout" value="5.0"/>
   </node>
-
+  
   <node name="object_information_server" pkg="object_recognition_ros"
         type="object_information_server" output="screen" respawn="true">
   </node>
@@ -98,9 +73,5 @@
     <arg name="robot_frame"  value="base_footprint"/>
     <arg name="sensor_frame" value="xtion_depth_optical_frame"/>
   </include>
-
-
-  <!-- Run Rviz and load the default config to see the state of the move_group node and the scene interaction markers -->
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_manip.rviz"/>
 
 </launch>
