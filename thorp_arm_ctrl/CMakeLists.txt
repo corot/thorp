@@ -20,8 +20,8 @@ add_executable(thorp_arm_ctrl_server src/pickup_object_server.cpp
                                      src/move_to_target_server.cpp
                                      src/thorp_arm_ctrl_server.cpp)
 target_link_libraries(thorp_arm_ctrl_server ${catkin_LIBRARIES})
-add_dependencies(thorp_arm_ctrl_server thorp_msgs_gencpp)
+add_dependencies(thorp_arm_ctrl_server thorp_msgs_generate_messages_cpp)
 
 add_executable(scene_interaction_server src/interactive_manip_server.cpp)
 target_link_libraries(scene_interaction_server ${catkin_LIBRARIES})
-add_dependencies(scene_interaction_server thorp_msgs_gencpp)
+add_dependencies(scene_interaction_server thorp_msgs_generate_messages_cpp)

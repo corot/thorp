@@ -13,7 +13,7 @@ catkin_package(DEPENDS roscpp actionlib thorp_toolkit yocs_math_toolkit moveit_r
 
 add_executable(object_detection_server src/object_detection_action_server.cpp)
 target_link_libraries(object_detection_server ${catkin_LIBRARIES})
-add_dependencies(object_detection_server thorp_msgs_gencpp)
+add_dependencies(object_detection_server thorp_msgs_generate_messages_cpp)
 
 
 # install
