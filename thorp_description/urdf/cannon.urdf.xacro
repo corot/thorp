@@ -66,7 +66,6 @@
     <axis xyz="0 -1 0"/>
     <limit effort="30" velocity="0.10471975512" lower="-0.523598775598" upper="0.523598775598"/>
     <!-- 6 degrees/s, +/-30 degrees operational range -->
-    <dynamics friction="0.13"/>  <!-- no idea -->
     <origin xyz="0.0 -0.015 0.0" rpy="0.0 0.0 0.0"/>
     <parent link="cannon_shaft_link"/>
     <child link="cannon_link"/>
