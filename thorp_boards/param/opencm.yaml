@@ -13,30 +13,30 @@ write_rate: 20
 # Easy workaround is to set higher limits here and the desired ones on the robot
 # description xacro file 
 
-joints: {
-  # max_speed: phisical limit of the AX-12 is 114 rpm (684 deg/s)
-  # operation angle is 300 deg, so (max_angle - min_angle) <= 300
-  # neutral point is specified in ticks, so 512 (150 deg) is the default
-  arm_shoulder_pan_joint: {id: 1, max_angle: 150, min_angle: -150, max_speed: 180},
-  arm_shoulder_lift_joint: {id: 2, max_angle: 125, min_angle: -125, max_speed: 180},
-  arm_elbow_flex_joint: {id: 3, max_angle: 150, min_angle: -150, max_speed: 180},
-  arm_wrist_flex_joint: {id: 4, max_angle: 100, min_angle: -100, max_speed: 180},
-  gripper_joint: {id: 5, max_speed: 90},
-}
-
-controllers: {
-  arm_controller: {
-    type: follow_controller,
-    joints: [arm_shoulder_pan_joint, arm_shoulder_lift_joint, arm_elbow_flex_joint, arm_wrist_flex_joint],
-    action_name: arm_controller/follow_joint_trajectory,
-    onboard: false
-  }
-}
+#joints: {
+#  # max_speed: phisical limit of the AX-12 is 114 rpm (684 deg/s)
+#  # operation angle is 300 deg, so (max_angle - min_angle) <= 300
+#  # neutral point is specified in ticks, so 512 (150 deg) is the default
+#  arm_shoulder_pan_joint: {id: 1, max_angle: 150, min_angle: -150, max_speed: 180},
+#  arm_shoulder_lift_joint: {id: 2, max_angle: 125, min_angle: -125, max_speed: 180},
+#  arm_elbow_flex_joint: {id: 3, max_angle: 150, min_angle: -150, max_speed: 180},
+#  arm_wrist_flex_joint: {id: 4, max_angle: 100, min_angle: -100, max_speed: 180},
+#  gripper_joint: {id: 5, max_speed: 90},
+#}
+#
+#controllers: {
+#  arm_controller: {
+#    type: follow_controller,
+#    joints: [arm_shoulder_pan_joint, arm_shoulder_lift_joint, arm_elbow_flex_joint, arm_wrist_flex_joint],
+#    action_name: arm_controller/follow_joint_trajectory,
+#    onboard: false
+#  }
+#}
 
 digital_servos: {
-  cannon_servo: {rate: 20, pin: 2, length: 2}
+  cannon_servo: {rate: 20, pin: 2, length: 2}   # 4-pins port  XXX OTRO!!!
 }
 
 analog_sensors: {
-  arm_ir_ranger: {rate: 20, pin: 0, length: 2}
+  arm_ir_ranger: {rate: 20, pin: 2, length: 2}  # 4-pins port 1
 }

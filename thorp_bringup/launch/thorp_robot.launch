@@ -38,6 +38,7 @@
 
   <!--  *********** Thorp specific hardware ***********  -->
   <include file="$(find thorp_cannon)/launch/cannon.launch"/>
+  <include file="$(find thorp_boards)/launch/opencm.launch"/>
   <include file="$(find thorp_boards)/launch/arduino.launch"/>
   <include file="$(find thorp_bringup)/launch/includes/arm.launch.xml"/>
   <include file="$(find thorp_bringup)/launch/includes/xtion.launch.xml"/>

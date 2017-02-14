@@ -1,0 +1,97 @@
+#joints: {
+#  # max_speed: phisical limit of the AX-12 is 114 rpm (684 deg/s)
+#  # operation angle is 300 deg, so (max_angle - min_angle) <= 300
+#  # neutral point is specified in ticks, so 512 (150 deg) is the default
+#  arm_shoulder_pan_joint: {id: 1, max_angle: 150, min_angle: -150, max_speed: 180},
+#  arm_shoulder_lift_joint: {id: 2, max_angle: 125, min_angle: -125, max_speed: 180},
+#  arm_elbow_flex_joint: {id: 3, max_angle: 150, min_angle: -150, max_speed: 180},
+#  arm_wrist_flex_joint: {id: 4, max_angle: 100, min_angle: -100, max_speed: 180},
+#  gripper_joint: {id: 5, max_speed: 90},
+#}
+#
+#controllers: {
+#  arm_controller: {
+#    type: follow_controller,
+#    joints: [arm_shoulder_pan_joint, arm_shoulder_lift_joint, arm_elbow_flex_joint, arm_wrist_flex_joint],
+#    action_name: arm_controller/follow_joint_trajectory,
+#    onboard: false
+#  }
+#}
+
+
+joints: ['arm_shoulder_pan_joint', 'arm_shoulder_lift_joint', 'arm_elbow_flex_joint', 'arm_wrist_flex_joint', 'gripper_joint']
+
+arm_shoulder_pan_joint:
+    controller:
+        package: dynamixel_controllers
+        module: joint_position_controller
+        type: JointPositionController
+    joint_name: arm_shoulder_pan_joint
+    joint_speed: 1.0
+    motor:
+        id: 1
+        init: 512
+        min: 0
+        max: 1024
+
+arm_shoulder_lift_joint:
+    controller:
+        package: dynamixel_controllers
+        module: joint_position_controller
+        type: JointPositionController
+    joint_name: arm_shoulder_lift_joint
+    joint_speed: 1.0
+    motor:
+        id: 2
+        init: 512
+        min: 84
+        max: 940
+
+arm_elbow_flex_joint:
+    controller:
+        package: dynamixel_controllers
+        module: joint_position_controller
+        type: JointPositionController
+    joint_name: arm_elbow_flex_joint
+    joint_speed: 1.0
+    motor:
+        id: 3
+        init: 512
+        min: 0
+        max: 1024
+
+arm_wrist_flex_joint:
+    controller:
+        package: dynamixel_controllers
+        module: joint_position_controller
+        type: JointPositionController
+    joint_name: arm_wrist_flex_joint
+    joint_speed: 1.0
+    motor:
+        id: 4
+        init: 512
+        min: 170
+        max: 854
+        
+gripper_joint:
+    controller:
+        package: dynamixel_controllers
+        module: joint_position_controller
+        type: JointPositionController
+    joint_name: gripper_joint
+    joint_speed: 1.0
+    motor:
+        id: 5
+        init: 512
+        min: 0
+        max: 1024
+
+arm_controller:
+   controller:
+       package: dynamixel_controllers
+       module: joint_trajectory_action_controller
+       type: JointTrajectoryActionController
+   joint_trajectory_action_node:
+       min_velocity: 0.25
+       constraints:
+           goal_time: 0.1

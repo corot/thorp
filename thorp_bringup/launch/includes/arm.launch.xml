@@ -1,8 +1,8 @@
 <launch>
   <arg name="simulation" default="false" />
 
-  <include file="$(find thorp_boards)/launch/opencm.launch">
-    <arg name="simulation" value="$(arg simulation)"/>
+  <include file="$(find thorp_arm_ctrl)/launch/controllers.launch">
+    <!-- <arg name="simulation" value="$(arg simulation)"/> -->
   </include>
 
   <node name="gripper_controller" pkg="arbotix_controllers" type="gripper_controller.py">
