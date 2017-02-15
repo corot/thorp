@@ -13,7 +13,7 @@
 #include <yocs_math_toolkit/geometry.hpp>
 
 // MoveIt!
-#include <moveit/move_group_interface/move_group.h>
+#include <moveit/move_group_interface/move_group_interface.h>
 
 // Thorp messages
 #include <thorp_msgs/ThorpError.h>
@@ -62,15 +62,15 @@ public:
 
 protected:
     // Move groups to control arm and gripper with MoveIt!
-    moveit::planning_interface::MoveGroup& arm()
+    moveit::planning_interface::MoveGroupInterface& arm()
     {
-      static moveit::planning_interface::MoveGroup arm("arm");
+      static moveit::planning_interface::MoveGroupInterface arm("arm");
       return arm;
     }
 
-    moveit::planning_interface::MoveGroup& gripper()
+    moveit::planning_interface::MoveGroupInterface& gripper()
     {
-      static moveit::planning_interface::MoveGroup gripper("gripper");
+      static moveit::planning_interface::MoveGroupInterface gripper("gripper");
       return gripper;
     }
 
