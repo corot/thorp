@@ -118,7 +118,7 @@ def ObjectDetection():
 def PickupObject(attempts=3):
     '''  Pickup a given object, retrying up to a given number of times  '''
     it = smach.Iterator(outcomes = ['succeeded','preempted','aborted'],
-                        input_keys = ['object_name', 'support_surf'],
+                        input_keys = ['object_name', 'support_surf', 'max_effort'],
                         output_keys = [],
                         it = lambda: range(0, attempts),
                         it_label = 'attempt',
@@ -126,16 +126,17 @@ def PickupObject(attempts=3):
 
     with it:    
         sm = smach.StateMachine(outcomes = ['succeeded','preempted','aborted','continue'],
-                                input_keys = ['object_name', 'support_surf'],
+                                input_keys = ['object_name', 'support_surf', 'max_effort'],
                                 output_keys = [])
         with sm:
             smach.StateMachine.add('PickupObject',
                                    smach_ros.SimpleActionState('pickup_object',
                                                                thorp_msgs.PickupObjectAction,
-                                                               goal_slots=['object_name', 'support_surf'],
+                                                               goal_slots=['object_name', 'support_surf', 'max_effort'],
                                                                result_slots=[]),
                                    remapping={'object_name':'object_name',
-                                              'support_surf':'support_surf'},
+                                              'support_surf':'support_surf',
+                                              'max_effort':'max_effort'},
                                    transitions={'succeeded':'succeeded',
                                                 'preempted':'preempted',
                                                 'aborted':'ClearOctomap'})

@@ -2,6 +2,7 @@
 
 string object_name
 string support_surf
+float32 max_effort   # maximum effort exerted by the gripper to consider the object as grasped
 
 ---
 

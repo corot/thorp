@@ -118,7 +118,6 @@ int32_t PlaceObjectServer::place(const std::string& obj_name, const std::string&
 
   while (!ac_.waitForResult(ros::Duration(0.1)))
   {
-    ROS_WARN("[place object] NOT");
     if (as_.isPreemptRequested())
     {
       ROS_WARN("[place object] preempt.................................");

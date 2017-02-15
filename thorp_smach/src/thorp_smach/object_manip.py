@@ -30,6 +30,7 @@ with sm:
     sm.userdata.ucmd_outcome   = thorp_msgs.UserCommandResult()
     sm.userdata.od_attempt     = 0
     sm.userdata.output_frame   = rospy.get_param('~rec_objects_frame', '/map')
+    sm.userdata.pick_effort    = 0.3
 #     sm.userdata.object_names   = []
 #     sm.userdata.object_name    = std_msg.String()
 #     sm.userdata.pick_pose      = geometry_msg.PoseStamped()
@@ -75,7 +76,8 @@ with sm:
     smach.StateMachine.add('PickupObject',
                            PickupObject(),
                            remapping={'object_name':'object_name',
-                                      'support_surf':'support_surf'},
+                                      'support_surf':'support_surf',
+                                      'max_effort':'pick_effort'},
                            transitions={'succeeded':'PlaceObject',
                                         'preempted':'preempted',
                                         'aborted':'ObjectDetection'})

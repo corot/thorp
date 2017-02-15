@@ -43,11 +43,11 @@ PickupObjectServer::~PickupObjectServer()
 
 void PickupObjectServer::executeCB(const thorp_msgs::PickupObjectGoal::ConstPtr& goal)
 {
-  ROS_INFO("[pickup object] Execute goal: pick object '%s' from support surface '%s'",
-           goal->object_name.c_str(), goal->support_surf.c_str());
+  ROS_INFO("[pickup object] Execute goal: pick object '%s' from support surface '%s' exerting up to %.2fN",
+           goal->object_name.c_str(), goal->support_surf.c_str(), goal->max_effort);
 
   thorp_msgs::PickupObjectResult result;
-  result.error.code = pickup(goal->object_name, goal->support_surf);
+  result.error.code = pickup(goal->object_name, goal->support_surf, goal->max_effort);
   result.error.text = mec2str(result.error.code);
   if (result.error.code == moveit_msgs::MoveItErrorCodes::SUCCESS)
   {
@@ -75,7 +75,7 @@ void PickupObjectServer::preemptCB()
   arm().stop();
 }
 
-int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::string& surface)
+int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::string& surface, float max_effort)
 {
   if (!ac_.isServerConnected())
   {
@@ -110,7 +110,7 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
   goal.planning_options.planning_scene_diff.is_diff = true;
   goal.planning_options.planning_scene_diff.robot_state.is_diff = true;
 
-  result = makeGrasps(obj_pose, obj_size, obj_name, surface, goal.possible_grasps);
+  result = makeGrasps(obj_pose, obj_size, obj_name, surface, max_effort, goal.possible_grasps);
   if (result < 0)
   {
     // Error occurred while making grasps...
@@ -151,7 +151,6 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
 
   while (!ac_.waitForResult(ros::Duration(0.1)))
   {
-    ROS_WARN("[pickup object] NOT");
     if (as_.isPreemptRequested())
     {
       ROS_WARN("[pickup object] preempt.................................");
@@ -200,7 +199,7 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
 
 int32_t PickupObjectServer::makeGrasps(const geometry_msgs::PoseStamped& target_pose,
                                        const geometry_msgs::Vector3& target_size,
-                                       const std::string& obj_name, const std::string& surface,
+                                       const std::string& obj_name, const std::string& surface, float max_effort,
                                        std::vector<moveit_msgs::Grasp>& grasps)
 {
   // Try up to PICK_ATTEMPTS grasps with slightly different poses
@@ -237,6 +236,7 @@ int32_t PickupObjectServer::makeGrasps(const geometry_msgs::PoseStamped& target_
     g.grasp_posture.joint_names.push_back("gripper_joint");
     g.grasp_posture.points.resize(1);
     g.grasp_posture.points[0].positions.push_back(std::min(target_size.x, target_size.y) - 0.002);
+    g.grasp_posture.points[0].effort.push_back(max_effort);
 
     g.allowed_touch_objects.push_back(obj_name);
     g.allowed_touch_objects.push_back(surface);
