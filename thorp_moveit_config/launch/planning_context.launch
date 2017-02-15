@@ -11,9 +11,10 @@
 
   <!-- The semantic description that corresponds to the URDF -->
   <param name="$(arg robot_description)_semantic" textfile="$(find thorp_moveit_config)/config/Thorp.srdf" />
-  
+
   <!-- Load updated joint limits (override information from URDF) -->
   <group ns="$(arg robot_description)_planning">
+    <param name="shape_transform_cache_lookup_wait_time" value="0.1" />
     <rosparam command="load" file="$(find thorp_moveit_config)/config/joint_limits.yaml"/>
   </group>
 
@@ -21,5 +22,5 @@
   <group ns="$(arg robot_description)_kinematics">
     <rosparam command="load" file="$(find thorp_moveit_config)/config/kinematics.yaml"/>
   </group>
-  
+
 </launch>
