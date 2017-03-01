@@ -5,7 +5,7 @@
 <launch>
   <arg name="config_file" default="$(find thorp_bringup)/param/senz3d/obj_recognition.yaml"/>
     
-  <node name="senz3d" pkg="softkinetic_camera" type="softkinetic_bringup_node" args="0" output="screen">
+  <node pkg="softkinetic_camera" type="softkinetic_bringup_node" name="senz3d" output="screen" respawn="true" args="0">
     <rosparam file="$(arg config_file)" command="load"/>
     <param name="rgb_calibration_file" type="string" value="$(find softkinetic_camera)/resources/senz3d.yaml"/>
   </node>

@@ -27,9 +27,10 @@
     <arg name="custom_param_file" value="$(find thorp_bringup)/param/custom_move_base.yaml"/>
   </include>
 <!-- <include file="$(find thorp_bringup)/launch/includes/scan_matcher_2.launch.xml"/> -->
-  
+
   <!--  ****** Geometric and semantic map servers *****  -->
-  <node name="map_server" pkg="map_server" type="map_server" args="$(find thorp_bringup)/resources/maps/$(arg map_name).yaml">
+  <node pkg="map_server" type="map_server" name="map_server" output="screen" respawn="true"
+        args="$(find thorp_bringup)/resources/maps/$(arg map_name).yaml">
     <param name="frame_id" value="/map"/>
   </node>
 
@@ -42,5 +43,5 @@
   </include>
   
   <!--  ***** Watchdog to keep the pose on reboot *****  -->
-  <node name="save_amcl_pose" pkg="thorp_toolkit" type="save_pose_node"/>
+  <node pkg="thorp_toolkit" type="save_pose_node" name="save_amcl_pose" output="screen" respawn="true"/>
 </launch>

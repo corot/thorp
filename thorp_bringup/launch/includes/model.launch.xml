@@ -8,7 +8,7 @@
     <arg name="simulation" value="true"/>
   </include>
   
-  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+  <node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher" output="screen" respawn="true">
     <param name="use_gui" value="$(arg use_joints_gui)"/>
   </node>
 </launch>

@@ -13,18 +13,19 @@
   <include file="$(find thorp_bringup)/launch/includes/state_publisher.launch.xml"/>
 
   <!-- Fake base's wheels joint state, as here we are not running the full robot -->
-  <node name="fake_wheels_joints_pub" pkg="thorp_bringup" type="fake_joint_pub.py"/>
+  <node pkg="thorp_bringup" type="fake_joint_pub.py" name="fake_wheels_joints_pub" output="screen" respawn="true"/>
 
-  <node name="arbotix_gui" pkg="arbotix_python" type="arbotix_gui" output="screen"/>
+  <node pkg="arbotix_python" type="arbotix_gui" name="arbotix_gui" output="screen" respawn="true"/>
 
   <!-- Run Rviz and load the default config to see the state of the move_group node -->
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_manip.rviz"/>
+  <node pkg="rviz" type="rviz" name="rviz" output="screen" respawn="true"
+        args="-d $(find thorp_bringup)/rviz/view_manip.rviz"/>
 
 
   <!--  ******* Fake localization and odometry ********  -->
-  <node pkg="tf" type="static_transform_publisher" name="fake_localization"
+  <node pkg="tf" type="static_transform_publisher" name="fake_localization" output="screen" respawn="true"
         args="0.0 0.0 0.0 0.0 0.0 0.0 /map /odom 200"/>
-  <node pkg="tf" type="static_transform_publisher" name="fake_odometry"
+  <node pkg="tf" type="static_transform_publisher" name="fake_odometry" output="screen" respawn="true"
         args="0.0 0.0 0.0 0.0 0.0 0.0 /odom /base_footprint 200"/>
 
 

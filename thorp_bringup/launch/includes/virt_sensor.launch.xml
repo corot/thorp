@@ -4,7 +4,7 @@
  of the voxel map at that height (around 41 cm)
 -->
 <launch>
-  <node name="virtual_sensor" pkg="yocs_virtual_sensor" type="yocs_virtual_sensor_node">
+  <node pkg="yocs_virtual_sensor" type="yocs_virtual_sensor_node" name="virtual_sensor" output="screen" respawn="true">
     <param name="range_min"    value="0.0"/>
     <param name="range_max"    value="6.0"/>
     <param name="frequency"    value="10.0"/>

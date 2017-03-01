@@ -14,12 +14,12 @@
 <launch>
   <arg name="simulation" default="false" />
 
-  <node name="arbotix" pkg="arbotix_python" type="arbotix_driver" output="screen">
+  <node pkg="arbotix_python" type="arbotix_driver" name="arbotix" output="screen" respawn="true">
     <rosparam file="$(find thorp_boards)/param/opencm.yaml" command="load" />
     <param name="sim" value="$(arg simulation)"/>
   </node>
 
-  <node name="arm_ir_ranger" pkg="thorp_boards" type="ir_ranger.py" output="screen">
+  <node pkg="thorp_boards" type="ir_ranger.py" name="arm_ir_ranger" output="screen" respawn="true">
     <param name="type" value="2Y0A21"/>
     <param name="name" value="arm_ir_ranger"/>
     <param name="frame" value="ir_arm_link"/>

@@ -1,5 +1,5 @@
 <launch>
   <arg name="simulation" default="false" />
 
-  <node name="cannon_ctrl" pkg="thorp_cannon" type="cannon_ctrl.py"/>
+  <node pkg="thorp_cannon" type="cannon_ctrl.py" name="cannon_ctrl" output="screen" respawn="true"/>
 </launch>

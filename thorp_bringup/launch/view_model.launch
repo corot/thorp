@@ -7,5 +7,6 @@
     <arg name="use_joints_gui" value="true"/>
   </include>
 
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_model.rviz"/>
+  <node pkg="rviz" type="rviz" name="rviz" output="screen" respawn="true"
+        args="-d $(find thorp_bringup)/rviz/view_model.rviz"/>
 </launch>

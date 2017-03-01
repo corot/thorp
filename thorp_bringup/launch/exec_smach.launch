@@ -35,46 +35,42 @@
   </include>
 
   <!--  Fake global reference to make Moveit octomap happy  -->
-  <node pkg="tf" type="static_transform_publisher" name="fake_global_reference"
+  <node pkg="tf" type="static_transform_publisher" name="fake_global_reference" output="screen" respawn="true"
         args="0.0 0.0 0.0 0.0 0.0 0.0 map odom 100"/>
 
 
   <!--  ****** Thorp perception and manipulation ******  -->
 
-  <node name="thorp_arm_ctrl_server" pkg="thorp_arm_ctrl"
-        type="thorp_arm_ctrl_server" output="screen" respawn="true">
+  <node pkg="thorp_arm_ctrl" type="thorp_arm_ctrl_server" name="thorp_arm_ctrl_server" output="screen" respawn="true">
     <param name="arm_ctrl_ref_frame" value="arm_base_link"/>
     <param name="vertical_backlash_delta" value="0.015"/>
     <param name="fall_short_distance_delta" value="0.008"/>
     <param name="gripper_asymmetry_yaw_delta" value="0.005"/>
   </node>
 
-  <node name="scene_interaction_server" pkg="thorp_arm_ctrl"
-        type="scene_interaction_server" output="screen" respawn="true">
+  <node pkg="thorp_arm_ctrl" type="scene_interaction_server" name="scene_interaction_server" output="screen" respawn="true">
   </node>
 
-  <node name="object_detection_server" pkg="thorp_obj_rec"
-        type="object_detection_server" output="screen" respawn="true">
+  <node pkg="thorp_obj_rec" type="object_detection_server" name="object_detection_server" output="screen" respawn="true">
     <param name="ork_execute_timeout" value="5.0"/>
   </node>
 
-  <node name="object_information_server" pkg="object_recognition_ros"
-        type="object_information_server" output="screen" respawn="true">
+  <node pkg="object_recognition_ros" type="object_information_server" name="object_information_server" output="screen" respawn="true">
   </node>
 
 
   <!--  ****** Executive smach and visualization ******  -->
 
-  <node name="$(arg smach_app)_smach" pkg="thorp_smach" type="$(arg smach_app).py" output="screen">
+  <node pkg="thorp_smach" type="$(arg smach_app).py" name="$(arg smach_app)_smach" output="screen" respawn="true">
     <param name="rec_objects_frame" value="map"/>
   </node>
 
-  <node name="$(arg smach_app)_smach_viewer" pkg="smach_viewer" type="smach_viewer.py" output="screen"/>
+  <node pkg="smach_viewer" type="smach_viewer.py" name="$(arg smach_app)_smach_viewer" output="screen" respawn="true"/>
 
   <!--  ******* Keyboard interaction with smach *******  -->
   <!-- We do it required so it will shutdown the whole demo on exit -->
-  <node if="$(arg keyboard_ctrl)" name="$(arg smach_app)_key_ctrl" pkg="thorp_smach" type="keyboard_ctrl.py"
-                                  args="$(arg smach_app)" output="screen" required="true">
+  <node if="$(arg keyboard_ctrl)" pkg="thorp_smach" type="keyboard_ctrl.py" name="$(arg smach_app)_key_ctrl" output="screen" required="true"
+        args="$(arg smach_app)">
     <param name="window_geometry" value="360x240"/>
     <param name="window_caption" value="Object manipulation user commands"/>
     <param name="shown_text" value="Available commands: &#10;  s:  start &#10;  x:  stop &#10;  r:  reset &#10;  f:  fold &#10;  e:  exit"/>
@@ -101,6 +97,7 @@
 
 
   <!-- Run Rviz and load the default config to see the state of the move_group node and the scene interaction markers -->
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_manip.rviz"/>
+  <node pkg="rviz" type="rviz" name="rviz" output="screen" respawn="true"
+        args="-d $(find thorp_bringup)/rviz/view_manip.rviz"/>
 
 </launch>

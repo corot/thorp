@@ -16,9 +16,9 @@
   <include file="$(find thorp_bringup)/launch/includes/arm.launch.xml"/>
 
   <!-- Fake base's wheels joint state, as we are not running the full robot by now -->
-  <node name="fake_wheels_joints_pub" pkg="thorp_bringup" type="fake_joint_pub.py"/>
+  <node pkg="thorp_bringup" type="fake_joint_pub.py" name="fake_wheels_joints_pub" output="screen" respawn="true"/>
 
-  <node name="arbotix_gui" pkg="arbotix_python" type="arbotix_gui" output="screen"/>
+  <node pkg="arbotix_python" type="arbotix_gui" name="arbotix_gui" output="screen" respawn="true"/>
 
 
   <!--  ************* Moveit config stuff *************  -->
@@ -36,26 +36,26 @@
   </include>
 
   <!--  Fake global reference to make Moveit octomap happy  -->
-  <node pkg="tf" type="static_transform_publisher" name="fake_global_reference"
+  <node pkg="tf" type="static_transform_publisher" name="fake_global_reference" output="screen" respawn="true"
         args="0.0 0.0 0.0 0.0 0.0 0.0 /map /base_footprint 100"/>
 
 
   <!--  *********** Block manipulation demo ***********  -->
 
-  <node name="block_detection_action_server" pkg="turtlebot_arm_block_manipulation" type="block_detection_action_server" output="screen">
+  <node pkg="turtlebot_arm_block_manipulation" type="block_detection_action_server" name="block_detection_action_server" output="screen" respawn="true">
     <rosparam param="table_pose">[0.09, 0.0, 0.035]</rosparam>
     <remap if="$(arg external_camera)" from="/camera/depth_registered/points" to="/external_camera/depth_registered/points"/>
     <remap unless="$(arg external_camera)" from="/camera/depth_registered/points" to="/xtion/depth_registered/points"/>
   </node>
 
-  <node name="pick_and_place_action_server" pkg="turtlebot_arm_block_manipulation" type="pick_and_place_action_server" output="screen">
+  <node pkg="turtlebot_arm_block_manipulation" type="pick_and_place_action_server" name="pick_and_place_action_server" output="screen" respawn="true">
   </node>
   
-  <node name="interactive_manipulation_action_server" pkg="turtlebot_arm_block_manipulation" type="interactive_manipulation_action_server" output="screen">
+  <node pkg="turtlebot_arm_block_manipulation" type="interactive_manipulation_action_server" name="interactive_manipulation_action_server" output="screen" respawn="true">
     <param name="bump_size" value="0.025"/>
   </node>
 
-  <node name="block_manipulation_demo" pkg="turtlebot_arm_block_manipulation" type="block_manipulation_demo" output="screen" >
+  <node pkg="turtlebot_arm_block_manipulation" type="block_manipulation_demo" name="block_manipulation_demo" output="screen" respawn="true">
     <param name="arm_link" value="/arm_base_link"/>
     <param name="gripper_open" value="0.045"/>
     <param name="gripper_closed" value="0.022"/>
@@ -65,6 +65,7 @@
   </node>
 
   <!-- Run Rviz and load the default config to see the state of the move_group node and the block manipulation interactive markers -->
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_manip.rviz"/>
+  <node pkg="rviz" type="rviz" name="rviz" output="screen" respawn="true"
+        args="-d $(find thorp_bringup)/rviz/view_manip.rviz"/>
 
 </launch>

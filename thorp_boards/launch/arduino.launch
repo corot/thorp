@@ -11,7 +11,7 @@
  and then replug the USB cable.
 -->
 <launch>
-  <node name="arduino_node" pkg="thorp_boards" type="arduino_node">
+  <node pkg="thorp_boards" type="arduino_node" name="arduino_node" output="screen" respawn="true">
     <rosparam file="$(find thorp_boards)/param/arduino.yaml" command="load"/>
   </node>
 </launch>

@@ -5,7 +5,7 @@
     <!-- <arg name="simulation" value="$(arg simulation)"/> -->
   </include>
 
-  <node name="gripper_controller" pkg="arbotix_controllers" type="gripper_controller.py">
+  <node pkg="arbotix_controllers" type="gripper_controller.py" name="gripper_controller" output="screen" respawn="true">
     <!--
      Gripper controller parameters:
      more than the physical properties of the gripper, these values are an ad-hoc configuration

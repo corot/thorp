@@ -5,7 +5,8 @@
   <arg name="debug_mode" default="false" />
 
   <!-- Velocity smoother nodelet; we must provide the absolute name of nodelet manager, as we can be in an application namespace -->
-  <node pkg="nodelet" type="nodelet" name="special_tasks_velocity_smoother" args="load yocs_velocity_smoother/VelocitySmootherNodelet /mobile_base_nodelet_manager">
+  <node pkg="nodelet" type="nodelet" name="special_tasks_velocity_smoother" output="screen" respawn="true"
+        args="load yocs_velocity_smoother/VelocitySmootherNodelet /mobile_base_nodelet_manager">
     <rosparam file="$(find thorp_bringup)/param/vel_smoother.yaml" command="load"/>
     <remap from="special_tasks_velocity_smoother/smooth_cmd_vel" to="/cmd_vel_mux/input/special_task"/>
     <remap from="special_tasks_velocity_smoother/robot_cmd_vel" to="/mobile_base/commands/velocity"/>
@@ -13,7 +14,7 @@
   </node>
 
   <!-- thorp_bringup main node -->
-  <node name="thorp_bringup" pkg="thorp_bringup" type="thorp_bringup_node" output="screen">
+  <node pkg="thorp_bringup" type="thorp_bringup_node" name="thorp_bringup" output="screen" respawn="true">
     <param name="global_frame" value="/map"/>
     <param name="odom_frame" value="odom"/>
     <param name="base_frame" value="base_footprint"/>

@@ -15,11 +15,12 @@
   <include unless="$(arg external_camera)" file="$(find thorp_bringup)/launch/includes/xtion.launch.xml"/>
   
   <!-- Fake base's wheels joint state, as here we are not running the full robot -->
-  <node name="fake_wheels_joints_pub" pkg="thorp_bringup" type="fake_joint_pub.py"/>
+  <node pkg="thorp_bringup" type="fake_joint_pub.py" name="fake_wheels_joints_pub" output="screen" respawn="true"/>
 
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_model.rviz"/>
+  <node pkg="rviz" type="rviz" name="rviz" output="screen" respawn="true"
+        args="-d $(find thorp_bringup)/rviz/view_model.rviz"/>
 
-  <node name="calibrate_kinect_checkerboard" pkg="turtlebot_arm_kinect_calibration" type="calibrate_kinect_checkerboard" output="screen">
+  <node pkg="turtlebot_arm_kinect_calibration" type="calibrate_kinect_checkerboard" name="calibrate_kinect_checkerboard" output="screen" respawn="true">
     <param if="$(arg external_camera)" name="fixed_frame" value="/base_footprint"/>
     <param if="$(arg external_camera)" name="camera_frame" value="/external_camera_rgb_frame"/>
     <param unless="$(arg external_camera)" name="fixed_frame" value="/xtion_mount_link"/>
@@ -39,7 +40,7 @@
     <remap unless="$(arg external_camera)" from="/camera/rgb/camera_info" to="/xtion/rgb/camera_info"/>
   </node>
 
-  <node name="checkerboard_image_view" pkg="image_view" type="image_view">
+  <node pkg="image_view" type="image_view" name="checkerboard_image_view" output="screen" respawn="true">
     <param name="autosize" value="true"/>
     <remap from="image" to="/calibrate_kinect_checkerboard/calibration_pattern_out"/>
   </node>

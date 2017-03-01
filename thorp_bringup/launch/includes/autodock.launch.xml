@@ -1,6 +1,7 @@
 <launch>
   <!-- Kobuki auto-docking nodelet; we must provide the absolute name of nodelet manager, as we can be in an application namespace -->
-  <node pkg="nodelet" type="nodelet" name="dock_drive" args="load kobuki_auto_docking/AutoDockingNodelet /mobile_base_nodelet_manager">
+  <node pkg="nodelet" type="nodelet" name="dock_drive" output="screen" respawn="true"
+        args="load kobuki_auto_docking/AutoDockingNodelet /mobile_base_nodelet_manager">
     <param name="min_abs_v" value="0.02"/>
     <param name="min_abs_w" value="0.15"/>
     <remap from="dock_drive/odom" to="/odom"/>

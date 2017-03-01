@@ -3,7 +3,8 @@
 -->
 <launch>
   <!-- Velocity smoother nodelet; we must provide the absolute name of nodelet manager, as we can be in an application namespace -->
-  <node pkg="nodelet" type="nodelet" name="safety_ctrl_velocity_smoother" args="load yocs_velocity_smoother/VelocitySmootherNodelet /mobile_base_nodelet_manager">
+  <node pkg="nodelet" type="nodelet" name="safety_ctrl_velocity_smoother" output="screen" respawn="true"
+        args="load yocs_velocity_smoother/VelocitySmootherNodelet /mobile_base_nodelet_manager">
     <rosparam file="$(find thorp_bringup)/param/vel_smoother.yaml" command="load"/>
     <param name="accel_lim_v"  value="0.5"/>
     <param name="decel_factor" value="3.0"/>  <!-- Make breaking almost unsmoothed so bumper and cliff sensors do their job -->
@@ -14,7 +15,8 @@
   </node>
 
   <!-- Safety controller nodelet; we must provide the absolute name of nodelet manager, as we can be in an application namespace -->
-  <node pkg="nodelet" type="nodelet" name="navigation_safety_controller" args="load kobuki_safety_controller/SafetyControllerNodelet /mobile_base_nodelet_manager">
+  <node pkg="nodelet" type="nodelet" name="navigation_safety_controller" output="screen" respawn="true"
+        args="load kobuki_safety_controller/SafetyControllerNodelet /mobile_base_nodelet_manager">
     <remap from="navigation_safety_controller/cmd_vel"           to="safety_ctrl_velocity_smoother/raw_cmd_vel"/>
     <remap from="navigation_safety_controller/events/bumper"     to="/mobile_base/events/bumper"/>
     <remap from="navigation_safety_controller/events/cliff"      to="/mobile_base/events/cliff"/>

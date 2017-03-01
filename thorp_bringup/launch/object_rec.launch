@@ -7,10 +7,11 @@
   <include file="$(find thorp_bringup)/launch/includes/xtion.launch.xml"/>
 
   <!-- Run Rviz and load the default config to see recognized tabletop objects -->
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_perc.rviz"/>
+  <node pkg="rviz" type="rviz" name="rviz" output="screen" respawn="true"
+        args="-d $(find thorp_bringup)/rviz/view_perc.rviz"/>
 
   <!-- Run dynamic reconfiguration to tweak the parameters of the camera filters -->
-  <node name="dyn_reconfigure" pkg="rqt_reconfigure" type="rqt_reconfigure"/>
+  <node pkg="rqt_reconfigure" type="rqt_reconfigure" name="dyn_reconfigure" output="screen" respawn="true"/>
 
   <!-- **************** ORK tabletop *****************  -->
   <include file="$(find thorp_obj_rec)/launch/obj_rec.launch.xml">
