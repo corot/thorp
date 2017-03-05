@@ -27,14 +27,16 @@
 #include <moveit_msgs/PlanningScene.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 
+// local includes for utility classes
+#include "thorp_obj_rec/object_detection_bin.hpp"
+#include "thorp_obj_rec/object_detection_color.hpp"
+
 
 namespace thorp_obj_rec
 {
 
 class ObjectDetectionServer
 {
-  class DetectionBin;  // forward declaration of private class DetectionBin
-
 private:
 
   // Action client for the ORK object recognition and server
@@ -78,10 +80,13 @@ private:
   double clustering_threshold_;   // maximum acceptable distance to assign an object to a bin
   int    recognize_objs_calls_;
 
+  ObjectDetectionColor color_;
+
 public:
-  ObjectDetectionServer(const std::string name) :
+
+  ObjectDetectionServer(ros::NodeHandle& nh, const std::string& name) :
     od_as_(name, boost::bind(&ObjectDetectionServer::executeCB, this, _1), false),
-    ork_ac_("tabletop/recognize_objects", true)
+    ork_ac_("tabletop/recognize_objects", true), color_(nh)
   {
     // Create the action client; spin its own thread
     ros::NodeHandle pnh("~");
@@ -103,7 +108,6 @@ public:
     ROS_INFO("[object detection] tabletop/recognize_objects action server started; ready for sending goals.");
 
     // Wait for the get object information service (mandatory, as we need to know objects' mesh)
-    ros::NodeHandle nh;
     obj_info_srv_ = nh.serviceClient<object_recognition_msgs::GetObjectInformation>("get_object_info");
     if (! obj_info_srv_.waitForExistence(ros::Duration(60.0)))
     {
@@ -141,7 +145,7 @@ public:
 
     // Call ORK tabletop action server and wait for the action to return
     // We do it CALLS_TO_TABLETOP times and accumulate the results on bins to provide more reliable results
-    std::vector<DetectionBin> detection_bins;
+    std::vector<ObjectDetectionBin> detection_bins;
 
     ROS_INFO("[object detection] Sending %d goals to tabletop/recognize_objects action server...",
              recognize_objs_calls_);
@@ -178,27 +182,30 @@ public:
         if (obj.confidence < confidence_threshold_)
           continue;
 
+        ros::Time t0 = ros::Time::now();
         bool assigned = false;
-        for (DetectionBin& bin: detection_bins)
+        for (ObjectDetectionBin& bin: detection_bins)
         {
           if (mtk::distance3D(bin.getCentroid().pose, obj.pose.pose.pose) <= clustering_threshold_)
           {
             ROS_DEBUG("Object with pose [%s] added to bin %d with centroid [%s] with distance [%f]",
                       mtk::pose2str3D(obj.pose.pose.pose).c_str(), bin.id, mtk::pose2str3D(bin.getCentroid()).c_str(),
                       mtk::distance3D(bin.getCentroid().pose, obj.pose.pose.pose));
-            bin.addObject(obj);
+            ROS_ASSERT(obj.point_clouds.size() == 1);
+            bin.addObject(obj, color_.getAvgColor(obj.point_clouds[0]));
             assigned = true;
             break;
           }
         }
+        ROS_ERROR("%f", (ros::Time::now()-t0).toSec());
 
         if (! assigned)
         {
           // No matching bin; create a new one for this object
           ROS_DEBUG("Object with pose [%s] added to a new bin", mtk::pose2str3D(obj.pose.pose.pose).c_str());
-          DetectionBin new_bin;
+          ObjectDetectionBin new_bin;
           new_bin.id = detection_bins.size();
-          new_bin.addObject(obj);
+          new_bin.addObject(obj, color_.getAvgColor(obj.point_clouds[0]));
           detection_bins.push_back(new_bin);
         }
       }
@@ -284,10 +291,9 @@ public:
     }
   }
 
-
 private:
 
-  int addObjects(const std::vector<DetectionBin>& detection_bins, thorp_msgs::DetectObjectsResult& result)
+  int addObjects(const std::vector<ObjectDetectionBin>& detection_bins, thorp_msgs::DetectObjectsResult& result)
   {
     std::map<std::string, unsigned int> obj_name_occurences;
     moveit_msgs::PlanningScene ps;
@@ -295,7 +301,7 @@ private:
 
     // Add a detected object per bin to the goal result and to the planning scene as a collision object
     // Only bins receiving detections on most of the ORK tabletop calls are considered consistent enough
-    for (const DetectionBin& bin: detection_bins)
+    for (const ObjectDetectionBin& bin: detection_bins)
     {
       if (bin.countObjects() < recognize_objs_calls_/1.5)
       {
@@ -332,10 +338,10 @@ private:
         result.object_names.push_back(obj_name);
         result.objects.push_back(co);
 
-        // Provide a random color to the collision object
+        // Provide the detected color to the collision object
         moveit_msgs::ObjectColor oc;
         oc.id = co.id;
-        oc.color = getRandColor(1.0);
+        oc.color = bin.getAvgColor();
         ps.object_colors.push_back(oc);
       }
       catch (...)
@@ -414,6 +420,7 @@ private:
     ROS_INFO("[object detection] Adding a table at %s as a collision object, based on %lu observations",
              mtk::point2str3D(co.primitive_poses[0].position).c_str(), table_poses.size());
     planning_scene_interface_.addCollisionObjects(std::vector<moveit_msgs::CollisionObject>(1, co));
+darle color a la tabla!!!
 
     // Add "table" as the support surface on action result
     result.support_surf = co.id;
@@ -498,91 +505,6 @@ private:
 
     return objs_info_[obj_type.key];
   }
-
-  std_msgs::ColorRGBA getRandColor(float alpha = 1.0)
-  {
-    std_msgs::ColorRGBA color;
-    color.r = float(rand())/RAND_MAX;
-    color.g = float(rand())/RAND_MAX;
-    color.b = float(rand())/RAND_MAX;
-    color.a = alpha;
-    return color;
-  }
-
-  /**
-   * Private class for clustering together the same object detected in consecutive observations
-   * and provide a more accurate pose as the centroid of all observations.
-   */
-  class DetectionBin
-  {
-  public:
-    unsigned int id;
-    unsigned int countObjects() const { return objects.size(); }
-    const geometry_msgs::PoseStamped& getCentroid() const { return centroid; }
-
-    void addObject(object_recognition_msgs::RecognizedObject object)
-    {
-      objects.push_back(object);
-
-      // recalculate centroid
-      centroid = geometry_msgs::PoseStamped();
-      double confidence_acc = 0.0, roll_acc = 0.0, pitch_acc = 0.0, yaw_acc = 0.0;
-      for (const object_recognition_msgs::RecognizedObject& obj: objects)
-      {
-        centroid.header.stamp = ros::Time::now();
-        centroid.header.frame_id = obj.pose.header.frame_id; // TODO could do some checking
-
-        centroid.pose.position.x += obj.pose.pose.pose.position.x * obj.confidence;
-        centroid.pose.position.y += obj.pose.pose.pose.position.y * obj.confidence;
-        centroid.pose.position.z += obj.pose.pose.pose.position.z * obj.confidence;
-        roll_acc                 += mtk::roll(obj.pose.pose.pose) * obj.confidence;
-        pitch_acc                += mtk::pitch (obj.pose.pose.pose) * obj.confidence;
-        yaw_acc                  += mtk::yaw(obj.pose.pose.pose) * obj.confidence;
-
-        confidence_acc += obj.confidence;
-      }
-
-      centroid.pose.position.x /= confidence_acc;
-      centroid.pose.position.y /= confidence_acc;
-      centroid.pose.position.z /= confidence_acc;
-      centroid.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(roll_acc/confidence_acc,
-                                                                          pitch_acc/confidence_acc,
-                                                                          yaw_acc/confidence_acc);
-      confidence = confidence_acc/(double)objects.size();
-    }
-
-    std::string getName() const
-    {
-      std::map<std::string, unsigned int> key_occurences;
-      for (const object_recognition_msgs::RecognizedObject& obj: objects)
-        key_occurences[obj.type.key]++;
-
-      std::string commonest_key;
-      std::map<std::string, unsigned int>::iterator it;
-      for(it = key_occurences.begin(); it != key_occurences.end(); it++)
-      {
-        if (it->second > key_occurences[commonest_key])
-          commonest_key = it->first;
-      }
-      return commonest_key;
-    }
-
-    object_recognition_msgs::ObjectType getType() const
-    {
-      std::string commonest_key = getName();
-      for (const object_recognition_msgs::RecognizedObject& obj: objects)
-        if (obj.type.key == commonest_key)
-          return obj.type;
-
-      return object_recognition_msgs::ObjectType();
-    }
-
-  private:
-    double confidence;
-    geometry_msgs::PoseStamped centroid;
-    std::vector<object_recognition_msgs::RecognizedObject> objects;
-  };
-
 };
 
 };  // namespace thorp_obj_rec
@@ -591,7 +513,8 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "object_detection_action_server");
 
-  thorp_obj_rec::ObjectDetectionServer server("object_detection");
+  ros::NodeHandle nh;
+  thorp_obj_rec::ObjectDetectionServer server(nh, "object_detection");
   ros::spin();
 
   return 0;
