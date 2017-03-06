@@ -11,7 +11,6 @@
   <node if="$(arg as_server)"
         pkg="object_recognition_ros" type="server" name="tabletop_object_recognition_server" output="screen" respawn="true"
         args="--node_name tabletop_object_recognition -c $(arg config_file)" launch-prefix="$(arg launch_prefix)">
-    <remap from="rgb_image" to="xtion/rgb/image_raw"/>
   </node>
 
   <node unless="$(arg as_server)"

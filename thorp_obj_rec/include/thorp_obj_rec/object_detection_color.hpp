@@ -4,11 +4,6 @@
 
 #include <ros/ros.h>
 
-// auxiliary libraries
-//#include <thorp_toolkit/common.hpp>
-//#include <yocs_math_toolkit/common.hpp>
-//#include <yocs_math_toolkit/geometry.hpp>
-
 #include <opencv/cv.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/PointCloud2.h>
@@ -23,29 +18,9 @@ namespace thorp_obj_rec
 
 class ObjectDetectionColor
 {
-private:
-  image_transport::ImageTransport image_trs_;
-  image_transport::CameraSubscriber image_sub_;
-  image_geometry::PinholeCameraModel cam_model_;
-  sensor_msgs::Image rgb_image_;
-
-  std_msgs::ColorRGBA getRandColor(float alpha = 1.0)
-  {
-    std_msgs::ColorRGBA color;
-    color.r = float(rand())/RAND_MAX;
-    color.g = float(rand())/RAND_MAX;
-    color.b = float(rand())/RAND_MAX;
-    color.a = alpha;
-    return color;
-  }
-
 public:
   ObjectDetectionColor(ros::NodeHandle& nh) : image_trs_(nh)
   {
-    // Create the action client; spin its own thread
-    ros::NodeHandle pnh("~");
-////    pnh.param("ork_execute_timeout",  ork_execute_timeout_,  5.0);
-
     // Subscribe to an RGB image to provide color to the detected objects
     image_sub_ = image_trs_.subscribeCamera("rgb_image", 1, &ObjectDetectionColor::imageCb, this);
   }
@@ -61,7 +36,6 @@ public:
 
   std_msgs::ColorRGBA getAvgColor(sensor_msgs::PointCloud2 pc_msg, float alpha = 1.0f)
   {
-
     std_msgs::ColorRGBA color;
     cv::Mat image;
     cv_bridge::CvImagePtr input_bridge;
@@ -95,12 +69,28 @@ public:
 
       points++;
     }
-    color.r /= float(points);
-    color.g /= float(points);
-    color.b /= float(points);
-    if (points == pc_msg.width * pc_msg.height)
-      ROS_ERROR("iguales !!   %d  %d", points, pc_msg.width * pc_msg.height);
+    color.r /= float(pc_msg.width * pc_msg.height);
+    color.g /= float(pc_msg.width * pc_msg.height);
+    color.b /= float(pc_msg.width * pc_msg.height);
+    if (points != pc_msg.width * pc_msg.height)
+      ROS_ERROR("DISTINOTS  OJO  cambiar codugo!!   %d  %d", points, pc_msg.width * pc_msg.height);
 
+    return color;
+  }
+
+private:
+  image_transport::ImageTransport image_trs_;
+  image_transport::CameraSubscriber image_sub_;
+  image_geometry::PinholeCameraModel cam_model_;
+  sensor_msgs::Image rgb_image_;
+
+  std_msgs::ColorRGBA getRandColor(float alpha = 1.0)
+  {
+    std_msgs::ColorRGBA color;
+    color.r = float(rand())/RAND_MAX;
+    color.g = float(rand())/RAND_MAX;
+    color.b = float(rand())/RAND_MAX;
+    color.a = alpha;
     return color;
   }
 };

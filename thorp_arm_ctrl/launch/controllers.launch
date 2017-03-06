@@ -4,7 +4,8 @@
   <rosparam ns="$(arg dynamixel_namespace)" file="$(find thorp_arm_ctrl)/param/controllers.yaml" command="load"/>
 
   <!-- Start the Dynamixel low-level driver manager with parameters -->
-  <node ns="$(arg dynamixel_namespace)" name="dynamixel_manager" pkg="dynamixel_controllers" type="controller_manager.py"  output="screen" respawn="true">
+  <node ns="$(arg dynamixel_namespace)"
+        pkg="dynamixel_controllers" type="controller_manager.py" name="dynamixel_manager" output="screen" respawn="true">
     <rosparam>
       namespace: dynamixel_manager
       diagnostics_rate: 1
@@ -22,7 +23,8 @@
   </node>
 
   <!-- Start the arm trajectory controller -->
-  <node ns="$(arg dynamixel_namespace)" name="arm_controller_spawner" pkg="dynamixel_controllers" type="controller_spawner.py" output="screen" 
+  <node ns="$(arg dynamixel_namespace)"
+        pkg="dynamixel_controllers" type="controller_spawner.py" name="arm_controller_spawner" output="screen" 
         args="--manager=dynamixel_manager
               --type=meta
               arm_controller
@@ -32,7 +34,8 @@
               arm_wrist_flex_joint"/>
 
   <!-- Start all AX12 joint controllers -->
-  <node ns="$(arg dynamixel_namespace)" name="ax12_controllers_spawner" pkg="dynamixel_controllers" type="controller_spawner.py" output="screen" respawn="true" 
+  <node ns="$(arg dynamixel_namespace)"
+        pkg="dynamixel_controllers" type="controller_spawner.py" name="ax12_controllers_spawner" output="screen" 
         args="--manager=dynamixel_manager
               --port=dynamixel_usb2ax
               --type=simple
@@ -43,16 +46,18 @@
               gripper_joint"/>
 
   <!-- Start the Dynamixel Joint States Publisher -->
-  <node ns="$(arg dynamixel_namespace)" pkg="thorp_arm_ctrl" name="dynamixel_joint_states_pub" type="dynamixel_joint_state_publisher.py" output="screen" respawn="true">
+  <node ns="$(arg dynamixel_namespace)"
+        pkg="thorp_arm_ctrl" type="dynamixel_joint_state_publisher.py" name="dynamixel_joint_states_pub" output="screen" respawn="true">
     <param name="rate" value="20" />
   </node>
 
   <!-- Fake gripper link joint state publisher -->
-  <node name="fake_gripper_joint_pub" pkg="turtlebot_arm_bringup" type="fake_joint_pub.py"/>
+  <node pkg="turtlebot_arm_bringup" type="fake_joint_pub.py" name="fake_gripper_joint_pub"/>
 
-  <!-- Start the Dynamixel servos relaxed
-   <node ns="$(arg dynamixel_namespace)" pkg="thorp_arm_ctrl" name="dynamixel_relax_all_servos" type="dynamixel_relax_all_servos.py"/>
- -->
+  <!-- Start the Dynamixel servos relaxed -->
+   <node ns="$(arg dynamixel_namespace)"
+         pkg="thorp_arm_ctrl" type="dynamixel_relax_all_servos.py" name="dynamixel_relax_all_servos"/>
+
  
   <!-- Load diagnostics -->
 <!--    <node pkg="diagnostic_aggregator" type="aggregator_node" name="diagnostic_aggregator" >
