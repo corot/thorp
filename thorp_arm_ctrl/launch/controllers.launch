@@ -54,9 +54,9 @@
   <!-- Fake gripper link joint state publisher -->
   <node pkg="turtlebot_arm_bringup" type="fake_joint_pub.py" name="fake_gripper_joint_pub"/>
 
-  <!-- Start the Dynamixel servos relaxed -->
+  <!-- Start the Dynamixel servos relaxed
    <node ns="$(arg dynamixel_namespace)"
-         pkg="thorp_arm_ctrl" type="dynamixel_relax_all_servos.py" name="dynamixel_relax_all_servos"/>
+         pkg="thorp_arm_ctrl" type="dynamixel_relax_all_servos.py" name="dynamixel_relax_all_servos"/> -->
 
  
   <!-- Load diagnostics -->
