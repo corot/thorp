@@ -1,4 +1,5 @@
 # move_base parameters
+max_planning_retries: 5
 
 
 # thorp recovery behaviors; use spinning as a last resort
@@ -43,7 +44,7 @@ aggressive_reset2:
 
 global_costmap:
   robot_radius: 0.18
-  
+
   plugins:
     - {name: static_layer,       type: "costmap_2d::StaticLayer"}
     - {name: range_sensor_layer, type: "range_sensor_layer::RangeSensorLayer"}
@@ -56,13 +57,13 @@ global_costmap:
     no_readings_timeout:  2.0
     clear_on_max_reading: true
     ns:     /mobile_base/sensors/sonars
-    topics: ["m90_IGNORE", "m72", "m54", "m36", "m18", "0", "p18", "p36", "p54", "p72", "p90_IGNORE"]
-    # NOTE: we ignore p90 because it is an EZ1 sonar with very width fov, and m90 because is broken
+    topics: ["m90", "m72", "m54", "m36", "m18", "0", "p18", "p36", "p54", "p72", "p90_IGNORE"]
+    # NOTE: we ignore p90 because it is an EZ1 sonar with very width fov, and m90 because is broken (TODO: RETRYING)
 
 local_costmap:
   resolution: 0.02
   robot_radius: 0.18
-  
+
   plugins:
     - {name: range_sensor_layer, type: "range_sensor_layer::RangeSensorLayer"}
     - {name: obstacle_layer,     type: "costmap_2d::VoxelLayer"}
@@ -74,7 +75,7 @@ local_costmap:
     no_readings_timeout:  2.0
     clear_on_max_reading: true
     ns:     /mobile_base/sensors
-    topics: [sonars/m90, snars/m72, sonars/m54, sonars/m36, sonars/m18, sonars/0, sonars/p18, sonars/p36, sonars/p54, sonars/p72, sonars/p90,
+    topics: [sonars/m90, sonars/m72, sonars/m54, sonars/m36, sonars/m18, sonars/0, sonars/p18, sonars/p36, sonars/p54, sonars/p72, sonars/p90,
              infrared/arm, infrared/l155, infrared/l180, infrared/r180, infrared/r155]
 
 
@@ -82,8 +83,8 @@ local_costmap:
 # move_base observation sources: we don use by now other than bumpers and kinect
 #  obstacle_layer:
 #    observation_sources: kinect virtual bumpers
-# 
+#
 #    kinect:  {data_type: LaserScan, topic: scan, marking: true, clearing: true, min_obstacle_height: 0.2, max_obstacle_height: 0.4}
 #    virtual: {data_type: LaserScan, topic: virtual, marking: true, clearing: true, min_obstacle_height: 0.4, max_obstacle_height: 0.8}
 #    bumpers: {data_type: PointCloud2, topic: bumpers, marking: true, clearing: false, min_obstacle_height: 0.0, max_obstacle_height: 0.2}
-    
+
