@@ -25,12 +25,11 @@ public:
   unsigned int id;
   unsigned int countObjects() const { return objects.size(); }
   const geometry_msgs::PoseStamped& getCentroid() const { return centroid; }
-  const std_msgs::ColorRGBA& getAvgColor() const  { return avg_color; }
+  const std::vector<cv::Vec3b>& getColorPoints() const  { return color_points; }
 
-  void addObject(object_recognition_msgs::RecognizedObject object, std_msgs::ColorRGBA color)
+  void addObject(object_recognition_msgs::RecognizedObject object, const std::vector<cv::Vec3b>& colors)
   {
     objects.push_back(object);
-    colors.push_back(color);
 
     // recalculate centroid
     centroid = geometry_msgs::PoseStamped();
@@ -58,22 +57,8 @@ public:
                                                                         yaw_acc/confidence_acc);
     confidence = confidence_acc/(double)objects.size();
 
-    // recalculate average color
-    avg_color = std_msgs::ColorRGBA();
-    for (const std_msgs::ColorRGBA& col: colors)
-    {
-      avg_color.r += col.r;
-      avg_color.g += col.g;
-      avg_color.b += col.b;
-      avg_color.a += col.a;
-    }
-
-    avg_color.r /= float(colors.size());
-    avg_color.g /= float(colors.size());
-    avg_color.b /= float(colors.size());
-    avg_color.a /= float(colors.size());
-
- //////   avg_color.a = 1; // JODER  XXX
+    // accumulate color points for calculate the average
+    color_points.insert(color_points.end(), colors.begin(), colors.end());
   }
 
   std::string getName() const
@@ -106,7 +91,7 @@ private:
   double confidence;
   std_msgs::ColorRGBA avg_color;
   geometry_msgs::PoseStamped centroid;
-  std::vector<std_msgs::ColorRGBA> colors;
+  std::vector<cv::Vec3b> color_points;
   std::vector<object_recognition_msgs::RecognizedObject> objects;
 };
 
@@ -152,7 +137,7 @@ public:
                     mtk::pose2str3D(obj.pose.pose.pose).c_str(), bin.id, mtk::pose2str3D(bin.getCentroid()).c_str(),
                     mtk::distance3D(bin.getCentroid().pose, obj.pose.pose.pose));
           ROS_ASSERT(obj.point_clouds.size() == 1);
-          bin.addObject(obj, color_detection_->getAvgColor(obj.point_clouds[0]));
+          bin.addObject(obj, color_detection_->getColors(obj.point_clouds[0]));
           assigned = true;
           break;
         }
@@ -165,7 +150,7 @@ public:
         ROS_DEBUG("Object with pose [%s] added to a new bin", mtk::pose2str3D(obj.pose.pose.pose).c_str());
         ObjectDetectionBin new_bin;
         new_bin.id = detection_bins_.size();
-        new_bin.addObject(obj, color_detection_->getAvgColor(obj.point_clouds[0]));
+        new_bin.addObject(obj, color_detection_->getColors(obj.point_clouds[0]));
         detection_bins_.push_back(new_bin);
       }
     }
@@ -188,11 +173,14 @@ public:
         continue;
       }
 
+      std_msgs::ColorRGBA color = color_detection_->getAvgColor(bin.getColorPoints());
+      std::string color_label = color_detection_->getColorLabel(color);
+
       // Compose object name with the name provided by the database plus an index, starting with [1]
       object_recognition_msgs::ObjectInformation obj_info = getObjInfo(bin.getType());
       obj_name_occurences[obj_info.name]++;
       std::stringstream sstream;
-      sstream << obj_info.name << " [" << obj_name_occurences[obj_info.name] << "]";
+      sstream << obj_info.name << " [" << obj_name_occurences[obj_info.name] << "] " << color_label;
       std::string obj_name = sstream.str();
 
       ROS_DEBUG("Bin %d with centroid [%s] and %d objects added as object '%s'",
@@ -217,7 +205,7 @@ public:
       // Provide the detected color to the collision object
       moveit_msgs::ObjectColor oc;
       oc.id = co.id;
-      oc.color = bin.getAvgColor();
+      oc.color = color;
       obj_colors.push_back(oc);
     }
   }

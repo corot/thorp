@@ -23,7 +23,6 @@
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.959695658" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
 								<option id="gnu.cpp.compiler.option.include.paths.1253745446" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="/opt/ros/kinetic/include"/>
-									<listOptionValue builtIn="false" value="/opt/ros/kinetic/include/opencv-3.1.0-dev"/>
 									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/turtlebot/devel/include"/>
 									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/ork/devel/include"/>
 									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/moveit/devel/include"/>
@@ -33,6 +32,7 @@
 									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/thorp/devel/include"/>
 									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/moveit/src/moveit/moveit_ros/planning_interface/move_group_interface/include"/>
 									<listOptionValue builtIn="false" value="/home/jorge/catkin_ws/moveit/src/moveit/moveit_ros/planning_interface/planning_scene_interface/include"/>
+									<listOptionValue builtIn="false" value="/opt/ros/kinetic/include/opencv-3.2.0-dev"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1057289454" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -55,6 +55,7 @@
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings">
 				<externalSettings containerId="thorp_toolkit;" factoryId="org.eclipse.cdt.core.cfg.export.settings.sipplier"/>
+				<externalSettings containerId="mag_common_cpp_libs;" factoryId="org.eclipse.cdt.core.cfg.export.settings.sipplier"/>
 			</storageModule>
 		</cconfiguration>
 	</storageModule>

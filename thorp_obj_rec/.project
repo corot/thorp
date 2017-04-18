@@ -6,6 +6,7 @@
 		<project>moveit_ros</project>
 		<project>thorp_toolkit</project>
 		<project>yocs_math_toolkit</project>
+		<project>mag_common_cpp_libs</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
