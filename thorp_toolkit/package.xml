@@ -20,7 +20,6 @@
   <build_depend>geometric_shapes</build_depend>
   <build_depend>moveit_msgs</build_depend>
   <build_depend>moveit_ros_planning_interface</build_depend>
-  <build_depend>yocs_math_toolkit</build_depend>
   <build_depend>thorp_msgs</build_depend>
 
   <run_depend>tf</run_depend>
@@ -29,7 +28,6 @@
   <run_depend>geometric_shapes</run_depend>
   <run_depend>moveit_msgs</run_depend>
   <run_depend>moveit_ros_planning_interface</run_depend>
-  <run_depend>yocs_math_toolkit</run_depend>
   <run_depend>thorp_msgs</run_depend>
 
   <export>

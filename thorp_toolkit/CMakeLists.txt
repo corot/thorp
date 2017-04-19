@@ -16,7 +16,6 @@ find_package(catkin
        geometric_shapes
        moveit_msgs
        moveit_ros_planning_interface
-       yocs_math_toolkit
        thorp_msgs
 )
 
@@ -38,7 +37,6 @@ catkin_package(
        geometric_shapes
        moveit_msgs
        moveit_ros_planning_interface
-       yocs_math_toolkit
        thorp_msgs
 )
 
