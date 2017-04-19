@@ -129,7 +129,7 @@ int32_t MoveToTargetServer::moveArmTo(const sensor_msgs::JointState& target)
 
 int32_t MoveToTargetServer::moveArmTo(const geometry_msgs::PoseStamped& target)
 {
-  ROS_DEBUG("[move to target] Move arm to [%s]", mtk::pose2str3D(target.pose).c_str());
+  ROS_DEBUG("[move to target] Move arm to [%s]", mcl::pose2str3D(target.pose).c_str());
 
   geometry_msgs::PoseStamped modiff_target = target;
   if (!validateTargetPose(modiff_target, true, false, false))
@@ -139,23 +139,23 @@ int32_t MoveToTargetServer::moveArmTo(const geometry_msgs::PoseStamped& target)
 
   if (arm().setPoseTarget(modiff_target) == false)
   {
-    ROS_ERROR("[move to target] Set pose target [%s] failed", mtk::pose2str3D(modiff_target.pose).c_str());
+    ROS_ERROR("[move to target] Set pose target [%s] failed", mcl::pose2str3D(modiff_target.pose).c_str());
     return thorp_msgs::ThorpError::INVALID_TARGET_POSE;
   }
 
   moveit::planning_interface::MoveItErrorCode result = arm().move();
   if (result)
   {
-    ROS_INFO("[move to target] Move to target [%s] completed", mtk::pose2str3D(modiff_target.pose).c_str());
+    ROS_INFO("[move to target] Move to target [%s] completed", mcl::pose2str3D(modiff_target.pose).c_str());
   }
   else if (as_.isPreemptRequested())
   {
-    ROS_WARN("[move to target] Move to target [%s] preempted", mtk::pose2str3D(modiff_target.pose).c_str());
+    ROS_WARN("[move to target] Move to target [%s] preempted", mcl::pose2str3D(modiff_target.pose).c_str());
     result.val = moveit::planning_interface::MoveItErrorCode::PREEMPTED;
   }
   else
   {
-    ROS_ERROR("[move to target] Move to target [%s] failed: %s", mtk::pose2str3D(modiff_target.pose).c_str(),
+    ROS_ERROR("[move to target] Move to target [%s] failed: %s", mcl::pose2str3D(modiff_target.pose).c_str(),
               mec2str(result));
   }
 
