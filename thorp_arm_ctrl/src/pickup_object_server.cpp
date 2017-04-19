@@ -6,7 +6,8 @@
 #include <ros/ros.h>
 
 // auxiliary libraries
-#include <yocs_math_toolkit/common.hpp>
+#include <mag_common_cpp_libs/common.hpp>
+namespace mcl = mag_common_libs;
 
 // MoveIt!
 #include <moveit/move_group_pick_place_capability/capability_names.h>
@@ -93,7 +94,7 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
   }
 
   ROS_INFO("[pickup object] Picking object '%s' with size [%s] at location [%s]...",
-           obj_name.c_str(), mtk::vector2str3D(obj_size).c_str(), mtk::point2str2D(obj_pose.pose.position).c_str());
+           obj_name.c_str(), mcl::vector2str3D(obj_size).c_str(), mcl::point2str2D(obj_pose.pose.position).c_str());
 
   // Prepare and send pick goal
   moveit_msgs::PickupGoal goal;
@@ -212,7 +213,7 @@ int32_t PickupObjectServer::makeGrasps(const geometry_msgs::PoseStamped& target_
       return thorp_msgs::ThorpError::INVALID_TARGET_POSE;
     }
 
-    ROS_DEBUG("[pickup object] Pick attempt %d at pose [%s]...", attempt, mtk::pose2str3D(p).c_str());
+    ROS_DEBUG("[pickup object] Pick attempt %d at pose [%s]...", attempt, mcl::pose2str3D(p).c_str());
 
     moveit_msgs::Grasp g;
     g.grasp_pose = p;

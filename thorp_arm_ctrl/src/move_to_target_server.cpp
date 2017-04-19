@@ -79,6 +79,9 @@ int32_t MoveToTargetServer::moveArmTo(const std::string& target)
     return thorp_msgs::ThorpError::INVALID_NAMED_TARGET;
   }
 
+  arm().setSupportSurfaceName("table");
+  gripper().setSupportSurfaceName("table");
+
   moveit::planning_interface::MoveItErrorCode result = arm().move();
   if (result)
   {

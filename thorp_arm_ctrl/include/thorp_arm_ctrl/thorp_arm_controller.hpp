@@ -9,8 +9,9 @@
 
 // auxiliary libraries
 #include <thorp_toolkit/common.hpp>
-#include <yocs_math_toolkit/common.hpp>
-#include <yocs_math_toolkit/geometry.hpp>
+#include <mag_common_cpp_libs/common.hpp>
+#include <mag_common_cpp_libs/geometry.hpp>
+namespace mcl = mag_common_libs;
 
 // MoveIt!
 #include <moveit/move_group_interface/move_group_interface.h>
@@ -160,7 +161,7 @@ protected:
     ROS_DEBUG("[arm controller] Pitch high target correction: %f;  random variation: %f", pitch_delta1, pitch_delta2);
 
     double rp = (M_PI_2 - std::asin((d - 0.1)/0.22)) + pitch_delta1 + pitch_delta2;
-    double ry = mtk::heading(target.pose);
+    double ry = mcl::heading(target.pose);
     double rr = 0.0;
     target.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(rr, rp, ry);
 
@@ -193,7 +194,7 @@ protected:
       ROS_DEBUG("[arm controller] Compensate distance fall short increasing distance by %fm", fall_short_distance_delta);
     }
 
-    ROS_DEBUG("[arm controller] Target pose [%s] [d: %.2f]", mtk::pose2str3D(target.pose).c_str(), d);
+    ROS_DEBUG("[arm controller] Target pose [%s] [d: %.2f]", mcl::pose2str3D(target.pose).c_str(), d);
     target_pose_pub.publish(target);
 
     return true;

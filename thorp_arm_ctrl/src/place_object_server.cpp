@@ -6,7 +6,8 @@
 #include <ros/ros.h>
 
 // auxiliary libraries
-#include <yocs_math_toolkit/common.hpp>
+#include <mag_common_cpp_libs/common.hpp>
+namespace mcl = mag_common_libs;
 
 // MoveIt!
 #include <moveit/move_group_pick_place_capability/capability_names.h>
@@ -44,7 +45,7 @@ PlaceObjectServer::~PlaceObjectServer()
 void PlaceObjectServer::executeCB(const thorp_msgs::PlaceObjectGoal::ConstPtr& goal)
 {
   ROS_INFO("[place object] Execute goal: place object '%s' on support surface '%s' at pose [%s]...",
-           goal->object_name.c_str(), goal->support_surf.c_str(), mtk::pose2str3D(goal->place_pose).c_str());
+           goal->object_name.c_str(), goal->support_surf.c_str(), mcl::pose2str3D(goal->place_pose).c_str());
 
   thorp_msgs::PlaceObjectResult result;
   result.error.code = place(goal->object_name, goal->support_surf, goal->place_pose);
@@ -92,7 +93,7 @@ int32_t PlaceObjectServer::place(const std::string& obj_name, const std::string&
     return result;
   }
 
-  ROS_INFO("[place object] Placing object '%s' at pose [%s]...", obj_name.c_str(), mtk::pose2str3D(pose).c_str());
+  ROS_INFO("[place object] Placing object '%s' at pose [%s]...", obj_name.c_str(), mcl::pose2str3D(pose).c_str());
 
   moveit_msgs::PlaceGoal goal;
   goal.attached_object_name = obj_name;
@@ -157,7 +158,7 @@ int32_t PlaceObjectServer::makePlaceLocations(const geometry_msgs::PoseStamped& 
       return thorp_msgs::ThorpError::INVALID_TARGET_POSE;
     }
 
-    ROS_DEBUG("[place object] Place attempt %d at pose [%s]...", attempt, mtk::pose2str3D(p).c_str());
+    ROS_DEBUG("[place object] Place attempt %d at pose [%s]...", attempt, mcl::pose2str3D(p).c_str());
 
     // MoveGroup::place will transform the provided place pose with the attached body pose, so the object retains
     // the orientation it had when picked. However, with our 4-dofs arm this is infeasible (nor we care about the
@@ -170,7 +171,7 @@ int32_t PlaceObjectServer::makePlaceLocations(const geometry_msgs::PoseStamped& 
     tf::poseTFToMsg(place_tf * aco_tf, p.pose);
 
     ROS_DEBUG("[place object] Compensate place pose with the attached object pose [%s]. Results: [%s]",
-              mtk::pose2str3D(attached_obj_pose).c_str(), mtk::pose2str3D(p.pose).c_str());
+              mcl::pose2str3D(attached_obj_pose).c_str(), mcl::pose2str3D(p.pose).c_str());
 
     moveit_msgs::PlaceLocation l;
     l.place_pose = p;

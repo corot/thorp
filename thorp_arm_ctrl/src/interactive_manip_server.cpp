@@ -11,9 +11,10 @@
 #include <thorp_msgs/InteractiveManipAction.h>
 
 // auxiliary libraries
-#include <yocs_math_toolkit/common.hpp>
 #include <thorp_toolkit/common.hpp>
 #include <thorp_toolkit/planning_scene.hpp>
+#include <mag_common_cpp_libs/common.hpp>
+namespace mcl = mag_common_libs;
 
 
 using namespace visualization_msgs;
@@ -154,7 +155,7 @@ public:
     im_.setCallback(marker.name, boost::bind(&InteractiveManipulationServer::feedbackCb, this, _1));
 
     ROS_INFO("[interactive manip] Added interactive marker for object '%s' at [%s] and scale [%f]",
-             marker.name.c_str(), mtk::pose2str3D(marker.pose).c_str(), marker.scale);
+             marker.name.c_str(), mcl::pose2str3D(marker.pose).c_str(), marker.scale);
 
     return true;
   }
