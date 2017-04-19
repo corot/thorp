@@ -7,7 +7,10 @@
 
 // auxiliary libraries
 #include <thorp_toolkit/common.hpp>
-#include <yocs_math_toolkit/geometry.hpp>
+#include <mag_common_cpp_libs/common.hpp>
+#include <mag_common_cpp_libs/geometry.hpp>
+namespace mcl = mag_common_libs;
+
 
 // action client: ORK's tabletop object recognition
 #include <object_recognition_msgs/TableArray.h>
@@ -65,14 +68,14 @@ public:
     if (! thorp_toolkit::transformPose(msg.header.frame_id, output_frame_, table.pose, table_pose))
     {
       ROS_WARN("[object detection] Table with pose [%s] discarded: unable to transform to output frame [%s]",
-               mtk::pose2str3D(table_pose).c_str(), output_frame_.c_str());
+               mcl::pose2str3D(table_pose).c_str(), output_frame_.c_str());
     }
-    else if ((std::abs(mtk::roll(table_pose)) >= M_PI/10.0) || (std::abs(mtk::pitch(table_pose)) >= M_PI/10.0))
+    else if ((std::abs(mcl::roll(table_pose)) >= M_PI/10.0) || (std::abs(mcl::pitch(table_pose)) >= M_PI/10.0))
     {
       // Only consider tables within +/-18 degrees away from the horizontal plane
       ROS_WARN("[object detection] Table with pose [%s] discarded: %.2f radians away from the horizontal",
-               mtk::pose2str3D(table_pose).c_str(),
-               std::max(std::abs(mtk::roll(table_pose)), std::abs(mtk::pitch(table_pose))));
+               mcl::pose2str3D(table_pose).c_str(),
+               std::max(std::abs(mcl::roll(table_pose)), std::abs(mcl::pitch(table_pose))));
     }
     else
     {
@@ -110,8 +113,8 @@ public:
       table_co.primitive_poses[0].position.x += table.pose.position.x;
       table_co.primitive_poses[0].position.y += table.pose.position.y;
       table_co.primitive_poses[0].position.z += table.pose.position.z;
-      roll_acc                               += mtk::roll(table.pose);
-      pitch_acc                              += mtk::pitch (table.pose);
+      roll_acc                               += mcl::roll(table.pose);
+      pitch_acc                              += mcl::pitch (table.pose);
 
       // Reuse the table descriptors to store the other parameters in vectors for easily calculate median values
       table_center_x.push_back(table.center_x);
@@ -124,8 +127,8 @@ public:
     table_co.primitives.resize(1);
     table_co.primitives[0].type = shape_msgs::SolidPrimitive::BOX;
     table_co.primitives[0].dimensions.resize(3);
-    table_co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_X] = mtk::median(table_size_x);
-    table_co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Y] = mtk::median(table_size_y);
+    table_co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_X] = mcl::median(table_size_x);
+    table_co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Y] = mcl::median(table_size_y);
     table_co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Z] = 0.01;  // arbitrarily set to 1 cm
     table_co.primitive_poses.resize(1);
 
@@ -135,14 +138,14 @@ public:
     table_co.primitive_poses[0].orientation =
         tf::createQuaternionMsgFromRollPitchYaw(roll_acc/(double)table_obs_.size(),
                                                 pitch_acc/(double)table_obs_.size(),
-                                                mtk::median(table_yaw));
+                                                mcl::median(table_yaw));
     // Displace the table center according to the centroid of its convex hull
-    table_co.primitive_poses[0].position.x += mtk::median(table_center_x);
-    table_co.primitive_poses[0].position.y += mtk::median(table_center_y);
+    table_co.primitive_poses[0].position.x += mcl::median(table_center_x);
+    table_co.primitive_poses[0].position.y += mcl::median(table_center_y);
     table_co.primitive_poses[0].position.z -= table_co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Z]/2.0;
 
     ROS_DEBUG("[object detection] Table estimated at %s, size %.2fx%.2fm, based on %lu observations",
-              mtk::point2str3D(table_co.primitive_poses[0].position).c_str(),
+              mcl::point2str3D(table_co.primitive_poses[0].position).c_str(),
               table_co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_X],
               table_co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Y], table_obs_.size());
 

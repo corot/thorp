@@ -2,13 +2,7 @@
  * Author: Jorge Santos
  */
 
-#include <tf/tf.h>
 #include <ros/ros.h>
-
-// auxiliary libraries
-#include <thorp_toolkit/common.hpp>
-#include <yocs_math_toolkit/common.hpp>
-#include <yocs_math_toolkit/geometry.hpp>
 
 // action client: ORK's tabletop object recognition
 #include <actionlib/client/simple_action_client.h>
@@ -54,7 +48,7 @@ private:
 
   // Parameters from goal
   std::string output_frame_;
-  
+
   // Object detection and classification parameters
   double ork_execute_timeout_;
   double ork_preempt_timeout_;
@@ -220,7 +214,7 @@ private:
     {
       // Add the table as a collision object into the world, so it gets excluded from the collision map
       ROS_INFO("[object detection] Adding a table at %s as a collision object",
-               mtk::point2str3D(table_co.primitive_poses[0].position).c_str());
+               mcl::point2str3D(table_co.primitive_poses[0].position).c_str());
       planning_scene_interface_.addCollisionObjects(std::vector<moveit_msgs::CollisionObject>(1, table_co));
 
       // Add "table" as the support surface on action result
