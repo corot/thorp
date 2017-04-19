@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
-# Populate Thorp objects database with a bunch of simple objects.  WARN: this script assumes that the
-# database doesn't contain any of this objects; if so, the script will hung while prompting for overwrite 
+# Populate Thorp objects database with a bunch of simple objects.
+# WARN 1: this script assumes that the database doesn't contain any of this objects; if so, the script will hung
+# while prompting for overwrite
+# WARN 2: run the script from its containing folder, so it can find gen_meshes.scad
 
 import re
 import rospkg
@@ -20,8 +22,17 @@ try:
 
     objects = [['coke_can', 'A universal can of coke', 'coke.stl'],
                ['lipstick', 'Uriage lipstick, 7.4cm long', 'lipstick.stl'],
-               ['tower 5cm', 'Untextured 2 x 2.5 cm side stacked cubes', 'tower_5.stl'],
-               ['cube 2.5cm', 'Untextured 2.5 cm side cube', 'cube_2_5.stl']]
+               ['tower', 'Untextured 2 x 2.5 cm side stacked cubes', 'tower.stl'],
+               ['cube', 'Untextured 2.5 cm side cube', 'cube.stl'],
+               ['square', 'Untextured 3.2 cm side square', 'square.stl'],
+               ['rectangle', 'Untextured 2.8 x 3.8 cm rectangle', 'rectangle.stl'],
+               ['triangle', 'Untextured 3.3 cm side triangle', 'triangle.stl'],
+               ['pentagon', 'Untextured 2.1 cm side pentagon', 'pentagon.stl'],
+               ['circle', 'Untextured 1.7 cm radius circle', 'circle.stl'],
+               ['star', 'Untextured 1.7 cm radius, 5 points star', 'star.stl'],
+               ['diamond', 'Untextured 2.6 cm side diamond', 'diamond.stl'],
+               ['cross', 'Untextured 3.7 x 3.7 cm cross', 'cross.stl'],
+               ['clover', 'Untextured 3.7 x 3.7 cm clover', 'clover.stl']]
 
     for object in objects:
         if os.path.exists(rospack.get_path('thorp_obj_rec') + "/meshes/" + object[2]):
