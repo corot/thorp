@@ -5,4 +5,6 @@ moveit_setup_assistant_config:
   SRDF:
     relative_path: config/Thorp.srdf
   CONFIG:
-    generated_timestamp: 1450104212
+    author_name: Jorge Santos Simón
+    author_email: jsantossimon@gmail.com
+    generated_timestamp: 1479072466

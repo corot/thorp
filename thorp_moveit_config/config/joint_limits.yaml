@@ -4,36 +4,31 @@
 joint_limits:
   arm_elbow_flex_joint:
     has_velocity_limits: true
-    max_velocity: 1.0
+    max_velocity: 0.8
     has_acceleration_limits: false
     max_acceleration: 0
   arm_shoulder_lift_joint:
     has_velocity_limits: true
-    max_velocity: 1.0
+    max_velocity: 0.8
     has_acceleration_limits: false
     max_acceleration: 0
   arm_shoulder_pan_joint:
     has_velocity_limits: true
-    max_velocity: 1.0
+    max_velocity: 0.8
     has_acceleration_limits: false
     max_acceleration: 0
   arm_wrist_flex_joint:
     has_velocity_limits: true
-    max_velocity: 1.0
+    max_velocity: 0.8
     has_acceleration_limits: false
     max_acceleration: 0
   gripper_joint:
     has_velocity_limits: true
-    max_velocity: 0.5
+    max_velocity: 0.785
     has_acceleration_limits: false
     max_acceleration: 0
   gripper_link_joint:
-    has_velocity_limits: false
-    max_velocity: 0
+    has_velocity_limits: true
+    max_velocity: 1
     has_acceleration_limits: false
     max_acceleration: 0
-
-# Time to wait when looking up transforms; solves issues when the sensor data is arriving so fast
-# that it is preceding the transform state, in turn delayed by the revolute joints values obtained
-# from joint_states topic.
-shape_transform_cache_lookup_wait_time: 0.5
