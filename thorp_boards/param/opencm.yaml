@@ -34,9 +34,13 @@ write_rate: 20
 #}
 
 digital_servos: {
-  cannon_servo: {rate: 20, pin: 2, length: 2}   # 4-pins port  XXX OTRO!!!
+  cannon_trigger: {rate: 20, pin: 8, value: 0, length: 2}    # 5-pins port 2, SIG1
+}
+
+analog_servos: {
+  cannon_servo: {rate: 20, pin: 3, value: 180, length: 2}    # 5-pins port 2, PWM
 }
 
 analog_sensors: {
-  arm_ir_ranger: {rate: 20, pin: 2, length: 2}  # 4-pins port 1
+  arm_ir_ranger: {rate: 20, pin: 1, length: 2}               # 5-pins port 4
 }

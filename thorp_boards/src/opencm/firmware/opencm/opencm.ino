@@ -42,9 +42,9 @@ bc_pose_t poses[30][MAX_NUM_SERVOS]; // poses [index][servo_id-1]
 sp_trans_t sequence[50]; // sequence
 int seqPos; // step in current sequence     
 
-int servo_pos = 0;
 Servo myservo;  // create servo object to control a servo
                 // a maximum of eight servo objects can be created
+int servo_pos = 180;
 // TODO:  can i do this reasonably generic ???
 
 void blink(unsigned int times = 1)
@@ -182,6 +182,7 @@ int handleWrite()
   }
   else if (addr >= REG_DIGITAL_OUT0 && addr < REG_RESERVED)
   {
+    toggleLED();
     digitalWrite(addr - REG_DIGITAL_OUT0, value);
   }
 
@@ -217,13 +218,14 @@ void setup()
   bioloid.setup(MAX_NUM_SERVOS);
   pinMode(BOARD_LED_PIN, OUTPUT);
   
-  pinMode(2, PWM);
-  pwmWrite(2, 0);
+//  pinMode(2, PWM);
+//  pwmWrite(2, 0);
   
   for (int id = 1; id <= MAX_NUM_SERVOS; id++)
     Dxl.jointMode(id);
 
-  myservo.attach(2);  // attaches the servo on pin 2 to the servo object 
+  pinMode(8, OUTPUT);
+  myservo.attach(3, SERVO_DEFAULT_MIN_PW - 309, SERVO_DEFAULT_MIN_PW + 309, 150, 210);  // attaches the servo on pin 2 to the servo object
 }
 
 /*
