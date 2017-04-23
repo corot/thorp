@@ -8,7 +8,6 @@
 #include <tf/tf.h>
 
 // auxiliary libraries
-#include <thorp_toolkit/common.hpp>
 #include <mag_common_cpp_libs/common.hpp>
 #include <mag_common_cpp_libs/geometry.hpp>
 namespace mcl = mag_common_libs;
@@ -117,7 +116,7 @@ protected:
       // Target's timestamp is irrelevant, and can trigger a TransformException if very recent; zero it!
       target.header.stamp = ros::Time(0.0);
       tf::quaternionTFToMsg(tf::createIdentityQuaternion(), target.pose.orientation);
-      if (!thorp_toolkit::transformPose(target.header.frame_id, arm_ref_frame, target, target))
+      if (!mcl::transformPose(target.header.frame_id, arm_ref_frame, target, target))
         return false;
     }
 
@@ -194,7 +193,7 @@ protected:
       ROS_DEBUG("[arm controller] Compensate distance fall short increasing distance by %fm", fall_short_distance_delta);
     }
 
-    ROS_DEBUG("[arm controller] Target pose [%s] [d: %.2f]", mcl::pose2str3D(target.pose).c_str(), d);
+    ROS_DEBUG("[arm controller] Target pose [%s] [d: %.2f]", mcl::pose2cstr3D(target.pose), d);
     target_pose_pub.publish(target);
 
     return true;

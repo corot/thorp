@@ -11,8 +11,8 @@
 #include <thorp_msgs/InteractiveManipAction.h>
 
 // auxiliary libraries
-#include <thorp_toolkit/common.hpp>
 #include <thorp_toolkit/planning_scene.hpp>
+#include <mag_common_cpp_libs/geometry.hpp>
 #include <mag_common_cpp_libs/common.hpp>
 namespace mcl = mag_common_libs;
 
@@ -38,7 +38,7 @@ private:
 
 public:
 
-  InteractiveManipulationServer(const std::string name) : 
+  InteractiveManipulationServer(const std::string name) :
     im_("move_objects"),
     as_(name, false)
   {
@@ -47,7 +47,7 @@ public:
     as_.registerPreemptCallback(boost::bind(&InteractiveManipulationServer::preemptCB, this));
     as_.start();
   }
-  
+
   void goalCB()
   {
     thorp_msgs::InteractiveManipGoal::ConstPtr goal = as_.acceptNewGoal();
@@ -63,7 +63,7 @@ public:
     // set the action state to preempted
     as_.setPreempted();
   }
-  
+
   // Moving an object; keep MOUSE_DOWN pose (origin) and move the object to MOUSE_UP pose
   void feedbackCb(const InteractiveMarkerFeedbackConstPtr &feedback)
   {
@@ -78,16 +78,16 @@ public:
         ROS_INFO_STREAM("[interactive manip] Staging '" << feedback->marker_name << "' at " << feedback->pose);
         old_pose_ = feedback->pose;
         break;
-   
+
       case visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP:
         ROS_INFO_STREAM("[interactive manip] Now moving '" << feedback->marker_name << "' to " << feedback->pose);
         moveObject(feedback->marker_name, feedback->header, old_pose_, feedback->pose);
         break;
     }
-    
+
     im_.applyChanges();
   }
-  
+
   void moveObject(const std::string& marker_name, const std_msgs::Header& poses_header,
                   const geometry_msgs::Pose& start_pose, const geometry_msgs::Pose& end_pose)
   {
@@ -134,7 +134,7 @@ public:
     marker.header = obj_pose.header;
 
     // We use the biggest dimension of the mesh to scale the marker
-    marker.scale = thorp_toolkit::max_dim(obj_size);
+    marker.scale = mcl::maxValue(obj_size);
 
     InteractiveMarkerControl control;
     control.orientation.w = 1;
@@ -155,7 +155,7 @@ public:
     im_.setCallback(marker.name, boost::bind(&InteractiveManipulationServer::feedbackCb, this, _1));
 
     ROS_INFO("[interactive manip] Added interactive marker for object '%s' at [%s] and scale [%f]",
-             marker.name.c_str(), mcl::pose2str3D(marker.pose).c_str(), marker.scale);
+             marker.name.c_str(), mcl::pose2cstr3D(marker.pose), marker.scale);
 
     return true;
   }

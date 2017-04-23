@@ -214,7 +214,7 @@ private:
     {
       // Add the table as a collision object into the world, so it gets excluded from the collision map
       ROS_INFO("[object detection] Adding a table at %s as a collision object",
-               mcl::point2str3D(table_co.primitive_poses[0].position).c_str());
+               mcl::point2cstr3D(table_co.primitive_poses[0].position));
       planning_scene_interface_.addCollisionObjects(std::vector<moveit_msgs::CollisionObject>(1, table_co));
 
       // Add "table" as the support surface on action result

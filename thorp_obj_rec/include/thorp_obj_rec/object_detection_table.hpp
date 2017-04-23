@@ -6,7 +6,6 @@
 #include <ros/ros.h>
 
 // auxiliary libraries
-#include <thorp_toolkit/common.hpp>
 #include <mag_common_cpp_libs/common.hpp>
 #include <mag_common_cpp_libs/geometry.hpp>
 namespace mcl = mag_common_libs;
@@ -65,16 +64,16 @@ public:
       return;
     }
 
-    if (! thorp_toolkit::transformPose(msg.header.frame_id, output_frame_, table.pose, table_pose))
+    if (! mcl::transformPose(msg.header.frame_id, output_frame_, table.pose, table_pose))
     {
       ROS_WARN("[object detection] Table with pose [%s] discarded: unable to transform to output frame [%s]",
-               mcl::pose2str3D(table_pose).c_str(), output_frame_.c_str());
+               mcl::pose2cstr3D(table_pose), output_frame_.c_str());
     }
     else if ((std::abs(mcl::roll(table_pose)) >= M_PI/10.0) || (std::abs(mcl::pitch(table_pose)) >= M_PI/10.0))
     {
       // Only consider tables within +/-18 degrees away from the horizontal plane
       ROS_WARN("[object detection] Table with pose [%s] discarded: %.2f radians away from the horizontal",
-               mcl::pose2str3D(table_pose).c_str(),
+               mcl::pose2cstr3D(table_pose),
                std::max(std::abs(mcl::roll(table_pose)), std::abs(mcl::pitch(table_pose))));
     }
     else
@@ -145,7 +144,7 @@ public:
     table_co.primitive_poses[0].position.z -= table_co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Z]/2.0;
 
     ROS_DEBUG("[object detection] Table estimated at %s, size %.2fx%.2fm, based on %lu observations",
-              mcl::point2str3D(table_co.primitive_poses[0].position).c_str(),
+              mcl::point2cstr3D(table_co.primitive_poses[0].position),
               table_co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_X],
               table_co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Y], table_obs_.size());
 

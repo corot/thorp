@@ -94,7 +94,7 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
   }
 
   ROS_INFO("[pickup object] Picking object '%s' with size [%s] at location [%s]...",
-           obj_name.c_str(), mcl::vector2str3D(obj_size).c_str(), mcl::point2str2D(obj_pose.pose.position).c_str());
+           obj_name.c_str(), mcl::vector2cstr3D(obj_size), mcl::point2cstr2D(obj_pose.pose.position));
 
   // Prepare and send pick goal
   moveit_msgs::PickupGoal goal;
@@ -213,7 +213,7 @@ int32_t PickupObjectServer::makeGrasps(const geometry_msgs::PoseStamped& target_
       return thorp_msgs::ThorpError::INVALID_TARGET_POSE;
     }
 
-    ROS_DEBUG("[pickup object] Pick attempt %d at pose [%s]...", attempt, mcl::pose2str3D(p).c_str());
+    ROS_DEBUG("[pickup object] Pick attempt %d at pose [%s]...", attempt, mcl::pose2cstr3D(p));
 
     moveit_msgs::Grasp g;
     g.grasp_pose = p;

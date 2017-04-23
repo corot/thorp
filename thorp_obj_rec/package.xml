@@ -27,7 +27,6 @@
   <build_depend>image_transport</build_depend>
 
   <build_depend>thorp_msgs</build_depend>
-  <build_depend>thorp_toolkit</build_depend>
   <build_depend>mag_common_cpp_libs</build_depend>
 
   <run_depend>tf</run_depend>
@@ -43,7 +42,6 @@
   <run_depend>image_transport</run_depend>
 
   <run_depend>thorp_msgs</run_depend>
-  <run_depend>thorp_toolkit</run_depend>
   <run_depend>mag_common_cpp_libs</run_depend>
 
   <run_depend>object_recognition_ros</run_depend>
