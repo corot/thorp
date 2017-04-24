@@ -2,31 +2,31 @@ Xtion mount -> camera link calibration
 =======================================
 
 Resulting transform (camera frame -> fixed frame): 
-   0.0103284    -0.999685    0.0228549 -0.000235827
-   -0.699418   -0.0235571    -0.714325    0.0144784
-    0.714638  -0.00860731    -0.699441   -0.0129629
-           0            0            0            1
+  0.0380815   -0.999029  -0.0221563  -0.0099109
+  -0.642532 -0.00749928   -0.766222 -0.00583965
+   0.765312    0.043415   -0.642194   0.0386825
+          0           0           0           1
 
 Resulting transform (fixed frame -> camera frame): 
-   0.714638 -0.00860731   -0.699441  -0.0129629
- -0.0103284    0.999685  -0.0228549 0.000235827
-   0.699418   0.0235571    0.714325  -0.0144784
-4.59135e-41 4.57019e-41 4.57019e-41           1
+   0.765312    0.043415   -0.642194   0.0386825
+ -0.0380815    0.999029   0.0221563   0.0099109
+   0.642532  0.00749928    0.766222  0.00583965
+4.57202e-41 4.57202e-41 4.59163e-41           1
 
 Static transform publisher (use for external kinect): 
 rosrun tf static_transform_publisher x y z qx qy qz qw frame_id child_frame_id period_in_ms
-rosrun tf static_transform_publisher 0.0193927 -6.25956e-06 0.00128084 -0.0125325 0.377731 0.000464743 0.925831 /xtion_mount_link /xtion_rgb_frame 100
+rosrun tf static_transform_publisher -0.0329789 -0.0116245 0.0201476 0.00390025 0.341868 0.0216864 0.93949 /xtion_mount_link /xtion_rgb_frame 100
 
 URDF output (use for kinect on robot): 
 <?xml version="1.0"?>
 <robot>
-        <property name="turtlebot_calib_cam_x" value="0.0193927" />
-        <property name="turtlebot_calib_cam_y" value="-6.25956e-06" />
-        <property name="turtlebot_calib_cam_z" value="0.00128084" />
-        <property name="turtlebot_calib_cam_rr" value="-0.0319842" />
-        <property name="turtlebot_calib_cam_rp" value="0.774615" />
-        <property name="turtlebot_calib_cam_ry" value="-0.0120437" />
-        <property name="turtlebot_kinect_frame_name" value="xtion_mount_link" />
+	<property name="turtlebot_calib_cam_x" value="-0.0329789" />
+	<property name="turtlebot_calib_cam_y" value="-0.0116245" />
+	<property name="turtlebot_calib_cam_z" value="0.0201476" />
+	<property name="turtlebot_calib_cam_rr" value="0.0289082" />
+	<property name="turtlebot_calib_cam_rp" value="0.697357" />
+	<property name="turtlebot_calib_cam_ry" value="0.0566678" />
+	<property name="turtlebot_kinect_frame_name" value="xtion_mount_link" />
 </robot>
 
 
