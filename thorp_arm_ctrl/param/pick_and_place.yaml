@@ -1,0 +1,6 @@
+arm_ctrl_ref_frame: arm_base_link
+vertical_backlash_delta: 0.0125      # Increment z to cope with backlash and low pitch poses
+fall_short_distance_delta: 0.015     # Increment the yaw to compensate that only the right finger
+                                     # opens, and so there's more grasping room on the right
+gripper_asymmetry_yaw_delta: 0.01    # Increment distance... no justification, really; it
+                                     # just put the target in the center of the gripper!

@@ -32,17 +32,17 @@ class ThorpArmController
 public:
   ThorpArmController()
   {
-    ros::NodeHandle nh("~");
+    ros::NodeHandle nh, pnh("~");
 
     // Read arm control parameters
-    nh.param("arm_ctrl_ref_frame", arm_ref_frame, std::string("arm_base_link"));
-    nh.param("grasp_attach_time", attach_time, 0.8);
-    nh.param("grasp_detach_time", detach_time, 0.6);
-    nh.param("vertical_backlash_delta", vertical_backlash_delta, 0.01);
-    nh.param("fall_short_distance_delta", fall_short_distance_delta, 0.008);
-    nh.param("gripper_asymmetry_yaw_delta", gripper_asymmetry_yaw_delta, 0.05);
+    pnh.param("arm_ctrl_ref_frame", arm_ref_frame, std::string("arm_base_link"));
+    pnh.param("grasp_attach_time", attach_time, 0.8);
+    pnh.param("grasp_detach_time", detach_time, 0.6);
+    pnh.param("vertical_backlash_delta", vertical_backlash_delta, 0.0);
+    pnh.param("fall_short_distance_delta", fall_short_distance_delta, 0.0);
+    pnh.param("gripper_asymmetry_yaw_delta", gripper_asymmetry_yaw_delta, 0.0);
 
-    nh.param("/gripper_controller/max_opening", gripper_open, 0.045);
+    nh.param("gripper_controller/max_opening", gripper_open, 0.0454321);
 
     // Default target poses reference frame: we normally work relative to
     // the arm base, so our calculated roll/pitch/yaw angles make sense
@@ -93,7 +93,11 @@ protected:
    * are calculated as a function of the x and y coordinates, plus some random variations
    * increasing with the number of attempts to improve our chances of successful planning.
    * @param target Pose target to validate
-   * @param compensate_backlash Increment z to cope with backlash and low pitch poses
+   * @param compensate_vertical_backlash Increment z to cope with backlash and low pitch poses
+   * @param compensate_gripper_asymmetry Increment the yaw to compensate that only the right
+   *        finger opens, and so there's more grasping room on the right
+   * @param compensate_distance_fall_short Increment distance... no justification, really; it
+   *        just put the target in the center of the gripper!
    * @param attempt The actual attempts number
    * @return True of success, false otherwise
    */
