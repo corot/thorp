@@ -27,4 +27,5 @@
   <param name="tabletop_object_recognition/table_normal_x"    value="0"/>
   <param name="tabletop_object_recognition/table_normal_y"    value="0"/>
   <param name="tabletop_object_recognition/table_normal_z"    value="1"/>
+  <param name="tabletop_object_recognition/fitter_type"       value="icp_2d"/>
 </launch>
