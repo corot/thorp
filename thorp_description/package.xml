@@ -21,4 +21,5 @@
   <run_depend>xacro</run_depend>
   <run_depend>kobuki_description</run_depend>
   <run_depend>turtlebot_description</run_depend>
+  <run_depend>hector_sensors_description</run_depend>
 </package>
