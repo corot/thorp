@@ -220,12 +220,12 @@ int32_t PickupObjectServer::makeGrasps(const geometry_msgs::PoseStamped& target_
 
     g.pre_grasp_approach.direction.vector.x = 0.5;
     g.pre_grasp_approach.direction.header.frame_id = arm().getEndEffectorLink();
-    g.pre_grasp_approach.min_distance = 0.005;
+    g.pre_grasp_approach.min_distance = 0.05;
     g.pre_grasp_approach.desired_distance = 0.1;
 
     g.post_grasp_retreat.direction.header.frame_id = arm().getEndEffectorLink();
     g.post_grasp_retreat.direction.vector.x = -0.5;
-    g.post_grasp_retreat.min_distance = 0.005;
+    g.post_grasp_retreat.min_distance = 0.05;
     g.post_grasp_retreat.desired_distance = 0.1;
 
     g.pre_grasp_posture.joint_names.push_back("gripper_joint");
