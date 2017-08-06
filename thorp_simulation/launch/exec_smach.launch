@@ -41,7 +41,7 @@
     <param name="rec_objects_frame" value="map"/>
   </node>
 
-  <node name="$(arg smach_app)_smach_viewer" pkg="smach_viewer" type="smach_viewer.py" output="screen"/>
+  <node name="$(arg smach_app)_smach_viewer" pkg="rqt_smach" type="rqt_smach" output="screen"/>
 
   <!--  ******* Keyboard interaction with smach *******  -->
   <!-- We do it required so it will shutdown the whole demo on exit -->
