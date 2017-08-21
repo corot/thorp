@@ -56,14 +56,6 @@ private:
    * @return Thorp arm controller error code
    */
   int32_t moveArmTo(const geometry_msgs::PoseStamped& target);
-
-  /**
-   * Set gripper opening.
-   * @param opening Physical opening of the gripper, in meters
-   * @param wait_for_complete Wait or not for the execution of the trajectory to complete
-   * @return True of success, false otherwise
-   */
-  bool setGripper(float opening, bool wait_for_complete = true);
 };
 
 };

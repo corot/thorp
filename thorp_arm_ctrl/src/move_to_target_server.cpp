@@ -163,27 +163,4 @@ int32_t MoveToTargetServer::moveArmTo(const geometry_msgs::PoseStamped& target)
 }
 
 
-bool MoveToTargetServer::setGripper(float opening, bool wait_for_complete)
-{
-  ROS_DEBUG("[move to target] Set gripper opening to %f", opening);
-  if (gripper().setJointValueTarget("gripper_joint", opening) == false)
-  {
-    ROS_ERROR("[move to target] Set gripper opening to %f failed", opening);
-    return false;
-  }
-
-  moveit::planning_interface::MoveItErrorCode result =
-      wait_for_complete ? gripper().move() : gripper().asyncMove();
-  if (result == true)
-  {
-    return true;
-  }
-  else
-  {
-    ROS_ERROR("[move to target] Set gripper opening failed (error %d)", result.val);
-    return false;
-  }
-}
-
-
 };

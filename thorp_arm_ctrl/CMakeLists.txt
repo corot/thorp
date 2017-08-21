@@ -15,9 +15,11 @@ catkin_package(DEPENDS roscpp actionlib actionlib_msgs geometry_msgs moveit_msgs
 
 
 # nodes
-add_executable(thorp_arm_ctrl_server src/pickup_object_server.cpp
+add_executable(thorp_arm_ctrl_server src/thorp_arm_controller.cpp
+                                     src/pickup_object_server.cpp
                                      src/place_object_server.cpp
                                      src/move_to_target_server.cpp
+                                     src/house_keeping_server.cpp
                                      src/thorp_arm_ctrl_server.cpp)
 target_link_libraries(thorp_arm_ctrl_server ${catkin_LIBRARIES})
 add_dependencies(thorp_arm_ctrl_server thorp_msgs_generate_messages_cpp)
