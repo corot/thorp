@@ -61,11 +61,6 @@ void PickupObjectServer::executeCB(const thorp_msgs::PickupObjectGoal::ConstPtr&
   else
   {
     as_.setAborted(result);
-
-    // Ensure we don't retain any object attached to the gripper
- //   arm().detachObject(goal->object_name);
-   // setGripper(gripper_open, false);
-
   }
 }
 
@@ -233,10 +228,10 @@ int32_t PickupObjectServer::makeGrasps(const geometry_msgs::PoseStamped& target_
     g.pre_grasp_posture.points[0].positions.push_back(gripper_open);
 
     // As we grasp the object "blindly", just in the center, we use the maximum possible value as the opened
-    // gripper position and the smallest dimension minus a small "tightening" epsilon as the closed position
+    // gripper position and the smallest dimension minus a 20% "tightening" as the closed position
     g.grasp_posture.joint_names.push_back("gripper_joint");
     g.grasp_posture.points.resize(1);
-    g.grasp_posture.points[0].positions.push_back(std::min(target_size.x, target_size.y) - 0.002);
+    g.grasp_posture.points[0].positions.push_back(std::min(target_size.x, target_size.y) * 0.80);
     g.grasp_posture.points[0].effort.push_back(max_effort);
 
     g.allowed_touch_objects.push_back(obj_name);
