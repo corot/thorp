@@ -37,7 +37,7 @@
         </geometry>
       </visual>
       <collision>
-        <origin xyz="-0.018 0.0035 0.004" rpy="0 0 0"/>
+        <xacro:insert_block name="visual_origin"/>
         <geometry>
         <box size="0.04 0.185 0.03"/>
       </geometry>
