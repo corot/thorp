@@ -92,6 +92,6 @@ arm_controller:
        module: joint_trajectory_action_controller
        type: JointTrajectoryActionController
    joint_trajectory_action_node:
-       min_velocity: 0.25
+       min_velocity: 0.5
        constraints:
            goal_time: 0.1
