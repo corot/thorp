@@ -1,0 +1,75 @@
+# see http://ros.org/wiki/dwa_local_planner for param description
+acc_lim_x: 0.6
+acc_lim_y: 0.0
+acc_lim_theta: 1.2
+
+# also used to set max_vel_x/min_vel_x
+max_trans_vel: 0.8
+min_trans_vel: 0.1
+max_rot_vel: 0.8
+min_rot_vel: 0.0
+
+# WARN:
+#   do not set max_trans_vel to 0.0 otherwise dwa will always think translational velocities
+#   are non-negligible and will continuously output small in place rotational velocities
+
+trans_stopped_vel: 0.01
+rot_stopped_vel: 0.01
+
+forward_point_distance: 0.3
+
+# default 0.05
+yaw_goal_tolerance: 0.1
+
+# default:0.1 -> with this value the robot sometimes has troubles achieving the goal, due to low tolerance
+xy_goal_tolerance: 0.08
+
+# if the robot ever reaches the goal xy location it will simply rotate in place, even if it ends up outside the goal tolerance while it is doing so.
+latch_xy_goal_tolerance: true
+
+# sim_time old: 2.1; ROS default 1.7
+# (observation: using a smaller value lets the robot stay more accurately on its planned global trajectory, eg the robot almost turns on the spot when doing a 180 turn (similar behaviour when reaching a goal) => less problems with door passing [at least in simulation]).
+sim_time: 3.0 # allows for well planned deccelerations
+sim_granularity: 0.025
+angular_sim_granularity: 0.25
+penalize_negative_x: false
+vx_samples: 8  # WARN: to prevent heeling when approaching goal, ensure that max_trans_vel / vx_samples > xy_goal_tolerance
+vy_samples: 0
+vth_samples: 20
+
+#cost =  path_distance_bias * (distance to path from the endpoint of the trajectory in meters)  + goal_distance_bias * (distance to local goal from the endpoint of the trajectory in meters)  + occdist_scale * (maximum obstacle cost along the trajectory in obstacle cost (0-254))
+# by increasing the ratio between path distance and (local) goal distance the robot stays better on its global plan (by which it will meet its local goals anyway).
+path_distance_bias: 80.0 # default: 32
+goal_distance_bias: 10.0 # default: 24
+occdist_scale: 1.0       # default: 0.01
+stop_time_buffer: 0.6
+
+in_collision_distance: 0.01  # maximum distance to an obstacle to consider that the robot is in collision
+
+oscillation_reset_dist: 0.05
+
+prune_plan: false
+
+holonomic_robot: false
+
+use_dwa: true  # trajectory rollout does a better job dealing with bulky robots inertia, but... somehow makes the robot underturn and crash!
+
+# Oriented planner specific parameters
+optimize_global_plan: true
+v_shape_angular_threshold: 1.5708
+
+slow_rotate_in_place: 0.15  # rotate in place angular velocity in presence of an obstacle
+
+path_missed_distance: 1.5  # threshold distance from the robot to the path to consider that missed have the path
+goal_missed_patiente: 2.0  # how long to wait in seconds, until deciding we have missed the goal; negative to disable goal missed detection
+goal_missed_patience: 2.0  # typo fixed on master
+
+# Debug information
+global_frame_id: map
+publish_cost_grid_pc: false
+publish_traj_pc: false
+
+resume_on_same_plan: 5   # on mbf we will often receive the same plan time and again when recovering from
+                         # local planner failures or when resuming a paused execution; in those cases we
+                         # want to continue with the last segment we where executing before stopping.
+                         # Though we also want to avoid get trapped, so we limit the times we do this

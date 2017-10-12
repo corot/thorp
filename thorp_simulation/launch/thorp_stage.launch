@@ -52,11 +52,10 @@
     <param name="yaml_cfg_file" value="$(find thorp_bringup)/param/vel_multiplexer.yaml"/>
   </node>
 
-  <!--  ** Turtlebot 2 move base with custom tweaks ***  -->
-  <include file="$(find turtlebot_navigation)/launch/includes/move_base.launch.xml">
-    <arg name="custom_param_file" value="$(find thorp_bringup)/param/custom_move_base.yaml"/>
+  <!--  **************** Move base flex ***************  -->
+  <include file="$(find thorp_bringup)/launch/includes/move_base_flex.launch.xml">
   </include>
-  
+
   <!-- we cannot simulate sonars on stage_ros, so disable sonar layer -->
   <param name="move_base/global_costmap/range_sensor_layer/enabled" value="false"/>
   <param name="move_base/local_costmap/range_sensor_layer/enabled" value="false"/>

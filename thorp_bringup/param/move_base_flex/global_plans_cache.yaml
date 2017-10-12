@@ -1,0 +1,8 @@
+enable_visualization: true
+move_base_result_timeout: 120.0
+
+# Alternative global planner configurtion for off-line plans refinement
+SBPLLatticePlanner:
+  allocated_time: 10.0
+  initial_epsilon: 3.0
+  reuse_cached_plans: false  # so planner doesn't return us a cached plan

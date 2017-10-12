@@ -44,9 +44,8 @@
   <!--  ************** Additional sensors *************  -->
   <include file="$(find thorp_bringup)/launch/includes/virt_sensor.launch.xml"/>
 
-  <!--  ** Turtlebot 2 move base with custom tweaks ***  -->
-  <include file="$(find turtlebot_navigation)/launch/includes/move_base.launch.xml">
-    <arg name="custom_param_file" value="$(find thorp_bringup)/param/custom_move_base.yaml"/>
+  <!--  **************** Move base flex ***************  -->
+  <include file="$(find thorp_bringup)/launch/includes/move_base_flex.launch.xml">
   </include>
 
   <!--  ****** Geometric and semantic map servers *****  -->

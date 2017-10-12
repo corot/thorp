@@ -5,6 +5,6 @@
     <arg name="world_name" value="$(find thorp_simulation)/worlds/gazebo/playground.world"/>
   </include>
   
-  <include file="$(find thorp_simulation)/launch/includes/thorp.launch.xml"/>
+  <include file="$(find thorp_simulation)/launch/includes/thorp_gazebo.launch.xml"/>
 
 </launch>

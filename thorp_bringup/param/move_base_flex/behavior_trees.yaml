@@ -1,0 +1,7 @@
+--- !extends:behavior_trees/behavior_trees.yaml
+tick_frequency: 10.0                                                                                       # Behavior Tree evaluation frequency in Hz; faster than main
+                                                                                                           # tree's 5 Hz, as mbf actions are called very often
+auto_start_initial_bt: false                                                                               # Do not auto-start execution; we require a goal as userdata
+behavior_tree_directory: $(find move_base_flex_tasks)/behavior_trees                                       # Directory that holds the Behavior Tree JSON files
+subtree_directory: $(find move_base_flex_tasks)/behavior_trees/subtrees                                    # Writable directory that holds the JSON files for BT subtrees
+initial_behavior_tree_file: $(find move_base_flex_tasks)/behavior_trees/subtrees/move-base-flex.json       # JSON file with the behavior tree to be loaded at startup

@@ -27,7 +27,7 @@ subscribers:
     timeout:     1.0
     priority:    5
   - name:        "Navigation"
-    topic:       "input/navi"
+    topic:       "input/navigation"
     timeout:     1.0
     priority:    3
 publisher: "/mobile_base/commands/velocity"

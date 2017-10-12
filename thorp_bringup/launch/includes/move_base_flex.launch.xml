@@ -1,0 +1,44 @@
+<!-- 
+         ROS navigation system
+-->
+<launch>
+  <arg name="base_frame_id"   default="base_footprint"/>
+  <arg name="odom_frame_id"   default="odom"/>
+  <arg name="global_frame_id" default="map"/>
+
+  <!-- Velocity smoother nodelet; we must provide the absolute name of nodelet manager, as we can be in an application namespace -->
+  <node pkg="nodelet" type="nodelet" name="navigation_velocity_smoother" output="screen" respawn="true"
+        args="load yocs_velocity_smoother/VelocitySmootherNodelet /mobile_base_nodelet_manager">
+    <rosparam file="$(find thorp_bringup)/param/vel_smoother.yaml" command="load"/>
+    <remap from="navigation_velocity_smoother/smooth_cmd_vel" to="/cmd_vel_mux/input/navigation"/>
+    <remap from="navigation_velocity_smoother/robot_cmd_vel" to="/mobile_base/commands/velocity"/>
+    <remap from="navigation_velocity_smoother/odometry" to="/odom"/>
+  </node>
+
+  <!-- Move base flex and legacy relay to provide backward compatibility with move base -->
+  <node pkg="move_base_flex" type="mbf_2d_nav" name="move_base_flex" output="screen" respawn="true" launch-prefix="gdb -ex run --args">
+    <rosparam file="$(find thorp_bringup)/param/move_base/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find thorp_bringup)/param/move_base/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find thorp_bringup)/param/move_base/local_costmap_params.yaml"  command="load" />
+    <rosparam file="$(find thorp_bringup)/param/move_base/global_costmap_params.yaml" command="load" />
+
+    <rosparam file="$(find thorp_bringup)/param/move_base/base_local_planner_params.yaml" command="load" />
+    <rosparam file="$(find thorp_bringup)/param/move_base_flex/move_base_flex.yaml" command="load" />
+
+    <rosparam file="$(find thorp_bringup)/param/custom_move_base.yaml" command="load" />
+
+    <!-- reset frame_id parameters using user input data -->
+    <param name="global_costmap/global_frame" value="$(arg global_frame_id)"/>
+    <param name="global_costmap/robot_base_frame" value="$(arg base_frame_id)"/>
+    <param name="local_costmap/global_frame" value="$(arg odom_frame_id)"/>
+    <param name="local_costmap/robot_base_frame" value="$(arg base_frame_id)"/>
+    <param name="TrajectoryPlannerROS/global_frame_id" value="$(arg odom_frame_id)"/>
+
+    <remap from="bumpers" to="/mobile_base/sensors/bumper_pointcloud"/>
+    <remap from="cmd_vel" to="navigation_velocity_smoother/raw_cmd_vel"/>
+    <remap from="odom" to="/odom"/>
+  </node>
+  <node pkg="move_base_flex" type="move_base_legacy_relay.py" name="move_base_legacy_relay" output="screen" respawn="true">
+    <rosparam file="$(find thorp_bringup)/param/move_base/move_base_params.yaml" command="load" />
+  </node>
+</launch>

@@ -1,0 +1,13 @@
+environment_type: XYThetaLattice
+planner_type: ARAPlanner
+allow_unknown: false
+allocated_time: 3.0
+initial_epsilon: 5.0
+forward_search: false
+lethal_obstacle: 10
+xy_goal_tolerance: 0.1
+yaw_goal_tolerance: 0.2
+reuse_cached_plans: true
+cache_calls_min_lapse: 5.0
+
+primitive_filename: $(optenv CMAN_CONFIG_DIR /opt/magazino/config)/environment/maps/sbpl.mprim
