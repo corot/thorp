@@ -11,17 +11,19 @@
 
 <launch>
   <arg name="debug"          default="false"/>
+  <arg name="paused"         default="true"/>
 
   <!-- Name of the map to use (without path nor extension) and initial position -->
   <arg name="map_name"       default="playground"/>
-  <arg name="initial_pose_x" value="0.0"/>
-  <arg name="initial_pose_y" value="0.0"/>
-  <arg name="initial_pose_a" value="0.0"/>
+  <arg name="initial_pose_x" default="0.0"/>
+  <arg name="initial_pose_y" default="0.0"/>
+  <arg name="initial_pose_a" default="0.0"/>
 
   <!--  ******************** Gazebo *******************  -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="debug" value="$(arg debug)"/>
+    <arg name="paused" value="$(arg paused)"/>
     <arg name="use_sim_time" value="true"/>
-    <arg name="debug" value="false"/>
     <arg name="world_name" value="$(find thorp_simulation)/worlds/gazebo/$(arg map_name).world"/>
   </include>
 
