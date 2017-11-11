@@ -1,16 +1,61 @@
+# thorp recovery behaviors; use spinning as a last resort
+#recovery_behaviors:
+#  - name: 'super_conservative_reset'
+#    type: 'clear_costmap_recovery/ClearCostmapRecovery'
+#  - name: 'conservative_reset'
+#    type: 'clear_costmap_recovery/ClearCostmapRecovery'
+#  - name: 'aggressive_reset1'
+#    type: 'clear_costmap_recovery/ClearCostmapRecovery'
+#  - name: 'clearing_rotation'
+#    type: 'rotate_recovery/RotateRecovery'
+#  - name: 'aggressive_reset2'
+#    type: 'clear_costmap_recovery/ClearCostmapRecovery'
+#
+## apply reset to obstacle and range sensor layers
+#super_conservative_reset:
+#  reset_distance: 3.0
+#  layer_names:
+#    - obstacle_layer
+#    - range_sensor_layer
+#
+#conservative_reset:
+#  reset_distance: 1.5
+#  layer_names:
+#    - obstacle_layer
+#    - range_sensor_layer
+#
+#aggressive_reset1:
+#  reset_distance: 0.0
+#  layer_names:
+#    - obstacle_layer
+#    - range_sensor_layer
+#
+#aggressive_reset2:
+#  reset_distance: 0.0
+#  layer_names:
+#    - obstacle_layer
+#    - range_sensor_layer
+
+
 recovery_behaviors:
   - {name: clear_costmaps,    type: clear_costmap_recovery/ClearCostmapRecovery}
-#  - {name: out_of_collision,  type: slow_escape_recovery/SlowEscapeRecovery}
-#  - {name: lp_altern_config,  type: change_config_recovery/ChangeConfigRecovery}
-#  - {name: gp_altern_config,  type: change_config_recovery/ChangeConfigRecovery}
-#  - {name: escape_distance,   type: slow_escape_recovery/SlowEscapeRecovery}
-#  - {name: force_mrpt_update, type: change_config_recovery/ChangeConfigRecovery}
+  - {name: out_of_collision,  type: slow_escape_recovery/SlowEscapeRecovery}
+  - {name: lp_altern_config,  type: change_config_recovery/ChangeConfigRecovery}
+  - {name: gp_altern_config,  type: clear_costmap_recovery/ClearCostmapRecovery}   # TODO dyn reconf. for NavFn and/or change global costmap params
+  - {name: escape_distance,   type: slow_escape_recovery/SlowEscapeRecovery}
+  - {name: clearing_rotation, type: rotate_recovery/RotateRecovery}
 
 # Define parameters for move_base_flex recovery behaviors
 
 clear_costmaps:
   layer_names: [obstacle_layer, tof_sensors_layer]
   reset_distance: 0.0
+
+clearing_rotation:   # all are default values, just informative
+  acc_lim_th: 3.2
+  max_rotational_vel: 1.0
+  min_in_place_rotational_vel: 0.4
+  yaw_goal_tolerance: 0.10
 
 # local planner alternative configuration: less safe and more detailed map
 lp_altern_config:
@@ -21,29 +66,19 @@ lp_altern_config:
     height: 3
     resolution: 0.01
     footprint_padding: 0.01
-  OrientedDWAPlanner:
+  TrajectoryPlannerROS:
     max_trans_vel: 0.25
     max_rot_vel: 0.5
     sim_granularity: 0.005
     angular_sim_granularity: 0.025
 
-# global planner alternative configuration: relaxed planning constraints
-gp_altern_config:
-  limited_duration: 8.0
-  limited_distance: 0.2
-  SBPLLatticePlanner:
-    allocated_time: 6.0
-    initial_epsilon: 8.0
-
-# shake mrpt localization particles filter; normally it's very stable when stopped
-force_mrpt_update:
-  config_namespace: "/"
-  limited_duration:  6.0
-  limited_distance: -1.0  # disabled
-  mrpt_localization:
-    update_while_stopped: true
-    gaussian_alpha_phi: 0.04
-    gaussian_alpha_xy: 0.008
+# global planner alternative configuration: relaxed planning constraints    doesn't exist for NavFn!!!
+#gp_altern_config:
+#  limited_duration: 8.0
+#  limited_distance: 0.2
+#  NavfnROS:
+#    allocated_time: 6.0
+#    initial_epsilon: 8.0
 
 # follow down costmap cost gradient for a short distance with time limit
 escape_distance:
@@ -57,10 +92,10 @@ escape_distance:
 
 # same as escape_distance but move until footprint doesn't touch any lethal obstacle in both costmaps
 out_of_collision:
-  v_max:                        !ref:escape_distance.v_max
-  w_max:                        !ref:escape_distance.w_max
-  controller_frequency:         !ref:escape_distance.controller_frequency
-  vel_projection_time:          !ref:escape_distance.vel_projection_time
+  v_max: 0.1
+  w_max: 0.15
+  controller_frequency: 8.0     # Hz; ideally same frequency as local costmap, as will sync with its updates
+  vel_projection_time: 0.5      # seconds
   max_execution_time: 15.0      # provide a maximum time for safety
   max_travelled_distance: 1.0   # provide a maximum distance for safety
   move_away_of_collision: 0.1   # move 10 cm away from closest obstacle

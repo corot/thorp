@@ -1,7 +1,29 @@
---- !extends:behavior_trees/behavior_trees.yaml
-tick_frequency: 10.0                                                                                       # Behavior Tree evaluation frequency in Hz; faster than main
-                                                                                                           # tree's 5 Hz, as mbf actions are called very often
-auto_start_initial_bt: false                                                                               # Do not auto-start execution; we require a goal as userdata
-behavior_tree_directory: $(find move_base_flex_tasks)/behavior_trees                                       # Directory that holds the Behavior Tree JSON files
-subtree_directory: $(find move_base_flex_tasks)/behavior_trees/subtrees                                    # Writable directory that holds the JSON files for BT subtrees
-initial_behavior_tree_file: $(find move_base_flex_tasks)/behavior_trees/subtrees/move-base-flex.json       # JSON file with the behavior tree to be loaded at startup
+#behavior_tree_directory: $(find behavior_trees_lib)/behavior_trees   # Directory that holds the Behavior Tree JSON files
+#subtree_directory: $(find behavior_trees_lib)/behavior_trees         # Writable directory that holds the JSON files for BT subtrees
+task_library_package: 'move_base_flex_task_library'                           # ROS package holding Python classes for BT tasks
+#initial_behavior_tree_file: $(find robee_task_library)/behavior_trees/empty.json           # JSON file with the behavior tree to be loaded at startup
+email_pwd: 'Mcx0xHUkaLzEURSxR9PJ'                                    # Password for sending emails
+#tick_frequency: 5.0                                                  # Behavior Tree evaluation frequency in Hz
+taskdebug: false
+#auto_start_initial_bt: false                                         # Shall the executive auto-start execution of the tree in the initial_behavior_tree parameter?
+#taskdebug: false
+bt_directories:
+- package: thorp_behavior
+  path: /home/jorge/catkin_ws/thorp/src/thorp/thorp_behavior/behavior_trees
+- package: thorp_behavior
+  path: /home/jorge/catkin_ws/thorp/src/thorp/thorp_behavior/behavior_trees/subtrees
+
+action_servers:
+  default:
+    label: default
+    name: /behavior_tree_server
+    action_name: /behavior_trees_msgs/ExecuteTreeAction
+
+
+
+tick_frequency: 50.0                                                                             # Behavior Tree evaluation frequency in Hz; faster than main
+                                                                                                 # tree's 5 Hz, as mbf actions are called very often
+auto_start_initial_bt: false                                                                     # Do not auto-start execution; we require a goal as userdata
+behavior_tree_directory: /home/jorge/catkin_ws/thorp/src/thorp/thorp_behavior/behavior_trees                                      # Directory that holds the Behavior Tree JSON files
+subtree_directory: /home/jorge/catkin_ws/thorp/src/thorp/thorp_behavior/behavior_trees/subtrees                                   # Writable directory that holds the JSON files for BT subtrees
+initial_behavior_tree_file: /home/jorge/catkin_ws/thorp/src/thorp/thorp_behavior/behavior_trees/subtrees/move-base-flex.json      # JSON file with the behavior tree to be loaded at startup

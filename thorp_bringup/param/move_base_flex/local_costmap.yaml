@@ -1,61 +1,16 @@
-#--- !extends:move_base_flex/common_costmap.yaml
-global_frame: map
-robot_base_frame: base_footprint
-update_frequency: 8.0
-publish_frequency: 1.0
-transform_tolerance: 0.5
-static_map: false
-rolling_window: true
-width: 8.0
-height: 8.0
-resolution: 0.02
-plugins:
-- {name: obstacle_layer,  type: "costmap_2d::VoxelLayer"}
-#- {name: semantic_layer,  type: "toru_navigation_layers::SemanticLayer"}
-- {name: local_map_layer, type: "costmap_2d::StaticLayer"}
-- {name: inflation_layer, type: "costmap_2d::InflationLayer"}
+local_costmap:
+  global_frame: odom
+  robot_base_frame: base_footprint
+  update_frequency: 5.0
+  publish_frequency: 2.0
+  static_map: false
+  rolling_window: true
+  width: 4.0
+  height: 4.0
+  resolution: 0.02
+  transform_tolerance: 0.5
 
-local_map_layer:
-  map_topic: local_map
-  use_maximum: true
-
-semantic_layer:
-  enabled: true
-  db_read_rate: 0.0  # disabled
-  viz_updated_bounds: false
-  positive_obstacles:   # objects marked as lethal in the costmap
-    types: ["segment", "local_virtual_obstacle"]
-
-mapping_layer:
-  enabled: false   # we don't want to start mapping until we have green light from localization watchdog
-  removal_threshold: 50
-  confirmation_threshold: 500
-  max_confirmation_score: 2500
-  simplify_polygons: true
-  simplification_tolerance: 0.025
-  max_tolerated_contour_points: 15
-  lower_size_threshold: 10
-  upper_size_threshold: 2000
-  contour_extent: 1.0
-  max_update_range: 5.0
-  kernel_size: 3
-  intensity_threshold: 20.0
-  approx_poly_accuracy: 4.0
-  shelf_inflation: 0.3
-  max_update_range: 5.0
-  use_occlusion_clearing: false
-  use_occlusion_whole_image: true
-  use_occlusion_drawn_contours: false
-  use_hausdorff: false
-  hausdorff_threshold: 0.3
-  box_filter_size: 3
-  box_filter_threshold: 0.4
-  union_buffer_distance: 0.0
-  collision_buffer_distance: 0.01
-  angle_threshold: 25.0
-  line_threshold: 1
-  line_buffer_distance: 0.03
-
-  # database access parameters
-  db_table: laserscan_obstacles
-  db_update_rate: 1.0
+  plugins:
+    - {name: range_sensor_layer, type: "range_sensor_layer::RangeSensorLayer"}
+    - {name: obstacle_layer,     type: "costmap_2d::VoxelLayer"}
+    - {name: inflation_layer,    type: "costmap_2d::InflationLayer"}

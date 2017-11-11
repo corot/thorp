@@ -9,25 +9,17 @@ oscillation_distance: 0.02
 local_planner: base_local_planner/TrajectoryPlannerROS
 #local_planner: oriented_dwa_local_planner/OrientedDWAPlanner
 local_planner_frequency: 8.0     # Hz
-local_planner_patience: 2.0      # seconds; abort if the local planner does not return within that time
+local_planner_patience:  2.0     # seconds; abort if the local planner does not return within that time
 local_planner_max_retries: 0     # limit consecutive failed calls to local planner
-#OrientedDWAPlanner: !include:move_base_flex/oriented_dwa_planner.yaml
 
 # Global planner parameters
 global_planner: navfn/NavfnROS
-#global_planner: sbpl_lattice_planner/SBPLLatticePlanner
-global_planner_frequency: 0.0    # disable replanning, as our local planner requires stable plans
-global_planner_patience: 10.0    # seconds; abort if the global planner does not return within that time
-                                 # WARN: ensure it's higher than SBPLLatticePlanner/allocated_time
+global_planner_frequency: 1.0    # replan every second to addapt to changing conditions
+global_planner_patience:  5.0    # seconds; abort if the global planner does not return within that time
 global_planner_max_retries: 3    # limit consecutive failed calls to global planner
-#SBPLLatticePlanner: !include:move_base_flex/sbpl_lattice_planner.yaml
 
 # Recovery parameters
 recovery_patience: 2.0           # seconds; abort if a recovery behavior does not return within that time
-#"": !include:move_base_flex/recovery_behaviors.yaml
 
 # Costmap parameters
-shutdown_costmaps: false         # stop updating costmaps when not navigating to save CPU
-
-#local_costmap: !include:move_base_flex/local_costmap.yaml
-#global_costmap: !include:move_base_flex/global_costmap.yaml
+shutdown_costmaps: false         # stop updating costmaps when not navigating to save CPU?
