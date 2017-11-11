@@ -9,6 +9,8 @@
  -->
 
 <launch>
+  <arg name="move_base_flex"  default="true"/>
+
   <!-- Name of the map to use (without path nor extension) and initial position -->
   <arg name="map_name"       default="maze"/>
   <arg name="initial_pose_x" value="2.0"/>
@@ -40,9 +42,6 @@
     <remap from="base_scan" to="scan"/>
   </node>
 
-  <!--  ************** Additional sensors *************  -->
-  <include file="$(find thorp_bringup)/launch/includes/virt_sensor.launch.xml"/>
-
   <!--  ***************** Robot Model *****************  -->
   <include file="$(find thorp_bringup)/launch/includes/model.launch.xml"/>
 
@@ -52,29 +51,20 @@
     <param name="yaml_cfg_file" value="$(find thorp_bringup)/param/vel_multiplexer.yaml"/>
   </node>
 
-  <!--  **************** Move base flex ***************  -->
-  <include file="$(find thorp_bringup)/launch/includes/move_base_flex.launch.xml">
+  <!--  ***************** Navigation ******************  -->
+  <include file="$(find thorp_bringup)/launch/includes/navigation.launch.xml">
+    <arg name="move_base_flex"  value="$(arg move_base_flex)"/>
+    <arg name="map_name"        value="$(arg map_name)"/>
+    <arg name="initial_pose_x"  value="$(arg initial_pose_x)"/>
+    <arg name="initial_pose_y"  value="$(arg initial_pose_y)"/>
+    <arg name="initial_pose_a"  value="$(arg initial_pose_a)"/>
   </include>
 
   <!-- we cannot simulate sonars on stage_ros, so disable sonar layer -->
   <param name="move_base/global_costmap/range_sensor_layer/enabled" value="false"/>
   <param name="move_base/local_costmap/range_sensor_layer/enabled" value="false"/>
-  
-  <!--  ****** Geometric and semantic map servers *****  -->
-  <node name="map_server" pkg="map_server" type="map_server" args="$(find thorp_bringup)/resources/maps/$(arg map_name).yaml">
-    <param name="frame_id" value="/map"/>
-  </node>
-
-  <!--  ******************** Amcl *********************  -->
-  <include file="$(find thorp_bringup)/launch/includes/amcl.launch.xml">
-    <arg name="scan_topic" value="scan"/>
-    <arg name="initial_pose_x" value="$(arg initial_pose_x)"/>
-    <arg name="initial_pose_y" value="$(arg initial_pose_y)"/>
-    <arg name="initial_pose_a" value="$(arg initial_pose_a)"/>
-  </include>
-  
-  <!--  ***** Watchdog to keep the pose on reboot *****  -->
-  <node name="save_amcl_pose" pkg="thorp_toolkit" type="save_pose_node"/>
+  <param name="move_base_flex/global_costmap/range_sensor_layer/enabled" value="false"/>
+  <param name="move_base_flex/local_costmap/range_sensor_layer/enabled" value="false"/>
 
   <!--  **************** Visualization ****************  -->
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_nav.rviz"/>

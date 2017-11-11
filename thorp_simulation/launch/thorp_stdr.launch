@@ -13,22 +13,28 @@
   <arg name="laser_topic" default="robot0/laser_0"/> default laser topic in stdr for 1 robot
   <arg name="odom_topic" default="robot0/odom"/> -->
 
+  <arg name="move_base_flex"  default="true"/>
+
   <!-- Frames: I subvert stdr frames system to into our old good map -> odom -> base, but here odom
        is named map_static and base robot0. To make this work, I must prevent stdr_server to publish
        map -> map_static, as amcl already does:
        Comment https://github.com/stdr-simulator-ros-pkg/stdr_simulator/blob/indigo-devel/stdr_server/src/map_server.cpp#L93  -->
-  <arg name="odom_frame_id" default="map_static"/> 
-  <arg name="base_frame_id" default="robot0"/>  
+  <arg name="odom_frame_id"   default="map_static"/> 
+  <arg name="base_frame_id"   default="robot0"/>  
   <arg name="global_frame_id" default="map"/> 
+
   <!-- Name of the map to use (without path nor extension) and initial position -->
-  <arg name="map_file"       default="$(env TURTLEBOT_STDR_MAP_FILE)"/>
-  <arg name="initial_pose_x" default="2.0"/>
-  <arg name="initial_pose_y" default="2.0"/>
-  <arg name="initial_pose_a" default="0.0"/>
+  <arg name="map_file"        default="$(env TURTLEBOT_STDR_MAP_FILE)"/>
+  <arg name="initial_pose_x"  default="2.0"/>
+  <arg name="initial_pose_y"  default="2.0"/>
+  <arg name="initial_pose_a"  default="0.0"/>
+
   <arg name="min_obstacle_height" default="0.0"/>
   <arg name="max_obstacle_height" default="5.0"/>
 
   <!--  ******************** STDR ********************  -->
+  <param name="robot0/odometry_rate" value="50.0"/>
+
   <include file="$(find stdr_robot)/launch/robot_manager.launch"/>
 
 <!--
@@ -84,13 +90,13 @@ TODO: I can recover this if I can rename the robot and once I start using a thor
     <param name="yaml_cfg_file" value="$(find thorp_bringup)/param/vel_multiplexer.yaml"/>
   </node>
 
-  <!--  ******************** Maps *********************  --> 	
-  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)"> 	
-    <param name="frame_id" value="$(arg global_frame_id)"/> 	
-  </node> 	
-
-  <!--  **************** Move base flex ***************  -->
-  <include file="$(find thorp_bringup)/launch/includes/move_base_flex.launch.xml">
+  <!--  ***************** Navigation ******************  -->
+  <include file="$(find thorp_bringup)/launch/includes/navigation.launch.xml">
+    <arg name="move_base_flex"  value="$(arg move_base_flex)"/>
+    <arg name="map_file"        value="$(arg map_file)"/>
+    <arg name="initial_pose_x"  value="$(arg initial_pose_x)"/>
+    <arg name="initial_pose_y"  value="$(arg initial_pose_y)"/>
+    <arg name="initial_pose_a"  value="$(arg initial_pose_a)"/>
     <arg name="odom_frame_id"   value="$(arg odom_frame_id)"/>
     <arg name="base_frame_id"   value="$(arg base_frame_id)"/>
     <arg name="global_frame_id" value="$(arg global_frame_id)"/>
@@ -101,21 +107,10 @@ TODO: I can recover this if I can rename the robot and once I start using a thor
   <param name="move_base/local_costmap/obstacle_layer/scan/max_obstacle_height" value="$(arg max_obstacle_height)"/>
   <param name="move_base/global_costmap/obstacle_layer/scan/min_obstacle_height" value="$(arg min_obstacle_height)"/>
   <param name="move_base/global_costmap/obstacle_layer/scan/max_obstacle_height" value="$(arg max_obstacle_height)"/>
-  
-  <!--  ******************** Amcl *********************  -->
-  <include file="$(find thorp_bringup)/launch/includes/amcl.launch.xml">
-    <!-- <arg name="scan_topic" value="$(arg laser_topic)"/> -->
-    <arg name="use_map_topic" value="true"/>
-    <arg name="odom_frame_id" value="$(arg odom_frame_id)"/>
-    <arg name="base_frame_id" value="$(arg base_frame_id)"/>
-    <arg name="global_frame_id" value="$(arg global_frame_id)"/>
-    <arg name="initial_pose_x" value="$(arg initial_pose_x)"/>
-    <arg name="initial_pose_y" value="$(arg initial_pose_y)"/>
-    <arg name="initial_pose_a" value="$(arg initial_pose_a)"/>
-  </include>
-  
-  <!--  ***** Watchdog to keep the pose on reboot *****  -->
-  <node name="save_amcl_pose" pkg="thorp_toolkit" type="save_pose_node"/>
+  <param name="move_base_flex/local_costmap/obstacle_layer/scan/min_obstacle_height" value="$(arg min_obstacle_height)"/>
+  <param name="move_base_flex/local_costmap/obstacle_layer/scan/max_obstacle_height" value="$(arg max_obstacle_height)"/>
+  <param name="move_base_flex/global_costmap/obstacle_layer/scan/min_obstacle_height" value="$(arg min_obstacle_height)"/>
+  <param name="move_base_flex/global_costmap/obstacle_layer/scan/max_obstacle_height" value="$(arg max_obstacle_height)"/>
 
   <!--  **************** Visualization ****************  -->
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_nav.rviz"/>

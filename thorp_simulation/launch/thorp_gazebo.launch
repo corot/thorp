@@ -13,6 +13,8 @@
   <arg name="debug"          default="false"/>
   <arg name="paused"         default="true"/>
 
+  <arg name="move_base_flex" default="true"/>
+
   <!-- Name of the map to use (without path nor extension) and initial position -->
   <arg name="map_name"       default="playground"/>
   <arg name="initial_pose_x" default="0.0"/>
@@ -41,21 +43,10 @@
        Make a new nodelet bumper2range and PR to Yujin -->
   <include file="$(find turtlebot_bringup)/launch/includes/kobuki/bumper2pc.launch.xml"/>
 
-  <!--  ************** Additional sensors *************  -->
-  <include file="$(find thorp_bringup)/launch/includes/virt_sensor.launch.xml"/>
-
-  <!--  **************** Move base flex ***************  -->
-  <include file="$(find thorp_bringup)/launch/includes/move_base_flex.launch.xml">
-  </include>
-
-  <!--  ****** Geometric and semantic map servers *****  -->
-  <node name="map_server" pkg="map_server" type="map_server" args="$(find thorp_bringup)/resources/maps/$(arg map_name).yaml">
-    <param name="frame_id" value="/map"/>
-  </node>
-
-  <!--  ******************** Amcl *********************  -->
-  <include file="$(find thorp_bringup)/launch/includes/amcl.launch.xml">
-    <arg name="scan_topic" value="scan"/>
+  <!--  ***************** Navigation ******************  -->
+  <include file="$(find thorp_bringup)/launch/includes/navigation.launch.xml">
+    <arg name="move_base_flex" value="$(arg move_base_flex)"/>
+    <arg name="map_name"       value="$(arg map_name)"/>
     <arg name="initial_pose_x" value="$(arg initial_pose_x)"/>
     <arg name="initial_pose_y" value="$(arg initial_pose_y)"/>
     <arg name="initial_pose_a" value="$(arg initial_pose_a)"/>
