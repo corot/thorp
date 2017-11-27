@@ -31,7 +31,7 @@ floorplan
 (
   name "maze"
   bitmap "../maps/maze.png"
-  size [ 10.0 10.0 2.0 ]
+  size [ 10.0 10.0 0.35 ]    # Z must be < 0.4, so we can select the robot to move it around
   pose [  5.0  5.0 0.0 0.0 ]
 )
 

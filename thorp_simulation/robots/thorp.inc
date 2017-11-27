@@ -13,15 +13,14 @@ define kinect ranger
 
 define thorp position
 (
-  pose [ 0.0 0.0 0.0 0.0 ]
-
-  odom_error [0.03 0.03 999999 999999 999999 0.02]
+  bitmap "../../robots/thorp_footprint.png"
 
   size [ 0.33 0.33 0.40 ]
   origin [ 0.0 0.0 0.0 0.0 ]
+  odom_error [ 0.03 0.03 0.0 3.0 ]
   gui_nose 1
   drive "diff"
-  color "gray"
-  
+  color "black"
+
   kinect(pose [ -0.1 0.0 -0.11 0.0 ])
 )
