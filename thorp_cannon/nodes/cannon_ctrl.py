@@ -25,7 +25,7 @@ def handle_cannon_command(request):
     if (request.action == CannonCmdRequest.FIRE or CannonCmdRequest.BOTH) and request.shots > 0:
         rospy.loginfo("Firing cannon! %d shot%s", request.shots, 's' if request.shots > 1 else '')
         fire_cannon_pub.publish(Digital(value=1))
-        rospy.sleep(rospy.Duration(request.shots * 0.05))
+        rospy.sleep(rospy.Duration(request.shots * 0.055))
         fire_cannon_pub.publish(Digital(value=0))
 
     return ThorpError(code=ThorpError.SUCCESS)
