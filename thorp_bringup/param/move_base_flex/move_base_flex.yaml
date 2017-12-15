@@ -7,19 +7,20 @@ oscillation_distance: 0.02
 
 # Local planner parameters
 local_planner: base_local_planner/TrajectoryPlannerROS
-#local_planner: oriented_dwa_local_planner/OrientedDWAPlanner
-local_planner_frequency: 8.0     # Hz
-local_planner_patience:  2.0     # seconds; abort if the local planner does not return within that time
-local_planner_max_retries: 0     # limit consecutive failed calls to local planner
+local_planner_frequency:  8.0      # Hz
+local_planner_patience:   2.0      # seconds; abort if the local planner does not return within that time
+local_planner_max_retries:  0      # limit consecutive failed calls to local planner
+local_planner_lock_costmap: true   # lock costmap as in move_base, or let planner to do itself
 
 # Global planner parameters
 global_planner: navfn/NavfnROS
-global_planner_frequency: 1.0    # replan every second to addapt to changing conditions
-global_planner_patience:  5.0    # seconds; abort if the global planner does not return within that time
-global_planner_max_retries: 3    # limit consecutive failed calls to global planner
+global_planner_frequency:  1.0     # replan every second to addapt to changing conditions
+global_planner_patience:   5.0     # seconds; abort if the global planner does not return within that time
+global_planner_max_retries:  3     # limit consecutive failed calls to global planner
+global_planner_lock_costmap: true  # lock costmap as in move_base, or let planner to do itself
 
 # Recovery parameters
-recovery_patience: 2.0           # seconds; abort if a recovery behavior does not return within that time
+recovery_patience: 2.0             # seconds; abort if a recovery behavior does not return within that time
 
 # Costmap parameters
-shutdown_costmaps: false         # stop updating costmaps when not navigating to save CPU?
+shutdown_costmaps: false           # stop updating costmaps when not navigating to save CPU?
