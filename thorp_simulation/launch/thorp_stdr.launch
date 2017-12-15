@@ -65,7 +65,7 @@ TODO: I can recover this if I can rename the robot and once I start using a thor
     <remap from="robot0/infrared/r155" to="mobile_base/sensors/infrared/r155"/>
   </node>
  -->
-  <param name="/robot0/odometry_rate" value="10.0"/>
+  <param name="/robot0/odometry_rate" value="50.0"/>
 
   <!-- Run STDR server with a predefined map -->
   <node pkg="stdr_server" type="stdr_server_node" name="stdr_server" output="screen" args="$(arg map_file)"/>
