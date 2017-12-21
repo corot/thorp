@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<!--
+  Creative Senz3D camera description
+-->
+<robot name="sensor_senz3d" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:property name="M_PI" value="3.14159265359"/>
+
+  <xacro:macro name="sensor_senz3d" params="parent name *origin">
+    <!-- Add RGB and RGB optical frames -->
+    <joint name="${name}_rgb_joint" type="fixed">
+      <!-- RGB joint is the base of the tf tree, as for Kinect -->
+      <xacro:insert_block name="origin"/>
+      <parent link="${parent}"/>
+      <child link="${name}_rgb_frame"/>
+    </joint>
+    <link name="${name}_rgb_frame"/>
+    <joint name="${name}_rgb_optical_joint" type="fixed">
+      <origin xyz="0.0 0.0 0.0" rpy="${-M_PI/2} 0.0 ${-M_PI/2}"/>
+      <parent link="${name}_rgb_frame"/>
+      <child link="${name}_rgb_optical_frame"/>
+    </joint>
+    <link name="${name}_rgb_optical_frame"/>
+
+    <!-- Senz3D camera link with the visual, inertia and collision models -->
+    <!-- Mimicking Kinect and Asus cameras, it's a child of RGB frame link -->
+    <joint name="${name}_joint" type="fixed">
+      <origin xyz="0.0 -0.013 0.0" rpy="0.0 0.0 0.0"/>
+      <parent link="${name}_rgb_frame"/>
+      <child link="${name}_link"/>
+    </joint>
+    <link name="${name}_link">
+      <visual>
+        <origin xyz="-0.015 0.0 0.0" rpy="${-M_PI/2} -${M_PI} ${-M_PI/2}"/>
+        <geometry>
+          <!-- As we don't have a Senz3D mesh, use a deformed Asus Xtion Pro instead -->
+          <mesh filename="package://thorp_description/meshes/asus_xtion_pro_live.dae" scale="0.0006 0.0015 0.0006"/>
+        </geometry>
+      </visual>
+      <collision>
+        <origin xyz="-0.015 0.0 0.0" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.03 0.11 0.04"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="0.271"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="0.000309392" ixy="0.0" ixz="0.0"
+                 iyy="0.000072267" iyz="0.0"
+                 izz="0.000309392"/>
+      </inertial>
+    </link>
+
+    <!-- Depth and depth optical frames, also children of RGB frame link -->
+    <joint name="${name}_depth_joint" type="fixed">
+      <origin xyz="0.0 -0.026 0.0" rpy="0.0 0.0 0.0"/>
+      <parent link="${name}_rgb_frame"/>
+      <child link="${name}_depth_frame"/>
+    </joint>
+    <link name="${name}_depth_frame"/>
+    <joint name="${name}_depth_optical_joint" type="fixed">
+      <origin xyz="0.0 0.0 0.0" rpy="${-M_PI/2} 0.0 ${-M_PI/2}"/>
+      <parent link="${name}_depth_frame"/>
+      <child link="${name}_depth_optical_frame"/>
+    </joint>
+    <link name="${name}_depth_optical_frame"/>
+  </xacro:macro>
+</robot>
