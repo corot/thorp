@@ -6,8 +6,6 @@ Panels:
       Expanded:
         - /TF1/Frames1
         - /TF1/Tree1
-        - /Local Map1/Costmap1
-        - /Global Map1/Costmap1
       Splitter Ratio: 0.5
     Tree Height: 843
   - Class: rviz/Selection
@@ -634,7 +632,7 @@ Visualization Manager:
       Color: 25; 255; 0
       Enabled: true
       Name: Footprint
-      Topic: /move_base/local_costmap/footprint
+      Topic: /move_base_flex/local_costmap/footprint
       Unreliable: false
       Value: true
     - Class: rviz/TF
@@ -727,7 +725,7 @@ Visualization Manager:
         cliff_sensor_right_link:
           Value: false
         gripper_active_finger_link:
-          Value: false
+          Value: true
         gripper_active_link:
           Value: false
         gripper_link:
@@ -735,9 +733,9 @@ Visualization Manager:
         gripper_servo_link:
           Value: false
         gripper_static_finger_link:
-          Value: false
+          Value: true
         gripper_static_link:
-          Value: false
+          Value: true
         gyro_link:
           Value: false
         ir_arm_link:
@@ -857,7 +855,7 @@ Visualization Manager:
         senz3d_depth_optical_frame:
           Value: false
         senz3d_gazebo_optical_frame:
-          Value: false
+          Value: true
         senz3d_link:
           Value: false
         senz3d_mount_link:
@@ -1000,15 +998,15 @@ Visualization Manager:
                             {}
                   opencm_link:
                     {}
-                  pole_middle_11_link:
-                    {}
-                  pole_middle_21_link:
-                    {}
                   pole_top_10_link:
                     {}
                   pole_top_20_link:
                     {}
                   senz3d_mount_link:
+                    pole_middle_11_link:
+                      {}
+                    pole_middle_21_link:
+                      {}
                     pole_top_12_link:
                       {}
                     pole_top_22_link:
@@ -1359,6 +1357,7 @@ Visualization Manager:
       Name: Map
       Topic: /map
       Unreliable: false
+      Use Timestamp: false
       Value: true
     - Class: rviz/Group
       Displays:
@@ -1368,14 +1367,18 @@ Visualization Manager:
           Draw Behind: false
           Enabled: true
           Name: Costmap
-          Topic: /move_base/local_costmap/costmap
+          Topic: /move_base_flex/local_costmap/costmap
           Unreliable: false
+          Use Timestamp: false
           Value: true
         - Alpha: 1
           Buffer Length: 1
           Class: rviz/Path
           Color: 0; 12; 255
           Enabled: true
+          Head Diameter: 0.300000012
+          Head Length: 0.200000003
+          Length: 0.300000012
           Line Style: Lines
           Line Width: 0.0299999993
           Name: Planner
@@ -1383,7 +1386,12 @@ Visualization Manager:
             X: 0
             Y: 0
             Z: 0
-          Topic: /move_base/TrajectoryPlannerROS/local_plan
+          Pose Color: 255; 85; 255
+          Pose Style: None
+          Radius: 0.0299999993
+          Shaft Diameter: 0.100000001
+          Shaft Length: 0.100000001
+          Topic: /move_base_flex/TrajectoryPlannerROS/local_plan
           Unreliable: false
           Value: true
       Enabled: true
@@ -1396,14 +1404,18 @@ Visualization Manager:
           Draw Behind: true
           Enabled: true
           Name: Costmap
-          Topic: /move_base/global_costmap/costmap
+          Topic: /move_base_flex/global_costmap/costmap
           Unreliable: false
+          Use Timestamp: false
           Value: true
         - Alpha: 1
           Buffer Length: 1
           Class: rviz/Path
           Color: 255; 0; 0
           Enabled: true
+          Head Diameter: 0.300000012
+          Head Length: 0.200000003
+          Length: 0.300000012
           Line Style: Lines
           Line Width: 0.0299999993
           Name: Planner
@@ -1411,26 +1423,16 @@ Visualization Manager:
             X: 0
             Y: 0
             Z: 0
-          Topic: /move_base/TrajectoryPlannerROS/global_plan
+          Pose Color: 255; 85; 255
+          Pose Style: None
+          Radius: 0.0299999993
+          Shaft Diameter: 0.100000001
+          Shaft Length: 0.100000001
+          Topic: /move_base_flex/NavfnROS/plan
           Unreliable: false
           Value: true
       Enabled: true
       Name: Global Map
-    - Alpha: 1
-      Axes Length: 0.600000024
-      Axes Radius: 0.0500000007
-      Class: rviz/Pose
-      Color: 255; 25; 0
-      Enabled: true
-      Head Length: 0.300000012
-      Head Radius: 0.100000001
-      Name: Pose (thorp_bringup)
-      Shaft Length: 1
-      Shaft Radius: 0.0500000007
-      Shape: Axes
-      Topic: /goal_pose
-      Unreliable: false
-      Value: true
     - Alpha: 1
       Axes Length: 1
       Axes Radius: 0.100000001
@@ -1439,49 +1441,27 @@ Visualization Manager:
       Enabled: true
       Head Length: 0.200000003
       Head Radius: 0.100000001
-      Name: Pose (move_base)
+      Name: Current Goal
       Shaft Length: 1
       Shaft Radius: 0.0500000007
       Shape: Arrow
-      Topic: /move_base/current_goal
+      Topic: /move_base_flex/current_goal
       Unreliable: false
       Value: true
-    - Arrow Length: 0.200000003
+    - Alpha: 1
+      Arrow Length: 0.200000003
+      Axes Length: 0.300000012
+      Axes Radius: 0.00999999978
       Class: rviz/PoseArray
       Color: 0; 192; 0
       Enabled: true
+      Head Length: 0.0700000003
+      Head Radius: 0.0299999993
       Name: ParticleCloud
+      Shaft Length: 0.230000004
+      Shaft Radius: 0.00999999978
+      Shape: Arrow (Flat)
       Topic: /particlecloud
-      Unreliable: false
-      Value: true
-    - Alpha: 1
-      Buffer Length: 1
-      Class: rviz/Path
-      Color: 25; 255; 0
-      Enabled: true
-      Line Style: Lines
-      Line Width: 0.0299999993
-      Name: Path (global)
-      Offset:
-        X: 0
-        Y: 0
-        Z: 0
-      Topic: /move_base/NavfnROS/plan
-      Unreliable: false
-      Value: true
-    - Alpha: 1
-      Buffer Length: 1
-      Class: rviz/Path
-      Color: 255; 230; 117
-      Enabled: true
-      Line Style: Lines
-      Line Width: 0.0299999993
-      Name: Path (local)
-      Offset:
-        X: 0
-        Y: 0
-        Z: 0
-      Topic: /move_base/TrajectoryPlannerROS/local_plan
       Unreliable: false
       Value: true
     - Alpha: 1
@@ -1516,13 +1496,37 @@ Visualization Manager:
       Value: true
     - Angle Tolerance: 0.100000001
       Class: rviz/Odometry
-      Color: 255; 25; 0
+      Covariance:
+        Orientation:
+          Alpha: 0.5
+          Color: 255; 255; 127
+          Color Style: Unique
+          Frame: Local
+          Offset: 1
+          Scale: 1
+          Value: true
+        Position:
+          Alpha: 0.300000012
+          Color: 204; 51; 204
+          Scale: 1
+          Value: true
+        Value: true
       Enabled: true
       Keep: 100
-      Length: 1
       Name: Odometry
       Position Tolerance: 0.100000001
+      Shape:
+        Alpha: 1
+        Axes Length: 1
+        Axes Radius: 0.100000001
+        Color: 255; 25; 0
+        Head Length: 0.300000012
+        Head Radius: 0.100000001
+        Shaft Length: 1
+        Shaft Radius: 0.0500000007
+        Value: Arrow
       Topic: /icp_odom
+      Unreliable: false
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
@@ -1620,20 +1624,21 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: 2.16066994e-07
+      Angle: 0.00500021596
       Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
+      Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Scale: 77.3909912
+      Scale: 82.9870834
       Target Frame: <Fixed Frame>
       Value: TopDownOrtho (rviz)
-      X: 4.67817163
-      Y: 4.34314299
+      X: 4.82983971
+      Y: 2.56054473
     Saved: ~
 Window Geometry:
   Displays:

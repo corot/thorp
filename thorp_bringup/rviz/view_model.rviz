@@ -4,6 +4,7 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
+        - /RobotModel1
         - /TF1/Frames1
         - /Camera1/Visibility1
       Splitter Ratio: 0.590503991
@@ -50,7 +51,7 @@ Visualization Manager:
       Value: true
     - Alpha: 1
       Class: rviz/RobotModel
-      Collision Enabled: false
+      Collision Enabled: true
       Enabled: true
       Links:
         All Links Enabled: true
@@ -258,7 +259,7 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        gripper_active_finger_link:
+        gripper_active2_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -268,21 +269,16 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        gripper_finger_base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         gripper_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
         gripper_servo_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        gripper_static_finger_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        gripper_static_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -559,10 +555,6 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        senz3d_gazebo_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
         senz3d_link:
           Alpha: 1
           Show Axes: false
@@ -629,19 +621,446 @@ Visualization Manager:
       Value: true
       Visual Enabled: true
     - Class: rviz/TF
-      Enabled: false
+      Enabled: true
       Frame Timeout: 15
       Frames:
         All Enabled: true
+        arm_base_link:
+          Value: true
+        arm_elbow_F10_0_link:
+          Value: true
+        arm_elbow_F10_1_link:
+          Value: true
+        arm_elbow_F10_2_link:
+          Value: true
+        arm_elbow_F3_0_link:
+          Value: true
+        arm_elbow_flex_link:
+          Value: true
+        arm_elbow_flex_servo_link:
+          Value: true
+        arm_mount_link:
+          Value: true
+        arm_shoulder_F10_0_link:
+          Value: true
+        arm_shoulder_F10_1_link:
+          Value: true
+        arm_shoulder_F10_2_link:
+          Value: true
+        arm_shoulder_F3_0_link:
+          Value: true
+        arm_shoulder_lift_link:
+          Value: true
+        arm_shoulder_lift_servo_link:
+          Value: true
+        arm_shoulder_pan_link:
+          Value: true
+        arm_shoulder_pan_servo_link:
+          Value: true
+        arm_wrist_F3_0_link:
+          Value: true
+        arm_wrist_flex_link:
+          Value: true
+        arm_wrist_flex_servo_link:
+          Value: true
+        base_footprint:
+          Value: true
+        base_link:
+          Value: true
+        cannon_link:
+          Value: true
+        cannon_servo_link:
+          Value: true
+        cannon_shaft_link:
+          Value: true
+        cannon_tube1_hollow_link:
+          Value: true
+        cannon_tube1_link:
+          Value: true
+        cannon_tube2_hollow_link:
+          Value: true
+        cannon_tube2_link:
+          Value: true
+        cannon_tube3_hollow_link:
+          Value: true
+        cannon_tube3_link:
+          Value: true
+        cannon_tube4_hollow_link:
+          Value: true
+        cannon_tube4_link:
+          Value: true
+        cannon_tube5_hollow_link:
+          Value: true
+        cannon_tube5_link:
+          Value: true
+        cannon_tube6_hollow_link:
+          Value: true
+        cannon_tube6_link:
+          Value: true
+        caster_back_link:
+          Value: true
+        caster_front_link:
+          Value: true
+        cliff_sensor_front_link:
+          Value: true
+        cliff_sensor_left_link:
+          Value: true
+        cliff_sensor_right_link:
+          Value: true
+        gripper_active2_link:
+          Value: true
+        gripper_active_link:
+          Value: true
+        gripper_finger_base_link:
+          Value: true
+        gripper_link:
+          Value: true
+        gripper_servo_link:
+          Value: true
+        gyro_link:
+          Value: true
+        ir_arm_link:
+          Value: true
+        ir_l155_link:
+          Value: true
+        ir_l180_link:
+          Value: true
+        ir_r155_link:
+          Value: true
+        ir_r180_link:
+          Value: true
+        kinect_depth_frame:
+          Value: true
+        kinect_depth_optical_frame:
+          Value: true
+        kinect_link:
+          Value: true
+        kinect_rgb_frame:
+          Value: true
+        kinect_rgb_optical_frame:
+          Value: true
+        opencm_link:
+          Value: true
+        plate_bottom_link:
+          Value: true
+        plate_middle_link:
+          Value: true
+        plate_top_link:
+          Value: true
+        pole_bottom_0_link:
+          Value: true
+        pole_bottom_10_link:
+          Value: true
+        pole_bottom_11_link:
+          Value: true
+        pole_bottom_12_link:
+          Value: true
+        pole_bottom_13_link:
+          Value: true
+        pole_bottom_14_link:
+          Value: true
+        pole_bottom_15_link:
+          Value: true
+        pole_bottom_1_link:
+          Value: true
+        pole_bottom_2_link:
+          Value: true
+        pole_bottom_3_link:
+          Value: true
+        pole_bottom_4_link:
+          Value: true
+        pole_bottom_5_link:
+          Value: true
+        pole_kinect_0_link:
+          Value: true
+        pole_kinect_1_link:
+          Value: true
+        pole_middle_0_link:
+          Value: true
+        pole_middle_11_link:
+          Value: true
+        pole_middle_1_link:
+          Value: true
+        pole_middle_21_link:
+          Value: true
+        pole_middle_2_link:
+          Value: true
+        pole_middle_3_link:
+          Value: true
+        pole_top_0_link:
+          Value: true
+        pole_top_10_link:
+          Value: true
+        pole_top_12_link:
+          Value: true
+        pole_top_1_link:
+          Value: true
+        pole_top_20_link:
+          Value: true
+        pole_top_22_link:
+          Value: true
+        pole_top_2_link:
+          Value: true
+        pole_top_3_link:
+          Value: true
+        s_0_link:
+          Value: true
+        s_m18_link:
+          Value: true
+        s_m36_link:
+          Value: true
+        s_m54_link:
+          Value: true
+        s_m72_link:
+          Value: true
+        s_m90_link:
+          Value: true
+        s_p18_link:
+          Value: true
+        s_p36_link:
+          Value: true
+        s_p54_link:
+          Value: true
+        s_p72_link:
+          Value: true
+        s_p90_link:
+          Value: true
+        senz3d_calib_link:
+          Value: true
+        senz3d_depth_frame:
+          Value: true
+        senz3d_depth_optical_frame:
+          Value: true
+        senz3d_link:
+          Value: true
+        senz3d_mount_link:
+          Value: true
+        senz3d_rgb_frame:
+          Value: true
+        senz3d_rgb_optical_frame:
+          Value: true
+        sonars_mount_link:
+          Value: true
+        wheel_left_link:
+          Value: true
+        wheel_right_link:
+          Value: true
+        xtion_depth_frame:
+          Value: true
+        xtion_depth_optical_frame:
+          Value: true
+        xtion_link:
+          Value: true
+        xtion_mount_link:
+          Value: true
+        xtion_rgb_frame:
+          Value: true
+        xtion_rgb_optical_frame:
+          Value: true
       Marker Scale: 0.200000003
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        {}
+        base_footprint:
+          base_link:
+            caster_back_link:
+              {}
+            caster_front_link:
+              {}
+            cliff_sensor_front_link:
+              {}
+            cliff_sensor_left_link:
+              {}
+            cliff_sensor_right_link:
+              {}
+            gyro_link:
+              {}
+            ir_l155_link:
+              {}
+            ir_l180_link:
+              {}
+            ir_r155_link:
+              {}
+            ir_r180_link:
+              {}
+            kinect_rgb_frame:
+              kinect_depth_frame:
+                kinect_depth_optical_frame:
+                  {}
+              kinect_link:
+                {}
+              kinect_rgb_optical_frame:
+                {}
+            plate_bottom_link:
+              {}
+            plate_middle_link:
+              {}
+            plate_top_link:
+              arm_base_link:
+                arm_shoulder_pan_servo_link:
+                  arm_shoulder_pan_link:
+                    arm_shoulder_lift_servo_link:
+                      arm_shoulder_lift_link:
+                        arm_shoulder_F10_0_link:
+                          arm_shoulder_F10_1_link:
+                            arm_shoulder_F10_2_link:
+                              arm_shoulder_F3_0_link:
+                                arm_elbow_flex_servo_link:
+                                  arm_elbow_flex_link:
+                                    arm_elbow_F10_0_link:
+                                      arm_elbow_F10_1_link:
+                                        arm_elbow_F10_2_link:
+                                          arm_elbow_F3_0_link:
+                                            arm_wrist_flex_servo_link:
+                                              arm_wrist_flex_link:
+                                                arm_wrist_F3_0_link:
+                                                  gripper_servo_link:
+                                                    gripper_active2_link:
+                                                      {}
+                                                    gripper_active_link:
+                                                      {}
+                                                    gripper_finger_base_link:
+                                                      {}
+                                                gripper_link:
+                                                  {}
+                ir_arm_link:
+                  {}
+                pole_bottom_10_link:
+                  {}
+                pole_bottom_11_link:
+                  {}
+                pole_bottom_12_link:
+                  {}
+                pole_bottom_13_link:
+                  {}
+                pole_bottom_14_link:
+                  {}
+                pole_bottom_15_link:
+                  {}
+              arm_mount_link:
+                cannon_servo_link:
+                  cannon_shaft_link:
+                    cannon_link:
+                      cannon_tube1_hollow_link:
+                        {}
+                      cannon_tube1_link:
+                        {}
+                      cannon_tube2_hollow_link:
+                        {}
+                      cannon_tube2_link:
+                        {}
+                      cannon_tube3_hollow_link:
+                        {}
+                      cannon_tube3_link:
+                        {}
+                      cannon_tube4_hollow_link:
+                        {}
+                      cannon_tube4_link:
+                        {}
+                      cannon_tube5_hollow_link:
+                        {}
+                      cannon_tube5_link:
+                        {}
+                      cannon_tube6_hollow_link:
+                        {}
+                      cannon_tube6_link:
+                        {}
+              opencm_link:
+                {}
+              pole_top_10_link:
+                {}
+              pole_top_20_link:
+                {}
+              senz3d_mount_link:
+                pole_middle_11_link:
+                  {}
+                pole_middle_21_link:
+                  {}
+                pole_top_12_link:
+                  {}
+                pole_top_22_link:
+                  {}
+                senz3d_calib_link:
+                  senz3d_rgb_frame:
+                    senz3d_depth_frame:
+                      senz3d_depth_optical_frame:
+                        {}
+                    senz3d_link:
+                      {}
+                    senz3d_rgb_optical_frame:
+                      {}
+                xtion_mount_link:
+                  xtion_rgb_frame:
+                    xtion_depth_frame:
+                      xtion_depth_optical_frame:
+                        {}
+                    xtion_link:
+                      {}
+                    xtion_rgb_optical_frame:
+                      {}
+            pole_bottom_0_link:
+              {}
+            pole_bottom_1_link:
+              {}
+            pole_bottom_2_link:
+              {}
+            pole_bottom_3_link:
+              {}
+            pole_bottom_4_link:
+              {}
+            pole_bottom_5_link:
+              {}
+            pole_kinect_0_link:
+              {}
+            pole_kinect_1_link:
+              {}
+            pole_middle_0_link:
+              {}
+            pole_middle_1_link:
+              {}
+            pole_middle_2_link:
+              {}
+            pole_middle_3_link:
+              {}
+            pole_top_0_link:
+              {}
+            pole_top_1_link:
+              {}
+            pole_top_2_link:
+              {}
+            pole_top_3_link:
+              {}
+            sonars_mount_link:
+              s_0_link:
+                {}
+              s_m18_link:
+                {}
+              s_m36_link:
+                {}
+              s_m54_link:
+                {}
+              s_m72_link:
+                {}
+              s_m90_link:
+                {}
+              s_p18_link:
+                {}
+              s_p36_link:
+                {}
+              s_p54_link:
+                {}
+              s_p72_link:
+                {}
+              s_p90_link:
+                {}
+            wheel_left_link:
+              {}
+            wheel_right_link:
+              {}
       Update Interval: 0
-      Value: false
+      Value: true
     - Class: rviz/Camera
       Enabled: false
       Image Rendering: background and overlay
@@ -765,22 +1184,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 1.23757291
+      Distance: 0.3598589
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.0791113973
-        Y: -0.0108749997
-        Z: 0.440961987
+        X: 0.0551662818
+        Y: 0.0809428468
+        Z: 0.762802541
+      Focal Shape Fixed Size: true
+      Focal Shape Size: 0.0500000007
+      Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.240199223
+      Pitch: 0.26019913
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 5.753613
+      Yaw: 5.27360344
     Saved: ~
 Window Geometry:
   Camera:
