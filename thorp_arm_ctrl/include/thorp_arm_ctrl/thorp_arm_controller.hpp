@@ -56,8 +56,6 @@ public:
 
     // Allow replanning to increase the odds of a solution
     arm().allowReplanning(true);
-
-    planning_scene_monitor_ptr_ = std::make_shared<planning_scene_monitor::PlanningSceneMonitor>("robot_description");
   }
 
   ~ThorpArmController()
@@ -78,9 +76,14 @@ protected:
       return gripper;
     }
 
-    // We use the planning_scene_interface::PlanningSceneInterface to manipulate the world
-    moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
-    planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor_ptr_;
+    // We use the planning_scene_interface::PlanningSceneInterface to manipulate the world   TODO move to toolkit to make common with other servers!
+    moveit::planning_interface::PlanningSceneInterface& planning_scene_interface()
+    {
+      static moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
+      return planning_scene_interface;
+    }
+
+    static std::string attached_object;
 
     // Pick and place parameters
     std::string arm_ref_frame;
@@ -215,6 +218,10 @@ protected:
         return "invalid joint state";
       case thorp_msgs::ThorpError::SERVER_NOT_AVAILABLE:
         return "server not available";
+      case thorp_msgs::ThorpError::OBJECT_NOT_ATTACHED:
+        return "requested object is not attached";
+      case thorp_msgs::ThorpError::OBJECT_ATTACHED:
+        return "already have an object attached";
 
       default:
         return "unrecognized error code";

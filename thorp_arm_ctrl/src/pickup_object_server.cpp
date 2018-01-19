@@ -14,6 +14,7 @@ namespace mcl = mag_common_libs;
 #include <moveit_msgs/Grasp.h>
 
 // Thorp stuff
+#include <thorp_msgs/ThorpError.h>
 #include <thorp_toolkit/planning_scene.hpp>
 
 #include "thorp_arm_ctrl/pickup_object_server.hpp"
@@ -44,15 +45,27 @@ PickupObjectServer::~PickupObjectServer()
 
 void PickupObjectServer::executeCB(const thorp_msgs::PickupObjectGoal::ConstPtr& goal)
 {
+  thorp_msgs::PickupObjectResult result;
+
+  if (!attached_object.empty())
+  {
+    ROS_INFO("[pickup object] Already have an attached object: '%s'; clear the gripper before picking another",
+             attached_object.c_str());
+    result.error.code = thorp_msgs::ThorpError::OBJECT_ATTACHED;
+    result.error.text = mec2str(result.error.code);
+    as_.setAborted(result);
+    return;
+  }
+
   ROS_INFO("[pickup object] Execute goal: pick object '%s' from support surface '%s' exerting up to %.2fN",
            goal->object_name.c_str(), goal->support_surf.c_str(), goal->max_effort);
 
-  thorp_msgs::PickupObjectResult result;
   result.error.code = pickup(goal->object_name, goal->support_surf, goal->max_effort);
   result.error.text = mec2str(result.error.code);
   if (result.error.code == moveit_msgs::MoveItErrorCodes::SUCCESS)
   {
     as_.setSucceeded(result);
+    attached_object = goal->object_name;
   }
   else if (result.error.code == moveit_msgs::MoveItErrorCodes::PREEMPTED)
   {

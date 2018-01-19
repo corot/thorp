@@ -7,6 +7,9 @@
 namespace thorp_arm_ctrl
 {
 
+std::string ThorpArmController::attached_object;
+
+
 bool ThorpArmController::setGripper(float opening, bool wait_for_complete)
 {
   ROS_DEBUG("[arm controller] Set gripper opening to %f", opening);

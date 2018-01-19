@@ -33,9 +33,6 @@ private:
   interactive_markers::InteractiveMarkerServer im_;
   geometry_msgs::Pose old_pose_;
 
-  // We use the planning_scene_interface::PlanningSceneInterface to retrieve world objects
-  moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
-
 public:
 
   InteractiveManipulationServer(const std::string name) :
@@ -112,7 +109,6 @@ public:
 
     bool active = as_.isActive();
 
-///    std::map<std::string, moveit_msgs::CollisionObject> objects = planning_scene_interface_.getObjects(object_names);
     for (const std::string& obj_name: object_names)
     {
       geometry_msgs::PoseStamped obj_pose; geometry_msgs::Vector3 obj_size;

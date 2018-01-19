@@ -14,6 +14,7 @@ namespace mcl = mag_common_libs;
 #include <moveit_msgs/PlaceLocation.h>
 
 // Thorp stuff
+#include <thorp_msgs/ThorpError.h>
 #include <thorp_toolkit/planning_scene.hpp>
 
 #include "thorp_arm_ctrl/place_object_server.hpp"
@@ -44,15 +45,27 @@ PlaceObjectServer::~PlaceObjectServer()
 
 void PlaceObjectServer::executeCB(const thorp_msgs::PlaceObjectGoal::ConstPtr& goal)
 {
+  thorp_msgs::PlaceObjectResult result;
+
+  if (!goal->object_name.empty() && goal->object_name != attached_object)
+  {
+    ROS_INFO("[place object] Requested object not in gripper: '%s'; currently attached object is '%s'",
+             goal->object_name.c_str(), attached_object.c_str());
+    result.error.code = thorp_msgs::ThorpError::OBJECT_NOT_ATTACHED;
+    result.error.text = mec2str(result.error.code);
+    as_.setAborted(result);
+    return;
+  }
+
   ROS_INFO("[place object] Execute goal: place object '%s' on support surface '%s' at pose [%s]...",
            goal->object_name.c_str(), goal->support_surf.c_str(), mcl::pose2cstr3D(goal->place_pose));
 
-  thorp_msgs::PlaceObjectResult result;
   result.error.code = place(goal->object_name, goal->support_surf, goal->place_pose);
   result.error.text = mec2str(result.error.code);
   if (result.error.code == moveit_msgs::MoveItErrorCodes::SUCCESS)
   {
     as_.setSucceeded(result);
+    attached_object = "";
   }
   else if (result.error.code == moveit_msgs::MoveItErrorCodes::PREEMPTED)
   {
