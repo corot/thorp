@@ -49,8 +49,8 @@ void PlaceObjectServer::executeCB(const thorp_msgs::PlaceObjectGoal::ConstPtr& g
 
   if (!goal->object_name.empty() && goal->object_name != attached_object)
   {
-    ROS_INFO("[place object] Requested object not in gripper: '%s'; currently attached object is '%s'",
-             goal->object_name.c_str(), attached_object.c_str());
+    ROS_ERROR("[place object] Requested object not in gripper: '%s'; currently attached object is '%s'",
+              goal->object_name.c_str(), attached_object.c_str());
     result.error.code = thorp_msgs::ThorpError::OBJECT_NOT_ATTACHED;
     result.error.text = mec2str(result.error.code);
     as_.setAborted(result);

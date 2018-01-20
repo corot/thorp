@@ -49,8 +49,8 @@ void PickupObjectServer::executeCB(const thorp_msgs::PickupObjectGoal::ConstPtr&
 
   if (!attached_object.empty())
   {
-    ROS_INFO("[pickup object] Already have an attached object: '%s'; clear the gripper before picking another",
-             attached_object.c_str());
+    ROS_ERROR("[pickup object] Already have an attached object: '%s'; clear the gripper before picking another",
+              attached_object.c_str());
     result.error.code = thorp_msgs::ThorpError::OBJECT_ATTACHED;
     result.error.text = mec2str(result.error.code);
     as_.setAborted(result);
