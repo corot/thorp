@@ -165,13 +165,13 @@ def main():
                                                'obj_size':'obj_size',
                                                'obj_poses':'obj_poses',
                                                'obj_names':'obj_names'},
-                                    transitions={'succeeded':'InteractiveManip',
+                                    transitions={'succeeded':'DragAndDrop',
                                                  'preempted':'ActionPreempted',
                                                  'aborted':'error'})
 
-        smach.StateMachine.add('InteractiveManip',
-                               smach_ros.SimpleActionState('interactive_manipulation',
-                                                           InteractiveManipAction,
+        smach.StateMachine.add('DragAndDrop',
+                               smach_ros.SimpleActionState('drag_and_drop',
+                                                           DragAndDropAction,
                                                            goal_slots=['frame', 'obj_size', 'obj_poses', 'obj_names'],
                                                            result_slots=['obj_name', 'pick_pose', 'place_pose']),
                                remapping={'frame':'frame',

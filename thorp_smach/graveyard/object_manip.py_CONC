@@ -74,13 +74,13 @@ def main():
                                           'table_height':'table_height',
                                           'block_size':'block_size',
                                           'blocks':'blocks'},
-                               transitions={'succeeded':'InteractiveManip',
+                               transitions={'succeeded':'DragAndDrop',
                                             'aborted':'aborted',
                                             'preempted':'ActionPreempted'})
 
-        smach.StateMachine.add('InteractiveManip',
-                               smach_ros.SimpleActionState('interactive_manipulation',
-                                                           InteractiveManipAction,
+        smach.StateMachine.add('DragAndDrop',
+                               smach_ros.SimpleActionState('drag_and_drop',
+                                                           DragAndDropAction,
                                                            goal_slots=['frame', 'block_size'],
                                                            result_slots=['pickup_pose', 'place_pose']),
                                remapping={'frame':'frame',

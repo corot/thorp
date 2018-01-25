@@ -8,7 +8,7 @@
 #include <actionlib/server/simple_action_server.h>
 #include <interactive_markers/interactive_marker_server.h>
 
-#include <thorp_msgs/InteractiveManipAction.h>
+#include <thorp_msgs/DragAndDropAction.h>
 
 // auxiliary libraries
 #include <thorp_toolkit/planning_scene.hpp>
@@ -26,8 +26,8 @@ namespace thorp_arm_ctrl
 class InteractiveManipulationServer
 {
 private:
-  // Thorp interactive manipulation action server
-  actionlib::SimpleActionServer<thorp_msgs::InteractiveManipAction> as_;
+  // Thorp interactive manipulation action server; by now just drag & drop interaction
+  actionlib::SimpleActionServer<thorp_msgs::DragAndDropAction> as_;
 
   // Interactive markers server and associated data
   interactive_markers::InteractiveMarkerServer im_;
@@ -47,7 +47,7 @@ public:
 
   void goalCB()
   {
-    thorp_msgs::InteractiveManipGoal::ConstPtr goal = as_.acceptNewGoal();
+    thorp_msgs::DragAndDropGoal::ConstPtr goal = as_.acceptNewGoal();
 
     ROS_INFO("[interactive manip] Received goal! Adding markers for objects in the word other than the table");
     addObjects(goal->object_names, goal->support_surf);
@@ -88,7 +88,7 @@ public:
   void moveObject(const std::string& marker_name, const std_msgs::Header& poses_header,
                   const geometry_msgs::Pose& start_pose, const geometry_msgs::Pose& end_pose)
   {
-    thorp_msgs::InteractiveManipResult result;
+    thorp_msgs::DragAndDropResult result;
     result.object_name = marker_name;
     result.pick_pose.header = poses_header;
     result.place_pose.header = poses_header;
@@ -202,7 +202,7 @@ int main(int argc, char** argv)
   // initialize node
   ros::init(argc, argv, "object_interactive_manip_action_server");
 
-  thorp_arm_ctrl::InteractiveManipulationServer manip("interactive_manipulation");
+  thorp_arm_ctrl::InteractiveManipulationServer manip("drag_and_drop");
 
   ros::spin();
 

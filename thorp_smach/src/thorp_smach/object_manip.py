@@ -56,13 +56,13 @@ with sm:
                            remapping={'output_frame':'output_frame',
                                       'object_names':'object_names',
                                       'support_surf':'support_surf'},
-                           transitions={'succeeded':'InteractiveManip',
+                           transitions={'succeeded':'DragAndDrop',
                                         'preempted':'preempted',
                                         'aborted':'error'})
 
-    smach.StateMachine.add('InteractiveManip',
-                           smach_ros.SimpleActionState('interactive_manipulation',
-                                                       thorp_msg.InteractiveManipAction,
+    smach.StateMachine.add('DragAndDrop',
+                           smach_ros.SimpleActionState('drag_and_drop',
+                                                       thorp_msg.DragAndDropAction,
                                                        goal_slots=['object_names'],
                                                        result_slots=['object_name', 'pick_pose', 'place_pose']),
                            remapping={'object_names':'object_names',
