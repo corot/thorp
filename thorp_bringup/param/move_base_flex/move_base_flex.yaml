@@ -6,14 +6,18 @@ oscillation_timeout: 8.0
 oscillation_distance: 0.02
 
 # Local planner parameters
-local_planner: base_local_planner/TrajectoryPlannerROS
+controllers:
+  - {name: controller,    type: base_local_planner/TrajectoryPlannerROS}
+  - {name: controller2,   type: dwa_local_planner/DWAPlannerROS}
 controller_frequency:  8.0      # Hz
 controller_patience:   2.0      # seconds; abort if the local planner does not return within that time
 controller_max_retries:  0      # limit consecutive failed calls to local planner
 controller_lock_costmap: true   # lock costmap as in move_base, or let planner to do itself
 
 # Global planner parameters
-global_planner: navfn/NavfnROS
+planners:
+  - {name: planner,    type: navfn/NavfnROS}
+  - {name: planner2,   type: carrot_planner/CarrotPlanner}
 planner_frequency:  1.0         # replan every second to addapt to changing conditions
 planner_patience:   5.0         # seconds; abort if the global planner does not return within that time
 planner_max_retries:  3         # limit consecutive failed calls to global planner
