@@ -184,7 +184,7 @@
         <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
       </joint>
       <actuator name="${name}_motor">
-        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
       </actuator>
     </transmission>
   </xacro:macro>
