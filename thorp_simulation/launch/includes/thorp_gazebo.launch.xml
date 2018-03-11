@@ -2,10 +2,12 @@
   <include file="$(find thorp_bringup)/launch/includes/state_publisher.launch.xml">
     <arg name="simulation" value="true"/>
   </include>
-    
+
   <!-- Gazebo model spawner -->
   <node name="spawn_turtlebot_model" pkg="gazebo_ros" type="spawn_model" output="screen"
-        args="$(optenv ROBOT_INITIAL_POSE) -urdf -param robot_description -model thorp"/>
+        args="$(optenv ROBOT_INITIAL_POSE) -urdf -param robot_description -model thorp
+
+              "/>  <!-- -unpause we spawn arm model on resting state -->
 
   <!-- Fake laser from Kinect -->
   <node pkg="nodelet" type="nodelet" name="laserscan_nodelet_manager" args="manager"/>
