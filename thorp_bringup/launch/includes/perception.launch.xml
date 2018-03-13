@@ -1,0 +1,34 @@
+<!--
+  Thorp perception
+ -->
+
+<launch>
+  <arg name="external_camera" default="false"/>
+
+  <!--  ************ Thorp perception nodes ***********  -->
+
+  <node pkg="thorp_obj_rec" type="object_detection_server" name="object_detection_server" output="screen" respawn="true">
+    <param name="ork_execute_timeout" value="5.0"/>
+
+    <remap from="rgb_image" to="xtion/rgb/image_raw"/>
+  </node>
+
+  <node pkg="object_recognition_ros" type="object_information_server" name="object_information_server" output="screen" respawn="true">
+  </node>
+
+  <!--  **************** ORK pipeline *****************  -->
+
+  <include if="$(arg external_camera)" file="$(find thorp_obj_rec)/launch/obj_rec.launch.xml" ns="tabletop">
+    <arg name="as_server"    value="true"/>
+    <arg name="config_file"  value="$(find thorp_obj_rec)/config/ork/external.tabletop.detection.ros.ork"/>
+    <arg name="robot_frame"  value="base_footprint"/>
+    <arg name="sensor_frame" value="external_camera_depth_optical_frame"/>
+  </include>
+
+  <include unless="$(arg external_camera)" file="$(find thorp_obj_rec)/launch/obj_rec.launch.xml" ns="tabletop">
+    <arg name="as_server"    value="true"/>
+    <arg name="config_file"  value="$(find thorp_obj_rec)/config/ork/tabletop.detection.ros.ork"/>
+    <arg name="robot_frame"  value="base_footprint"/>
+    <arg name="sensor_frame" value="xtion_depth_optical_frame"/>
+  </include>
+</launch>

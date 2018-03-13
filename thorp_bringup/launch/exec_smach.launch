@@ -8,69 +8,38 @@
   <arg name="smach_app"/>
   <arg name="keyboard_ctrl" default="true"/>
   <arg name="external_camera" default="false"/>
+  <arg name="simulation" default="false"/>   <!-- run on Gazebo instead of real robot -->
 
-  <!--  ******** External 3D camera (optional) ********  -->
+  <group unless="$(arg simulation)">
+    <!--  ******* External 3D camera (optional) *******  -->
 
-  <include if="$(arg external_camera)" file="$(find thorp_bringup)/launch/includes/xtion.launch.xml">
-    <arg name="camera_name" value="external_camera"/>
-  </include>
+    <include if="$(arg external_camera)" file="$(find thorp_bringup)/launch/includes/xtion.launch.xml">
+      <arg name="camera_name" value="external_camera"/>
+    </include>
 
+    <!--  ********** Thorp robot standalone ***********  -->
+    <include file="$(find thorp_bringup)/launch/thorp_robot.launch"/>
 
-  <!--  *********** Thorp robot standalone ************  -->
-  <include file="$(find thorp_bringup)/launch/thorp_robot.launch"/>
+    <!--  As we are not (yet) running navigation and localization, fake global reference to make Moveit octomap happy  -->
+    <node pkg="tf" type="static_transform_publisher" name="fake_global_reference" output="screen" respawn="true"
+          args="0.0 0.0 0.0 0.0 0.0 0.0 map odom 100"/>
+  </group>
 
+  <group if="$(arg simulation)">
+    <!--  **** Simulated mobile manipulator Thorp *****  -->
 
-  <!--  ************* Moveit config stuff *************  -->
-
-  <!-- Load the URDF, SRDF and other .yaml configuration files on the param server -->
-  <include file="$(find thorp_moveit_config)/launch/planning_context.launch">
-    <arg name="load_robot_description" value="false"/>
-  </include>
-
-  <!-- Run the main MoveIt executable to provide move groups -->
-  <include file="$(find thorp_moveit_config)/launch/move_group.launch">
-    <arg name="allow_trajectory_execution" value="true"/>
-    <arg name="fake_execution" value="false"/>
-    <arg name="info" value="true"/>
-  </include>
-
-  <!--  Fake global reference to make Moveit octomap happy  -->
-  <node pkg="tf" type="static_transform_publisher" name="fake_global_reference" output="screen" respawn="true"
-        args="0.0 0.0 0.0 0.0 0.0 0.0 map odom 100"/>
+    <include file="$(find thorp_simulation)/launch/thorp_gazebo.launch"/>
+  </group>
 
 
   <!--  ****** Thorp perception and manipulation ******  -->
 
-  <node pkg="thorp_arm_ctrl" type="thorp_arm_ctrl_server" name="thorp_arm_ctrl_server" output="screen" respawn="true">
-    <rosparam file="$(find thorp_arm_ctrl)/param/pick_and_place.yaml" command="load"/>
-  </node>
-
-  <node pkg="thorp_arm_ctrl" type="scene_interaction_server" name="scene_interaction_server" output="screen" respawn="true">
-  </node>
-
-  <node pkg="thorp_obj_rec" type="object_detection_server" name="object_detection_server" output="screen" respawn="true">
-    <param name="ork_execute_timeout" value="5.0"/>
-
-    <remap from="rgb_image" to="xtion/rgb/image_raw"/>
-  </node>
-
-  <node pkg="object_recognition_ros" type="object_information_server" name="object_information_server" output="screen" respawn="true">
-  </node>
-
-  <!--  **************** ORK pipeline *****************  -->
-
-  <include if="$(arg external_camera)" file="$(find thorp_obj_rec)/launch/obj_rec.launch.xml" ns="tabletop">
-    <arg name="as_server"    value="true"/>
-    <arg name="config_file"  value="$(find thorp_obj_rec)/config/ork/external.tabletop.detection.ros.ork"/>
-    <arg name="robot_frame"  value="base_footprint"/>
-    <arg name="sensor_frame" value="external_camera_depth_optical_frame"/>
+  <include file="$(find thorp_bringup)/launch/includes/perception.launch.xml">
+    <arg name="external_camera" value="$(arg external_camera)"/>
   </include>
 
-  <include unless="$(arg external_camera)" file="$(find thorp_obj_rec)/launch/obj_rec.launch.xml" ns="tabletop">
-    <arg name="as_server"    value="true"/>
-    <arg name="config_file"  value="$(find thorp_obj_rec)/config/ork/tabletop.detection.ros.ork"/>
-    <arg name="robot_frame"  value="base_footprint"/>
-    <arg name="sensor_frame" value="xtion_depth_optical_frame"/>
+  <include file="$(find thorp_bringup)/launch/includes/manipulation.launch.xml">
+    <arg name="debug" value="false"/>
   </include>
 
 
