@@ -34,8 +34,8 @@
         <joint name="gripper_link_joint" value="0" />
     </group_state>
     <group_state name="resting" group="arm">
-        <joint name="arm_elbow_flex_joint" value="2.3" />
-        <joint name="arm_shoulder_lift_joint" value="-2" />
+        <joint name="arm_elbow_flex_joint" value="2.2" />
+        <joint name="arm_shoulder_lift_joint" value="-1.9" />
         <joint name="arm_shoulder_pan_joint" value="0" />
         <joint name="arm_wrist_flex_joint" value="1.4" />
         <joint name="gripper_link_joint" value="0" />

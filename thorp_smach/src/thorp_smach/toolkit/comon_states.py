@@ -40,7 +40,7 @@ def FoldArm():
         smach.Concurrence.add('CloseGripper',
                                smach_ros.SimpleActionState('gripper_controller/gripper_action',
                                                            control_msgs.GripperCommandAction,
-                                                           goal=control_msgs.GripperCommandGoal(control_msgs.GripperCommand(0.0, 0.0))))
+                                                           goal=control_msgs.GripperCommandGoal(control_msgs.GripperCommand(0.005, 0.0))))
         smach.Concurrence.add('FoldArm',
                                smach_ros.SimpleActionState('move_to_target',
                                                            thorp_msgs.MoveToTargetAction,
