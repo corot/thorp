@@ -6,7 +6,11 @@
   <!-- Gazebo model spawner -->
   <node name="spawn_turtlebot_model" pkg="gazebo_ros" type="spawn_model" output="screen"
         args="$(optenv ROBOT_INITIAL_POSE) -urdf -param robot_description -model thorp
-
+              -J arm_shoulder_pan_joint 0.0
+              -J arm_shoulder_lift_joint -1.9
+              -J arm_elbow_flex_joint 2.2
+              -J arm_wrist_flex_joint 1.4
+              -J gripper_link_joint 0.0
               "/>  <!-- -unpause we spawn arm model on resting state -->
 
   <!-- Fake laser from Kinect -->
