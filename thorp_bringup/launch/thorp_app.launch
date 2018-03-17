@@ -1,0 +1,82 @@
+<!--
+  Make Thorp execute a specific application, either using SMACH or behavior trees as executive
+    TODO 1: still not launching the whole stuff; navigation is missing
+    TODO 2: this is not fully generic, as keyboard_ctrl is obj manip specific; idea: make it issue generic commands and show "not apply" when the SM rejects it
+ -->
+
+<launch>
+  <arg name="app_name"/>
+  <arg name="executive"/>  <!-- btree / smach -->
+  <arg name="keyboard_ctrl" default="true"/>
+  <arg name="external_camera" default="false"/>
+  <arg name="simulation" default="false"/>   <!-- run on Gazebo instead of real robot -->
+
+  <group unless="$(arg simulation)">
+    <!--  ******* External 3D camera (optional) *******  -->
+
+    <include if="$(arg external_camera)" file="$(find thorp_bringup)/launch/includes/xtion.launch.xml">
+      <arg name="camera_name" value="external_camera"/>
+    </include>
+
+    <!--  ********** Thorp robot standalone ***********  -->
+    <include file="$(find thorp_bringup)/launch/thorp_robot.launch"/>
+
+    <!--  As we are not (yet) running navigation and localization, fake global reference to make Moveit octomap happy  -->
+    <node pkg="tf" type="static_transform_publisher" name="fake_global_reference" output="screen" respawn="true"
+          args="0.0 0.0 0.0 0.0 0.0 0.0 map odom 100"/>
+  </group>
+
+  <group if="$(arg simulation)">
+    <!--  **** Simulated mobile manipulator Thorp *****  -->
+
+    <include file="$(find thorp_simulation)/launch/thorp_gazebo.launch"/>
+  </group>
+
+
+  <!--  ****** Thorp perception and manipulation ******  -->
+
+  <include file="$(find thorp_bringup)/launch/includes/perception.launch.xml">
+    <arg name="external_camera" value="$(arg external_camera)"/>
+  </include>
+
+  <include file="$(find thorp_bringup)/launch/includes/manipulation.launch.xml">
+    <arg name="debug" value="false"/>
+  </include>
+
+
+  <!--  *********** Executive behavior tree ***********  -->
+  <group if="$(eval executive == 'btree')">
+    <include file="$(find thorp_behavior)/launch/action_server.launch">
+	  <arg name="robee_interactive" value="true"/>
+	</include>
+  </group>
+
+  <!--  ****** Executive smach and visualization ******  -->
+  <group if="$(eval executive == 'smach')">
+    <node pkg="thorp_smach" type="$(arg smach_app).py" name="$(arg smach_app)_smach" output="screen" respawn="true">
+      <param name="rec_objects_frame" value="map"/>
+    </node>
+
+    <node pkg="rqt_smach" type="rqt_smach" name="$(arg smach_app)_smach_viewer" output="screen" respawn="true"/>
+  </group>
+
+
+  <!--  ******* Keyboard interaction with smach *******  -->
+  <!-- We do it required so it will shutdown the whole demo on exit -->
+  <node if="$(arg keyboard_ctrl)" pkg="thorp_smach" type="keyboard_ctrl.py" name="$(arg app_name)_key_ctrl" output="screen" required="true"
+        args="$(arg app_name)">
+    <param name="window_geometry" value="360x240"/>
+    <param name="window_caption" value="Object manipulation user commands"/>
+    <param name="shown_text" value="Available commands: &#10;  s:  start &#10;  x:  stop &#10;  r:  reset &#10;  f:  fold &#10;  e:  exit"/>
+    <param name="text_font" value="Comic Sans MS"/>
+    <param name="font_size" value="12"/>
+
+    <remap from="user_commands_action_server" to="behavior_tree_server/run_user_command" if="$(eval executive == 'btree')"/>
+  </node>
+
+
+  <!-- Run Rviz and load the default config to see the state of the move_group node and the scene interaction markers -->
+  <node pkg="rviz" type="rviz" name="rviz" output="screen" respawn="true"
+        args="-d $(find thorp_bringup)/rviz/view_manip.rviz"/>
+
+</launch>
