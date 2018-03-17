@@ -52,8 +52,6 @@ private:
   // Object detection and classification parameters
   double ork_execute_timeout_;
   double ork_preempt_timeout_;
-  double confidence_threshold_;   // minimum confidence required to accept an object
-  double clustering_threshold_;   // maximum acceptable distance to assign an object to a bin
   int    recognize_objs_calls_;
 
   std::unique_ptr<ObjectDetectionBins>  objs_detection_;
@@ -72,8 +70,6 @@ public:
     ros::NodeHandle pnh("~");
     pnh.param("ork_execute_timeout",  ork_execute_timeout_,  5.0);
     pnh.param("ork_preempt_timeout",  ork_preempt_timeout_,  1.0);
-    pnh.param("confidence_threshold", confidence_threshold_, 0.85);
-    pnh.param("clustering_threshold", clustering_threshold_, 0.05);
     pnh.param("recognize_objs_calls", recognize_objs_calls_, 10);
 
     // Wait for the tabletop/recognize_objects action server to start before we provide our own service
@@ -150,7 +146,7 @@ public:
       object_recognition_msgs::ObjectRecognitionResultConstPtr result = ork_ac_.getResult();
 
       // Classify objects detected in each call to tabletop into bins based on distance to bin's centroid
-      objs_detection_->addObservations(result->recognized_objects.objects, confidence_threshold_, clustering_threshold_);
+      objs_detection_->addObservations(result->recognized_objects.objects);
 
       ros::spinOnce();  // keep spinning so table messages callbacks are processed
     }  // loop up to CALLS_TO_ORK_TABLETOP

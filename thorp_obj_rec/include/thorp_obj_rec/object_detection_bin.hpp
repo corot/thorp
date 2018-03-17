@@ -10,6 +10,7 @@
 #include <mag_common_cpp_libs/geometry.hpp>
 namespace mcl = mag_common_libs;
 
+#include "thorp_obj_rec/spatial_hash.hpp"
 #include "thorp_obj_rec/object_detection_color.hpp"
 
 
@@ -107,7 +108,10 @@ public:
   ObjectDetectionBins(std::shared_ptr<ObjectDetectionColor> color) :
       color_detection_(color)
   {
-    ros::NodeHandle nh;
+    ros::NodeHandle nh, pnh("~");
+
+    pnh.param("confidence_threshold", confidence_threshold_, 0.85);
+    pnh.param("clustering_threshold", clustering_threshold_, 0.05);
 
     // Wait for the get object information service (mandatory, as we need to know objects' mesh)
     obj_info_srv_ = nh.serviceClient<object_recognition_msgs::GetObjectInformation>("get_object_info");
@@ -117,22 +121,26 @@ public:
       ROS_ERROR("[object detection] Shutting down node...");
       throw;
     }
+
+    spatial_hash_.setup(1.0, 1.0, clustering_threshold_);
   }
 
-  void addObservations(const std::vector<object_recognition_msgs::RecognizedObject>& objects,
-                       double confidence_threshold, double clustering_threshold)
+  void addObservations(const std::vector<object_recognition_msgs::RecognizedObject>& objects)
   {
     // Classify objects detected in each call to tabletop into bins based on distance to bin's centroid
     for (const object_recognition_msgs::RecognizedObject& obj: objects)
     {
-      if (obj.confidence < confidence_threshold)
+      if (obj.confidence < confidence_threshold_)
         continue;
 
-      ros::Time t0 = ros::Time::now();
+      std::set<int> nearby_bins = spatial_hash_.getNearbyValues(obj.pose.pose.pose.position.x,
+                                                                obj.pose.pose.pose.position.y,
+                                                                clustering_threshold_/2.0);
       bool assigned = false;
-      for (ObjectDetectionBin& bin: detection_bins_)
+      for (int nearby_bin: nearby_bins)
       {
-        if (mcl::distance3D(bin.getCentroid().pose, obj.pose.pose.pose) <= clustering_threshold)
+        ObjectDetectionBin& bin = detection_bins_[nearby_bin];
+        if (mcl::distance3D(bin.getCentroid().pose, obj.pose.pose.pose) <= clustering_threshold_)
         {
           ROS_DEBUG("Object with pose [%s] added to bin %d with centroid [%s] with distance [%f]",
                     mcl::pose2cstr3D(obj.pose.pose.pose), bin.id, mcl::pose2cstr3D(bin.getCentroid()),
@@ -143,7 +151,6 @@ public:
           break;
         }
       }
-      ROS_ERROR("%f", (ros::Time::now()-t0).toSec());
 
       if (! assigned)
       {
@@ -153,6 +160,10 @@ public:
         new_bin.id = detection_bins_.size();
         new_bin.addObject(obj, color_detection_->getColors(obj.point_clouds[0]));
         detection_bins_.push_back(new_bin);
+        spatial_hash_.registerValue(new_bin.getCentroid().pose.position.x,
+                                    new_bin.getCentroid().pose.position.y,
+                                    clustering_threshold_/2.0,
+                                    detection_bins_.size() - 1);
       }
     }
   }
@@ -211,10 +222,15 @@ public:
 
   void clear()
   {
+    spatial_hash_.clear();
     detection_bins_.clear();
   }
 
 private:
+  double confidence_threshold_;   // minimum confidence required to accept an object
+  double clustering_threshold_;   // maximum acceptable distance to assign an object to a bin
+
+  SpatialHash<int> spatial_hash_;
   std::vector<ObjectDetectionBin> detection_bins_;
   std::shared_ptr<ObjectDetectionColor> color_detection_;
 

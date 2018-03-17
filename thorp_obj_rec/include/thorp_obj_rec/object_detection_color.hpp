@@ -64,7 +64,7 @@ public:
     }
     catch (cv_bridge::Exception& ex)
     {
-      ROS_ERROR("[object detection] Failed to convert RBG image");
+      ROS_ERROR("[object detection] Failed to convert RBG image: %s", ex.what());
       return colors;
     }
 
