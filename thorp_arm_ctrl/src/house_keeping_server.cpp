@@ -18,6 +18,7 @@ HouseKeepingServer::HouseKeepingServer()
   arm_trajectory_pub_ = nh.advertise<trajectory_msgs::JointTrajectory>("arm_controller/command", 1);
   force_resting_srv_  = nh.advertiseService("force_resting", &HouseKeepingServer::forceRestingCB, this);
   clear_gripper_srv_  = nh.advertiseService("clear_gripper", &HouseKeepingServer::clearGripperCB, this);
+  gripper_busy_srv_   = nh.advertiseService("gripper_busy",  &HouseKeepingServer::gripperBusyCB,  this);
 
   // Get default planning scene so I can restore it after temporal changes
   planning_scene_srv_ = nh.serviceClient<moveit_msgs::GetPlanningScene>("get_planning_scene");
@@ -146,6 +147,38 @@ bool HouseKeepingServer::clearGripperCB(std_srvs::EmptyRequest &request, std_srv
   attached_object = "";
   bool gripper_result = setGripper(gripper_open, false);
   return gripper_result && detach_result;
+}
+
+bool HouseKeepingServer::gripperBusyCB(std_srvs::TriggerRequest &request, std_srvs::TriggerResponse &response)
+{
+  // Check if we are holding an object by closing a bit the gripper and measuring if joint effort increases
+  double opening_before = joint_state_watchdog_.gripperOpening();
+  double effort_before = joint_state_watchdog_.gripperEffort();
+
+  bool gripper_result = setGripper(opening_before - 0.001, true);
+  double effort_after = joint_state_watchdog_.gripperEffort();
+
+  bool gripper_busy = (effort_before - effort_after) > 0.01;
+  response.success = gripper_busy;
+  response.message = attached_object;
+
+  // if (!gripper_busy && !attached_object.empty())   someone should call clearGripperCB if this is true, but i let for the executive
+  //  bool detach_result = arm().detachObject();
+  // Remove the detached object from the planning scene so the gripper doesn't "collide" with it
+  //planning_scene_interface().removeCollisionObjects(std::vector<std::string>{attached_object});
+  //attached_object = "";
+
+  if (gripper_busy)
+    ROS_INFO("[house keeping] Gripper is busy %s",
+             attached_object.empty() ? "but no object is attached" : ("with object " + attached_object).c_str());
+  else
+    ROS_INFO("[house keeping] Gripper is free %s",
+             !attached_object.empty() ? ("but we have an object attached: " + attached_object).c_str() : "");
+
+  // restore gripper original opening
+  setGripper(opening_before, false);
+
+  return gripper_result;
 }
 
 };

@@ -5,9 +5,11 @@
 #pragma once
 
 #include <std_srvs/Empty.h>
+#include <std_srvs/Trigger.h>
 #include <trajectory_msgs/JointTrajectory.h>
 
 #include "thorp_arm_ctrl/thorp_arm_controller.hpp"
+#include "thorp_arm_ctrl/joint_state_watchdog.hpp"
 
 
 namespace thorp_arm_ctrl
@@ -25,8 +27,11 @@ private:
   ros::ServiceClient planning_scene_srv_;
   ros::ServiceServer force_resting_srv_;
   ros::ServiceServer clear_gripper_srv_;
+  ros::ServiceServer gripper_busy_srv_;
 
   moveit_msgs::PlanningScene planning_scene_;
+
+  JointStateWatchdog joint_state_watchdog_;
 
 public:
   HouseKeepingServer();
@@ -45,6 +50,12 @@ private:
    * @return True if succeeded, false otherwise
    */
   bool clearGripperCB(std_srvs::EmptyRequest &request, std_srvs::EmptyResponse &response);
+
+  /**
+   * Check if the gripper is holding an object.
+   * @return True if succeeded, false otherwise
+   */
+  bool gripperBusyCB(std_srvs::TriggerRequest &request, std_srvs::TriggerResponse &response);
 };
 
 };
