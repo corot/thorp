@@ -49,15 +49,18 @@
     <include file="$(find thorp_behavior)/launch/action_server.launch">
 	  <arg name="robee_interactive" value="true"/>
 	</include>
+
+	<!-- TODO: I must by now start this separatedly, as it requieres cmanlaunch
+	<include file="$(find thorp_behavior)/launch/robee_frontend.launch"/> -->
   </group>
 
   <!--  ****** Executive smach and visualization ******  -->
   <group if="$(eval executive == 'smach')">
-    <node pkg="thorp_smach" type="$(arg smach_app).py" name="$(arg smach_app)_smach" output="screen" respawn="true">
+    <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="true">
       <param name="rec_objects_frame" value="map"/>
     </node>
 
-    <node pkg="rqt_smach" type="rqt_smach" name="$(arg smach_app)_smach_viewer" output="screen" respawn="true"/>
+    <node pkg="rqt_smach" type="rqt_smach" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
   </group>
 
 

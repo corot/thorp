@@ -1,8 +1,8 @@
 <launch>
   <arg name="simulation" default="false" />
 
-  <include file="$(find thorp_arm_ctrl)/launch/controllers.launch">
-    <!-- <arg name="simulation" value="$(arg simulation)"/> -->
+  <include unless="$(arg simulation)" file="$(find thorp_arm_ctrl)/launch/controllers.launch">
+    <!-- here we only load physical robot controllers, so no needed on simulation -->
   </include>
 
   <node pkg="arbotix_controllers" type="gripper_controller.py" name="gripper_controller" output="screen" respawn="true">
@@ -20,4 +20,7 @@
     <param name="max_opening" value="0.05"/>
     <param name="stalled_time" value="0.5"/>
   </node>
+
+  <!-- Fake gripper link joint state publisher -->
+  <node pkg="turtlebot_arm_bringup" type="fake_joint_pub.py" name="fake_gripper_joint_pub"/>
 </launch>
