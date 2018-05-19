@@ -50,7 +50,7 @@ public:
     thorp_msgs::DragAndDropGoal::ConstPtr goal = as_.acceptNewGoal();
 
     ROS_INFO("[interactive manip] Received goal! Adding markers for objects in the word other than the table");
-    addObjects(goal->object_names, goal->support_surf);
+    addObjects(goal->object_names, goal->support_surf, goal->output_frame);
   }
 
   void preemptCB()
@@ -102,7 +102,8 @@ public:
   }
 
   // Add an interactive marker for any object in the word other than the table
-  void addObjects(const std::vector<std::string> &object_names, const std::string &support_surf)
+  void addObjects(const std::vector<std::string> &object_names,
+                  const std::string &support_surf, const std::string &output_frame)
   {
     im_.clear();
     im_.applyChanges();
@@ -113,7 +114,10 @@ public:
     {
       geometry_msgs::PoseStamped obj_pose; geometry_msgs::Vector3 obj_size;
       if (thorp_toolkit::getObjectData(obj_name, obj_pose, obj_size) > 0)
+      {
+        mcl::transformPose(obj_pose.header.frame_id, output_frame, obj_pose, obj_pose);
         addMarker(obj_name, obj_pose, obj_size, active);
+      }
     }
 
     im_.applyChanges();
@@ -128,6 +132,7 @@ public:
     marker.name = obj_name;
     marker.pose = obj_pose.pose;
     marker.header = obj_pose.header;
+    marker.header.stamp = ros::Time();  // use object frame
 
     // We use the biggest dimension of the mesh to scale the marker
     marker.scale = mcl::maxValue(obj_size);

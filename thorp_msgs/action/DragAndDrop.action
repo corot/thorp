@@ -2,6 +2,7 @@
 
 string[] object_names
 string   support_surf
+string   output_frame
 
 ---
 

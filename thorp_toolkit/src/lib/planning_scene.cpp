@@ -56,8 +56,8 @@ int32_t getObjectData(const std::string& obj_name,
     {
       tf::vectorEigenToMsg(shapes::computeShapeExtents(obj.meshes[0]), obj_size);
 
-      // We assume meshes laying in the floor, so we bump its pose by half z-dimension to
-      // grasp the object at mid-height. TODO: we could try something more sophisticated...
+      // We assume meshes laying in the floor, so we bump its pose by half z-dimension to grasp the object at mid-height
+      // TODO: maybe should add instead z-dimension - half gripper finger length, as I grasp objects normally from above
       obj_pose.pose.position.z += obj_size.z/2.0;
     }
     else
