@@ -10,7 +10,7 @@ source1:
     rgb_image_topic:   /xtion/rgb/image_raw
     rgb_camera_info:   /xtion/rgb/camera_info
     depth_frame_id:     xtion_depth_optical_frame
-    depth_image_topic: /xtion/depth_registered/image_raw
+    depth_image_topic: /xtion/depth_registered/image_filtered
     depth_camera_info: /xtion/depth_registered/camera_info
 
 sink1:

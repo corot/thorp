@@ -9,6 +9,7 @@
 
   <node pkg="thorp_obj_rec" type="object_detection_server" name="object_detection_server" output="screen" respawn="true">
     <param name="ork_execute_timeout" value="5.0"/>
+    <param name="recognize_objs_calls" value="5"/>
 
     <remap from="rgb_image" to="xtion/rgb/image_raw"/>
   </node>
