@@ -10,13 +10,14 @@ find_package(Boost REQUIRED COMPONENTS thread)
 find_package(catkin
     REQUIRED
     COMPONENTS
-       tf
-       roscpp
-       geometry_msgs
-       geometric_shapes
-       moveit_msgs
-       moveit_ros_planning_interface
-       thorp_msgs
+        tf
+        roscpp
+        geometry_msgs
+        geometric_shapes
+        moveit_msgs
+        moveit_ros_planning_interface
+        eigen_conversions
+        thorp_msgs
 )
 
 
@@ -31,13 +32,14 @@ catkin_package(
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}
     CATKIN_DEPENDS
-       tf
-       roscpp
-       geometry_msgs
-       geometric_shapes
-       moveit_msgs
-       moveit_ros_planning_interface
-       thorp_msgs
+        tf
+        roscpp
+        geometry_msgs
+        geometric_shapes
+        moveit_msgs
+        moveit_ros_planning_interface
+        eigen_conversions
+        thorp_msgs
 )
 
 
