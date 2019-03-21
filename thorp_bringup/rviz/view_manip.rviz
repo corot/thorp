@@ -1,17 +1,15 @@
 Panels:
   - Class: rviz/Displays
-    Help Height: 84
+    Help Height: 70
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /MotionPlanning1
-        - /MotionPlanning1/Scene Geometry1
         - /DepthCloud1/Auto Size1
         - /TF1/Frames1
         - /Camera1/Visibility1
         - /DepthCloud External Camera1/Auto Size1
-      Splitter Ratio: 0.609136999
-    Tree Height: 178
+      Splitter Ratio: 0.6091369986534119
+    Tree Height: 366
   - Class: rviz/Help
     Name: Help
   - Class: rviz/Views
@@ -25,6 +23,8 @@ Panels:
       - /2D Pose Estimate1
     Name: Tool Properties
     Splitter Ratio: 0.5
+Preferences:
+  PromptSaveOnExit: true
 Visualization Manager:
   Class: ""
   Displays:
@@ -34,7 +34,7 @@ Visualization Manager:
       Color: 160; 160; 164
       Enabled: true
       Line Style:
-        Line Width: 0.0299999993
+        Line Width: 0.029999999329447746
         Value: Lines
       Name: Grid
       Normal Cell Count: 0
@@ -62,9 +62,14 @@ Visualization Manager:
       Update Interval: 0
       Value: false
       Visual Enabled: true
-    - Class: moveit_rviz_plugin/MotionPlanning
+    - Acceleration_Scaling_Factor: 1
+      Class: moveit_rviz_plugin/MotionPlanning
       Enabled: true
       Move Group Namespace: ""
+      MoveIt_Allow_Approximate_IK: false
+      MoveIt_Allow_External_Program: false
+      MoveIt_Allow_Replanning: false
+      MoveIt_Allow_Sensor_Positioning: false
       MoveIt_Goal_Tolerance: 0
       MoveIt_Planning_Attempts: 10
       MoveIt_Planning_Time: 5
@@ -657,6 +662,7 @@ Visualization Manager:
         Show Robot Visual: true
         Show Trail: false
         State Display Time: 0.05 s
+        Trail Step Size: 1
         Trajectory Topic: /move_group/display_planned_path
       Planning Metrics:
         Payload: 1
@@ -664,7 +670,7 @@ Visualization Manager:
         Show Manipulability: false
         Show Manipulability Index: false
         Show Weight Limit: false
-        TextHeight: 0.0799999982
+        TextHeight: 0.07999999821186066
       Planning Request:
         Colliding Link Color: 255; 0; 0
         Goal State Alpha: 1
@@ -680,9 +686,9 @@ Visualization Manager:
       Planning Scene Topic: move_group/monitored_planning_scene
       Robot Description: robot_description
       Scene Geometry:
-        Scene Alpha: 0.899999976
+        Scene Alpha: 0.8999999761581421
         Scene Color: 50; 230; 50
-        Scene Display Time: 0.200000003
+        Scene Display Time: 0.20000000298023224
         Show Scene Geometry: true
         Voxel Coloring: Z-Axis
         Voxel Rendering: Occupied Voxels
@@ -1258,17 +1264,18 @@ Visualization Manager:
         Show Robot Collision: false
         Show Robot Visual: true
       Value: true
+      Velocity_Scaling_Factor: 1
     - Alpha: 1
       Axes Length: 1
-      Axes Radius: 0.100000001
+      Axes Radius: 0.10000000149011612
       Class: rviz/Pose
       Color: 220; 220; 220
       Enabled: true
-      Head Length: 0.0199999996
-      Head Radius: 0.0199999996
+      Head Length: 0.019999999552965164
+      Head Radius: 0.019999999552965164
       Name: Pick/Place Pose
-      Shaft Length: 0.0799999982
-      Shaft Radius: 0.00999999978
+      Shaft Length: 0.07999999821186066
+      Shaft Radius: 0.009999999776482582
       Shape: Arrow
       Topic: /gripper_pose
       Unreliable: false
@@ -1296,7 +1303,7 @@ Visualization Manager:
       Queue Size: 10
       Selectable: true
       Size (Pixels): 3
-      Size (m): 0.00249999994
+      Size (m): 0.0024999999441206455
       Style: Flat Squares
       Topic: /senz3d/depth/points
       Unreliable: false
@@ -1342,33 +1349,33 @@ Visualization Manager:
       Use rainbow: true
       Value: true
     - Alpha: 1
-      Arrow Length: 0.300000012
-      Axes Length: 0.300000012
-      Axes Radius: 0.00999999978
+      Arrow Length: 0.30000001192092896
+      Axes Length: 0.30000001192092896
+      Axes Radius: 0.009999999776482582
       Class: rviz/PoseArray
       Color: 0; 0; 255
       Enabled: false
-      Head Length: 0.0700000003
-      Head Radius: 0.0299999993
+      Head Length: 0.07000000029802322
+      Head Radius: 0.029999999329447746
       Name: Blocks Poses
-      Shaft Length: 0.230000004
-      Shaft Radius: 0.00999999978
+      Shaft Length: 0.23000000417232513
+      Shaft Radius: 0.009999999776482582
       Shape: Arrow (Flat)
       Topic: /turtlebot_blocks
       Unreliable: false
       Value: false
     - Alpha: 1
-      Arrow Length: 0.300000012
-      Axes Length: 0.300000012
-      Axes Radius: 0.00999999978
+      Arrow Length: 0.30000001192092896
+      Axes Length: 0.30000001192092896
+      Axes Radius: 0.009999999776482582
       Class: rviz/PoseArray
       Color: 255; 25; 0
       Enabled: false
-      Head Length: 0.0700000003
-      Head Radius: 0.0299999993
+      Head Length: 0.07000000029802322
+      Head Radius: 0.029999999329447746
       Name: Pick & Place Poses
-      Shaft Length: 0.230000004
-      Shaft Radius: 0.00999999978
+      Shaft Length: 0.23000000417232513
+      Shaft Radius: 0.009999999776482582
       Shape: Arrow (Flat)
       Topic: /pick_and_place
       Unreliable: false
@@ -1396,7 +1403,7 @@ Visualization Manager:
       Queue Size: 10
       Selectable: true
       Size (Pixels): 3
-      Size (m): 0.00499999989
+      Size (m): 0.004999999888241291
       Style: Flat Squares
       Topic: /block_detection_action_server/block_output
       Unreliable: false
@@ -1413,16 +1420,16 @@ Visualization Manager:
       Update Topic: /move_objects/update
       Value: true
     - Alpha: 1
-      Axes Length: 0.0799999982
-      Axes Radius: 0.00800000038
+      Axes Length: 0.07999999821186066
+      Axes Radius: 0.00800000037997961
       Class: rviz/Pose
       Color: 255; 25; 0
       Enabled: true
-      Head Length: 0.300000012
-      Head Radius: 0.100000001
+      Head Length: 0.30000001192092896
+      Head Radius: 0.10000000149011612
       Name: Pick/Place Pose
       Shaft Length: 1
-      Shaft Radius: 0.0500000007
+      Shaft Radius: 0.05000000074505806
       Shape: Axes
       Topic: /target_pose
       Unreliable: false
@@ -1545,7 +1552,7 @@ Visualization Manager:
       Queue Size: 10
       Selectable: true
       Size (Pixels): 3
-      Size (m): 0.00999999978
+      Size (m): 0.009999999776482582
       Style: Flat Squares
       Topic: /external_camera/depth_registered/points
       Unreliable: false
@@ -1593,8 +1600,9 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
+    Default Light: true
     Fixed Frame: base_footprint
-    Frame Rate: 30
+    Frame Rate: 10
   Name: root
   Tools:
     - Class: rviz/Interact
@@ -1609,24 +1617,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 1.49543595
+      Distance: 1.855658769607544
       Enable Stereo Rendering:
-        Stereo Eye Separation: 0.0599999987
+        Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.617840648
-        Y: 0.191290542
-        Z: 0.478571862
+        X: 0.432201623916626
+        Y: 0.20097903907299042
+        Z: 0.3376429080963135
       Focal Shape Fixed Size: true
-      Focal Shape Size: 0.0500000007
+      Focal Shape Size: 0.05000000074505806
+      Invert Z Axis: false
       Name: Current View
-      Near Clip Distance: 0.00999999978
-      Pitch: 0.245398849
+      Near Clip Distance: 0.009999999776482582
+      Pitch: 0.400398850440979
       Target Frame: base_link
       Value: Orbit (rviz)
-      Yaw: 4.03858232
+      Yaw: 4.333581447601318
     Saved: ~
 Window Geometry:
   Camera:
@@ -1635,20 +1644,22 @@ Window Geometry:
     collapsed: false
   External Camera:
     collapsed: false
-  Height: 1056
+  Height: 1025
   Help:
     collapsed: false
   Hide Left Dock: false
   Hide Right Dock: false
   MotionPlanning:
     collapsed: false
+  MotionPlanning - Trajectory Slider:
+    collapsed: false
   Onboard Camera:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000200000000000002b8000003dafc0200000008fb000000100044006900730070006c006100790073010000002800000147000000dd00fffffffb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e00670100000175000001d70000000000000000fb0000000800480065006c00700000000342000000bb0000007600fffffffb0000000a005600690065007700730100000175000000b0000000b000fffffffb0000000a0049006d006100670065000000030a000000b70000000000000000fb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000002f1000000ab0000006400fffffffb0000000c00430061006d006500720061020000000000000170000003b1000002c8fb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e0067010000022b000001d7000001cc00ffffff00000001000001ea000003dafc0200000002fb0000001c004f006e0062006f006100720064002000430061006d0065007200610000000033000003850000001600fffffffc00000028000003da0000000000fffffffa000000010100000002fb0000001e00450078007400650072006e0061006c002000430061006d0065007200610000000000ffffffff000000a300fffffffb0000000c00430061006d0065007200610000000596000001ea000000000000000000000481000003da00000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000200000000000002ed000003a3fc0200000008fb000000100044006900730070006c006100790073010000003f000001f4000000cc00fffffffb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e00670100000239000001a90000019e00fffffffb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e00670100000175000001d70000000000000000fb0000000800480065006c00700000000342000000bb0000006f00fffffffb0000000a0049006d006100670065000000030a000000b70000000000000000fb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000002f1000000ab0000005d00fffffffb0000000c00430061006d006500720061020000000000000170000003b1000002c8fb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000004400ffffff000000010000014d000003a7fc0200000003fb0000000a00560069006500770073000000003d000003a7000000a900fffffffb0000001c004f006e0062006f006100720064002000430061006d0065007200610000000033000003850000001700fffffffc00000028000003da0000000000fffffffa000000010100000002fb0000001e00450078007400650072006e0061006c002000430061006d0065007200610000000000ffffffff000000bb00fffffffb0000000c00430061006d0065007200610000000596000001ea00000000000000000000044a000003a300000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Tool Properties:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1855
-  X: 65
-  Y: 24
+  Width: 1853
+  X: 67
+  Y: 27
