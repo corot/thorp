@@ -11,7 +11,7 @@ write_rate: 20
 # 20 Hz, but this value is used for interpolation; the result is that it fails to
 # achieve the configured max speed (it reaches ~80% of it, it seems).
 # Easy workaround is to set higher limits here and the desired ones on the robot
-# description xacro file 
+# description xacro file
 
 #joints: {
 #  # max_speed: phisical limit of the AX-12 is 114 rpm (684 deg/s)

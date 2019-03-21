@@ -11,16 +11,15 @@
  -->
 
 <launch>
-  <!--  *********** Turtlebot and 3d sensor ***********  -->
+  <!--  ********* Turtlebot with Kinect camera ********  -->
   <include file="$(find turtlebot_bringup)/launch/minimal.launch">
     <arg name="base"      value="kobuki"/>
     <arg name="stacks"    value="hexagons"/>
     <arg name="3d_sensor" value="kinect"/>
     <arg name="battery"   value="/sys/class/power_supply/BAT1"/>
   </include>
-  <include file="$(find turtlebot_bringup)/launch/3dsensor.launch">
+  <include file="$(find thorp_bringup)/launch/includes/kinect.launch.xml">
     <arg name="camera"                          value="kinect"/>
-    <arg name="3d_sensor"                       value="kinect"/>
     <!-- We only need RGB images and pseudo laser scan -->
     <arg name="depth_registration"              value="false"/>
     <arg name="rgb_processing"                  value="true" />
