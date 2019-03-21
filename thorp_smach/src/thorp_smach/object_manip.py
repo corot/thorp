@@ -29,7 +29,7 @@ with sm:
     sm.userdata.ucmd_progress  = thorp_msgs.UserCommandFeedback()
     sm.userdata.ucmd_outcome   = thorp_msgs.UserCommandResult()
     sm.userdata.od_attempt     = 0
-    sm.userdata.output_frame   = rospy.get_param('~rec_objects_frame', '/map')
+    sm.userdata.output_frame   = rospy.get_param('~rec_objects_frame', 'map')
     sm.userdata.pick_effort    = 0.3
 #     sm.userdata.object_names   = []
 #     sm.userdata.object_name    = std_msg.String()
@@ -45,9 +45,9 @@ with sm:
 
     smach.StateMachine.add('ExecuteUserCommand',
                            ExecuteUserCommand(['start', 'stop', 'reset', 'fold']),
-                           transitions={'start':'ObjectDetection', 
-                                        'reset':'ObjectDetection', 
-                                        'fold':'FoldArm', 
+                           transitions={'start':'ObjectDetection',
+                                        'reset':'ObjectDetection',
+                                        'fold':'FoldArm',
                                         'stop':'FoldArmAndRelax',
                                         'invalid_command':'error'})
 
@@ -63,7 +63,7 @@ with sm:
     smach.StateMachine.add('DragAndDrop',
                            smach_ros.SimpleActionState('drag_and_drop',
                                                        thorp_msg.DragAndDropAction,
-                                                       goal_slots=['object_names'],
+                                                       goal_slots=['object_names', 'output_frame'],
                                                        result_slots=['object_name', 'pick_pose', 'place_pose']),
                            remapping={'object_names':'object_names',
                                       'object_name':'object_name',
@@ -120,10 +120,10 @@ with sm:
                                         goal_key = 'user_command',
                                         feedback_key = 'ucmd_progress',
                                         result_key = 'ucmd_outcome')
-    
+
     # Run the server in a background thread
     asw.run_server()
-    
+
     # Create and start the introspection server
     sis = smach_ros.IntrospectionServer('object_manipulation', sm, '/SM_ROOT')
     sis.start()
