@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 # Populate Thorp objects database with a bunch of simple objects.
+# Install Couch Db: https://wg-perception.github.io/object_recognition_core/infrastructure/couch.html
 # WARN 1: this script assumes that the database doesn't contain any of this objects; if so, the script will hung
 # while prompting for overwrite
 # WARN 2: run the script from its containing folder, so it can find gen_meshes.scad
