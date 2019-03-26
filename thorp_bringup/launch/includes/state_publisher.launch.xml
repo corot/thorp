@@ -6,7 +6,7 @@
 <launch>
   <arg name="simulation" default="false"/>
 
-  <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find thorp_description)/urdf/thorp.urdf.xacro' simulation:=$(arg simulation)"/>
+  <param name="robot_description" command="$(find xacro)/xacro '$(find thorp_description)/urdf/thorp.urdf.xacro' simulation:=$(arg simulation)"/>
   <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen" respawn="true">
     <param name="publish_frequency" value="20.0"/>
   </node>

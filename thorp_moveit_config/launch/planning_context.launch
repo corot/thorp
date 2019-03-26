@@ -7,7 +7,7 @@
 
   <!-- Load universal robot description format (URDF) -->
   <param if="$(arg load_robot_description)" name="$(arg robot_description)"
-    command="$(find xacro)/xacro --inorder '$(find thorp_description)/urdf/thorp.urdf.xacro'"/>
+    command="$(find xacro)/xacro '$(find thorp_description)/urdf/thorp.urdf.xacro'"/>
 
   <!-- The semantic description that corresponds to the URDF -->
   <param name="$(arg robot_description)_semantic" textfile="$(find thorp_moveit_config)/config/Thorp.srdf" />

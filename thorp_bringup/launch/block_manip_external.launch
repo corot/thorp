@@ -1,7 +1,7 @@
 <launch>
 
   <!--  ************ Off-board 3D sensor ***********  -->
-  
+
   <include file="$(find openni_launch)/launch/openni.launch">
   	<arg name="depth_registration" value="true"/>
   </include>
@@ -13,7 +13,7 @@
 
   <!--  ************* Arm bringup stuff ************* -->
 
-  <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find thorp_description)/urdf/standalone_arm.urdf.xacro'"/>
+  <param name="robot_description" command="$(find xacro)/xacro '$(find thorp_description)/urdf/standalone_arm.urdf.xacro'"/>
   <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_pub" output="screen" respawn="true"/>
   <node pkg="turtlebot_arm_bringup" type="fake_joint_pub.py" name="fake_joint_pub" output="screen" respawn="true"/>
 
@@ -49,7 +49,7 @@
 
   <!-- Run the main MoveIt executable to provide move groups -->
   <include file="$(find thorp_moveit_config)/launch/move_group.launch">
-    <arg name="allow_trajectory_execution" value="true"/>  
+    <arg name="allow_trajectory_execution" value="true"/>
     <arg name="fake_execution" value="false"/>
     <arg name="info" value="true"/>
   </include>
@@ -63,7 +63,7 @@
 
   <node pkg="turtlebot_arm_block_manipulation" type="pick_and_place_action_server" name="pick_and_place_action_server" output="screen" respawn="true">
   </node>
-  
+
   <node pkg="turtlebot_arm_block_manipulation" type="interactive_manipulation_action_server" name="interactive_manipulation_action_server" output="screen" respawn="true">
     <param name="bump_size" value="0.025"/>
   </node>
