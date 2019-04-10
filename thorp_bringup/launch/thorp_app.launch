@@ -50,8 +50,7 @@
 	  <arg name="robee_interactive" value="true"/>
 	</include>
 
-	<!-- TODO: I must by now start this separatedly, as it requieres cmanlaunch
-	<include file="$(find thorp_behavior)/launch/robee_frontend.launch"/> -->
+	<include file="$(find thorp_behavior)/launch/arc_frontend.launch"/>
   </group>
 
   <!--  ****** Executive smach and visualization ******  -->
