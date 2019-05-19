@@ -33,7 +33,7 @@
              simulation and the "working" pose used with the real robot differ -->
         <xacro:insert_block name="visual_origin"/>
         <geometry>
-          <mesh filename="package://turtlebot_description/meshes/sensors/xtion_pro_camera.dae" scale="${M_SCALE} ${M_SCALE} ${M_SCALE}"/>
+          <mesh filename="package://turtlebot_description/meshes/sensors/xtion_pro_camera.dae"/>
         </geometry>
       </visual>
       <collision>
