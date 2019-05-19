@@ -11,7 +11,7 @@
               -J arm_elbow_flex_joint 2.2
               -J arm_wrist_flex_joint 1.4
               -J gripper_link_joint 0.0
-              "/>  <!-- -unpause we spawn arm model on resting state -->
+              -unpause"/>  <!--  we spawn arm model on resting state -->
 
   <!-- Fake laser from Kinect -->
   <node pkg="nodelet" type="nodelet" name="laserscan_nodelet_manager" args="manager"/>
