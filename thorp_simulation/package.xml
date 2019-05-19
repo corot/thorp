@@ -16,9 +16,6 @@
   <run_depend>thorp_bringup</run_depend>
 
   <run_depend>xacro</run_depend>
-  <run_depend>ros_control</run_depend>
-  <run_depend>ros_controllers</run_depend>
-  <run_depend>controller_manager</run_depend>
   <run_depend>stdr_server</run_depend>
   <run_depend>stdr_robot</run_depend>
   <run_depend>stdr_gui</run_depend>
@@ -34,4 +31,9 @@
   <run_depend>turtlebot_navigation</run_depend>
   <run_depend>diagnostic_aggregator</run_depend>
   <run_depend>depthimage_to_laserscan</run_depend>
+  <run_depend>rail_collada_models</run_depend>
+  <run_depend>controller_manager</run_depend>
+  <run_depend>position_controllers</run_depend>
+  <run_depend>joint_state_controller</run_depend>
+  <run_depend>joint_trajectory_controller</run_depend>
 </package>
