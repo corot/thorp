@@ -40,6 +40,7 @@
   </include>
 
   <include file="$(find thorp_bringup)/launch/includes/manipulation.launch.xml">
+    <arg name="simulation" default="$(arg simulation)"/>
     <arg name="debug" value="false"/>
   </include>
 
