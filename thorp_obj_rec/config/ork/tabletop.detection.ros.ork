@@ -32,7 +32,7 @@ pipeline1:
   parameters:
     # table detector
     min_table_size: 20000         # The minimum number of points deemed necessary to find a table (def. 10000)
-    plane_threshold: 0.005        # The distance used as a threshold when finding a plane (def. 0.02)
+    plane_threshold: 0.02         # The distance used as a threshold when finding a plane (def. 0.02)
     table_cluster_tolerance: 0.01 # The distance used when clustering a plane (def. 0.2)
     vertical_frame_id: '/base_footprint' # The vertical frame id (def. '/map')
     # clusterer
