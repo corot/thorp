@@ -174,7 +174,10 @@
 
   <!-- Gazebo configuration for arm and cannon servos control -->
   <gazebo>
-    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so"/>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+      <legacyModeNS>false</legacyModeNS>
+    </plugin>
   </gazebo>
 
   <xacro:macro name="servo_transmission" params="name">
