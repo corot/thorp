@@ -5,8 +5,9 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /TF1/Frames1
-      Splitter Ratio: 0.401459992
-    Tree Height: 292
+        - /TF1/Tree1
+      Splitter Ratio: 0.4014599919319153
+    Tree Height: 783
   - Class: rviz/Help
     Name: Help
   - Class: rviz/Views
@@ -20,6 +21,10 @@ Panels:
       - /2D Pose Estimate1
     Name: Tool Properties
     Splitter Ratio: 0.5
+Preferences:
+  PromptSaveOnExit: true
+Toolbars:
+  toolButtonStyle: 2
 Visualization Manager:
   Class: ""
   Displays:
@@ -29,7 +34,7 @@ Visualization Manager:
       Color: 160; 160; 164
       Enabled: true
       Line Style:
-        Line Width: 0.0299999993
+        Line Width: 0.029999999329447746
         Value: Lines
       Name: Grid
       Normal Cell Count: 0
@@ -44,18 +49,582 @@ Visualization Manager:
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
-      Enabled: false
+      Enabled: true
       Links:
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
+        arm_base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        arm_elbow_F10_0_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_elbow_F10_1_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_elbow_F10_2_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_elbow_F3_0_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_elbow_flex_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_elbow_flex_servo_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_mount_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_shoulder_F10_0_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_shoulder_F10_1_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_shoulder_F10_2_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_shoulder_F3_0_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_shoulder_lift_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_shoulder_lift_servo_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_shoulder_pan_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_shoulder_pan_servo_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_wrist_F3_0_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_wrist_flex_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_wrist_flex_servo_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        base_footprint:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_servo_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_shaft_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube1_hollow_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube1_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube2_hollow_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube2_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube3_hollow_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube3_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube4_hollow_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube4_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube5_hollow_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube5_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube6_hollow_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube6_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        caster_back_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        caster_front_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cliff_sensor_front_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        cliff_sensor_left_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        cliff_sensor_right_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        gripper_active_finger_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gripper_active_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gripper_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        gripper_servo_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gripper_static_finger_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gripper_static_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gyro_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        ir_arm_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        ir_l155_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        ir_l180_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        ir_r155_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        ir_r180_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        kinect_depth_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        kinect_depth_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        kinect_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        kinect_rgb_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        kinect_rgb_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        opencm_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        plate_bottom_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        plate_middle_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        plate_top_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_0_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_10_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_11_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_12_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_13_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_14_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_15_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_1_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_2_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_3_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_4_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_5_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_kinect_0_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_kinect_1_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_middle_0_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_middle_11_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_middle_1_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_middle_21_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_middle_2_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_middle_3_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_top_0_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_top_10_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_top_12_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_top_1_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_top_20_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_top_22_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_top_2_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_top_3_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_0_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_m18_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_m36_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_m54_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_m72_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_m90_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_p18_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_p36_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_p54_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_p72_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_p90_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        senz3d_calib_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        senz3d_depth_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        senz3d_depth_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        senz3d_gazebo_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        senz3d_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        senz3d_mount_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        senz3d_rgb_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        senz3d_rgb_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        sonars_mount_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wheel_left_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wheel_right_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        xtion_depth_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        xtion_depth_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        xtion_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        xtion_mount_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        xtion_rgb_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        xtion_rgb_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
       Name: RobotModel
       Robot Description: robot_description
       TF Prefix: ""
       Update Interval: 0
-      Value: false
+      Value: true
       Visual Enabled: true
     - Class: rviz/TF
       Enabled: false
@@ -71,7 +640,7 @@ Visualization Manager:
         {}
       Update Interval: 0
       Value: false
-    - Alpha: 0.699999988
+    - Alpha: 0.699999988079071
       Class: rviz/Map
       Color Scheme: map
       Draw Behind: false
@@ -79,6 +648,7 @@ Visualization Manager:
       Name: Map
       Topic: /map
       Unreliable: false
+      Use Timestamp: false
       Value: true
     - Class: rviz/Group
       Displays:
@@ -115,7 +685,7 @@ Visualization Manager:
           Queue Size: 10
           Selectable: true
           Size (Pixels): 3
-          Size (m): 0.00999999978
+          Size (m): 0.009999999776482582
           Style: Flat Squares
           Topic: /scan
           Unreliable: false
@@ -145,7 +715,7 @@ Visualization Manager:
           Queue Size: 10
           Selectable: true
           Size (Pixels): 3
-          Size (m): 0.200000003
+          Size (m): 0.20000000298023224
           Style: Spheres
           Topic: /xtion/depth_registered/points
           Unreliable: false
@@ -213,7 +783,7 @@ Visualization Manager:
           Queue Size: 10
           Selectable: true
           Size (Pixels): 3
-          Size (m): 0.00999999978
+          Size (m): 0.009999999776482582
           Style: Flat Squares
           Topic: /kinect/depth/points
           Unreliable: false
@@ -253,7 +823,7 @@ Visualization Manager:
           Queue Size: 5
           Selectable: true
           Size (Pixels): 3
-          Size (m): 9.99999975e-05
+          Size (m): 9.999999747378752e-5
           Style: Points
           Topic Filter: true
           Use Fixed Frame: true
@@ -282,7 +852,7 @@ Visualization Manager:
           Queue Size: 10
           Selectable: true
           Size (Pixels): 3
-          Size (m): 0.00999999978
+          Size (m): 0.009999999776482582
           Style: Flat Squares
           Topic: /senz3d/depth/points
           Unreliable: false
@@ -334,23 +904,24 @@ Visualization Manager:
         - Alpha: 1
           Buffer Length: 1
           Class: rviz/Path
-          Color: 255; 85; 255
+          Color: 0; 255; 0
           Enabled: true
-          Head Diameter: 0.300000012
-          Head Length: 0.200000003
-          Length: 0.300000012
+          Head Diameter: 0.30000001192092896
+          Head Length: 0.20000000298023224
+          Length: 0.30000001192092896
           Line Style: Lines
-          Line Width: 0.0299999993
+          Line Width: 0.029999999329447746
           Name: Global Plan
           Offset:
             X: 0
             Y: 0
             Z: 0
+          Pose Color: 255; 85; 255
           Pose Style: None
-          Radius: 0.0299999993
-          Shaft Diameter: 0.100000001
-          Shaft Length: 0.100000001
-          Topic: /move_base/NavfnROS/plan
+          Radius: 0.029999999329447746
+          Shaft Diameter: 0.10000000149011612
+          Shaft Length: 0.10000000149011612
+          Topic: /move_base_flex/planner/plan
           Unreliable: false
           Value: true
         - Alpha: 1
@@ -358,51 +929,60 @@ Visualization Manager:
           Class: rviz/Path
           Color: 255; 85; 255
           Enabled: true
-          Head Diameter: 0.300000012
-          Head Length: 0.200000003
-          Length: 0.300000012
+          Head Diameter: 0.30000001192092896
+          Head Length: 0.20000000298023224
+          Length: 0.30000001192092896
           Line Style: Lines
-          Line Width: 0.0299999993
+          Line Width: 0.029999999329447746
           Name: Local Plan
           Offset:
             X: 0
             Y: 0
             Z: 0
+          Pose Color: 255; 85; 255
           Pose Style: None
-          Radius: 0.0299999993
-          Shaft Diameter: 0.100000001
-          Shaft Length: 0.100000001
-          Topic: /move_base/DWAPlannerROS/local_plan
+          Radius: 0.029999999329447746
+          Shaft Diameter: 0.10000000149011612
+          Shaft Length: 0.10000000149011612
+          Topic: /move_base_flex/controller/local_plan
           Unreliable: false
           Value: true
-        - Alpha: 0.600000024
+        - Alpha: 0.6000000238418579
           Class: rviz/Map
           Color Scheme: costmap
           Draw Behind: false
           Enabled: true
           Name: Local Costmap
-          Topic: /move_base/local_costmap/costmap
+          Topic: /move_base_flex/local_costmap/costmap
           Unreliable: false
+          Use Timestamp: false
           Value: true
-        - Alpha: 0.300000012
+        - Alpha: 0.30000001192092896
           Class: rviz/Map
           Color Scheme: costmap
           Draw Behind: true
           Enabled: true
           Name: Global Costmap
-          Topic: /move_base/global_costmap/costmap
+          Topic: /move_base_flex/global_costmap/costmap
           Unreliable: false
+          Use Timestamp: false
           Value: true
       Enabled: true
       Name: Navigation
     - Class: rviz/Group
       Displays:
-        - Class: moveit_rviz_plugin/MotionPlanning
+        - Acceleration_Scaling_Factor: 1
+          Class: moveit_rviz_plugin/MotionPlanning
           Enabled: true
           Move Group Namespace: ""
+          MoveIt_Allow_Approximate_IK: false
+          MoveIt_Allow_External_Program: false
+          MoveIt_Allow_Replanning: false
+          MoveIt_Allow_Sensor_Positioning: false
           MoveIt_Goal_Tolerance: 0
           MoveIt_Planning_Attempts: 10
           MoveIt_Planning_Time: 5
+          MoveIt_Use_Cartesian_Path: false
           MoveIt_Use_Constraint_Aware_IK: true
           MoveIt_Warehouse_Host: 127.0.0.1
           MoveIt_Warehouse_Port: 33829
@@ -425,570 +1005,6 @@ Visualization Manager:
               Expand Link Details: false
               Expand Tree: false
               Link Tree Style: Links in Alphabetic Order
-              arm_base_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              arm_elbow_F10_0_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_elbow_F10_1_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_elbow_F10_2_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_elbow_F3_0_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_elbow_flex_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_elbow_flex_servo_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_mount_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_shoulder_F10_0_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_shoulder_F10_1_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_shoulder_F10_2_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_shoulder_F3_0_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_shoulder_lift_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_shoulder_lift_servo_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_shoulder_pan_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_shoulder_pan_servo_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_wrist_F3_0_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_wrist_flex_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_wrist_flex_servo_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              base_footprint:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              base_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cannon_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cannon_servo_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cannon_shaft_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cannon_tube1_hollow_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cannon_tube1_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cannon_tube2_hollow_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cannon_tube2_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cannon_tube3_hollow_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cannon_tube3_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cannon_tube4_hollow_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cannon_tube4_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cannon_tube5_hollow_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cannon_tube5_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cannon_tube6_hollow_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cannon_tube6_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              caster_back_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              caster_front_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cliff_sensor_front_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              cliff_sensor_left_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              cliff_sensor_right_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              gripper_active_finger_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              gripper_active_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              gripper_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              gripper_servo_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              gripper_static_finger_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              gripper_static_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              gyro_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              ir_arm_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              ir_l155_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              ir_l180_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              ir_r155_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              ir_r180_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              kinect_depth_frame:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              kinect_depth_optical_frame:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              kinect_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              kinect_rgb_frame:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              kinect_rgb_optical_frame:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              opencm_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              plate_bottom_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              plate_middle_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              plate_top_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_bottom_0_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_bottom_10_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_bottom_11_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_bottom_12_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_bottom_13_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_bottom_14_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_bottom_15_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_bottom_1_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_bottom_2_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_bottom_3_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_bottom_4_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_bottom_5_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_kinect_0_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_kinect_1_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_middle_0_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_middle_11_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_middle_1_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_middle_21_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_middle_2_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_middle_3_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_top_0_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_top_10_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_top_12_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_top_1_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_top_20_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_top_22_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_top_2_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_top_3_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              s_0_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              s_m18_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              s_m36_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              s_m54_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              s_m72_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              s_m90_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              s_p18_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              s_p36_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              s_p54_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              s_p72_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              s_p90_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              senz3d_calib_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              senz3d_depth_frame:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              senz3d_depth_optical_frame:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              senz3d_gazebo_optical_frame:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              senz3d_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              senz3d_mount_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              senz3d_rgb_frame:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              senz3d_rgb_optical_frame:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              sonars_mount_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              wheel_left_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              wheel_right_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              xtion_depth_frame:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              xtion_depth_optical_frame:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              xtion_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              xtion_mount_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              xtion_rgb_frame:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              xtion_rgb_optical_frame:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
             Loop Animation: false
             Robot Alpha: 0.5
             Robot Color: 150; 50; 150
@@ -996,6 +1012,7 @@ Visualization Manager:
             Show Robot Visual: false
             Show Trail: false
             State Display Time: 0.05 s
+            Trail Step Size: 1
             Trajectory Topic: /move_group/display_planned_path
           Planning Metrics:
             Payload: 1
@@ -1003,14 +1020,14 @@ Visualization Manager:
             Show Manipulability: false
             Show Manipulability Index: false
             Show Weight Limit: false
-            TextHeight: 0.0799999982
+            TextHeight: 0.07999999821186066
           Planning Request:
             Colliding Link Color: 255; 0; 0
             Goal State Alpha: 1
             Goal State Color: 250; 128; 0
             Interactive Marker Size: 0
             Joint Violation Color: 255; 0; 255
-            Planning Group: arm
+            Planning Group: ""
             Query Goal State: true
             Query Start State: false
             Show Workspace: false
@@ -1021,7 +1038,7 @@ Visualization Manager:
           Scene Geometry:
             Scene Alpha: 1
             Scene Color: 50; 230; 50
-            Scene Display Time: 0.200000003
+            Scene Display Time: 0.20000000298023224
             Show Scene Geometry: true
             Voxel Coloring: Z-Axis
             Voxel Rendering: Occupied Voxels
@@ -1033,617 +1050,54 @@ Visualization Manager:
               Expand Link Details: false
               Expand Tree: false
               Link Tree Style: Links in Alphabetic Order
-              arm_base_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              arm_elbow_F10_0_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_elbow_F10_1_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_elbow_F10_2_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_elbow_F3_0_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_elbow_flex_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_elbow_flex_servo_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_mount_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_shoulder_F10_0_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_shoulder_F10_1_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_shoulder_F10_2_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_shoulder_F3_0_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_shoulder_lift_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_shoulder_lift_servo_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_shoulder_pan_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_shoulder_pan_servo_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_wrist_F3_0_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_wrist_flex_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              arm_wrist_flex_servo_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              base_footprint:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              base_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cannon_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cannon_servo_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cannon_shaft_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cannon_tube1_hollow_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cannon_tube1_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cannon_tube2_hollow_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cannon_tube2_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cannon_tube3_hollow_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cannon_tube3_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cannon_tube4_hollow_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cannon_tube4_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cannon_tube5_hollow_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cannon_tube5_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cannon_tube6_hollow_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cannon_tube6_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              caster_back_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              caster_front_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              cliff_sensor_front_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              cliff_sensor_left_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              cliff_sensor_right_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              gripper_active_finger_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              gripper_active_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              gripper_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              gripper_servo_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              gripper_static_finger_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              gripper_static_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              gyro_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              ir_arm_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              ir_l155_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              ir_l180_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              ir_r155_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              ir_r180_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              kinect_depth_frame:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              kinect_depth_optical_frame:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              kinect_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              kinect_rgb_frame:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              kinect_rgb_optical_frame:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              opencm_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              plate_bottom_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              plate_middle_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              plate_top_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_bottom_0_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_bottom_10_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_bottom_11_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_bottom_12_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_bottom_13_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_bottom_14_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_bottom_15_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_bottom_1_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_bottom_2_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_bottom_3_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_bottom_4_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_bottom_5_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_kinect_0_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_kinect_1_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_middle_0_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_middle_11_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_middle_1_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_middle_21_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_middle_2_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_middle_3_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_top_0_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_top_10_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_top_12_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_top_1_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_top_20_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_top_22_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_top_2_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              pole_top_3_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              s_0_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              s_m18_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              s_m36_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              s_m54_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              s_m72_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              s_m90_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              s_p18_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              s_p36_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              s_p54_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              s_p72_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              s_p90_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              senz3d_calib_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              senz3d_depth_frame:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              senz3d_depth_optical_frame:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              senz3d_gazebo_optical_frame:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              senz3d_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              senz3d_mount_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              senz3d_rgb_frame:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              senz3d_rgb_optical_frame:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              sonars_mount_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              wheel_left_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              wheel_right_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              xtion_depth_frame:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              xtion_depth_optical_frame:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              xtion_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              xtion_mount_link:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-                Value: true
-              xtion_rgb_frame:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
-              xtion_rgb_optical_frame:
-                Alpha: 1
-                Show Axes: false
-                Show Trail: false
             Robot Alpha: 1
             Show Robot Collision: false
             Show Robot Visual: true
           Value: true
+          Velocity_Scaling_Factor: 1
         - Alpha: 1
           Axes Length: 1
-          Axes Radius: 0.100000001
+          Axes Radius: 0.10000000149011612
           Class: rviz/Pose
           Color: 220; 220; 220
           Enabled: true
-          Head Length: 0.0199999996
-          Head Radius: 0.0199999996
+          Head Length: 0.019999999552965164
+          Head Radius: 0.019999999552965164
           Name: Pick/Place Pose
-          Shaft Length: 0.0799999982
-          Shaft Radius: 0.00999999978
+          Shaft Length: 0.07999999821186066
+          Shaft Radius: 0.009999999776482582
           Shape: Arrow
           Topic: /gripper_pose
           Unreliable: false
           Value: true
         - Alpha: 1
-          Arrow Length: 0.300000012
-          Axes Length: 0.300000012
-          Axes Radius: 0.00999999978
+          Arrow Length: 0.30000001192092896
+          Axes Length: 0.30000001192092896
+          Axes Radius: 0.009999999776482582
           Class: rviz/PoseArray
           Color: 0; 0; 255
           Enabled: true
-          Head Length: 0.0700000003
-          Head Radius: 0.0299999993
+          Head Length: 0.07000000029802322
+          Head Radius: 0.029999999329447746
           Name: Blocks Poses
-          Shaft Length: 0.230000004
-          Shaft Radius: 0.00999999978
+          Shaft Length: 0.23000000417232513
+          Shaft Radius: 0.009999999776482582
           Shape: Arrow (Flat)
           Topic: /turtlebot_blocks
           Unreliable: false
           Value: true
         - Alpha: 1
-          Arrow Length: 0.300000012
-          Axes Length: 0.300000012
-          Axes Radius: 0.00999999978
+          Arrow Length: 0.30000001192092896
+          Axes Length: 0.30000001192092896
+          Axes Radius: 0.009999999776482582
           Class: rviz/PoseArray
           Color: 255; 25; 0
           Enabled: true
-          Head Length: 0.0700000003
-          Head Radius: 0.0299999993
+          Head Length: 0.07000000029802322
+          Head Radius: 0.029999999329447746
           Name: Pick & Place Poses
-          Shaft Length: 0.230000004
-          Shaft Radius: 0.00999999978
+          Shaft Length: 0.23000000417232513
+          Shaft Radius: 0.009999999776482582
           Shape: Arrow (Flat)
           Topic: /pick_and_place
           Unreliable: false
@@ -1671,7 +1125,7 @@ Visualization Manager:
           Queue Size: 10
           Selectable: true
           Size (Pixels): 3
-          Size (m): 0.00999999978
+          Size (m): 0.009999999776482582
           Style: Flat Squares
           Topic: /block_detection_action_server/block_output
           Unreliable: false
@@ -1688,25 +1142,26 @@ Visualization Manager:
           Update Topic: /move_objects/update
           Value: true
         - Alpha: 1
-          Axes Length: 0.100000001
-          Axes Radius: 0.00800000038
+          Axes Length: 0.10000000149011612
+          Axes Radius: 0.00800000037997961
           Class: rviz/Pose
           Color: 255; 25; 0
           Enabled: true
-          Head Length: 0.300000012
-          Head Radius: 0.100000001
+          Head Length: 0.30000001192092896
+          Head Radius: 0.10000000149011612
           Name: Pick/Place Pose
           Shaft Length: 1
-          Shaft Radius: 0.0500000007
+          Shaft Radius: 0.05000000074505806
           Shape: Axes
           Topic: /target_pose
           Unreliable: false
           Value: true
-      Enabled: true
+      Enabled: false
       Name: Manipulation
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
+    Default Light: true
     Fixed Frame: map
     Frame Rate: 10
   Name: root
@@ -1718,47 +1173,51 @@ Visualization Manager:
     - Class: rviz/SetGoal
       Topic: /move_base_simple/goal
     - Class: rviz/SetInitialPose
+      Theta std deviation: 0.2617993950843811
       Topic: /initialpose
+      X std deviation: 0.5
+      Y std deviation: 0.5
   Value: true
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 3.97665071
+      Distance: 4.90317964553833
       Enable Stereo Rendering:
-        Stereo Eye Separation: 0.0599999987
+        Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.323954999
-        Y: -0.126170993
-        Z: 0.0101969996
+        X: 0.6710507273674011
+        Y: -0.9966614842414856
+        Z: 0.010196522809565067
       Focal Shape Fixed Size: true
-      Focal Shape Size: 0.0500000007
+      Focal Shape Size: 0.05000000074505806
+      Invert Z Axis: false
       Name: Current View
-      Near Clip Distance: 0.00999999978
-      Pitch: 0.769797087
+      Near Clip Distance: 0.009999999776482582
+      Pitch: 1.099797010421753
       Target Frame: <Fixed Frame>
       Value: XYOrbit (rviz)
-      Yaw: 5.01814032
+      Yaw: 4.808140277862549
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 1056
+  Height: 1025
   Help:
     collapsed: false
   Hide Left Dock: false
   Hide Right Dock: false
   MotionPlanning:
     collapsed: false
-  MotionPlanning - Slider:
+  MotionPlanning - Trajectory Slider:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000100000000000002b8000003dafc0200000009fb000000100044006900730070006c0061007900730100000028000001b9000000dd00fffffffb0000000800480065006c00700000000342000000bb0000007600fffffffb0000000a005600690065007700730000000178000000b0000000b000fffffffb0000000c00430061006d00650072006100000002ff000001610000000000000000fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e006701000001f40000020e0000000000000000fb0000000a0049006d006100670065000000030a000000b70000000000000000fb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000002f1000000ab0000006400fffffffb0000002e004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d00200053006c00690064006500720000000000ffffffff0000004a00fffffffb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e006701000001e70000021b000001cc00ffffff00000481000003da00000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000100000000000002ed000003a3fc020000000afb000000100044006900730070006c006100790073010000003f000003a3000000cc00fffffffb0000000800480065006c00700000000342000000bb0000006f00fffffffb0000000a005600690065007700730000000178000000b0000000a900fffffffb0000000c00430061006d00650072006100000002ff000001610000000000000000fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e006701000001f40000020e0000000000000000fb0000000a0049006d006100670065000000030a000000b70000000000000000fb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000002f1000000ab0000005d00fffffffb0000002e004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d00200053006c00690064006500720000000000ffffffff0000000000000000fb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e006700000001e5000001fd000001b400fffffffb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff00000017000000170000044a000003a300000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Tool Properties:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1855
-  X: 65
-  Y: 24
+  Width: 1853
+  X: 67
+  Y: 27
