@@ -18,18 +18,7 @@
     <arg name="3d_sensor" value="kinect"/>
     <arg name="battery"   value="/sys/class/power_supply/BAT1"/>
   </include>
-  <include file="$(find thorp_bringup)/launch/includes/kinect.launch.xml">
-    <arg name="camera"                          value="kinect"/>
-    <!-- We only need RGB images and pseudo laser scan -->
-    <arg name="depth_registration"              value="false"/>
-    <arg name="rgb_processing"                  value="true" />
-    <arg name="ir_processing"                   value="false"/>
-    <arg name="depth_processing"                value="false"/>
-    <arg name="depth_registered_processing"     value="false"/>
-    <arg name="disparity_processing"            value="false"/>
-    <arg name="disparity_registered_processing" value="false"/>
-    <arg name="scan_processing"                 value="true" />
-  </include>
+  <include file="$(find thorp_bringup)/launch/includes/kinect.launch.xml"/>
 
   <!-- Overwrite default Turtlebot 2 description with Thorp's one -->
   <param name="robot_description" command="$(find xacro)/xacro '$(find thorp_description)/urdf/thorp.urdf.xacro' simulation:=false"/>
