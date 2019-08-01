@@ -23,6 +23,7 @@
         <link name="gripper_active_finger_link" />
         <link name="gripper_static_link" />
         <link name="gripper_static_finger_link" />
+        <joint name="gripper_static_joint" />
         <joint name="gripper_joint" />
     </group>
     <!--GROUP STATES: Purpose: Define a named state for a particular group, in terms of joint values. This is useful to define states like 'folded arms'-->
@@ -46,6 +47,7 @@
     <virtual_joint name="base_map" type="planar" parent_frame="map" child_link="base_footprint" />
     <!--PASSIVE JOINT: Purpose: this element is used to mark joints that are not actuated-->
     <passive_joint name="gripper_link_joint" />
+    <passive_joint name="gripper_static_joint" />
     <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
 
     <!--Manually added to prevent collisions produced by arm configurations belong the limits -->
