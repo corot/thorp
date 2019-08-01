@@ -19,6 +19,8 @@
 
   <run_depend>urdf</run_depend>
   <run_depend>xacro</run_depend>
+  <run_depend>gazebo_plugins</run_depend>
+  <run_depend>gazebo_grasp_plugin</run_depend>
   <run_depend>kobuki_description</run_depend>
   <run_depend>turtlebot_description</run_depend>
   <run_depend>turtlebot_arm_description</run_depend>
