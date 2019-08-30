@@ -43,7 +43,7 @@ public:
       return;
     }
 
-    if (msg.tables.size() == 0)
+    if (msg.tables.empty())
     {
       ROS_WARN("[object detection] Table array message is empty");
       return;
@@ -54,7 +54,8 @@ public:
     // table... very risky, to say the least. TODO: assure we always accumulate data over the same table
     object_recognition_msgs::Table table = msg.tables[0];
     geometry_msgs::Pose table_pose = table.pose;
-    // Tables often have orientations with all-nan values, but assertQuaternionValid lets them go!
+    // Tables often have orientations with all-nan values
+    // WARN: don't use tf::assertQuaternionValid, as it requires that magnitude = 1; not the case most of the times
     if (std::isnan(table.pose.orientation.x) ||
         std::isnan(table.pose.orientation.y) ||
         std::isnan(table.pose.orientation.z) ||
@@ -97,30 +98,36 @@ public:
     table_co.operation = moveit_msgs::CollisionObject::ADD;
 
     // We calculate table size, centroid and orientation as the median of the accumulated convex hulls
-    std::vector<double> table_center_x;
-    std::vector<double> table_center_y;
+    std::vector<double> table_position_x;
+    std::vector<double> table_position_y;
+    std::vector<double> table_position_z;
+    std::vector<double> table_rotation_r;
+    std::vector<double> table_rotation_p;
+    std::vector<double> table_rotation_y;
+    std::vector<double> table_centroid_x;
+    std::vector<double> table_centroid_y;
     std::vector<double> table_size_x;
     std::vector<double> table_size_y;
-    std::vector<double> table_yaw;
 
     // Calculate table's pose as the centroid of all accumulated poses; as yaw
     // we use the one estimated for the convex hull, ignoring the pose's yaw
-    double roll_acc = 0.0, pitch_acc = 0.0;//, yaw_acc = 0.0;
+    // TODO how to consider the -pi/+pi continuity on median filtering?
     table_co.primitive_poses.resize(1);
     for (const TableDescriptor& table: table_obs_)
     {
-      table_co.primitive_poses[0].position.x += table.pose.position.x;
-      table_co.primitive_poses[0].position.y += table.pose.position.y;
-      table_co.primitive_poses[0].position.z += table.pose.position.z;
-      roll_acc                               += mcl::roll(table.pose);
-      pitch_acc                              += mcl::pitch (table.pose);
+      // Copy table descriptor parameters in vectors for easily calculate median values
+      table_position_x.push_back(table.pose.position.x);
+      table_position_y.push_back(table.pose.position.y);
+      table_position_z.push_back(table.pose.position.z);
 
-      // Reuse the table descriptors to store the other parameters in vectors for easily calculate median values
-      table_center_x.push_back(table.center_x);
-      table_center_y.push_back(table.center_y);
+      table_rotation_r.push_back(mcl::roll(table.pose));
+      table_rotation_p.push_back(mcl::pitch(table.pose));
+      table_rotation_y.push_back(table.yaw);
+
+      table_centroid_x.push_back(table.center_x);
+      table_centroid_y.push_back(table.center_y);
       table_size_x.push_back(table.size_x);
       table_size_y.push_back(table.size_y);
-      table_yaw.push_back(table.yaw);
     }
 
     table_co.primitives.resize(1);
@@ -129,26 +136,31 @@ public:
     table_co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_X] = mcl::median(table_size_x);
     table_co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Y] = mcl::median(table_size_y);
     table_co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Z] = 0.01;  // arbitrarily set to 1 cm
-    table_co.primitive_poses.resize(1);
 
-    table_co.primitive_poses[0].position.x = table_co.primitive_poses[0].position.x / (double)table_obs_.size();
-    table_co.primitive_poses[0].position.y = table_co.primitive_poses[0].position.y / (double)table_obs_.size();
-    table_co.primitive_poses[0].position.z = table_co.primitive_poses[0].position.z / (double)table_obs_.size();
+    table_co.primitive_poses.resize(1);
+    table_co.primitive_poses[0].position.x = mcl::median(table_position_x);
+    table_co.primitive_poses[0].position.y = mcl::median(table_position_y);
+    table_co.primitive_poses[0].position.z = mcl::median(table_position_z);
     table_co.primitive_poses[0].orientation =
-        tf::createQuaternionMsgFromRollPitchYaw(roll_acc/(double)table_obs_.size(),
-                                                pitch_acc/(double)table_obs_.size(),
-                                                mcl::median(table_yaw));
+        tf::createQuaternionMsgFromRollPitchYaw(mcl::median(table_rotation_r),
+                                                mcl::median(table_rotation_p),
+                                                mcl::median(table_rotation_y));
     // Displace the table center according to the centroid of its convex hull
-    table_co.primitive_poses[0].position.x += mcl::median(table_center_x);
-    table_co.primitive_poses[0].position.y += mcl::median(table_center_y);
+    table_co.primitive_poses[0].position.x += mcl::median(table_centroid_x);
+    table_co.primitive_poses[0].position.y += mcl::median(table_centroid_y);
     table_co.primitive_poses[0].position.z -= table_co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Z]/2.0;
 
-    ROS_DEBUG("[object detection] Table estimated at %s, size %.2fx%.2fm, based on %lu observations",
-              mcl::point2cstr3D(table_co.primitive_poses[0].position),
-              table_co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_X],
-              table_co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Y], table_obs_.size());
+    ROS_INFO("[object detection] Table estimated at %s, size %.2fx%.2fm, based on %lu observations",
+             mcl::pose2cstr3D(table_co.primitive_poses[0]),
+             table_co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_X],
+             table_co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Y], table_obs_.size());
 
     return true;
+  }
+
+  size_t observations()
+  {
+    return table_obs_.size();
   }
 
   void clear()
@@ -225,14 +237,12 @@ private:
         table.size_x = max0 - min0;
         table.size_y = max1 - min1;
         table.yaw = std::atan2(U1.y(), U1.x());
-        if (table.yaw > 0.0)
-          table.yaw -= M_PI;
         min_area = area;
       }
     }
 
-    ROS_DEBUG("Table parameters: pose [%f, %f, %f], size [%f, %f]",
-              table.center_x, table.center_y, table.yaw, table.size_x, table.size_y);
+    ROS_DEBUG("Table parameters: centroid [%f, %f], size [%f, %f], yaw [%f]",
+              table.center_x, table.center_y, table.size_x, table.size_y, table.yaw);
 
     return table;
   }
