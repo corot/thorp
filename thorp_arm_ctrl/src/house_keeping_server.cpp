@@ -151,6 +151,24 @@ bool HouseKeepingServer::clearGripperCB(std_srvs::EmptyRequest &request, std_srv
 
 bool HouseKeepingServer::gripperBusyCB(std_srvs::TriggerRequest &request, std_srvs::TriggerResponse &response)
 {
+  std::map<std::string, moveit_msgs::AttachedCollisionObject> attached_objects =
+    planning_scene_interface().getAttachedObjects();
+  for (const auto& ao: attached_objects)
+    ROS_ERROR_STREAM(" " << ao.first<< "     "<< ao.second.object.id<<  "    mio: " <<attached_object);
+
+  if (!attached_objects.empty())
+  {
+    ROS_ASSERT_MSG(attached_objects.size()==1, "More than one (%lu) attached objects???", attached_objects.size());
+    response.success = true;
+    response.message = attached_objects.begin()->first;
+  }
+  else
+    response.success = false;
+
+  return true;
+  // TODO:  this is much simpler and reliable... I keep by now, until I can do a "physical check", still interesting, but too hard
+
+
   // Check if we are holding an object by closing a bit the gripper and measuring if joint effort increases
   double opening_before = joint_state_watchdog_.gripperOpening();
   double effort_before = joint_state_watchdog_.gripperEffort();
