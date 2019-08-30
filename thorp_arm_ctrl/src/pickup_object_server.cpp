@@ -206,8 +206,8 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
 }
 
 
-int32_t PickupObjectServer::makeGrasps(const geometry_msgs::PoseStamped& target_pose,
-                                       const geometry_msgs::Vector3& target_size,
+int32_t PickupObjectServer::makeGrasps(const geometry_msgs::PoseStamped& obj_pose,
+                                       const geometry_msgs::Vector3& obj_size,
                                        const std::string& obj_name, const std::string& surface, float max_effort,
                                        std::vector<moveit_msgs::Grasp>& grasps)
 {
@@ -215,16 +215,16 @@ int32_t PickupObjectServer::makeGrasps(const geometry_msgs::PoseStamped& target_
 
   for (int attempt = 0; attempt < PICK_ATTEMPTS; ++attempt)
   {
-    geometry_msgs::PoseStamped p = target_pose;
-    if (!validateTargetPose(p, true, true, true, attempt))
+    geometry_msgs::PoseStamped target_pose = obj_pose;
+    if (!validateTargetPose(target_pose, true, true, true, attempt))
     {
       return thorp_msgs::ThorpError::INVALID_TARGET_POSE;
     }
 
-    ROS_DEBUG("[pickup object] Pick attempt %d at pose [%s]...", attempt, mcl::pose2cstr3D(p));
+    ROS_DEBUG("[pickup object] Pick attempt %d at pose [%s]...", attempt, mcl::pose2cstr3D(target_pose));
 
     moveit_msgs::Grasp g;
-    g.grasp_pose = p;
+    g.grasp_pose = target_pose;
 
     g.pre_grasp_approach.direction.vector.x = 0.5;
     g.pre_grasp_approach.direction.header.frame_id = arm().getEndEffectorLink();
@@ -240,11 +240,12 @@ int32_t PickupObjectServer::makeGrasps(const geometry_msgs::PoseStamped& target_
     g.pre_grasp_posture.points.resize(1);
     g.pre_grasp_posture.points[0].positions.push_back(gripper_open);
 
-    // As we grasp the object "blindly", just in the center, we use the maximum possible value as the opened
-    // gripper position and the smallest dimension minus a 20% "tightening" as the closed position
+    // As we grasp the object "blindly", just in the center, we use the maximum possible value as the opened gripper
+    // position and the dimension more aligned with the arm yaw, minus a "tightening" factor, as the closed position
     g.grasp_posture.joint_names.push_back("gripper_joint");
     g.grasp_posture.points.resize(1);
-    g.grasp_posture.points[0].positions.push_back(std::min(target_size.x, target_size.y) * 0.80);
+    g.grasp_posture.points[0].positions.push_back(std::min(obj_size.x, obj_size.y) * 0.80);  // TODO: still use the smallest dimension minus a 20% "tightening"
+    //g.grasp_posture.points[0].positions.push_back(gripperClosing(target_pose, obj_size));  // TODO: useless until my obj rec reports orientation!
     g.grasp_posture.points[0].effort.push_back(max_effort);
 
     g.allowed_touch_objects.push_back(obj_name);
@@ -256,6 +257,18 @@ int32_t PickupObjectServer::makeGrasps(const geometry_msgs::PoseStamped& target_
   }
 
   return grasps.size();
+}
+
+double PickupObjectServer::gripperClosing(const geometry_msgs::PoseStamped& target_pose,
+                                          const geometry_msgs::Vector3& target_size)
+{
+  double h = mcl::heading(target_pose.pose);  // assuming is in arm reference frame
+  double y = mcl::yaw(target_pose.pose);
+  double s = std::abs(mcl::wrapAngle(y - h)) < M_PI/2.0 ? target_size.y : target_size.x;
+
+  ROS_WARN_STREAM(" GRIPPER CLOSING  "<< h << "  "<< y << "   " << (std::abs(mcl::wrapAngle(y - h)) < M_PI/2.0 ? " USE Y    " : "  USE X    ")
+  << target_size.x << "  "<< target_size.y  << "      "<< mcl::pose2str3D(target_pose) << "      "<< target_pose.header.frame_id);
+  return s * 0.80;
 }
 
 };

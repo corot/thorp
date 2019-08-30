@@ -41,9 +41,11 @@ public:
 private:
   int32_t pickup(const std::string& obj_name, const std::string& surface, float max_effort = 0.0);
 
-  int32_t makeGrasps(const geometry_msgs::PoseStamped& target_pose, const geometry_msgs::Vector3& target_size,
+  int32_t makeGrasps(const geometry_msgs::PoseStamped& obj_pose, const geometry_msgs::Vector3& obj_size,
                      const std::string& target_name, const std::string& surface, float max_effort,
                      std::vector<moveit_msgs::Grasp>& grasps);
+
+  double gripperClosing(const geometry_msgs::PoseStamped& target_pose, const geometry_msgs::Vector3& target_size);
 };
 
 };
