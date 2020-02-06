@@ -31,9 +31,9 @@
 
 
   <!-- Plain Turtlebot 2 -->
-  <kobuki/>
-  <stack_hexagons parent="base_link"/>
-  <kinect_camera parent="base_link" name="kinect"/>
+  <xacro:kobuki/>
+  <xacro:stack_hexagons parent="base_link"/>
+  <xacro:kinect_camera parent="base_link" name="kinect"/>
 
 
   <!-- Turtlebot arm, its controller board and its mounting on Thorp -->
@@ -60,10 +60,10 @@
   <xacro:property name="wrist_llimit" value="-1.745"/>     <!-- -100 deg -->
   <xacro:property name="wrist_ulimit" value=" 1.745"/>     <!-- +100 deg -->
 
-  <turtlebot_arm parent="plate_top_link" color="White" gripper_color="Black"
+  <xacro:turtlebot_arm parent="plate_top_link" color="White" gripper_color="Black"
                  pincher_gripper="false" turtlebot_gripper="true">
     <origin xyz="0.10914 0.0295 0.0284"/>
-  </turtlebot_arm>
+  </xacro:turtlebot_arm>
 
   <!-- Mount for arm and cannon, set on top of six small poles -->
   <joint name="arm_mount_joint" type="fixed">
@@ -97,12 +97,12 @@
     </collision>
   </link>
 
-  <stack_bottom_pole parent="arm_base_link" number="10" x_loc=" 0.0"   y_loc=" 0.0288" z_loc="-0.0112"/>
-  <stack_bottom_pole parent="arm_base_link" number="11" x_loc=" 0.014" y_loc="-0.0288" z_loc="-0.0112"/>
-  <stack_bottom_pole parent="arm_base_link" number="12" x_loc=" 0.0"   y_loc="-0.0864" z_loc="-0.0112"/>
-  <stack_bottom_pole parent="arm_base_link" number="13" x_loc="-0.038" y_loc=" 0.0288" z_loc="-0.0112"/>
-  <stack_bottom_pole parent="arm_base_link" number="14" x_loc="-0.038" y_loc="-0.0288" z_loc="-0.0112"/>
-  <stack_bottom_pole parent="arm_base_link" number="15" x_loc="-0.038" y_loc="-0.0864" z_loc="-0.0112"/>
+  <xacro:stack_bottom_pole parent="arm_base_link" number="10" x_loc=" 0.0"   y_loc=" 0.0288" z_loc="-0.0112"/>
+  <xacro:stack_bottom_pole parent="arm_base_link" number="11" x_loc=" 0.014" y_loc="-0.0288" z_loc="-0.0112"/>
+  <xacro:stack_bottom_pole parent="arm_base_link" number="12" x_loc=" 0.0"   y_loc="-0.0864" z_loc="-0.0112"/>
+  <xacro:stack_bottom_pole parent="arm_base_link" number="13" x_loc="-0.038" y_loc=" 0.0288" z_loc="-0.0112"/>
+  <xacro:stack_bottom_pole parent="arm_base_link" number="14" x_loc="-0.038" y_loc="-0.0288" z_loc="-0.0112"/>
+  <xacro:stack_bottom_pole parent="arm_base_link" number="15" x_loc="-0.038" y_loc="-0.0864" z_loc="-0.0112"/>
 
   <!-- Emulate the OpenCM9.04 controller as a box -->
   <joint name="opencm_joint" type="fixed">
@@ -147,8 +147,8 @@
   <!-- Auxiliary Senz3D camera plus mounting on Thorp -->
   
   <!-- Mounting poles: a pair of top poles -->
-  <stack_top_pole parent="plate_top_link" number="10" x_loc="-0.1124" y_loc=" 0.098" z_loc="${0.006/2 + 0.2032/2}"/>
-  <stack_top_pole parent="plate_top_link" number="20" x_loc="-0.1124" y_loc="-0.098" z_loc="${0.006/2 + 0.2032/2}"/>
+  <xacro:stack_top_pole parent="plate_top_link" number="10" x_loc="-0.1124" y_loc=" 0.098" z_loc="${0.006/2 + 0.2032/2}"/>
+  <xacro:stack_top_pole parent="plate_top_link" number="20" x_loc="-0.1124" y_loc="-0.098" z_loc="${0.006/2 + 0.2032/2}"/>
   
   <!-- Mounting plate -->
   <joint name="senz3d_mount_joint" type="fixed">
@@ -210,9 +210,9 @@
     <link name="senz3d_gazebo_optical_frame"/>
   </xacro:if>
 
-  <sensor_senz3d parent="senz3d_calib_link" name="senz3d">
+  <xacro:sensor_senz3d parent="senz3d_calib_link" name="senz3d">
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
-  </sensor_senz3d>
+  </xacro:sensor_senz3d>
 
 
   <!-- Manipulation Asus Xtion Pro camera mounted on top of the Senz3D's mounting plate -->
@@ -220,10 +220,10 @@
   <!-- Mounting poles: two columns made with one top and one middle poles stacked -->
   <!-- The Z loc of the lower top poles is : 1/2*plate height + 3/2*top pole height -->
   <!-- The Z loc of the upper middle poles is : 1/2*plate height + top pole height + 1/2*middle pole height (with screw) -->
-  <stack_top_pole parent="senz3d_mount_link" number="12" x_loc="0.0" y_loc=" 0.098" z_loc="${0.005/2 + 0.2032/2}"/>
-  <stack_top_pole parent="senz3d_mount_link" number="22" x_loc="0.0" y_loc="-0.098" z_loc="${0.005/2 + 0.2032/2}"/>
-  <stack_middle_pole parent="senz3d_mount_link" number="11" x_loc="0.0" y_loc=" 0.098" z_loc="${0.005/2 + 0.2032 + 0.0608/2}"/>
-  <stack_middle_pole parent="senz3d_mount_link" number="21" x_loc="0.0" y_loc="-0.098" z_loc="${0.005/2 + 0.2032 + 0.0608/2}"/>
+  <xacro:stack_top_pole parent="senz3d_mount_link" number="12" x_loc="0.0" y_loc=" 0.098" z_loc="${0.005/2 + 0.2032/2}"/>
+  <xacro:stack_top_pole parent="senz3d_mount_link" number="22" x_loc="0.0" y_loc="-0.098" z_loc="${0.005/2 + 0.2032/2}"/>
+  <xacro:stack_middle_pole parent="senz3d_mount_link" number="11" x_loc="0.0" y_loc=" 0.098" z_loc="${0.005/2 + 0.2032 + 0.0608/2}"/>
+  <xacro:stack_middle_pole parent="senz3d_mount_link" number="21" x_loc="0.0" y_loc="-0.098" z_loc="${0.005/2 + 0.2032 + 0.0608/2}"/>
 
   <!-- Mounting plate. The Z loc of the upper middle poles is : -->
   <!--   1/2*Senz3D mounting plate height + middle pole height (without screw) + top pole height + mounting's poles housing -->
@@ -258,7 +258,7 @@
   </link>
 
   <!-- The camera itself -->
-  <xtion_camera parent="xtion_mount_link" name="xtion">
+  <xacro:xtion_camera parent="xtion_mount_link" name="xtion">
     <!-- Ideal extrinsic parameters obtained from robot model -->
     <xacro:if value="$(arg simulation)">
       <origin xyz="0.022 0.003 0.002" rpy="0.0 0.694626 0.0"/>
@@ -271,7 +271,7 @@
       <!-- Visual origin corrections: undo the rotations for better aesthetics  -->
       <origin xyz="0.0005 0.0 0.0365" rpy="0.0 0.0 0.0"/>
     </xacro:unless>
-  </xtion_camera>
+  </xacro:xtion_camera>
         
   <!-- Seems like Gazebo kinect plugin needs to use a centered frame instead of separated rgb and depth.
        No idea if this makes any sense, but it works! I also move the optical tf a bit forward to make
@@ -347,17 +347,17 @@
     </link>
   </xacro:macro>
 
-  <LV_MaxSonar_EZ2_sensor name="m90" parent="sonars_mount_link" x_loc="0.0"    y_loc="-0.1380" yaw="-1.57080"/>
-  <LV_MaxSonar_EZ2_sensor name="m72" parent="sonars_mount_link" x_loc="0.0426" y_loc="-0.1312" yaw="-1.25664"/>
-  <LV_MaxSonar_EZ2_sensor name="m54" parent="sonars_mount_link" x_loc="0.0811" y_loc="-0.1116" yaw="-0.94248"/>
-  <LV_MaxSonar_EZ2_sensor name="m36" parent="sonars_mount_link" x_loc="0.1116" y_loc="-0.0811" yaw="-0.62832"/>
-  <LV_MaxSonar_EZ2_sensor name="m18" parent="sonars_mount_link" x_loc="0.1312" y_loc="-0.0426" yaw="-0.31416"/>
-  <LV_MaxSonar_EZ2_sensor name="0"   parent="sonars_mount_link" x_loc="0.138"  y_loc=" 0.0"    yaw=" 0.0"/>
-  <LV_MaxSonar_EZ2_sensor name="p18" parent="sonars_mount_link" x_loc="0.1312" y_loc="+0.0426" yaw="+0.31416"/>
-  <LV_MaxSonar_EZ2_sensor name="p36" parent="sonars_mount_link" x_loc="0.1116" y_loc="+0.0811" yaw="+0.62832"/>
-  <LV_MaxSonar_EZ2_sensor name="p54" parent="sonars_mount_link" x_loc="0.0811" y_loc="+0.1116" yaw="+0.94248"/>
-  <LV_MaxSonar_EZ2_sensor name="p72" parent="sonars_mount_link" x_loc="0.0426" y_loc="+0.1312" yaw="+1.25664"/>
-  <LV_MaxSonar_EZ2_sensor name="p90" parent="sonars_mount_link" x_loc="0.0"    y_loc="+0.1380" yaw="+1.57080"/>
+  <xacro:LV_MaxSonar_EZ2_sensor name="m90" parent="sonars_mount_link" x_loc="0.0"    y_loc="-0.1380" yaw="-1.57080"/>
+  <xacro:LV_MaxSonar_EZ2_sensor name="m72" parent="sonars_mount_link" x_loc="0.0426" y_loc="-0.1312" yaw="-1.25664"/>
+  <xacro:LV_MaxSonar_EZ2_sensor name="m54" parent="sonars_mount_link" x_loc="0.0811" y_loc="-0.1116" yaw="-0.94248"/>
+  <xacro:LV_MaxSonar_EZ2_sensor name="m36" parent="sonars_mount_link" x_loc="0.1116" y_loc="-0.0811" yaw="-0.62832"/>
+  <xacro:LV_MaxSonar_EZ2_sensor name="m18" parent="sonars_mount_link" x_loc="0.1312" y_loc="-0.0426" yaw="-0.31416"/>
+  <xacro:LV_MaxSonar_EZ2_sensor name="0"   parent="sonars_mount_link" x_loc="0.138"  y_loc=" 0.0"    yaw=" 0.0"/>
+  <xacro:LV_MaxSonar_EZ2_sensor name="p18" parent="sonars_mount_link" x_loc="0.1312" y_loc="+0.0426" yaw="+0.31416"/>
+  <xacro:LV_MaxSonar_EZ2_sensor name="p36" parent="sonars_mount_link" x_loc="0.1116" y_loc="+0.0811" yaw="+0.62832"/>
+  <xacro:LV_MaxSonar_EZ2_sensor name="p54" parent="sonars_mount_link" x_loc="0.0811" y_loc="+0.1116" yaw="+0.94248"/>
+  <xacro:LV_MaxSonar_EZ2_sensor name="p72" parent="sonars_mount_link" x_loc="0.0426" y_loc="+0.1312" yaw="+1.25664"/>
+  <xacro:LV_MaxSonar_EZ2_sensor name="p90" parent="sonars_mount_link" x_loc="0.0"    y_loc="+0.1380" yaw="+1.57080"/>
 
   <!-- IR sensor links, pointing at -155, pi, pi and 155 degrees -->
   <joint name="ir_l155_joint" type="fixed">

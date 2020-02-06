@@ -24,10 +24,10 @@
     <xacro:property name="wrist_llimit" value="-1.745"/>
     <xacro:property name="wrist_ulimit" value=" 1.745"/>
 
-    <turtlebot_arm parent="base_link" color="white" gripper_color="Green"
+    <xacro:turtlebot_arm parent="base_link" color="white" gripper_color="Green"
                    pincher_gripper="false" turtlebot_gripper="true">
       <!-- Place the "floating" arm at the location it should be if mounted on a turtlebot,
            as pick and place and other demos assume this location -->
       <origin xyz="0.1 0.03 0.435"/>
-    </turtlebot_arm>
+    </xacro:turtlebot_arm>
 </robot>

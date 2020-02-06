@@ -120,17 +120,17 @@
     </gazebo>
   </xacro:macro>
 
-  <LV_MaxSonar_EZ2_sim name="m90"/>
-  <LV_MaxSonar_EZ2_sim name="m72"/>
-  <LV_MaxSonar_EZ2_sim name="m54"/>
-  <LV_MaxSonar_EZ2_sim name="m36"/>
-  <LV_MaxSonar_EZ2_sim name="m18"/>
-  <LV_MaxSonar_EZ2_sim name="0"/>
-  <LV_MaxSonar_EZ2_sim name="p18"/>
-  <LV_MaxSonar_EZ2_sim name="p36"/>
-  <LV_MaxSonar_EZ2_sim name="p54"/>
-  <LV_MaxSonar_EZ2_sim name="p72"/>
-  <LV_MaxSonar_EZ2_sim name="p90"/>
+  <xacro:LV_MaxSonar_EZ2_sim name="m90"/>
+  <xacro:LV_MaxSonar_EZ2_sim name="m72"/>
+  <xacro:LV_MaxSonar_EZ2_sim name="m54"/>
+  <xacro:LV_MaxSonar_EZ2_sim name="m36"/>
+  <xacro:LV_MaxSonar_EZ2_sim name="m18"/>
+  <xacro:LV_MaxSonar_EZ2_sim name="0"/>
+  <xacro:LV_MaxSonar_EZ2_sim name="p18"/>
+  <xacro:LV_MaxSonar_EZ2_sim name="p36"/>
+  <xacro:LV_MaxSonar_EZ2_sim name="p54"/>
+  <xacro:LV_MaxSonar_EZ2_sim name="p72"/>
+  <xacro:LV_MaxSonar_EZ2_sim name="p90"/>
   
   <!-- Sharp GP2Y0A21 IR sensors -->
   <xacro:macro name="Sharp_GP2Y0A21_IR_sim" params="name">  
@@ -166,11 +166,11 @@
     </gazebo>
   </xacro:macro>
 
-  <Sharp_GP2Y0A21_IR_sim name="arm"/>
-  <Sharp_GP2Y0A21_IR_sim name="l155"/>
-  <Sharp_GP2Y0A21_IR_sim name="l180"/>
-  <Sharp_GP2Y0A21_IR_sim name="r180"/>
-  <Sharp_GP2Y0A21_IR_sim name="r155"/>
+  <xacro:Sharp_GP2Y0A21_IR_sim name="arm"/>
+  <xacro:Sharp_GP2Y0A21_IR_sim name="l155"/>
+  <xacro:Sharp_GP2Y0A21_IR_sim name="l180"/>
+  <xacro:Sharp_GP2Y0A21_IR_sim name="r180"/>
+  <xacro:Sharp_GP2Y0A21_IR_sim name="r155"/>
 
   <!-- Gazebo configuration for faking grasping -->
   <gazebo>
@@ -211,13 +211,13 @@
     </transmission>
   </xacro:macro>
 
-  <servo_transmission name="arm_shoulder_pan"/>
-  <servo_transmission name="arm_shoulder_lift"/>
-  <servo_transmission name="arm_elbow_flex"/>
-  <servo_transmission name="arm_wrist_flex"/>
-  <servo_transmission name="gripper"/>
+  <xacro:servo_transmission name="arm_shoulder_pan"/>
+  <xacro:servo_transmission name="arm_shoulder_lift"/>
+  <xacro:servo_transmission name="arm_elbow_flex"/>
+  <xacro:servo_transmission name="arm_wrist_flex"/>
+  <xacro:servo_transmission name="gripper"/>
 
-  <servo_transmission name="cannon"/>
+  <xacro:servo_transmission name="cannon"/>
 
   <!-- Gazebo configuration for other structural parts -->
   <xacro:macro name="structural_part" params="name color">
@@ -228,18 +228,18 @@
     </gazebo>
   </xacro:macro>
 
-  <structural_part name="sonars_mount" color="Black"/>
-  <structural_part name="senz3d_mount" color="Black"/>
-  <structural_part name="xtion_mount"  color="Black"/>
-  <structural_part name="arm_mount"    color="Black"/>
-  <structural_part name="opencm"       color="Black"/>
-  <structural_part name="cannon"       color="Black"/>
-  <structural_part name="cannon_servo" color="Black"/>
-  <structural_part name="cannon_shaft" color="Black"/>
-  <structural_part name="cannon_tube1" color="Black"/>
-  <structural_part name="cannon_tube2" color="Black"/>
-  <structural_part name="cannon_tube3" color="Black"/>
-  <structural_part name="cannon_tube4" color="Black"/>
-  <structural_part name="cannon_tube5" color="Black"/>
-  <structural_part name="cannon_tube6" color="Black"/>
+  <xacro:structural_part name="sonars_mount" color="Black"/>
+  <xacro:structural_part name="senz3d_mount" color="Black"/>
+  <xacro:structural_part name="xtion_mount"  color="Black"/>
+  <xacro:structural_part name="arm_mount"    color="Black"/>
+  <xacro:structural_part name="opencm"       color="Black"/>
+  <xacro:structural_part name="cannon"       color="Black"/>
+  <xacro:structural_part name="cannon_servo" color="Black"/>
+  <xacro:structural_part name="cannon_shaft" color="Black"/>
+  <xacro:structural_part name="cannon_tube1" color="Black"/>
+  <xacro:structural_part name="cannon_tube2" color="Black"/>
+  <xacro:structural_part name="cannon_tube3" color="Black"/>
+  <xacro:structural_part name="cannon_tube4" color="Black"/>
+  <xacro:structural_part name="cannon_tube5" color="Black"/>
+  <xacro:structural_part name="cannon_tube6" color="Black"/>
 </robot>
