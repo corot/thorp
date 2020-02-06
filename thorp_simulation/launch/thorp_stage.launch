@@ -9,13 +9,17 @@
  -->
 
 <launch>
-  <arg name="move_base_flex"  default="true"/>
+  <arg name="move_base_flex" default="true"/>
 
-  <!-- Name of the map to use (without path nor extension) and initial position -->
-  <arg name="map_name"       default="maze"/>
-  <arg name="initial_pose_x" value="2.0"/>
-  <arg name="initial_pose_y" value="2.0"/>
-  <arg name="initial_pose_a" value="0.0"/>
+  <!-- To specify a simulated world other than the default 'maze', provide either word_name
+       (without path nor extension), or specific files (with full path) for both map and world.
+       Optionally, provide also an initial position -->
+  <arg name="world_name"     default="maze"/>
+  <arg name="map_file"       default="$(find thorp_bringup)/resources/maps/$(arg world_name).yaml"/>
+  <arg name="world_file"     default="$(find thorp_simulation)/worlds/stage/$(arg world_name).world"/>
+  <arg name="initial_pose_x" default="2.0"/>
+  <arg name="initial_pose_y" default="2.0"/>
+  <arg name="initial_pose_a" default="0.0"/>
 
   <param name="/use_sim_time" value="true"/>
 
@@ -34,7 +38,7 @@
         Args:
           -g : run in headless mode.
   --> 
-  <node pkg="stage_ros" type="stageros" name="stageros" args="$(find thorp_simulation)/worlds/stage/$(arg map_name).world">
+  <node pkg="stage_ros" type="stageros" name="stageros" args="$(arg world_file)">
     <param name="base_watchdog_timeout" value="0.5"/>
     <remap from="odom" to="odom"/>
     <remap from="base_pose_ground_truth" to="base_pose_ground_truth"/>
@@ -54,7 +58,7 @@
   <!--  ***************** Navigation ******************  -->
   <include file="$(find thorp_bringup)/launch/includes/navigation.launch.xml">
     <arg name="move_base_flex"  value="$(arg move_base_flex)"/>
-    <arg name="map_name"        value="$(arg map_name)"/>
+    <arg name="map_file"        value="$(arg map_file)"/>
     <arg name="initial_pose_x"  value="$(arg initial_pose_x)"/>
     <arg name="initial_pose_y"  value="$(arg initial_pose_y)"/>
     <arg name="initial_pose_a"  value="$(arg initial_pose_a)"/>
