@@ -15,7 +15,7 @@
        (without path nor extension), or specific files (with full path) for both map and world.
        Optionally, provide also an initial position -->
   <arg name="world_name"     default="maze"/>
-  <arg name="map_file"       default="$(find thorp_bringup)/resources/maps/$(arg world_name).yaml"/>
+  <arg name="map_file"       default="$(find thorp_simulation)/worlds/maps/$(arg world_name).yaml"/>
   <arg name="world_file"     default="$(find thorp_simulation)/worlds/stage/$(arg world_name).world"/>
   <arg name="initial_pose_x" default="2.0"/>
   <arg name="initial_pose_y" default="2.0"/>
