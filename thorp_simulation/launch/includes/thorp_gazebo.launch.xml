@@ -1,11 +1,18 @@
 <launch>
+  <arg name="initial_pose_x" default="0.0"/>
+  <arg name="initial_pose_y" default="0.0"/>
+  <arg name="initial_pose_a" default="0.0"/>
+
   <include file="$(find thorp_bringup)/launch/includes/state_publisher.launch.xml">
     <arg name="simulation" value="true"/>
   </include>
 
   <!-- Gazebo model spawner -->
   <node name="spawn_turtlebot_model" pkg="gazebo_ros" type="spawn_model" output="screen"
-        args="$(optenv ROBOT_INITIAL_POSE) -urdf -param robot_description -model thorp
+        args="-urdf -param robot_description -model thorp
+              -x $(arg initial_pose_x)
+              -y $(arg initial_pose_y)
+              -Y $(arg initial_pose_a)
               -J arm_shoulder_pan_joint 0.0
               -J arm_shoulder_lift_joint -1.9
               -J arm_elbow_flex_joint 2.2

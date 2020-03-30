@@ -31,7 +31,11 @@
   </include>
 
   <!--  *************** Simulated Robot ***************  -->
-  <include file="$(find thorp_simulation)/launch/includes/thorp_gazebo.launch.xml"/>
+  <include file="$(find thorp_simulation)/launch/includes/thorp_gazebo.launch.xml">
+    <arg name="initial_pose_x" value="$(arg initial_pose_x)"/>
+    <arg name="initial_pose_y" value="$(arg initial_pose_y)"/>
+    <arg name="initial_pose_a" value="$(arg initial_pose_a)"/>
+  </include>
 
   <!--  ******** Velocity commands multiplexer ********  -->
   <node pkg="nodelet" type="nodelet" name="mobile_base_nodelet_manager" args="manager"/>
