@@ -17,7 +17,7 @@ if (OBJ == "tower") {
     cube([0.025, 0.025, 0.05], true);
 }
 if (OBJ == "lipstick") {
-  translate([0, 0, 0.037]) 
+  translate([0, 0, 0.037])
     cylinder(0.074, 0.01, 0.01, true, $fn=16);
 }
 if (OBJ == "square") {
