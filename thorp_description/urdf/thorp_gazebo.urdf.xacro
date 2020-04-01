@@ -10,7 +10,7 @@
         <camera>
           <horizontal_fov>${60.0*M_PI/180.0}</horizontal_fov>
           <image>
-            <format>B8G8R8</format>
+            <format>R8G8B8</format>
             <width>640</width>
             <height>480</height>
           </image>
@@ -22,7 +22,7 @@
         <plugin name="kinect_camera_controller" filename="libgazebo_ros_openni_kinect.so">
           <cameraName>${name}</cameraName>
           <alwaysOn>true</alwaysOn>
-          <updateRate>10</updateRate>
+          <updateRate>1.0</updateRate>
           <imageTopicName>rgb/image_raw</imageTopicName>
           <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>
           <xacro:if value="${depth_registration}">  <!-- Normally for manipulation camera (Xtion) -->
@@ -131,7 +131,7 @@
   <xacro:LV_MaxSonar_EZ2_sim name="p54"/>
   <xacro:LV_MaxSonar_EZ2_sim name="p72"/>
   <xacro:LV_MaxSonar_EZ2_sim name="p90"/>
-  
+
   <!-- Sharp GP2Y0A21 IR sensors -->
   <xacro:macro name="Sharp_GP2Y0A21_IR_sim" params="name">  
     <gazebo reference="ir_${name}_link">
