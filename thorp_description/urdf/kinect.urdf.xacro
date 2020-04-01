@@ -66,6 +66,6 @@
 	<link name="${name}_depth_optical_frame"/>
 	
     <!-- RGBD sensor for simulation -->
-    <xacro:thorp_sim_3dsensor name="${name}" depth_registration="false"/>
+    <xacro:thorp_sim_3dsensor name="${name}" depth_registration="true"/>
   </xacro:macro>
 </robot>
