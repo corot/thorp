@@ -27,14 +27,14 @@
     <param name="scan_height" value="10"/>
     <param name="output_frame_id" value="kinect_depth_frame"/>
     <param name="range_min" value="0.45"/>
-    <remap from="image" to="/kinect/depth/image_raw"/>
+    <remap from="image" to="/kinect/depth_registered/image_raw"/>
     <remap from="scan" to="/scan"/>
   </node>
 
   <!-- Read the configuration and load controllers for the arm and gripper -->
   <rosparam file="$(find thorp_simulation)/param/arm_control.yaml" command="load"/>
   <node name="controller_spawner" pkg="controller_manager" type="spawner" output="screen"
-        args="--timeout 120 joint_state_controller gripper_joint arm_controller"/>
+        args="--timeout 30 joint_state_controller gripper_joint arm_controller"/>
 
   <!-- We provide GripperCommand action with arbotix controllers, as on real robot; but
        the simulation flag will ensure that we don't load any physical robot controller  -->
