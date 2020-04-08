@@ -7,7 +7,7 @@ Panels:
         - /TF1/Frames1
         - /TF1/Tree1
       Splitter Ratio: 0.4014599919319153
-    Tree Height: 783
+    Tree Height: 790
   - Class: rviz/Help
     Name: Help
   - Class: rviz/Views
@@ -652,16 +652,174 @@ Visualization Manager:
       Value: true
     - Class: rviz/Group
       Displays:
-        - Alpha: 0.5
-          Buffer Length: 1
-          Class: rviz/Range
-          Color: 255; 255; 255
-          Enabled: false
-          Name: Range
-          Queue Size: 100
-          Topic: /mobile_base/sensors/sonars/p72
-          Unreliable: false
-          Value: false
+        - Class: rviz/Group
+          Displays:
+            - Alpha: 0.15000000596046448
+              Buffer Length: 1
+              Class: rviz/Range
+              Color: 200; 255; 200
+              Enabled: true
+              Name: p90
+              Queue Size: 100
+              Topic: /mobile_base/sensors/sonars/p90
+              Unreliable: false
+              Value: true
+            - Alpha: 0.15000000596046448
+              Buffer Length: 1
+              Class: rviz/Range
+              Color: 200; 255; 200
+              Enabled: true
+              Name: p72
+              Queue Size: 100
+              Topic: /mobile_base/sensors/sonars/p72
+              Unreliable: false
+              Value: true
+            - Alpha: 0.15000000596046448
+              Buffer Length: 1
+              Class: rviz/Range
+              Color: 200; 255; 200
+              Enabled: true
+              Name: p54
+              Queue Size: 100
+              Topic: /mobile_base/sensors/sonars/p54
+              Unreliable: false
+              Value: true
+            - Alpha: 0.15000000596046448
+              Buffer Length: 1
+              Class: rviz/Range
+              Color: 200; 255; 200
+              Enabled: true
+              Name: p36
+              Queue Size: 100
+              Topic: /mobile_base/sensors/sonars/p36
+              Unreliable: false
+              Value: true
+            - Alpha: 0.15000000596046448
+              Buffer Length: 1
+              Class: rviz/Range
+              Color: 200; 255; 200
+              Enabled: true
+              Name: p18
+              Queue Size: 100
+              Topic: /mobile_base/sensors/sonars/p18
+              Unreliable: false
+              Value: true
+            - Alpha: 0.15000000596046448
+              Buffer Length: 1
+              Class: rviz/Range
+              Color: 200; 255; 200
+              Enabled: true
+              Name: 0
+              Queue Size: 100
+              Topic: /mobile_base/sensors/sonars/0
+              Unreliable: false
+              Value: true
+            - Alpha: 0.15000000596046448
+              Buffer Length: 1
+              Class: rviz/Range
+              Color: 200; 255; 200
+              Enabled: true
+              Name: m18
+              Queue Size: 100
+              Topic: /mobile_base/sensors/sonars/m18
+              Unreliable: false
+              Value: true
+            - Alpha: 0.15000000596046448
+              Buffer Length: 1
+              Class: rviz/Range
+              Color: 200; 255; 200
+              Enabled: true
+              Name: m36
+              Queue Size: 100
+              Topic: /mobile_base/sensors/sonars/m36
+              Unreliable: false
+              Value: true
+            - Alpha: 0.15000000596046448
+              Buffer Length: 1
+              Class: rviz/Range
+              Color: 200; 255; 200
+              Enabled: true
+              Name: m54
+              Queue Size: 100
+              Topic: /mobile_base/sensors/sonars/m54
+              Unreliable: false
+              Value: true
+            - Alpha: 0.15000000596046448
+              Buffer Length: 1
+              Class: rviz/Range
+              Color: 200; 255; 200
+              Enabled: true
+              Name: m72
+              Queue Size: 100
+              Topic: /mobile_base/sensors/sonars/m72
+              Unreliable: false
+              Value: true
+            - Alpha: 0.15000000596046448
+              Buffer Length: 1
+              Class: rviz/Range
+              Color: 200; 255; 200
+              Enabled: true
+              Name: m90
+              Queue Size: 100
+              Topic: /mobile_base/sensors/sonars/m90
+              Unreliable: false
+              Value: true
+          Enabled: true
+          Name: Sonars
+        - Class: rviz/Group
+          Displays:
+            - Alpha: 0.15000000596046448
+              Buffer Length: 1
+              Class: rviz/Range
+              Color: 255; 200; 200
+              Enabled: true
+              Name: arm
+              Queue Size: 100
+              Topic: /mobile_base/sensors/infrared/arm
+              Unreliable: false
+              Value: true
+            - Alpha: 0.15000000596046448
+              Buffer Length: 1
+              Class: rviz/Range
+              Color: 255; 200; 200
+              Enabled: true
+              Name: 155 left
+              Queue Size: 100
+              Topic: /mobile_base/sensors/infrared/l155
+              Unreliable: false
+              Value: true
+            - Alpha: 0.15000000596046448
+              Buffer Length: 1
+              Class: rviz/Range
+              Color: 255; 200; 200
+              Enabled: true
+              Name: 180 left
+              Queue Size: 100
+              Topic: /mobile_base/sensors/infrared/l180
+              Unreliable: false
+              Value: true
+            - Alpha: 0.15000000596046448
+              Buffer Length: 1
+              Class: rviz/Range
+              Color: 255; 200; 200
+              Enabled: true
+              Name: 180 right
+              Queue Size: 100
+              Topic: /mobile_base/sensors/infrared/r180
+              Unreliable: false
+              Value: true
+            - Alpha: 0.15000000596046448
+              Buffer Length: 1
+              Class: rviz/Range
+              Color: 255; 200; 200
+              Enabled: true
+              Name: 155 right
+              Queue Size: 100
+              Topic: /mobile_base/sensors/infrared/r155
+              Unreliable: false
+              Value: true
+          Enabled: true
+          Name: IR sensors
         - Alpha: 1
           Autocompute Intensity Bounds: true
           Autocompute Value Bounds:
@@ -1181,25 +1339,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 4.90317964553833
+      Distance: 7.2750420570373535
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.6710507273674011
-        Y: -0.9966614842414856
+        X: 5.021410942077637
+        Y: -0.10981720685958862
         Z: 0.010196522809565067
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.099797010421753
+      Pitch: 0.7247960567474365
       Target Frame: <Fixed Frame>
       Value: XYOrbit (rviz)
-      Yaw: 4.808140277862549
+      Yaw: 5.698142051696777
     Saved: ~
 Window Geometry:
   Displays:
@@ -1213,7 +1371,7 @@ Window Geometry:
     collapsed: false
   MotionPlanning - Trajectory Slider:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000100000000000002ed000003a3fc020000000afb000000100044006900730070006c006100790073010000003f000003a3000000cc00fffffffb0000000800480065006c00700000000342000000bb0000006f00fffffffb0000000a005600690065007700730000000178000000b0000000a900fffffffb0000000c00430061006d00650072006100000002ff000001610000000000000000fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e006701000001f40000020e0000000000000000fb0000000a0049006d006100670065000000030a000000b70000000000000000fb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000002f1000000ab0000005d00fffffffb0000002e004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d00200053006c00690064006500720000000000ffffffff0000000000000000fb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e006700000001e5000001fd000001b400fffffffb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff00000017000000170000044a000003a300000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000100000000000002ed000003a7fc020000000afb000000100044006900730070006c006100790073010000003d000003a7000000c900fffffffb0000000800480065006c00700000000342000000bb0000006e00fffffffb0000000a005600690065007700730000000178000000b0000000a400fffffffb0000000c00430061006d00650072006100000002ff000001610000000000000000fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e006701000001f40000020e0000000000000000fb0000000a0049006d006100670065000000030a000000b70000000000000000fb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000002f1000000ab0000005c00fffffffb0000002e004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d00200053006c00690064006500720000000000ffffffff0000000000000000fb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e006700000001e5000001fd0000019b00fffffffb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff00000016000000160000044a000003a700000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Tool Properties:
     collapsed: false
   Views:
