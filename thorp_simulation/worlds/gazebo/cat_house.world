@@ -11,6 +11,8 @@
     </include>
 
     <physics type="ode">
+      <!-- I have reduced max_step_size and real_time_update_rate by an order of magnitude to speed up simulation
+           The price is that physics get a bit crazy when the robot moves very fast, but simulations looks plausible -->
       <max_step_size>0.01</max_step_size>
       <real_time_factor>1</real_time_factor>
       <real_time_update_rate>100</real_time_update_rate>
@@ -39,7 +41,7 @@
     <!-- A cute cat -->
     <model name='cat_orange'>
       <link name='link'>
-        <pose frame=''>0 0 0.5 0 -0 0</pose>
+        <pose frame=''>0 0 0 0 0 0</pose>
         <collision name='collision'>
           <geometry>
             <mesh>
@@ -79,7 +81,7 @@
             <iyz>0</iyz>
             <izz>1</izz>
           </inertia>
-          <mass>1</mass>
+          <mass>4</mass>
         </inertial>
         <enable_wind>0</enable_wind>
         <kinematic>0</kinematic>
@@ -88,7 +90,6 @@
     </model>
     <model name='cat_black'>
       <link name='link'>
-        <pose frame=''>0 0 0.5 0 -0 0</pose>
         <collision name='collision'>
           <geometry>
             <mesh>
@@ -128,18 +129,18 @@
             <iyz>0</iyz>
             <izz>1</izz>
           </inertia>
-          <mass>1</mass>
+          <mass>4</mass>
         </inertial>
         <enable_wind>0</enable_wind>
         <kinematic>0</kinematic>
       </link>
-      <pose frame=''>1.0 -3.0 0 0 -0 0</pose>
+      <pose frame=''>1.0 -3.0 0 0 0 0</pose>
     </model>
 
     <scene>
       <ambient>0.4 0.4 0.4 1</ambient>
       <background>0.7 0.7 0.7 1</background>
-      <shadows>true</shadows>
+      <shadows>false</shadows>
     </scene>
 
     <gui fullscreen='0'>
