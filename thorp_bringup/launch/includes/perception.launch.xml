@@ -3,7 +3,8 @@
  -->
 
 <launch>
-  <arg name="external_camera" default="false"/>
+  <arg name="pipeline"/>  <!-- ORK / COB / RAIL -->
+  <arg name="target_objects" default="[]"/>
 
   <!--  ************ Thorp perception nodes ***********  -->
 
@@ -18,18 +19,51 @@
   </node>
 
   <!--  **************** ORK pipeline *****************  -->
+  <group if="$(eval pipeline == 'ORK')">
+    <arg name="external_camera" default="false"/>
 
-  <include if="$(arg external_camera)" file="$(find thorp_obj_rec)/launch/obj_rec.launch.xml" ns="tabletop">
-    <arg name="as_server"    value="true"/>
-    <arg name="config_file"  value="$(find thorp_obj_rec)/config/ork/external.tabletop.detection.ros.ork"/>
-    <arg name="robot_frame"  value="base_footprint"/>
-    <arg name="sensor_frame" value="external_camera_depth_optical_frame"/>
-  </include>
+    <include if="$(arg external_camera)" file="$(find thorp_obj_rec)/launch/obj_rec.launch.xml" ns="tabletop">
+      <arg name="as_server"    value="true"/>
+      <arg name="config_file"  value="$(find thorp_obj_rec)/config/ork/external.tabletop.detection.ros.ork"/>
+      <arg name="robot_frame"  value="base_footprint"/>
+      <arg name="sensor_frame" value="external_camera_depth_optical_frame"/>
+    </include>
 
-  <include unless="$(arg external_camera)" file="$(find thorp_obj_rec)/launch/obj_rec.launch.xml" ns="tabletop">
-    <arg name="as_server"    value="true"/>
-    <arg name="config_file"  value="$(find thorp_obj_rec)/config/ork/tabletop.detection.ros.ork"/>
-    <arg name="robot_frame"  value="base_footprint"/>
-    <arg name="sensor_frame" value="xtion_depth_optical_frame"/>
-  </include>
+    <include unless="$(arg external_camera)" file="$(find thorp_obj_rec)/launch/obj_rec.launch.xml" ns="tabletop">
+      <arg name="as_server"    value="true"/>
+      <arg name="config_file"  value="$(find thorp_obj_rec)/config/ork/tabletop.detection.ros.ork"/>
+      <arg name="robot_frame"  value="base_footprint"/>
+      <arg name="sensor_frame" value="xtion_depth_optical_frame"/>
+    </include>
+  </group>
+
+  <!--  ************ COB Object Detection *************  -->
+  <group if="$(eval pipeline == 'COB')">
+    <node name="cob_object_detection" pkg="cob_people_object_detection_tensorflow" type="cob_people_object_detection_tensorflow.py" output="screen" respawn="true">
+      <rosparam command="load" file="$(find thorp_obj_rec)/config/cob/object_detection.yaml"/>
+    </node>
+
+    <node name="cob_object_projection" pkg="cob_people_object_detection_tensorflow" type="projection.py" output="screen" respawn="true">
+      <rosparam command="load" file="$(find thorp_obj_rec)/config/cob/object_projection.yaml"/>
+    </node>
+
+    <node name="cob_object_tracking" pkg="thorp_obj_rec" type="object_tracking.py" output="screen"       respawn="false">
+      <rosparam param="target_objects" subst_value="True">$(arg target_objects)</rosparam>
+    </node>
+  </group>
+
+  <!--  ************ RAIL Object Detection ************  -->
+  <group if="$(eval pipeline == 'RAIL')">
+    <node pkg="rail_segmentation" type="rail_segmentation" name="rail_segmentation" output="screen" respawn="true">
+      <param name="debug" value="true"/>
+      <param name="point_cloud_topic" value="/xtion/depth_registered/points"/>
+      <param name="zones_config" value="$(find thorp_obj_rec)/config/rail/zones.yaml"/>
+      <param name="min_cluster_size" value="200"/>
+      <param name="max_cluster_size" value="10000"/>
+      <param name="cluster_tolerance" value="0.01"/>
+      <param name="use_color" value="true"/>
+      <param name="crop_first" value="false"/>
+      <param name="label_markers" value="true"/>
+    </node>
+  </group>
 </launch>

@@ -21,13 +21,13 @@ from cv_bridge import CvBridge
 from thorp_toolkit.geometry import transform_pose, heading
 
 from sensor_msgs.msg import Image
-from geometry_msgs.msg import TransformStamped, Pose
+from geometry_msgs.msg import TransformStamped, PoseStamped
 from visualization_msgs.msg import MarkerArray, Marker
 from cob_perception_msgs.msg import DetectionArray, Detection
 
 
 class ObjectTrackingNode(object):
-    """Get 3D values of bounding boxes returned by face_recognizer node.
+    """Get 3D values of bounding boxes returned by object recognizer node.
 
     _bridge (CvBridge): Bridge between ROS and CV image
     pub (Publisher): Publisher object for face depth results
@@ -43,6 +43,7 @@ class ObjectTrackingNode(object):
         self._buffer_length = 10   # TODO param  should be discard_after * freq
         self._discard_after = rospy.Duration(5)
         self._tracked_objs = {}
+        self._target_objs = rospy.get_param('~target_objects', None)
         self._last_img_cv = None
         self._cv_bridge = CvBridge()
 
@@ -56,6 +57,7 @@ class ObjectTrackingNode(object):
         self._objects_pub = rospy.Publisher('tracked_objects', DetectionArray, queue_size=1)
         self._markers_pub = rospy.Publisher('tracked_objects_markers', MarkerArray, queue_size=1)
         self._images_pub = rospy.Publisher('tracked_objects_images', Image, queue_size=1)
+        self._target_pub = rospy.Publisher('target_object_pose', PoseStamped, queue_size=1)
         self._tf2_bcaster = tf2_ros.TransformBroadcaster()
 
     def shutdown(self):
@@ -111,18 +113,21 @@ class ObjectTrackingNode(object):
                 if len(obs_buffer) > self._buffer_length / 2:
                     # TODO: do smarter!  estimate prob
                     obs = deepcopy(obs_buffer[-1])
-                    obs.pose = transform_pose('base_footprint', obs.pose)
-                    obs.header = obs.pose.header
                     da.detections.append(obs)
                     ma.markers.append(self.make_marker(obs))
                     self.pub_transform(obs)
                     self.pub_img_quad(obs)
+                    if obs.label in self._target_objs:
+                        self._target_pub.publish(obs.pose)
 
             if da.detections:
                 self._objects_pub.publish(da)
                 self._markers_pub.publish(ma)
 
-            rate.sleep()
+            try:
+                rate.sleep()
+            except rospy.exceptions.ROSInterruptException:
+                pass
 
     def make_marker(self, detection):
         marker = Marker()
@@ -138,7 +143,8 @@ class ObjectTrackingNode(object):
         marker.color.r = 1.0
         marker.color.a = 1.0
         marker.pose = deepcopy(detection.pose.pose)
-        marker.pose.position.z += 0.5  # need bounding_box_lwh.z / 2,  but now is all zero!
+        marker.pose.position.y -= 0.5  # note it comes on camera optical frame
+        # TODO would be better to use bounding_box_lwh.z / 2, but now is always zero!
         return marker
 
     def pub_transform(self, detection):
@@ -146,12 +152,7 @@ class ObjectTrackingNode(object):
         tfs.header = detection.header
         tfs.child_frame_id = detection.label + '_' + str(detection.id)
         tfs.transform.translation = detection.pose.pose.position
-        # looking to the robot
-        q = tf_conversions.transformations.quaternion_from_euler(-pi/2.0, 0.0, heading(detection.pose.pose) + pi/2.0)
-        tfs.transform.rotation.x = q[0]
-        tfs.transform.rotation.y = q[1]
-        tfs.transform.rotation.z = q[2]
-        tfs.transform.rotation.w = q[3]
+        tfs.transform.rotation = detection.pose.pose.orientation
         self._tf2_bcaster.sendTransform(tfs)
 
     def pub_img_quad(self, detection):

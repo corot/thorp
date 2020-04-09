@@ -9,8 +9,8 @@ Panels:
         - /Camera1/Visibility1
         - /COB1
         - /COB1/Tracked1/Status1
-        - /COB1/Tracked3
         - /COB1/Tracked3/Status1
+        - /COB1/Target Pose1/Status1
       Splitter Ratio: 0.5230547785758972
     Tree Height: 378
   - Class: rviz/Help
@@ -658,6 +658,7 @@ Visualization Manager:
       Visibility:
         COB:
           Detected: true
+          Target Pose: true
           Tracked: true
           Value: true
         External:
@@ -975,6 +976,7 @@ Visualization Manager:
           Visibility:
             COB:
               Detected: true
+              Target Pose: true
               Tracked: true
               Value: true
             Camera: true
@@ -1000,10 +1002,7 @@ Visualization Manager:
           Marker Topic: /tracked_objects_markers
           Name: Tracked
           Namespaces:
-            1: true
             17: true
-            18: true
-            19: true
           Queue Size: 100
           Value: true
         - Class: rviz/Image
@@ -1024,6 +1023,21 @@ Visualization Manager:
           Meters per pixel: 0.0020000000949949026
           Name: Tracked
           Quad Frame: cat_17
+          Value: true
+        - Alpha: 1
+          Axes Length: 0.5
+          Axes Radius: 0.02500000037252903
+          Class: rviz/Pose
+          Color: 255; 25; 0
+          Enabled: true
+          Head Length: 0.30000001192092896
+          Head Radius: 0.10000000149011612
+          Name: Target Pose
+          Shaft Length: 1
+          Shaft Radius: 0.05000000074505806
+          Shape: Axes
+          Topic: /target_object_pose
+          Unreliable: false
           Value: true
       Enabled: true
       Name: COB
