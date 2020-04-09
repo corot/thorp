@@ -1,15 +1,16 @@
 # Cannon command service:
-#  - action can be tilt, fore or both
+#  - action can be aim, tilt or fire
+#  - aim requires an externally provided target
 #  - angle is expected in degrees, 0 for horizontal
 #  - the cannon can fire continuously up to 6 shots
 
-uint8 TILT = 1
-uint8 FIRE = 2
-uint8 BOTH = 3
+uint8 AIM  = 1
+uint8 TILT = 2
+uint8 FIRE = 3
 
 uint8 action
-float32 angle
-uint8 shots
+float32 angle  # required only for TILT
+uint8 shots    # required only for FIRE
 
 ---
 # result definition

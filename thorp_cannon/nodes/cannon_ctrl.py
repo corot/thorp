@@ -1,51 +1,87 @@
 #!/usr/bin/env python
 
-import math
 import rospy
 
+from math import atan, degrees, radians
 from thorp_msgs.srv import CannonCmd, CannonCmdRequest
 from thorp_msgs.msg import ThorpError
 from arbotix_msgs.msg import Digital, Analog
 from sensor_msgs.msg import JointState
+from geometry_msgs.msg import PoseStamped
+from thorp_toolkit.geometry import transform_pose, heading
 
-rospy.init_node("cannon_ctrl")
 
-def handle_cannon_command(request):
-    if (request.action == CannonCmdRequest.TILT or CannonCmdRequest.BOTH):
-        if request.angle < -5.0 or request.angle > 18.0:
+class CannonCtrlNode:
+    def __init__(self):
+        self._cannon_cmd_srv = rospy.Service('cannon_command', CannonCmd, self.handle_cannon_command)
+
+        self._tilt_cannon_pub = rospy.Publisher('arbotix/cannon_servo', Analog, queue_size=5, latch=True)
+        self._fire_cannon_pub = rospy.Publisher('arbotix/cannon_trigger', Digital, queue_size=5, latch=True)
+
+        # Subscribe to a target pose to aim to
+        self._target_obj_pose = None
+        self._target_obj_sub = rospy.Subscriber('target_object_pose', PoseStamped, self.target_obj_cb, queue_size=5)
+
+        # Publish cannon joint state
+        self._cannon_tilt_angle = 0.0
+        self._joint_states_pub = rospy.Publisher('joint_states', JointState, queue_size=5)
+
+        self._js_msg = JointState()
+        self._js_msg.name = ["cannon_joint"]
+        self._js_msg.velocity = [0.0]
+
+    def target_obj_cb(self, pose):
+        self._target_obj_pose = pose
+
+    def aim_to_target(self):
+        if not self._target_obj_pose:
+            return ThorpError(code=ThorpError.INVALID_TARGET_POSE, text="No target pose to aim to")
+        pose_in_cannon_ref = transform_pose('cannon_link', self._target_obj_pose)
+        adjacent = pose_in_cannon_ref.pose.position.x
+        opposite = pose_in_cannon_ref.pose.position.z
+        tilt_angle = atan(opposite / adjacent)
+        print(degrees(tilt_angle))
+        return self.tilt(degrees(tilt_angle))
+
+    def tilt(self, angle):
+        if angle < -5.0 or angle > 18.0:
             # The -5 is due to a strange effect on OpenCM Servo class; -6 puts the cannon almost in collision
             # with the upper plate!  TODO investigate what's going on
             return ThorpError(code=ThorpError.JOINT_OUT_OF_BOUNDS, text="Tilt angle out of bounds (-5,+18)")
-        rospy.loginfo("Tilting cannon to %.2f degrees", request.angle)
-        global cannon_tilt_angle
-        cannon_tilt_angle = math.radians(request.angle)
+        rospy.loginfo("Tilting cannon to %.2f degrees", angle)
+        self._cannon_tilt_angle = radians(angle)
         # OpenCM servo is configured to operate between 150 and 210, being 180 the central position
-        tilt_cannon_pub.publish(Analog(value=int(request.angle + 180)))
+        self._tilt_cannon_pub.publish(Analog(value=int(angle + 180)))
+        return ThorpError(code=ThorpError.SUCCESS)
 
-    if (request.action == CannonCmdRequest.FIRE or CannonCmdRequest.BOTH) and request.shots > 0:
-        rospy.loginfo("Firing cannon! %d shot%s", request.shots, 's' if request.shots > 1 else '')
-        fire_cannon_pub.publish(Digital(value=1))
-        rospy.sleep(rospy.Duration(request.shots * 0.055))
-        fire_cannon_pub.publish(Digital(value=0))
+    def fire(self, shots):
+        if shots > 0:
+            rospy.loginfo("Firing cannon! %d shot%s", shots, 's' if shots > 1 else '')
+            self._fire_cannon_pub.publish(Digital(value=1))
+            rospy.sleep(rospy.Duration(shots * 0.055))
+            self._fire_cannon_pub.publish(Digital(value=0))
+        return ThorpError(code=ThorpError.SUCCESS)
 
-    return ThorpError(code=ThorpError.SUCCESS)
+    def handle_cannon_command(self, request):
+        if request.action == CannonCmdRequest.AIM:
+            return self.aim_to_target()
+
+        if request.action == CannonCmdRequest.TILT:
+            return self.tilt(request.angle)
+
+        if request.action == CannonCmdRequest.FIRE:
+            return self.fire(request.shots)
+
+    def spin(self):
+        while not rospy.is_shutdown():
+            self._js_msg.position = [self._cannon_tilt_angle]
+            self._js_msg.header.stamp = rospy.Time.now()
+            self._joint_states_pub.publish(self._js_msg)
+            rospy.sleep(0.05)
 
 
-cannon_cmd_srv = rospy.Service('cannon_command', CannonCmd, handle_cannon_command)
+if __name__ == '__main__':
+    rospy.init_node("cannon_ctrl")
 
-tilt_cannon_pub = rospy.Publisher('arbotix/cannon_servo', Analog, queue_size=5, latch=True)
-fire_cannon_pub = rospy.Publisher('arbotix/cannon_trigger', Digital, queue_size=5, latch=True)
-
-# Publish cannon joint state
-cannon_tilt_angle = 0.0
-joint_states_pub = rospy.Publisher('joint_states', JointState, queue_size=5)
-
-msg = JointState()
-msg.name = ["cannon_joint"]
-
-while not rospy.is_shutdown():
-    msg.position = [cannon_tilt_angle]
-    msg.velocity = [0.0]
-    msg.header.stamp = rospy.Time.now()
-    joint_states_pub.publish(msg)
-    rospy.sleep(0.05)
+    node = CannonCtrlNode()
+    node.spin()

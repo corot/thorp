@@ -14,7 +14,8 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   
-  <run_depend>sensor_msgs</run_depend>
+  <run_depend>geometry_msgs</run_depend>
   <run_depend>arbotix_msgs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
   <run_depend>thorp_msgs</run_depend>
 </package>
