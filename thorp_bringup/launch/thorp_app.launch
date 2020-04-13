@@ -36,7 +36,7 @@
   <!--  ****** Thorp perception and manipulation ******  -->
 
   <include file="$(find thorp_bringup)/launch/includes/perception.launch.xml">
-    <arg name="external_camera" value="$(arg external_camera)"/>
+    <arg name="pipeline" value="RAIL"/>
   </include>
 
   <include file="$(find thorp_bringup)/launch/includes/manipulation.launch.xml">
@@ -60,7 +60,7 @@
       <param name="rec_objects_frame" value="map"/>
     </node>
 
-    <node pkg="rqt_smach" type="rqt_smach" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
+    <node pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
   </group>
 
 
