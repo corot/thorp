@@ -16,14 +16,8 @@
   <node pkg="thorp_arm_ctrl" type="scene_interaction_server" name="scene_interaction_server" output="screen" respawn="true">
   </node>
 
-  <!--  ************* Moveit config stuff *************  -->
+  <!--  ************** Moveit move groups *************  -->
 
-  <!-- Load the URDF, SRDF and other .yaml configuration files on the param server -->
-  <include file="$(find thorp_moveit_config)/launch/planning_context.launch">
-    <arg name="load_robot_description" value="false"/>
-  </include>
-
-  <!-- Run the main MoveIt executable to provide move groups -->
   <include file="$(find thorp_moveit_config)/launch/move_group.launch">
     <arg name="allow_trajectory_execution" value="true"/>
     <arg name="fake_execution" value="false"/>
