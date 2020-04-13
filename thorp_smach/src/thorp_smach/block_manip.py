@@ -51,7 +51,7 @@ def main():
                                             'preempted':'preempted'})
 
         smach.StateMachine.add('DragAndDrop',
-                               smach_ros.SimpleActionState('drag_and_drop',
+                               smach_ros.SimpleActionState('interactive_manipulation',
                                                            InteractiveBlockManipulationAction,
                                                            goal_slots=['frame', 'block_size'],
                                                            result_slots=['pickup_pose', 'place_pose']),
