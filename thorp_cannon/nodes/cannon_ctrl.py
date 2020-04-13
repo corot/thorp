@@ -3,6 +3,7 @@
 import rospy
 
 from math import atan, degrees, radians
+from std_msgs.msg import Float64
 from thorp_msgs.srv import CannonCmd, CannonCmdRequest
 from thorp_msgs.msg import ThorpError
 from arbotix_msgs.msg import Digital, Analog
@@ -13,10 +14,15 @@ from thorp_toolkit.geometry import transform_pose, heading
 
 class CannonCtrlNode:
     def __init__(self):
+        self._simulation = rospy.get_param('/use_sim_time', False)
+
         self._cannon_cmd_srv = rospy.Service('cannon_command', CannonCmd, self.handle_cannon_command)
 
-        self._tilt_cannon_pub = rospy.Publisher('arbotix/cannon_servo', Analog, queue_size=5, latch=True)
         self._fire_cannon_pub = rospy.Publisher('arbotix/cannon_trigger', Digital, queue_size=5, latch=True)
+        if self._simulation:
+            self._tilt_cannon_pub = rospy.Publisher('cannon_joint/command', Float64, queue_size=5, latch=True)
+        else:
+            self._tilt_cannon_pub = rospy.Publisher('arbotix/cannon_servo', Analog, queue_size=5, latch=True)
 
         # Subscribe to a target pose to aim to
         self._target_obj_pose = None
@@ -44,14 +50,20 @@ class CannonCtrlNode:
         return self.tilt(degrees(tilt_angle))
 
     def tilt(self, angle):
-        if angle < -5.0 or angle > 18.0:
-            # The -5 is due to a strange effect on OpenCM Servo class; -6 puts the cannon almost in collision
-            # with the upper plate!  TODO investigate what's going on
-            return ThorpError(code=ThorpError.JOINT_OUT_OF_BOUNDS, text="Tilt angle out of bounds (-5,+18)")
+        if abs(angle) > 18.0:
+            return ThorpError(code=ThorpError.JOINT_OUT_OF_BOUNDS, text="Tilt angle out of bounds (-18, +18)")
         rospy.loginfo("Tilting cannon to %.2f degrees", angle)
+        if angle < 0.0 and not self._simulation:
+            # With real cannon I need to squeeze negative angles between 0 and -5, due to a strange effect on OpenCM
+            # Servo class; -6 puts the cannon almost in collision with the upper plate! TODO investigate what's going on
+            angle = (angle * 5.0) / 18.0
+
         self._cannon_tilt_angle = radians(angle)
-        # OpenCM servo is configured to operate between 150 and 210, being 180 the central position
-        self._tilt_cannon_pub.publish(Analog(value=int(angle + 180)))
+        if self._simulation:
+            self._tilt_cannon_pub.publish(Float64(data=self._cannon_tilt_angle))
+        else:
+            # OpenCM servo is configured to operate between 150 and 210, being 180 the central position
+            self._tilt_cannon_pub.publish(Analog(value=int(round(angle + 180))))
         return ThorpError(code=ThorpError.SUCCESS)
 
     def fire(self, shots):

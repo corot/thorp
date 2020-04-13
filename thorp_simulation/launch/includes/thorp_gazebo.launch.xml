@@ -18,6 +18,7 @@
               -J arm_elbow_flex_joint 2.2
               -J arm_wrist_flex_joint 1.4
               -J gripper_link_joint 0.0
+              -J cannon_joint 0.0
               -unpause"/>  <!--  we spawn arm model on resting state -->
 
   <!-- Fake laser from Kinect -->
@@ -31,14 +32,19 @@
     <remap from="scan" to="/scan"/>
   </node>
 
-  <!-- Read the configuration and load controllers for the arm and gripper -->
-  <rosparam file="$(find thorp_simulation)/param/arm_control.yaml" command="load"/>
+  <!-- Read the configuration and load controllers for the arm, gripper and cannon -->
+  <rosparam file="$(find thorp_simulation)/param/controllers.yaml" command="load"/>
   <node name="controller_spawner" pkg="controller_manager" type="spawner" output="screen"
-        args="--timeout 30 joint_state_controller gripper_joint arm_controller"/>
+        args="--timeout 30 joint_state_controller gripper_joint cannon_joint arm_controller"/>
 
   <!-- We provide GripperCommand action with arbotix controllers, as on real robot; but
        the simulation flag will ensure that we don't load any physical robot controller  -->
   <include file="$(find thorp_bringup)/launch/includes/arm.launch.xml">
+    <arg name="simulation" value="true"/>
+  </include>
+
+  <!-- Same for the cannon: on simulation will talk with a simulated controller` -->
+  <include file="$(find thorp_cannon)/launch/cannon.launch">
     <arg name="simulation" value="true"/>
   </include>
 </launch>

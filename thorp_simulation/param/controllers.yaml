@@ -19,23 +19,11 @@ arm_controller:
   state_publish_rate:  25
   action_monitor_rate: 10
 
-arm_shoulder_pan_joint:
-  type: position_controllers/JointPositionController
-  joint: arm_shoulder_pan_joint
-
-arm_shoulder_lift_joint:
-  type: position_controllers/JointPositionController
-  joint: arm_shoulder_lift_joint
-
-arm_elbow_flex_joint:
-  type: position_controllers/JointPositionController
-  joint: arm_elbow_flex_joint
-
-arm_wrist_flex_joint:
-  type: position_controllers/JointPositionController
-  joint: arm_wrist_flex_joint
-
-# Gripper Position Controller
+# Gripper and cannon position controllers; I think those are the only really needed
 gripper_joint:
   type: position_controllers/JointPositionController
   joint: gripper_joint
+
+cannon_joint:
+  type: position_controllers/JointPositionController
+  joint: cannon_joint
