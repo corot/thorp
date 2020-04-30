@@ -6,8 +6,8 @@
 #include <ros/ros.h>
 
 // auxiliary libraries
-#include <mag_common_cpp_libs/common.hpp>
-namespace mcl = mag_common_libs;
+#include <thorp_toolkit/tf.hpp>
+namespace ttk = thorp_toolkit;
 
 // MoveIt!
 #include <moveit/move_group_pick_place_capability/capability_names.h>
@@ -58,7 +58,7 @@ void PlaceObjectServer::executeCB(const thorp_msgs::PlaceObjectGoal::ConstPtr& g
   }
 
   ROS_INFO("[place object] Execute goal: place object '%s' on support surface '%s' at pose [%s]...",
-           goal->object_name.c_str(), goal->support_surf.c_str(), mcl::pose2cstr3D(goal->place_pose));
+           goal->object_name.c_str(), goal->support_surf.c_str(), ttk::pose2cstr3D(goal->place_pose));
 
   result.error.code = place(goal->object_name, goal->support_surf, goal->place_pose);
   result.error.text = mec2str(result.error.code);
@@ -106,7 +106,7 @@ int32_t PlaceObjectServer::place(const std::string& obj_name, const std::string&
     return result;
   }
 
-  ROS_INFO("[place object] Placing object '%s' at pose [%s]...", obj_name.c_str(), mcl::pose2cstr3D(pose));
+  ROS_INFO("[place object] Placing object '%s' at pose [%s]...", obj_name.c_str(), ttk::pose2cstr3D(pose));
 
   moveit_msgs::PlaceGoal goal;
   goal.attached_object_name = obj_name;
@@ -171,7 +171,7 @@ int32_t PlaceObjectServer::makePlaceLocations(const geometry_msgs::PoseStamped& 
       return thorp_msgs::ThorpError::INVALID_TARGET_POSE;
     }
 
-    ROS_DEBUG("[place object] Place attempt %d at pose [%s]...", attempt, mcl::pose2cstr3D(p));
+    ROS_DEBUG("[place object] Place attempt %d at pose [%s]...", attempt, ttk::pose2cstr3D(p));
 
     // MoveGroup::place will transform the provided place pose with the attached body pose, so the object retains
     // the orientation it had when picked. However, with our 4-dofs arm this is infeasible (nor we care about the
@@ -184,7 +184,7 @@ int32_t PlaceObjectServer::makePlaceLocations(const geometry_msgs::PoseStamped& 
     tf::poseTFToMsg(place_tf * aco_tf, p.pose);
 
     ROS_DEBUG("[place object] Compensate place pose with the attached object pose [%s]. Results: [%s]",
-              mcl::pose2cstr3D(attached_obj_pose), mcl::pose2cstr3D(p.pose));
+              ttk::pose2cstr3D(attached_obj_pose), ttk::pose2cstr3D(p.pose));
 
     moveit_msgs::PlaceLocation l;
     l.place_pose = p;

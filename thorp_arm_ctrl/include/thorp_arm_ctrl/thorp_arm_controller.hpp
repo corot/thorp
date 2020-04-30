@@ -5,12 +5,6 @@
 #pragma once
 
 #include <ros/ros.h>
-#include <tf/tf.h>
-
-// auxiliary libraries
-#include <mag_common_cpp_libs/common.hpp>
-#include <mag_common_cpp_libs/geometry.hpp>
-namespace mcl = mag_common_libs;
 
 // MoveIt!
 #include <moveit/move_group_interface/move_group_interface.h>

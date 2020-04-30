@@ -16,9 +16,9 @@
 #include <image_transport/image_transport.h>
 #include <image_geometry/pinhole_camera_model.h>
 
-#include <mag_common_cpp_libs/common.hpp>
-#include <mag_common_cpp_libs/geometry.hpp>
-namespace mcl = mag_common_libs;
+#include <thorp_toolkit/tf.hpp>
+#include <thorp_toolkit/math.hpp>
+namespace ttk = thorp_toolkit;
 
 namespace thorp_obj_rec
 {
@@ -103,9 +103,9 @@ public:
       V.push_back(hsv[2]);
     }
 
-    uint8_t h = mcl::median(H);
-    uint8_t s = mcl::median(S);
-    uint8_t v = mcl::median(V);
+    uint8_t h = ttk::median(H);
+    uint8_t s = ttk::median(S);
+    uint8_t v = ttk::median(V);
     if (v > 15)  // if not black, set value artificially high to make easier labeling and visualization
       v = 255;   // this trick works for black, white and colors, but any gray will be labeled as white
 
@@ -150,7 +150,7 @@ public:
     cv::Vec3f lab_color = convertColor(cv::Vec3f(color.r, color.g, color.b), cv::COLOR_RGB2Lab);
     for (const auto& basic_color: BASIC_LAB_COLORS)
     {
-      double dist = mcl::distance2D(lab_color[1], lab_color[2], basic_color.second[1], basic_color.second[2]);
+      double dist = ttk::distance2D(lab_color[1], lab_color[2], basic_color.second[1], basic_color.second[2]);
       ROS_DEBUG("%f  %f  %f   %f  %f  %f  ->  %f  %f  %f   %f   < %f ?",
                 color.r*1.0, color.g*1.0, color.b*1.0, lab_color[0], lab_color[1], lab_color[2],
                 basic_color.second[0], basic_color.second[1], basic_color.second[2], dist, min_dist);

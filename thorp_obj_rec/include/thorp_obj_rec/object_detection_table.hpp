@@ -6,9 +6,9 @@
 #include <ros/ros.h>
 
 // auxiliary libraries
-#include <mag_common_cpp_libs/common.hpp>
-#include <mag_common_cpp_libs/geometry.hpp>
-namespace mcl = mag_common_libs;
+#include <thorp_toolkit/tf.hpp>
+#include <thorp_toolkit/math.hpp>
+namespace ttk = thorp_toolkit;
 
 
 // action client: ORK's tabletop object recognition
@@ -65,17 +65,17 @@ public:
       return;
     }
 
-    if (! mcl::transformPose(msg.header.frame_id, output_frame_, table.pose, table_pose))
+    if (! ttk::transformPose(msg.header.frame_id, output_frame_, table.pose, table_pose))
     {
       ROS_WARN("[object detection] Table with pose [%s] discarded: unable to transform to output frame [%s]",
-               mcl::pose2cstr3D(table_pose), output_frame_.c_str());
+               ttk::pose2cstr3D(table_pose), output_frame_.c_str());
     }
-    else if ((std::abs(mcl::roll(table_pose)) >= M_PI/10.0) || (std::abs(mcl::pitch(table_pose)) >= M_PI/10.0))
+    else if ((std::abs(ttk::roll(table_pose)) >= M_PI/10.0) || (std::abs(ttk::pitch(table_pose)) >= M_PI/10.0))
     {
       // Only consider tables within +/-18 degrees away from the horizontal plane
       ROS_WARN("[object detection] Table with pose [%s] discarded: %.2f radians away from the horizontal",
-               mcl::pose2cstr3D(table_pose),
-               std::max(std::abs(mcl::roll(table_pose)), std::abs(mcl::pitch(table_pose))));
+               ttk::pose2cstr3D(table_pose),
+               std::max(std::abs(ttk::roll(table_pose)), std::abs(ttk::pitch(table_pose))));
     }
     else
     {
@@ -120,8 +120,8 @@ public:
       table_position_y.push_back(table.pose.position.y);
       table_position_z.push_back(table.pose.position.z);
 
-      table_rotation_r.push_back(mcl::roll(table.pose));
-      table_rotation_p.push_back(mcl::pitch(table.pose));
+      table_rotation_r.push_back(ttk::roll(table.pose));
+      table_rotation_p.push_back(ttk::pitch(table.pose));
       table_rotation_y.push_back(table.yaw);
 
       table_centroid_x.push_back(table.center_x);
@@ -133,25 +133,25 @@ public:
     table_co.primitives.resize(1);
     table_co.primitives[0].type = shape_msgs::SolidPrimitive::BOX;
     table_co.primitives[0].dimensions.resize(3);
-    table_co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_X] = mcl::median(table_size_x);
-    table_co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Y] = mcl::median(table_size_y);
+    table_co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_X] = ttk::median(table_size_x);
+    table_co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Y] = ttk::median(table_size_y);
     table_co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Z] = 0.01;  // arbitrarily set to 1 cm
 
     table_co.primitive_poses.resize(1);
-    table_co.primitive_poses[0].position.x = mcl::median(table_position_x);
-    table_co.primitive_poses[0].position.y = mcl::median(table_position_y);
-    table_co.primitive_poses[0].position.z = mcl::median(table_position_z);
+    table_co.primitive_poses[0].position.x = ttk::median(table_position_x);
+    table_co.primitive_poses[0].position.y = ttk::median(table_position_y);
+    table_co.primitive_poses[0].position.z = ttk::median(table_position_z);
     table_co.primitive_poses[0].orientation =
-        tf::createQuaternionMsgFromRollPitchYaw(mcl::median(table_rotation_r),
-                                                mcl::median(table_rotation_p),
-                                                mcl::median(table_rotation_y));
+        tf::createQuaternionMsgFromRollPitchYaw(ttk::median(table_rotation_r),
+                                                ttk::median(table_rotation_p),
+                                                ttk::median(table_rotation_y));
     // Displace the table center according to the centroid of its convex hull
-    table_co.primitive_poses[0].position.x += mcl::median(table_centroid_x);
-    table_co.primitive_poses[0].position.y += mcl::median(table_centroid_y);
+    table_co.primitive_poses[0].position.x += ttk::median(table_centroid_x);
+    table_co.primitive_poses[0].position.y += ttk::median(table_centroid_y);
     table_co.primitive_poses[0].position.z -= table_co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Z]/2.0;
 
     ROS_INFO("[object detection] Table estimated at %s, size %.2fx%.2fm, based on %lu observations",
-             mcl::pose2cstr3D(table_co.primitive_poses[0]),
+             ttk::pose2cstr3D(table_co.primitive_poses[0]),
              table_co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_X],
              table_co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Y], table_obs_.size());
 

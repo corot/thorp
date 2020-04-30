@@ -28,7 +28,7 @@
   <build_depend>image_transport</build_depend>
 
   <build_depend>thorp_msgs</build_depend>
-  <build_depend>mag_common_cpp_libs</build_depend>
+  <build_depend>thorp_toolkit</build_depend>
 
   <run_depend>tf</run_depend>
   <run_depend>roscpp</run_depend>
@@ -45,7 +45,6 @@
 
   <run_depend>thorp_msgs</run_depend>
   <run_depend>thorp_toolkit</run_depend>
-  <run_depend>mag_common_cpp_libs</run_depend>
 
   <run_depend>admesh</run_depend>
   <run_depend>couchdb</run_depend>

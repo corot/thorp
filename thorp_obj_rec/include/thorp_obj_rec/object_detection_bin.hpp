@@ -6,9 +6,9 @@
 #include <ros/ros.h>
 
 // auxiliary libraries
-#include <mag_common_cpp_libs/common.hpp>
-#include <mag_common_cpp_libs/geometry.hpp>
-namespace mcl = mag_common_libs;
+#include <thorp_toolkit/tf.hpp>
+#include <thorp_toolkit/math.hpp>
+namespace ttk = thorp_toolkit;
 
 #include "thorp_obj_rec/spatial_hash.hpp"
 #include "thorp_obj_rec/object_detection_color.hpp"
@@ -44,9 +44,9 @@ public:
       centroid.pose.position.x += obj.pose.pose.pose.position.x * obj.confidence;
       centroid.pose.position.y += obj.pose.pose.pose.position.y * obj.confidence;
       centroid.pose.position.z += obj.pose.pose.pose.position.z * obj.confidence;
-      roll_acc                 += mcl::roll(obj.pose.pose.pose) * obj.confidence;
-      pitch_acc                += mcl::pitch (obj.pose.pose.pose) * obj.confidence;
-      yaw_acc                  += mcl::yaw(obj.pose.pose.pose) * obj.confidence;
+      roll_acc                 += ttk::roll(obj.pose.pose.pose) * obj.confidence;
+      pitch_acc                += ttk::pitch (obj.pose.pose.pose) * obj.confidence;
+      yaw_acc                  += ttk::yaw(obj.pose.pose.pose) * obj.confidence;
 
       confidence_acc += obj.confidence;
     }
@@ -140,11 +140,11 @@ public:
       for (int nearby_bin: nearby_bins)
       {
         ObjectDetectionBin& bin = detection_bins_[nearby_bin];
-        if (mcl::distance3D(bin.getCentroid().pose, obj.pose.pose.pose) <= clustering_threshold_)
+        if (ttk::distance3D(bin.getCentroid().pose, obj.pose.pose.pose) <= clustering_threshold_)
         {
           ROS_DEBUG("Object with pose [%s] added to bin %d with centroid [%s] with distance [%f]",
-                    mcl::pose2cstr3D(obj.pose.pose.pose), bin.id, mcl::pose2cstr3D(bin.getCentroid()),
-                    mcl::distance3D(bin.getCentroid().pose, obj.pose.pose.pose));
+                    ttk::pose2cstr3D(obj.pose.pose.pose), bin.id, ttk::pose2cstr3D(bin.getCentroid()),
+                    ttk::distance3D(bin.getCentroid().pose, obj.pose.pose.pose));
           ROS_ASSERT(obj.point_clouds.size() == 1);
           bin.addObject(obj, color_detection_->getColors(obj.point_clouds[0]));
           assigned = true;
@@ -155,7 +155,7 @@ public:
       if (! assigned)
       {
         // No matching bin; create a new one for this object
-        ROS_DEBUG("Object with pose [%s] added to a new bin", mcl::pose2cstr3D(obj.pose.pose.pose));
+        ROS_DEBUG("Object with pose [%s] added to a new bin", ttk::pose2cstr3D(obj.pose.pose.pose));
         ObjectDetectionBin new_bin;
         new_bin.id = detection_bins_.size();
         new_bin.addObject(obj, color_detection_->getColors(obj.point_clouds[0]));
@@ -181,7 +181,7 @@ public:
       if (bin.countObjects() < min_detections)
       {
         ROS_DEBUG("Bin %d with centroid [%s] discarded as it received %d objects (at least %d required)",
-                   bin.id, mcl::pose2cstr3D(bin.getCentroid()), bin.countObjects(), min_detections);
+                   bin.id, ttk::pose2cstr3D(bin.getCentroid()), bin.countObjects(), min_detections);
         continue;
       }
 
@@ -196,11 +196,11 @@ public:
       std::string obj_name = sstream.str();
 
       ROS_DEBUG("Bin %d with centroid [%s] and %d objects added as object '%s'",
-                 bin.id, mcl::pose2cstr3D(bin.getCentroid()), bin.countObjects(), obj_name.c_str());
+                 bin.id, ttk::pose2cstr3D(bin.getCentroid()), bin.countObjects(), obj_name.c_str());
 
       geometry_msgs::Pose out_pose;
-      mcl::transformPose(bin.getCentroid().header.frame_id, output_frame, bin.getCentroid().pose, out_pose);
-      ROS_INFO("[object detection] Adding '%s' object at %s", obj_name.c_str(), mcl::point2cstr3D(out_pose.position));
+      ttk::transformPose(bin.getCentroid().header.frame_id, output_frame, bin.getCentroid().pose, out_pose);
+      ROS_INFO("[object detection] Adding '%s' object at %s", obj_name.c_str(), ttk::point2cstr3D(out_pose.position));
 
       moveit_msgs::CollisionObject co;
       co.id = obj_name;

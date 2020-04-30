@@ -11,10 +11,10 @@
 #include <thorp_msgs/DragAndDropAction.h>
 
 // auxiliary libraries
+#include <thorp_toolkit/tf.hpp>
+#include <thorp_toolkit/math.hpp>
 #include <thorp_toolkit/planning_scene.hpp>
-#include <mag_common_cpp_libs/geometry.hpp>
-#include <mag_common_cpp_libs/common.hpp>
-namespace mcl = mag_common_libs;
+namespace ttk = thorp_toolkit;
 
 
 using namespace visualization_msgs;
@@ -115,7 +115,7 @@ public:
       geometry_msgs::PoseStamped obj_pose; geometry_msgs::Vector3 obj_size;
       if (thorp_toolkit::getObjectData(obj_name, obj_pose, obj_size) > 0)
       {
-        mcl::transformPose(obj_pose.header.frame_id, output_frame, obj_pose, obj_pose);
+        ttk::transformPose(obj_pose.header.frame_id, output_frame, obj_pose, obj_pose);
         addMarker(obj_name, obj_pose, obj_size, active);
       }
     }
@@ -135,7 +135,7 @@ public:
     marker.header.stamp = ros::Time();  // use object frame
 
     // We use the biggest dimension of the mesh to scale the marker
-    marker.scale = mcl::maxValue(obj_size);
+    marker.scale = ttk::maxValue(obj_size);
 
     InteractiveMarkerControl control;
     control.orientation.w = 1;
@@ -156,7 +156,7 @@ public:
     im_.setCallback(marker.name, boost::bind(&InteractiveManipulationServer::feedbackCb, this, _1));
 
     ROS_INFO("[interactive manip] Added interactive marker for object '%s' at [%s] and scale [%f]",
-             marker.name.c_str(), mcl::pose2cstr3D(marker.pose), marker.scale);
+             marker.name.c_str(), ttk::pose2cstr3D(marker.pose), marker.scale);
 
     return true;
   }

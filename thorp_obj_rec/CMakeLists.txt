@@ -1,18 +1,18 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(thorp_obj_rec)
 
-find_package(catkin REQUIRED roscpp actionlib moveit_ros_planning_interface
+find_package(catkin REQUIRED roscpp actionlib moveit_ros_planning_interface thorp_toolkit
                              thorp_msgs object_recognition_msgs rail_manipulation_msgs
                              geometry_msgs moveit_msgs shape_msgs
-                             image_geometry image_transport cv_bridge mag_common_cpp_libs)
+                             image_geometry image_transport cv_bridge)
 link_directories(${catkin_LIBRARY_DIRS})
 include_directories(${catkin_INCLUDE_DIRS} include)
 
 catkin_package(INCLUDE_DIRS include
-               DEPENDS roscpp actionlib moveit_ros_planning_interface
+               DEPENDS roscpp actionlib moveit_ros_planning_interface thorp_toolkit
                        thorp_msgs object_recognition_msgs rail_manipulation_msgs
                        geometry_msgs moveit_msgs shape_msgs
-                       image_geometry image_transport cv_bridge mag_common_cpp_libs)
+                       image_geometry image_transport cv_bridge)
 
 # nodes
 

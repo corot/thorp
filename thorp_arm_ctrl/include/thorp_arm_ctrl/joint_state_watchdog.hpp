@@ -6,10 +6,12 @@
 
 #include <deque>
 
+#include <ros/ros.h>
+
 #include <sensor_msgs/JointState.h>
 
-#include <mag_common_cpp_libs/common.hpp>
-namespace mcl = mag_common_libs;
+#include <thorp_toolkit/math.hpp>
+namespace ttk = thorp_toolkit;
 
 namespace thorp_arm_ctrl
 {
@@ -22,8 +24,8 @@ public:
 
   void jointStateCB(const sensor_msgs::JointState& msg);
 
-  double gripperOpening() { return mcl::mean(gripper_opening); }
-  double gripperEffort() { return mcl::mean(gripper_effort); }
+  double gripperOpening() { return ttk::mean(gripper_opening); }
+  double gripperEffort() { return ttk::mean(gripper_effort); }
 
 private:
   double gripper_pad_width;

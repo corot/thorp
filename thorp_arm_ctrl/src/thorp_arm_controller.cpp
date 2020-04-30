@@ -2,6 +2,10 @@
  * Author: Jorge Santos
  */
 
+// auxiliary libraries
+#include <thorp_toolkit/tf.hpp>
+namespace ttk = thorp_toolkit;
+
 #include "thorp_arm_ctrl/thorp_arm_controller.hpp"
 
 namespace thorp_arm_ctrl
@@ -51,7 +55,7 @@ bool ThorpArmController::validateTargetPose(geometry_msgs::PoseStamped& target, 
     // Target's timestamp is irrelevant, and can trigger a TransformException if very recent; zero it!
     target.header.stamp = ros::Time(0.0);
     tf::quaternionTFToMsg(tf::createIdentityQuaternion(), target.pose.orientation);
-    if (!mcl::transformPose(target.header.frame_id, arm_ref_frame, target, target))
+    if (!ttk::transformPose(target.header.frame_id, arm_ref_frame, target, target))
       return false;
   }
 
@@ -95,7 +99,7 @@ bool ThorpArmController::validateTargetPose(geometry_msgs::PoseStamped& target, 
   ROS_DEBUG("[arm controller] Pitch high target correction: %f;  random variation: %f", pitch_delta1, pitch_delta2);
 
   double rp = (M_PI_2 - std::asin((d - 0.1)/0.22)) + pitch_delta1 + pitch_delta2;
-  double ry = mcl::heading(target.pose);
+  double ry = ttk::heading(target.pose);
   double rr = 0.0;
   target.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(rr, rp, ry);
 
@@ -128,7 +132,7 @@ bool ThorpArmController::validateTargetPose(geometry_msgs::PoseStamped& target, 
     ROS_DEBUG("[arm controller] Compensate distance fall short increasing distance by %fm", fall_short_distance_delta);
   }
 
-  ROS_DEBUG("[arm controller] Target pose [%s] [d: %.2f]", mcl::pose2cstr3D(target.pose), d);
+  ROS_DEBUG("[arm controller] Target pose [%s] [d: %.2f]", ttk::pose2cstr3D(target.pose), d);
   target_pose_pub.publish(target);
 
   return true;

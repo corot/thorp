@@ -2,6 +2,12 @@
  * Author: Jorge Santos
  */
 
+#include <tf/tf.h>
+
+// auxiliary libraries
+#include <thorp_toolkit/tf.hpp>
+namespace ttk = thorp_toolkit;
+
 #include "thorp_arm_ctrl/move_to_target_server.hpp"
 
 
@@ -129,7 +135,7 @@ int32_t MoveToTargetServer::moveArmTo(const sensor_msgs::JointState& target)
 
 int32_t MoveToTargetServer::moveArmTo(const geometry_msgs::PoseStamped& target)
 {
-  ROS_DEBUG("[move to target] Move arm to [%s]", mcl::pose2cstr3D(target.pose));
+  ROS_DEBUG("[move to target] Move arm to [%s]", ttk::pose2cstr3D(target.pose));
 
   geometry_msgs::PoseStamped modiff_target = target;
   if (!validateTargetPose(modiff_target, true, false, false))
@@ -139,23 +145,23 @@ int32_t MoveToTargetServer::moveArmTo(const geometry_msgs::PoseStamped& target)
 
   if (arm().setPoseTarget(modiff_target) == false)
   {
-    ROS_ERROR("[move to target] Set pose target [%s] failed", mcl::pose2cstr3D(modiff_target.pose));
+    ROS_ERROR("[move to target] Set pose target [%s] failed", ttk::pose2cstr3D(modiff_target.pose));
     return thorp_msgs::ThorpError::INVALID_TARGET_POSE;
   }
 
   moveit::planning_interface::MoveItErrorCode result = arm().move();
   if (result)
   {
-    ROS_INFO("[move to target] Move to target [%s] completed", mcl::pose2cstr3D(modiff_target.pose));
+    ROS_INFO("[move to target] Move to target [%s] completed", ttk::pose2cstr3D(modiff_target.pose));
   }
   else if (as_.isPreemptRequested())
   {
-    ROS_WARN("[move to target] Move to target [%s] preempted", mcl::pose2cstr3D(modiff_target.pose));
+    ROS_WARN("[move to target] Move to target [%s] preempted", ttk::pose2cstr3D(modiff_target.pose));
     result.val = moveit::planning_interface::MoveItErrorCode::PREEMPTED;
   }
   else
   {
-    ROS_ERROR("[move to target] Move to target [%s] failed: %s", mcl::pose2cstr3D(modiff_target.pose),
+    ROS_ERROR("[move to target] Move to target [%s] failed: %s", ttk::pose2cstr3D(modiff_target.pose),
               mec2str(result));
   }
 

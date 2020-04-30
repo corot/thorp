@@ -6,8 +6,9 @@
 #include <ros/ros.h>
 
 // auxiliary libraries
-#include <mag_common_cpp_libs/common.hpp>
-namespace mcl = mag_common_libs;
+#include <thorp_toolkit/tf.hpp>
+#include <thorp_toolkit/math.hpp>
+namespace ttk = thorp_toolkit;
 
 // MoveIt!
 #include <moveit/move_group_pick_place_capability/capability_names.h>
@@ -102,7 +103,7 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
   }
 
   ROS_INFO("[pickup object] Picking object '%s' with size [%s] at location [%s]...",
-           obj_name.c_str(), mcl::vector2cstr3D(obj_size), mcl::point2cstr2D(obj_pose.pose.position));
+           obj_name.c_str(), ttk::vector2cstr3D(obj_size), ttk::point2cstr2D(obj_pose.pose.position));
 
   // Prepare and send pick goal
   moveit_msgs::PickupGoal goal;
@@ -221,7 +222,7 @@ int32_t PickupObjectServer::makeGrasps(const geometry_msgs::PoseStamped& obj_pos
       return thorp_msgs::ThorpError::INVALID_TARGET_POSE;
     }
 
-    ROS_DEBUG("[pickup object] Pick attempt %d at pose [%s]...", attempt, mcl::pose2cstr3D(target_pose));
+    ROS_DEBUG("[pickup object] Pick attempt %d at pose [%s]...", attempt, ttk::pose2cstr3D(target_pose));
 
     moveit_msgs::Grasp g;
     g.grasp_pose = target_pose;
@@ -262,12 +263,12 @@ int32_t PickupObjectServer::makeGrasps(const geometry_msgs::PoseStamped& obj_pos
 double PickupObjectServer::gripperClosing(const geometry_msgs::PoseStamped& target_pose,
                                           const geometry_msgs::Vector3& target_size)
 {
-  double h = mcl::heading(target_pose.pose);  // assuming is in arm reference frame
-  double y = mcl::yaw(target_pose.pose);
-  double s = std::abs(mcl::wrapAngle(y - h)) < M_PI/2.0 ? target_size.y : target_size.x;
+  double h = ttk::heading(target_pose.pose);  // assuming is in arm reference frame
+  double y = ttk::yaw(target_pose.pose);
+  double s = std::abs(ttk::wrapAngle(y - h)) < M_PI/2.0 ? target_size.y : target_size.x;
 
-  ROS_WARN_STREAM(" GRIPPER CLOSING  "<< h << "  "<< y << "   " << (std::abs(mcl::wrapAngle(y - h)) < M_PI/2.0 ? " USE Y    " : "  USE X    ")
-  << target_size.x << "  "<< target_size.y  << "      "<< mcl::pose2str3D(target_pose) << "      "<< target_pose.header.frame_id);
+  ROS_WARN_STREAM(" GRIPPER CLOSING  "<< h << "  "<< y << "   " << (std::abs(ttk::wrapAngle(y - h)) < M_PI/2.0 ? " USE Y    " : "  USE X    ")
+  << target_size.x << "  "<< target_size.y  << "      "<< ttk::pose2str3D(target_pose) << "      "<< target_pose.header.frame_id);
   return s * 0.80;
 }
 
