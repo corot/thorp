@@ -22,11 +22,11 @@
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 
 // local includes for utility classes
-#include "thorp_obj_rec/object_detection_bin.hpp"
-#include "thorp_obj_rec/object_detection_table.hpp"
+#include "thorp_perception/object_detection_bin.hpp"
+#include "thorp_perception/object_detection_table.hpp"
 
 
-namespace thorp_obj_rec
+namespace thorp_perception
 {
 
 class ObjectDetectionServer
@@ -223,13 +223,13 @@ private:
   }
 };
 
-};  // namespace thorp_obj_rec
+};  // namespace thorp_perception
 
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "object_detection_action_server");
 
-  thorp_obj_rec::ObjectDetectionServer server("object_detection");
+  thorp_perception::ObjectDetectionServer server("object_detection");
   ros::spin();
 
   return 0;

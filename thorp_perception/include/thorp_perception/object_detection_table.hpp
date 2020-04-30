@@ -14,7 +14,7 @@ namespace ttk = thorp_toolkit;
 // action client: ORK's tabletop object recognition
 #include <object_recognition_msgs/TableArray.h>
 
-namespace thorp_obj_rec
+namespace thorp_perception
 {
 
 class ObjectDetectionTable
@@ -248,4 +248,4 @@ private:
   }
 };
 
-};  // namespace thorp_obj_rec
+};  // namespace thorp_perception

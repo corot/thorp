@@ -4,7 +4,7 @@
       <arg     if="$(arg debug)" name="launch_prefix" value="gdb --ex run --args" />
       
       <arg name="recognition_config_file"
-           default="$(find thorp_obj_rec)/config/tabletop/kinect.detection.object.ros.ork"/>
+           default="$(find thorp_perception)/config/tabletop/kinect.detection.object.ros.ork"/>
       <arg name="robot_frame"  default="base_footprint"/>
       <arg name="sensor_frame" default="camera_rgb_optical_frame"/>
     

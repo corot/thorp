@@ -17,7 +17,7 @@
 #include <image_geometry/pinhole_camera_model.h>
 
 
-namespace thorp_obj_rec
+namespace thorp_perception
 {
 
 class ObjectDetectionColor
@@ -48,19 +48,21 @@ public:
   {
     std::vector<cv::Vec3f> colors;
 
-    cv::Mat image;
+    cv::Mat image_bgr, image_hsv;
     cv_bridge::CvImagePtr input_bridge;
     try
     {
       image_mutex_.lock();
       input_bridge = cv_bridge::toCvCopy(rgb_image_, sensor_msgs::image_encodings::BGR8);
       image_mutex_.unlock();
-      image = input_bridge->image;
+      image_bgr = input_bridge->image;
 
-//      cv::namedWindow( "Display window", cv::WINDOW_AUTOSIZE );// Create a window for display.
-//      cv::imshow( "Display window", image );                   // Show our image inside it.
-//
-//      cv::waitKey(100);
+      cv::cvtColor(image_bgr, image_hsv, cv::COLOR_BGR2HSV);
+
+      cv::namedWindow( "Display window", cv::WINDOW_AUTOSIZE );// Create a window for display.
+      cv::imshow( "Display window", image_hsv );                   // Show our image inside it.
+
+      cv::waitKey(100);
     }
     catch (cv_bridge::Exception& ex)
     {
@@ -74,18 +76,15 @@ public:
     sensor_msgs::PointCloud2Iterator<float> iter_y(pc_msg, "y");
     sensor_msgs::PointCloud2Iterator<float> iter_z(pc_msg, "z");
 
-    cv::Mat image2 = image.clone();
-    image2 = cv::Vec3b(255, 255, 255);
-
-    std::unordered_map<uint32_t, cv::Vec3f> color_map;
+    std::unordered_map<uint32_t, cv::Vec3b> color_map;
     for (; iter_x != iter_x.end(); ++iter_x, ++iter_y, ++iter_z)
     {
       cv::Point3d pt_cv(*iter_x, *iter_y, *iter_z);
       cv::Point2d uv = cam_model_.project3dToPixel(pt_cv);
-      cv::Vec3b rgb = image.at<cv::Vec3b>(uv.y, uv.x);
-      color_map[int(uv.y)<<16 + int(uv.x)] = rgb;
+      cv::Vec3b hsv = image_hsv.at<cv::Vec3b>(uv.y, uv.x);
+      color_map[int(uv.y)<<16 + int(uv.x)] = hsv;
 
-     image2.at<cv::Vec3b>(uv.y, uv.x) = rgb;
+//      image2.at<cv::Vec3b>(uv.y, uv.x) = rgb;
 //      if (uv.y < 0)
 //        ROS_ERROR("--------------------------------------------------");   no ocurre...
 
@@ -107,13 +106,14 @@ public:
     sensor_msgs::PointCloud2Iterator<float> iter_y1(pc_msg, "y");
     sensor_msgs::PointCloud2Iterator<float> iter_z1(pc_msg, "z");
 
-    image = cv::Vec3b(255, 255, 255);
+    cv::Mat image2 = image_bgr;
+    image2 = cv::Vec3b(255, 255, 255);
     std_msgs::ColorRGBA kk = getAvgColor(colors);
     for (; iter_x1 != iter_x1.end(); ++iter_x1, ++iter_y1, ++iter_z1)
     {
       cv::Point3d pt_cv(*iter_x1, *iter_y1, *iter_z1);
       cv::Point2d uv = cam_model_.project3dToPixel(pt_cv);
-      image.at<cv::Vec3b>(uv.y, uv.x) = cv::Vec3b(kk.b*255, kk.g*255, kk.r*255);
+      image2.at<cv::Vec3b>(uv.y, uv.x) = cv::Vec3b(kk.b*255, kk.g*255, kk.r*255);
     }
 //    for (auto color: color_map)
 //      image.at<cv::Vec3b>(color.first>>16, color.first&0x0000FFFF) = cv::Vec3b(color.second[0] / 255.0f, color.second[1] / 255.0f, color.second[2] / 255.0f);
@@ -123,9 +123,6 @@ public:
 //3 . coger solo puntos centricos (no se como)
 //4 . x cada punto, coger median del vecindario
 
-    cv::namedWindow( "Display window", cv::WINDOW_AUTOSIZE );// Create a window for display.
-    cv::namedWindow( "Display window 2", cv::WINDOW_AUTOSIZE );// Create a window for display.
-    cv::imshow( "Display window", image );                   // Show our image inside it.
     cv::imshow( "Display window 2", image2 );                   // Show our image inside it.
 
     cv::waitKey(4000);
@@ -209,4 +206,4 @@ private:
   }
 };
 
-};  // namespace thorp_obj_rec
+};  // namespace thorp_perception

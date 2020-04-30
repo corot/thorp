@@ -8,7 +8,7 @@
 
   <!--  ************ Thorp perception nodes ***********  -->
 
-  <node pkg="thorp_obj_rec" type="object_detection_server" name="object_detection_server" output="screen" respawn="true">
+  <node pkg="thorp_perception" type="object_detection_server" name="object_detection_server" output="screen" respawn="true">
     <param name="ork_execute_timeout" value="5.0"/>
     <param name="recognize_objs_calls" value="5"/>
 
@@ -22,16 +22,16 @@
   <group if="$(eval pipeline == 'ORK')">
     <arg name="external_camera" default="false"/>
 
-    <include if="$(arg external_camera)" file="$(find thorp_obj_rec)/launch/obj_rec.launch.xml" ns="tabletop">
+    <include if="$(arg external_camera)" file="$(find thorp_perception)/launch/obj_rec.launch.xml" ns="tabletop">
       <arg name="as_server"    value="true"/>
-      <arg name="config_file"  value="$(find thorp_obj_rec)/config/ork/external.tabletop.detection.ros.ork"/>
+      <arg name="config_file"  value="$(find thorp_perception)/config/ork/external.tabletop.detection.ros.ork"/>
       <arg name="robot_frame"  value="base_footprint"/>
       <arg name="sensor_frame" value="external_camera_depth_optical_frame"/>
     </include>
 
-    <include unless="$(arg external_camera)" file="$(find thorp_obj_rec)/launch/obj_rec.launch.xml" ns="tabletop">
+    <include unless="$(arg external_camera)" file="$(find thorp_perception)/launch/obj_rec.launch.xml" ns="tabletop">
       <arg name="as_server"    value="true"/>
-      <arg name="config_file"  value="$(find thorp_obj_rec)/config/ork/tabletop.detection.ros.ork"/>
+      <arg name="config_file"  value="$(find thorp_perception)/config/ork/tabletop.detection.ros.ork"/>
       <arg name="robot_frame"  value="base_footprint"/>
       <arg name="sensor_frame" value="xtion_depth_optical_frame"/>
     </include>
@@ -40,14 +40,14 @@
   <!--  ************ COB Object Detection *************  -->
   <group if="$(eval pipeline == 'COB')">
     <node name="cob_object_detection" pkg="cob_people_object_detection_tensorflow" type="cob_people_object_detection_tensorflow.py" output="screen" respawn="true">
-      <rosparam command="load" file="$(find thorp_obj_rec)/config/cob/object_detection.yaml"/>
+      <rosparam command="load" file="$(find thorp_perception)/config/cob/object_detection.yaml"/>
     </node>
 
     <node name="cob_object_projection" pkg="cob_people_object_detection_tensorflow" type="projection.py" output="screen" respawn="true">
-      <rosparam command="load" file="$(find thorp_obj_rec)/config/cob/object_projection.yaml"/>
+      <rosparam command="load" file="$(find thorp_perception)/config/cob/object_projection.yaml"/>
     </node>
 
-    <node name="cob_object_tracking" pkg="thorp_obj_rec" type="object_tracking.py" output="screen"       respawn="false">
+    <node name="cob_object_tracking" pkg="thorp_perception" type="object_tracking.py" output="screen"       respawn="false">
       <rosparam param="target_objects" subst_value="True">$(arg target_objects)</rosparam>
     </node>
   </group>
@@ -57,7 +57,7 @@
     <node pkg="rail_segmentation" type="rail_segmentation" name="rail_segmentation" output="screen" respawn="true">
       <param name="debug" value="true"/>
       <param name="point_cloud_topic" value="/xtion/depth_registered/points"/>
-      <param name="zones_config" value="$(find thorp_obj_rec)/config/rail/zones.yaml"/>
+      <param name="zones_config" value="$(find thorp_perception)/config/rail/zones.yaml"/>
       <param name="min_cluster_size" value="200"/>
       <param name="max_cluster_size" value="10000"/>
       <param name="cluster_tolerance" value="0.01"/>

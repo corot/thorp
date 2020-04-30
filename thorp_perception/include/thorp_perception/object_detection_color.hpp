@@ -20,7 +20,7 @@
 #include <thorp_toolkit/math.hpp>
 namespace ttk = thorp_toolkit;
 
-namespace thorp_obj_rec
+namespace thorp_perception
 {
 
 class ObjectDetectionColor
@@ -208,4 +208,4 @@ private:
   }
 };
 
-};  // namespace thorp_obj_rec
+};  // namespace thorp_perception

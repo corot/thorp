@@ -12,7 +12,7 @@ import subprocess
 import os.path
 
 try:
-    # use rospkg to get the absolute path of meshes on thorp_obj_rec
+    # use rospkg to get the absolute path of meshes on thorp_perception
     rospack = rospkg.RosPack()
 
     # For each object, check if we already have a STL mesh. If not, generate it with OpenSCAD. We must convert to
@@ -36,8 +36,8 @@ try:
                ['clover', 'Untextured 3.7 x 3.7 cm clover', 'clover.stl']]
 
     for object in objects:
-        if os.path.exists(rospack.get_path('thorp_obj_rec') + "/meshes/" + object[2]):
-            print subprocess.check_output(['cp', rospack.get_path('thorp_obj_rec') + "/meshes/" + object[2], 'tmp.ascii.stl'])
+        if os.path.exists(rospack.get_path('thorp_perception') + "/meshes/" + object[2]):
+            print subprocess.check_output(['cp', rospack.get_path('thorp_perception') + "/meshes/" + object[2], 'tmp.ascii.stl'])
         else:
             print subprocess.check_output(['openscad', '-DOBJ="' + object[2][:-4] + '"', '-o', 'tmp.ascii.stl', 'gen_meshes.scad'])
         print subprocess.check_output(['admesh', '-b', 'tmp.bin.stl', 'tmp.ascii.stl'])

@@ -10,11 +10,11 @@
 #include <thorp_toolkit/math.hpp>
 namespace ttk = thorp_toolkit;
 
-#include "thorp_obj_rec/spatial_hash.hpp"
-#include "thorp_obj_rec/object_detection_color.hpp"
+#include "thorp_perception/spatial_hash.hpp"
+#include "thorp_perception/object_detection_color.hpp"
 
 
-namespace thorp_obj_rec
+namespace thorp_perception
 {
 
 /**
@@ -263,4 +263,4 @@ private:
   }
 };
 
-};  // namespace thorp_obj_rec
+};  // namespace thorp_perception

@@ -4,7 +4,7 @@
   <arg     if="$(arg debug)" name="launch_prefix" value="gdb --args /usr/bin/python"/>
   
   <arg name="as_server"    default="true"/>
-  <arg name="config_file"  default="$(find thorp_obj_rec)/config/ork/tabletop.detection.ros.ork"/>
+  <arg name="config_file"  default="$(find thorp_perception)/config/ork/tabletop.detection.ros.ork"/>
   <arg name="robot_frame"  default="base_footprint"/>
   <arg name="sensor_frame" default="camera_depth_optical_frame"/>
 

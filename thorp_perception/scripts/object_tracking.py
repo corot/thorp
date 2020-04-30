@@ -136,7 +136,7 @@ class ObjectTrackingNode(object):
         marker.type = Marker.TEXT_VIEW_FACING
         marker.text = detection.label + '_' + str(detection.id)
         # marker.type = Marker.MESH_RESOURCE
-        # marker.mesh_resource = "package://thorp_obj_rec/meshes/kitty.dae"
+        # marker.mesh_resource = "package://thorp_perception/meshes/kitty.dae"
         marker.action = Marker.ADD
         marker.lifetime = self._discard_after
         marker.scale.z = 0.2

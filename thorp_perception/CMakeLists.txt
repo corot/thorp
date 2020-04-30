@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(thorp_obj_rec)
+project(thorp_perception)
 
 find_package(catkin REQUIRED roscpp actionlib moveit_ros_planning_interface thorp_toolkit
                              thorp_msgs object_recognition_msgs rail_manipulation_msgs
