@@ -42,7 +42,7 @@
 
   <!-- Start the Dynamixel servos relaxed, so we can manually move the arm -->
    <node ns="$(arg dynamixel_namespace)"
-         pkg="thorp_arm_ctrl" type="dynamixel_relax_all_servos.py" name="dynamixel_relax_all_servos"/>
+         pkg="thorp_manipulation" type="dynamixel_relax_all_servos.py" name="dynamixel_relax_all_servos"/>
 
   <node pkg="image_view" type="image_view" name="checkerboard_image_view" output="screen" respawn="true">
     <param name="autosize" value="true"/>

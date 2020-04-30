@@ -13,10 +13,10 @@
 #include <actionlib/client/simple_action_client.h>
 #include <moveit_msgs/PlaceAction.h>
 
-#include "thorp_arm_ctrl/thorp_arm_controller.hpp"
+#include "thorp_manipulation/thorp_arm_controller.hpp"
 
 
-namespace thorp_arm_ctrl
+namespace thorp_manipulation
 {
 
 class PlaceObjectServer : public ThorpArmController

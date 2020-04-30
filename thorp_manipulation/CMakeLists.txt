@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(thorp_arm_ctrl)
+project(thorp_manipulation)
 
 find_package(catkin REQUIRED roscpp actionlib geometry_msgs moveit_msgs moveit_core visualization_msgs
                              interactive_markers thorp_msgs thorp_toolkit)

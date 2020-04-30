@@ -13,10 +13,10 @@
 #include <moveit_msgs/Grasp.h>
 
 // Thorp stuff
-#include "thorp_arm_ctrl/pickup_object_server.hpp"
+#include "thorp_manipulation/pickup_object_server.hpp"
 
 
-namespace thorp_arm_ctrl
+namespace thorp_manipulation
 {
 
 PickupObjectServer::PickupObjectServer(const std::string name) :

@@ -17,10 +17,10 @@ namespace ttk = thorp_toolkit;
 #include <thorp_msgs/ThorpError.h>
 #include <thorp_toolkit/planning_scene.hpp>
 
-#include "thorp_arm_ctrl/place_object_server.hpp"
+#include "thorp_manipulation/place_object_server.hpp"
 
 
-namespace thorp_arm_ctrl
+namespace thorp_manipulation
 {
 
 PlaceObjectServer::PlaceObjectServer(const std::string name) :

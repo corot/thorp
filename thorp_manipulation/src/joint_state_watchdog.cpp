@@ -2,10 +2,10 @@
  * Author: Jorge Santos
  */
 
-#include "thorp_arm_ctrl/joint_state_watchdog.hpp"
+#include "thorp_manipulation/joint_state_watchdog.hpp"
 
 
-namespace thorp_arm_ctrl
+namespace thorp_manipulation
 {
 
 JointStateWatchdog::JointStateWatchdog()

@@ -8,10 +8,10 @@
 #include <thorp_toolkit/tf.hpp>
 namespace ttk = thorp_toolkit;
 
-#include "thorp_arm_ctrl/move_to_target_server.hpp"
+#include "thorp_manipulation/move_to_target_server.hpp"
 
 
-namespace thorp_arm_ctrl
+namespace thorp_manipulation
 {
 
 

@@ -9,10 +9,10 @@
 #include <actionlib/server/simple_action_server.h>
 #include <thorp_msgs/MoveToTargetAction.h>
 
-#include "thorp_arm_ctrl/thorp_arm_controller.hpp"
+#include "thorp_manipulation/thorp_arm_controller.hpp"
 
 
-namespace thorp_arm_ctrl
+namespace thorp_manipulation
 {
 
 /**

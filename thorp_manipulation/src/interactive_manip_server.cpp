@@ -20,7 +20,7 @@ namespace ttk = thorp_toolkit;
 using namespace visualization_msgs;
 
 
-namespace thorp_arm_ctrl
+namespace thorp_manipulation
 {
 
 class InteractiveManipulationServer
@@ -207,7 +207,7 @@ int main(int argc, char** argv)
   // initialize node
   ros::init(argc, argv, "object_interactive_manip_action_server");
 
-  thorp_arm_ctrl::InteractiveManipulationServer manip("drag_and_drop");
+  thorp_manipulation::InteractiveManipulationServer manip("drag_and_drop");
 
   ros::spin();
 

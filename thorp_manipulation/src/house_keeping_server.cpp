@@ -4,10 +4,10 @@
 
 #include <moveit_msgs/GetPlanningScene.h>
 
-#include "thorp_arm_ctrl/house_keeping_server.hpp"
+#include "thorp_manipulation/house_keeping_server.hpp"
 
 
-namespace thorp_arm_ctrl
+namespace thorp_manipulation
 {
 
 

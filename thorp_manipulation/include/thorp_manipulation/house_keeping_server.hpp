@@ -8,11 +8,11 @@
 #include <std_srvs/Trigger.h>
 #include <trajectory_msgs/JointTrajectory.h>
 
-#include "thorp_arm_ctrl/thorp_arm_controller.hpp"
-#include "thorp_arm_ctrl/joint_state_watchdog.hpp"
+#include "thorp_manipulation/thorp_arm_controller.hpp"
+#include "thorp_manipulation/joint_state_watchdog.hpp"
 
 
-namespace thorp_arm_ctrl
+namespace thorp_manipulation
 {
 
 /**

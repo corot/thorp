@@ -16,7 +16,7 @@
 
   <!--  ****** Thorp perception and manipulation ******  -->
 
-  <node name="thorp_arm_ctrl_server" pkg="thorp_arm_ctrl"
+  <node name="thorp_manipulation/_server" pkg="thorp_arm_ctrl"
         type="thorp_arm_ctrl_server" output="screen" respawn="true">
     <rosparam file="$(find thorp_arm_ctrl)/param/pick_and_place.yaml" command="load"/>
   </node>

@@ -8,7 +8,7 @@ Software that interfaces with Thorp's arm through [dynamixel_motor](http://wiki.
 
 To interface with Thorp's arm you must install the USB2AX interface udev rule to make it available on the default port "/dev/USB2AX":
 
-    $ roscd thorp_arm_ctrl
+    $ roscd thorp_manipulation
     $ sudo cp resources/60-usb2ax.rules /etc/udev/rules.d
  
 and then replug the USB cable.

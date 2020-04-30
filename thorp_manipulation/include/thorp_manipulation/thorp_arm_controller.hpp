@@ -15,7 +15,7 @@
 #include <thorp_msgs/ThorpError.h>
 
 
-namespace thorp_arm_ctrl
+namespace thorp_manipulation
 {
 
 /**

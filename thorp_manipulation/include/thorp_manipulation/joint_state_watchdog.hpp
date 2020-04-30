@@ -13,7 +13,7 @@
 #include <thorp_toolkit/math.hpp>
 namespace ttk = thorp_toolkit;
 
-namespace thorp_arm_ctrl
+namespace thorp_manipulation
 {
 
 class JointStateWatchdog

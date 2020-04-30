@@ -6,9 +6,9 @@
 #include <thorp_toolkit/tf.hpp>
 namespace ttk = thorp_toolkit;
 
-#include "thorp_arm_ctrl/thorp_arm_controller.hpp"
+#include "thorp_manipulation/thorp_arm_controller.hpp"
 
-namespace thorp_arm_ctrl
+namespace thorp_manipulation
 {
 
 std::string ThorpArmController::attached_object;

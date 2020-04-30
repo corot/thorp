@@ -13,10 +13,10 @@
 #include <moveit_msgs/PlaceLocation.h>
 
 // Thorp stuff
-#include "thorp_arm_ctrl/place_object_server.hpp"
+#include "thorp_manipulation/place_object_server.hpp"
 
 
-namespace thorp_arm_ctrl
+namespace thorp_manipulation
 {
 
 PlaceObjectServer::PlaceObjectServer(const std::string name) :
