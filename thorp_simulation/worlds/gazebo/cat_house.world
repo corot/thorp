@@ -11,11 +11,9 @@
     </include>
 
     <physics type="ode">
-      <!-- I have reduced max_step_size and real_time_update_rate by an order of magnitude to speed up simulation
-           The price is that physics get a bit crazy when the robot moves very fast, but simulations looks plausible -->
-      <max_step_size>0.01</max_step_size>
+      <max_step_size>0.001</max_step_size>
       <real_time_factor>1</real_time_factor>
-      <real_time_update_rate>100</real_time_update_rate>
+      <real_time_update_rate>1000</real_time_update_rate>
       <ode>
         <solver>
           <type>quick</type>
@@ -33,109 +31,53 @@
       </ode>
     </physics>
 
-    <!-- A turtlebot symbol -->
+    <!-- A turtlebot house -->
     <include>
       <uri>model://turtlebot3_house</uri>
     </include>
 
-    <!-- A cute cat -->
-    <model name='cat_orange'>
-      <link name='link'>
-        <pose frame=''>0 0 0 0 0 0</pose>
-        <collision name='collision'>
-          <geometry>
-            <mesh>
-              <uri>model://cat_orange/meshes/12221_Cat_v1_l3.obj</uri>
-              <scale>0.01 0.01 0.01</scale>
-            </mesh>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <contact>
-              <ode/>
-            </contact>
-            <bounce/>
-            <friction>
-              <torsional>
-                <ode/>
-              </torsional>
-              <ode/>
-            </friction>
-          </surface>
-        </collision>
-        <visual name='visual'>
-          <geometry>
-            <mesh>
-              <uri>model://cat_orange/meshes/12221_Cat_v1_l3.obj</uri>
-              <scale>0.01 0.01 0.01</scale>
-            </mesh>
-          </geometry>
-        </visual>
-        <self_collide>0</self_collide>
-        <inertial>
-          <inertia>
-            <ixx>1</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>1</iyy>
-            <iyz>0</iyz>
-            <izz>1</izz>
-          </inertia>
-          <mass>4</mass>
-        </inertial>
-        <enable_wind>0</enable_wind>
-        <kinematic>0</kinematic>
-      </link>
-      <pose frame=''>1.0 -2.0 0 0 -0 0</pose>
-    </model>
-    <model name='cat_black'>
-      <link name='link'>
-        <collision name='collision'>
-          <geometry>
-            <mesh>
-              <uri>model://cat_black/meshes/12222_Cat_v1_l3.obj</uri>
-              <scale>0.01 0.01 0.01</scale>
-            </mesh>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <contact>
-              <ode/>
-            </contact>
-            <bounce/>
-            <friction>
-              <torsional>
-                <ode/>
-              </torsional>
-              <ode/>
-            </friction>
-          </surface>
-        </collision>
-        <visual name='visual'>
-          <geometry>
-            <mesh>
-              <uri>model://cat_black/meshes/12222_Cat_v1_l3.obj</uri>
-              <scale>0.01 0.01 0.01</scale>
-            </mesh>
-          </geometry>
-        </visual>
-        <self_collide>0</self_collide>
-        <inertial>
-          <inertia>
-            <ixx>1</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>1</iyy>
-            <iyz>0</iyz>
-            <izz>1</izz>
-          </inertia>
-          <mass>4</mass>
-        </inertial>
-        <enable_wind>0</enable_wind>
-        <kinematic>0</kinematic>
-      </link>
-      <pose frame=''>1.0 -3.0 0 0 0 0</pose>
-    </model>
+    <!-- A couple of cute cats -->
+    <include>
+      <uri>model://cat_orange</uri>
+      <pose>1.0 -2.0 0 0 -0 0</pose>
+    </include>
+
+    <include>
+      <uri>model://cat_black</uri>
+      <pose>1.0 -3.0 0 0 -0 0</pose>
+    </include>
+
+    <!-- Six rockets to fire at them -->
+    <include>
+      <uri>model://particle_sphere</uri>
+      <name>particle_sphere1</name>
+      <pose>0 10 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://particle_sphere</uri>
+      <name>particle_sphere2</name>
+      <pose>0 11 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://particle_sphere</uri>
+      <name>particle_sphere3</name>
+      <pose>0 12 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://particle_sphere</uri>
+      <name>particle_sphere4</name>
+      <pose>0 13 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://particle_sphere</uri>
+      <name>particle_sphere5</name>
+      <pose>0 14 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://particle_sphere</uri>
+      <name>particle_sphere6</name>
+      <pose>0 15 0 0 0 0</pose>
+    </include>
 
     <scene>
       <ambient>0.4 0.4 0.4 1</ambient>
@@ -145,7 +87,7 @@
 
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose>0.0 0.0 17.0 0 1.5708 0</pose>
+        <pose>0.0 0.0 15.0 0 1.5708 0</pose>
         <view_controller>orbit</view_controller>
       </camera>
     </gui>

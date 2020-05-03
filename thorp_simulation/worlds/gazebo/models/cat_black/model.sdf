@@ -2,7 +2,7 @@
 <sdf version="1.5">
   <model name="cat_black">
     <link name="link">
-      <pose>0 0 0.5 0 0 0</pose>
+      <pose>0 0 0 0 0 0</pose>
       <collision name="collision">
         <geometry>
           <mesh>
@@ -19,6 +19,17 @@
           </mesh>
         </geometry>
       </visual>
+      <inertial>
+        <inertia>
+          <ixx>0.08333</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.03333</iyy>
+          <iyz>0</iyz>
+          <izz>0.05667</izz>
+        </inertia>
+        <mass>4</mass>
+      </inertial>
     </link>
   </model>
 </sdf>
