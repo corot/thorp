@@ -69,9 +69,13 @@ class CannonCtrlNode:
     def fire(self, shots):
         if shots > 0:
             rospy.loginfo("Firing cannon! %d shot%s", shots, 's' if shots > 1 else '')
-            self._fire_cannon_pub.publish(Digital(value=1))
+            msg = Digital(value=1)
+            msg.header.stamp = rospy.get_rostime()
+            self._fire_cannon_pub.publish(msg)
             rospy.sleep(rospy.Duration(shots * 0.055))
-            self._fire_cannon_pub.publish(Digital(value=0))
+            msg.value = 0
+            msg.header.stamp = rospy.get_rostime()
+            self._fire_cannon_pub.publish(msg)
         return ThorpError(code=ThorpError.SUCCESS)
 
     def handle_cannon_command(self, request):
@@ -85,11 +89,15 @@ class CannonCtrlNode:
             return self.fire(request.shots)
 
     def spin(self):
+        rate = rospy.Rate(20)
         while not rospy.is_shutdown():
             self._js_msg.position = [self._cannon_tilt_angle]
             self._js_msg.header.stamp = rospy.Time.now()
             self._joint_states_pub.publish(self._js_msg)
-            rospy.sleep(0.05)
+            try:
+                rate.sleep()
+            except rospy.exceptions.ROSInterruptException:
+                pass
 
 
 if __name__ == '__main__':

@@ -6,7 +6,7 @@
     <gazebo reference="${name}_link">
       <sensor type="depth" name="${name}">
         <always_on>true</always_on>
-        <update_rate>20.0</update_rate>
+        <update_rate>10.0</update_rate>
         <camera>
           <horizontal_fov>${60.0*M_PI/180.0}</horizontal_fov>
           <image>
@@ -22,7 +22,7 @@
         <plugin name="kinect_camera_controller" filename="libgazebo_ros_openni_kinect.so">
           <cameraName>${name}</cameraName>
           <alwaysOn>true</alwaysOn>
-          <updateRate>1.0</updateRate>
+          <updateRate>10.0</updateRate>
           <imageTopicName>rgb/image_raw</imageTopicName>
           <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>
           <xacro:if value="${depth_registration}">  <!-- Normally for manipulation camera (Xtion) -->
@@ -216,8 +216,18 @@
   <xacro:servo_transmission name="arm_elbow_flex"/>
   <xacro:servo_transmission name="arm_wrist_flex"/>
   <xacro:servo_transmission name="gripper"/>
-
   <xacro:servo_transmission name="cannon"/>
+
+  <!-- Gazebo configuration for the cannon plugin, used to simulate cannon firing -->
+  <gazebo>
+    <plugin name="gazebo_cannon_plugin" filename="libgazebo_cannon_plugin.so">
+      <origin_link>cannon_link</origin_link>
+      <axis_of_fire>x</axis_of_fire>
+      <rocket_count>6</rocket_count>
+      <rate_of_fire>18.18</rate_of_fire>
+      <shoot_force>100</shoot_force>
+    </plugin>
+  </gazebo>
 
   <!-- Gazebo configuration for other structural parts -->
   <xacro:macro name="structural_part" params="name color">

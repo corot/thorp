@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>thorp_cannon</name>
   <version>0.1.0</version>
-  <description>Thorp robot's cannon description and control</description>
+  <description>Thorp robot's cannon control and gazebo plugin</description>
   <maintainer email="jsantossimon@gmail.com">Jorge Santos Simón</maintainer>
   <author email="jsantossimon@gmail.com">Jorge Santos Simón</author> 
 
@@ -13,9 +13,16 @@
   <url type="website">http://wiki.ros.org/thorp_cannon</url> 
 
   <buildtool_depend>catkin</buildtool_depend>
-  
-  <run_depend>geometry_msgs</run_depend>
-  <run_depend>arbotix_msgs</run_depend>
-  <run_depend>sensor_msgs</run_depend>
-  <run_depend>thorp_msgs</run_depend>
+
+  <depend>roscpp</depend>
+  <depend>gazebo_ros</depend>
+  <depend>geometry_msgs</depend>
+  <depend>arbotix_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>thorp_msgs</depend>
+
+  <export>
+    <gazebo_ros gazebo_model_path="${prefix}/models"/>
+    <gazebo_ros plugin_path="${prefix}/lib" gazebo_media_path="${prefix}"/>
+  </export>
 </package>
