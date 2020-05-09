@@ -29,6 +29,7 @@
           <izz>0.05667</izz>
         </inertia>
         <mass>4</mass>
+        <pose>0 0 0.15 0 0 0</pose>
       </inertial>
     </link>
   </model>
