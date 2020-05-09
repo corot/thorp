@@ -1,32 +1,41 @@
 THORP
 =====
 
-Software for a lowcost mobile manipulation: a TurtleBot2 with an arm, a second 3D camera, and some extra junk
+Software for a low-cost mobile manipulation: a TurtleBot2 with an arm, a second 3D camera, and some extra junk.
 
 Example demo
 ------------
 
-[Turtlebot arm object manipulation demo](https://github.com/corot/turtlebot_arm/tree/indigo-devel/turtlebot_arm_object_manipulation) ( [video](https://drive.google.com/file/d/0BzYjlgbSZJSWaVRVQmVKTVczY00/view?usp=sharing)).
+[Turtlebot arm object manipulation demo](https://github.com/corot/turtlebot_arm/tree/melodic-devel/turtlebot_arm_object_manipulation) ([video](https://drive.google.com/file/d/0BzYjlgbSZJSWaVRVQmVKTVczY00/view?usp=sharing)).
 
 Bringup
 -------
 
 #### Pre-requisite ####
 
+Install wstool:
+
 ```
-sudo pip install -U yujin_tools
+sudo apt-get install python-wstool
+```
+or when that is not possible, fall back to pip:
+```
+sudo pip install -U wstool
 ```
 
 #### Installation ####
 
 ```
-yujin_init_workspace -j10 --track=indigo ~/thorp https://raw.githubusercontent.com/corot/thorp/master/thorp.rosinstall
+mkdir ~/thorp
 cd ~/thorp
-source /opt/ros/indigo/setup.bash
+wstool init src https://raw.githubusercontent.com/corot/thorp/master/thorp.rosinstall
+touch src/gazebo-pkgs/CATKIN_IGNORE
+ln -sr src/gazebo-pkgs/gazebo_grasp_plugin src
+ln -sr src/gazebo-pkgs/gazebo_version_helpers src
+source /opt/ros/melodic/setup.bash
 rosdep update
-rosdep install --from-paths src /opt/ros/indigo --ignore-src --rosdistro indigo -y
-yujin_init_build . -u /opt/ros/indigo
-yujin_make
+rosdep install --from-paths src /opt/ros/melodic --ignore-src --rosdistro melodic -y
+catkin build
 ```
 
 #### Prepare hardware ####
