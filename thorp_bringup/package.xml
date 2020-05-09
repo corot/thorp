@@ -15,7 +15,8 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <run_depend>tf</run_depend>
-  <run_depend>roscpp</run_depend>
+  <run_depend>openni2_launch</run_depend>
+  <run_depend>freenect_launch</run_depend>
   <run_depend>actionlib</run_depend>
   <run_depend>actionlib_msgs</run_depend>
   <run_depend>move_base_msgs</run_depend>
@@ -31,7 +32,6 @@
   <run_depend>yocs_cmd_vel_mux</run_depend>
   <run_depend>yocs_virtual_sensor</run_depend>
   <run_depend>yocs_velocity_smoother</run_depend>
-  <run_depend>object_recognition_ros</run_depend>
 
   <run_depend>thorp_msgs</run_depend>
   <run_depend>thorp_smach</run_depend>
@@ -40,7 +40,4 @@
   <run_depend>thorp_perception</run_depend>
   <run_depend>thorp_description</run_depend>
   <run_depend>thorp_moveit_config</run_depend>
-
-  <export>
-  </export>
 </package>
