@@ -142,8 +142,7 @@ public:
 
   void SetRocketPose(boost::shared_ptr<gazebo::physics::Model> rocket_model, const ignition::math::Pose3d &cannon_pose)
   {
-    ignition::math::Pose3d rocket_pose = cannon_pose;
-    rocket_pose.Pos().X(rocket_pose.Pos().X() + 0.15);
+    ignition::math::Pose3d rocket_pose = ignition::math::Pose3d(0.1, 0.0, 0.0, 0.0, 0.0, 0.0) * cannon_pose;
     ROS_WARN("POSE [X, Y, Z, Roll, Pitch, Yaw] [%f, %f, %f, %f, %f, %f], model=%s",
       rocket_pose.Pos().X(), rocket_pose.Pos().Y(), rocket_pose.Pos().Z(),
       rocket_pose.Rot().Euler().X(), rocket_pose.Rot().Euler().Y(), rocket_pose.Rot().Euler().Z(),
