@@ -49,33 +49,33 @@
 
     <!-- Six rockets to fire at them -->
     <include>
-      <uri>model://particle_sphere</uri>
-      <name>particle_sphere1</name>
+      <uri>model://rocket</uri>
+      <name>rocket1</name>
       <pose>0 10 0 0 0 0</pose>
     </include>
     <include>
-      <uri>model://particle_sphere</uri>
-      <name>particle_sphere2</name>
+      <uri>model://rocket</uri>
+      <name>rocket2</name>
       <pose>0 11 0 0 0 0</pose>
     </include>
     <include>
-      <uri>model://particle_sphere</uri>
-      <name>particle_sphere3</name>
+      <uri>model://rocket</uri>
+      <name>rocket3</name>
       <pose>0 12 0 0 0 0</pose>
     </include>
     <include>
-      <uri>model://particle_sphere</uri>
-      <name>particle_sphere4</name>
+      <uri>model://rocket</uri>
+      <name>rocket4</name>
       <pose>0 13 0 0 0 0</pose>
     </include>
     <include>
-      <uri>model://particle_sphere</uri>
-      <name>particle_sphere5</name>
+      <uri>model://rocket</uri>
+      <name>rocket5</name>
       <pose>0 14 0 0 0 0</pose>
     </include>
     <include>
-      <uri>model://particle_sphere</uri>
-      <name>particle_sphere6</name>
+      <uri>model://rocket</uri>
+      <name>rocket6</name>
       <pose>0 15 0 0 0 0</pose>
     </include>
 
@@ -87,7 +87,7 @@
 
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose>0.0 0.0 15.0 0 1.5708 0</pose>
+        <pose>0.0 -4.0 0.5 0 0 1.5708</pose>
         <view_controller>orbit</view_controller>
       </camera>
     </gui>

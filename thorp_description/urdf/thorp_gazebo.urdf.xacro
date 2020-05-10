@@ -221,11 +221,11 @@
   <!-- Gazebo configuration for the cannon plugin, used to simulate cannon firing -->
   <gazebo>
     <plugin name="gazebo_cannon_plugin" filename="libgazebo_cannon_plugin.so">
-      <origin_link>cannon_link</origin_link>
+      <cannon_link>cannon_link</cannon_link>
       <axis_of_fire>x</axis_of_fire>
       <rocket_count>6</rocket_count>
       <rate_of_fire>18.18</rate_of_fire>
-      <shoot_force>2000</shoot_force>
+      <shoot_force>2500</shoot_force>
     </plugin>
   </gazebo>
 
