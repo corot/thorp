@@ -9,7 +9,7 @@ from thorp_msgs.msg import ThorpError
 from arbotix_msgs.msg import Digital, Analog
 from sensor_msgs.msg import JointState
 from geometry_msgs.msg import PoseStamped
-from thorp_toolkit.geometry import transform_pose, heading
+from thorp_toolkit.geometry import TF2
 
 
 class CannonCtrlNode:
@@ -42,7 +42,7 @@ class CannonCtrlNode:
     def aim_to_target(self):
         if not self._target_obj_pose:
             return ThorpError(code=ThorpError.INVALID_TARGET_POSE, text="No target pose to aim to")
-        pose_in_cannon_ref = transform_pose('cannon_link', self._target_obj_pose)
+        pose_in_cannon_ref = TF2().transform_pose(self._target_obj_pose, None, 'cannon_link')
         adjacent = pose_in_cannon_ref.pose.position.x
         opposite = pose_in_cannon_ref.pose.position.z
         tilt_angle = atan(opposite / adjacent)
@@ -102,6 +102,6 @@ class CannonCtrlNode:
 
 if __name__ == '__main__':
     rospy.init_node("cannon_ctrl")
-
+    TF2()  # start listener asap
     node = CannonCtrlNode()
     node.spin()
