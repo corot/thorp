@@ -26,6 +26,10 @@ subscribers:
     topic:       "input/auto_docking"
     timeout:     1.0
     priority:    5
+  - name:        "Visual servoing"
+    topic:       "input/servoing"
+    timeout:     1.0
+    priority:    4
   - name:        "Navigation"
     topic:       "input/navigation"
     timeout:     1.0

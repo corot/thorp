@@ -1,7 +1,8 @@
 <!--
-  Thorp global navigation:
+  Thorp navigation:
   - virtual sensor
   - move_base[_flex]
+  - pose servoing
   - geometric map
   - semantic map???
   - amcl localization
@@ -34,7 +35,11 @@
   <include unless="$(arg move_base_flex)" file="$(find thorp_bringup)/launch/includes/move_base.launch.xml">
   </include>
 
-  <!-- <include file="$(find thorp_bringup)/launch/includes/scan_matcher_2.launch.xml"/> -->
+  <!--  **************** Pose servoing ****************  -->
+  <node pkg="thorp_navigation" type="pose_servoing" name="pose_servoing" output="screen" respawn="true">
+    <remap from="cmd_vel" to="/cmd_vel_mux/input/servoing"/>
+    <remap from="camera_info" to="/kinect/rgb/camera_info"/>
+  </node>
 
   <!--  ****** Geometric and semantic map servers *****  -->
   <node pkg="map_server" type="map_server" name="map_server" output="screen" respawn="true" args="$(arg map_file)">
