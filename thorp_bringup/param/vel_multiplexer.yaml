@@ -30,8 +30,12 @@ subscribers:
     topic:       "input/servoing"
     timeout:     1.0
     priority:    4
+  - name:        "Pose following"
+    topic:       "input/following"
+    timeout:     1.0
+    priority:    3
   - name:        "Navigation"
     topic:       "input/navigation"
     timeout:     1.0
-    priority:    3
+    priority:    2
 publisher: "/mobile_base/commands/velocity"

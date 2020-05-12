@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>thorp_navigation</name>
   <version>0.1.0</version>
   <description>
@@ -16,22 +16,14 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>tf</build_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>actionlib</build_depend>
-  <build_depend>actionlib_msgs</build_depend>
-  <build_depend>geometry_msgs</build_depend>
-  <build_depend>thorp_msgs</build_depend>
-  <build_depend>thorp_toolkit</build_depend>
-  <build_depend>visp_ros</build_depend>
-
-  <run_depend>tf</run_depend>
-  <run_depend>rospy</run_depend>
-  <run_depend>roscpp</run_depend>
-  <run_depend>actionlib</run_depend>
-  <run_depend>actionlib_msgs</run_depend>
-  <run_depend>geometry_msgs</run_depend>
-  <run_depend>thorp_msgs</run_depend>
-  <run_depend>thorp_toolkit</run_depend>
-  <run_depend>visp_ros</run_depend>
+  <depend>tf</depend>
+  <depend>roscpp</depend>
+  <depend>actionlib</depend>
+  <depend>actionlib_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>turtlebot_msgs</depend>
+  <depend>thorp_msgs</depend>
+  <depend>thorp_toolkit</depend>
+  <depend>visp_ros</depend>
+  <depend>dynamic_reconfigure</depend>
 </package>

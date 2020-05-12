@@ -378,6 +378,16 @@ inline double heading(const geometry_msgs::Pose& p)
 }
 
 /**
+ * Heading angle from origin to stamped pose p
+ * @param p the pose
+ * @return heading angle
+ */
+inline double heading(const geometry_msgs::PoseStamped& p)
+{
+  return std::atan2(p.pose.position.y, p.pose.position.x);
+}
+
+/**
  * Heading angle from origin to transform p
  * @param t the transform
  * @return heading angle
