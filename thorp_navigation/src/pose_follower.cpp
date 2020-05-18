@@ -44,6 +44,7 @@ public:
     ros::NodeHandle private_nh("~");
 
     private_nh.param("robot_frame", robot_frame_, std::string("base_footprint"));
+    private_nh.param("no_pose_timeout", no_pose_timeout_, 0.5);
 
     twist_pub_ = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
     pose_sub_ = nh.subscribe("target_pose", 1, &PoseFollower::poseCallback, this);
@@ -54,6 +55,10 @@ public:
     dynamic_reconfigure::Server<thorp_navigation::FollowerConfig>::CallbackType f =
       boost::bind(&PoseFollower::reconfigure, this, _1, _2);
     config_srv_->setCallback(f);
+
+    // Create (stopped by now) a one-shot timer to stop the robot if no more poses are received within no_pose_timeout
+    no_pose_timer_ =
+      private_nh.createTimer(ros::Duration(no_pose_timeout_), &PoseFollower::timerCallback, this, true, false);
   }
 
 private:
@@ -65,6 +70,9 @@ private:
 
   ros::Subscriber pose_sub_;
   ros::Publisher twist_pub_;
+
+  ros::Timer no_pose_timer_;  /**< No pose messages received timer */
+  double no_pose_timeout_;    /**< No pose messages received timeout */
 
   // Service for start/stop following
   ros::ServiceServer switch_srv_;
@@ -102,23 +110,31 @@ private:
     double distance = ttk::distance2D(target_pose);
     double heading = ttk::heading(target_pose);
 
-    if (distance > d_target_)
+    geometry_msgs::Twist cmd;
+    if (std::abs(heading) > M_PI/2.0)
     {
-      ROS_INFO_THROTTLE(1, "Following target pose at %.2f %.2f %.2f; distance: %.2f, heading: %.2f",
-                        x, y, z, distance, heading);
-      geometry_msgs::Twist cmd;
-      cmd.linear.x = (distance - d_target_)*v_scale_;
-      cmd.angular.z = -heading*w_scale_;
-      twist_pub_.publish(cmd);
+      cmd.angular.z = heading * w_scale_;
+      ROS_INFO_THROTTLE(1, "Rotating at %.2frad/s to target pose %.2f %.2f; distance: %.2f, heading: %.2f",
+                        cmd.angular.z, x, y, distance, heading);
     }
     else
     {
-      ROS_INFO_THROTTLE(1, "Within distance to target pose at %.2f %.2f %.2f; distance: %.2f, heading: %.2f",
-                        x, y, z, distance, heading);
-      twist_pub_.publish(geometry_msgs::Twist());
+      cmd.linear.x = (distance - d_target_) * v_scale_;
+      cmd.angular.z = heading * w_scale_;
+      ROS_INFO_THROTTLE(1, "Following at %.2fm/s, %.2frad/s target pose %.2f %.2f; distance: %.2f, heading: %.2f",
+                        cmd.linear.x, cmd.angular.z, x, y, distance, heading);
     }
+    twist_pub_.publish(cmd);
 
-    // TODO: timeout to stop the robot if no pose is received;  or make an action server
+    // Reset timeout to stop the robot if no more poses are received within a short time
+    no_pose_timer_.stop();
+    no_pose_timer_.start();
+  }
+
+  void timerCallback(const ros::TimerEvent& event)
+  {
+    ROS_INFO("No pose msgs received for %gs: following stopped", no_pose_timeout_);
+    twist_pub_.publish(geometry_msgs::Twist());
   }
 
   bool changeModeSrvCb(turtlebot_msgs::SetFollowState::Request &request,
