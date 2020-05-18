@@ -6,7 +6,7 @@
       <collision name="collision">
         <geometry>
           <mesh>
-            <uri>model://cat_orange/meshes/12221_Cat_v1_l3.obj</uri>
+            <uri>model://cat_orange/meshes/Cat_v1_l3.obj</uri>
             <scale>0.01 0.01 0.01</scale>
           </mesh>
         </geometry>
@@ -14,7 +14,7 @@
       <visual name="visual">
         <geometry>
           <mesh>
-            <uri>model://cat_orange/meshes/12221_Cat_v1_l3.obj</uri>
+            <uri>model://cat_orange/meshes/Cat_v1_l3.obj</uri>
             <scale>0.01 0.01 0.01</scale>
           </mesh>
         </geometry>
