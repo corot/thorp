@@ -1,0 +1,128 @@
+# Publish all joint states
+joint_state_controller:
+  type: joint_state_controller/JointStateController
+  publish_rate: 40  
+
+# Arm Position Controller
+arm_controller:
+  type: effort_controllers/JointTrajectoryController
+  joints: [arm_shoulder_pan_joint, arm_shoulder_lift_joint, arm_elbow_flex_joint, arm_wrist_flex_joint]
+  constraints:
+    goal_time: 10.0
+    stopped_velocity_tolerance: 0.91  # Gazebo fails to reach resting with lower values (GOAL_TOLERANCE_VIOLATED error)
+    arm_shoulder_pan_joint: {trajectory: 1.0, goal: 1.0}
+    arm_shoulder_lift_joint: {trajectory: 1.0, goal: 1.0}
+    arm_elbow_flex_joint: {trajectory: 1.0, goal: 1.0}
+    arm_wrist_flex_joint: {trajectory: 1.0, goal: 1.0}
+  stop_trajectory_duration: 0.5
+  state_publish_rate:  25
+  action_monitor_rate: 10
+
+
+  gains:
+    arm_shoulder_pan_joint:
+      p: 100.0
+      i: 0.0
+      d: 0.0
+      i_clamp: 0.2
+      antiwindup: false
+      publish_state: true
+
+    arm_shoulder_lift_joint:
+      p: 100.0
+      i: 0.0
+      d: 0.0
+      i_clamp: 0.2
+      antiwindup: false
+      publish_state: true
+
+    arm_elbow_flex_joint:
+      p: 100.0
+      i: 0.0
+      d: 0.0
+      i_clamp: 0.2
+      antiwindup: false
+      publish_state: true
+
+    arm_wrist_flex_joint:
+      p: 100.0
+      i: 0.0
+      d: 0.0
+      i_clamp: 0.2
+      antiwindup: false
+      publish_state: true
+
+#arm_shoulder_pan_joint:
+#  type: effort_controllers/JointPositionController
+#  joint: arm_shoulder_pan_joint
+#  pid: {p: 100.0, i: 0.01, d: 10.0}
+#
+#arm_shoulder_lift_joint:
+#  type: effort_controllers/JointPositionController
+#  joint: arm_shoulder_lift_joint
+#  pid: {p: 100.0, i: 0.01, d: 10.0}
+#
+#arm_elbow_flex_joint:
+#  type: effort_controllers/JointPositionController
+#  joint: arm_elbow_flex_joint
+#  pid: {p: 100.0, i: 0.01, d: 10.0}
+#
+#arm_wrist_flex_joint:
+#  type: effort_controllers/JointPositionController
+#  joint: arm_wrist_flex_joint
+#  pid: {p: 100.0, i: 0.01, d: 10.0}
+#
+## Gripper Position Controller
+#gripper_joint:
+##gripper_controller:
+#  type: effort_controllers/JointPositionController
+#  joint: gripper_joint
+#  pid: {p: 100.0, i: 0.01, d: 10.0}
+
+#gazebo_ros_control:    #CON ESTO EXPLOTA EL BRAZO!!!!   pero si no se queja,,,,    joder con gazebo...
+#  pid_gains:
+#    arm_shoulder_pan_joint: {p: 100.0, i: 0.01, d: 10.0}
+#    arm_shoulder_lift_joint: {p: 100.0, i: 0.01, d: 10.0}
+#    arm_elbow_flex_joint: {p: 100.0, i: 0.01, d: 10.0}
+#    arm_wrist_flex_joint: {p: 100.0, i: 0.01, d: 10.0}
+#    gripper_joint: {p: 100.0, i: 0.01, d: 10.0}
+
+#    arm_shoulder_pan_joint:
+#      p: 100000.0
+#      i: 1000.0
+#      d: 100.0
+#      i_clamp: 0.2
+#      antiwindup: false
+#      publish_state: true
+#
+#    arm_shoulder_lift_joint:
+#      p: 100000.0
+#      i: 1000.0
+#      d: 100.0
+#      i_clamp: 0.2
+#      antiwindup: false
+#      publish_state: true
+#
+#    arm_elbow_flex_joint:
+#      p: 100000.0
+#      i: 1000.0
+#      d: 100.0
+#      i_clamp: 0.2
+#      antiwindup: false
+#      publish_state: true
+#
+#    arm_wrist_flex_joint:
+#      p: 100000.0
+#      i: 1000.0
+#      d: 100.0
+#      i_clamp: 0.2
+#      antiwindup: false
+#      publish_state: true
+#
+#    gripper_joint:
+#      p: 100000.0
+#      i: 1000.0
+#      d: 100.0
+#      i_clamp: 0.2
+#      antiwindup: false
+#      publish_state: true
