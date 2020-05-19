@@ -41,18 +41,21 @@ class CannonCtrlNode:
 
     def aim_to_target(self):
         if not self._target_obj_pose:
+            rospy.logwarn("No target pose to aim to")
             return ThorpError(code=ThorpError.INVALID_TARGET_POSE, text="No target pose to aim to")
-        pose_in_cannon_ref = TF2().transform_pose(self._target_obj_pose, None, 'cannon_link')
+        pose_in_cannon_ref = TF2().transform_pose(self._target_obj_pose, None, 'cannon_shaft_link')
         adjacent = pose_in_cannon_ref.pose.position.x
         opposite = pose_in_cannon_ref.pose.position.z
         tilt_angle = atan(opposite / adjacent)
-        print(degrees(tilt_angle))
+        print(adjacent, opposite, degrees(tilt_angle))
         return self.tilt(degrees(tilt_angle))
 
     def tilt(self, angle):
         if abs(angle) > 18.0:
-            return ThorpError(code=ThorpError.JOINT_OUT_OF_BOUNDS, text="Tilt angle out of bounds (-18, +18)")
-        rospy.loginfo("Tilting cannon to %.2f degrees", angle)
+            err_msg = "Tilt angle %g out of bounds (-18, +18)" % angle
+            rospy.logwarn(err_msg)
+            return ThorpError(code=ThorpError.JOINT_OUT_OF_BOUNDS, text=err_msg)
+        rospy.loginfo("Tilting cannon to %g degrees", angle)
         if angle < 0.0 and not self._simulation:
             # With real cannon I need to squeeze negative angles between 0 and -5, due to a strange effect on OpenCM
             # Servo class; -6 puts the cannon almost in collision with the upper plate! TODO investigate what's going on
