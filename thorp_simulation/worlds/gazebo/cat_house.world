@@ -39,12 +39,12 @@
     <!-- A couple of cute cats -->
     <include>
       <uri>model://cat_orange</uri>
-      <pose>1.0 -2.0 0 0 -0 0</pose>
+      <pose>1.0 -2.0 0 0 0 0</pose>
     </include>
 
     <include>
       <uri>model://cat_black</uri>
-      <pose>1.0 -3.0 0 0 -0 0</pose>
+      <pose>1.0 -3.0 0 0 0 0</pose>
     </include>
 
     <!-- Six rockets to fire at them -->

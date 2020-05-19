@@ -7,13 +7,14 @@ Panels:
         - /TF1/Frames1
         - /TF1/Tree1
       Splitter Ratio: 0.5
-    Tree Height: 767
+    Tree Height: 1127
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
     Expanded:
-      - /2D Pose Estimate1
       - /2D Nav Goal1
+      - /2D Pose Estimate1
+      - /Publish Point1
     Name: Tool Properties
     Splitter Ratio: 0.5886790156364441
   - Class: rviz/Views
@@ -1293,7 +1294,7 @@ Visualization Manager:
           Topic: /mobile_base/sensors/sonars/p90
           Unreliable: false
           Value: true
-      Enabled: true
+      Enabled: false
       Name: Sonars
     - Class: rviz/Group
       Displays:
@@ -1347,7 +1348,7 @@ Visualization Manager:
           Topic: /mobile_base/sensors/infrared/r155
           Unreliable: false
           Value: true
-      Enabled: true
+      Enabled: false
       Name: IR sensors
     - Alpha: 0.699999988079071
       Class: rviz/Map
@@ -1605,6 +1606,15 @@ Visualization Manager:
       Topic: /scan_matcher_pose
       Unreliable: false
       Value: true
+    - Class: rviz/InteractiveMarkers
+      Enable Transparency: true
+      Enabled: true
+      Name: Model Markers
+      Show Axes: true
+      Show Descriptions: true
+      Show Visual Aids: true
+      Update Topic: /model_markers/update
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -1613,49 +1623,52 @@ Visualization Manager:
     Frame Rate: 10
   Name: root
   Tools:
-    - Class: rviz/MoveCamera
     - Class: rviz/Interact
       Hide Inactive Objects: true
+    - Class: rviz/MoveCamera
     - Class: rviz/Select
+    - Class: rviz/Measure
+    - Class: rviz/SetGoal
+      Topic: goal
     - Class: rviz/SetInitialPose
       Theta std deviation: 0.2617993950843811
-      Topic: /initialpose
+      Topic: initialpose
       X std deviation: 0.5
       Y std deviation: 0.5
-    - Class: rviz/SetGoal
-      Topic: /move_base_simple/goal
-    - Class: rviz/Measure
+    - Class: rviz/PublishPoint
+      Single click: true
+      Topic: /clicked_point
   Value: true
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 11.851865768432617
+      Distance: 10.906749725341797
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 5.877128601074219
-        Y: 2.92472505569458
-        Z: -5.245208740234375e-6
+        X: 2.9858360290527344
+        Y: -2.4515461921691895
+        Z: -5.0961971282958984e-6
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.00039803981781
+      Pitch: 0.7047968506813049
       Target Frame: <Fixed Frame>
       Value: XYOrbit (rviz)
-      Yaw: 6.263584136962891
+      Yaw: 4.713569164276123
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 1025
+  Height: 1385
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd0000000400000000000001e1000003a7fc0200000005fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afc0000003d000003a7000000e60100001cfa000000000100000002fb000000100044006900730070006c0061007900730100000000000001e10000015600fffffffb0000000a005600690065007700730100000000ffffffff0000010000ffffff000000010000010f000003a7fc0200000002fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004a00000003efc0100000002fb0000000800540069006d00650000000000000004a0000002eb00fffffffb0000000800540069006d0065010000000000000450000000000000000000000556000003a700000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000400000000000001e10000050ffc0200000005fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afc0000003d0000050f000000e60100001cfa000000000100000002fb000000100044006900730070006c0061007900730100000000000001e10000015600fffffffb0000000a005600690065007700730100000000ffffffff0000010000ffffff000000010000010f000003a7fc0200000002fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004a00000003efc0100000002fb0000000800540069006d00650000000000000004a0000002eb00fffffffb0000000800540069006d00650100000000000004500000000000000000000007d60000050f00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -1664,6 +1677,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1853
-  X: 67
+  Width: 2493
+  X: 1987
   Y: 27

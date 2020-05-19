@@ -4,7 +4,6 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /Global Options1
         - /TF1/Frames1
         - /Camera1/Visibility1
         - /COB1
@@ -12,7 +11,7 @@ Panels:
         - /COB1/Tracked3/Status1
         - /COB1/Target Pose1/Status1
       Splitter Ratio: 0.5230547785758972
-    Tree Height: 378
+    Tree Height: 561
   - Class: rviz/Help
     Name: Help
   - Class: rviz/Views
@@ -656,6 +655,7 @@ Visualization Manager:
       Unreliable: false
       Value: false
       Visibility:
+        "": true
         COB:
           Detected: true
           Target Pose: true
@@ -952,7 +952,7 @@ Visualization Manager:
     - Class: rviz/Group
       Displays:
         - Class: rviz/Image
-          Enabled: true
+          Enabled: false
           Image Topic: /object_detection/detections_image
           Max Value: 1
           Median window: 5
@@ -962,9 +962,9 @@ Visualization Manager:
           Queue Size: 2
           Transport Hint: raw
           Unreliable: false
-          Value: true
+          Value: false
         - Class: rviz/Camera
-          Enabled: false
+          Enabled: true
           Image Rendering: background and overlay
           Image Topic: /object_detection/detections_image
           Name: Detected
@@ -972,7 +972,7 @@ Visualization Manager:
           Queue Size: 2
           Transport Hint: raw
           Unreliable: false
-          Value: false
+          Value: true
           Visibility:
             COB:
               Detected: true
@@ -981,20 +981,28 @@ Visualization Manager:
               Value: true
             Camera: true
             External:
-              "": true
+              DepthCloud External Camera: true
+              PointCloud2 External Camera: true
               Value: true
             Grid: true
             Kinect:
-              "": true
+              DepthCloud: true
+              Image: true
               Value: true
+            Models: true
             ORK:
-              "": true
+              ORK Clusters: true
+              ORK Objects: true
+              ORK Tables: true
               Value: true
             RobotModel: true
             TF: true
             Value: true
             Xtion:
-              "": true
+              DepthCloud: true
+              Image Color: true
+              Image Depth: true
+              PointCloud2: true
               Value: true
           Zoom Factor: 1
         - Class: rviz/MarkerArray
@@ -1002,7 +1010,8 @@ Visualization Manager:
           Marker Topic: /tracked_objects_markers
           Name: Tracked
           Namespaces:
-            17: true
+            18: true
+            19: true
           Queue Size: 100
           Value: true
         - Class: rviz/Image
@@ -1041,6 +1050,15 @@ Visualization Manager:
           Value: true
       Enabled: true
       Name: COB
+    - Class: rviz/InteractiveMarkers
+      Enable Transparency: true
+      Enabled: true
+      Name: Models
+      Show Axes: false
+      Show Descriptions: true
+      Show Visual Aids: false
+      Update Topic: /model_markers/update
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -1064,7 +1082,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 1.630037546157837
+      Distance: 4.204005241394043
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -1079,10 +1097,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.19479791820049286
+      Pitch: -0.11020208895206451
       Target Frame: base_link
       Value: XYOrbit (rviz)
-      Yaw: 3.904477596282959
+      Yaw: 4.804476261138916
     Saved: ~
 Window Geometry:
   Camera:
@@ -1091,7 +1109,7 @@ Window Geometry:
     collapsed: false
   Displays:
     collapsed: false
-  Height: 1025
+  Height: 1385
   Help:
     collapsed: false
   Hide Left Dock: false
@@ -1102,13 +1120,13 @@ Window Geometry:
     collapsed: false
   Image Depth:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000100000000000002b8000003a7fc020000000efc0000003d000001d4000000e60100001cfa000000000100000003fb000000100044006900730070006c0061007900730100000000000002b80000015600fffffffb0000000a005600690065007700730100000000ffffffff0000010000fffffffb0000000a0049006d0061006700650100000000ffffffff0000005e00fffffffb0000000a0049006d00610067006500000001440000009a0000001600fffffffb0000000800480065006c00700000000342000000bb0000006e00fffffffb000000100044006500740065006300740065006400000001ea0000011a0000001600fffffffb00000010004400650074006500630074006500640100000217000000d50000001600fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000002f1000000ab0000005c00fffffffb0000000c00430061006d006500720061020000000000000170000003b1000002c8fb000000160049006d00610067006500200043006f006c006f007200000002f5000000800000001600fffffffb000000160049006d006100670065002000440065007000740068000000037b000000690000001600fffffffb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e00670000000236000001cc0000000000000000fb0000000e0054007200610063006b0065006401000002f2000000f20000001600fffffffb0000000c00430061006d006500720061000000031a000000ca0000000000000000fb0000000c00430061006d00650072006100000002a4000000770000000000000000fb0000000a0049006d00610067006500000002e10000010300000000000000000000047f000003a700000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000100000000000002b80000050ffc020000000efc0000003d0000028b000000e60100001cfa000000000100000003fb000000100044006900730070006c0061007900730100000000000002b80000015600fffffffb0000000a005600690065007700730100000000ffffffff0000010000fffffffb0000000a0049006d0061006700650100000000ffffffff0000005e00fffffffb0000000a0049006d00610067006500000001440000009a0000001600fffffffb0000000800480065006c00700000000342000000bb0000006e00fffffffb000000100044006500740065006300740065006400000001ea0000011a0000001600fffffffb000000100044006500740065006300740065006401000002ce000001280000001600fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000002f1000000ab0000005c00fffffffb0000000c00430061006d006500720061020000000000000170000003b1000002c8fb000000160049006d00610067006500200043006f006c006f007200000002f5000000800000001600fffffffb000000160049006d006100670065002000440065007000740068000000037b000000690000001600fffffffb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e00670000000236000001cc0000000000000000fb0000000e0054007200610063006b0065006401000003fc000001500000001600fffffffb0000000c00430061006d006500720061000000031a000000ca0000000000000000fb0000000c00430061006d00650072006100000002a4000000770000000000000000fb0000000a0049006d00610067006500000002e1000001030000000000000000000006ff0000050f00000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Tool Properties:
     collapsed: false
   Tracked:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1853
-  X: 67
+  Width: 2493
+  X: 1987
   Y: 27

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 """
 A ROS node that gathers information about general objects detected in the environment,
 in opposition to tabletop objects for manipulation. For evey object, we track for a
@@ -41,7 +42,7 @@ class ObjectTrackingNode(object):
         rospy.init_node('cob_object_tracking', anonymous=False)
 
         self._buffer_length = 10   # TODO param  should be discard_after * freq
-        self._discard_after = rospy.Duration(5)
+        self._discard_after = rospy.Duration(1)
         self._tracked_objs = {}
         self._target_objs = rospy.get_param('~target_objects', None)
         self._last_img_cv = None
@@ -68,12 +69,10 @@ class ObjectTrackingNode(object):
 
     def detection_callback(self, msg):
         """
-        Callback for RGB images: The main logic is applied here
+        Callback for recognized objects
 
         Args:
         msg (cob_perception_msgs/DetectionArray): detections array
-        depth (sensor_msgs/PointCloud2): depth image from camera
-
         """
         # Check if there is a detection
         for i, detection in enumerate(msg.detections):
@@ -82,23 +81,21 @@ class ObjectTrackingNode(object):
             self._tracked_objs[detection.id].append(detection)
 
     def image_callback(self, msg):
+        """
+        Callback for RGB images showing recognized objects
+
+        Args:
+        msg (sensor_msgs/Image): RGB image from camera
+        """
         self._last_img_cv = self._cv_bridge.imgmsg_to_cv2(msg)
 
     def spin(self):
         """
-        Gets the necessary parameters from parameter server
-
-        Returns:
-        (tuple) :
-            depth_topic (String): Incoming depth topic name
-            face_topic (String): Incoming face bounding box topic name
-            output_topic (String): Outgoing depth topic name
-            f (Float): Focal Length
-            cx (Int): Principle Point Horizontal
-            cy (Int): Principle Point Vertical
+        Main loop: review tracked object observations and publish markers for them.
+        Publish also the pose of our target object, if any
         """
 
-        rate = rospy.Rate(20)
+        rate = rospy.Rate(10)
         while not rospy.is_shutdown():
             da = DetectionArray()
             ma = MarkerArray()
