@@ -1,0 +1,71 @@
+<!--
+  Thorp navigation:
+  - move_base[_flex]
+  - pose following
+  - geometric map
+  - semantic map???
+  - amcl localization
+ -->
+
+<launch>
+  <arg name="move_base_flex"  default="true"/>
+  <arg name="base_frame_id"   default="base_footprint"/>  
+  <arg name="odom_frame_id"   default="odom"/> 
+  <arg name="global_frame_id" default="map"/> 
+
+  <!-- Name of the map to use (without path nor extension) and initial position -->
+  <arg name="map_name"        default="home"/>
+  <arg name="map_file"        default="$(find thorp_navigation)/resources/maps/$(arg map_name).yaml"/>
+  <arg name="initial_pose_x"  default="0.0"/>
+  <arg name="initial_pose_y"  default="0.0"/>
+  <arg name="initial_pose_a"  default="0.0"/>
+
+  <!--  **************** Move base flex ***************  -->
+  <include if="$(arg move_base_flex)" file="$(find thorp_navigation)/launch/includes/move_base_flex.launch.xml">
+    <arg name="odom_frame_id"   value="$(arg odom_frame_id)"/>
+    <arg name="base_frame_id"   value="$(arg base_frame_id)"/>
+    <arg name="global_frame_id" value="$(arg global_frame_id)"/>
+  </include>
+
+  <!--  *** Turtlebot 2 move base with custom tweaks **  -->
+  <include unless="$(arg move_base_flex)" file="$(find thorp_navigation)/launch/includes/move_base.launch.xml">
+  </include>
+
+  <!--  **************** Pose following ****************  -->
+  <!-- Velocity smoother nodelet; we must provide the absolute name of nodelet manager, as we can be in an application namespace -->
+  <node pkg="nodelet" type="nodelet" name="follow_smoother" output="screen" respawn="true"
+        args="load yocs_velocity_smoother/VelocitySmootherNodelet /mobile_base_nodelet_manager">
+    <rosparam file="$(find thorp_navigation)/param/vel_smoother.yaml" command="load"/>
+    <remap from="follow_smoother/smooth_cmd_vel" to="/cmd_vel_mux/input/following"/>
+    <remap from="follow_smoother/robot_cmd_vel" to="/mobile_base/commands/velocity"/>
+    <remap from="follow_smoother/odometry" to="/odom"/>
+  </node>
+
+  <node pkg="thorp_navigation" type="pose_follower" name="pose_follower" output="screen" respawn="true">
+    <param name="enabled" value="false"/>
+    <param name="v_scale" value="1.0"/>
+    <param name="w_scale" value="5.0"/>
+
+    <remap from="cmd_vel" to="follow_smoother/raw_cmd_vel"/>
+    <remap from="target_pose" to="target_object_pose"/>
+  </node>
+
+  <!--  ****** Geometric and semantic map servers *****  -->
+  <node pkg="map_server" type="map_server" name="map_server" output="screen" respawn="true" args="$(arg map_file)">
+    <param name="frame_id" value="map"/>
+  </node>
+
+  <!--  ******************** Amcl *********************  -->
+  <include file="$(find thorp_navigation)/launch/includes/amcl.launch.xml">
+    <arg name="scan_topic"      value="scan"/>
+    <arg name="base_frame_id"   value="$(arg base_frame_id)"/>
+    <arg name="odom_frame_id"   value="$(arg odom_frame_id)"/>
+    <arg name="global_frame_id" value="$(arg global_frame_id)"/>
+    <arg name="initial_pose_x"  value="$(arg initial_pose_x)"/>
+    <arg name="initial_pose_y"  value="$(arg initial_pose_y)"/>
+    <arg name="initial_pose_a"  value="$(arg initial_pose_a)"/>
+  </include>
+  
+  <!--  ***** Watchdog to keep the pose on reboot *****  -->
+  <node pkg="thorp_toolkit" type="save_pose_node" name="save_amcl_pose" output="screen" respawn="true"/>
+</launch>

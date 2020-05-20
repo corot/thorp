@@ -18,7 +18,7 @@
   <include file="$(find turtlebot_navigation)/launch/includes/safety_controller.launch.xml"/>  <!-- TODO -->
 
   <!-- Move base flex and legacy relay to provide backward compatibility with move base -->
-  <node pkg="mbf_costmap_nav" type="mbf_costmap_nav" name="move_base_flex" output="screen" respawn="true">
+  <node pkg="mbf_costmap_nav" type="mbf_costmap_nav" name="move_base_flex" output="screen" respawn="true" launch-prefix="gdb -ex run --args">
     <rosparam file="$(find thorp_navigation)/param/move_base_flex/common_costmap.yaml" command="load" ns="global_costmap"/>
     <rosparam file="$(find thorp_navigation)/param/move_base_flex/common_costmap.yaml" command="load" ns="local_costmap"/>
     <rosparam file="$(find thorp_navigation)/param/move_base_flex/global_costmap.yaml" command="load"/>
@@ -44,3 +44,4 @@
     <rosparam file="$(find thorp_navigation)/param/move_base/move_base_params.yaml" command="load"/>
   </node>
 </launch>
+

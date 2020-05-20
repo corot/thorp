@@ -1,4 +1,4 @@
-NavfnROS:
+NavfnPlanner:
   visualize_potential: false    # Publish potential for rviz as pointcloud2, not really helpful, default false
   allow_unknown: false          # Specifies whether or not to allow navfn to create plans that traverse unknown space, default true
                                 # Needs to have track_unknown_space: true in the obstacle / voxel layer (in costmap_commons_param) to work
