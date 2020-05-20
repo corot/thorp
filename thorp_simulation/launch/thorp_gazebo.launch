@@ -2,10 +2,8 @@
   Thorp full simulation:
   - gazebo
   - simulated robot
-  - move base
-  - static map
-  - amcl localization
   - moveit arm control
+  - navigation
   - rviz view
  -->
 
@@ -15,8 +13,12 @@
 
   <arg name="move_base_flex" default="true"/>
 
-  <!-- Name of the world to spawn (without path nor extension) and initial position -->
+  <!-- To specify a simulated world other than the default 'playground', provide either word_name
+       (without path nor extension), or specific files (with full path) for both map and world.
+       Optionally, provide also an initial position -->
   <arg name="world_name"     default="playground"/>
+  <arg name="map_file"       default="$(find thorp_simulation)/worlds/maps/$(arg world_name).yaml"/>
+  <arg name="world_file"     default="$(find thorp_simulation)/worlds/gazebo/$(arg world_name).world"/>
   <arg name="initial_pose_x" default="0.0"/>
   <arg name="initial_pose_y" default="0.0"/>
   <arg name="initial_pose_a" default="0.0"/>
@@ -27,7 +29,7 @@
     <arg name="paused" value="$(arg paused)"/>
     <arg name="respawn_gazebo" value="true"/>
     <arg name="use_sim_time" value="true"/>
-    <arg name="world_name" value="$(find thorp_simulation)/worlds/gazebo/$(arg world_name).world"/>
+    <arg name="world_name" value="$(arg world_file)"/>
   </include>
 
   <!--  *************** Simulated Robot ***************  -->
@@ -37,26 +39,17 @@
     <arg name="initial_pose_a" value="$(arg initial_pose_a)"/>
   </include>
 
-  <!--  ******** Velocity commands multiplexer ********  -->
-  <node pkg="nodelet" type="nodelet" name="mobile_base_nodelet_manager" args="manager"/>
-  <node pkg="nodelet" type="nodelet" name="cmd_vel_mux" args="load yocs_cmd_vel_mux/CmdVelMuxNodelet mobile_base_nodelet_manager">
-    <param name="yaml_cfg_file" value="$(find thorp_bringup)/param/vel_multiplexer.yaml"/>
-  </node>
-
-  <!--  *************** Virtual sensors ***************  -->
-  <include file="$(find thorp_bringup)/launch/includes/virt_sensor.launch.xml"/>
+  <!--  ************* Common functionality ************  -->
+  <include file="$(find thorp_simulation)/launch/includes/thorp_common.launch.xml">
+    <arg name="move_base_flex"  value="$(arg move_base_flex)"/>
+    <arg name="map_file"        value="$(arg map_file)"/>
+    <arg name="initial_pose_x"  value="$(arg initial_pose_x)"/>
+    <arg name="initial_pose_y"  value="$(arg initial_pose_y)"/>
+    <arg name="initial_pose_a"  value="$(arg initial_pose_a)"/>
+  </include>
 
   <!-- Bumper/cliff events to pointcloud, so can be integrated on move_base's costmaps  -->
   <!-- TODO (not working, as it needs sensors/core messages and kobuki plugin only provides the events)
        Make a new nodelet bumper2range and PR to Yujin -->
   <include file="$(find turtlebot_bringup)/launch/includes/kobuki/bumper2pc.launch.xml"/>
-
-  <!--  ***************** Navigation ******************  -->
-  <include file="$(find thorp_navigation)/launch/navigation.launch">
-    <arg name="move_base_flex" value="$(arg move_base_flex)"/>
-    <arg name="map_file"       value="$(find thorp_simulation)/worlds/maps/$(arg world_name).yaml"/>
-    <arg name="initial_pose_x" value="$(arg initial_pose_x)"/>
-    <arg name="initial_pose_y" value="$(arg initial_pose_y)"/>
-    <arg name="initial_pose_a" value="$(arg initial_pose_a)"/>
-  </include>
 </launch>

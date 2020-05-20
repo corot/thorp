@@ -1,10 +1,8 @@
 <!--
-  Thorp global navigation simulation:
-  - stage
+  Thorp global navigation simulation on Stage:
+  - stage simulator
   - robot model
-  - move base
-  - static map
-  - amcl localization
+  - navigation
   - rviz view
  -->
 
@@ -49,17 +47,8 @@
   <!--  ***************** Robot Model *****************  -->
   <include file="$(find thorp_bringup)/launch/includes/model.launch.xml"/>
 
-  <!--  ******** Velocity commands multiplexer ********  -->
-  <node pkg="nodelet" type="nodelet" name="mobile_base_nodelet_manager" args="manager"/>
-  <node pkg="nodelet" type="nodelet" name="cmd_vel_mux" args="load yocs_cmd_vel_mux/CmdVelMuxNodelet mobile_base_nodelet_manager">
-    <param name="yaml_cfg_file" value="$(find thorp_bringup)/param/vel_multiplexer.yaml"/>
-  </node>
-
-  <!--  *************** Virtual sensors ***************  -->
-  <include file="$(find thorp_bringup)/launch/includes/virt_sensor.launch.xml"/>
-
-  <!--  ***************** Navigation ******************  -->
-  <include file="$(find thorp_navigation)/launch/navigation.launch">
+  <!--  ************* Common functionality ************  -->
+  <include file="$(find thorp_simulation)/launch/includes/thorp_common.launch.xml">
     <arg name="move_base_flex"  value="$(arg move_base_flex)"/>
     <arg name="map_file"        value="$(arg map_file)"/>
     <arg name="initial_pose_x"  value="$(arg initial_pose_x)"/>
