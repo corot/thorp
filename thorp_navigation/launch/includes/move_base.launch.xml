@@ -2,13 +2,15 @@
          ROS navigation system
 -->
 <launch>
+  <arg name="smooth_velocity" default="true"/>
+
   <!-- Velocity smoother nodelet; we must provide the absolute name of nodelet manager, as we can be in an application namespace -->
-  <node pkg="nodelet" type="nodelet" name="navigation_velocity_smoother" output="screen" respawn="true"
+  <node if="$(arg smooth_velocity)" pkg="nodelet" type="nodelet" name="vel_smoother" output="screen" respawn="true"
         args="load yocs_velocity_smoother/VelocitySmootherNodelet /mobile_base_nodelet_manager">
     <rosparam file="$(find thorp_navigation)/param/vel_smoother.yaml" command="load"/>
-    <remap from="navigation_velocity_smoother/smooth_cmd_vel" to="/cmd_vel_mux/input/navigation"/>
-    <remap from="navigation_velocity_smoother/robot_cmd_vel" to="/mobile_base/commands/velocity"/>
-    <remap from="navigation_velocity_smoother/odometry" to="/odom"/>
+    <remap from="vel_smoother/smooth_cmd_vel" to="/cmd_vel_mux/input/navigation"/>
+    <remap from="vel_smoother/robot_cmd_vel" to="/mobile_base/commands/velocity"/>
+    <remap from="vel_smoother/odometry" to="/odom"/>
   </node>
 
   <!-- Move base -->
@@ -22,7 +24,8 @@
     <rosparam file="$(find thorp_navigation)/param/move_base/move_base_params.yaml" command="load"/>
 
     <remap from="bumpers" to="/mobile_base/sensors/bumper_pointcloud"/>
-    <remap from="cmd_vel" to="navigation_velocity_smoother/raw_cmd_vel"/>
+    <remap from="cmd_vel" to="/vel_smoother/raw_cmd_vel" if="$(arg smooth_velocity)"/>
+    <remap from="cmd_vel" to="/cmd_vel_mux/input/navigation" unless="$(arg smooth_velocity)"/>
     <remap from="odom" to="/odom"/>
   </node>
 </launch>
