@@ -1,0 +1,37 @@
+# thorp recovery behaviors; use spinning as a last resort
+recovery_behaviors:
+  - name: 'super_conservative_reset'
+    type: 'clear_costmap_recovery/ClearCostmapRecovery'
+  - name: 'conservative_reset'
+    type: 'clear_costmap_recovery/ClearCostmapRecovery'
+  - name: 'aggressive_reset1'
+    type: 'clear_costmap_recovery/ClearCostmapRecovery'
+  - name: 'clearing_rotation'
+    type: 'rotate_recovery/RotateRecovery'
+  - name: 'aggressive_reset2'
+    type: 'clear_costmap_recovery/ClearCostmapRecovery'
+
+# apply reset to obstacle and range sensor layers
+super_conservative_reset:
+  reset_distance: 3.0
+  layer_names:
+    - obstacle_layer
+    - range_sensor_layer
+
+conservative_reset:
+  reset_distance: 1.5
+  layer_names:
+    - obstacle_layer
+    - range_sensor_layer
+
+aggressive_reset1:
+  reset_distance: 0.0
+  layer_names:
+    - obstacle_layer
+    - range_sensor_layer
+
+aggressive_reset2:
+  reset_distance: 0.0
+  layer_names:
+    - obstacle_layer
+    - range_sensor_layer

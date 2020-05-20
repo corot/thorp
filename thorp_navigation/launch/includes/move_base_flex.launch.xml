@@ -8,7 +8,8 @@
   <arg name="smooth_velocity" default="true"/>
 
   <!-- Velocity smoother nodelet; we must provide the absolute name of nodelet manager, as we can be in an application namespace -->
-  <node if="$(arg smooth_velocity)" pkg="nodelet" type="nodelet" name="vel_smoother" output="screen" respawn="true"
+  <node if="$(arg smooth_velocity)"
+        pkg="nodelet" type="nodelet" name="vel_smoother" output="screen" respawn="true"
         args="load yocs_velocity_smoother/VelocitySmootherNodelet /mobile_base_nodelet_manager">
     <rosparam file="$(find thorp_navigation)/param/vel_smoother.yaml" command="load"/>
     <remap from="vel_smoother/smooth_cmd_vel" to="/cmd_vel_mux/input/navigation"/>
@@ -33,7 +34,7 @@
     <param name="global_costmap/global_frame" value="$(arg global_frame_id)"/>
     <param name="global_costmap/robot_base_frame" value="$(arg base_frame_id)"/>
     <param name="local_costmap/global_frame" value="$(arg odom_frame_id)"/>
-    <param name="local_costmap/robot_base_frame" value="$(arg smooth_velocity)"/>
+    <param name="local_costmap/robot_base_frame" value="$(arg base_frame_id)"/>
     <param name="TrajectoryPlannerROS/global_frame_id" value="$(arg odom_frame_id)"/>
 
     <remap from="bumpers" to="/mobile_base/sensors/bumper_pointcloud"/>
