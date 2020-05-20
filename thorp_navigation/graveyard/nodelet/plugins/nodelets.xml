@@ -1,0 +1,7 @@
+<library path="lib/libpose_follower">
+    <class name="thorp_navigation/PoseFollower" type="thorp_navigation::PoseFollower" base_class_type="nodelet::Nodelet">
+        <description>
+            Thorp pose follower nodelet.
+        </description>
+    </class>
+</library>

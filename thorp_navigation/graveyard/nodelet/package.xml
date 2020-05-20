@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>thorp_navigation</name>
+  <version>0.1.0</version>
+  <description>
+   The thorp_navigation provides Thorp's navigation configuration and special-purpose nodes.
+  </description>
+  <maintainer email="jsantossimon@gmail.com">Jorge Santos Simón</maintainer>
+  <author email="jsantossimon@gmail.com">Jorge Santos Simón</author>
+
+  <license>BSD</license>
+
+  <url type="bugtracker">https://github.com/corot/thorp/issues</url>
+  <url type="repository">https://github.com/corot/thorp</url>
+  <url type="website">http://wiki.ros.org/thorp_navigation</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>tf</depend>
+  <depend>roscpp</depend>
+  <depend>nodelet</depend>
+  <depend>actionlib</depend>
+  <depend>actionlib_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>turtlebot_msgs</depend>
+  <depend>thorp_msgs</depend>
+  <depend>thorp_toolkit</depend>
+  <depend>visp_ros</depend>
+  <depend>dynamic_reconfigure</depend>
+
+  <export>
+    <nodelet plugin="${prefix}/plugins/nodelets.xml" />
+  </export>
+</package>
