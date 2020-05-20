@@ -79,5 +79,5 @@
 
   <!-- Run Rviz and load the default config to see the state of the move_group node and the block manipulation interactive markers -->
   <node pkg="rviz" type="rviz" name="rviz" output="screen" respawn="true"
-       args="-d $(find turtlebot_arm_block_manipulation)/demo/block_manipulation_demo.rviz" />
+       args="-d $(find turtlebot_arm_block_manipulation)/demo/block_manipulation_demo.rviz"/>
 </launch>

@@ -39,10 +39,10 @@
 
 recovery_behaviors:
   - {name: clear_costmaps,    type: clear_costmap_recovery/ClearCostmapRecovery}
-  - {name: out_of_collision,  type: slow_escape_recovery/SlowEscapeRecovery}
-  - {name: lp_altern_config,  type: change_config_recovery/ChangeConfigRecovery}
-  - {name: gp_altern_config,  type: clear_costmap_recovery/ClearCostmapRecovery}   # TODO dyn reconf. for NavFn and/or change global costmap params
-  - {name: escape_distance,   type: slow_escape_recovery/SlowEscapeRecovery}
+#  - {name: out_of_collision,  type: slow_escape_recovery/SlowEscapeRecovery}
+#  - {name: lp_altern_config,  type: change_config_recovery/ChangeConfigRecovery}
+#  - {name: gp_altern_config,  type: clear_costmap_recovery/ClearCostmapRecovery}   # TODO dyn reconf. for NavFn and/or change global costmap params
+#  - {name: escape_distance,   type: slow_escape_recovery/SlowEscapeRecovery}
   - {name: clearing_rotation, type: rotate_recovery/RotateRecovery}
 
 # Define parameters for move_base_flex recovery behaviors

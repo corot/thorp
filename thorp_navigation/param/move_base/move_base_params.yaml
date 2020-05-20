@@ -14,7 +14,7 @@ max_planning_retries: 3
 oscillation_timeout: 10.0
 oscillation_distance: 0.2
 
-# thorp_bringup recovery behaviors; we avoid spinning, but we need a fall-back replanning
+# thorp recovery behaviors; we avoid spinning, but we need a fall-back replanning
 recovery_behaviors:
   - name: 'super_conservative_reset'
     type: 'clear_costmap_recovery/ClearCostmapRecovery'

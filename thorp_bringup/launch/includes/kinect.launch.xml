@@ -7,8 +7,8 @@
 
   <!-- Factory-calibrated depth registration -->
   <arg name="depth_registration"              default="true"/>
-  <arg     if="$(arg depth_registration)" name="depth" value="depth_registered" />
-  <arg unless="$(arg depth_registration)" name="depth" value="depth" />
+  <arg     if="$(arg depth_registration)" name="depth" value="depth_registered"/>
+  <arg unless="$(arg depth_registration)" name="depth" value="depth"/>
 
   <!-- Laserscan processing -->
   <arg name="scan_topic"                        value="scan" />

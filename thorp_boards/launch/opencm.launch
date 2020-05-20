@@ -12,7 +12,7 @@
  and then replug the USB cable.
 -->
 <launch>
-  <arg name="simulation" default="false" />
+  <arg name="simulation" default="false"/>
 
   <node pkg="arbotix_python" type="arbotix_driver" name="arbotix" output="screen" respawn="false">
     <rosparam file="$(find thorp_boards)/param/opencm.yaml" command="load" />

@@ -2,7 +2,7 @@
          thorp_bringup controller
 -->
 <launch>
-  <arg name="debug_mode" default="false" />
+  <arg name="debug_mode" default="false"/>
 
   <!-- Velocity smoother nodelet; we must provide the absolute name of nodelet manager, as we can be in an application namespace -->
   <node pkg="nodelet" type="nodelet" name="special_tasks_velocity_smoother" output="screen" respawn="true"

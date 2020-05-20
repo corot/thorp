@@ -1,7 +1,7 @@
 <!--
   Thorp robot standalone:
   - turtlebot
-  - 3d sensor
+  - additional sensors
   - arduino interface
   - opencm interface
   - arm controllers
@@ -32,8 +32,10 @@
   <include file="$(find thorp_bringup)/launch/includes/arm.launch.xml"/>
   <include file="$(find thorp_bringup)/launch/includes/xtion.launch.xml"/>
 
-  <!-- Reconfigure command velocity multiplexer to fit thorp_bringup needs. Just set the parameter doesn't work
-       if we start the thorp_bringup rapp with app manager; we must explicitly call the reconfigure service -->
+  <!--  *************** Virtual sensors ***************  -->
+  <include file="$(find thorp_bringup)/launch/includes/virt_sensor.launch.xml"/>
+
+  <!-- Reconfigure command velocity multiplexer to fit Thorp's' needs -->
   <node pkg="rosservice" type="rosservice" name="reconfig_vel_mux" args="call --wait /cmd_vel_mux/set_parameters
             '{config:{strs:[[yaml_cfg_file,$(find thorp_bringup)/param/vel_multiplexer.yaml]]}}'"/>
 
