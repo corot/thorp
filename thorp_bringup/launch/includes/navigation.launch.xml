@@ -37,9 +37,9 @@
 
   <!--  **************** Pose following ****************  -->
   <node pkg="thorp_navigation" type="pose_follower" name="pose_follower" output="screen" respawn="true">
-    <param name="enabled" value="true"/>
-    <param name="x_scale" value="7.0"/>
-    <param name="z_scale" value="2.0"/>
+    <param name="enabled" value="false"/>
+    <param name="v_scale" value="1.0"/>
+    <param name="w_scale" value="5.0"/>
 
     <remap from="cmd_vel" to="/cmd_vel_mux/input/following"/>
     <remap from="target_pose" to="target_object_pose"/>
