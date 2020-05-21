@@ -8,7 +8,6 @@ import geometry_msgs.msg as geometry_msgs
 import move_base_msgs.msg as move_base_msgs
 
 from actionlib import *
-from actionlib_msgs.msg import *
 
 
 def main():
@@ -18,10 +17,10 @@ def main():
                                       'aborted',
                                       'preempted'])
     with sm:
-        ''' general '''
+        # general
         sm.userdata.true = True
         sm.userdata.false = False
-        ''' table poses '''
+        # table poses
         sm.userdata.pose_table_a = geometry_msgs.PoseStamped()
         sm.userdata.pose_table_a.header.stamp = rospy.Time.now()
         sm.userdata.pose_table_a.header.frame_id = "map"
@@ -39,7 +38,7 @@ def main():
         sm.userdata.pose_table_b.pose.orientation.y = 0.0
         sm.userdata.pose_table_b.pose.orientation.z = -0.509
         sm.userdata.pose_table_b.pose.orientation.w = 0.861
-        ''' Thorp base pose '''
+        # Thorp base pose
         sm.userdata.base_position = geometry_msgs.PoseStamped()
 
         smach.StateMachine.add('MoveToTableA',
@@ -47,32 +46,30 @@ def main():
                                                            move_base_msgs.MoveBaseAction,
                                                            goal_slots=['target_pose'],
                                                            result_slots=[]),
-                               remapping={'target_pose':'pose_table_a',
-                                          'base_position':'base_position'},
-                               transitions={'succeeded':'MoveToTableB',
-                                            'aborted':'aborted',
-                                            'preempted':'preempted'})
-
+                               remapping={'target_pose': 'pose_table_a',
+                                          'base_position': 'base_position'},
+                               transitions={'succeeded': 'MoveToTableB',
+                                            'aborted': 'aborted',
+                                            'preempted': 'preempted'})
 
         smach.StateMachine.add('MoveToTableB',
                                smach_ros.SimpleActionState('move_base',
                                                            move_base_msgs.MoveBaseAction,
                                                            goal_slots=['target_pose'],
                                                            result_slots=[]),
-                               remapping={'target_pose':'pose_table_b',
-                                          'base_position':'base_position'},
-                               transitions={'succeeded':'MoveToTableA',
-                                            'aborted':'aborted',
-                                            'preempted':'preempted'})
-
+                               remapping={'target_pose': 'pose_table_b',
+                                          'base_position': 'base_position'},
+                               transitions={'succeeded': 'MoveToTableA',
+                                            'aborted': 'aborted',
+                                            'preempted': 'preempted'})
 
     # Create and start the introspection server
     sis = smach_ros.IntrospectionServer('server_name', sm, '/SM_ROOT')
     sis.start()
-    
+
     # Execute the state machine
     outcome = sm.execute()
-    
+
     # Wait for ctrl-c to stop the application
     rospy.spin()
     sis.stop()

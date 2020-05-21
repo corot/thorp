@@ -8,11 +8,11 @@ import geometry_msgs.msg as geometry_msgs
 import move_base_msgs.msg as move_base_msgs
 
 from actionlib import *
-from actionlib_msgs.msg import *
 
 
 def monitor_cb(ud, msg):
     return True
+
 
 def main():
     rospy.init_node('smach_example_actionlib')
@@ -49,41 +49,39 @@ def main():
                                smach_ros.MonitorState("/sm_start",
                                                       Empty,
                                                       monitor_cb),
-                               transitions={'invalid':'aborted',
-                                            'valid':'MoveToTableA',
-                                            'preempted':'preempted'})
+                               transitions={'invalid': 'aborted',
+                                            'valid': 'MoveToTableA',
+                                            'preempted': 'preempted'})
 
         smach.StateMachine.add('MoveToTableA',
                                smach_ros.SimpleActionState('move_base',
                                                            move_base_msgs.MoveBaseAction,
                                                            goal_slots=['target_pose'],
                                                            result_slots=[]),
-                               remapping={'target_pose':'pose_table_a',
-                                          'base_position':'base_position'},
-                               transitions={'succeeded':'MoveToTableB',
-                                            'aborted':'aborted',
-                                            'preempted':'preempted'})
-
+                               remapping={'target_pose': 'pose_table_a',
+                                          'base_position': 'base_position'},
+                               transitions={'succeeded': 'MoveToTableB',
+                                            'aborted': 'aborted',
+                                            'preempted': 'preempted'})
 
         smach.StateMachine.add('MoveToTableB',
                                smach_ros.SimpleActionState('move_base',
                                                            move_base_msgs.MoveBaseAction,
                                                            goal_slots=['target_pose'],
                                                            result_slots=[]),
-                               remapping={'target_pose':'pose_table_b',
-                                          'base_position':'base_position'},
-                               transitions={'succeeded':'MoveToTableA',
-                                            'aborted':'aborted',
-                                            'preempted':'preempted'})
-
+                               remapping={'target_pose': 'pose_table_b',
+                                          'base_position': 'base_position'},
+                               transitions={'succeeded': 'MoveToTableA',
+                                            'aborted': 'aborted',
+                                            'preempted': 'preempted'})
 
     # Create and start the introspection server
     sis = smach_ros.IntrospectionServer('server_name', sm, '/SM_ROOT')
     sis.start()
-    
+
     # Execute the state machine
     outcome = sm.execute()
-    
+
     # Wait for ctrl-c to stop the application
     rospy.spin()
     sis.stop()
