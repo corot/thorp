@@ -6,45 +6,42 @@
  -->
 
 <launch>
+  <arg name="app_name" value="block_manip"/>
+
   <arg name="external_camera" default="false"/>
 
   <!--  ***** Simulated mobile manipulator Thorp ******  -->
 
-  <include file="$(find thorp_simulation)/launch/thorp_gazebo.launch"/>
-
-
-  <!--  ************** Moveit move groups *************  -->
-
-  <include file="$(find thorp_moveit_config)/launch/move_group.launch">
-    <arg name="allow_trajectory_execution" value="true"/>
-    <arg name="fake_execution" value="false"/>
-    <arg name="info" value="true"/>
-    <arg name="debug" value="false"/>
+  <include file="$(find thorp_simulation)/launch/thorp_gazebo.launch">
+    <arg name="world_name"     default="playground"/>
+    <arg name="initial_pose_x" default="0.0"/>
+    <arg name="initial_pose_y" default="0.0"/>
+    <arg name="initial_pose_a" default="0.0"/>
   </include>
 
 
   <!--  *********** Block manipulation demo ***********  -->
 
-  <node name="block_detection_action_server" pkg="turtlebot_arm_block_manipulation" type="block_detection_action_server" output="screen">
+  <node name="block_detection_action_server" pkg="turtlebot_arm_block_manipulation" type="block_detection_action_server" output="screen" respawn="true">
     <rosparam param="table_pose">[0.09, 0.0, -0.015]</rosparam>
     <remap if="$(arg external_camera)" from="/camera/depth_registered/points" to="/external_camera/depth_registered/points"/>
     <remap unless="$(arg external_camera)" from="/camera/depth_registered/points" to="/xtion/depth_registered/points"/>
   </node>
 
-  <node name="pick_and_place_action_server" pkg="turtlebot_arm_block_manipulation" type="pick_and_place_action_server" output="screen">
+  <node name="pick_and_place_action_server" pkg="turtlebot_arm_block_manipulation" type="pick_and_place_action_server" output="screen" respawn="true">
     <param name="grasp_attach_time" value="0.0"/>  <!-- 15.0s required to cheat Gazebo2 -->
     <param name="grasp_detach_time" value="0.0"/>  <!-- 10.0s required to cheat Gazebo2 --> 
   </node>
   
-  <node name="interactive_manipulation_action_server" pkg="turtlebot_arm_block_manipulation" type="interactive_manipulation_action_server" output="screen">
+  <node name="interactive_manipulation_action_server" pkg="turtlebot_arm_block_manipulation" type="interactive_manipulation_action_server" output="screen" respawn="true">
     <param name="bump_size" value="0.02"/>
   </node>
 
 
   <!--  ****** Executive smach and visualization ******  -->
 
-  <node name="block_manipulation_demo" pkg="thorp_smach" type="block_manip.py" output="screen"    respawn="true">  <!-- TODO: does nothing until restarted!!! -->
-    <param name="arm_link" value="/arm_base_link"/>
+  <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="true">
+    <param name="arm_link" value="arm_base_link"/>
     <param name="gripper_open" value="0.045"/>
     <param name="gripper_closed" value="0.02"/>
     <param name="z_up" value="0.05"/>
@@ -52,7 +49,7 @@
     <param name="block_size" value="0.025"/>
   </node>
 
-  <node name="block_manip_smach_viewer" pkg="smach_viewer" type="smach_viewer.py" output="screen"/>
+  <node pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_manip.rviz"/>
 </launch>
