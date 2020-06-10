@@ -26,3 +26,7 @@
     local-name: rail_collada_models
     uri: https://github.com/GT-RAIL/rail_collada_models.git
     version: develop
+- git:
+    local-name: ipa_coverage_planning
+    uri: https://github.com/ipa320/ipa_coverage_planning
+    version: indigo_dev
