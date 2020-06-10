@@ -1,0 +1,24 @@
+<!--
+  Patrol between two points app:
+  - Thorp Stage simulation
+  - Executive SMACH and visualization
+ -->
+
+<launch>
+  <arg name="app_name" value="explore_house"/>
+
+  <!--  ***** Simulated mobile manipulator Thorp ******  -->
+  <include file="$(find thorp_simulation)/launch/thorp_stage.launch">
+    <arg name="world_name"     default="cat_house"/>
+    <arg name="initial_pose_x" default="0.0"/>
+    <arg name="initial_pose_y" default="-2.0"/>
+    <arg name="initial_pose_a" default="0.0"/>
+  </include>
+
+  <!--  ****** Executive smach and visualization ******  -->
+  <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="true">
+    <param name="rec_objects_frame" value="map"/>
+  </node>
+
+  <node pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
+</launch>

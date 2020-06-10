@@ -1,0 +1,36 @@
+<!--
+  Simulated version of Thorp's object manipulation app:
+  - Full Thorp Gazebo simulation
+  - Executive SMACH and visualization
+ -->
+
+<launch>
+  <arg name="app_name" value="object_manip"/>
+
+  <!--  ***** Simulated mobile manipulator Thorp ******  -->
+  <include file="$(find thorp_simulation)/launch/thorp_gazebo.launch">
+    <arg name="world_name"     default="playground"/>
+    <arg name="initial_pose_x" default="0.0"/>
+    <arg name="initial_pose_y" default="0.0"/>
+    <arg name="initial_pose_a" default="0.0"/>
+  </include>
+
+  <!--  ********* Perception and manipulation *********  -->
+  <include file="$(find thorp_bringup)/launch/includes/perception.launch.xml">
+    <arg name="pipeline" value="RAIL"/>
+  </include>
+
+  <include file="$(find thorp_bringup)/launch/includes/manipulation.launch.xml">
+    <arg name="simulation" value="true"/>
+    <arg name="debug" value="false"/>
+  </include>
+
+  <!--  ****** Executive smach and visualization ******  -->
+  <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="true">
+    <param name="rec_objects_frame" value="map"/>
+  </node>
+
+  <node pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_manip.rviz"/>
+</launch>

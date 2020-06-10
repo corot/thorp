@@ -1,0 +1,53 @@
+<!--
+  Simulated version of Thorp's blocks manipulation demo using SMACH instead of C++ block_manipulation_demo node:
+  - Full Thorp Gazebo simulation
+  - Block manipulation stuff
+  - Executive SMACH and visualization
+ -->
+
+<launch>
+  <arg name="app_name" value="cat_hunter"/>
+
+  <!--  ***** Simulated mobile manipulator Thorp ******  -->
+
+  <include file="$(find thorp_simulation)/launch/thorp_gazebo.launch">
+    <arg name="world_name"     default="cat_house"/>
+    <arg name="initial_pose_x" default="0.0"/>
+    <arg name="initial_pose_y" default="-2.0"/>
+    <arg name="initial_pose_a" default="0.0"/>
+  </include>
+
+
+  <!--  ***** Object recognition using the Kinect *****  -->
+
+  <include file="$(find thorp_bringup)/launch/includes/perception.launch.xml">
+    <arg name="pipeline" value="COB"/>
+    <arg name="target_objects" value="[cat, dog, horse]"/>
+  </include>
+
+
+  <!--  ****************** Utilities ******************  -->
+
+  <node name="model_markers" pkg="thorp_simulation" type="model_markers.py" output="screen" respawn="true"
+        args="cat_orange cat_black"/>
+
+
+  <!--  ****** Executive smach and visualization ******  -->
+
+
+<!--  <node name="block_manipulation_demo" pkg="thorp_smach" type="block_manip.py" output="screen">
+    <param name="arm_link" value="/arm_base_link"/>
+    <param name="gripper_open" value="0.045"/>
+    <param name="gripper_closed" value="0.02"/>
+    <param name="z_up" value="0.05"/>
+    <param name="table_height" value="-0.03"/>
+    <param name="block_size" value="0.025"/>
+  </node>
+
+  <node name="block_manip_smach_viewer" pkg="smach_viewer" type="smach_viewer.py" output="screen"/>
+
+
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_perc.rviz"/>
+  -->
+</launch>
