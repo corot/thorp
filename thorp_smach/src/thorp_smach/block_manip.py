@@ -4,10 +4,8 @@ import rospy
 import smach
 import smach_ros
 
-import geometry_msgs.msg as geometry_msgs
-import move_base_msgs.msg as move_base_msgs
+import geometry_msgs.msg as geometry_msg
 
-from actionlib import *
 from turtlebot_arm_block_manipulation.msg import *
 
 
@@ -32,16 +30,17 @@ def main():
         sm.userdata.z_up = rospy.get_param('~z_up', 0.12)
         sm.userdata.table_height = rospy.get_param('~table_height', 0.1)
         sm.userdata.block_size = rospy.get_param('~block_size', 0.025)
-        sm.userdata.blocks = geometry_msgs.PoseArray()
-        sm.userdata.pickup_pose = geometry_msgs.Pose()
-        sm.userdata.place_pose = geometry_msgs.Pose()
+        sm.userdata.blocks = geometry_msg.PoseArray()
+        sm.userdata.pickup_pose = geometry_msg.Pose()
+        sm.userdata.place_pose = geometry_msg.Pose()
         sm.userdata.topic = ''
 
         smach.StateMachine.add('BlockDetection',
                                smach_ros.SimpleActionState('block_detection',
                                                            BlockDetectionAction,
                                                            goal_slots=['frame', 'table_height', 'block_size'],
-                                                           result_slots=['blocks']),
+                                                           result_slots=['blocks'],
+                                                           server_wait_timeout=rospy.Duration(120)),
                                remapping={'frame': 'frame',
                                           'table_height': 'table_height',
                                           'block_size': 'block_size',
@@ -54,7 +53,8 @@ def main():
                                smach_ros.SimpleActionState('interactive_manipulation',
                                                            InteractiveBlockManipulationAction,
                                                            goal_slots=['frame', 'block_size'],
-                                                           result_slots=['pickup_pose', 'place_pose']),
+                                                           result_slots=['pickup_pose', 'place_pose'],
+                                                           server_wait_timeout=rospy.Duration(120)),
                                remapping={'frame': 'frame',
                                           'block_size': 'block_size',
                                           'pickup_pose': 'pickup_pose',
@@ -69,7 +69,8 @@ def main():
                                                            goal_slots=['frame', 'z_up',
                                                                        'gripper_open', 'gripper_closed',
                                                                        'pickup_pose', 'place_pose', 'topic'],
-                                                           result_slots=[]),
+                                                           result_slots=[],
+                                                           server_wait_timeout=rospy.Duration(120)),
                                remapping={'frame': 'frame',
                                           'z_up': 'z_up',
                                           'gripper_open': 'gripper_open',
