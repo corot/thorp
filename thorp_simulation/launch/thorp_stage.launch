@@ -36,7 +36,7 @@
         Args:
           -g : run in headless mode.
   --> 
-  <node pkg="stage_ros" type="stageros" name="stageros" args="$(arg world_file)">
+  <node pkg="stage_ros" type="stageros" name="stageros" args="$(arg world_file)" output="screen" respawn="true">
     <param name="base_watchdog_timeout" value="0.5"/>
     <remap from="odom" to="odom"/>
     <remap from="base_pose_ground_truth" to="base_pose_ground_truth"/>

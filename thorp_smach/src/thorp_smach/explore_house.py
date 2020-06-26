@@ -4,62 +4,74 @@ import rospy
 import smach
 import smach_ros
 
-import geometry_msgs.msg as geometry_msgs
-import move_base_msgs.msg as move_base_msgs
-
-from actionlib import *
+from toolkit.explore_states import *
 
 
 def main():
+    """
+    Explore house SM:
+     - segment map into rooms and plan visit sequence
+     - iterate over all rooms and explore following the planned sequence
+    """
     rospy.init_node('smach_explore_house')
 
-    sm = smach.StateMachine(outcomes=['success',
-                                      'aborted',
-                                      'preempted'])
-    with sm:
-        # general
-        sm.userdata.true = True
-        sm.userdata.false = False
-        # table poses
-        sm.userdata.pose_table_a = geometry_msgs.PoseStamped()
-        sm.userdata.pose_table_a.header.stamp = rospy.Time.now()
-        sm.userdata.pose_table_a.header.frame_id = "map"
-        sm.userdata.pose_table_a.pose.position.x = 2.0
-        sm.userdata.pose_table_a.pose.position.y = 5.0
-        sm.userdata.pose_table_a.pose.orientation.x = 0.0
-        sm.userdata.pose_table_a.pose.orientation.y = 0.0
-        sm.userdata.pose_table_a.pose.orientation.z = 0.851
-        sm.userdata.pose_table_a.pose.orientation.w = 0.526
-        sm.userdata.pose_table_b = geometry_msgs.PoseStamped()
-        sm.userdata.pose_table_b.header = sm.userdata.pose_table_a.header
-        sm.userdata.pose_table_b.pose.position.x = 2.0
-        sm.userdata.pose_table_b.pose.position.y = 1.0
-        sm.userdata.pose_table_b.pose.orientation.x = 0.0
-        sm.userdata.pose_table_b.pose.orientation.y = 0.0
-        sm.userdata.pose_table_b.pose.orientation.z = -0.509
-        sm.userdata.pose_table_b.pose.orientation.w = 0.861
-        # Thorp base pose
-        sm.userdata.base_position = geometry_msgs.PoseStamped()
+    TF2()  # start listener asap
 
-        smach.StateMachine.add('MoveToTableA',
-                               smach_ros.SimpleActionState('move_base',
-                                                           move_base_msgs.MoveBaseAction,
-                                                           goal_slots=['target_pose'],
-                                                           result_slots=[]),
-                               remapping={'target_pose': 'pose_table_a',
-                                          'base_position': 'base_position'},
-                               transitions={'succeeded': 'MoveToTableB',
+    # segment house into rooms and plan visit sequence
+    plan_room_seq_sm = smach.Sequence(outcomes=['succeeded', 'aborted', 'preempted'],
+                                      connector_outcome='succeeded',
+                                      output_keys=['map_image', 'map_resolution', 'map_origin', 'robot_radius',
+                                                   'segmented_map', 'room_sequence'])
+    with plan_room_seq_sm:
+        smach.Sequence.add('SEGMENT_ROOMS', SegmentRooms())
+        smach.Sequence.add('GET_ROBOT_POSE', GetRobotPose())
+        smach.Sequence.add('PLAN_ROOM_SEQUENCE', PlanRoomSequence(),
+                           remapping={'input_map': 'map_image'})
+
+    # explore a single room
+    explore_1_room_sm = smach.Sequence(outcomes=['succeeded', 'aborted', 'preempted'],
+                                       connector_outcome='succeeded',
+                                       input_keys=['map_image', 'map_resolution', 'map_origin', 'robot_radius',
+                                                   'segmented_map', 'room_number'])
+    with explore_1_room_sm:
+        smach.Sequence.add('GET_ROBOT_POSE', GetRobotPose())
+        smach.Sequence.add('PLAN_ROOM_EXPL', PlanRoomExploration())
+        smach.Sequence.add('TRAVERSE_POSES', TraversePoses(),
+                           remapping={'poses': 'coverage_path_pose_stamped'})
+
+    # iterate over all rooms and explore following the planned sequence
+    explore_house_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted'],
+                                      input_keys=['map_image', 'map_resolution', 'map_origin', 'robot_radius',
+                                                  'segmented_map', 'room_sequence'],
+                                      output_keys=[],
+                                      it=lambda: sm.userdata.room_sequence,  # must be a lambda because we destroy the list
+                                      it_label='room_number',
+                                      exhausted_outcome='succeeded')
+    with explore_house_it:
+        cont_sm = smach.StateMachine(outcomes=['succeeded', 'preempted', 'aborted', 'continue'],
+                                     input_keys=['map_image', 'map_resolution', 'map_origin', 'robot_radius',
+                                                 'segmented_map', 'room_number'],
+                                     output_keys=[])
+        with cont_sm:
+            smach.StateMachine.add('EXPLORE_1_ROOM', explore_1_room_sm,
+                                   transitions={'succeeded': 'continue',
+                                                'aborted': 'aborted',
+                                                'preempted': 'preempted'})
+
+        smach.Iterator.set_contained_state('', cont_sm, loop_outcomes=['continue'])
+
+    # Full SM: plan rooms visit sequence and explore each room in turn
+    sm = smach.StateMachine(outcomes=['succeeded',
+                                      'aborted',
+                                      'preempted'],
+                            output_keys=[])
+    with sm:
+        smach.StateMachine.add('PLAN_ROOM_SEQ', plan_room_seq_sm,
+                               transitions={'succeeded': 'EXPLORE_HOUSE',
                                             'aborted': 'aborted',
                                             'preempted': 'preempted'})
-
-        smach.StateMachine.add('MoveToTableB',
-                               smach_ros.SimpleActionState('move_base',
-                                                           move_base_msgs.MoveBaseAction,
-                                                           goal_slots=['target_pose'],
-                                                           result_slots=[]),
-                               remapping={'target_pose': 'pose_table_b',
-                                          'base_position': 'base_position'},
-                               transitions={'succeeded': 'MoveToTableA',
+        smach.StateMachine.add('EXPLORE_HOUSE', explore_house_it,
+                               transitions={'succeeded': 'succeeded',
                                             'aborted': 'aborted',
                                             'preempted': 'preempted'})
 

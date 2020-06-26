@@ -1,0 +1,14 @@
+# room exploration parameters
+
+# this field of view fits a Kinect sensor mounted in the standard position on a TB2, assuming 60 deg. horizontal fov
+# (well below actual 84.1° to ensure we see the whole target) and 0.5/2.0m as min/max distances (y = tan(fov/2)*dist)
+field_of_view_origin: [-0.087, -0.013, 0.287]  # tf base_footprint -> kinect_rgb_frame
+field_of_view_points: [[0.5, 0.288675135, 0.0],
+                       [0.5,-0.288675135, 0.0],
+                       [2.0,-1.154700538, 0.0],
+                       [2.0, 1.154700538, 0.0]]
+room_exploration_algorithm: 8  # Use a variant of the boustrophedon exploration algorithm
+display_trajectory: true
+execute_path: false  # we do ourselves
+return_path: true
+camera_frame: base_footprint  ## TODO ??? q hace el codigo?

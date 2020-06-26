@@ -120,6 +120,16 @@ def get_pose_from_co(co, stamped=False):
     return pose_stamped
 
 
+def to_pose2d(pose):
+    if isinstance(pose, geometry_msgs.PoseStamped):
+        p = pose.pose
+    elif isinstance(pose, geometry_msgs.Pose):
+        p = pose
+    else:
+        raise rospy.ROSException("Input parameter pose is not a valid geometry_msgs pose object")
+    return geometry_msgs.Pose2D(p.position.x, p.position.y, yaw(p))
+
+
 def pose2d2str(pose):
     """ Provide a string representation of a geometry_msgs 2D pose """
     return "[x: {:.2f}, y: {:.2f}, yaw: {:.2f}]".format(pose.position.x, pose.position.y, yaw(pose))
