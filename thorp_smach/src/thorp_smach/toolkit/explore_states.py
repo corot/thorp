@@ -19,7 +19,8 @@ class SegmentRooms(smach_ros.SimpleActionState):
                                            ipa_building_msgs.MapSegmentationAction,
                                            goal_cb=self.make_goal,
                                            result_cb=self.result_cb,
-                                           result_slots=['segmented_map', 'room_information_in_pixel'],
+                                           result_slots=['segmented_map',
+                                                         'room_information_in_meter', 'room_information_in_pixel'],
                                            output_keys=['map_image', 'map_origin', 'map_resolution', 'robot_radius'])
         self.img_pub = rospy.Publisher('exploration/room_segmentation_img', sensor_msgs.Image, queue_size=1, latch=True)
 
@@ -62,10 +63,11 @@ class SegmentRooms(smach_ros.SimpleActionState):
         rospy.Publisher('/exploration/img', sensor_msgs.Image, queue_size=1, latch=True).publish(goal.input_map)
         goal.map_origin = occ_grid_map.info.origin
         goal.map_resolution = occ_grid_map.info.resolution
-        goal.return_format_in_meter = False
+        goal.return_format_in_meter = True
         goal.return_format_in_pixel = True
         goal.robot_radius = rospy.get_param('/move_base_flex/global_costmap/robot_radius', 0.18)
-        # those values are also needed by PlanRoomSequence, so share them as output keys
+        # those values are also needed by PlanRoomSequence and PlanRoomExploration, so share them as output keys
+        # the segmented map comes with its own origin and resolution, but are the same as for the input map
         ud['map_image'] = goal.input_map
         ud['map_origin'] = goal.map_origin
         ud['map_resolution'] = goal.map_resolution
@@ -100,9 +102,13 @@ class PlanRoomExploration(smach_ros.SimpleActionState):
                                                   goal_cb=self.make_goal,
                                                   goal_slots=['map_resolution', 'map_origin', 'robot_radius'],
                                                   result_slots=['coverage_path', 'coverage_path_pose_stamped'],
-                                                  input_keys=['map_image', 'segmented_map', 'room_number', 'robot_start_coordinate'])
+                                                  input_keys=['map_image', 'segmented_map', 'robot_pose',
+                                                              'room_number', 'room_information_in_meter'])
         self.path_pub = rospy.Publisher('/exploration/coverage_path', nav_msgs.Path, queue_size=1, latch=True)
         # TODO already have!!! compare both  not really needed
+        self.start_pub = rospy.Publisher('/exploration/starting_point', geometry_msgs.PointStamped, queue_size=1)
+        self.fov_pub = rospy.Publisher('/exploration/camera_fov', geometry_msgs.PolygonStamped, queue_size=1)
+        self.fov_pub_timer = None
 
     def make_goal(self, ud, goal):
         """ Create a goal for the action
@@ -127,18 +133,26 @@ class PlanRoomExploration(smach_ros.SimpleActionState):
                     goal.input_map.data += b'\x00'
 
         fov_points = rospy.get_param('/exploration/room_exploration_server/field_of_view_points')
-        fov_origin = rospy.get_param('/exploration/room_exploration_server/field_of_view_origin')  # TODO use tf frame
-        goal.field_of_view_origin = geometry_msgs.Point32(*fov_origin)
+        goal.field_of_view_origin = TF2().transform_pose(None, 'kinect_rgb_frame', 'base_footprint').pose.position
         goal.field_of_view = [geometry_msgs.Point32(*pt) for pt in fov_points]
         goal.planning_mode = 2  # plan a path for coverage with the robot's field of view
-        goal.starting_position = to_pose2d(ud['robot_start_coordinate'])  # we need to convert to Pose2D msg
+        goal.starting_position = to_pose2d(ud['robot_pose'])  # we need to convert to Pose2D msg
+
+        # use room center as starting point
+        room_info = ud['room_information_in_meter'][room_number - 1]
+        start_point = geometry_msgs.PointStamped()
+        start_point.header.frame_id = 'map'
+        start_point.point = room_info.room_center
+        self.start_pub.publish(start_point)
+        # TODO: use room_info.room_min_max to avoid points colliding with the walls
 
         # visualize explore map and fov on RViz
         fov = geometry_msgs.PolygonStamped()
         fov.header.frame_id = 'kinect_rgb_frame'
         fov.polygon.points = goal.field_of_view
         rospy.Publisher('/exploration/img', sensor_msgs.Image, queue_size=1, latch=True).publish(goal.input_map)
-        rospy.Publisher('/exploration/fov', geometry_msgs.PolygonStamped, queue_size=1, latch=True).publish(fov)
+        if not self.fov_pub_timer:
+            self.fov_pub_timer = rospy.Timer(rospy.Duration(0.1), lambda e: self.fov_pub.publish(fov))
 
     def result_cb(self, ud, status, result):
         path = nav_msgs.Path(result.coverage_path_pose_stamped[0].header, result.coverage_path_pose_stamped)
@@ -151,12 +165,12 @@ class GetRobotPose(smach.State):
     def __init__(self):
         smach.State.__init__(self,
                              outcomes=['succeeded', 'aborted'],
-                             output_keys=['robot_start_coordinate'])  # TODO try remapping
+                             output_keys=['robot_pose'])
 
     def execute(self, ud):
         try:
             # set as Pose, no PoseStamped, as required by FindRoomSequenceWithCheckpointsGoal
-            ud['robot_start_coordinate'] = TF2().transform_pose(None, 'base_footprint', 'map').pose
+            ud['robot_pose'] = TF2().transform_pose(None, 'base_footprint', 'map').pose
             return 'succeeded'
         except rospy.ROSException as err:
             rospy.logerr("Get robot pose failed: %s", str(err))
