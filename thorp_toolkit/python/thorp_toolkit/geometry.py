@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from math import *
 from .singleton import Singleton
 
@@ -9,6 +7,7 @@ import tf2_ros
 import tf2_geometry_msgs
 from tf.transformations import quaternion_from_euler, euler_from_quaternion
 
+import std_msgs.msg as std_msgs
 import geometry_msgs.msg as geometry_msgs
 
 
@@ -128,6 +127,15 @@ def to_pose2d(pose):
     else:
         raise rospy.ROSException("Input parameter pose is not a valid geometry_msgs pose object")
     return geometry_msgs.Pose2D(p.position.x, p.position.y, yaw(p))
+
+
+def to_pose3d(pose, timestamp=rospy.Time(), frame=None):
+    if isinstance(pose, geometry_msgs.Pose2D):
+        p = geometry_msgs.Pose(geometry_msgs.Point(pose.x, pose.y, 0.0), quaternion_from_yaw(pose.theta))
+        if not frame:
+            return p
+        return geometry_msgs.PoseStamped(std_msgs.Header(0, timestamp, frame), p)
+    raise rospy.ROSException("Input parameter pose is not a geometry_msgs.Pose2D object")
 
 
 def pose2d2str(pose):

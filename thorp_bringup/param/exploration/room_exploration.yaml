@@ -6,8 +6,16 @@ field_of_view_points: [[0.5, 0.288675135, 0.0],
                        [0.5,-0.288675135, 0.0],
                        [2.0,-1.154700538, 0.0],
                        [2.0, 1.154700538, 0.0]]
-room_exploration_algorithm: 8  # Use a variant of the boustrophedon exploration algorithm
+room_exploration_algorithm: 4  # Use the convex SPP exploration algorithm
 display_trajectory: true
-execute_path: false  # we do ourselves
+execute_path: false  # we do ourselves (this just sends goal by goal to move_base)
 return_path: true
-camera_frame: base_footprint  ## TODO ??? q hace el codigo?
+
+# I think all these is for nav
+#camera_frame: kinect_rgb_frame  ## used only if execute_path is true, I think
+#grid_line_length: 15
+#path_eps: 10
+#cell_size: 10
+#plan_for_footprint: true
+#goal_eps: 0.0
+#delta_theta: 0.005

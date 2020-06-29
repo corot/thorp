@@ -1,5 +1,5 @@
 # room segmentation parameters
-display_segmented_map: true
+display_segmented_map: false
 publish_segmented_map: true
 room_segmentation_algorithm: 3             # we use the Voronoi segmentation algorithm
 room_area_factor_lower_limit_voronoi: 1.8  # magic number that merges the entrance with another room keeping the rest equal; mmm... not ideal

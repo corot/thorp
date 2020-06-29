@@ -5,12 +5,13 @@ import smach
 import smach_ros
 
 import nav_msgs.msg as nav_msgs
-import mbf_msgs.msg as mbf_msgs
 import sensor_msgs.msg as sensor_msgs
 import geometry_msgs.msg as geometry_msgs
 import ipa_building_msgs.msg as ipa_building_msgs
 
-from thorp_toolkit.geometry import TF2, to_pose2d
+from thorp_toolkit.geometry import TF2, to_pose2d, create_2d_pose
+
+from .navigation_states import GetRobotPose, GoToPose
 
 
 class SegmentRooms(smach_ros.SimpleActionState):
@@ -102,10 +103,10 @@ class PlanRoomExploration(smach_ros.SimpleActionState):
                                                   goal_cb=self.make_goal,
                                                   goal_slots=['map_resolution', 'map_origin', 'robot_radius'],
                                                   result_slots=['coverage_path', 'coverage_path_pose_stamped'],
-                                                  input_keys=['map_image', 'segmented_map', 'robot_pose',
-                                                              'room_number', 'room_information_in_meter'])
-        self.path_pub = rospy.Publisher('/exploration/coverage_path', nav_msgs.Path, queue_size=1, latch=True)
-        # TODO already have!!! compare both  not really needed
+                                                  input_keys=['map_image', 'map_resolution',
+                                                              'segmented_map', 'robot_pose',
+                                                              'room_number', 'room_information_in_meter'],
+                                                  output_keys=['start_pose'])
         self.start_pub = rospy.Publisher('/exploration/starting_point', geometry_msgs.PointStamped, queue_size=1)
         self.fov_pub = rospy.Publisher('/exploration/camera_fov', geometry_msgs.PolygonStamped, queue_size=1)
         self.fov_pub_timer = None
@@ -138,13 +139,18 @@ class PlanRoomExploration(smach_ros.SimpleActionState):
         goal.planning_mode = 2  # plan a path for coverage with the robot's field of view
         goal.starting_position = to_pose2d(ud['robot_pose'])  # we need to convert to Pose2D msg
 
-        # use room center as starting point
+        # use room center as starting point; theta is ignored by room exploration
         room_info = ud['room_information_in_meter'][room_number - 1]
         start_point = geometry_msgs.PointStamped()
         start_point.header.frame_id = 'map'
         start_point.point = room_info.room_center
+        goal.starting_position.x = room_info.room_center.x
+        goal.starting_position.y = room_info.room_center.y
+        goal.starting_position.theta = 0.0  # it's ignored
         self.start_pub.publish(start_point)
-        # TODO: use room_info.room_min_max to avoid points colliding with the walls
+        # provide the starting pose so we can move there before starting exploring
+        ud['start_pose'] = create_2d_pose(room_info.room_center.x, room_info.room_center.y, 0.0, 'map')
+        # IDEA: can use room_info.room_min_max to avoid points colliding with the walls
 
         # visualize explore map and fov on RViz
         fov = geometry_msgs.PolygonStamped()
@@ -154,52 +160,28 @@ class PlanRoomExploration(smach_ros.SimpleActionState):
         if not self.fov_pub_timer:
             self.fov_pub_timer = rospy.Timer(rospy.Duration(0.1), lambda e: self.fov_pub.publish(fov))
 
-    def result_cb(self, ud, status, result):
-        path = nav_msgs.Path(result.coverage_path_pose_stamped[0].header, result.coverage_path_pose_stamped)
-        self.path_pub.publish(path)
 
-
-class GetRobotPose(smach.State):
-    """ Add current robot pose to userdata """
-
-    def __init__(self):
-        smach.State.__init__(self,
-                             outcomes=['succeeded', 'aborted'],
-                             output_keys=['robot_pose'])
-
-    def execute(self, ud):
-        try:
-            # set as Pose, no PoseStamped, as required by FindRoomSequenceWithCheckpointsGoal
-            ud['robot_pose'] = TF2().transform_pose(None, 'base_footprint', 'map').pose
-            return 'succeeded'
-        except rospy.ROSException as err:
-            rospy.logerr("Get robot pose failed: %s", str(err))
-            return 'aborted'
-
-
-def TraversePoses():
+class TraversePoses(smach.Iterator):
     """ Visit a list of stamped poses """
-    it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted'],
-                        input_keys=['poses'],
-                        output_keys=[],
-                        it=lambda: it.userdata.poses,
-                        it_label='target_pose',
-                        exhausted_outcome='succeeded')
+    def __init__(self):
+        super(TraversePoses, self).__init__(outcomes=['succeeded', 'preempted', 'aborted'],
+                                            input_keys=['poses',
+                                                        'planner', 'controller',
+                                                        'dist_tolerance', 'angle_tolerance'],
+                                            output_keys=['outcome', 'message'],
+                                            it=lambda: self.userdata.poses,
+                                            it_label='target_pose',
+                                            exhausted_outcome='succeeded')
 
-    with it:
-        sm = smach.StateMachine(outcomes=['succeeded', 'preempted', 'aborted', 'continue'],
-                                input_keys=['target_pose'],
-                                output_keys=[])
-        with sm:
-            smach.StateMachine.add('GO_TO_POSE',
-                                   smach_ros.SimpleActionState('move_base_flex/move_base',
-                                                               mbf_msgs.MoveBaseAction,
-                                                               goal_slots=['target_pose'],
-                                                               result_slots=[]),
-                                   transitions={'succeeded': 'continue',
-                                                'aborted': 'aborted',
-                                                'preempted': 'preempted'})
+        with self:
+            sm = smach.StateMachine(outcomes=['succeeded', 'preempted', 'aborted', 'continue'],
+                                    input_keys=['target_pose',
+                                                'planner', 'controller', 'dist_tolerance', 'angle_tolerance'],
+                                    output_keys=['outcome', 'message'])
+            with sm:
+                smach.StateMachine.add('GO_TO_POSE', GoToPose(),
+                                       transitions={'succeeded': 'continue',
+                                                    'aborted': 'aborted',
+                                                    'preempted': 'preempted'})
 
-        smach.Iterator.set_contained_state('', sm, loop_outcomes=['continue'])
-
-    return it
+            smach.Iterator.set_contained_state('', sm, loop_outcomes=['continue'])

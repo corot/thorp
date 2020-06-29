@@ -4,19 +4,15 @@ import rospy
 import smach
 import smach_ros
 
-from toolkit.explore_states import *
+from toolkit.exploration_states import *
 
 
-def main():
+def explore_house_sm():
     """
     Explore house SM:
      - segment map into rooms and plan visit sequence
      - iterate over all rooms and explore following the planned sequence
     """
-    rospy.init_node('smach_explore_house')
-
-    TF2()  # start listener asap
-
     # segment house into rooms and plan visit sequence
     plan_room_seq_sm = smach.Sequence(outcomes=['succeeded', 'aborted', 'preempted'],
                                       connector_outcome='succeeded',
@@ -35,10 +31,24 @@ def main():
                                        input_keys=['map_image', 'map_resolution', 'map_origin', 'robot_radius',
                                                    'segmented_map', 'room_number', 'room_information_in_meter'])
     with explore_1_room_sm:
+        explore_1_room_sm.userdata.controller = 'DWAPlanner'
+        explore_1_room_sm.userdata.planner = 'GlobalPlanner'
+        explore_1_room_sm.userdata.loose_dist_tolerance = 0.2
+        explore_1_room_sm.userdata.loose_angle_tolerance = 0.5  # ~30 deg
+        explore_1_room_sm.userdata.inf_angle_tolerance = float('inf')
+
         smach.Sequence.add('GET_ROBOT_POSE', GetRobotPose())
         smach.Sequence.add('PLAN_ROOM_EXPL', PlanRoomExploration())
+        smach.Sequence.add('GOTO_START_POSE', GoToPose(),
+                           remapping={'target_pose': 'start_pose',
+                                      'dist_tolerance': 'loose_dist_tolerance',   # just close enough
+                                      'angle_tolerance': 'inf_angle_tolerance'})  # ignore orientation
         smach.Sequence.add('TRAVERSE_POSES', TraversePoses(),
-                           remapping={'poses': 'coverage_path_pose_stamped'})
+                           remapping={'poses': 'coverage_path_pose_stamped',
+                                      'dist_tolerance': 'loose_dist_tolerance',   # just close enough
+                                      'angle_tolerance': 'inf_angle_tolerance'})  # ignore orientation
+        # smach.Sequence.add('TRAVERSE_POSES', ExePath(),
+        #                    remapping={'path': 'coverage_path_pose_stamped'})
 
     # iterate over all rooms and explore following the planned sequence
     explore_house_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted'],
@@ -64,8 +74,7 @@ def main():
     # Full SM: plan rooms visit sequence and explore each room in turn
     sm = smach.StateMachine(outcomes=['succeeded',
                                       'aborted',
-                                      'preempted'],
-                            output_keys=[])
+                                      'preempted'])
     with sm:
         smach.StateMachine.add('PLAN_ROOM_SEQ', plan_room_seq_sm,
                                transitions={'succeeded': 'EXPLORE_HOUSE',
@@ -75,6 +84,15 @@ def main():
                                transitions={'succeeded': 'succeeded',
                                             'aborted': 'aborted',
                                             'preempted': 'preempted'})
+    return sm
+
+
+if __name__ == '__main__':
+    rospy.init_node('smach_explore_house')
+
+    TF2()  # start listener asap
+
+    sm = explore_house_sm()
 
     # Create and start the introspection server
     sis = smach_ros.IntrospectionServer('server_name', sm, '/SM_ROOT')
@@ -88,7 +106,3 @@ def main():
     sis.stop()
 
     rospy.signal_shutdown('All done.')
-
-
-if __name__ == '__main__':
-    main()
