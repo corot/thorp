@@ -5,6 +5,8 @@ global_frame: map
 oscillation_timeout: 8.0
 oscillation_distance: 0.02
 
+mbf_tolerance_check: true       # allow mbf to overrule tolerances on nav_core controllers
+
 # Local planner parameters
 controllers:
   - {name: TrajPlanner,     type: base_local_planner/TrajectoryPlannerROS}
