@@ -174,14 +174,4 @@ class TraversePoses(smach.Iterator):
                                             exhausted_outcome='succeeded')
 
         with self:
-            sm = smach.StateMachine(outcomes=['succeeded', 'preempted', 'aborted', 'continue'],
-                                    input_keys=['target_pose',
-                                                'planner', 'controller', 'dist_tolerance', 'angle_tolerance'],
-                                    output_keys=['outcome', 'message'])
-            with sm:
-                smach.StateMachine.add('GO_TO_POSE', GoToPose(),
-                                       transitions={'succeeded': 'continue',
-                                                    'aborted': 'aborted',
-                                                    'preempted': 'preempted'})
-
-            smach.Iterator.set_contained_state('', sm, loop_outcomes=['continue'])
+            smach.Iterator.set_contained_state('GO_TO_POSE', GoToPose(), loop_outcomes=['succeeded'])

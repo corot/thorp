@@ -55,21 +55,11 @@ def explore_house_sm():
                                       input_keys=['map_image', 'map_resolution', 'map_origin', 'robot_radius',
                                                   'segmented_map', 'room_sequence', 'room_information_in_meter'],
                                       output_keys=[],
-                                      it=lambda: sm.userdata.room_sequence,  # must be a lambda because we destroy the list
+                                      it=lambda: sm.userdata.room_sequence,  # must be a lambda because we destroy the list  TODO  ehhh???
                                       it_label='room_number',
                                       exhausted_outcome='succeeded')
     with explore_house_it:
-        cont_sm = smach.StateMachine(outcomes=['succeeded', 'preempted', 'aborted', 'continue'],
-                                     input_keys=['map_image', 'map_resolution', 'map_origin', 'robot_radius',
-                                                 'segmented_map', 'room_number', 'room_information_in_meter'],
-                                     output_keys=[])
-        with cont_sm:
-            smach.StateMachine.add('EXPLORE_1_ROOM', explore_1_room_sm,
-                                   transitions={'succeeded': 'continue',
-                                                'aborted': 'aborted',
-                                                'preempted': 'preempted'})
-
-        smach.Iterator.set_contained_state('', cont_sm, loop_outcomes=['continue'])
+        smach.Iterator.set_contained_state('EXPLORE_1_ROOM', explore_1_room_sm, loop_outcomes=['succeeded'])
 
     # Full SM: plan rooms visit sequence and explore each room in turn
     sm = smach.StateMachine(outcomes=['succeeded',
