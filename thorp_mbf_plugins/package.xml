@@ -1,0 +1,38 @@
+<package>
+  <name>thorp_mbf_plugins</name>
+  <description>
+    slow_escape_recovery:
+      Try to recover from local planner navigation failures by slowly moving away from closest obstacles
+      by following a decreasing footprint cost gradient on local costmap. Should mostly act on local planner
+      failures, as global planner ones are mainly due to blocked paths, where this behavior has little to do.
+  </description>
+
+  <version>0.1.0</version>
+  <maintainer email="jsantossimon@gmail.com">Jorge Santos Simón</maintainer>
+  <author email="jsantossimon@gmail.com">Jorge Santos Simón</author>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>pluginlib</build_depend>
+  <build_depend>costmap_2d</build_depend>
+  <build_depend>mbf_msgs</build_depend>
+  <build_depend>mbf_costmap_core</build_depend>
+  <build_depend>base_local_planner</build_depend>
+  <build_depend>thorp_toolkit</build_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>pluginlib</run_depend>
+  <run_depend>costmap_2d</run_depend>
+  <run_depend>mbf_msgs</run_depend>
+  <run_depend>mbf_costmap_core</run_depend>
+  <run_depend>base_local_planner</run_depend>
+  <run_depend>thorp_toolkit</run_depend>
+
+  <export>
+    <mbf_costmap_core plugin="${prefix}/plugins/slow_escape_recovery.xml"/>
+  </export>
+
+</package>
