@@ -19,9 +19,17 @@
     uri: https://github.com/nphoang1102/dynamixel_motor.git
     version: master
 - git:
+    local-name: move_base_flex
+    uri: https://github.com/magazino/move_base_flex.git
+    version: master
+- git:
     local-name: navigation_layers
     uri: https://github.com/corot/navigation_layers.git
     version: master
+- git:
+    local-name: navigation_experimental
+    uri: https://github.com/corot/navigation_experimental.git
+    version: melodic-devel
 - git:
     local-name: rail_collada_models
     uri: https://github.com/GT-RAIL/rail_collada_models.git
