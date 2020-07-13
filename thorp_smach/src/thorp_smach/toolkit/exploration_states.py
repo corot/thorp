@@ -11,8 +11,6 @@ import ipa_building_msgs.msg as ipa_building_msgs
 
 from thorp_toolkit.geometry import TF2, to_pose2d, create_2d_pose
 
-from .navigation_states import GetRobotPose, GoToPose
-
 
 class SegmentRooms(smach_ros.SimpleActionState):
     def __init__(self):
@@ -159,19 +157,3 @@ class PlanRoomExploration(smach_ros.SimpleActionState):
         rospy.Publisher('/exploration/img', sensor_msgs.Image, queue_size=1, latch=True).publish(goal.input_map)
         if not self.fov_pub_timer:
             self.fov_pub_timer = rospy.Timer(rospy.Duration(0.1), lambda e: self.fov_pub.publish(fov))
-
-
-class TraversePoses(smach.Iterator):
-    """ Visit a list of stamped poses """
-    def __init__(self):
-        super(TraversePoses, self).__init__(outcomes=['succeeded', 'preempted', 'aborted'],
-                                            input_keys=['poses',
-                                                        'planner', 'controller',
-                                                        'dist_tolerance', 'angle_tolerance'],
-                                            output_keys=['outcome', 'message'],
-                                            it=lambda: self.userdata.poses,
-                                            it_label='target_pose',
-                                            exhausted_outcome='succeeded')
-
-        with self:
-            smach.Iterator.set_contained_state('GO_TO_POSE', GoToPose(), loop_outcomes=['succeeded'])

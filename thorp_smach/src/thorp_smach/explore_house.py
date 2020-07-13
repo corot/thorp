@@ -4,7 +4,9 @@ import rospy
 import smach
 import smach_ros
 
-from toolkit.navigation_states import ExeSparsePath
+import toolkit.config as cfg
+
+from toolkit.navigation_states import *
 from toolkit.exploration_states import *
 
 
@@ -32,26 +34,19 @@ def explore_house_sm():
                                        input_keys=['map_image', 'map_resolution', 'map_origin', 'robot_radius',
                                                    'segmented_map', 'room_number', 'room_information_in_meter'])
     with explore_1_room_sm:
-        explore_1_room_sm.userdata.controller = 'DWAPlanner'
-        explore_1_room_sm.userdata.pose_follower = 'PoseFollower'
-        explore_1_room_sm.userdata.planner = 'GlobalPlanner'
-        explore_1_room_sm.userdata.loose_dist_tolerance = 0.2
-        explore_1_room_sm.userdata.loose_angle_tolerance = 0.5  # ~30 deg
-        explore_1_room_sm.userdata.inf_angle_tolerance = float('inf')
-
         smach.Sequence.add('GET_ROBOT_POSE', GetRobotPose())
         smach.Sequence.add('PLAN_ROOM_EXPL', PlanRoomExploration())
-        smach.Sequence.add('GOTO_START_POSE', GoToPose(dist_tolerance=None, angle_tolerance=),
-                           remapping={'target_pose': 'start_pose',
-                                      'dist_tolerance': 'loose_dist_tolerance',   # just close enough
-                                      'angle_tolerance': 'inf_angle_tolerance'})  # ignore orientation
+        smach.Sequence.add('GOTO_START_POSE', GoToPose(dist_tolerance=cfg.LOOSE_DIST_TOLERANCE,   # just close enough
+                                                       angle_tolerance=cfg.INF_ANGLE_TOLERANCE),  # ignore orientation
+                           remapping={'target_pose': 'start_pose'})
+                                      # 'dist_tolerance': 'loose_dist_tolerance',   # just close enough
+                                      # 'angle_tolerance': 'inf_angle_tolerance'})  # ignore orientation
         # smach.Sequence.add('TRAVERSE_POSES', TraversePoses(),
         #                    remapping={'poses': 'coverage_path_pose_stamped',
         #                               'dist_tolerance': 'loose_dist_tolerance',   # just close enough
         #                               'angle_tolerance': 'inf_angle_tolerance'})  # ignore orientation
         smach.Sequence.add('TRAVERSE_POSES', ExeSparsePath(),
-                           remapping={'controller': 'pose_follower',
-                                      'path': 'coverage_path_pose_stamped'})
+                           remapping={'path': 'coverage_path_pose_stamped'})
 
     # iterate over all rooms and explore following the planned sequence
     explore_house_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted'],

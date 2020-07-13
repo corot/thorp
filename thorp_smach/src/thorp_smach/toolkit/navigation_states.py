@@ -1,5 +1,3 @@
-from math import pi
-
 import rospy
 import smach
 import smach_ros
@@ -8,6 +6,8 @@ import nav_msgs.msg as nav_msgs
 import mbf_msgs.msg as mbf_msgs
 
 from thorp_toolkit.geometry import TF2
+
+import config as cfg
 
 
 class GetRobotPose(smach.State):
@@ -28,7 +28,11 @@ class GetRobotPose(smach.State):
 
 
 class GoToPose(smach_ros.SimpleActionState):
-    def __init__(self, planner=None, controller=None, dist_tolerance=None, angle_tolerance=None):
+    def __init__(self,
+                 planner=cfg.DEFAULT_PLANNER,
+                 controller=cfg.DEFAULT_CONTROLLER,
+                 rec_behaviors=cfg.MOVE_BASE_RECOVERY,
+                 dist_tolerance=None, angle_tolerance=None):
         super(GoToPose, self).__init__('move_base_flex/move_base',
                                        mbf_msgs.MoveBaseAction,
                                        goal_cb=self.make_goal,
@@ -36,6 +40,7 @@ class GoToPose(smach_ros.SimpleActionState):
                                        result_slots=['outcome', 'message'])
         self.planner = planner
         self.controller = controller
+        self.rec_behaviors = rec_behaviors
         self.dist_tolerance = dist_tolerance
         self.angle_tolerance = angle_tolerance
 
@@ -44,6 +49,8 @@ class GoToPose(smach_ros.SimpleActionState):
             goal.planner = self.planner
         if self.controller:
             goal.controller = self.controller
+        if self.rec_behaviors:
+            goal.recovery_behaviors = self.rec_behaviors
         if self.dist_tolerance and self.angle_tolerance:
             goal.dist_tolerance = self.dist_tolerance
             goal.angle_tolerance = self.angle_tolerance
@@ -70,6 +77,30 @@ class GoToPose___NO_ARGS_ALL_USERDATA(smach_ros.SimpleActionState):  # TODO deci
 
 
 class ExePath(smach_ros.SimpleActionState):
+    def __init__(self, controller=cfg.DEFAULT_CONTROLLER, dist_tolerance=None, angle_tolerance=None):
+        super(ExePath, self).__init__('move_base_flex/exe_path',
+                                      mbf_msgs.ExePathAction,
+                                      goal_cb=self.make_goal,
+                                      input_keys=['path'],
+                                      result_slots=['outcome', 'message'])
+        self.controller = controller
+        self.dist_tolerance = dist_tolerance
+        self.angle_tolerance = angle_tolerance
+
+    def make_goal(self, ud, goal):
+        goal.path = nav_msgs.Path(ud['path'][0].header, ud['path'])
+        if self.controller:
+            goal.controller = self.controller
+        if self.dist_tolerance and self.angle_tolerance:
+            goal.dist_tolerance = self.dist_tolerance
+            goal.angle_tolerance = self.angle_tolerance
+            goal.tolerance_from_action = True
+
+    def _goal_feedback_cb(self, feedback):
+        super(ExePath, self)._goal_feedback_cb(feedback)
+
+
+class ExePath___NO_ARGS_ALL_USERDATA(smach_ros.SimpleActionState):  # TODO decide and remove one
     def __init__(self):
         super(ExePath, self).__init__('move_base_flex/exe_path',
                                       mbf_msgs.ExePathAction,
@@ -85,10 +116,6 @@ class ExePath(smach_ros.SimpleActionState):
             goal.dist_tolerance = ud['dist_tolerance']
             goal.angle_tolerance = ud['angle_tolerance']
             goal.tolerance_from_action = True
-
-    # def _goal_feedback_cb(self, feedback):
-    #     super(ExePath, self)._goal_feedback_cb(feedback)
-    #     print feedback
 
 
 class Recovery(smach_ros.SimpleActionState):
@@ -106,15 +133,15 @@ class ExePathFailed(smach.State):
         super(ExePathFailed, self).__init__(outcomes=['recover', 'next_wp', 'aborted'],
                                             input_keys=['path', 'outcome', 'message'],
                                             output_keys=['path', 'next_wp', 'recovery_behavior'])
-        self.recovery_behaviors = [rb['name'] for rb in rospy.get_param('/move_base_flex/recovery_behaviors', [])]
+        self.recovery_behaviors = cfg.EXE_PATH_RECOVERY
         self.consecutive_failures = 0
 
     def execute(self, ud):
         # Cut path up to current waypoint, so we don't redo it from the beginning after recovering
-        # TODO: ExePath must provide this specific message in the result in case of failure;
-        # would be more robust to get in the feedback and store the value in a new output key
-        if ud['message'].startswith('current waypoint: '):
-            current_waypoint = int(ud['message'][len('current waypoint: '):])
+        # ExePath must provide this specific message at the end of the result message in case of failure
+        cwp_index = ud['message'].find('current waypoint: ')
+        if cwp_index >= 0:
+            current_waypoint = int(ud['message'][cwp_index + len('current waypoint: '):])
             ud['path'] = ud['path'][current_waypoint:]
         else:
             rospy.logwarn("No current waypoint provided")
@@ -144,10 +171,12 @@ class ExeSparsePath(smach.StateMachine):
         super(ExeSparsePath, self).__init__(outcomes=['succeeded',
                                                       'aborted',
                                                       'preempted'],
-                                            input_keys=['path', 'controller', 'dist_tolerance', 'angle_tolerance'],
+                                            input_keys=['path'],
                                             output_keys=['outcome', 'message'])
         with self:
-            smach.StateMachine.add('EXE_PATH', ExePath(),
+            smach.StateMachine.add('EXE_PATH', ExePath(cfg.TRAVERSE_CONTROLLER,
+                                                       cfg.LOOSE_DIST_TOLERANCE,
+                                                       cfg.INF_ANGLE_TOLERANCE),
                                    transitions={'succeeded': 'succeeded',
                                                 'aborted': 'FAILURE',
                                                 'preempted': 'preempted'})
@@ -160,8 +189,25 @@ class ExeSparsePath(smach.StateMachine):
                                                 'aborted': 'aborted',
                                                 'preempted': 'preempted'},
                                    remapping={'behavior': 'recovery_behavior'})
-            smach.StateMachine.add('NEXT_WP', GoToPose(dist_tolerance=0.2, angle_tolerance=pi),
+            smach.StateMachine.add('NEXT_WP', GoToPose(dist_tolerance=cfg.LOOSE_DIST_TOLERANCE,
+                                                       angle_tolerance=cfg.INF_ANGLE_TOLERANCE),
                                    transitions={'succeeded': 'EXE_PATH',
                                                 'aborted': 'aborted',
                                                 'preempted': 'preempted'},
                                    remapping={'target_pose': 'next_wp'})
+
+
+class TraversePoses(smach.Iterator):
+    """ Visit a list of stamped poses """
+    def __init__(self, dist_tolerance=cfg.LOOSE_DIST_TOLERANCE, angle_tolerance=cfg.LOOSE_ANGLE_TOLERANCE):
+        super(TraversePoses, self).__init__(outcomes=['succeeded', 'preempted', 'aborted'],
+                                            input_keys=['poses'],
+                                            output_keys=['outcome', 'message'],
+                                            it=lambda: self.userdata.poses,
+                                            it_label='target_pose',
+                                            exhausted_outcome='succeeded')
+
+        with self:
+            smach.Iterator.set_contained_state('GO_TO_POSE', GoToPose(dist_tolerance=dist_tolerance,
+                                                                      angle_tolerance=angle_tolerance),
+                                               loop_outcomes=['succeeded'])

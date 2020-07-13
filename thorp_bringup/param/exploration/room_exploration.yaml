@@ -7,7 +7,7 @@ field_of_view_points: [[0.5, 0.288675135, 0.0],
                        [2.0,-1.154700538, 0.0],
                        [2.0, 1.154700538, 0.0]]
 room_exploration_algorithm: 4  # Use the convex SPP exploration algorithm
-display_trajectory: true
+display_trajectory: false
 execute_path: false  # we do ourselves (this just sends goal by goal to move_base)
 return_path: true
 
