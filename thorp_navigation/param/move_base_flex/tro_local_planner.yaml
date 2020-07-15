@@ -1,0 +1,22 @@
+TROPlanner:
+
+# Forward Simulation Parameters
+  sim_time: 1.5
+  vx_samples: 3
+  vtheta_samples: 20
+
+# Trajectory Scoring Parameters
+  path_distance_bias: 1.2
+  goal_distance_bias: 0.6
+  occdist_scale: 0.05
+  meter_scoring: true
+  heading_lookahead: 0.325
+  dwa: true
+
+# Oscillation Prevention Parameters
+  oscillation_reset_dist: 0.05
+
+# Differential-drive robot configuration
+  holonomic_robot: false
+  acc_lim_y: 0.0
+  y_vels: ""

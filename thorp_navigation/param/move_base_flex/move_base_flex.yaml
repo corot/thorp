@@ -10,8 +10,8 @@ mbf_tolerance_check: true       # allow mbf to overrule tolerances on nav_core c
 # Local planner parameters
 controllers:
   - {name: DWAPlanner,      type: dwa_local_planner/DWAPlannerROS}
-  - {name: TebPlanner,      type: teb_local_planner/TebLocalPlannerROS}
-  - {name: TrajPlanner,     type: base_local_planner/TrajectoryPlannerROS}
+  - {name: TEBPlanner,      type: teb_local_planner/TebLocalPlannerROS}
+  - {name: TROPlanner,      type: base_local_planner/TrajectoryPlannerROS}
   - {name: PoseFollower,    type: pose_follower/PoseFollower}
 controller_frequency:  8.0      # Hz
 controller_patience:   2.0      # seconds; abort if the local planner does not return within that time

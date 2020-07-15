@@ -1,19 +1,18 @@
-TrajPlanner:
+TROPlanner:
+# Robot Configuration Parameters - Kobuki
+  max_vel_x: &Mvx 0.5  # choose slightly less than the base's capability
+  min_vel_x: &mvx 0.0  # this is the min trans velocity when there is negligible rotational velocity
 
-# Robot Configuration Parameters
-  max_vel_x: 0.5
-  min_vel_x: 0.1
+  max_vel_theta:  2.5  # choose slightly less than the base's capability
+  min_vel_theta: -2.5  # note that this is different to the other planners
 
-  max_vel_theta:  0.8
-  min_vel_theta: -0.8
-  min_in_place_vel_theta: 0.6
-
-  acc_lim_x: 0.2
-  acc_lim_theta: 1.0
+  acc_lim_x: &alx 1.0  # maximum is theoretically 2.0
+  acc_lim_y: &aly 0.0  # diff drive robot
+  acc_lim_theta: &alt 2.0
 
 # Goal Tolerance Parameters
-  yaw_goal_tolerance: 0.3
-  xy_goal_tolerance: 0.15
+  yaw_goal_tolerance: &agt 0.1
+  xy_goal_tolerance: &lgt 0.1
 
 # Forward Simulation Parameters
   sim_time: 1.5
@@ -28,43 +27,34 @@ TrajPlanner:
   heading_lookahead: 0.325
   dwa: true
 
-# Oscillation Prevention Parameters
-  oscillation_reset_dist: 0.05
-
-# Differential-drive robot configuration
-  holonomic_robot: false
-  acc_lim_y: 0.0
-  y_vels: ""
-
 
 DWAPlanner:
 
 # Robot Configuration Parameters - Kobuki
-  max_vel_x: 0.5  # 0.55
-  min_vel_x: 0.0
-
-  max_vel_y: 0.0  # diff drive robot
-  min_vel_y: 0.0  # diff drive robot
-
-  max_vel_trans: 0.5  # choose slightly less than the base's capability
-  min_vel_trans: 0.1  # this is the min trans velocity when there is negligible rotational velocity
+  max_vel_x: *Mvx
+  min_vel_x: *mvx  # WARN: must be zero
+  max_vel_y: &Mvy 0.0  # diff drive robot
+  min_vel_y: &mvy 0.0  # diff drive robot
+  max_vel_trans: *Mvx
+  min_vel_trans: *mvx
   trans_stopped_vel: 0.1
 
   # Warning!
   #   do not set min_vel_trans to 0.0 otherwise dwa will always think translational velocities
   #   are non-negligible and small in place rotational velocities will be created.
 
-  max_vel_theta: 5.0  # choose slightly less than the base's capability
-  min_vel_theta: 0.4  # this is the min angular velocity when there is negligible translational velocity
+  max_vel_theta: &Mvt 5.0
+  min_vel_theta: &mvt 1.0
   theta_stopped_vel: 0.4
 
-  acc_lim_x: 1.0 # maximum is theoretically 2.0, but we
-  acc_lim_theta: 2.0
-  acc_lim_y: 0.0      # diff drive robot
+  acc_lim_x: *alx
+  acc_lim_y: *aly
+  acc_lim_trans: *alx
+  acc_lim_theta: *alt
 
 # Goal Tolerance Parameters
-  yaw_goal_tolerance: 0.1  # 0.05
-  xy_goal_tolerance: 0.1   # 0.10
+  yaw_goal_tolerance: *agt
+  xy_goal_tolerance: *lgt
   latch_xy_goal_tolerance: false
 
 # Forward Simulation Parameters
@@ -73,28 +63,18 @@ DWAPlanner:
   vy_samples: 1       # diff drive robot, there is only one sample
   vtheta_samples: 20  # 20
 
-# Trajectory Scoring Parameters
-  path_distance_bias: 60.0      # 32.0   - weighting for how much it should stick to the global path plan
-  goal_distance_bias: 20.0      # 24.0   - weighting for how much it should attempt to reach its goal
-  occdist_scale: 0.01           # 0.01   - weighting for how much the controller should avoid obstacles
-  meter_scoring: true           # false  - whether weights must assume goal/path distance in meters or cells
-  forward_point_distance: 0.325 # 0.325  - how far along to place an additional scoring point
-  stop_time_buffer: 0.2         # 0.2    - amount of time a robot must stop in before colliding for a valid traj.
-  scaling_speed: 0.25           # 0.25   - absolute velocity at which to start scaling the robot's footprint
-  max_scaling_factor: 0.2       # 0.2    - how much to scale the robot's footprint when at speed.
-
-# Oscillation Prevention Parameters
-  oscillation_reset_dist: 0.05  # 0.05   - how far to travel before resetting oscillation flags
-
-# Debugging
-  publish_traj_pc : true
-  publish_cost_grid_pc: true
-  global_frame_id: odom
+TEBPlanner:
+  max_vel_x: *Mvx
+  max_vel_x_backwards: 0.1
+  max_vel_y: *Mvy
+  max_vel_theta: *Mvt
+  acc_lim_x: *alx
+  acc_lim_theta: *alt
 
 PoseFollower:
-  max_vel_lin: 0.5
-  max_vel_th: 2.0
+  max_vel_lin: *Mvx
+  max_vel_th: *Mvt
   holonomic: false
-  tolerance_trans: 0.1
-  tolerance_rot: 0.1
+  tolerance_trans: *lgt
+  tolerance_rot: *agt
   tolerance_timeout: 0.0
