@@ -1,80 +1,96 @@
+# Robot Configuration Parameters - Kobuki base
+# choose velocity/acceleration limits slightly less than the base's capability:
+#   Maximum translational velocity: 70 cm/s
+#   Maximum rotational velocity: 180 deg/s (>110 deg/s gyro performance will degrade)
+
+max_vel_x: &Mvx 0.5
+min_vel_x: &mvx 0.0  # this is the min trans velocity when there is negligible rotational velocity
+max_bw_vel_x: &Mbv 0.1  # more conservative, as we only have four IR sensors pointing backward
+_max_bw_vel_x: &_Mbv -0.1
+
+max_vel_y: &Mvy 0.0  # diff drive robot
+min_vel_y: &mvy 0.0
+
+max_vel_theta: &Mvt 1.8
+_max_vel_theta: &_Mvt -1.8
+min_vel_theta: &mvt 0.2
+min_vel_spin: &mvs 0.15
+
+linear_stopped_vel: &lsv 0.08
+angular_stopped_vel: &asv 0.4
+
+acc_lim_x: &alx 1.0  # maximum is theoretically 2.0
+acc_lim_y: &aly 0.0  # diff drive robot
+acc_lim_theta: &alt 2.0
+
+# Goal tolerance parameters
+dist_tolerance: &dgt 0.1
+angle_tolerance: &agt 0.1
+latch_dist_tolerance: &lgt true  # do not resume if we get out of the goal due to adjusting localization
+
+
 TROPlanner:
-# Robot Configuration Parameters - Kobuki
-  max_vel_x: &Mvx 0.5  # choose slightly less than the base's capability
-  min_vel_x: &mvx 0.0  # this is the min trans velocity when there is negligible rotational velocity
+  max_vel_x: *Mvx
+  min_vel_x: *mvx
+  max_vel_trans: *Mvx
+  min_vel_trans: *mvx
+  trans_stopped_vel: *lsv
+  escape_vel: *_Mbv
 
-  max_vel_theta:  2.5  # choose slightly less than the base's capability
-  min_vel_theta: -2.5  # note that this is different to the other planners
+  max_vel_theta: *Mvt
+  min_vel_theta: *_Mvt  # On TRO we can choose different max w for both turning directions
+  theta_stopped_vel: *asv
+  min_in_place_vel_theta: *mvs
 
-  acc_lim_x: &alx 1.0  # maximum is theoretically 2.0
-  acc_lim_y: &aly 0.0  # diff drive robot
-  acc_lim_theta: &alt 2.0
+  acc_lim_x: *alx
+  acc_lim_y: *aly
+  acc_lim_theta: *alt
 
-# Goal Tolerance Parameters
-  yaw_goal_tolerance: &agt 0.1
-  xy_goal_tolerance: &lgt 0.1
-
-# Forward Simulation Parameters
-  sim_time: 1.5
-  vx_samples: 3
-  vtheta_samples: 20
-
-# Trajectory Scoring Parameters
-  path_distance_bias: 1.2
-  goal_distance_bias: 0.6
-  occdist_scale: 0.05
-  meter_scoring: true
-  heading_lookahead: 0.325
-  dwa: true
+  yaw_goal_tolerance: *agt
+  xy_goal_tolerance: *dgt
+  latch_xy_goal_tolerance: *lgt
 
 
 DWAPlanner:
-
-# Robot Configuration Parameters - Kobuki
   max_vel_x: *Mvx
   min_vel_x: *mvx  # WARN: must be zero
-  max_vel_y: &Mvy 0.0  # diff drive robot
-  min_vel_y: &mvy 0.0  # diff drive robot
+  max_vel_y: *Mvy
+  min_vel_y: *mvy
   max_vel_trans: *Mvx
   min_vel_trans: *mvx
-  trans_stopped_vel: 0.1
-
+  trans_stopped_vel: *lsv
   # Warning!
   #   do not set min_vel_trans to 0.0 otherwise dwa will always think translational velocities
   #   are non-negligible and small in place rotational velocities will be created.
+  # Also min_vel_theta must be non-zero, but I have no idea why
 
-  max_vel_theta: &Mvt 5.0
-  min_vel_theta: &mvt 1.0
-  theta_stopped_vel: 0.4
+  max_vel_theta: *Mvt
+  min_vel_theta: *mvt
+  theta_stopped_vel: *asv
 
   acc_lim_x: *alx
   acc_lim_y: *aly
   acc_lim_trans: *alx
   acc_lim_theta: *alt
 
-# Goal Tolerance Parameters
   yaw_goal_tolerance: *agt
-  xy_goal_tolerance: *lgt
-  latch_xy_goal_tolerance: false
+  xy_goal_tolerance: *dgt
+  latch_xy_goal_tolerance: *lgt
 
-# Forward Simulation Parameters
-  sim_time: 2.0       # 1.7
-  vx_samples: 6       # 3
-  vy_samples: 1       # diff drive robot, there is only one sample
-  vtheta_samples: 20  # 20
 
 TEBPlanner:
   max_vel_x: *Mvx
-  max_vel_x_backwards: 0.1
+  max_vel_x_backwards: *Mbv
   max_vel_y: *Mvy
   max_vel_theta: *Mvt
   acc_lim_x: *alx
   acc_lim_theta: *alt
 
+
 PoseFollower:
   max_vel_lin: *Mvx
   max_vel_th: *Mvt
   holonomic: false
-  tolerance_trans: *lgt
+  tolerance_trans: *dgt
   tolerance_rot: *agt
   tolerance_timeout: 0.0

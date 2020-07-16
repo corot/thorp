@@ -15,16 +15,19 @@ recovery_behaviors:
 
 clear_both_cms:
   layer_names: [obstacle_layer, tof_sensors_layer]
+  force_updating: true
   reset_distance: 0.0
   affected_maps: both
 
 clear_local_cm:
   layer_names: [obstacle_layer, tof_sensors_layer]
+  force_updating: true
   reset_distance: 0.0
   affected_maps: local
 
 clear_global_cm:
   layer_names: [obstacle_layer]
+  force_updating: true
   reset_distance: 0.0
   affected_maps: global
 
