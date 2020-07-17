@@ -39,12 +39,6 @@ def explore_house_sm():
         smach.Sequence.add('GOTO_START_POSE', GoToPose(dist_tolerance=cfg.LOOSE_DIST_TOLERANCE,   # just close enough
                                                        angle_tolerance=cfg.INF_ANGLE_TOLERANCE),  # ignore orientation
                            remapping={'target_pose': 'start_pose'})
-                                      # 'dist_tolerance': 'loose_dist_tolerance',   # just close enough
-                                      # 'angle_tolerance': 'inf_angle_tolerance'})  # ignore orientation
-        # smach.Sequence.add('TRAVERSE_POSES', TraversePoses(),
-        #                    remapping={'poses': 'coverage_path_pose_stamped',
-        #                               'dist_tolerance': 'loose_dist_tolerance',   # just close enough
-        #                               'angle_tolerance': 'inf_angle_tolerance'})  # ignore orientation
         smach.Sequence.add('TRAVERSE_POSES', ExeSparsePath(),
                            remapping={'path': 'coverage_path_pose_stamped'})
 
@@ -87,7 +81,9 @@ if __name__ == '__main__':
     sis.start()
 
     # Execute the state machine
+    t0 = rospy.get_time()
     outcome = sm.execute()
+    rospy.loginfo("Exploration completed in %.2fs with outcome '%s'", rospy.get_time() - t0, outcome)
 
     # Wait for ctrl-c to stop the application
     rospy.spin()
