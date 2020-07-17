@@ -26,7 +26,7 @@
     <rosparam file="$(find thorp_navigation)/param/move_base_flex/global_costmap.yaml" command="load"/>
     <rosparam file="$(find thorp_navigation)/param/move_base_flex/local_costmap.yaml"  command="load"/>
     <rosparam file="$(find thorp_navigation)/param/move_base_flex/global_planners.yaml" command="load"/>
-    <rosparam file="$(find thorp_navigation)/param/move_base_flex/local_planners.yaml" command="load"/>
+    <rosparam file="$(find thorp_navigation)/param/move_base_flex/follower_planner.yaml" command="load"/>
     <rosparam file="$(find thorp_navigation)/param/move_base_flex/dwa_local_planner.yaml" command="load"/>
     <rosparam file="$(find thorp_navigation)/param/move_base_flex/tro_local_planner.yaml" command="load"/>
     <rosparam file="$(find thorp_navigation)/param/move_base_flex/teb_local_planner.yaml" command="load"/>
