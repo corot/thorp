@@ -1,5 +1,5 @@
 DEFAULT_PLANNER = 'GlobalPlanner'
-DEFAULT_CONTROLLER = 'DWAPlanner'
+DEFAULT_CONTROLLER = 'TEBPlanner'
 GET_PATH_RECOVERY = ['clear_global_cm']
 EXE_PATH_RECOVERY = ['clear_local_cm', 'escape_distance', 'out_to_free_space']
 MOVE_BASE_RECOVERY = ['clear_both_cms', 'escape_distance', 'out_to_free_space']
