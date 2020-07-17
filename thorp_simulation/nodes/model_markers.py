@@ -10,13 +10,16 @@ Author:
 import copy
 import rospy
 
+from math import pi
+from random import randint, uniform
+
 from interactive_markers.interactive_marker_server import *
 from interactive_markers.menu_handler import *
 from visualization_msgs.msg import *
 from geometry_msgs.msg import PoseStamped, Twist
 from gazebo_msgs.msg import ModelState, ModelStates
 
-from thorp_toolkit.geometry import quaternion_from_yaw, yaw, normalize_quaternion, pose3d2str
+from thorp_toolkit.geometry import quaternion_from_yaw, yaw, normalize_quaternion, pose3d2str, create_2d_pose
 
 server = None
 menu_handler = MenuHandler()
@@ -124,12 +127,16 @@ if __name__ == "__main__":
         print("Usage: model_markers.py <list of interactive models>")
         sys.exit(0)
     try:
-        model_states = rospy.wait_for_message("gazebo/model_states", ModelStates, 20.0)
+        model_states = rospy.wait_for_message("gazebo/model_states", ModelStates, 10.0)
     except rospy.ROSInterruptException:
         sys.exit(0)
     except rospy.ROSException as err:
-        rospy.logerr(err)
-        sys.exit(-1)
+        rospy.logwarn(err)
+        rospy.logwarn("Creating markers for models %s on random poses", str(target_models))
+        model_states = ModelStates()
+        for model_name in target_models:
+            model_states.name.append(model_name)
+            model_states.pose.append(create_2d_pose(randint(1, 10), randint(1, 10), uniform(-pi, pi)))
 
     for index, model_name in enumerate(model_states.name):
         if model_name in target_models:
