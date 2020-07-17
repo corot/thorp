@@ -54,9 +54,10 @@ void SlowEscapeRecovery::initialize(std::string n, tf2_ros::Buffer* tf,
   private_nh.param("escape_from_inscribed", escape_from_inscribed_, -1.0);  // disabled by default
   private_nh.param("release_bumper_distance", release_bumper_distance_, 0.04);
   private_nh.param("max_search_depth", max_search_depth_, 30);
-  if (escape_from_inscribed_ >= 0.0)
+  if (escape_from_inscribed_ >= 0.0 && escape_from_collision_ >= 0.0)
   {
-    ROS_WARN("If >= 0, escape_to_free_space overrules escape_from_collision");
+    ROS_WARN("escape_to_free_space is not negative (%g), so it overrules escape_from_collision (%g)",
+             escape_from_inscribed_, escape_from_collision_);
     escape_from_collision_ = -1.0;
   }
 
