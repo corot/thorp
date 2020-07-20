@@ -4,11 +4,12 @@
   - pose following
   - geometric map
   - semantic map???
-  - amcl localization
+  - localization
   - pose persistence
  -->
 
 <launch>
+  <arg name="localization"    default="amcl"/>  <!-- amcl/fake -->
   <arg name="move_base_flex"  default="true"/>
   <arg name="base_frame_id"   default="base_footprint"/>  
   <arg name="odom_frame_id"   default="odom"/> 
@@ -52,7 +53,8 @@
   </node>
 
   <!--  ******************** Amcl *********************  -->
-  <include file="$(find thorp_navigation)/launch/includes/amcl.launch.xml">
+  <include if="$(eval localization == 'amcl')"
+           file="$(find thorp_navigation)/launch/includes/amcl.launch.xml">
     <arg name="scan_topic"      value="scan"/>
     <arg name="base_frame_id"   value="$(arg base_frame_id)"/>
     <arg name="odom_frame_id"   value="$(arg odom_frame_id)"/>
@@ -61,6 +63,11 @@
     <arg name="initial_pose_y"  value="$(arg initial_pose_y)"/>
     <arg name="initial_pose_a"  value="$(arg initial_pose_a)"/>
   </include>
+
+  <!--  ************** Fake Localization *************  -->
+  <node if="$(eval localization == 'fake')"
+        pkg="tf2_ros" type="static_transform_publisher" name="fake_localization" output="screen" respawn="true"
+        args="$(arg initial_pose_x) $(arg initial_pose_y) 0.0 0.0 0.0 $(arg initial_pose_a) map odom"/>
 
   <!--  **** Watchdog to keep the pose on rebooting ***  -->
   <node if="$(arg save_robot_pose)"
