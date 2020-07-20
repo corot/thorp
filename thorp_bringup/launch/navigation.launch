@@ -9,7 +9,7 @@
   <arg name="move_base_flex" default="true"/>
 
   <!-- Name of the map to use (without path nor extension) and initial position -->
-  <arg name="map_name"       default="graz_home"/>
+  <arg name="map_name"       default="home"/>
   <arg name="initial_pose_x" value="0.0"/>
   <arg name="initial_pose_y" value="0.0"/>
   <arg name="initial_pose_a" value="0.0"/>
@@ -18,7 +18,7 @@
   <include file="$(find thorp_bringup)/launch/thorp_robot.launch"/>
 
   <!--  *************** Thorp navigation **************  -->
-  <include file="$(find thorp_bringup)/launch/includes/navigation.launch.xml">
+  <include file="$(find thorp_navigation)/launch/navigation.launch">
     <arg name="move_base_flex" value="$(arg move_base_flex)"/>
     <arg name="map_name"       value="$(arg map_name)"/>
     <arg name="initial_pose_x" value="$(arg initial_pose_x)"/>
