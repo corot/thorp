@@ -77,8 +77,8 @@ TODO: I can recover this if I can rename the robot and once I start using a thor
   <include file="$(find thorp_simulation)/launch/includes/stdr_relays.launch.xml"/>
 
   <!-- Connect STDR's thorp and base_footprint tf trees -->
-  <node pkg="tf" type="static_transform_publisher" name="fake_global_reference"
-        args="0.0 0.0 0.0 0.0 0.0 0.0 robot0 base_footprint 100"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="fake_global_reference"
+        args="0.0 0.0 0.0 0.0 0.0 0.0 robot0 base_footprint"/>
   
   <!--  ***************** Robot Model *****************  -->
   <include file="$(find thorp_bringup)/launch/includes/model.launch.xml"/>

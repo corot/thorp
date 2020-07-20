@@ -36,8 +36,8 @@
   </include>
 
   <!--  Fake global reference to make Moveit octomap happy  -->
-  <node pkg="tf" type="static_transform_publisher" name="fake_global_reference" output="screen" respawn="true"
-        args="0.0 0.0 0.0 0.0 0.0 0.0 /map /base_footprint 100"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="fake_global_reference" output="screen" respawn="true"
+        args="0.0 0.0 0.0 0.0 0.0 0.0 map base_footprint"/>
 
 
   <!--  *********** Block manipulation demo ***********  -->

@@ -23,10 +23,10 @@
 
 
   <!--  ******* Fake localization and odometry ********  -->
-  <node pkg="tf" type="static_transform_publisher" name="fake_localization" output="screen" respawn="true"
-        args="0.0 0.0 0.0 0.0 0.0 0.0 /map /odom 200"/>
-  <node pkg="tf" type="static_transform_publisher" name="fake_odometry" output="screen" respawn="true"
-        args="0.0 0.0 0.0 0.0 0.0 0.0 /odom /base_footprint 200"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="fake_localization" output="screen" respawn="true"
+        args="0.0 0.0 0.0 0.0 0.0 0.0 map odom"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="fake_odometry" output="screen" respawn="true"
+        args="0.0 0.0 0.0 0.0 0.0 0.0 odom base_footprint"/>
 
 
   <!--  ************* Moveit config stuff *************  -->

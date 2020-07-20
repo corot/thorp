@@ -7,8 +7,8 @@
   </include>
 
   <!--  ********* Calibrated 3D sensor pose ********  -->
-  <node pkg="tf" type="static_transform_publisher" name="external_camera_tf" output="screen" respawn="true"
-        args="0.0779029 -0.779742 1.09201 -0.227259 0.172085 0.676341 0.679193 /base_link /camera_link 100"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="external_camera_tf" output="screen" respawn="true"
+        args="0.0779029 -0.779742 1.09201 -0.227259 0.172085 0.676341 0.679193 base_link camera_link"/>
 
 
   <!--  ************* Arm bringup stuff ************* -->

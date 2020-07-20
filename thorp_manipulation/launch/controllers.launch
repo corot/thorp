@@ -67,6 +67,6 @@
    <node ns="$(arg dynamixel_namespace)" pkg="rbx2_dynamixels" type="relax_all_servos.py" name="relax_all_servos" />
   
    Publish a static transform between the robot base and the world frame
-   <node pkg="tf" type="static_transform_publisher" name="world_base_broadcaster" args="0 0 0 0 0 0 /world /base_link 100" />
+   <node pkg="tf2_ros" type="static_transform_publisher" name="world_base_broadcaster" args="0 0 0 0 0 0 world base_link" />
  -->
 </launch>
