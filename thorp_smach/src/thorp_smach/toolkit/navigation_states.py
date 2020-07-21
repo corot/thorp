@@ -65,9 +65,6 @@ class GoToPose(smach_ros.SimpleActionState):
         if self.rec_behaviors:
             goal.recovery_behaviors = self.rec_behaviors
         if self.dist_tolerance and self.angle_tolerance:
-            goal.dist_tolerance = self.dist_tolerance
-            goal.angle_tolerance = self.angle_tolerance
-            goal.tolerance_from_action = True
             # Set configured tolerance values and keep previous to restore before leaving the state
             self.prev_dist_tolerance = rospy.get_param(self.params_ns + '/xy_goal_tolerance')
             self.prev_angle_tolerance = rospy.get_param(self.params_ns + '/yaw_goal_tolerance')
@@ -83,26 +80,6 @@ class GoToPose(smach_ros.SimpleActionState):
             self.reconfigure_client.update_configuration(prev_config)
             self.prev_dist_tolerance = None
             self.prev_angle_tolerance = None
-
-
-class GoToPose___NO_ARGS_ALL_USERDATA(smach_ros.SimpleActionState):  # TODO decide and remove one
-    def __init__(self):
-        super(GoToPose, self).__init__('move_base_flex/move_base',
-                                       mbf_msgs.MoveBaseAction,
-                                       goal_cb=self.make_goal,
-                                       goal_slots=['target_pose'],
-                                       input_keys=['planner', 'controller', 'dist_tolerance', 'angle_tolerance'],
-                                       result_slots=['outcome', 'message'])
-
-    def make_goal(self, ud, goal):
-        if 'planner' in ud:
-            goal.planner = ud['planner']
-        if 'controller' in ud:
-            goal.controller = ud['controller']
-        if 'dist_tolerance' in ud and 'angle_tolerance' in ud:
-            goal.dist_tolerance = ud['dist_tolerance']
-            goal.angle_tolerance = ud['angle_tolerance']
-            goal.tolerance_from_action = True
 
 
 class ExePath(smach_ros.SimpleActionState):
@@ -133,9 +110,6 @@ class ExePath(smach_ros.SimpleActionState):
         if self.controller:
             goal.controller = self.controller
         if self.dist_tolerance and self.angle_tolerance:
-            goal.dist_tolerance = self.dist_tolerance
-            goal.angle_tolerance = self.angle_tolerance
-            goal.tolerance_from_action = True
             # Set configured tolerance values and keep previous to restore before leaving the state
             self.prev_dist_tolerance = rospy.get_param(self.params_ns + '/xy_goal_tolerance')
             self.prev_angle_tolerance = rospy.get_param(self.params_ns + '/yaw_goal_tolerance')
@@ -154,24 +128,6 @@ class ExePath(smach_ros.SimpleActionState):
 
     def _goal_feedback_cb(self, feedback):
         super(ExePath, self)._goal_feedback_cb(feedback)
-
-
-class ExePath___NO_ARGS_ALL_USERDATA(smach_ros.SimpleActionState):  # TODO decide and remove one
-    def __init__(self):
-        super(ExePath, self).__init__('move_base_flex/exe_path',
-                                      mbf_msgs.ExePathAction,
-                                      goal_cb=self.make_goal,
-                                      input_keys=['path', 'controller', 'dist_tolerance', 'angle_tolerance'],
-                                      result_slots=['outcome', 'message'])
-
-    def make_goal(self, ud, goal):
-        goal.path = nav_msgs.Path(ud['path'][0].header, ud['path'])
-        if 'controller' in ud:
-            goal.controller = ud['controller']
-        if 'dist_tolerance' in ud and 'angle_tolerance' in ud:
-            goal.dist_tolerance = ud['dist_tolerance']
-            goal.angle_tolerance = ud['angle_tolerance']
-            goal.tolerance_from_action = True
 
 
 class Recovery(smach_ros.SimpleActionState):
