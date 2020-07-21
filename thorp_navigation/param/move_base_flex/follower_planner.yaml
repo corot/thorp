@@ -2,6 +2,8 @@ PoseFollower:
   max_vel_lin: 0.5
   max_vel_th: 5.0
   holonomic: false
+  trans_stopped_velocity: 0.01
+  rot_stopped_velocity: 0.05
   xy_goal_tolerance: 0.1
   yaw_goal_tolerance: 0.1
   tolerance_timeout: 0.0
