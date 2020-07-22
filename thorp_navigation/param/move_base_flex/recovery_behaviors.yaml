@@ -14,17 +14,17 @@ recovery_behaviors:
 # Define parameters for loaded recovery behaviors
 
 clear_both_cms:
-  layer_names: [obstacle_layer, tof_sensors_layer]
+  layer_names: [obstacle_layer, range_sensor_layer]
   reset_distance: 0.0
   affected_maps: both
 
 clear_local_cm:
-  layer_names: [obstacle_layer, tof_sensors_layer]
+  layer_names: [obstacle_layer, range_sensor_layer]
   reset_distance: 0.0
   affected_maps: local
 
 clear_global_cm:
-  layer_names: [obstacle_layer]
+  layer_names: [obstacle_layer, range_sensor_layer]
   reset_distance: 0.0
   affected_maps: global
 
