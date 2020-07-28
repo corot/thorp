@@ -1,8 +1,10 @@
 <!--
-  Simulated version of Thorp's blocks manipulation demo using SMACH instead of C++ block_manipulation_demo node:
-  - Full Thorp Gazebo simulation
-  - Block manipulation stuff
+Cat hunter app:
+  - Thorp Stage simulation
+  - IPA coverage planning
   - Executive SMACH and visualization
+
+Explore the entire environment searching for cats, and attack them whenever found.
  -->
 
 <launch>
@@ -11,10 +13,10 @@
   <!--  ***** Simulated mobile manipulator Thorp ******  -->
 
   <include file="$(find thorp_simulation)/launch/thorp_gazebo.launch">
-    <arg name="world_name"     default="cat_house"/>
-    <arg name="initial_pose_x" default="0.0"/>
-    <arg name="initial_pose_y" default="-2.0"/>
-    <arg name="initial_pose_a" default="0.0"/>
+    <arg name="world_name"     value="cat_house"/>
+    <arg name="initial_pose_x" value="8.0"/>
+    <arg name="initial_pose_y" value="4.0"/>
+    <arg name="initial_pose_a" value="0.0"/>
   </include>
 
 
@@ -32,22 +34,16 @@
         args="cat_orange cat_black"/>
 
 
+  <!--  ************ IPA coverage planning ************  -->
+  <include file="$(find thorp_bringup)/launch/includes/exploration.launch.xml"/>
+
+
   <!--  ****** Executive smach and visualization ******  -->
 
+  <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="true"/>
 
-<!--  <node name="block_manipulation_demo" pkg="thorp_smach" type="block_manip.py" output="screen">
-    <param name="arm_link" value="/arm_base_link"/>
-    <param name="gripper_open" value="0.045"/>
-    <param name="gripper_closed" value="0.02"/>
-    <param name="z_up" value="0.05"/>
-    <param name="table_height" value="-0.03"/>
-    <param name="block_size" value="0.025"/>
-  </node>
-
-  <node name="block_manip_smach_viewer" pkg="smach_viewer" type="smach_viewer.py" output="screen"/>
+  <node pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
 
 
-
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_perc.rviz"/>
-  -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/hunting.rviz" output="screen" respawn="true"/>
 </launch>
