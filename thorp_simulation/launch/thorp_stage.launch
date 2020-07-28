@@ -7,7 +7,7 @@
  -->
 
 <launch>
-  <arg name="move_base_flex" default="true"/>
+  <arg name="visualization"  default="true"/>
 
   <!-- To specify a simulated world other than the default 'maze', provide either word_name
        (without path nor extension), or specific files (with full path) for both map and world.
@@ -49,7 +49,6 @@
 
   <!--  ************* Common functionality ************  -->
   <include file="$(find thorp_simulation)/launch/includes/thorp_common.launch.xml">
-    <arg name="move_base_flex"  value="$(arg move_base_flex)"/>
     <arg name="map_file"        value="$(arg map_file)"/>
     <arg name="initial_pose_x"  value="$(arg initial_pose_x)"/>
     <arg name="initial_pose_y"  value="$(arg initial_pose_y)"/>
@@ -63,5 +62,6 @@
   <param name="move_base_flex/local_costmap/range_sensor_layer/enabled" value="false"/>
 
   <!--  **************** Visualization ****************  -->
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_nav.rviz"/>
+  <node if="$(arg visualization)"
+        name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_nav.rviz"/>
 </launch>
