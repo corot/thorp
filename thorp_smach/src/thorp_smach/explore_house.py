@@ -6,6 +6,7 @@ import smach_ros
 
 import toolkit.config as cfg
 
+from toolkit.comon_states import UDHasKey
 from toolkit.navigation_states import *
 from toolkit.exploration_states import *
 
@@ -19,10 +20,11 @@ def explore_house_sm():
     # segment house into rooms and plan visit sequence
     plan_room_seq_sm = smach.Sequence(outcomes=['succeeded', 'aborted', 'preempted'],
                                       connector_outcome='succeeded',
-                                      output_keys=['map_image', 'map_resolution', 'map_origin', 'robot_radius',
-                                                   'segmented_map', 'room_sequence', 'room_information_in_meter'])
+                                      input_keys=['map_image', 'map_resolution', 'map_origin', 'robot_radius',
+                                                  'segmented_map',
+                                                  'room_information_in_meter', 'room_information_in_pixel'],
+                                      output_keys=['room_sequence'])
     with plan_room_seq_sm:
-        smach.Sequence.add('SEGMENT_ROOMS', SegmentRooms())
         smach.Sequence.add('GET_ROBOT_POSE', GetRobotPose())
         smach.Sequence.add('PLAN_ROOM_SEQUENCE', PlanRoomSequence(),
                            remapping={'robot_start_coordinate': 'robot_pose',
@@ -35,12 +37,17 @@ def explore_house_sm():
                                                    'segmented_map', 'room_number', 'room_information_in_meter'])
     with explore_1_room_sm:
         smach.Sequence.add('GET_ROBOT_POSE', GetRobotPose())
-        smach.Sequence.add('PLAN_ROOM_EXPL', PlanRoomExploration())
+        smach.Sequence.add('PLAN_ROOM_EXPL', PlanRoomExploration(),
+                           transitions={'aborted': 'aborted',
+                                        'preempted': 'preempted'})
+        smach.Sequence.add('POSES_AS_PATH', PosesAsPath(),
+                           remapping={'poses': 'coverage_path_pose_stamped'})
         smach.Sequence.add('GOTO_START_POSE', GoToPose(dist_tolerance=cfg.LOOSE_DIST_TOLERANCE,   # just close enough
                                                        angle_tolerance=cfg.INF_ANGLE_TOLERANCE),  # ignore orientation
+                           transitions={'aborted': 'aborted',
+                                        'preempted': 'preempted'},
                            remapping={'target_pose': 'start_pose'})
-        smach.Sequence.add('TRAVERSE_POSES', ExeSparsePath(),
-                           remapping={'path': 'coverage_path_pose_stamped'})
+        smach.Sequence.add('TRAVERSE_POSES', ExeSparsePath())
 
     # iterate over all rooms and explore following the planned sequence
     explore_house_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted'],
@@ -58,6 +65,13 @@ def explore_house_sm():
                                       'aborted',
                                       'preempted'])
     with sm:
+        smach.StateMachine.add('HAVE_SEGMENTED_MAP', UDHasKey('segmented_map'),
+                               transitions={'true': 'PLAN_ROOM_SEQ',
+                                            'false': 'SEGMENT_ROOMS'})
+        smach.StateMachine.add('SEGMENT_ROOMS', SegmentRooms(),
+                               transitions={'succeeded': 'PLAN_ROOM_SEQ',
+                                            'aborted': 'aborted',
+                                            'preempted': 'preempted'})
         smach.StateMachine.add('PLAN_ROOM_SEQ', plan_room_seq_sm,
                                transitions={'succeeded': 'EXPLORE_HOUSE',
                                             'aborted': 'aborted',

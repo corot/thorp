@@ -28,6 +28,33 @@ class GetRobotPose(smach.State):
             return 'aborted'
 
 
+class PoseAsPath(smach.State):
+    """ Add a path to the userdata containing just the input pose """
+
+    def __init__(self):
+        super(PoseAsPath, self).__init__(outcomes=['succeeded'],
+                                         input_keys=['pose'],
+                                         output_keys=['path'])
+
+    def execute(self, ud):
+        ud['path'] = nav_msgs.Path(ud['pose'].header, [ud['pose']])
+        return 'succeeded'
+
+
+class PosesAsPath(smach.State):
+    """ Add a path to the userdata containing the list of input poses """
+
+    def __init__(self):
+        super(PosesAsPath, self).__init__(outcomes=['succeeded'],
+                                          input_keys=['poses'],
+                                          output_keys=['path'])
+
+    def execute(self, ud):
+        assert ud['poses'], "PosesAsPath: poses list is empty"
+        ud['path'] = nav_msgs.Path(ud['poses'][0].header, ud['poses'])
+        return 'succeeded'
+
+
 class GoToPose(smach_ros.SimpleActionState):
     def __init__(self,
                  planner=cfg.DEFAULT_PLANNER,
@@ -106,7 +133,7 @@ class ExePath(smach_ros.SimpleActionState):
             rospy.logerr("'%s' dynamic reconfiguration not available: %s", self.params_ns, str(err))
 
     def make_goal(self, ud, goal):
-        goal.path = nav_msgs.Path(ud['path'][0].header, ud['path'])
+        goal.path = ud['path']
         if self.controller:
             goal.controller = self.controller
         if self.dist_tolerance and self.angle_tolerance:
@@ -154,7 +181,7 @@ class ExePathFailed(smach.State):
         cwp_index = ud['message'].find('current waypoint: ')
         if cwp_index >= 0:
             current_waypoint = int(ud['message'][cwp_index + len('current waypoint: '):])
-            ud['path'] = ud['path'][current_waypoint:]
+            ud['path'].poses = ud['path'].poses[current_waypoint:]
         else:
             rospy.logwarn("No current waypoint provided")
             current_waypoint = -1
@@ -170,7 +197,7 @@ class ExePathFailed(smach.State):
             rospy.loginfo("Recovery behaviors exhausted after %d consecutive failures", self.consecutive_failures)
             self.consecutive_failures = 0
             if current_waypoint >= 0:
-                next_wp_pose = ud['path'][0]
+                next_wp_pose = ud['path'].poses[0]
                 rospy.loginfo("Try to navigate to the next waypoint: %d, %s", current_waypoint, next_wp_pose)
                 ud['next_wp'] = next_wp_pose
                 return 'next_wp'
@@ -186,7 +213,7 @@ class ExeSparsePath(smach.StateMachine):
                                             input_keys=['path'],
                                             output_keys=['outcome', 'message'])
         with self:
-            smach.StateMachine.add('EXE_PATH', ExePath(cfg.TRAVERSE_CONTROLLER,
+            smach.StateMachine.add('EXE_PATH', ExePath(cfg.FOLLOW_CONTROLLER,
                                                        cfg.LOOSE_DIST_TOLERANCE,
                                                        cfg.INF_ANGLE_TOLERANCE),
                                    transitions={'succeeded': 'succeeded',

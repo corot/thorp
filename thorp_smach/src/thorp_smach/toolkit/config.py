@@ -1,9 +1,9 @@
 DEFAULT_PLANNER = 'GlobalPlanner'
 DEFAULT_CONTROLLER = 'TEBPlanner'
+FOLLOW_CONTROLLER = 'PoseFollower'
 GET_PATH_RECOVERY = ['clear_global_cm']
 EXE_PATH_RECOVERY = ['clear_local_cm', 'escape_distance', 'out_to_free_space']
 MOVE_BASE_RECOVERY = ['clear_both_cms', 'escape_distance', 'out_to_free_space']
-TRAVERSE_CONTROLLER = 'PoseFollower'
 LOOSE_DIST_TOLERANCE = 0.2
 LOOSE_ANGLE_TOLERANCE = 0.5  # ~30 deg
 INF_ANGLE_TOLERANCE = float('inf')
