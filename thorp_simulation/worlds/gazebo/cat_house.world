@@ -48,7 +48,7 @@
       <pose>9.0 3.0 0 0 0 0</pose>
     </include>
 
-    <!-- Six rockets to fire at them -->
+    <!-- 6 x 3 rockets to fire at them -->
     <include>
       <uri>model://rocket</uri>
       <name>rocket1</name>
@@ -78,6 +78,66 @@
       <uri>model://rocket</uri>
       <name>rocket6</name>
       <pose>-1 5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://rocket</uri>
+      <name>rocket7</name>
+      <pose>-2 0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://rocket</uri>
+      <name>rocket8</name>
+      <pose>-2 1 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://rocket</uri>
+      <name>rocket9</name>
+      <pose>-2 2 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://rocket</uri>
+      <name>rocket10</name>
+      <pose>-2 3 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://rocket</uri>
+      <name>rocket11</name>
+      <pose>-2 4 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://rocket</uri>
+      <name>rocket12</name>
+      <pose>-2 5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://rocket</uri>
+      <name>rocket13</name>
+      <pose>-3 0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://rocket</uri>
+      <name>rocket14</name>
+      <pose>-3 1 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://rocket</uri>
+      <name>rocket15</name>
+      <pose>-3 2 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://rocket</uri>
+      <name>rocket16</name>
+      <pose>-3 3 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://rocket</uri>
+      <name>rocket17</name>
+      <pose>-3 4 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://rocket</uri>
+      <name>rocket18</name>
+      <pose>-3 5 0 0 0 0</pose>
     </include>
 
     <scene>

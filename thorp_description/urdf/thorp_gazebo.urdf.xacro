@@ -241,7 +241,7 @@
     <plugin name="gazebo_cannon_plugin" filename="libgazebo_cannon_plugin.so">
       <cannon_link>cannon_link</cannon_link>
       <axis_of_fire>x</axis_of_fire>
-      <rocket_count>6</rocket_count>
+      <rocket_count>18</rocket_count>
       <rate_of_fire>18.18</rate_of_fire>
       <shoot_force>2500</shoot_force>
     </plugin>
