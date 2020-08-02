@@ -38,12 +38,23 @@
   </include>
 
   <!--  **************** Pose following ****************  -->
+  <!-- Velocity smoother nodelet; needed on gazebo to prevent robot from falling due to jerky movements -->
+  <node pkg="nodelet" type="nodelet" name="follow_smoother" output="screen" respawn="true"
+        args="load yocs_velocity_smoother/VelocitySmootherNodelet mobile_base_nodelet_manager">
+    <!-- TODO: gazebo smoother params: much faster decceleration to avoid overturning -->
+    <rosparam file="$(find thorp_bringup)/param/vel_smoother_gazebo.yaml" command="load"/>
+    <remap from="follow_smoother/smooth_cmd_vel" to="/cmd_vel_mux/input/following"/>
+    <remap from="follow_smoother/robot_cmd_vel" to="/mobile_base/commands/velocity"/>
+    <remap from="follow_smoother/odometry" to="/odom"/>
+  </node>
+
   <node pkg="thorp_navigation" type="pose_follower" name="pose_follower" output="screen" respawn="true">
     <param name="enabled" value="false"/>
     <param name="v_scale" value="1.0"/>
     <param name="w_scale" value="5.0"/>
+    <param name="no_pose_timeout" value="1.0"/>
 
-    <remap from="cmd_vel" to="/cmd_vel_mux/input/following"/>
+    <remap from="cmd_vel" to="follow_smoother/raw_cmd_vel"/>
     <remap from="target_pose" to="target_object_pose"/>
   </node>
 
