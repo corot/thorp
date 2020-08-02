@@ -18,6 +18,7 @@ add_action_files(DIRECTORY action
                            PlaceObject.action
                            DragAndDrop.action
                            UserCommand.action
+                           FollowPose.action
                 )
 
 generate_messages(DEPENDENCIES std_msgs moveit_msgs geometry_msgs actionlib_msgs)

@@ -21,4 +21,4 @@ add_dependencies(pose_servoing thorp_msgs_generate_messages_cpp)
 
 add_executable(pose_follower src/pose_follower.cpp)
 target_link_libraries(pose_follower ${catkin_LIBRARIES})
-add_dependencies(pose_follower thorp_msgs_generate_messages_cpp ${PROJECT_NAME}_generate_messages_cpp)
+add_dependencies(pose_follower thorp_msgs_generate_messages_cpp)

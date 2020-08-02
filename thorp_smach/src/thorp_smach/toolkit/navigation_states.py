@@ -5,6 +5,7 @@ import dynamic_reconfigure.client
 
 import nav_msgs.msg as nav_msgs
 import mbf_msgs.msg as mbf_msgs
+import thorp_msgs.msg as thorp_msgs
 
 from thorp_toolkit.geometry import TF2
 
@@ -250,3 +251,22 @@ class TraversePoses(smach.Iterator):
             smach.Iterator.set_contained_state('GO_TO_POSE', GoToPose(dist_tolerance=dist_tolerance,
                                                                       angle_tolerance=angle_tolerance),
                                                loop_outcomes=['succeeded'])
+
+
+class FollowPose(smach_ros.SimpleActionState):
+    def __init__(self, distance=-1.0):
+        super(FollowPose, self).__init__('pose_follower/follow',
+                                         thorp_msgs.FollowPoseAction,
+                                         goal_cb=self.make_goal)
+                                   #      input_keys=['path'],
+                                   #       result_cb=self.result_cb,
+                                   #       result_slots=['outcome', 'message'])
+        self.follow_distance = distance  # TODO,,, could overwrite configured param
+
+    def make_goal(self, ud, goal):
+        goal.time_limit = rospy.Duration(25)   # TODO
+        goal.distance = self.follow_distance
+        goal.stop_at_distance = False  # TODO
+
+    def result_cb(self, ud, status, result):
+        pass

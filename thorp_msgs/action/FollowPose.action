@@ -1,0 +1,30 @@
+# Follow pose: try to follow poses received on 'target_pose' topic
+# Aborted if no poses are received for 'no_pose_timeout' parameter
+# Otherwise, runs until preempted if neither stop_at_distance and time_limit are set
+
+# goal definition
+
+####string target_name
+float32 distance       # following desired distance; use the configured value if <= 0
+bool stop_at_distance  # stop action upon reaching the desired following distance
+duration time_limit    # stop action after this time; ignored if 0
+
+---
+
+# result definition
+
+uint8 WITHIN_DISTANCE = 0
+uint8 RUN_OUT_OF_TIME = 1
+uint8 NO_POSE_TIMEOUT = 2
+uint8 FOLLOW_CANCELED = 2
+
+uint8 outcome
+#####ThorpError error
+
+---
+
+# feedback
+
+float32 dist_to_target
+float32 angle_to_target
+geometry_msgs/Twist cmd  # last command calculated by the controller
