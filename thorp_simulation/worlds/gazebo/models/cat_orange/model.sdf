@@ -10,6 +10,7 @@
             <scale>0.01 0.01 0.01</scale>
           </mesh>
         </geometry>
+        <pose>0 -0.09 0 0 0 0</pose>
       </collision>
       <visual name="visual">
         <geometry>
@@ -18,6 +19,7 @@
             <scale>0.01 0.01 0.01</scale>
           </mesh>
         </geometry>
+        <pose>0 -0.09 0 0 0 0</pose>
       </visual>
       <inertial>
         <inertia>
@@ -29,7 +31,7 @@
           <izz>0.05667</izz>
         </inertia>
         <mass>4</mass>
-        <pose>0 0 0.15 0 0 0</pose>
+        <pose>0 -0.09 0.15 0 0 0</pose>
       </inertial>
     </link>
   </model>
