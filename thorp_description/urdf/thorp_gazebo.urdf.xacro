@@ -247,6 +247,35 @@
     </plugin>
   </gazebo>
 
+  <!-- Add and visualize a fake range sensor to see where the cannon is pointing to -->
+  <gazebo reference="ir_cannon_link">
+    <sensor type="ray" name="ir_cannon">
+      <always_on>true</always_on>
+      <update_rate>20</update_rate>
+      <visualize>true</visualize>
+      <ray>
+        <range>
+          <min>0.1</min>
+          <max>5.0</max>
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+      <plugin name="gazebo_ros_ir_cannon_controller" filename="libgazebo_ros_range.so">
+        <updateRate>20</updateRate>
+        <topicName>mobile_base/sensors/infrared/cannon</topicName>
+        <frameName>ir_cannon_link</frameName>
+        <radiation>infrared</radiation>
+        <fov>0.001</fov>
+      </plugin>
+    </sensor>
+  </gazebo>
+  <joint name="ir_cannon_joint" type="fixed">
+    <origin xyz="0.035 0.0 0.0"/>
+    <parent link="cannon_link"/>
+    <child link="ir_cannon_link"/>
+  </joint>
+  <link name="ir_cannon_link"/>
+
   <!-- Gazebo configuration for other structural parts -->
   <xacro:macro name="structural_part" params="name color">
     <gazebo reference="${name}_link">
