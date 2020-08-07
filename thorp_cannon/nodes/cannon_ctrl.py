@@ -34,6 +34,7 @@ class CannonCtrlNode:
 
         self._js_msg = JointState()
         self._js_msg.name = ["cannon_joint"]
+        self._js_msg.position = [0.0]
         self._js_msg.velocity = [0.0]
 
     def target_obj_cb(self, pose):
@@ -48,7 +49,8 @@ class CannonCtrlNode:
         opposite = pose_in_cannon_ref.pose.position.z
         tilt_angle = atan(opposite / adjacent)
         print(adjacent, opposite, degrees(tilt_angle))
-        return self.tilt(degrees(tilt_angle))
+        tilt_angle = max(min(degrees(tilt_angle), +18), -18)
+        return self.tilt(tilt_angle)
 
     def tilt(self, angle):
         if abs(angle) > 18.0:
@@ -94,7 +96,7 @@ class CannonCtrlNode:
     def spin(self):
         rate = rospy.Rate(20)
         while not rospy.is_shutdown():
-            self._js_msg.position = [self._cannon_tilt_angle]
+            self._js_msg.position[0] = self._cannon_tilt_angle
             self._js_msg.header.stamp = rospy.Time.now()
             self._joint_states_pub.publish(self._js_msg)
             try:
