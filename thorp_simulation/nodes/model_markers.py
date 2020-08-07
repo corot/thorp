@@ -19,7 +19,7 @@ from visualization_msgs.msg import *
 from geometry_msgs.msg import PoseStamped, Twist
 from gazebo_msgs.msg import ModelState, ModelStates
 
-from thorp_toolkit.geometry import quaternion_from_yaw, yaw, normalize_quaternion, pose3d2str, create_2d_pose
+from thorp_toolkit.geometry import quaternion_msg_from_yaw, yaw, normalize_quaternion, pose3d2str, create_2d_pose
 
 server = None
 menu_handler = MenuHandler()
@@ -86,7 +86,7 @@ def make_interactive_marker(pose, model):
     int_marker.header.frame_id = "map"
     int_marker.pose = pose
     int_marker.pose.position.z = max(int_marker.pose.position.z, 0.01)  # ensure marker is above ground
-    int_marker.pose.orientation = quaternion_from_yaw(yaw(pose))  # discard all but yaw to ensure marker is flat
+    int_marker.pose.orientation = quaternion_msg_from_yaw(yaw(pose))  # discard all but yaw to ensure marker is flat
     int_marker.scale = 1
 
     make_model_control(int_marker, model)

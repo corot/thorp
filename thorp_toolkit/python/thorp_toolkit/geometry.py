@@ -68,9 +68,14 @@ def yaw(pose_or_quat):
     return get_euler(pose_or_quat)[2]
 
 
-def quaternion_from_yaw(theta):
+def quaternion_msg_from_yaw(theta):
     """ Create a geometry_msgs/Quaternion from heading """
     return geometry_msgs.Quaternion(*quaternion_from_euler(0, 0, theta))
+
+
+def quaternion_msg_from_rpy(roll, pitch, yaw):
+    """ Create a geometry_msgs/Quaternion from roll, pitch, yaw """
+    return geometry_msgs.Quaternion(*quaternion_from_euler(roll, pitch, yaw))
 
 
 def normalize_quaternion(q):
@@ -131,7 +136,7 @@ def to_pose2d(pose):
 
 def to_pose3d(pose, timestamp=rospy.Time(), frame=None):
     if isinstance(pose, geometry_msgs.Pose2D):
-        p = geometry_msgs.Pose(geometry_msgs.Point(pose.x, pose.y, 0.0), quaternion_from_yaw(pose.theta))
+        p = geometry_msgs.Pose(geometry_msgs.Point(pose.x, pose.y, 0.0), quaternion_msg_from_yaw(pose.theta))
         if not frame:
             return p
         return geometry_msgs.PoseStamped(std_msgs.Header(0, timestamp, frame), p)
