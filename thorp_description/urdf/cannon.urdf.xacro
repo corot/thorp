@@ -64,8 +64,9 @@
 
   <joint name="cannon_joint" type="revolute">
     <axis xyz="0 -1 0"/>
-    <limit effort="30" velocity="0.10471975512" lower="-0.523598775598" upper="0.523598775598"/>
-    <!-- 6 degrees/s, +/-30 degrees operational range -->
+    <limit effort="1.0" velocity="5.0" lower="${-M_PI/10}" upper="${+M_PI/10}"/>
+    <!-- 300 degrees/s (specs say 600/s, but then I cannot see the cannon rotate in gazebo),
+         limits: +/-18 degrees operational range (servo limits are +/-30 degrees, I think) -->
     <origin xyz="0.0 -0.015 0.0" rpy="0.0 0.0 0.0"/>
     <parent link="cannon_shaft_link"/>
     <child link="cannon_link"/>
