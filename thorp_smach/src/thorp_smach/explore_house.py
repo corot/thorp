@@ -17,19 +17,6 @@ def explore_house_sm():
      - segment map into rooms and plan visit sequence
      - iterate over all rooms and explore following the planned sequence
     """
-    # segment house into rooms and plan visit sequence
-    plan_room_seq_sm = smach.Sequence(outcomes=['succeeded', 'aborted', 'preempted'],
-                                      connector_outcome='succeeded',
-                                      input_keys=['map_image', 'map_resolution', 'map_origin', 'robot_radius',
-                                                  'segmented_map',
-                                                  'room_information_in_meter', 'room_information_in_pixel'],
-                                      output_keys=['room_sequence'])
-    with plan_room_seq_sm:
-        smach.Sequence.add('GET_ROBOT_POSE', GetRobotPose())
-        smach.Sequence.add('PLAN_ROOM_SEQUENCE', PlanRoomSequence(),
-                           remapping={'robot_start_coordinate': 'robot_pose',
-                                      'input_map': 'map_image'})
-
     # explore a single room
     explore_1_room_sm = smach.Sequence(outcomes=['succeeded', 'aborted', 'preempted'],
                                        connector_outcome='succeeded',
@@ -60,22 +47,27 @@ def explore_house_sm():
     with explore_house_it:
         smach.Iterator.set_contained_state('EXPLORE_1_ROOM', explore_1_room_sm, loop_outcomes=['succeeded', 'aborted'])
 
-    # Full SM: plan rooms visit sequence and explore each room in turn
+    # Full SM: segment map, plan rooms visit sequence and explore each room in turn
     sm = smach.StateMachine(outcomes=['succeeded',
                                       'aborted',
                                       'preempted'])
     with sm:
         smach.StateMachine.add('HAVE_SEGMENTED_MAP', UDHasKey('segmented_map'),
-                               transitions={'true': 'PLAN_ROOM_SEQ',
+                               transitions={'true': 'GET_ROBOT_POSE',
                                             'false': 'SEGMENT_ROOMS'})
         smach.StateMachine.add('SEGMENT_ROOMS', SegmentRooms(),
-                               transitions={'succeeded': 'PLAN_ROOM_SEQ',
+                               transitions={'succeeded': 'GET_ROBOT_POSE',
                                             'aborted': 'aborted',
                                             'preempted': 'preempted'})
-        smach.StateMachine.add('PLAN_ROOM_SEQ', plan_room_seq_sm,
+        smach.StateMachine.add('GET_ROBOT_POSE', GetRobotPose(),
+                               transitions={'succeeded': 'PLAN_ROOM_SEQ',
+                                            'aborted': 'aborted'})
+        smach.StateMachine.add('PLAN_ROOM_SEQ', PlanRoomSequence(),
                                transitions={'succeeded': 'EXPLORE_HOUSE',
                                             'aborted': 'aborted',
-                                            'preempted': 'preempted'})
+                                            'preempted': 'preempted'},
+                               remapping={'robot_start_coordinate': 'robot_pose',
+                                          'input_map': 'map_image'})
         smach.StateMachine.add('EXPLORE_HOUSE', explore_house_it,
                                transitions={'succeeded': 'succeeded',
                                             'aborted': 'aborted',
