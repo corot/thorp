@@ -5,7 +5,10 @@ import smach
 import smach_ros
 
 import toolkit.config as cfg
+import visualization_msgs.msg as viz_msgs
 
+from math import pi
+from thorp_toolkit.geometry import TF2, quaternion_msg_from_rpy
 from explore_house import explore_house_sm
 from toolkit.comon_states import *
 from toolkit.navigation_states import *
@@ -25,6 +28,7 @@ class Attack(FollowPose):
         # cannon commands service client
         rospy.wait_for_service('cannon_command', 30.0)
         self.cannon_srv = rospy.ServiceProxy('cannon_command', thorp_srvs.CannonCmd)
+        self.target_pub = rospy.Publisher('attack_target', viz_msgs.Marker, queue_size=1)
 
     def _goal_feedback_cb(self, feedback):
         super(Attack, self)._goal_feedback_cb(feedback)
@@ -36,7 +40,6 @@ class Attack(FollowPose):
                 resp = self.cannon_srv(thorp_srvs.CannonCmdRequest.AIM, None, None)
                 if resp.error.code != thorp_msgs.ThorpError.SUCCESS:
                     rospy.logerr("Aim cannon failed with error code %d: %s", resp.error.code, resp.error.text)
-                print "AIM CMD"
                 self.last_aim_command_time = rospy.get_time()
             if rospy.get_time() - self.last_fire_command_time > 1.0 and \
                  feedback.dist_to_target <= self.fire_max_dist and \
@@ -45,10 +48,36 @@ class Attack(FollowPose):
                 if resp.error.code != thorp_msgs.ThorpError.SUCCESS:
                     rospy.logerr("Fire cannon failed with error code %d: %s", resp.error.code, resp.error.text)
                 self.request_preempt()  # TODO: we cannot verify the kill, so by now just stop the attack
+                # TODO: this will give as 'preempted' as outcome, what is weird,,, I need to remap Follow outcomes!!!
                 rospy.loginfo("Fired at target at %g m and %g rad!", feedback.dist_to_target, feedback.angle_to_target)
                 self.last_fire_command_time = rospy.get_time()
+                self._highlight_target(feedback.target_pose, fire=True)
+            else:
+                self._highlight_target(feedback.target_pose, fire=False)
+
         except rospy.ServiceException as err:
             rospy.logerr("Cannon commands service call failed: %s", err)
+
+    def _highlight_target(self, pose, fire=False):
+        m = viz_msgs.Marker()
+        m.id = 1
+        m.ns = 'highlight_target'
+        m.action = viz_msgs.Marker.ADD
+        m.lifetime = rospy.Duration(1)
+        m.header.frame_id = 'map'
+        m.pose = TF2().transform_pose(pose, pose.header.frame_id, 'map').pose
+        m.pose.position.z = 0.00005
+        m.pose.orientation = quaternion_msg_from_rpy(0.0, 0.0, 0.0)
+        m.type = viz_msgs.Marker.CYLINDER
+        m.scale.x = 1.0
+        m.scale.y = 1.0
+        m.scale.z = 0.0001
+        if fire:
+            m.color.r = 0.8
+        else:
+            m.color.b = 0.8
+        m.color.a = 0.4
+        self.target_pub.publish(m)
 
 
 def cat_hunter_sm():
@@ -86,27 +115,9 @@ def cat_hunter_sm():
                                   output_keys=['tracked_object_pose'],
                                   child_termination_cb=child_term_cb,
                                   outcome_cb=out_cb)
-
-    def my_cb(ud):
-        rospy.sleep(5)  # TODO ojo,,, no cancelable!!!
-        return 'succeeded'
     with search_sm:
-#        smach.Concurrence.add('EXPLORE_HOUSE', explore_house_sm())
-        smach.Concurrence.add('EXPLORE_HOUSE', smach.CBState(my_cb, outcomes=['succeeded']))
+        smach.Concurrence.add('EXPLORE_HOUSE', explore_house_sm())
         smach.Concurrence.add('LOOK_FOR_CATS', MonitorObjects(['cat', 'dog', 'horse']))
-
-    # hunt sm
-    hunt_sm = smach.Sequence(outcomes=['succeeded', 'aborted', 'preempted'],
-                             connector_outcome='succeeded',
-                             input_keys=['tracked_object_pose'])
-    with hunt_sm:
-        smach.Sequence.add('POSE_AS_PATH', PoseAsPath(),
-                           remapping={'pose': 'tracked_object_pose'})
-        smach.Sequence.add('APPROACH', ExePath(cfg.FOLLOW_CONTROLLER,
-                                               1, #FIRE_DISTANCE,
-                                               cfg.INF_ANGLE_TOLERANCE))
-        smach.Sequence.add('AIM_CANNON', AimCannon())
-        smach.Sequence.add('FIRE_CANNON', FireCannon(1))
 
     # Full SM: plan rooms visit sequence and explore each room in turn
     sm = smach.StateMachine(outcomes=['detected',

@@ -78,6 +78,7 @@ class SegmentRooms(smach_ros.SimpleActionState):
 
 
 class PlanRoomSequence(smach_ros.SimpleActionState):
+    """ Plan rooms visit sequence """
     def __init__(self):
         super(PlanRoomSequence, self).__init__('exploration/room_sequence_planning_server',
                                                ipa_building_msgs.FindRoomSequenceWithCheckpointsAction,

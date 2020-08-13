@@ -254,14 +254,11 @@ class TraversePoses(smach.Iterator):
 
 
 class FollowPose(smach_ros.SimpleActionState):
-    def __init__(self, distance=-1.0):
+    def __init__(self, distance=0.0):
         super(FollowPose, self).__init__('pose_follower/follow',
                                          thorp_msgs.FollowPoseAction,
                                          goal_cb=self.make_goal)
-                                   #      input_keys=['path'],
-                                   #       result_cb=self.result_cb,
-                                   #       result_slots=['outcome', 'message'])
-        self.follow_distance = distance  # TODO,,, could overwrite configured param
+        self.follow_distance = distance
 
     def make_goal(self, ud, goal):
         goal.time_limit = rospy.Duration(25)   # TODO
