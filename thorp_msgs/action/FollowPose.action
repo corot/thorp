@@ -27,4 +27,5 @@ uint8 outcome
 
 float32 dist_to_target
 float32 angle_to_target
-geometry_msgs/Twist cmd  # last command calculated by the controller
+geometry_msgs/Twist cmd                # last command calculated by the controller
+geometry_msgs/PoseStamped target_pose  # last target pose received, in robot reference frame

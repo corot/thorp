@@ -257,6 +257,7 @@ private:
         }
         feedback_.dist_to_target = distance;
         feedback_.angle_to_target = heading;
+        feedback_.target_pose = target_pose_in_robot_frame;
         follow_as_.publishFeedback(feedback_);
         twist_pub_.publish(feedback_.cmd);
       }
