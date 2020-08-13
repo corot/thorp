@@ -68,10 +68,15 @@ class MonitorObjects(smach_ros.MonitorState):
                 self.detected_at = rospy.get_time()
                 ud['tracked_object'] = detection
                 ud['tracked_object_pose'] = detection.pose
+                rospy.loginfo("Detected " + detection.label)
+                # I retort a bit MonitorState's logic; returning here False means 'invalid' msg, but it makes the state
+                # to finish, that is what I want. MonitorState's execute will return 'invalid', but I just ignore it.
+                # Returning True means keep receiving msgs, again what I want.
                 return False
         return True
 
     def execute(self, ud):
         super(MonitorObjects, self).execute(ud)
-        print 'detected' if rospy.get_time() - self.detected_at <= self.persistence else 'not_detected'
-        return 'detected' if rospy.get_time() - self.detected_at <= self.persistence else 'not_detected'
+        outcome = 'detected' if rospy.get_time() - self.detected_at <= self.persistence else 'not_detected'
+        rospy.loginfo("Monitor ended with outcome " + outcome)
+        return outcome
