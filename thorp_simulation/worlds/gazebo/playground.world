@@ -711,7 +711,7 @@
         <visual name='visual'>
           <geometry>
             <mesh>
-              <uri>model://doll_table/doll_furniture/doll_table.dae</uri>
+              <uri>model://doll_furniture/doll_table.dae</uri>
               <scale>2 2 2</scale>
             </mesh>
           </geometry>
@@ -719,7 +719,7 @@
         <collision name='collision'>
           <geometry>
             <mesh>
-              <uri>model://doll_table/doll_furniture/doll_table.stl</uri>
+              <uri>model://doll_furniture/doll_table.stl</uri>
               <scale>0.0514 0.0514 0.0514</scale>
             </mesh>
           </geometry>
