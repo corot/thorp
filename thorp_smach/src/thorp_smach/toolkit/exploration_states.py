@@ -1,4 +1,5 @@
 import struct
+import random
 
 import rospy
 import smach
@@ -24,6 +25,7 @@ class SegmentRooms(smach_ros.SimpleActionState):
         self.img_pub = rospy.Publisher('exploration/room_segmentation_img', sensor_msgs.Image, queue_size=1, latch=True)
 
     def make_goal(self, ud, goal):
+        # Listen for current map
         occ_grid_map = rospy.wait_for_message('/map', nav_msgs.OccupancyGrid)
         goal.input_map = sensor_msgs.Image()
         goal.input_map.header = occ_grid_map.header
@@ -37,15 +39,6 @@ class SegmentRooms(smach_ros.SimpleActionState):
             for j in range(occ_grid_map.info.width):
                 pixel_value = b'\x00' if occ_grid_map.data[i * occ_grid_map.info.width + j] in [-1, 100] else b'\xFF'
                 goal.input_map.data += pixel_value
-# [/exploration/room_sequence_planning_server  INFO 1592274444.350931252, 465.900000000]: ********Sequence planning started************
-# terminate called after throwing an instance of 'cv_bridge::Exception'
-#   what():  [32SC1] is not a color format. but [mono8] is. The conversion does not make sense
-#        la img tie mal format pa planning      y parece lento
-
-# y fix   [exploration/room_segmentation_server-17] escalating to SIGTERM
-        # [move_base-10] escalating to SIGTERM
-
-        rospy.Publisher('/exploration/img', sensor_msgs.Image, queue_size=1, latch=True).publish(goal.input_map)
         # ALTERNATIVE: read image from file
         # import cv2
         # from cv_bridge import CvBridge
@@ -73,8 +66,25 @@ class SegmentRooms(smach_ros.SimpleActionState):
         ud['robot_radius'] = goal.robot_radius
 
     def result_cb(self, ud, status, result):
-        self.img_pub.publish(result.segmented_map)
-        # TODO  Unsupported image encoding [32SC1]    ah,,, yes, and anyway doesn't have colors;  need to make myself
+        # make a random color rooms map to show in RViz
+        rooms_color_map = sensor_msgs.Image()
+        rooms_color_map.header = result.segmented_map.header
+        rooms_color_map.width = result.segmented_map.width
+        rooms_color_map.height = result.segmented_map.height
+        rooms_color_map.step = rooms_color_map.width * 3
+        rooms_color_map.encoding = 'rgb8'
+        for i in range(result.segmented_map.height):
+            for j in range(result.segmented_map.width):
+                idx = i * result.segmented_map.width * 4 + j * 4
+                val = result.segmented_map.data[idx:idx + 4]
+                room = struct.unpack('<BBBB', val)[0]
+                if room > 0:
+                    random.seed(room)
+                    r, g, b = random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)
+                    rooms_color_map.data += struct.pack('<BBB', r, g, b)
+                else:
+                    rooms_color_map.data += struct.pack('<BBB', 0, 0, 0)
+        self.img_pub.publish(rooms_color_map)
 
 
 class PlanRoomSequence(smach_ros.SimpleActionState):
