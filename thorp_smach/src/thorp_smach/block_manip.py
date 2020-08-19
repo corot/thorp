@@ -4,6 +4,7 @@ import rospy
 import smach
 import smach_ros
 
+import rosgraph_msgs.msg as rosgraph_msgs
 import geometry_msgs.msg as geometry_msg
 
 from turtlebot_arm_block_manipulation.msg import *
@@ -15,6 +16,11 @@ def monitor_cb(ud, msg):
 
 def main():
     rospy.init_node('smach_block_manip')
+
+    if rospy.get_param('/use_sim_time', False):
+        if not rospy.wait_for_message('/clock', rosgraph_msgs.Clock, rospy.Duration(60)):
+            rospy.logfatal("No clock msgs after 60 seconds, being use_sim_time true")
+            return
 
     sm = smach.StateMachine(outcomes=['success',
                                       'aborted',
@@ -39,8 +45,7 @@ def main():
                                smach_ros.SimpleActionState('block_detection',
                                                            BlockDetectionAction,
                                                            goal_slots=['frame', 'table_height', 'block_size'],
-                                                           result_slots=['blocks'],
-                                                           server_wait_timeout=rospy.Duration(120)),
+                                                           result_slots=['blocks']),
                                remapping={'frame': 'frame',
                                           'table_height': 'table_height',
                                           'block_size': 'block_size',
@@ -53,8 +58,7 @@ def main():
                                smach_ros.SimpleActionState('interactive_manipulation',
                                                            InteractiveBlockManipulationAction,
                                                            goal_slots=['frame', 'block_size'],
-                                                           result_slots=['pickup_pose', 'place_pose'],
-                                                           server_wait_timeout=rospy.Duration(120)),
+                                                           result_slots=['pickup_pose', 'place_pose']),
                                remapping={'frame': 'frame',
                                           'block_size': 'block_size',
                                           'pickup_pose': 'pickup_pose',
@@ -69,8 +73,7 @@ def main():
                                                            goal_slots=['frame', 'z_up',
                                                                        'gripper_open', 'gripper_closed',
                                                                        'pickup_pose', 'place_pose', 'topic'],
-                                                           result_slots=[],
-                                                           server_wait_timeout=rospy.Duration(120)),
+                                                           result_slots=[]),
                                remapping={'frame': 'frame',
                                           'z_up': 'z_up',
                                           'gripper_open': 'gripper_open',
