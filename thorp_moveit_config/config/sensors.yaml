@@ -1,21 +1,21 @@
 sensors:
-#  - sensor_plugin: occupancy_map_monitor/PointCloudOctomapUpdater
-##    point_cloud_topic: /camera/depth_registered/points
-#    point_cloud_topic: /xtion/depth_registered/points
-#    filtered_cloud_topic: filtered_cloud
-#    max_range: 1.0
-#    point_subsample: 1
-#    padding_offset: 0.04
-#    padding_scale: 1.0
-
-  - sensor_plugin: occupancy_map_monitor/DepthImageOctomapUpdater
-    image_topic: /xtion/depth_registered/image_raw
-    queue_size: 5
-    near_clipping_plane_distance: 0.4  # choose shorter than pointcloud cutoff
-    far_clipping_plane_distance: 1.0
-    skip_vertical_pixels: 0
-    skip_horizontal_pixels: 0
-    shadow_threshold: 0.2
-    padding_scale: 1.0
+  - sensor_plugin: occupancy_map_monitor/PointCloudOctomapUpdater
+    point_cloud_topic: /xtion/depth_registered/points
+    filtered_cloud_topic: filtered_cloud
+    max_range: 1.0
+    point_subsample: 3  # needs x3 more CPU than depth image; subsample to mitigate this
     padding_offset: 0.04
-    filtered_cloud_topic: occ_map_filtered_cloud
+    padding_scale: 1.0
+
+# much cheaper in terms of CPU, but doesn't filter the arm properly
+#  - sensor_plugin: occupancy_map_monitor/DepthImageOctomapUpdater
+#    image_topic: /xtion/depth_registered/image_raw
+#    queue_size: 5
+#    near_clipping_plane_distance: 0.4  # choose shorter than pointcloud cutoff
+#    far_clipping_plane_distance: 1.0
+#    skip_vertical_pixels: 0
+#    skip_horizontal_pixels: 0
+#    shadow_threshold: 0.2
+#    padding_scale: 4.0
+#    padding_offset: 0.03
+#    filtered_cloud_topic: occ_map_filtered_cloud
