@@ -34,8 +34,6 @@
   <run_depend>roscpp</run_depend>
   <run_depend>actionlib</run_depend>
   <run_depend>shape_msgs</run_depend>
-  <run_depend>object_recognition_msgs</run_depend>
-  <run_depend>rail_manipulation_msgs</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>moveit_msgs</run_depend>
   <run_depend>moveit_ros_planning_interface</run_depend>
@@ -46,9 +44,19 @@
   <run_depend>thorp_msgs</run_depend>
   <run_depend>thorp_toolkit</run_depend>
 
-  <run_depend>admesh</run_depend>
-  <run_depend>couchdb</run_depend>
-  <run_depend>openscad</run_depend>
+  <!-- perception pipelines -->
+  <run_depend>object_recognition_msgs</run_depend>
+
+  <run_depend>rail_manipulation_msgs</run_depend>
+  <run_depend>rail_segmentation</run_depend>
+  <run_depend>rail_mesh_icp/</run_depend>
+
   <run_depend>object_recognition_ros</run_depend>
   <run_depend>object_recognition_tabletop</run_depend>
+
+  <!-- meshes handling tools -->
+  <run_depend>admesh</run_depend>
+  <run_depend>meshlab</run_depend>
+  <run_depend>couchdb</run_depend>
+  <run_depend>openscad</run_depend>
 </package>

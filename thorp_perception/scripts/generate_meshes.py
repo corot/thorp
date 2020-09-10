@@ -21,7 +21,7 @@ try:
     # Once we have our mesh, we call object_recognition_core object_add, get the generated object id and call mesh_add
     # Expected output of object_add: Stored new object with id: 9628d89172994443d3f7a535ca000abd  WARN: including a \n!
 
-    objects = [['coke_can', 'A universal can of coke', 'coke.stl'],
+    objects = [['coke', 'A universal can of coke', 'coke.stl'],
                ['lipstick', 'Uriage lipstick, 7.4cm long', 'lipstick.stl'],
                ['tower', 'Untextured 2 x 2.5 cm side stacked cubes', 'tower.stl'],
                ['cube', 'Untextured 2.5 cm side cube', 'cube.stl'],
@@ -37,16 +37,15 @@ try:
 
     meshes_path = rospack.get_path('thorp_perception') + "/meshes/"
     for object in objects:
-        if os.path.exists(meshes_path + object[2]):
-            print subprocess.check_output(['cp', meshes_path + object[2], 'tmp.ascii.stl'])
-        else:
-            print subprocess.check_output(['openscad', '-DOBJ="' + object[2][:-4] + '"', '-o', 'tmp.ascii.stl', 'generate_meshes.scad'])
-        print subprocess.check_output(['admesh', '-b', 'tmp.bin.stl', 'tmp.ascii.stl'])
-        out = subprocess.check_output(['rosrun', 'object_recognition_core', 'object_add.py', '-n', object[0], '-d', object[1], '--commit'])
-        id = re.split(' ', out)[-1][:-1]
-        print out
-        print subprocess.check_output(['rosrun', 'object_recognition_core', 'mesh_add.py', id, 'tmp.bin.stl', '--commit'])
-        print subprocess.check_output(['rm', 'tmp.ascii.stl', 'tmp.bin.stl'])
+        if not os.path.exists(meshes_path + object[0] + '.stl'):
+            ###   TODO  obj_name = object[2][:-4]  just need the list..  takes as param, w/ all as default
+            print(subprocess.check_output(['openscad', '-DOBJ="' + object[0] + '"', '-o', 'tmp.ascii.stl',
+                                           'generate_meshes.scad']))
+            print(subprocess.check_output(['admesh', '-b', meshes_path + object[0] + '.stl', 'tmp.ascii.stl']))
+            print(subprocess.check_output(['rm', 'tmp.ascii.stl']))
+        if not os.path.exists(meshes_path + object[0] + '.ply'):
+            print(subprocess.check_output(['meshlabserver', '-i', meshes_path + object[0] + '.stl',
+                                                            '-o', meshes_path + object[0] + '.ply']))
 except rospkg.common.ResourceNotFound as err:
     print("get package path failed: " + str(err))
 except subprocess.CalledProcessError as err:
