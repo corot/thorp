@@ -46,7 +46,7 @@
     <remap from="odom" to="/odom"/>
   </node>
 
-  <node pkg="mbf_costmap_nav" type="move_base_legacy_relay.py" name="move_base" output="screen" respawn="true">
+  <node pkg="mbf_costmap_nav" type="move_base_legacy_relay.py" name="move_base" output="screen" respawn="false">
     <rosparam file="$(find thorp_navigation)/param/move_base/move_base_params.yaml" command="load"/>
   </node>
 </launch>
