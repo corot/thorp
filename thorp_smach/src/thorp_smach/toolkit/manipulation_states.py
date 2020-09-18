@@ -12,25 +12,30 @@ def FoldArm():
     sm = smach.Concurrence(outcomes=['succeeded', 'preempted', 'aborted'],
                            default_outcome='succeeded',
                            outcome_map={'succeeded': {'CloseGripper': 'succeeded',
-                                                      'FoldArm': 'succeeded'},
+                                                      'MoveToResting': 'succeeded'},
                                         'preempted': {'CloseGripper': 'preempted',
-                                                      'FoldArm': 'preempted'},
+                                                      'MoveToResting': 'preempted'},
                                         'aborted': {'CloseGripper': 'aborted',
-                                                    'FoldArm': 'aborted'}})
+                                                    'MoveToResting': 'aborted'}})
     with sm:
         smach.Concurrence.add('CloseGripper',
                               smach_ros.SimpleActionState('gripper_controller/gripper_action',
                                                           control_msgs.GripperCommandAction,
                                                           goal=control_msgs.GripperCommandGoal(
-                                                              control_msgs.GripperCommand(0.005, 0.0))))
-        smach.Concurrence.add('FoldArm',
-                              smach_ros.SimpleActionState('move_to_target',
-                                                          thorp_msgs.MoveToTargetAction,
-                                                          goal=thorp_msgs.MoveToTargetGoal(
-                                                              thorp_msgs.MoveToTargetGoal.NAMED_TARGET,
-                                                              'resting', None, None)))
+                                                              control_msgs.GripperCommand(0.025, 0.0))))
+        smach.Concurrence.add('MoveToResting',
+                              StoredConfig('resting'))
 
     return sm
+
+
+def StoredConfig(config):
+    """ Move arm into one of the stored configuration (resting, right_up, etc.) """
+    return smach_ros.SimpleActionState('move_to_target',
+                                       thorp_msgs.MoveToTargetAction,
+                                       goal=thorp_msgs.MoveToTargetGoal(
+                                           thorp_msgs.MoveToTargetGoal.NAMED_TARGET,
+                                           config, None, None))
 
 
 def ObjectDetection():

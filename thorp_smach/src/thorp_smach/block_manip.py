@@ -17,6 +17,8 @@ def monitor_cb(ud, msg):
 def main():
     rospy.init_node('smach_block_manip')
 
+    # In sim, wait for clock to start (I start gazebo paused, so smach action clients start waiting at time 0,
+    # but first clock marks ~90s, after spawner unpauses physics)
     if rospy.get_param('/use_sim_time', False):
         if not rospy.wait_for_message('/clock', rosgraph_msgs.Clock, rospy.Duration(60)):
             rospy.logfatal("No clock msgs after 60 seconds, being use_sim_time true")
