@@ -34,12 +34,19 @@
         <joint name="arm_wrist_flex_joint" value="0" />
         <joint name="gripper_link_joint" value="0" />
     </group_state>
+    <group_state name="right_front" group="arm">
+        <joint name="arm_elbow_flex_joint" value="0.0" />
+        <joint name="arm_shoulder_lift_joint" value="1.57" />
+        <joint name="arm_shoulder_pan_joint" value="0.0" />
+        <joint name="arm_wrist_flex_joint" value="0.0" />
+        <joint name="gripper_link_joint" value="0.0" />
+    </group_state>
     <group_state name="resting" group="arm">
         <joint name="arm_elbow_flex_joint" value="2.2" />
         <joint name="arm_shoulder_lift_joint" value="-1.9" />
-        <joint name="arm_shoulder_pan_joint" value="0" />
+        <joint name="arm_shoulder_pan_joint" value="0.0" />
         <joint name="arm_wrist_flex_joint" value="1.4" />
-        <joint name="gripper_link_joint" value="0" />
+        <joint name="gripper_link_joint" value="0.0" />
     </group_state>
     <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
     <end_effector name="gripper" parent_link="gripper_link" group="gripper" parent_group="arm" />
@@ -454,7 +461,13 @@
     <disable_collisions link1="arm_mount_link" link2="cannon_servo_link" reason="Adjacent" />
     <disable_collisions link1="arm_mount_link" link2="cannon_shaft_link" reason="Never" />
     <disable_collisions link1="arm_mount_link" link2="cannon_tube1_hollow_link" reason="Never" />
+    <disable_collisions link1="arm_mount_link" link2="cannon_tube1_link" reason="Never" />
+    <disable_collisions link1="arm_mount_link" link2="cannon_tube2_hollow_link" reason="Never" />
+    <disable_collisions link1="arm_mount_link" link2="cannon_tube2_link" reason="Never" />
+    <disable_collisions link1="arm_mount_link" link2="cannon_tube3_hollow_link" reason="Never" />
+    <disable_collisions link1="arm_mount_link" link2="cannon_tube3_link" reason="Never" />
     <disable_collisions link1="arm_mount_link" link2="cannon_tube4_hollow_link" reason="Never" />
+    <disable_collisions link1="arm_mount_link" link2="cannon_tube4_link" reason="Never" />
     <disable_collisions link1="arm_mount_link" link2="cannon_tube5_hollow_link" reason="Never" />
     <disable_collisions link1="arm_mount_link" link2="cannon_tube5_link" reason="Never" />
     <disable_collisions link1="arm_mount_link" link2="cannon_tube6_hollow_link" reason="Never" />
@@ -754,9 +767,11 @@
     <disable_collisions link1="arm_shoulder_F3_0_link" link2="arm_wrist_flex_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F3_0_link" link2="arm_wrist_flex_servo_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F3_0_link" link2="base_link" reason="Never" />
+    <disable_collisions link1="arm_shoulder_F3_0_link" link2="cannon_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F3_0_link" link2="cannon_tube1_hollow_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F3_0_link" link2="cannon_tube1_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F3_0_link" link2="cannon_tube2_hollow_link" reason="Never" />
+    <disable_collisions link1="arm_shoulder_F3_0_link" link2="cannon_tube2_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F3_0_link" link2="cannon_tube3_hollow_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F3_0_link" link2="cannon_tube3_link" reason="Never" />
     <disable_collisions link1="arm_shoulder_F3_0_link" link2="cannon_tube4_hollow_link" reason="Never" />
@@ -1111,8 +1126,9 @@
     <disable_collisions link1="arm_wrist_F3_0_link" link2="gripper_active_finger_link" reason="Never" />
     <disable_collisions link1="arm_wrist_F3_0_link" link2="gripper_active_link" reason="Default" />
     <disable_collisions link1="arm_wrist_F3_0_link" link2="gripper_servo_link" reason="Adjacent" />
-    <disable_collisions link1="arm_wrist_F3_0_link" link2="gripper_static_finger_link" reason="Default" />
+    <disable_collisions link1="arm_wrist_F3_0_link" link2="gripper_static_finger_link" reason="Never" />
     <disable_collisions link1="arm_wrist_F3_0_link" link2="gripper_static_link" reason="Default" />
+    <disable_collisions link1="arm_wrist_F3_0_link" link2="kinect_link" reason="Never" />
     <disable_collisions link1="arm_wrist_F3_0_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="arm_wrist_F3_0_link" link2="plate_middle_link" reason="Never" />
     <disable_collisions link1="arm_wrist_F3_0_link" link2="pole_bottom_0_link" reason="Never" />
@@ -1151,6 +1167,7 @@
     <disable_collisions link1="arm_wrist_flex_link" link2="base_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_link" link2="caster_back_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_link" link2="caster_front_link" reason="Never" />
+    <disable_collisions link1="arm_wrist_flex_link" link2="gripper_active_finger_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_link" link2="gripper_servo_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_link" link2="gripper_static_finger_link" reason="Never" />
     <disable_collisions link1="arm_wrist_flex_link" link2="gripper_static_link" reason="Never" />
@@ -1531,6 +1548,7 @@
     <disable_collisions link1="cannon_tube1_hollow_link" link2="opencm_link" reason="Never" />
     <disable_collisions link1="cannon_tube1_hollow_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="cannon_tube1_hollow_link" link2="plate_middle_link" reason="Never" />
+    <disable_collisions link1="cannon_tube1_hollow_link" link2="plate_top_link" reason="Never" />
     <disable_collisions link1="cannon_tube1_hollow_link" link2="pole_bottom_0_link" reason="Never" />
     <disable_collisions link1="cannon_tube1_hollow_link" link2="pole_bottom_10_link" reason="Never" />
     <disable_collisions link1="cannon_tube1_hollow_link" link2="pole_bottom_11_link" reason="Never" />
@@ -1593,6 +1611,7 @@
     <disable_collisions link1="cannon_tube1_link" link2="opencm_link" reason="Never" />
     <disable_collisions link1="cannon_tube1_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="cannon_tube1_link" link2="plate_middle_link" reason="Never" />
+    <disable_collisions link1="cannon_tube1_link" link2="plate_top_link" reason="Never" />
     <disable_collisions link1="cannon_tube1_link" link2="pole_bottom_0_link" reason="Never" />
     <disable_collisions link1="cannon_tube1_link" link2="pole_bottom_10_link" reason="Never" />
     <disable_collisions link1="cannon_tube1_link" link2="pole_bottom_11_link" reason="Never" />
@@ -1654,6 +1673,7 @@
     <disable_collisions link1="cannon_tube2_hollow_link" link2="opencm_link" reason="Never" />
     <disable_collisions link1="cannon_tube2_hollow_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="cannon_tube2_hollow_link" link2="plate_middle_link" reason="Never" />
+    <disable_collisions link1="cannon_tube2_hollow_link" link2="plate_top_link" reason="Never" />
     <disable_collisions link1="cannon_tube2_hollow_link" link2="pole_bottom_0_link" reason="Never" />
     <disable_collisions link1="cannon_tube2_hollow_link" link2="pole_bottom_10_link" reason="Never" />
     <disable_collisions link1="cannon_tube2_hollow_link" link2="pole_bottom_11_link" reason="Never" />
@@ -1714,6 +1734,7 @@
     <disable_collisions link1="cannon_tube2_link" link2="opencm_link" reason="Never" />
     <disable_collisions link1="cannon_tube2_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="cannon_tube2_link" link2="plate_middle_link" reason="Never" />
+    <disable_collisions link1="cannon_tube2_link" link2="plate_top_link" reason="Never" />
     <disable_collisions link1="cannon_tube2_link" link2="pole_bottom_0_link" reason="Never" />
     <disable_collisions link1="cannon_tube2_link" link2="pole_bottom_10_link" reason="Never" />
     <disable_collisions link1="cannon_tube2_link" link2="pole_bottom_11_link" reason="Never" />
@@ -1773,6 +1794,7 @@
     <disable_collisions link1="cannon_tube3_hollow_link" link2="opencm_link" reason="Never" />
     <disable_collisions link1="cannon_tube3_hollow_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="cannon_tube3_hollow_link" link2="plate_middle_link" reason="Never" />
+    <disable_collisions link1="cannon_tube3_hollow_link" link2="plate_top_link" reason="Never" />
     <disable_collisions link1="cannon_tube3_hollow_link" link2="pole_bottom_0_link" reason="Never" />
     <disable_collisions link1="cannon_tube3_hollow_link" link2="pole_bottom_10_link" reason="Never" />
     <disable_collisions link1="cannon_tube3_hollow_link" link2="pole_bottom_11_link" reason="Never" />
@@ -1831,6 +1853,7 @@
     <disable_collisions link1="cannon_tube3_link" link2="opencm_link" reason="Never" />
     <disable_collisions link1="cannon_tube3_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="cannon_tube3_link" link2="plate_middle_link" reason="Never" />
+    <disable_collisions link1="cannon_tube3_link" link2="plate_top_link" reason="Never" />
     <disable_collisions link1="cannon_tube3_link" link2="pole_bottom_0_link" reason="Never" />
     <disable_collisions link1="cannon_tube3_link" link2="pole_bottom_10_link" reason="Never" />
     <disable_collisions link1="cannon_tube3_link" link2="pole_bottom_11_link" reason="Never" />
@@ -1888,6 +1911,7 @@
     <disable_collisions link1="cannon_tube4_hollow_link" link2="opencm_link" reason="Never" />
     <disable_collisions link1="cannon_tube4_hollow_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="cannon_tube4_hollow_link" link2="plate_middle_link" reason="Never" />
+    <disable_collisions link1="cannon_tube4_hollow_link" link2="plate_top_link" reason="Never" />
     <disable_collisions link1="cannon_tube4_hollow_link" link2="pole_bottom_0_link" reason="Never" />
     <disable_collisions link1="cannon_tube4_hollow_link" link2="pole_bottom_10_link" reason="Never" />
     <disable_collisions link1="cannon_tube4_hollow_link" link2="pole_bottom_11_link" reason="Never" />
@@ -1944,6 +1968,7 @@
     <disable_collisions link1="cannon_tube4_link" link2="opencm_link" reason="Never" />
     <disable_collisions link1="cannon_tube4_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="cannon_tube4_link" link2="plate_middle_link" reason="Never" />
+    <disable_collisions link1="cannon_tube4_link" link2="plate_top_link" reason="Never" />
     <disable_collisions link1="cannon_tube4_link" link2="pole_bottom_0_link" reason="Never" />
     <disable_collisions link1="cannon_tube4_link" link2="pole_bottom_10_link" reason="Never" />
     <disable_collisions link1="cannon_tube4_link" link2="pole_bottom_11_link" reason="Never" />
@@ -2318,7 +2343,7 @@
     <disable_collisions link1="caster_front_link" link2="xtion_link" reason="Never" />
     <disable_collisions link1="caster_front_link" link2="xtion_mount_link" reason="Never" />
     <disable_collisions link1="gripper_active_finger_link" link2="gripper_active_link" reason="Adjacent" />
-    <disable_collisions link1="gripper_active_finger_link" link2="gripper_servo_link" reason="Default" />
+    <disable_collisions link1="gripper_active_finger_link" link2="gripper_servo_link" reason="Never" />
     <disable_collisions link1="gripper_active_finger_link" link2="gripper_static_finger_link" reason="Never" />
     <disable_collisions link1="gripper_active_finger_link" link2="gripper_static_link" reason="Never" />
     <disable_collisions link1="gripper_active_finger_link" link2="plate_bottom_link" reason="Never" />
@@ -2328,6 +2353,7 @@
     <disable_collisions link1="gripper_active_finger_link" link2="pole_bottom_3_link" reason="Never" />
     <disable_collisions link1="gripper_active_finger_link" link2="pole_bottom_4_link" reason="Never" />
     <disable_collisions link1="gripper_active_finger_link" link2="pole_bottom_5_link" reason="Never" />
+    <disable_collisions link1="gripper_active_finger_link" link2="pole_middle_0_link" reason="Never" />
     <disable_collisions link1="gripper_active_finger_link" link2="pole_middle_11_link" reason="Never" />
     <disable_collisions link1="gripper_active_finger_link" link2="pole_middle_1_link" reason="Never" />
     <disable_collisions link1="gripper_active_finger_link" link2="pole_middle_21_link" reason="Never" />
@@ -2368,6 +2394,7 @@
     <disable_collisions link1="gripper_active_link" link2="pole_middle_21_link" reason="Never" />
     <disable_collisions link1="gripper_active_link" link2="pole_middle_2_link" reason="Never" />
     <disable_collisions link1="gripper_active_link" link2="pole_middle_3_link" reason="Never" />
+    <disable_collisions link1="gripper_active_link" link2="pole_top_22_link" reason="Never" />
     <disable_collisions link1="gripper_active_link" link2="s_0_link" reason="Never" />
     <disable_collisions link1="gripper_active_link" link2="s_m18_link" reason="Never" />
     <disable_collisions link1="gripper_active_link" link2="s_m36_link" reason="Never" />
@@ -2384,7 +2411,7 @@
     <disable_collisions link1="gripper_active_link" link2="wheel_right_link" reason="Never" />
     <disable_collisions link1="gripper_active_link" link2="xtion_link" reason="Never" />
     <disable_collisions link1="gripper_active_link" link2="xtion_mount_link" reason="Never" />
-    <disable_collisions link1="gripper_servo_link" link2="gripper_static_finger_link" reason="Default" />
+    <disable_collisions link1="gripper_servo_link" link2="gripper_static_finger_link" reason="Never" />
     <disable_collisions link1="gripper_servo_link" link2="gripper_static_link" reason="Adjacent" />
     <disable_collisions link1="gripper_servo_link" link2="plate_bottom_link" reason="Never" />
     <disable_collisions link1="gripper_servo_link" link2="plate_middle_link" reason="Never" />
@@ -3323,7 +3350,7 @@
     <disable_collisions link1="pole_middle_11_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="pole_middle_11_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="pole_middle_11_link" link2="wheel_right_link" reason="Never" />
-    <disable_collisions link1="pole_middle_11_link" link2="xtion_link" reason="Never" />
+    <disable_collisions link1="pole_middle_11_link" link2="xtion_link" reason="Default" />
     <disable_collisions link1="pole_middle_11_link" link2="xtion_mount_link" reason="Default" />
     <disable_collisions link1="pole_middle_1_link" link2="pole_middle_21_link" reason="Never" />
     <disable_collisions link1="pole_middle_1_link" link2="pole_middle_2_link" reason="Never" />
@@ -3380,7 +3407,7 @@
     <disable_collisions link1="pole_middle_21_link" link2="sonars_mount_link" reason="Never" />
     <disable_collisions link1="pole_middle_21_link" link2="wheel_left_link" reason="Never" />
     <disable_collisions link1="pole_middle_21_link" link2="wheel_right_link" reason="Never" />
-    <disable_collisions link1="pole_middle_21_link" link2="xtion_link" reason="Default" />
+    <disable_collisions link1="pole_middle_21_link" link2="xtion_link" reason="Never" />
     <disable_collisions link1="pole_middle_21_link" link2="xtion_mount_link" reason="Default" />
     <disable_collisions link1="pole_middle_2_link" link2="pole_middle_3_link" reason="Never" />
     <disable_collisions link1="pole_middle_2_link" link2="pole_top_0_link" reason="Never" />

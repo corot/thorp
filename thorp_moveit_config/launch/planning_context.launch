@@ -6,8 +6,7 @@
   <arg name="robot_description" default="robot_description"/>
 
   <!-- Load universal robot description format (URDF) -->
-  <param if="$(arg load_robot_description)" name="$(arg robot_description)"
-    command="$(find xacro)/xacro '$(find thorp_description)/urdf/thorp.urdf.xacro'"/>
+  <param if="$(arg load_robot_description)" name="$(arg robot_description)" command="xacro  '$(find thorp_description)/urdf/thorp.urdf.xacro'"/>
 
   <!-- The semantic description that corresponds to the URDF -->
   <param name="$(arg robot_description)_semantic" textfile="$(find thorp_moveit_config)/config/Thorp.srdf" />
@@ -15,12 +14,12 @@
   <!-- Load updated joint limits (override information from URDF) -->
   <group ns="$(arg robot_description)_planning">
     <rosparam command="load" file="$(find thorp_moveit_config)/config/joint_limits.yaml"/>
-    <param name="shape_transform_cache_lookup_wait_time" value="0.25" />
   </group>
 
   <!-- Load default settings for kinematics; these settings are overridden by settings in a node's namespace -->
   <group ns="$(arg robot_description)_kinematics">
     <rosparam command="load" file="$(find thorp_moveit_config)/config/kinematics.yaml"/>
+
   </group>
 
 </launch>

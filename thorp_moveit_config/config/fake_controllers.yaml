@@ -8,3 +8,6 @@ controller_list:
   - name: fake_gripper_controller
     joints:
       - gripper_joint
+initial:  # Define initial robot poses.
+  - group: arm
+    pose: resting
