@@ -1,7 +1,7 @@
 # Publish all joint states
 joint_state_controller:
   type: joint_state_controller/JointStateController
-  publish_rate: 40  
+  publish_rate: 100  # WARN: if lower than 50, I have a trembling arm when shoulder pan joint is near zero
 
 # Arm Position Controller
 arm_controller:
