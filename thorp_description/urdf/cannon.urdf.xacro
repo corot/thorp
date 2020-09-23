@@ -19,22 +19,15 @@
       </geometry>
       <material name="Black"/>
     </visual>
-    <collision>
-      <origin xyz="0.0 0.006 0.0" rpy="0.0 0.0 0.0"/>
-      <geometry>
-        <box size="0.022 0.022 0.012"/>
-      </geometry>
-    </collision>
-    <inertial>
-      <mass value="0.01"/>
-      <origin xyz="0 0 0"/>
-      <inertia ixx="0.0001" ixy="0.0" ixz="0.0"
-               iyy="0.0001" iyz="0.0"
-               izz="0.0001"/>
-    </inertial>
+    <xacro:box_inertia length="0.022" width="0.022" height="0.012" mass="0.01"/>
+    <!-- covered under the arm mount, so no need for collision -->
   </link>
 
-  <joint name="cannon_shaft_joint" type="fixed">
+  <joint name="cannon_joint" type="revolute">
+    <axis xyz="0 -1 0"/>
+    <limit effort="1.0" velocity="5.0" lower="${-M_PI/10}" upper="${+M_PI/10}"/>
+    <!-- 300 degrees/s (specs say 600/s, but then I cannot see the cannon rotate in gazebo),
+         limits: +/-18 degrees operational range (servo limits are +/-30 degrees, I think) -->
     <origin xyz="0.006 -0.015 0.0" rpy="0.0 0.0 0.0"/>
     <parent link="cannon_servo_link"/>
     <child link="cannon_shaft_link"/>
@@ -47,26 +40,10 @@
       </geometry>
       <material name="Black"/>
     </visual>
-    <collision>
-      <origin xyz="0.0 0.002 0.0" rpy="${+M_PI/2} 0.0 0.0"/>
-      <geometry>
-        <cylinder radius="0.002" length="0.016"/>
-      </geometry>
-    </collision>
-    <inertial>
-      <mass value="0.002"/>
-      <origin xyz="0 0 0"/>
-      <inertia ixx="0.0001" ixy="0.0" ixz="0.0"
-               iyy="0.0001" iyz="0.0"
-               izz="0.0001"/>
-    </inertial>
+    <!-- very small and light, so we don't need collision and inertial -->
   </link>
 
-  <joint name="cannon_joint" type="revolute">
-    <axis xyz="0 -1 0"/>
-    <limit effort="1.0" velocity="5.0" lower="${-M_PI/10}" upper="${+M_PI/10}"/>
-    <!-- 300 degrees/s (specs say 600/s, but then I cannot see the cannon rotate in gazebo),
-         limits: +/-18 degrees operational range (servo limits are +/-30 degrees, I think) -->
+  <joint name="cannon_shaft_joint" type="fixed">
     <origin xyz="0.0 -0.015 0.0" rpy="0.0 0.0 0.0"/>
     <parent link="cannon_shaft_link"/>
     <child link="cannon_link"/>
@@ -85,13 +62,8 @@
         <cylinder radius="0.01" length="0.066"/>
       </geometry>
     </collision>
-    <inertial>
-      <mass value="0.01"/>
-      <origin xyz="0.01 0.0 0.0"/>
-      <inertia ixx="0.0001" ixy="0.0" ixz="0.0"
-               iyy="0.0001" iyz="0.0"
-               izz="0.0001"/>
-    </inertial>
+    <xacro:box_inertia length="0.03" width="0.02" height="0.02" mass="0.01" x="0.01"/>
+    <!-- should be a cylinder... but is very light to bother -->
   </link>
 
   <!-- Emulate the six cannon tubes with two cylinders, the second a bit smaller and transparent -->
