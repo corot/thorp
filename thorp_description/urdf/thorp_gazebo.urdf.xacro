@@ -22,7 +22,7 @@
         <plugin name="kinect_camera_controller" filename="libgazebo_ros_openni_kinect.so">
           <cameraName>${name}</cameraName>
           <alwaysOn>true</alwaysOn>
-          <updateRate>10.0</updateRate>
+          <updateRate>0.0</updateRate>
           <imageTopicName>rgb/image_raw</imageTopicName>
           <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>
           <xacro:if value="${depth_registration}">  <!-- Normally for manipulation camera (Xtion) -->
