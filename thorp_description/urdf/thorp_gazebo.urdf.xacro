@@ -280,7 +280,7 @@
   <xacro:macro name="structural_part" params="name color">
     <gazebo reference="${name}_link">
       <material>Gazebo/${color}</material>
-      <selfCollide>true</selfCollide>
+      <selfCollide>false</selfCollide>
       <gravity>true</gravity>
     </gazebo>
   </xacro:macro>
