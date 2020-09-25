@@ -12,6 +12,7 @@
   <arg name="paused"         default="true"/>
 
   <arg name="move_base_flex" default="true"/>
+  <arg name="localization"   default="amcl"/>
 
   <!-- To specify a simulated world other than the default 'playground', provide either word_name
        (without path nor extension), or specific files (with full path) for both map and world.
@@ -43,6 +44,7 @@
   <!--  ************* Common functionality ************  -->
   <include file="$(find thorp_simulation)/launch/includes/thorp_common.launch.xml">
     <arg name="move_base_flex"  value="$(arg move_base_flex)"/>
+    <arg name="localization"    value="$(arg localization)"/>
     <arg name="map_file"        value="$(arg map_file)"/>
     <arg name="initial_pose_x"  value="$(arg initial_pose_x)"/>
     <arg name="initial_pose_y"  value="$(arg initial_pose_y)"/>
