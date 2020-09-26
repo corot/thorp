@@ -236,7 +236,7 @@
     <!-- Ideal extrinsic parameters obtained from robot model -->
     <xacro:if value="$(arg simulation)">
       <origin xyz="0.022 0.003 0.002" rpy="0.0 0.694626 0.0"/>
-      <origin xyz="-0.015 0.0035 0.004" rpy="0 0 0"/>    <!-- Visual origin -->
+      <origin xyz="-0.015 -0.018 0.004" rpy="0.0 0.0 0.0"/>    <!-- Visual origin -->
     </xacro:if>
     <!-- Extrinsic parameters obtained by fitting the visible pc to robot model -->
     <xacro:unless value="$(arg simulation)">
