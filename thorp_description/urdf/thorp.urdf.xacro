@@ -275,17 +275,10 @@
         <mesh filename="package://thorp_description/meshes/sonar_array.dae" scale="0.001006 0.001006 0.001"/>
       </geometry>
     </visual>
-    <xacro:box_inertia length="0.17" width="0.325" height="0.035" mass="0.3" x="0.068"/>
-
-    <!-- Include also the 11 EZ2 and the arduino board: 0.22 + 11 * 0.005 + 0.025 = 0.3 -->
-    <!-- We don't need collision, as this part is mostly covered by kobuki base cylinder
-    <collision>
-      <origin xyz="0.068 0.0 0.0" rpy="0.0 0.0 0.0"/>
-      <geometry>
-        <box size="0.17 0.325 0.035"/>
-      </geometry>
-    </collision>
--->
+    <xacro:box_inertia length="0.17" width="0.325" height="0.035" mass="0.36" x="0.068"/>
+    <!-- This inertia tensor ncludes the 11 EZ2 (plus cables and mountings) and the arduino board:
+         0.22 + 11 * (0.0043 + 0.005) + 0.037 = 0.36 -->
+    <!-- We don't need collision, as this part is mostly covered by kobuki base cylinder -->
   </link>
 
   <xacro:macro name="LV_MaxSonar_EZ2_sensor" params="name parent x_loc y_loc yaw">
