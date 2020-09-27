@@ -22,14 +22,14 @@
   <group if="$(eval pipeline == 'ORK')">
     <arg name="external_camera" default="false"/>
 
-    <include if="$(arg external_camera)" file="$(find thorp_perception)/launch/obj_rec.launch.xml" ns="tabletop">
+    <include if="$(arg external_camera)" file="$(find thorp_perception)/launch/includes/obj_rec.launch.xml" ns="tabletop">
       <arg name="as_server"    value="true"/>
       <arg name="config_file"  value="$(find thorp_perception)/config/ork/external.tabletop.detection.ros.ork"/>
       <arg name="robot_frame"  value="base_footprint"/>
       <arg name="sensor_frame" value="external_camera_depth_optical_frame"/>
     </include>
 
-    <include unless="$(arg external_camera)" file="$(find thorp_perception)/launch/obj_rec.launch.xml" ns="tabletop">
+    <include unless="$(arg external_camera)" file="$(find thorp_perception)/launch/includes/obj_rec.launch.xml" ns="tabletop">
       <arg name="as_server"    value="true"/>
       <arg name="config_file"  value="$(find thorp_perception)/config/ork/tabletop.detection.ros.ork"/>
       <arg name="robot_frame"  value="base_footprint"/>

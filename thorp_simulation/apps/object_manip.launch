@@ -16,7 +16,7 @@
   </include>
 
   <!--  ********* Perception and manipulation *********  -->
-  <include file="$(find thorp_bringup)/launch/includes/perception.launch.xml">
+  <include file="$(find thorp_perception)/launch/perception.launch">
     <arg name="pipeline" value="RAIL"/>
   </include>
 

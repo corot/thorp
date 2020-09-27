@@ -34,7 +34,7 @@
 
   <!--  ****** Thorp perception and manipulation ******  -->
 
-  <include file="$(find thorp_bringup)/launch/includes/perception.launch.xml">
+  <include file="$(find thorp_bringup)/launch/perception.launch">
     <arg name="external_camera" value="$(arg external_camera)"/>
   </include>
 

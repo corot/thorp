@@ -26,4 +26,8 @@
   <depend>thorp_toolkit</depend>
   <depend>visp_ros</depend>
   <depend>dynamic_reconfigure</depend>
+
+  <exec_depend>navigation</exec_depend>
+  <exec_depend>move_base_flex</exec_depend>
+  <exec_depend>range_sensor_layer</exec_depend>
 </package>

@@ -1,6 +1,6 @@
 <!--
 Cat hunter app:
-  - Thorp Stage simulation
+  - Thorp Gazebo simulation
   - IPA coverage planning
   - Executive SMACH and visualization
 
@@ -22,7 +22,7 @@ Explore the entire environment searching for cats, and attack them whenever foun
 
   <!--  ***** Object recognition using the Kinect *****  -->
 
-  <include file="$(find thorp_bringup)/launch/includes/perception.launch.xml">
+  <include file="$(find thorp_perception)/launch/perception.launch">
     <arg name="pipeline" value="COB"/>
     <arg name="target_objects" value="[cat, dog, horse]"/>
   </include>
@@ -38,7 +38,7 @@ Explore the entire environment searching for cats, and attack them whenever foun
   <include file="$(find thorp_bringup)/launch/includes/exploration.launch.xml"/>
 
 
-  <!--  ****** Executive smach and visualization ****** -->
+  <!--  ****** Executive smach and visualization ******  -->
 
   <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="true"/>
 

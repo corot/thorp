@@ -14,7 +14,7 @@
   <node pkg="rqt_reconfigure" type="rqt_reconfigure" name="dyn_reconfigure" output="screen" respawn="true"/>
 
   <!-- **************** ORK tabletop *****************  -->
-  <include file="$(find thorp_perception)/launch/obj_rec.launch.xml">
+  <include file="$(find thorp_perception)/launch/includes/obj_rec.launch.xml">
     <arg name="as_server"    value="$(arg as_server)"/>
     <arg name="config_file"  value="$(find thorp_perception)/config/ork/$(arg pipeline).detection.ros.ork"/>
     <arg name="robot_frame"  value="base_footprint"/>

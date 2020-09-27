@@ -1,6 +1,6 @@
 <!--
   Simulated version of Thorp's blocks manipulation demo using SMACH instead of C++ block_manipulation_demo node:
-  - Full Thorp Gazebo simulation
+  - Thorp Gazebo simulation
   - Block manipulation stuff
   - Executive SMACH and visualization
  -->
