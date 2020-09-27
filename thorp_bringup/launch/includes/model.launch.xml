@@ -7,7 +7,7 @@
   <include file="$(find thorp_bringup)/launch/includes/state_publisher.launch.xml">
     <arg name="simulation" value="true"/>
   </include>
-  
+
   <node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher" output="screen" respawn="true">
     <param name="use_gui" value="$(arg use_joints_gui)"/>
   </node>
