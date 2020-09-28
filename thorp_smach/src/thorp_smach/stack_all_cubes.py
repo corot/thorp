@@ -32,7 +32,7 @@ class GetDetectedCubes(smach.State):
             # Object's timestamp is irrelevant, and can trigger a TransformException if very recent; zero it!
             obj_pose = ttk.get_pose_from_co(obj, stamped=True)
             obj_pose.header.stamp = rospy.Time(0.0)
-            obj_pose = ttk.transform_pose(userdata.arm_ref_frame, obj_pose)
+            obj_pose = ttk.TF2().transform_pose(userdata.arm_ref_frame, obj_pose)
             distance = ttk.distance_2d(obj_pose.pose)
             if distance > 0.3:
                 rospy.logdebug("'%s' is out of reach (%d > %d)", obj.id, distance, 0.3)

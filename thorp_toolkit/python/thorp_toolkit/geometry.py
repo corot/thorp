@@ -192,16 +192,3 @@ class TF2:
                 tf2_ros.ExtrapolationException,
                 rospy.exceptions.ROSInterruptException) as err:
             raise rospy.ROSException("Could not lookup transform from %s to %s: %s" % (frame_from, frame_to, str(err)))
-
-
-# TODO: deprecated --> remove
-import tf
-def transform_pose(target_frame, pose_stamped):
-    global tf_listener
-    if not tf_listener:
-        tf_listener = tf.TransformListener()
-        rospy.sleep(0.1)  # wait a moment to allow listener to start filling the buffer
-
-    tf_listener.waitForTransform(target_frame, pose_stamped.header.frame_id,
-                                 rospy.Time(), rospy.Duration(30.0))
-    return tf_listener.transformPose(target_frame, pose_stamped)
