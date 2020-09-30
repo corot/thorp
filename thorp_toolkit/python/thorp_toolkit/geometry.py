@@ -3,7 +3,6 @@ from .singleton import Singleton
 
 import rospy
 import tf2_ros
-# importing tf2_geometry_msgs to register geometry_msgs types with tf2_ros.TransformRegistration
 import tf2_geometry_msgs
 from tf.transformations import quaternion_from_euler, euler_from_quaternion
 
@@ -21,7 +20,7 @@ def heading(pose1, pose2=None):
 def distance_2d(pose1, pose2=None):
     if not pose2:
         pose2 = pose1
-        pose1 = geometry_msgs.Pose() # 0, 0, 0 pose, i.e. origin
+        pose1 = geometry_msgs.Pose()  # 0, 0, 0 pose, i.e. origin
     return sqrt(pow(pose2.position.x - pose1.position.x, 2)
               + pow(pose2.position.y - pose1.position.y, 2))
 
@@ -29,7 +28,7 @@ def distance_2d(pose1, pose2=None):
 def distance_3d(pose1, pose2=None):
     if not pose2:
         pose2 = pose1
-        pose1 = geometry_msgs.Pose() # 0, 0, 0 pose, i.e. origin
+        pose1 = geometry_msgs.Pose()  # 0, 0, 0 pose, i.e. origin
     return sqrt(pow(pose2.position.x - pose1.position.x, 2)
               + pow(pose2.position.y - pose1.position.y, 2)
               + pow(pose2.position.z - pose1.position.z, 2))
@@ -143,6 +142,20 @@ def to_pose3d(pose, timestamp=rospy.Time(), frame=None):
     raise rospy.ROSException("Input parameter pose is not a geometry_msgs.Pose2D object")
 
 
+def to_transform(pose, child_frame):
+    if isinstance(pose, geometry_msgs.Pose2D):
+        return geometry_msgs.Transform(geometry_msgs.Vector3(pose.x, pose.y, 0.0), quaternion_msg_from_yaw(pose.theta))
+    elif isinstance(pose, geometry_msgs.Pose):
+        return geometry_msgs.Transform(geometry_msgs.Vector3(pose.position.x, pose.position.y, pose.position.z),
+                                       pose.orientation)
+    elif isinstance(pose, geometry_msgs.PoseStamped):
+        p = pose.pose
+        tf = geometry_msgs.Transform(geometry_msgs.Vector3(p.position.x, p.position.y, p.position.z), p.orientation)
+        return geometry_msgs.TransformStamped(pose.header, child_frame, tf)
+
+    raise rospy.ROSException("Input parameter pose is not a valid geometry_msgs pose object")
+
+
 def pose2d2str(pose):
     """ Provide a string representation of a geometry_msgs 2D pose """
     return "[x: {:.2f}, y: {:.2f}, yaw: {:.2f}]".format(pose.position.x, pose.position.y, yaw(pose))
@@ -154,6 +167,11 @@ def pose3d2str(pose):
                                                                                                 pose.position.y,
                                                                                                 pose.position.z,
                                                                                                 *get_euler(pose))
+
+
+def transform_pose(pose, transform):
+    """ Apply the given transform to a stamped pose """
+    return tf2_geometry_msgs.do_transform_pose(pose, transform)
 
 
 class TF2:
