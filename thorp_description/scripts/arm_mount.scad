@@ -6,10 +6,10 @@ difference()
   union()
   {
     translate([20.7, 0, 0])
-      import("mount.stl", convexity=3);
+      import("../meshes/orig_arm_mount.stl", convexity=3);
 
     translate([77.7, 0, 0])
-      import("mount.stl", convexity=3);
+      import("../meshes/orig_arm_mount.stl", convexity=3);
 
     translate([-6, -6.6, 0])
       cube([60, 61, 3.81]);
