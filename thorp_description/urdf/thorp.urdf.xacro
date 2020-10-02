@@ -246,11 +246,11 @@
       <origin xyz="0.0005 0.0 0.0365" rpy="0.0 0.0 0.0"/>
     </xacro:unless>
   </xacro:xtion_camera>
-        
+
   <!-- Seems like Gazebo kinect plugin needs to use a centered frame instead of separated rgb and depth.
        No idea if this makes any sense, but it works! I also move the optical tf a bit forward to make
        pointcloud match better the model; this is absolutely arbitrary...
-       
+
   <xacro:if value="$(arg simulation)">
     <joint name="xtion_gazebo_optical_joint" type="fixed">
       <origin xyz="0.004 0.0 0.0" rpy="${-M_PI/2} 0.0 ${-M_PI/2}"/>
@@ -276,7 +276,7 @@
       </geometry>
     </visual>
     <xacro:box_inertia length="0.17" width="0.325" height="0.035" mass="0.36" x="0.068"/>
-    <!-- This inertia tensor ncludes the 11 EZ2 (plus cables and mountings) and the arduino board:
+    <!-- This inertia tensor includes the 11 EZ2 (plus cables and mountings) and the arduino board:
          0.22 + 11 * (0.0043 + 0.005) + 0.037 = 0.36 -->
     <!-- We don't need collision, as this part is mostly covered by kobuki base cylinder -->
   </link>

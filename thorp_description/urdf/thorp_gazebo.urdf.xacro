@@ -19,7 +19,7 @@
             <far>8.0</far>
           </clip>
         </camera>
-        <plugin name="kinect_camera_controller" filename="libgazebo_ros_openni_kinect.so">
+        <plugin name="depth_camera_controller" filename="libgazebo_ros_depth_camera.so">
           <cameraName>${name}</cameraName>
           <alwaysOn>true</alwaysOn>
           <updateRate>0.0</updateRate>
@@ -66,10 +66,10 @@
           <far>1.5</far>
         </clip>
       </camera>
-      <plugin name="kinect_camera_controller" filename="libgazebo_ros_openni_kinect.so">
+      <plugin name="depth_camera_controller" filename="libgazebo_ros_depth_camera.so">
         <cameraName>senz3d</cameraName>
         <alwaysOn>true</alwaysOn>
-        <updateRate>10</updateRate>
+        <updateRate>0</updateRate>
         <imageTopicName>rgb/image_color</imageTopicName>
         <depthImageTopicName>depth/image_raw</depthImageTopicName>
         <pointCloudTopicName>depth/points</pointCloudTopicName>
