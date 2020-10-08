@@ -22,5 +22,5 @@
   </node>
 
   <!-- Fake gripper link joint state publisher -->
-  <node pkg="turtlebot_arm_bringup" type="fake_joint_pub.py" name="fake_gripper_joint_pub"/>
+  <node pkg="turtlebot_arm_bringup" type="fake_joint_pub.py" name="fake_gripper_joint_pub" output="screen" respawn="true"/>
 </launch>
