@@ -39,7 +39,7 @@
 
   <!-- We provide GripperCommand action with arbotix controllers, as on real robot; but
        the simulation flag will ensure that we don't load any physical robot controller  -->
-  <include file="$(find thorp_bringup)/launch/includes/arm.launch.xml">
+  <include file="$(find thorp_manipulation)/launch/includes/arm.launch.xml">
     <arg name="simulation" value="true"/>
   </include>
 

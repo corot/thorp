@@ -1,7 +1,7 @@
 <launch>
   <arg name="external_camera" default="false"/>
 
-  <include file="$(find thorp_bringup)/launch/includes/arm.launch.xml"/>
+  <include file="$(find thorp_manipulation)/launch/includes/arm.launch.xml"/>
 
   <include file="$(find thorp_bringup)/launch/includes/state_publisher.launch.xml"/>
  

@@ -38,7 +38,7 @@
     <arg name="external_camera" value="$(arg external_camera)"/>
   </include>
 
-  <include file="$(find thorp_bringup)/launch/includes/manipulation.launch.xml">
+  <include file="$(find thorp_manipulation)/launch/manipulation.launch">
     <arg name="debug" value="false"/>
   </include>
 

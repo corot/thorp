@@ -1,7 +1,7 @@
 <launch>
   <arg name="simulation" default="false"/>
 
-  <include unless="$(arg simulation)" file="$(find thorp_manipulation)/launch/controllers.launch">
+  <include unless="$(arg simulation)" file="$(find thorp_manipulation)/launch/includes/controllers.launch.xml">
     <!-- here we only load physical robot controllers, so no needed on simulation -->
   </include>
 

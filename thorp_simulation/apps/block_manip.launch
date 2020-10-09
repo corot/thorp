@@ -22,7 +22,7 @@
 
   <!--  ************ Manipulation pipeline ************  -->
 
-  <include file="$(find thorp_bringup)/launch/includes/manipulation.launch.xml">
+  <include file="$(find thorp_manipulation)/launch/manipulation.launch">
     <arg name="simulation" value="true"/>
     <arg name="debug" value="false"/>
   </include>
