@@ -4178,6 +4178,18 @@
             </script>
           </material>
         </visual>
+        <inertial>
+          <inertia>
+            <ixx>0.05083</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.03417</iyy>
+            <iyz>0</iyz>
+            <izz>0.04333</izz>
+          </inertia>
+          <pose frame=''>0 0 0.85 0 0 0</pose>
+          <mass>5.0</mass>
+        </inertial>
       </link>
       <pose frame=''>0.883462 -0.576236 0 0 0 -3.14159</pose>
     </model>
