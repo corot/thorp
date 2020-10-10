@@ -7,10 +7,9 @@ import smach_ros
 from thorp_smach.toolkit.comon_states import ExecuteUserCommand
 from thorp_smach.toolkit.manipulation_states import FoldArm, PickupObject, PlaceObject, ObjectDetection
 
-import thorp_msgs.msg as thorp_msg
-import control_msgs.msg as control_msg
-import arbotix_msgs.srv as arbotix_srv
-import geometry_msgs.msg as geometry_msg
+import std_srvs.srv as std_srvs
+import thorp_msgs.msg as thorp_msgs
+import arbotix_msgs.srv as arbotix_srvs
 
 
 rospy.init_node('object_manipulation_smach')
@@ -30,7 +29,7 @@ with sm:
     #     sm.userdata.object_name    = std_msg.String()
     #     sm.userdata.pick_pose      = geometry_msg.PoseStamped()
     #     sm.userdata.place_pose     = geometry_msg.PoseStamped()
-    #     sm.userdata.named_pose_target_type = thorp_msg.MoveToTargetGoal.NAMED_TARGET
+    #     sm.userdata.named_pose_target_type = thorp_msgs.MoveToTargetGoal.NAMED_TARGET
     #     sm.userdata.arm_folded_named_pose = 'resting'
     #     sm.userdata.close_gripper  = control_msg.GripperCommand()
     #     sm.userdata.close_gripper.position = 0.0
@@ -56,7 +55,7 @@ with sm:
 
     smach.StateMachine.add('DragAndDrop',
                            smach_ros.SimpleActionState('drag_and_drop',
-                                                       thorp_msg.DragAndDropAction,
+                                                       thorp_msgs.DragAndDropAction,
                                                        goal_slots=['object_names', 'output_frame'],
                                                        result_slots=['object_name', 'pick_pose', 'place_pose']),
                            remapping={'object_names': 'object_names',
@@ -82,7 +81,13 @@ with sm:
                                       'place_pose': 'place_pose'},
                            transitions={'succeeded': 'ObjectDetection',
                                         'preempted': 'preempted',
-                                        'aborted': 'ObjectDetection'})
+                                        'aborted': 'CLEAR_GRIPPER'})
+
+    smach.StateMachine.add('CLEAR_GRIPPER',
+                           smach_ros.ServiceState('clear_gripper', std_srvs.Empty),
+                           transitions={'succeeded': 'ObjectDetection',
+                                        'preempted': 'preempted',
+                                        'aborted': 'aborted'})
 
     smach.StateMachine.add('FoldArm',
                            FoldArm(),
@@ -98,14 +103,14 @@ with sm:
 
     smach.StateMachine.add('RelaxArmAndStop',
                            smach_ros.ServiceState('servos/relax_all',
-                                                  arbotix_srv.Relax),
+                                                  arbotix_srvs.Relax),
                            transitions={'succeeded': 'stop',
                                         'preempted': 'stop',
                                         'aborted': 'error'})
 
     # Construct action server wrapper for top-level sm to control it with keyboard commands
     asw = smach_ros.ActionServerWrapper('user_commands_action_server',
-                                        thorp_msg.UserCommandAction,
+                                        thorp_msgs.UserCommandAction,
                                         wrapped_container=sm,
                                         succeeded_outcomes=['stop'],
                                         aborted_outcomes=['aborted'],

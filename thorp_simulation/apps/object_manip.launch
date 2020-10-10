@@ -15,15 +15,31 @@
     <arg name="initial_pose_a" default="0.0"/>
   </include>
 
-  <!--  ********* Perception and manipulation *********  -->
+  <!--  ********* Perception and manipulation *********
   <include file="$(find thorp_perception)/launch/perception.launch">
     <arg name="pipeline" value="RAIL"/>
-  </include>
+  </include>  TODO restore once I have proper obj recognition -->
+  <node name="block_detection_action_server" pkg="turtlebot_arm_block_manipulation" type="block_detection_action_server" output="screen" respawn="true">
+    <rosparam param="table_pose">[0.09, 0.0, -0.015]</rosparam>
+    <remap from="/camera/depth_registered/points" to="/xtion/depth_registered/points"/>
+  </node>
+
 
   <include file="$(find thorp_manipulation)/launch/manipulation.launch">
     <arg name="simulation" value="true"/>
     <arg name="debug" value="false"/>
   </include>
+
+  <!--  ********** Keyboard user interaction **********  -->
+  <!-- We do it required so it will shutdown the whole demo on exit -->
+  <node pkg="thorp_bringup" type="keyboard_ctrl.py" name="$(arg app_name)_key_ctrl" output="screen" required="true"
+        args="$(arg app_name)">
+    <param name="window_geometry" value="360x240"/>
+    <param name="window_caption" value="Object manipulation user commands"/>
+    <param name="shown_text" value="Available commands: &#10;  s:  start &#10;  x:  stop &#10;  r:  reset &#10;  f:  fold &#10;  e:  exit"/>
+    <param name="text_font" value="Comic Sans MS"/>
+    <param name="font_size" value="12"/>
+  </node>
 
   <!--  ****** Executive smach and visualization ******  -->
   <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="true">
