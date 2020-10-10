@@ -166,7 +166,7 @@ int32_t PlaceObjectServer::makePlaceLocations(const geometry_msgs::PoseStamped& 
   for (int attempt = 0; attempt < PLACE_ATTEMPTS; ++attempt)
   {
     geometry_msgs::PoseStamped p = target_pose;
-    if (!validateTargetPose(p, true, false, false, attempt))
+    if (!validateTargetPose(p, true, true, true, attempt))
     {
       return thorp_msgs::ThorpError::INVALID_TARGET_POSE;
     }
