@@ -140,7 +140,7 @@ def cat_hunter_sm():
 if __name__ == '__main__':
     rospy.init_node('smach_cat_hunter')
 
-    TF2()  # start listener asap
+    TF2()  # start listener asap to avoid delays when running
 
     sm = cat_hunter_sm()
 

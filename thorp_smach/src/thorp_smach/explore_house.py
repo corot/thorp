@@ -78,7 +78,7 @@ def explore_house_sm():
 if __name__ == '__main__':
     rospy.init_node('smach_explore_house')
 
-    TF2()  # start listener asap
+    TF2()  # start listener asap to avoid delays when running
 
     sm = explore_house_sm()
 

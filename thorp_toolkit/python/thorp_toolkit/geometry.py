@@ -1,4 +1,5 @@
 from math import *
+from copy import deepcopy
 from .singleton import Singleton
 
 import rospy
@@ -10,6 +11,42 @@ import std_msgs.msg as std_msgs
 import geometry_msgs.msg as geometry_msgs
 
 
+def __get_naked_pose(pose):
+    """ Return input pose without header and covariance """
+    if isinstance(pose, geometry_msgs.PoseWithCovarianceStamped):
+        return pose.pose.pose
+    elif isinstance(pose, geometry_msgs.PoseWithCovariance):
+        return pose.pose
+    elif isinstance(pose, geometry_msgs.PoseStamped):
+        return pose.pose
+    elif isinstance(pose, geometry_msgs.Pose):
+        return pose
+    else:
+        raise rospy.ROSException("Input parameter is not a geometry_msgs pose!")
+
+
+def __set_naked_pose(pose, naked_pose):
+    """ Return input pose placing position and rotation with those on naked_pose """
+    if not isinstance(naked_pose, geometry_msgs.Pose):
+        raise rospy.ROSException("Input parameter naked_pose is not a geometry_msgs.Pose!")
+    if isinstance(pose, geometry_msgs.PoseWithCovarianceStamped):
+        pose.pose.pose = naked_pose
+    elif isinstance(pose, geometry_msgs.PoseWithCovariance):
+        pose.pose = naked_pose
+    elif isinstance(pose, geometry_msgs.PoseStamped):
+        pose.pose = naked_pose
+    elif isinstance(pose, geometry_msgs.Pose):
+        pose = naked_pose
+    else:
+        raise rospy.ROSException("Input parameter pose is not any of geometry_msgs' poses!")
+    return pose
+
+
+def __get_naked_poses(pose1, pose2):
+    """ Return input poses without headers and covariances """
+    return __get_naked_pose(pose1), __get_naked_pose(pose2)
+
+
 def heading(pose1, pose2=None):
     if not pose2:
         pose2 = pose1
@@ -18,14 +55,19 @@ def heading(pose1, pose2=None):
 
 
 def distance_2d(pose1, pose2=None):
+    """ Euclidean distance between 2D poses; z coordinate is ignored.
+        Poses are assumed to have the same reference frame. """
     if not pose2:
         pose2 = pose1
         pose1 = geometry_msgs.Pose()  # 0, 0, 0 pose, i.e. origin
-    return sqrt(pow(pose2.position.x - pose1.position.x, 2)
-              + pow(pose2.position.y - pose1.position.y, 2))
+    p1, p2 = __get_naked_poses(pose1, pose2)
+    return sqrt(pow(p2.position.x - p1.position.x, 2)
+              + pow(p2.position.y - p1.position.y, 2))
 
 
 def distance_3d(pose1, pose2=None):
+    """ Euclidean distance between 3D poses.
+        Poses are assumed to have the same reference frame. """
     if not pose2:
         pose2 = pose1
         pose1 = geometry_msgs.Pose()  # 0, 0, 0 pose, i.e. origin
@@ -102,6 +144,22 @@ def create_2d_pose(x, y, theta, frame=None):
         return pose.pose
 
 
+def create_3d_pose(x, y, z, roll, pitch, yaw, frame=None):
+    """ Create a geometry_msgs/Pose or geometry_msgs/PoseStamped
+        (if frame is provided) from 3D coordinates and Euler angles """
+    pose = geometry_msgs.PoseStamped()
+    pose.pose.position.x = x
+    pose.pose.position.y = y
+    pose.pose.position.z = z
+    pose.pose.orientation.x, pose.pose.orientation.y, pose.pose.orientation.z, pose.pose.orientation.w = \
+        quaternion_from_euler(roll, pitch, yaw)
+    if frame:
+        pose.header.frame_id = frame
+        return pose
+    else:
+        return pose.pose
+
+
 def get_pose_from_co(co, stamped=False):
     """ Get the pose for a moveit_msgs/CollisionObject. We try first meshes, then primitives and finally planes.
         TODO: make another function to calculate the centroid OF ALL THREE ELEMENTS and provide it!
@@ -169,24 +227,46 @@ def pose3d2str(pose):
                                                                                                 *get_euler(pose))
 
 
-def transform_pose(pose, transform):
-    """ Apply the given transform to a stamped pose """
-    return tf2_geometry_msgs.do_transform_pose(pose, transform)
+def transform_pose(pose, tf):
+    """ Transform the given pose with the given transform """
+    # do_transform_pose expects a stamped pose, but it ignores the header
+    if isinstance(pose, geometry_msgs.Pose2D):
+        p = to_pose3d(pose, frame='dummy')  # just force to_pose3d return a stamped pose
+    elif isinstance(pose, geometry_msgs.Pose):
+        p = geometry_msgs.PoseStamped(None, pose)
+    elif isinstance(pose, geometry_msgs.PoseStamped):
+        p = pose
+    else:
+        raise rospy.ROSException("Input parameter pose is not a valid geometry_msgs pose object")
+
+    return tf2_geometry_msgs.do_transform_pose(p, tf)
+
+
+def apply_transform(pose, tf):
+    """ Apply the given transform to a stamped pose, keeping its reference frame """
+    if not isinstance(pose, geometry_msgs.PoseStamped):
+        raise rospy.ROSException("Input parameter pose is not a valid geometry_msgs stamped pose")
+
+    p = deepcopy(pose)
+    p = tf2_geometry_msgs.do_transform_pose(p, tf)
+    p.header = pose.header
+    return p
 
 
 class TF2:
     __metaclass__ = Singleton
 
     def __init__(self):
-        """ Creates a global TF2 buffer to use on all tf related functions """
+        """ Singleton encapsulating a tf2 listener and a broadcaster """
         try:
             self.__buff__ = tf2_ros.Buffer()
             self.__list__ = tf2_ros.TransformListener(self.__buff__)
+            self.__stbc__ = tf2_ros.StaticTransformBroadcaster()
         except rospy.ROSException as err:
             rospy.logerr("Could not start tf buffer client: " + str(err))
             raise err
 
-    def transform_pose(self, pose_in, frame_from, frame_to, timeout=rospy.Duration(1.0)):
+    def transform_pose(self, pose_in, frame_from, frame_to, timeout=rospy.Duration(2.0)):
         """ Transform pose_in from one frame to another, or create
         the corresponding pose if None is provided on pose_in """
         if not pose_in:
@@ -210,3 +290,6 @@ class TF2:
                 tf2_ros.ExtrapolationException,
                 rospy.exceptions.ROSInterruptException) as err:
             raise rospy.ROSException("Could not lookup transform from %s to %s: %s" % (frame_from, frame_to, str(err)))
+
+    def publish_transform(self, transform):
+        self.__stbc__.sendTransform(transform)

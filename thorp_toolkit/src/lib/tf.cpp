@@ -17,7 +17,7 @@ bool transformPose(const std::string& from_frame, const std::string& to_frame,
   try
   {
     static tf::TransformListener tf_listener;
-    tf_listener.waitForTransform(to_frame, from_frame, ros::Time(0.0), ros::Duration(1.0));
+    tf_listener.waitForTransform(to_frame, from_frame, in_pose.header.stamp, ros::Duration(2.0));
     tf_listener.transformPose(to_frame, in_pose, out_pose);
     return true;
   }
