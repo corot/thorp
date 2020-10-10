@@ -668,236 +668,25 @@
       <pose>1.41131 -1 0 0 -0 0.9</pose>
       <static>1</static>
     </model>
-    <model name='doll_table_0'>
-      <static>1</static>
+    <include>
+      <uri>model://doll_table</uri>
+      <name>doll_table_0</name>
       <pose>0.57697 0 0 0 -0 0</pose>
-      <link name='link'>
-        <visual name='visual'>
-          <geometry>
-            <mesh>
-              <uri>model://doll_furniture/doll_table.dae</uri>
-              <scale>2 2 2</scale>
-            </mesh>
-          </geometry>
-        </visual>
-        <collision name='collision'>
-          <geometry>
-            <mesh>
-              <uri>model://doll_furniture/doll_table.stl</uri>
-              <scale>0.0514 0.0514 0.0514</scale>
-            </mesh>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <bounce/>
-            <friction>
-              <ode/>
-            </friction>
-            <contact>
-              <ode/>
-            </contact>
-          </surface>
-        </collision>
-        <velocity_decay>
-          <linear>0</linear>
-          <angular>0</angular>
-        </velocity_decay>
-        <inertial>
-          <inertia>
-            <ixx>1</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>1</iyy>
-            <iyz>0</iyz>
-            <izz>1</izz>
-          </inertia>
-          <mass>5.0</mass>
-        </inertial>
-        <self_collide>0</self_collide>
-        <kinematic>0</kinematic>
-        <gravity>1</gravity>
-      </link>
-    </model>
-    <model name='wood_cube_2_5cm_0'>
-      <link name='link'>
-        <pose>0 0 0.0125 0 -0 0</pose>
-        <inertial>
-          <mass>0.0073</mass>
-          <inertia>
-            <ixx>7.60417e-07</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>7.60417e-07</iyy>
-            <iyz>0</iyz>
-            <izz>7.60417e-07</izz>
-          </inertia>
-        </inertial>
-        <collision name='collision'>
-          <geometry>
-            <box>
-              <size>0.025 0.025 0.025</size>
-            </box>
-          </geometry>
-          <surface>
-            <contact>
-              <ode>
-                <max_vel>0.1</max_vel>
-                <min_depth>0.001</min_depth>
-              </ode>
-            </contact>
-            <bounce/>
-            <friction>
-              <ode/>
-            </friction>
-          </surface>
-          <max_contacts>10</max_contacts>
-        </collision>
-        <visual name='visual'>
-          <geometry>
-            <box>
-              <size>0.025 0.025 0.025</size>
-            </box>
-          </geometry>
-          <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
-          </material>
-        </visual>
-        <velocity_decay>
-          <linear>0</linear>
-          <angular>0</angular>
-        </velocity_decay>
-        <self_collide>0</self_collide>
-        <kinematic>0</kinematic>
-        <gravity>1</gravity>
-      </link>
+    </include>
+    <include>
+      <uri>model://wood_cube_2_5cm</uri>
+      <name>wood_cube_2_5cm_0</name>
       <pose>-0.428382 -2 0 0 -0 0</pose>
-      <static>0</static>
-    </model>
-    <model name='wood_cube_2_5cm_1'>
-      <link name='link'>
-        <pose>0 0 0.0125 0 -0 0</pose>
-        <inertial>
-          <mass>0.0073</mass>
-          <inertia>
-            <ixx>7.60417e-07</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>7.60417e-07</iyy>
-            <iyz>0</iyz>
-            <izz>7.60417e-07</izz>
-          </inertia>
-        </inertial>
-        <collision name='collision'>
-          <geometry>
-            <box>
-              <size>0.025 0.025 0.025</size>
-            </box>
-          </geometry>
-          <surface>
-            <contact>
-              <ode>
-                <max_vel>0.1</max_vel>
-                <min_depth>0.001</min_depth>
-              </ode>
-            </contact>
-            <bounce/>
-            <friction>
-              <ode/>
-            </friction>
-          </surface>
-          <max_contacts>10</max_contacts>
-        </collision>
-        <visual name='visual'>
-          <geometry>
-            <box>
-              <size>0.025 0.025 0.025</size>
-            </box>
-          </geometry>
-          <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
-          </material>
-        </visual>
-        <velocity_decay>
-          <linear>0</linear>
-          <angular>0</angular>
-        </velocity_decay>
-        <self_collide>0</self_collide>
-        <kinematic>0</kinematic>
-        <gravity>1</gravity>
-      </link>
-      <pose>-1 -2 0 0 -0 0</pose>
-      <static>0</static>
-    </model>
-    <model name='wood_cube_2_5cm_2'>
-      <link name='link'>
-        <pose>0 0 0.0125 0 -0 0</pose>
-        <inertial>
-          <mass>0.0073</mass>
-          <inertia>
-            <ixx>7.60417e-07</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>7.60417e-07</iyy>
-            <iyz>0</iyz>
-            <izz>7.60417e-07</izz>
-          </inertia>
-        </inertial>
-        <collision name='collision'>
-          <geometry>
-            <box>
-              <size>0.025 0.025 0.025</size>
-            </box>
-          </geometry>
-          <surface>
-            <contact>
-              <ode>
-                <max_vel>0.1</max_vel>
-                <min_depth>0.001</min_depth>
-              </ode>
-            </contact>
-            <bounce/>
-            <friction>
-              <ode/>
-            </friction>
-          </surface>
-          <max_contacts>10</max_contacts>
-        </collision>
-        <visual name='visual'>
-          <geometry>
-            <box>
-              <size>0.025 0.025 0.025</size>
-            </box>
-          </geometry>
-          <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
-          </material>
-        </visual>
-        <velocity_decay>
-          <linear>0</linear>
-          <angular>0</angular>
-        </velocity_decay>
-        <self_collide>0</self_collide>
-        <kinematic>0</kinematic>
-        <gravity>1</gravity>
-      </link>
-      <pose>-1 -1 0 0 -0 0</pose>
-      <static>0</static>
-    </model>
-    <spherical_coordinates>
-      <surface_model>EARTH_WGS84</surface_model>
-      <latitude_deg>0</latitude_deg>
-      <longitude_deg>0</longitude_deg>
-      <elevation>0</elevation>
-      <heading_deg>0</heading_deg>
-    </spherical_coordinates>
+    </include>
+    <include>
+      <uri>model://wood_cube_2_5cm</uri>
+      <name>wood_cube_2_5cm_1</name>
+      <pose>-1 -2 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://wood_cube_2_5cm</uri>
+      <name>wood_cube_2_5cm_2</name>
+      <pose>-1 -1 0 0 0 0</pose>
+    </include>
   </world>
 </sdf>
