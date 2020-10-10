@@ -108,7 +108,7 @@ bool ThorpArmController::validateTargetPose(geometry_msgs::PoseStamped& target, 
   {
     // Slightly increase z proportionally to pitch to avoid hitting the table with the lower gripper corner and
     // a bit extra to compensate the effect of the arm's backlash in the height of the gripper over the table
-    double z_delta1 = (1.0 - std::abs(std::sin(rp)))/(M_PI*M_PI);
+    double z_delta1 = vertical_backlash_scale * (1.0 - std::abs(std::sin(rp)))/(M_PI*M_PI);
     double z_delta2 = vertical_backlash_delta;
     ROS_DEBUG("[arm controller] Z increases:  %f  +  %f  +  %f", target.pose.position.z, z_delta1, z_delta2);
     target.pose.position.z += z_delta1;

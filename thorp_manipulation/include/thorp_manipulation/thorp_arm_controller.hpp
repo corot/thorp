@@ -32,8 +32,7 @@ public:
 
     // Read arm control parameters
     pnh.param("arm_ctrl_ref_frame", arm_ref_frame, std::string("arm_base_link"));
-    pnh.param("grasp_attach_time", attach_time, 0.8);
-    pnh.param("grasp_detach_time", detach_time, 0.6);
+    pnh.param("vertical_backlash_scale", vertical_backlash_scale, 0.0);
     pnh.param("vertical_backlash_delta", vertical_backlash_delta, 0.0);
     pnh.param("fall_short_distance_delta", fall_short_distance_delta, 0.0);
     pnh.param("gripper_asymmetry_yaw_delta", gripper_asymmetry_yaw_delta, 0.0);
@@ -57,40 +56,39 @@ public:
   }
 
 protected:
-    // Move groups to control arm and gripper with MoveIt!
-    moveit::planning_interface::MoveGroupInterface& arm()
-    {
-      static moveit::planning_interface::MoveGroupInterface arm("arm");
-      return arm;
-    }
+  // Move groups to control arm and gripper with MoveIt!
+  moveit::planning_interface::MoveGroupInterface& arm()
+  {
+    static moveit::planning_interface::MoveGroupInterface arm("arm");
+    return arm;
+  }
 
-    moveit::planning_interface::MoveGroupInterface& gripper()
-    {
-      static moveit::planning_interface::MoveGroupInterface gripper("gripper");
-      return gripper;
-    }
+  moveit::planning_interface::MoveGroupInterface& gripper()
+  {
+    static moveit::planning_interface::MoveGroupInterface gripper("gripper");
+    return gripper;
+  }
 
-    // We use the planning_scene_interface::PlanningSceneInterface to manipulate the world   TODO move to toolkit to make common with other servers!
-    moveit::planning_interface::PlanningSceneInterface& planning_scene_interface()
-    {
-      static moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
-      return planning_scene_interface;
-    }
+  // We use the planning_scene_interface::PlanningSceneInterface to manipulate the world   TODO move to toolkit to make common with other servers!
+  moveit::planning_interface::PlanningSceneInterface& planning_scene_interface()
+  {
+    static moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
+    return planning_scene_interface;
+  }
 
-    static std::string attached_object;
+  static std::string attached_object;
 
-    // Pick and place parameters
-    std::string arm_ref_frame;
-    double      gripper_open;
-    double      attach_time;
-    double      detach_time;
-    double      vertical_backlash_delta;
-    double      gripper_asymmetry_yaw_delta;
-    double      fall_short_distance_delta;
+  // Pick and place parameters
+  std::string arm_ref_frame;
+  double      gripper_open;
+  double      vertical_backlash_scale;
+  double      vertical_backlash_delta;
+  double      gripper_asymmetry_yaw_delta;
+  double      fall_short_distance_delta;
 
-    // Arm's physical reach limitations
-    double const MAX_DISTANCE = 0.30;
-    double const MAX_HEIGHT   = 0.20;
+  // Arm's physical reach limitations
+  double const MAX_DISTANCE = 0.30;
+  double const MAX_HEIGHT   = 0.20;
 
 
   /**
