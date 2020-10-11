@@ -290,6 +290,7 @@
   <xacro:structural_part name="xtion_mount"  color="Black"/>
   <xacro:structural_part name="arm_mount"    color="Black"/>
   <xacro:structural_part name="opencm"       color="Black"/>
+  <xacro:structural_part name="tray"         color="Yellow"/>
   <xacro:structural_part name="cannon"       color="Black"/>
   <xacro:structural_part name="cannon_servo" color="Black"/>
   <xacro:structural_part name="cannon_shaft" color="Black"/>

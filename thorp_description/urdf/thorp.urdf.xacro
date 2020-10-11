@@ -9,6 +9,7 @@
     - 11 sonars
     - 5 IR sensors
     - Turtlebot arm
+    - Tray next to it
     - Rocket launcher
     - Auxiliary 3D sensor (Creative Senz3D)
     - Manipulation 3D sensor (Asus Xtion Pro)
@@ -49,7 +50,7 @@
   <xacro:property name="joints_vlimit" value="0.8"/>
 
   <!-- <xacro:property name="pan_llimit" value="-2.617"/> -->
-  <!-- <xacro:property name="pan_ulimit" value=" 2.617"/> -->
+<!--   <xacro:property name="pan_ulimit" value=" 2.617"/>-->
   <xacro:property name="pan_llimit" value="${-M_PI/2}"/>
   <xacro:property name="pan_ulimit" value="${+M_PI/2}"/>
   <xacro:property name="shoulder_llimit" value="-2.617"/>  <!-- -150 deg, but physical limit is -2.18 rad (-125 deg) -->
@@ -130,6 +131,38 @@
   <link name="ir_arm_link"/>
 
 
+  <!-- Tray for gathering objects -->
+  <!-- Dimensions: 150x150x15 mm; mesh base is at z=0 relative to tray_link (we can -->
+  <!-- ignore thickness, as it's only 2mm). It's supported by two bottom stack poles -->
+  <xacro:stack_bottom_pole parent="plate_top_link" number="16" x_loc=" 0.014" y_loc="-0.0516" z_loc="${0.035/2}"/>
+  <xacro:stack_bottom_pole parent="plate_top_link" number="17" x_loc=" 0.014" y_loc="-0.0980" z_loc="${0.035/2}"/>
+  <xacro:property name="tray_depth" value="0.015"/>
+  <xacro:property name="tray_side" value="0.15"/>
+  <joint name="tray_joint" type="fixed">
+    <origin xyz="0.014 -0.0748 ${0.006/2 + 0.0435}" rpy="0.0 0.0 0.0"/>
+    <parent link="plate_top_link"/>
+    <child link="tray_link"/>
+  </joint>
+  <link name="tray_link">
+    <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <mesh filename="package://thorp_description/meshes/tray.stl" scale="${M_SCALE} ${M_SCALE} ${M_SCALE}"/>
+      </geometry>
+      <material name="Yellow">
+        <color rgba="1.0 1.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <mesh filename="package://thorp_description/meshes/tray.stl" scale="${M_SCALE} ${M_SCALE} ${M_SCALE}"/>
+      </geometry>
+    </collision>
+    <xacro:box_inertia length="${tray_side}" width="${tray_side}" height="${tray_depth}" mass="0.040" z="${tray_depth/2}"/>
+  </link>
+
+
   <!-- Auxiliary Senz3D camera plus mounting on Thorp -->
   
   <!-- Mounting poles: a pair of top poles -->
@@ -146,7 +179,7 @@
     <visual>
       <origin xyz="0.0075 0.0 -0.003" rpy="0.0 0.0 0.0"/>
       <geometry>
-        <mesh filename="package://thorp_description/meshes/senz3d_mount.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://thorp_description/meshes/senz3d_mount.stl" scale="${M_SCALE} ${M_SCALE} ${M_SCALE}"/>
       </geometry>
       <material name="Black">
         <color rgba="0.0 0.0 0.0 1.0"/>
@@ -216,7 +249,7 @@
     <visual>
       <origin xyz="0.0 0 0.0" rpy="0.0 0.0 ${M_PI/2}"/>
       <geometry>
-        <mesh filename="package://thorp_description/meshes/xtion_mount.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://thorp_description/meshes/xtion_mount.stl" scale="${M_SCALE} ${M_SCALE} ${M_SCALE}"/>
       </geometry>
       <material name="Black">
         <color rgba="0.0 0.0 0.0 1.0"/>
