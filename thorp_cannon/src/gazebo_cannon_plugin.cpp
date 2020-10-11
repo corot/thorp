@@ -54,7 +54,11 @@ public:
     auto cannon_link_name = _sdf->HasElement("cannon_link") ? _sdf->Get<std::string>("cannon_link") : "cannon_link";
     ROS_DEBUG("Get link %s for model %s", cannon_link_name.c_str(), this->model->GetName().c_str());
     this->cannon_link = this->model->GetLink(cannon_link_name);
-    GZ_ASSERT(this->cannon_link !=nullptr, "Got nullptr link pointer!");
+    if (!this->cannon_link)
+    {
+      ROS_ERROR_STREAM("Got nullptr for cannon model " << cannon_link_name << "; cannon disabled");
+      return;
+    }
 
     if (this->axis_of_fire == "x")
       this->direction_of_fire = ignition::math::Vector3d(this->shoot_force, 0, 0);
@@ -126,7 +130,11 @@ public:
     std::string model_name = this->rocket_models_base_name + std::to_string(number);
     ROS_DEBUG("Loading rocket %d model: %s", number, model_name.c_str());
     auto rocket_model = this->world->ModelByName(model_name);
-    GZ_ASSERT(rocket_model, "Got nullptr rocket model pointer!");
+    if (!rocket_model)
+    {
+      ROS_ERROR_STREAM("Got nullptr for rocket model " << model_name << "; firing aborted");
+      return;
+    }
 
     auto origin_pose = this->cannon_link->WorldPose();
 
