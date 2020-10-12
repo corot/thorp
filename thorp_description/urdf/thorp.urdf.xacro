@@ -42,24 +42,21 @@
   <!-- Note that the arm position is biased to the left of the robot, while the manipulation
        camera is biased to the right; with this configuration, the arm doesn't block completely
        the camera vision of the operation space.
-       We constrain the elbow lower limit and both shoulder limits to force the arm to operate 
-       always with the same gripper orientation, preventing the inefficient full turns.
-       TODO: I don't think we need to be that restrictive; do a better problem assessment.
+       Pan joint is rotated -30 degrees from the center to allow reaching the entire tray.
+       We artificially constrain the elbow lower limit to 0 to enforce planning always with the
+       same gripper orientation, preventing the inefficient full turns.
        We also use a deliberately low joints velocity limit to improve safety and precision;
        the physical limit of the AX-12 is 114 rpm (684 deg/s) -->
   <xacro:property name="joints_vlimit" value="0.8"/>
 
-  <!-- <xacro:property name="pan_llimit" value="-2.617"/> -->
-<!--   <xacro:property name="pan_ulimit" value=" 2.617"/>-->
-  <xacro:property name="pan_llimit" value="${-M_PI/2}"/>
-  <xacro:property name="pan_ulimit" value="${+M_PI/2}"/>
-  <xacro:property name="shoulder_llimit" value="-2.617"/>  <!-- -150 deg, but physical limit is -2.18 rad (-125 deg) -->
-  <xacro:property name="shoulder_ulimit" value=" 2.617"/>  <!-- +150 deg, but physical limit is +2.18 rad (+125 deg) -->
-  <!-- <xacro:property name="elbow_llimit" value=" -2.617"/> -->
-  <xacro:property name="elbow_llimit" value=" 0.0"/>       <!-- -150 deg, but physical limit is -2.41 rad (-138 deg) -->
-  <xacro:property name="elbow_ulimit" value=" 2.617"/>     <!-- +150 deg, but physical limit is +2.41 rad (+138 deg) -->
-  <xacro:property name="wrist_llimit" value="-1.745"/>     <!-- -100 deg -->
-  <xacro:property name="wrist_ulimit" value=" 1.745"/>     <!-- +100 deg -->
+  <xacro:property name="pan_llimit" value="${-AX12_RANGE/2 - M_PI/6}"/>  <!-- rotated -30 degrees -->
+  <xacro:property name="pan_ulimit" value="${+AX12_RANGE/2 - M_PI/6}"/>  <!-- TODO change on real robot! -->
+  <xacro:property name="shoulder_llimit" value="${-AX12_RANGE/2}"/>
+  <xacro:property name="shoulder_ulimit" value="${+AX12_RANGE/2}"/>
+  <xacro:property name="elbow_llimit" value="0.0"/>                  <!-- force constant gripper orientation -->
+  <xacro:property name="elbow_ulimit" value="${+AX12_RANGE/2}"/>
+  <xacro:property name="wrist_llimit" value="${-AX12_RANGE/3}"/>     <!-- -100 deg -->
+  <xacro:property name="wrist_ulimit" value="${+AX12_RANGE/3}"/>     <!-- +100 deg -->
 
   <xacro:turtlebot_arm parent="plate_top_link" color="White" gripper_color="Black"
                  pincher_gripper="false" turtlebot_gripper="true">
