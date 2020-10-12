@@ -3,7 +3,8 @@
 ##############################################################################
 
 add_library(${PROJECT_NAME}
-    tf.cpp
+    tf2.cpp
+    geometry.cpp
     planning_scene.cpp
 )
 add_dependencies(${PROJECT_NAME} thorp_msgs_generate_messages_cpp)

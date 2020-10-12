@@ -5,7 +5,7 @@
 #include <ros/ros.h>
 
 // auxiliary libraries
-#include <thorp_toolkit/tf.hpp>
+#include <thorp_toolkit/geometry.hpp>
 #include <thorp_toolkit/math.hpp>
 namespace ttk = thorp_toolkit;
 

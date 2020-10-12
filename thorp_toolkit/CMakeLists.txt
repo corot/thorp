@@ -11,6 +11,9 @@ find_package(catkin
     REQUIRED
     COMPONENTS
         tf
+        tf2
+        tf2_ros
+        tf2_geometry_msgs
         roscpp
         geometry_msgs
         geometric_shapes
@@ -33,6 +36,9 @@ catkin_package(
     LIBRARIES ${PROJECT_NAME}
     CATKIN_DEPENDS
         tf
+        tf2
+        tf2_ros
+        tf2_geometry_msgs
         roscpp
         geometry_msgs
         geometric_shapes

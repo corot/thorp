@@ -565,35 +565,6 @@ inline bool samePose(const geometry_msgs::PoseStamped& a, const geometry_msgs::P
   return sameFrame(a, b) && samePose(a.pose, b.pose, xy_tolerance, yaw_tolerance);
 }
 
-/**
- * Transform in_pose from on frame to another
- * @param from_frame initial frame
- * @param to_frame target frame
- * @param in_pose initial pose
- * @param out_pose transformed pose
- * @return true if transformation succeeded.
- */
-bool transformPose(const std::string& from_frame, const std::string& to_frame,
-                   const geometry_msgs::PoseStamped& in_pose, geometry_msgs::PoseStamped& out_pose);
-
-/**
- * Transform in_pose from on frame to another
- * @param from_frame initial frame
- * @param to_frame target frame
- * @param in_pose initial pose
- * @param out_pose transformed pose
- * @return true if transformation succeeded.
- */
-bool transformPose(const std::string& from_frame, const std::string& to_frame,
-                   const geometry_msgs::Pose& in_pose, geometry_msgs::Pose& out_pose);
-
-
-void tf2pose(const tf::Transform& tf, geometry_msgs::Pose& pose);
-void tf2pose(const tf::StampedTransform& tf, geometry_msgs::PoseStamped& pose);
-
-void pose2tf(const geometry_msgs::Pose& pose, tf::Transform& tf);
-void pose2tf(const geometry_msgs::PoseStamped& pose, tf::StampedTransform& tf);
-
 std::string vector2str3D(const geometry_msgs::Vector3& vector);
 std::string vector2str3D(const geometry_msgs::Vector3Stamped& vector);
 std::string point2str2D(const geometry_msgs::Point& point);

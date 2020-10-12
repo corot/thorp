@@ -3,7 +3,8 @@
  */
 
 // auxiliary libraries
-#include <thorp_toolkit/tf.hpp>
+#include <thorp_toolkit/tf2.hpp>
+#include <thorp_toolkit/geometry.hpp>
 namespace ttk = thorp_toolkit;
 
 #include "thorp_manipulation/thorp_arm_controller.hpp"
@@ -55,7 +56,7 @@ bool ThorpArmController::validateTargetPose(geometry_msgs::PoseStamped& target, 
     // Target's timestamp is irrelevant, and can trigger a TransformException if very recent; zero it!
     target.header.stamp = ros::Time(0.0);
     tf::quaternionTFToMsg(tf::createIdentityQuaternion(), target.pose.orientation);
-    if (!ttk::transformPose(target.header.frame_id, arm_ref_frame, target, target))
+    if (!ttk::TF2::transformPose(target.header.frame_id, arm_ref_frame, target, target))
       return false;
   }
 

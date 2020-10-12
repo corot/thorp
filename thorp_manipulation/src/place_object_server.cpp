@@ -6,7 +6,7 @@
 #include <ros/ros.h>
 
 // auxiliary libraries
-#include <thorp_toolkit/tf.hpp>
+#include <thorp_toolkit/geometry.hpp>
 namespace ttk = thorp_toolkit;
 
 // MoveIt!

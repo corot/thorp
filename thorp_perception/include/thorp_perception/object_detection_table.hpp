@@ -6,8 +6,9 @@
 #include <ros/ros.h>
 
 // auxiliary libraries
-#include <thorp_toolkit/tf.hpp>
+#include <thorp_toolkit/tf2.hpp>
 #include <thorp_toolkit/math.hpp>
+#include <thorp_toolkit/geometry.hpp>
 namespace ttk = thorp_toolkit;
 
 
@@ -65,7 +66,7 @@ public:
       return;
     }
 
-    if (! ttk::transformPose(msg.header.frame_id, output_frame_, table.pose, table_pose))
+    if (! ttk::TF2::transformPose(msg.header.frame_id, output_frame_, table.pose, table_pose))
     {
       ROS_WARN("[object detection] Table with pose [%s] discarded: unable to transform to output frame [%s]",
                ttk::pose2cstr3D(table_pose), output_frame_.c_str());

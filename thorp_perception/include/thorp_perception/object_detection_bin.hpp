@@ -5,9 +5,13 @@
 #include <tf/tf.h>
 #include <ros/ros.h>
 
+#include <object_recognition_msgs/ObjectInformation.h>
+#include <object_recognition_msgs/GetObjectInformation.h>
+
 // auxiliary libraries
-#include <thorp_toolkit/tf.hpp>
+#include <thorp_toolkit/tf2.hpp>
 #include <thorp_toolkit/math.hpp>
+#include <thorp_toolkit/geometry.hpp>
 namespace ttk = thorp_toolkit;
 
 #include "thorp_perception/spatial_hash.hpp"
@@ -147,6 +151,10 @@ public:
                     ttk::distance3D(bin.getCentroid().pose, obj.pose.pose.pose));
           ROS_ASSERT(obj.point_clouds.size() == 1);
           bin.addObject(obj, color_detection_->getColors(obj.point_clouds[0]));
+          tf::Quaternion q;
+          tf::quaternionMsgToTF(obj.pose.pose.pose.orientation, q);
+          ROS_ERROR_STREAM("GIVEN:  "<<q.length2()<<"      NORM:  "<<q.normalized().length2());
+          // TODO remove all this,,, I think only had problem w/ ICP, so no more
           assigned = true;
           break;
         }
@@ -199,8 +207,15 @@ public:
                  bin.id, ttk::pose2cstr3D(bin.getCentroid()), bin.countObjects(), obj_name.c_str());
 
       geometry_msgs::Pose out_pose;
-      ttk::transformPose(bin.getCentroid().header.frame_id, output_frame, bin.getCentroid().pose, out_pose);
-      ROS_INFO("[object detection] Adding '%s' object at %s", obj_name.c_str(), ttk::point2cstr3D(out_pose.position));
+      tf::Quaternion q;
+      tf::quaternionMsgToTF(out_pose.orientation, q);
+      ROS_ERROR_STREAM("  bin   GIVEN:  "<<q.length2()<<"      NORM:  "<<q.normalized().length2());
+
+      ttk::TF2::transformPose(bin.getCentroid().header.frame_id, output_frame, bin.getCentroid().pose, out_pose);
+
+      tf::quaternionMsgToTF(out_pose.orientation, q);
+
+      ROS_INFO("[object detection] Adding '%s' object at %s      %f", obj_name.c_str(), ttk::point2cstr3D(out_pose.position)      ,q.length2());
 
       moveit_msgs::CollisionObject co;
       co.id = obj_name;
