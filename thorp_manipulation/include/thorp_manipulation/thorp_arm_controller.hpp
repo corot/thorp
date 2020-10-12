@@ -76,6 +76,8 @@ protected:
     return planning_scene_interface;
   }
 
+  bool preempted_ = false;
+
   static std::string attached_object;
 
   // Pick and place parameters

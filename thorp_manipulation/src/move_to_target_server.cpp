@@ -21,6 +21,7 @@ MoveToTargetServer::MoveToTargetServer(const std::string name) :
   // Register feedback callback for our server; executeCB is run on a separated thread, so it can be cancelled
   as_.registerPreemptCallback(boost::bind(&MoveToTargetServer::preemptCB, this));
   as_.start();
+  ROS_INFO("[move to target] Server started");
 }
 
 MoveToTargetServer::~MoveToTargetServer()
@@ -30,8 +31,7 @@ MoveToTargetServer::~MoveToTargetServer()
 
 void MoveToTargetServer::executeCB(const thorp_msgs::MoveToTargetGoal::ConstPtr& goal)
 {
-  ROS_INFO("[move to target] Received goal!");
-
+  preempted_ = false;
   thorp_msgs::MoveToTargetResult result;
 
   switch (goal->target_type)
@@ -54,24 +54,22 @@ void MoveToTargetServer::executeCB(const thorp_msgs::MoveToTargetGoal::ConstPtr&
   result.error.text = mec2str(result.error);
   if (result.error.code == moveit_msgs::MoveItErrorCodes::SUCCESS)
   {
-    ROS_ERROR("SUCCCCCCCCCCCCCCCCCCC   %d", result.error.code);
     as_.setSucceeded(result);
   }
   else if (result.error.code == moveit_msgs::MoveItErrorCodes::PREEMPTED)
   {
-    ROS_ERROR("PREEEEEEEEEEEEEEEEMPT   %d", result.error.code);
     as_.setPreempted();
   }
   else
   {
-    ROS_ERROR("ABOOOOOOOOOOOOOOOOORT   %d", result.error.code);
     as_.setAborted(result);
   }
 }
 
 void MoveToTargetServer::preemptCB()
 {
-  ROS_INFO("[move to target] Action preempted; cancel all movement");
+  ROS_WARN("[move to target] Action preempted; cancel all movement");
+  preempted_ = true;
   gripper().stop();
   arm().stop();
 }
@@ -79,21 +77,18 @@ void MoveToTargetServer::preemptCB()
 int32_t MoveToTargetServer::moveArmTo(const std::string& target)
 {
   ROS_DEBUG("[move to target] Move arm to '%s' position", target.c_str());
-  if (arm().setNamedTarget(target) == false)
+  if (!arm().setNamedTarget(target))
   {
     ROS_ERROR("[move to target] Set named target '%s' failed", target.c_str());
     return thorp_msgs::ThorpError::INVALID_NAMED_TARGET;
   }
-
-  arm().setSupportSurfaceName("table");
-  gripper().setSupportSurfaceName("table");
 
   moveit::planning_interface::MoveItErrorCode result = arm().move();
   if (result)
   {
     ROS_INFO("[move to target] Move to target '%s' completed", target.c_str());
   }
-  else if (as_.isPreemptRequested())
+  else if (preempted_)
   {
     ROS_WARN("[move to target] Move to target '%s' preempted", target.c_str());
     result.val = moveit::planning_interface::MoveItErrorCode::PREEMPTED;
@@ -109,7 +104,7 @@ int32_t MoveToTargetServer::moveArmTo(const std::string& target)
 int32_t MoveToTargetServer::moveArmTo(const sensor_msgs::JointState& target)
 {
   ROS_DEBUG_STREAM("[move to target] Move arm to target configuration:\n" << target);
-  if (arm().setJointValueTarget(target) == false)
+  if (!arm().setJointValueTarget(target))
   {
     ROS_ERROR_STREAM("[move to target] Set joint value target failed:\n" << target);
     return thorp_msgs::ThorpError::INVALID_JOINT_STATE;
@@ -120,7 +115,7 @@ int32_t MoveToTargetServer::moveArmTo(const sensor_msgs::JointState& target)
   {
     ROS_INFO("[move to target] Move to joint value target completed");
   }
-  else if (as_.isPreemptRequested())
+  else if (preempted_)
   {
     ROS_WARN("[move to target] Move to joint value target preempted");
     result.val = moveit::planning_interface::MoveItErrorCode::PREEMPTED;
@@ -138,12 +133,13 @@ int32_t MoveToTargetServer::moveArmTo(const geometry_msgs::PoseStamped& target)
   ROS_DEBUG("[move to target] Move arm to [%s]", ttk::pose2cstr3D(target.pose));
 
   geometry_msgs::PoseStamped modiff_target = target;
-  if (!validateTargetPose(modiff_target, true, false, false))
+  if (!validateTargetPose(modiff_target, false, false, false))
   {
+    ROS_ERROR("[move to target] Invalid target pose [%s]", ttk::pose2cstr3D(target.pose));
     return thorp_msgs::ThorpError::INVALID_TARGET_POSE;
   }
 
-  if (arm().setPoseTarget(modiff_target) == false)
+  if (!arm().setPoseTarget(modiff_target))
   {
     ROS_ERROR("[move to target] Set pose target [%s] failed", ttk::pose2cstr3D(modiff_target.pose));
     return thorp_msgs::ThorpError::INVALID_TARGET_POSE;
@@ -154,19 +150,17 @@ int32_t MoveToTargetServer::moveArmTo(const geometry_msgs::PoseStamped& target)
   {
     ROS_INFO("[move to target] Move to target [%s] completed", ttk::pose2cstr3D(modiff_target.pose));
   }
-  else if (as_.isPreemptRequested())
+  else if (preempted_)
   {
     ROS_WARN("[move to target] Move to target [%s] preempted", ttk::pose2cstr3D(modiff_target.pose));
     result.val = moveit::planning_interface::MoveItErrorCode::PREEMPTED;
   }
   else
   {
-    ROS_ERROR("[move to target] Move to target [%s] failed: %s", ttk::pose2cstr3D(modiff_target.pose),
-              mec2str(result));
+    ROS_ERROR("[move to target] Move to target [%s] failed: %s", ttk::pose2cstr3D(modiff_target.pose), mec2str(result));
   }
 
   return result.val;
 }
-
 
 };

@@ -2,7 +2,6 @@
  * Author: Jorge Santos
  */
 
-#include <tf/tf.h>
 #include <ros/ros.h>
 
 // auxiliary libraries
@@ -46,6 +45,7 @@ PickupObjectServer::~PickupObjectServer()
 
 void PickupObjectServer::executeCB(const thorp_msgs::PickupObjectGoal::ConstPtr& goal)
 {
+  preempted_ = false;
   thorp_msgs::PickupObjectResult result;
 
   if (!attached_object.empty())
@@ -81,6 +81,7 @@ void PickupObjectServer::executeCB(const thorp_msgs::PickupObjectGoal::ConstPtr&
 void PickupObjectServer::preemptCB()
 {
   ROS_WARN("[pickup object] Action preempted; cancel all movement");
+  preempted_ = true;
   gripper().stop();
   arm().stop();
 }
@@ -127,52 +128,51 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
     return result;
   }
 
+  // TODO: play with the many other options:
+  // goal.attached_object_touch_links : string[] --> defaults to gripper; can change by just fingers
 
-  //string[] attached_object_touch_links --> defaults to gripper; can change by just fingers
+  //  # Optionally notify the pick action that it should approach the object further,
+  //  # as much as possible (this minimizing the distance to the object before the grasp)
+  //  # along the approach direction; Note: this option changes the grasping poses
+  //  # supplied in possible_grasps[] such that they are closer to the object when possible.
+  //  goal.minimize_object_distance  -->  TRY
 
+  //  # an optional list of obstacles that we have semantic information about
+  //  # and that can be touched/pushed/moved in the course of grasping;
+  //  # CAREFUL: If the object name 'all' is used, collisions with all objects are disabled during the approach & lift.
+  //  string[] allowed_touch_objects
 
-//  # Optionally notify the pick action that it should approach the object further,
-//  # as much as possible (this minimizing the distance to the object before the grasp)
-//  # along the approach direction; Note: this option changes the grasping poses
-//  # supplied in possible_grasps[] such that they are closer to the object when possible.
-//  goal.minimize_object_distance  -->  TRY
+  //  # The maximum amount of time the motion planner is allowed to plan for
+  //  float64 allowed_planning_time
+  //
+  //  # Planning options
+  //  PlanningOptions planning_options
 
-//  # an optional list of obstacles that we have semantic information about
-//  # and that can be touched/pushed/moved in the course of grasping;
-//  # CAREFUL: If the object name 'all' is used, collisions with all objects are disabled during the approach & lift.
-//  string[] allowed_touch_objects
+  // Allow some leeway in position (meters) and orientation (radians)
+  arm().setGoalPositionTolerance(0.001);  // TODO: same values already set on parent class; add to the goal if needed
+  arm().setGoalOrientationTolerance(0.02);
 
-//  # The maximum amount of time the motion planner is allowed to plan for
-//  float64 allowed_planning_time
-//
-//  # Planning options
-//  PlanningOptions planning_options
-
-//  arm().setSupportSurfaceName(goal->support_surf);
-//
-//  // Allow some leeway in position (meters) and orientation (radians)
-//  arm().setGoalPositionTolerance(0.001);
-//  arm().setGoalOrientationTolerance(0.02);
-//
-//  // Allow replanning to increase the odds of a solution
-//  arm().allowReplanning(true);
+  // Allow replanning to increase the odds of a solution
+  arm().allowReplanning(true);
 
   ac_.sendGoal(goal);
 
-  while (!ac_.waitForResult(ros::Duration(0.1)))
+  if (!ac_.waitForResult(ros::Duration(30)))  // TODO param or add to goal
   {
-    if (as_.isPreemptRequested())
-    {
-      ROS_WARN("[pickup object] preempt.................................");
-      ac_.cancelAllGoals();
-      ROS_WARN("[pickup object] Pick action preempted    %d", ac_.getResult()->error_code.val);
-      ///return ac_.getResult()->error_code.val;
-      return moveit::planning_interface::MoveItErrorCode::PREEMPTED;
-    }
+    preemptCB();
+    ac_.cancelAllGoals();
+    ROS_WARN("[pickup object] Pick action timed out after 30s");
+    return moveit::planning_interface::MoveItErrorCode::TIMED_OUT;
+  }
+
+  if (preempted_)
+  {
+    ac_.cancelAllGoals();
+    ROS_WARN("[pickup object] Pick action preempted");
+    return moveit::planning_interface::MoveItErrorCode::PREEMPTED;
   }
 
   result = ac_.getResult()->error_code.val;
-  ROS_WARN("[pickup object] DONE");
   if (ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
   {
     ROS_INFO("[pickup object] Pick succeeded!");
@@ -180,30 +180,9 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
   else
   {
     ROS_ERROR("[pickup object] Pick fail with error code [%d] (%s): %s",
-              ac_.getResult()->error_code.val, ac_.getState().toString().c_str(), ac_.getState().getText().c_str());
+              result, ac_.getState().toString().c_str(), ac_.getState().getText().c_str());
   }
-
-  ROS_WARN("[pickup object] Pick OOOOOOOOOOOOK>>>>>>>>>>>>>    %d", ac_.getResult()->error_code.val);
-  return ac_.getResult()->error_code.val;
-//  {
-//    return moveit::planning_interface::MoveItErrorCode(ac_.getResult()->error_code);
-//  }
-//  else
-//  {
-//    return moveit::planning_interface::MoveItErrorCode(ac_.getResult()->error_code);
-//  }
-//
-//    if ((result = arm().pick(obj_name, grasps)))
-//    {
-//      ROS_INFO("[pickup object] Pick successfully completed");
-//      return result.val;
-//    }
-//
-//    ROS_DEBUG("[pickup object] Pick attempt %d failed: %s", attempt, mec2str(result));
-//
-//
-//  ROS_ERROR("[pickup object] Pick failed after %d attempts", PICK_ATTEMPTS);
-//  return result.val;
+  return result;
 }
 
 
@@ -252,7 +231,7 @@ int32_t PickupObjectServer::makeGrasps(const geometry_msgs::PoseStamped& obj_pos
     g.allowed_touch_objects.push_back(obj_name);
     g.allowed_touch_objects.push_back(surface);
 
-    g.id = attempt;
+    g.id = std::to_string(attempt);
 
     grasps.push_back(g);
   }

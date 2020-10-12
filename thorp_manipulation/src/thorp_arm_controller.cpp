@@ -17,7 +17,7 @@ std::string ThorpArmController::attached_object;
 bool ThorpArmController::setGripper(float opening, bool wait_for_complete)
 {
   ROS_DEBUG("[arm controller] Set gripper opening to %f", opening);
-  if (gripper().setJointValueTarget("gripper_joint", opening) == false)
+  if (!gripper().setJointValueTarget("gripper_joint", opening))
   {
     ROS_ERROR("[arm controller] Set gripper opening to %f failed", opening);
     return false;
@@ -67,7 +67,7 @@ bool ThorpArmController::validateTargetPose(geometry_msgs::PoseStamped& target, 
   //    - Translation: [0.000, -0.000, 0.060]
   //    - Rotation: in Quaternion [0.000, 0.000, 0.000, 1.000]
   //                in RPY (radian) [0.000, 0.000, 0.000]
-  //                in RPY (degree) [0.000, 0.000, 0.000]
+  //                in RPY (degree) [0.000, 0.000, 0.000]  TODO use tf!  ttk::transformPose(arm_ref_frame, "arm_shoulder_lift_servo_link");
   double x = target.pose.position.x;
   double y = target.pose.position.y;
   double z = target.pose.position.z - 0.06;

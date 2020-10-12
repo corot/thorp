@@ -45,6 +45,7 @@ PlaceObjectServer::~PlaceObjectServer()
 
 void PlaceObjectServer::executeCB(const thorp_msgs::PlaceObjectGoal::ConstPtr& goal)
 {
+  preempted_ = false;
   thorp_msgs::PlaceObjectResult result;
 
   if (!goal->object_name.empty() && goal->object_name != attached_object)
@@ -74,16 +75,13 @@ void PlaceObjectServer::executeCB(const thorp_msgs::PlaceObjectGoal::ConstPtr& g
   else
   {
     as_.setAborted(result);
-
-    // Ensure we don't retain any object attached to the gripper
-//    arm().detachObject(goal->object_name);
-//    setGripper(gripper_open, false);
   }
 }
 
 void PlaceObjectServer::preemptCB()
 {
   ROS_WARN("[place object] Action preempted; cancel all movement");
+  preempted_ = true;
   gripper().stop();
   arm().stop();
 }
@@ -111,8 +109,8 @@ int32_t PlaceObjectServer::place(const std::string& obj_name, const std::string&
   moveit_msgs::PlaceGoal goal;
   goal.attached_object_name = obj_name;
   goal.group_name = arm().getName();
-  goal.allowed_planning_time = arm().getPlanningTime();
   goal.support_surface_name = surface;
+  goal.allowed_planning_time = arm().getPlanningTime();
   goal.allow_gripper_support_collision = true;
   goal.planning_options.plan_only = false;
   goal.planning_options.look_around = false;
@@ -128,21 +126,31 @@ int32_t PlaceObjectServer::place(const std::string& obj_name, const std::string&
     return result;
   }
 
+  // Allow some leeway in position (meters) and orientation (radians)
+  arm().setGoalPositionTolerance(0.001);  // TODO: same values already set on parent class; add to the goal if needed
+  arm().setGoalOrientationTolerance(0.02);
+
+  // Allow replanning to increase the odds of a solution
+  arm().allowReplanning(true);
+
   ac_.sendGoal(goal);
 
-  while (!ac_.waitForResult(ros::Duration(0.1)))
+  if (!ac_.waitForResult(ros::Duration(30)))  // TODO param or add to goal
   {
-    if (as_.isPreemptRequested())
-    {
-      ROS_WARN("[place object] preempt.................................");
-      ac_.cancelAllGoals();
-      ROS_WARN("[place object] Place action preempted    %d", ac_.getResult()->error_code.val);
-      ///return ac_.getResult()->error_code.val;
-      return moveit::planning_interface::MoveItErrorCode::PREEMPTED;
-    }
+    preemptCB();
+    ac_.cancelAllGoals();
+    ROS_WARN("[place object] Place action timed out after 30s");
+    return moveit::planning_interface::MoveItErrorCode::TIMED_OUT;
   }
 
-  ROS_WARN("[place object] DONE");
+  if (preempted_)
+  {
+    ac_.cancelAllGoals();
+    ROS_WARN("[place object] Place action preempted");
+    return moveit::planning_interface::MoveItErrorCode::PREEMPTED;
+  }
+
+  result = ac_.getResult()->error_code.val;
   if (ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
   {
     ROS_INFO("[place object] Place succeeded!");
@@ -150,10 +158,9 @@ int32_t PlaceObjectServer::place(const std::string& obj_name, const std::string&
   else
   {
     ROS_ERROR("[place object] Place fail with error code [%d] (%s): %s",
-              ac_.getResult()->error_code.val, ac_.getState().toString().c_str(), ac_.getState().getText().c_str());
+              result, ac_.getState().toString().c_str(), ac_.getState().getText().c_str());
   }
-
-  return ac_.getResult()->error_code.val;
+  return result;
 }
 
 int32_t PlaceObjectServer::makePlaceLocations(const geometry_msgs::PoseStamped& target_pose,
@@ -206,7 +213,7 @@ int32_t PlaceObjectServer::makePlaceLocations(const geometry_msgs::PoseStamped& 
     l.allowed_touch_objects.push_back(obj_name);
     l.allowed_touch_objects.push_back(surface);
 
-    l.id = attempt;
+    l.id = std::to_string(attempt);
 
     place_locations.push_back(l);
   }
