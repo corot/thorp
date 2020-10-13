@@ -211,7 +211,7 @@ public:
       tf::quaternionMsgToTF(out_pose.orientation, q);
       ROS_ERROR_STREAM("  bin   GIVEN:  "<<q.length2()<<"      NORM:  "<<q.normalized().length2());
 
-      ttk::TF2::transformPose(bin.getCentroid().header.frame_id, output_frame, bin.getCentroid().pose, out_pose);
+      ttk::TF2::transformPose(output_frame, bin.getCentroid().header.frame_id, bin.getCentroid().pose, out_pose);
 
       tf::quaternionMsgToTF(out_pose.orientation, q);
 

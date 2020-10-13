@@ -1,6 +1,7 @@
 /*
  * Author: Jorge Santos
  */
+
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 #include "thorp_toolkit/tf2.hpp"
@@ -28,37 +29,75 @@ TF2& TF2::getInstance()
   return *inst_ptr_;
 }
 
-bool TF2::transformPose(const std::string& from_frame, const std::string& to_frame,
-                        const geometry_msgs::PoseStamped& in_pose, geometry_msgs::PoseStamped& out_pose)
+
+bool TF2::lookupTransform(const std::string& target_frame, const std::string& source_frame,
+                          geometry_msgs::TransformStamped& transform,
+                          const ros::Time& time, const ros::Duration& timeout)
 {
   try
   {
-    TF2::getInstance();  // so we start listening if not done before
-    buffer_.transform(in_pose, out_pose, to_frame, ros::Duration(2.0));  // 2.0 is enough to fill enough the buffer
-    // transform returns a reference; and no idea if it throws any exception;  TODO remake this
+    TF2::getInstance();  // start listening if not done before
+    transform = buffer_.lookupTransform(target_frame, source_frame, time, timeout);
     return true;
   }
-  catch (tf::InvalidArgument& e)
+  catch (tf2::LookupException& e)
+  {
+    ROS_ERROR("Lookup error: %s", e.what());
+  }
+  catch (tf2::ConnectivityException& e)
+  {
+    ROS_ERROR("Unconnected frames: %s", e.what());
+  }
+  catch (tf2::ExtrapolationException& e)
+  {
+    ROS_ERROR("Extrapolation error: %s", e.what());
+  }
+  catch (tf2::InvalidArgumentException& e)
   {
     ROS_ERROR("Invalid input pose: %s", e.what());
-    return false;
   }
-  catch (tf::TransformException& e)
-  {
-    ROS_ERROR("Could not get '%s' to '%s' transform: %s", from_frame.c_str(), to_frame.c_str(), e.what());
-    return false;
-  }
+  return false;
 }
 
-bool TF2::transformPose(const std::string& from_frame, const std::string& to_frame,
-                        const geometry_msgs::Pose& in_pose, geometry_msgs::Pose& out_pose)
+bool TF2::transformPose(const std::string& target_frame, const geometry_msgs::PoseStamped& in_pose,
+                        geometry_msgs::PoseStamped& out_pose, const ros::Duration& timeout)
+{
+  try
+  {
+    TF2::getInstance();  // start listening if not done before
+    buffer_.transform(in_pose, out_pose, target_frame, timeout);
+    return true;
+  }
+  catch (tf2::LookupException& e)
+  {
+    ROS_ERROR("Lookup error: %s", e.what());
+  }
+  catch (tf2::ConnectivityException& e)
+  {
+    ROS_ERROR("Unconnected frames: %s", e.what());
+  }
+  catch (tf2::ExtrapolationException& e)
+  {
+    ROS_ERROR("Extrapolation error: %s", e.what());
+  }
+  catch (tf2::InvalidArgumentException& e)
+  {
+    ROS_ERROR("Invalid input pose: %s", e.what());
+  }
+  return false;
+}
+
+bool TF2::transformPose(const std::string& target_frame, const std::string& source_frame,
+                        const geometry_msgs::Pose& in_pose, geometry_msgs::Pose& out_pose,
+                        const ros::Time& time, const ros::Duration& timeout)
 {
   geometry_msgs::PoseStamped in_stamped;
   geometry_msgs::PoseStamped out_stamped;
 
-  in_stamped.header.frame_id = from_frame;
+  in_stamped.header.frame_id = source_frame;
+  in_stamped.header.stamp = time;
   in_stamped.pose = in_pose;
-  if (transformPose(from_frame, to_frame, in_stamped, out_stamped))
+  if (transformPose(target_frame, in_stamped, out_stamped, timeout))
   {
     out_pose = out_stamped.pose;
     return true;

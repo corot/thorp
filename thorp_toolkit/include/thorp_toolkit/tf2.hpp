@@ -51,27 +51,47 @@ public:
    */
   static TF2& getInstance();
 
-  /**
-   * Transform in_pose from on frame to another
-   * @param from_frame initial frame
-   * @param to_frame target frame
-   * @param in_pose initial pose
-   * @param out_pose transformed pose
-   * @return true if transformation succeeded.
-   */
-  static bool transformPose(const std::string& from_frame, const std::string& to_frame,
-                            const geometry_msgs::PoseStamped& in_pose, geometry_msgs::PoseStamped& out_pose);
 
   /**
-   * Transform in_pose from on frame to another
-   * @param from_frame initial frame
-   * @param to_frame target frame
-   * @param in_pose initial pose
-   * @param out_pose transformed pose
+   * Get the transform between two frames by frame ID.
+   * @param target_frame The frame to which data should be transformed
+   * @param source_frame The frame where the data originated
+   * @param time The time at which the value of the transform is desired. (0 will get the latest)
+   * @param timeout How long to block before failing. Defaults to 2.0, enough time to fill an empty
+   * buffer, so we can call this function anytime without calling getInstance beforehand.
    * @return true if transformation succeeded.
    */
-  static bool transformPose(const std::string& from_frame, const std::string& to_frame,
-                            const geometry_msgs::Pose& in_pose, geometry_msgs::Pose& out_pose);
+  static bool lookupTransform(const std::string& target_frame, const std::string& source_frame,
+                              geometry_msgs::TransformStamped& transform,
+                              const ros::Time& time = ros::Time(), const ros::Duration& timeout = ros::Duration(2));
+
+  /**
+   * Transform in_pose to the target frame
+   * @param target_frame target frame
+   * @param in_pose initial pose
+   * @param out_pose transformed pose
+   * @param timeout How long to block before failing. Defaults to 2.0, enough time to fill an empty
+   * buffer, so we can call this function anytime without calling getInstance beforehand.
+   * @return true if transformation succeeded.
+   */
+  static bool transformPose(const std::string& target_frame,
+                            const geometry_msgs::PoseStamped& in_pose, geometry_msgs::PoseStamped& out_pose,
+                            const ros::Duration& timeout = ros::Duration(2));
+
+  /**
+   * Get the transform between two frames by frame ID.
+   * @param target_frame The frame to which data should be transformed
+   * @param source_frame The frame where the data originated
+   * @param in_pose initial pose
+   * @param out_pose transformed pose
+   * @param time The time at which the value of the transform is desired. (0 will get the latest)
+   * @param timeout How long to block before failing. Defaults to 2.0, enough time to fill an empty
+   * buffer, so we can call this function anytime without calling getInstance beforehand.
+   * @return true if transformation succeeded.
+   */
+  static bool transformPose(const std::string& target_frame, const std::string& source_frame,
+                            const geometry_msgs::Pose& in_pose, geometry_msgs::Pose& out_pose,
+                            const ros::Time& time = ros::Time(), const ros::Duration& timeout = ros::Duration(2));
 };
 
 

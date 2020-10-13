@@ -56,22 +56,19 @@ bool ThorpArmController::validateTargetPose(geometry_msgs::PoseStamped& target, 
     // Target's timestamp is irrelevant, and can trigger a TransformException if very recent; zero it!
     target.header.stamp = ros::Time(0.0);
     tf::quaternionTFToMsg(tf::createIdentityQuaternion(), target.pose.orientation);
-    if (!ttk::TF2::transformPose(target.header.frame_id, arm_ref_frame, target, target))
+    if (!ttk::TF2::transformPose(arm_ref_frame, target, target))
       return false;
   }
 
   // We work on arm_ref_frame, but it's useful to set z relative to arm_shoulder_lift_servo_link, to
   // calculate the target 3D distance and the high target correction, as that's the arm's operation
-  // plane (the height at which it can reach further), 6cm above arm_base_link. I got it with:
-  //    rosrun  tf tf_echo /arm_base_link /arm_shoulder_lift_servo_link
-  //    At time 1456156899.841
-  //    - Translation: [0.000, -0.000, 0.060]
-  //    - Rotation: in Quaternion [0.000, 0.000, 0.000, 1.000]
-  //                in RPY (radian) [0.000, 0.000, 0.000]
-  //                in RPY (degree) [0.000, 0.000, 0.000]  TODO use tf!  ttk::transformPose(arm_ref_frame, "arm_shoulder_lift_servo_link");
+  // plane (the height at which it can reach further), 6cm above arm_base_link.
+  geometry_msgs::TransformStamped arm_base_to_servo_tf;
+  if (!ttk::TF2::lookupTransform("arm_shoulder_lift_servo_link", arm_ref_frame, arm_base_to_servo_tf))
+    return false;
   double x = target.pose.position.x;
   double y = target.pose.position.y;
-  double z = target.pose.position.z - 0.06;
+  double z = target.pose.position.z + arm_base_to_servo_tf.transform.translation.z;
   double d = sqrt(x*x + y*y + z*z);
   if (d > MAX_DISTANCE)
   {

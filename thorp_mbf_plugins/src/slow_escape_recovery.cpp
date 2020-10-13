@@ -9,7 +9,7 @@
 #include <tf2/utils.h>
 #include <tf2/LinearMath/Quaternion.h>
 
-#include <thorp_toolkit/tf.hpp>
+#include <thorp_toolkit/geometry.hpp>
 namespace ttk = thorp_toolkit;
 
 #include "thorp_mbf_plugins/slow_escape_recovery.h"

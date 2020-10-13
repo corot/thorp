@@ -116,7 +116,7 @@ public:
       geometry_msgs::PoseStamped obj_pose; geometry_msgs::Vector3 obj_size;
       if (thorp_toolkit::getObjectData(obj_name, obj_pose, obj_size) > 0)
       {
-        ttk::TF2::transformPose(obj_pose.header.frame_id, output_frame, obj_pose, obj_pose);
+        ttk::TF2::transformPose(output_frame, obj_pose, obj_pose);
         addMarker(obj_name, obj_pose, obj_size, active);
       }
     }

@@ -11,7 +11,8 @@
 #include <turtlebot_msgs/SetFollowState.h>
 #include <dynamic_reconfigure/server.h>
 
-#include <thorp_toolkit/tf.hpp>
+#include <thorp_toolkit/tf2.hpp>
+#include <thorp_toolkit/geometry.hpp>
 namespace ttk = thorp_toolkit;
 
 #include "thorp_navigation/FollowerConfig.h"
@@ -126,7 +127,7 @@ private:
 
 //    // transform target pose into robot reference frame
 //    geometry_msgs::PoseStamped target_pose;
-//    ttk::transformPose(msg.header.frame_id, robot_frame_, msg, target_pose);
+//    ttk::TF2::transformPose(robot_frame_, msg, target_pose);
 //
 //    // calculate distance and heading to the target pose
 //    double x = target_pose.pose.position.x;
@@ -220,7 +221,7 @@ private:
         else
         {
           // transform target pose into robot reference frame
-          ttk::transformPose(target_pose_.header.frame_id, robot_frame_, target_pose_, target_pose_in_robot_frame);
+          ttk::TF2::transformPose(robot_frame_, target_pose_, target_pose_in_robot_frame);
           // Transform failure will print an appropriate error message, and the frame_id will be empty
         }
       }
