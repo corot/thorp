@@ -4,25 +4,17 @@ import rospy
 import smach
 import smach_ros
 
-import rosgraph_msgs.msg as rosgraph_msgs
 import geometry_msgs.msg as geometry_msg
 
 from turtlebot_arm_block_manipulation.msg import *
-
-
-def monitor_cb(ud, msg):
-    return True
+from thorp_smach.toolkit.comon_states import wait_for_sim_time
 
 
 def main():
     rospy.init_node('smach_block_manip')
 
-    # In sim, wait for clock to start (I start gazebo paused, so smach action clients start waiting at time 0,
-    # but first clock marks ~90s, after spawner unpauses physics)
-    if rospy.get_param('/use_sim_time', False):
-        if not rospy.wait_for_message('/clock', rosgraph_msgs.Clock, rospy.Duration(60)):
-            rospy.logfatal("No clock msgs after 60 seconds, being use_sim_time true")
-            return
+    if not wait_for_sim_time():
+        return
 
     sm = smach.StateMachine(outcomes=['success',
                                       'aborted',
