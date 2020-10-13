@@ -21,7 +21,7 @@ namespace thorp_mbf_plugins
 
 
 SlowEscapeRecovery::SlowEscapeRecovery()
-                  : initialized_(false), global_costmap_(NULL), local_costmap_(NULL),
+                  : initialized_(false), global_costmap_(nullptr), local_costmap_(nullptr),
                     behavior_running_(false), cancel_requested_(false)
 {
 }

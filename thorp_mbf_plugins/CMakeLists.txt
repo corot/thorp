@@ -6,6 +6,7 @@ add_definitions("-std=c++11 -W")
 
 find_package(catkin REQUIRED
     COMPONENTS
+        tf2
         roscpp
         pluginlib
         costmap_2d
@@ -25,6 +26,7 @@ catkin_package(
     INCLUDE_DIRS include
     LIBRARIES slow_escape_recovery
     CATKIN_DEPENDS
+        tf2
         roscpp
         pluginlib
         costmap_2d
