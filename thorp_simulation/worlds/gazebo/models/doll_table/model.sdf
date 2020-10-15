@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <sdf version='1.4'>
     <model name='doll_table'>
-      <static>0</static>
+      <static>1</static>
       <link name='link'>
         <visual name='visual'>
           <geometry>
