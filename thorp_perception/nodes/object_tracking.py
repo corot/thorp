@@ -19,7 +19,7 @@ import collections
 from math import pi
 from copy import deepcopy
 from cv_bridge import CvBridge
-from thorp_toolkit.geometry import transform_pose, heading
+from thorp_toolkit.geometry import distance_3d
 
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import TransformStamped, PoseStamped
@@ -41,8 +41,8 @@ class ObjectTrackingNode(object):
         # init the node
         rospy.init_node('cob_object_tracking', anonymous=False)
 
-        self._buffer_length = 10   # TODO param  should be discard_after * freq
-        self._discard_after = rospy.Duration(1)
+        self._buffer_length = 4   # TODO param  should be discard_after * freq
+        self._discard_after = rospy.Duration(5)
         self._tracked_objs = {}
         self._target_objs = rospy.get_param('~target_objects', None)
         self._last_img_cv = None
@@ -100,6 +100,7 @@ class ObjectTrackingNode(object):
             da = DetectionArray()
             ma = MarkerArray()
 
+            target_candidates = []
             for obs_buffer in self._tracked_objs.values():
                 # clear old observations
                 while obs_buffer:
@@ -111,11 +112,16 @@ class ObjectTrackingNode(object):
                     # TODO: do smarter!  estimate prob
                     obs = deepcopy(obs_buffer[-1])
                     da.detections.append(obs)
-                    ma.markers.append(self.make_marker(obs))
+                    ma.markers.append(self.make_detection_marker(obs))
                     self.pub_transform(obs)
                     self.pub_img_quad(obs)
                     if obs.label in self._target_objs:
-                        self._target_pub.publish(obs.pose)
+                        target_candidates.append((obs.pose, distance_3d(obs.pose.pose)))
+
+            if target_candidates:
+                sorted(target_candidates, key=lambda x: x[1], reverse=True)
+                self._target_pub.publish(target_candidates[0][0])
+                ma.markers.append(self.make_target_marker(target_candidates[0][0]))
 
             if da.detections:
                 self._objects_pub.publish(da)
@@ -126,14 +132,29 @@ class ObjectTrackingNode(object):
             except rospy.exceptions.ROSInterruptException:
                 pass
 
-    def make_marker(self, detection):
+    def make_target_marker(self, pose):
+        marker = Marker()
+        marker.header = pose.header
+        marker.ns = 'target'
+        marker.type = Marker.SPHERE
+        marker.action = Marker.ADD
+        marker.lifetime = rospy.Duration(0.1)  # short lived to make easy to figure out when we have a target
+        marker.scale.x = 0.75
+        marker.scale.y = 0.75
+        marker.scale.z = 0.75
+        marker.color.r = 1.0
+        marker.color.a = 0.25
+        marker.pose = deepcopy(pose.pose)
+        ####marker.pose.position.y -= 0.5  # note it comes on camera optical frame
+        # TODO would be better to use bounding_box_lwh.z / 2, but now is always zero!
+        return marker
+
+    def make_detection_marker(self, detection):
         marker = Marker()
         marker.header = detection.header
         marker.ns = str(detection.id)
         marker.type = Marker.TEXT_VIEW_FACING
         marker.text = detection.label + '_' + str(detection.id)
-        # marker.type = Marker.MESH_RESOURCE
-        # marker.mesh_resource = "package://thorp_perception/meshes/kitty.dae"
         marker.action = Marker.ADD
         marker.lifetime = self._discard_after
         marker.scale.z = 0.2
