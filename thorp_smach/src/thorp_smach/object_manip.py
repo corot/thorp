@@ -37,9 +37,10 @@ with sm:
     #     sm.userdata.open_gripper.position = 0.05
 
     smach.StateMachine.add('ExecuteUserCommand',
-                           ExecuteUserCommand(['start', 'stop', 'reset', 'fold']),
+                           ExecuteUserCommand(rospy.get_param('object_manip_key_ctrl/valid_commands')),
                            transitions={'start': 'ObjectDetection',
                                         'reset': 'ObjectDetection',
+                                        'clear': 'CLEAR_GRIPPER',
                                         'fold': 'FoldArm',
                                         'stop': 'FoldArmAndRelax',
                                         'invalid_command': 'error'})
@@ -85,7 +86,7 @@ with sm:
 
     smach.StateMachine.add('CLEAR_GRIPPER',
                            smach_ros.ServiceState('clear_gripper', std_srvs.Empty),
-                           transitions={'succeeded': 'ObjectDetection',
+                           transitions={'succeeded': 'DragAndDrop',
                                         'preempted': 'preempted',
                                         'aborted': 'aborted'})
 

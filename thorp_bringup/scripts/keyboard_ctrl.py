@@ -2,6 +2,7 @@
 
 import sys
 import rospy
+from bidict import bidict
 
 import Tkinter as tk
 import thorp_msgs.msg as thorp_msgs
@@ -9,13 +10,15 @@ import thorp_msgs.msg as thorp_msgs
 from actionlib import *
 
 
-USER_COMMANDS = {
+USER_COMMANDS = bidict({
     's': "start",
     'x': "stop",
     'r': "reset",
+    'c': "clear",
     'f': "fold",
     'e': "exit"
-}
+})
+
 
 def set_window_text(new_text):
     # Clean text and reinsert the header
@@ -60,8 +63,10 @@ def on_key_press(event):
         # Invalid command; nothing to do
         text.insert('end', "\n\n'%s' is not a valid command" % event.char)
 
+
 def quit_tk():
     window.quit()
+
 
 if __name__ == '__main__':
     try:
@@ -88,11 +93,16 @@ if __name__ == '__main__':
 
         text = tk.Text(window, background='black', foreground='white',
                        font=(rospy.get_param('~text_font', 'Comic Sans MS'), rospy.get_param('~font_size', 12)))
-        text_header = rospy.get_param('~shown_text', 'Press command key')
+        valid_cmds = rospy.get_param('~valid_commands', [])
+        text_header = 'Available commands:\n'
+        for cmd in valid_cmds + ['exit']:
+            text_header += ' - ' + USER_COMMANDS.inverse[cmd] + ': ' + cmd + '\n'
         text.insert('end', text_header)
         text.pack()
 
         window.bind('<KeyPress>', on_key_press)
         window.mainloop()
     except rospy.ROSInterruptException:
-        print "program interrupted before completion"
+        rospy.logerr("Program interrupted before completion")
+    except KeyError as err:
+        rospy.logerr("%s is not a valid user command", err)
