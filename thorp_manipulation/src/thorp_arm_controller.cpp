@@ -89,11 +89,11 @@ bool ThorpArmController::validateTargetPose(geometry_msgs::PoseStamped& target, 
   // Pitch is 90 (vertical) at 10 cm from the arm base; the farther the target is, the closer to horizontal
   // we point the gripper (0.22 = arm's max reach - vertical pitch distance + ε). We also add a correction
   // when trying to reach targets above the arm operation plane, ranging from zero correction to set the
-  // gripper horizontal when reaching a target at MAX_HEIGHT (I never tried it!). Finally, try some random
+  // gripper horizontal when reaching a target at MAX_HEIGHT (I never tried it!). Finally, try incremental
   // variations to increase the chances of successful planning. Yaw is the direction to the target, and so
   // must be fixed. Roll is plainly ignored, as our arm lacks that dof.
-  double pitch_delta1 = (z > 0.0 ? -M_PI_2*(z/MAX_HEIGHT) : 0.0);
-  double pitch_delta2 = ((attempt%2)*2 - 1)*(std::ceil(attempt/2.0)*0.05);
+  double pitch_delta1 = (z > 0.0 ? -M_PI_2 * (z/MAX_HEIGHT) : 0.0);
+  double pitch_delta2 = ((attempt%2)*2 - 1) * (std::ceil(attempt/2.0)*0.05);  // +/- increasing deltas
   ROS_DEBUG("[arm controller] Pitch high target correction: %f;  random variation: %f", pitch_delta1, pitch_delta2);
 
   double rp = (M_PI_2 - std::asin((d - 0.1)/0.22)) + pitch_delta1 + pitch_delta2;

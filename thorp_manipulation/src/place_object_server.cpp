@@ -96,8 +96,8 @@ int32_t PlaceObjectServer::place(const std::string& obj_name, const std::string&
   }
 
   // Look for obj_name in the planning scene's list of attached collision objects
-  geometry_msgs::Pose attached_pose;
-  int32_t result = thorp_toolkit::getAttachedObjectPose(obj_name, attached_pose);
+  geometry_msgs::PoseStamped attached_pose; geometry_msgs::Vector3 obj_size;
+  int32_t result = thorp_toolkit::getAttachedObjectData(obj_name, attached_pose, obj_size);
   if (result < 0)
   {
     // Error occurred while getting object data...
@@ -119,7 +119,7 @@ int32_t PlaceObjectServer::place(const std::string& obj_name, const std::string&
   goal.planning_options.planning_scene_diff.is_diff = true;
   goal.planning_options.planning_scene_diff.robot_state.is_diff = true;
 
-  result = makePlaceLocations(pose, attached_pose, obj_name, surface, goal.place_locations);
+  result = makePlaceLocations(pose, attached_pose, obj_size, obj_name, surface, goal.place_locations);
   if (result < 0)
   {
     // Error occurred while making grasps...
@@ -164,21 +164,24 @@ int32_t PlaceObjectServer::place(const std::string& obj_name, const std::string&
 }
 
 int32_t PlaceObjectServer::makePlaceLocations(const geometry_msgs::PoseStamped& target_pose,
-                                              const geometry_msgs::Pose& attached_obj_pose,
+                                              const geometry_msgs::PoseStamped& obj_pose,
+                                              const geometry_msgs::Vector3& obj_size,
                                               const std::string& obj_name, const std::string& surface,
                                               std::vector<moveit_msgs::PlaceLocation>& place_locations)
 {
   // Try up to PLACE_ATTEMPTS place locations with slightly different poses
 
+  // target pose is expected to be the center of the object once placed in the support surface
+  geometry_msgs::PoseStamped place_pose = target_pose;
+  place_pose.pose.position.z += obj_size.z / 2.0;  // gripper pose is at the top of the object, so we must add z/2
+  place_pose.pose.position.z += place_support_surf_clearance;  // add some clearance to avoid crushing the object
+
   for (int attempt = 0; attempt < PLACE_ATTEMPTS; ++attempt)
   {
-    geometry_msgs::PoseStamped p = target_pose;
-    if (!validateTargetPose(p, true, true, true, attempt))
-    {
+    moveit_msgs::PlaceLocation l;
+    l.place_pose = place_pose;
+    if (!validateTargetPose(l.place_pose, false, true, false, attempt))
       return thorp_msgs::ThorpError::INVALID_TARGET_POSE;
-    }
-
-    ROS_DEBUG("[place object] Place attempt %d at pose [%s]...", attempt, ttk::pose2cstr3D(p));
 
     // MoveGroup::place will transform the provided place pose with the attached body pose, so the object retains
     // the orientation it had when picked. However, with our 4-dofs arm this is infeasible (nor we care about the
@@ -186,15 +189,11 @@ int32_t PlaceObjectServer::makePlaceLocations(const geometry_msgs::PoseStamped& 
     // https://github.com/ros-planning/moveit_ros/blob/jade-devel/manipulation/pick_place/src/place.cpp#L64
     // More details on this issue: https://github.com/ros-planning/moveit_ros/issues/577
     tf::Transform place_tf, aco_tf;
-    tf::poseMsgToTF(p.pose, place_tf);
-    tf::poseMsgToTF(attached_obj_pose, aco_tf);
-    tf::poseTFToMsg(place_tf * aco_tf, p.pose);
-
+    tf::poseMsgToTF(l.place_pose.pose, place_tf);
+    tf::poseMsgToTF(obj_pose.pose, aco_tf);
+    tf::poseTFToMsg(place_tf * aco_tf, l.place_pose.pose);
     ROS_DEBUG("[place object] Compensate place pose with the attached object pose [%s]. Results: [%s]",
-              ttk::pose2cstr3D(attached_obj_pose), ttk::pose2cstr3D(p.pose));
-
-    moveit_msgs::PlaceLocation l;
-    l.place_pose = p;
+              ttk::pose2cstr3D(obj_pose.pose), ttk::pose2cstr3D(l.place_pose.pose));
 
     l.pre_place_approach.direction.vector.x = 0.5;
     l.pre_place_approach.direction.header.frame_id = arm().getEndEffectorLink();
@@ -216,6 +215,8 @@ int32_t PlaceObjectServer::makePlaceLocations(const geometry_msgs::PoseStamped& 
     l.id = std::to_string(attempt);
 
     place_locations.push_back(l);
+
+    ROS_DEBUG("[place object] Place attempt %d at pose [%s]...", attempt, ttk::pose2cstr3D(place_pose));
   }
 
   return place_locations.size();

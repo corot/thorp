@@ -1,6 +1,7 @@
 # Undo (mostly) pick and place tweaks, as on simulated robots there are not backlash
 arm_ctrl_ref_frame: arm_base_link
-vertical_backlash_scale: 0.45
-vertical_backlash_delta: -0.005
-fall_short_distance_delta: 0.005
+vertical_backlash_scale: 0. # 45
+vertical_backlash_delta: -0.0 #05  # try 0
+fall_short_distance_delta: 0.0  #05  # try 0
 gripper_asymmetry_yaw_delta: -0.00001
+place_support_surf_clearance: 0.005  # distance to the support surface on placing (avoids crushing the object against the surface)

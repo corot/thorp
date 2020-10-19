@@ -191,20 +191,17 @@ int32_t PickupObjectServer::makeGrasps(const geometry_msgs::PoseStamped& obj_pos
                                        const std::string& obj_name, const std::string& surface, float max_effort,
                                        std::vector<moveit_msgs::Grasp>& grasps)
 {
+  geometry_msgs::PoseStamped pick_pose = obj_pose;
+  pick_pose.pose.position.z += obj_size.z / 2.0;
+
   // Try up to PICK_ATTEMPTS grasps with slightly different poses
 
   for (int attempt = 0; attempt < PICK_ATTEMPTS; ++attempt)
   {
-    geometry_msgs::PoseStamped target_pose = obj_pose;
-    if (!validateTargetPose(target_pose, true, true, true, attempt))
-    {
-      return thorp_msgs::ThorpError::INVALID_TARGET_POSE;
-    }
-
-    ROS_DEBUG("[pickup object] Pick attempt %d at pose [%s]...", attempt, ttk::pose2cstr3D(target_pose));
-
     moveit_msgs::Grasp g;
-    g.grasp_pose = target_pose;
+    g.grasp_pose = pick_pose;
+    if (!validateTargetPose(g.grasp_pose, false, true, false, attempt))
+      return thorp_msgs::ThorpError::INVALID_TARGET_POSE;
 
     g.pre_grasp_approach.direction.vector.x = 0.5;
     g.pre_grasp_approach.direction.header.frame_id = arm().getEndEffectorLink();
@@ -234,6 +231,8 @@ int32_t PickupObjectServer::makeGrasps(const geometry_msgs::PoseStamped& obj_pos
     g.id = std::to_string(attempt);
 
     grasps.push_back(g);
+
+    ROS_DEBUG("[pickup object] Pick attempt %d at pose [%s]...", attempt, ttk::pose2cstr3D(g.grasp_pose));
   }
 
   return grasps.size();

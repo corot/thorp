@@ -42,7 +42,8 @@ private:
   int32_t place(const std::string& obj_name, const std::string& surface, const geometry_msgs::PoseStamped& pose);
 
   int32_t makePlaceLocations(const geometry_msgs::PoseStamped& target_pose,
-                             const geometry_msgs::Pose& attached_obj_pose,
+                             const geometry_msgs::PoseStamped& obj_pose,
+                             const geometry_msgs::Vector3& obj_size,
                              const std::string& obj_name, const std::string& surface,
                              std::vector<moveit_msgs::PlaceLocation>& place_locations);
 };
