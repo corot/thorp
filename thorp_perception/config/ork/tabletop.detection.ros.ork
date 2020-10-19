@@ -52,3 +52,4 @@ pipeline2:
       type: CouchDB
       root: http://localhost:5984
       collection: object_recognition
+    fitter_type: icp_2d
