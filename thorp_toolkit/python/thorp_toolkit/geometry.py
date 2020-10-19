@@ -216,15 +216,29 @@ def to_transform(pose, child_frame):
 
 def pose2d2str(pose):
     """ Provide a string representation of a geometry_msgs 2D pose """
-    return "[x: {:.2f}, y: {:.2f}, yaw: {:.2f}]".format(pose.position.x, pose.position.y, yaw(pose))
+    if isinstance(pose, geometry_msgs.Pose):
+        p = pose
+        f = ''
+    elif isinstance(pose, geometry_msgs.PoseStamped):
+        p = pose.pose
+        f = ', ' + pose.header.frame_id
+    else:
+        raise rospy.ROSException("Input parameter pose is not a valid geometry_msgs pose object")
+    return "[x: {:.2f}, y: {:.2f}, yaw: {:.2f}{}]".format(p.position.x, p.position.y, yaw(p), f)
 
 
 def pose3d2str(pose):
     """ Provide a string representation of a geometry_msgs 3D pose """
-    return "[x: {:.2f}, y: {:.2f}, z: {:.2f}, roll: {:.2f}, pitch: {:.2f}, yaw: {:.2f}]".format(pose.position.x,
-                                                                                                pose.position.y,
-                                                                                                pose.position.z,
-                                                                                                *get_euler(pose))
+    if isinstance(pose, geometry_msgs.Pose):
+        p = pose
+        f = ''
+    elif isinstance(pose, geometry_msgs.PoseStamped):
+        p = pose.pose
+        f = ', ' + pose.header.frame_id
+    else:
+        raise rospy.ROSException("Input parameter pose is not a valid geometry_msgs pose object")
+    return "[x: {:.2f}, y: {:.2f}, z: {:.2f}, roll: {:.2f}, pitch: {:.2f}, yaw: {:.2f}{}]" \
+           .format(p.position.x, p.position.y, p.position.z, roll(p), pitch(p), yaw(p), f)
 
 
 def transform_pose(pose, tf):
