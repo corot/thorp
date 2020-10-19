@@ -4,4 +4,4 @@ vertical_backlash_scale: 0. # 45
 vertical_backlash_delta: -0.0 #05  # try 0
 fall_short_distance_delta: 0.0  #05  # try 0
 gripper_asymmetry_yaw_delta: -0.00001
-place_support_surf_clearance: 0.005  # distance to the support surface on placing (avoids crushing the object against the surface)
+###place_support_surf_clearance: 0.005  # distance to the support surface on placing (avoids crushing the object against the surface)   use instead cfg.PLACING_HEIGHT_ON_TABLE

@@ -271,10 +271,11 @@ class DisplaceObject(smach.State):
         smach.State.__init__(self,
                              outcomes=['succeeded'],
                              input_keys=['object_name', 'new_pose'])
+        self.clearance = rospy.get_param('place_on_tray_clearance', 0.03)
 
     def execute(self, ud):
         new_pose = ud['new_pose']
-        ##### new_pose.pose.position.z -= (0.03 - 0.025/2.0)  # TODO hackish...  should be obj size.z/2
+        new_pose.pose.position.z -= cfg.PLACING_HEIGHT_ON_TRAY  # undo added clearance to replicate gravity
         rospy.loginfo("Object '%s' pose in tray readjusted to %s", ud['object_name'], pose2d2str(new_pose))
         PlanningScene().displace_obj(ud['object_name'], ud['new_pose'])
         return 'succeeded'
@@ -289,6 +290,7 @@ class GetPoseInTray(smach.State):
         smach.State.__init__(self,
                              outcomes=['succeeded', 'tray_full'],
                              output_keys=['pose_in_tray'])
+        self.clearance = rospy.get_param('place_on_tray_clearance', 0.03)  # place objects 3cm above the tray
         self.tray_link = rospy.get_param('tray_link', 'tray_link')
         self.tray_full = False
         self.slots_x = int(cfg.TRAY_SIDE_X / cfg.TRAY_SLOT + 0.1)  # avoid float division pitfall
@@ -301,7 +303,7 @@ class GetPoseInTray(smach.State):
         # add a collision object for the tray surface, right above the mesh
         PlanningScene().add_tray(create_3d_pose(0, 0, 0.0015, 0, 0, 0, self.tray_link),
                                  (cfg.TRAY_SIDE_X, cfg.TRAY_SIDE_Y, 0.002))
-        # visualize place poses (debug)
+        # visualize place poses (for debugging)
         points = []
         for _ in range(self.slots_x * self.slots_y):
             points.append(self._next_pose().pose.position)
@@ -321,7 +323,7 @@ class GetPoseInTray(smach.State):
         x = (self.next_x - self.slots_x/2) * cfg.TRAY_SLOT + self.offset_x
         y = (self.next_y - self.slots_y/2) * cfg.TRAY_SLOT + self.offset_y
         z = 0.0125  # TODO: should be obj.size.z/2, os something like that;  what I do in object manip does half size.z
-        z += 0.02  # add delta to the place pose: avoid collision with (or ejecting) previously gathered objects
+        z += cfg.PLACING_HEIGHT_ON_TRAY
         self.next_x = (self.next_x + 1) % self.slots_x
         if self.next_x == 0:
             self.next_y = (self.next_y + 1) % self.slots_y

@@ -10,6 +10,7 @@ LOOSE_DIST_TOLERANCE = 0.2
 LOOSE_ANGLE_TOLERANCE = 0.5  # ~30 deg
 INF_ANGLE_TOLERANCE = float('inf')
 PICKING_DIST_TO_TABLE = 0.18
+PLACING_HEIGHT_ON_TRAY = 0.03  # well above the tray to avoid colliding with (or ejecting) previously placed objects
 MAX_ARM_REACH = 0.3
 TRAY_SIDE_X = 0.15
 TRAY_SIDE_Y = 0.15

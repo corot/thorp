@@ -174,7 +174,6 @@ int32_t PlaceObjectServer::makePlaceLocations(const geometry_msgs::PoseStamped& 
   // target pose is expected to be the center of the object once placed in the support surface
   geometry_msgs::PoseStamped place_pose = target_pose;
   place_pose.pose.position.z += obj_size.z / 2.0;  // gripper pose is at the top of the object, so we must add z/2
-  place_pose.pose.position.z += place_support_surf_clearance;  // add some clearance to avoid crushing the object
 
   for (int attempt = 0; attempt < PLACE_ATTEMPTS; ++attempt)
   {
