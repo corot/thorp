@@ -1,7 +1,7 @@
 # Publish all joint states
 joint_state_controller:
   type: joint_state_controller/JointStateController
-  publish_rate: 100  # WARN: if lower than 50, I have a trembling arm when shoulder pan joint is near zero
+  publish_rate: 50  # WARN: if lower than 50, I have a trembling arm when shoulder pan joint is near zero
 
 # Arm Position Controller
 arm_controller:
@@ -27,3 +27,97 @@ gripper_joint:
 cannon_joint:
   type: position_controllers/JointPositionController
   joint: cannon_joint
+
+
+# From here, all is provided by MoveIt! setup assistant; no idea what's necessary and what's not,
+# but without something here below, I have a trembling arm when shoulder pan joint is near zero
+
+## Simulation settings for using moveit_sim_controllers
+#moveit_sim_hw_interface:
+#  joint_model_group: arm
+#  joint_model_group_pose: right_up
+#
+## Settings for ros_control_boilerplate control loop
+#generic_hw_control_loop:
+#  loop_hz: 300
+#  cycle_time_error_threshold: 0.01
+#
+## Settings for ros_control hardware interface
+#hardware_interface:
+#  joints:
+#    - base_map
+#    - arm_shoulder_pan_joint
+#    - arm_shoulder_lift_joint
+#    - arm_elbow_flex_joint
+#    - arm_wrist_flex_joint
+#    - gripper_joint
+#    - cannon_joint
+#    - wheel_left_joint
+#    - wheel_right_joint
+#  sim_control_mode: 1  # 0: position, 1: velocity
+#
+#controller_list:
+#  - name: arm_controller
+#    action_ns: follow_joint_trajectory
+#    default: true
+#    type: FollowJointTrajectory
+#    joints:
+#      - arm_shoulder_pan_joint
+#      - arm_shoulder_lift_joint
+#      - arm_elbow_flex_joint
+#      - arm_wrist_flex_joint
+#  - name: gripper_controller
+#    action_ns: gripper_action
+#    default: true
+#    type: GripperCommand
+#    joints:
+#      - gripper_joint
+#
+#
+#arm_shoulder_pan_joint:
+#  type: effort_controllers/JointPositionController
+#  joint: arm_shoulder_pan_joint
+#  pid: {p: 100.0, i: 0.01, d: 10.0}
+#
+#arm_shoulder_lift_joint:
+#  type: effort_controllers/JointPositionController
+#  joint: arm_shoulder_lift_joint
+#  pid: {p: 100.0, i: 0.01, d: 10.0}
+#
+#arm_elbow_flex_joint:
+#  type: effort_controllers/JointPositionController
+#  joint: arm_elbow_flex_joint
+#  pid: {p: 100.0, i: 0.01, d: 10.0}
+#
+#arm_wrist_flex_joint:
+#  type: effort_controllers/JointPositionController
+#  joint: arm_wrist_flex_joint
+#  pid: {p: 100.0, i: 0.01, d: 10.0}
+
+  # Position Controllers ---------------------------------------
+#  joint1_position_controller:
+#    type: effort_controllers/JointPositionController
+#    joint: joint1
+#    pid: {p: 100.0, i: 0.01, d: 10.0}
+#  joint2_position_controller:
+#    type: effort_controllers/JointPositionController
+#    joint: joint2
+#    pid: {p: 100.0, i: 0.01, d: 10.0}
+
+#gazebo_ros_control:
+#  pid_gains:
+#    arm_shoulder_pan_joint: {p: -100.0, i: -0.01, d: -10.0}
+#    arm_shoulder_lift_joint: {p: 10.0, i: 0.01, d: 1.0}
+#    arm_elbow_flex_joint: {p: 10.0, i: 0.01, d: 1.0}
+#    arm_wrist_flex_joint: {p: 10.0, i: 0.01, d: 1.0}
+#    gripper_joint: {p: 10.0, i: 0.01, d: 1.0}
+#    cannon_joint: {p: 10.0, i: 0.01, d: 1.0}
+
+#gazebo_ros_control:
+#  pid_gains:
+#    arm_shoulder_pan_joint: {p: 1000, i: 100, d: 100}
+#    arm_shoulder_lift_joint: {p: 1000, i: 100, d: 100}
+#    arm_elbow_flex_joint: {p: 1000, i: 100, d: 100}
+#    arm_wrist_flex_joint: {p: 1000, i: 100, d: 100}
+#    gripper_joint: {p: 1000, i: 100, d: 100}
+#    cannon_joint: {p: 1000, i: 100, d: 100}
