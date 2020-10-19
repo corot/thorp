@@ -4,18 +4,18 @@
 
 #include <ros/ros.h>
 
-// auxiliary libraries
-#include <thorp_toolkit/geometry.hpp>
-#include <thorp_toolkit/math.hpp>
-namespace ttk = thorp_toolkit;
-
 // MoveIt!
 #include <moveit/move_group_pick_place_capability/capability_names.h>
 #include <moveit_msgs/Grasp.h>
 
-// Thorp stuff
-#include <thorp_msgs/ThorpError.h>
+// auxiliary libraries
 #include <thorp_toolkit/planning_scene.hpp>
+#include <thorp_toolkit/geometry.hpp>
+#include <thorp_toolkit/math.hpp>
+namespace ttk = thorp_toolkit;
+
+// other Thorp stuff
+#include <thorp_msgs/ThorpError.h>
 
 #include "thorp_manipulation/pickup_object_server.hpp"
 
@@ -96,7 +96,7 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
 
   // Look for obj_name in the planning scene's list of collision objects
   geometry_msgs::PoseStamped obj_pose; geometry_msgs::Vector3 obj_size;
-  int32_t result = thorp_toolkit::getObjectData(obj_name, obj_pose, obj_size);
+  int32_t result = ttk::getObjectData(obj_name, obj_pose, obj_size);
   if (result < 0)
   {
     // Error occurred while getting object data...

@@ -69,13 +69,6 @@ protected:
     return gripper;
   }
 
-  // We use the planning_scene_interface::PlanningSceneInterface to manipulate the world   TODO move to toolkit to make common with other servers!
-  moveit::planning_interface::PlanningSceneInterface& planning_scene_interface()
-  {
-    static moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
-    return planning_scene_interface;
-  }
-
   bool preempted_ = false;
 
   static std::string attached_object;

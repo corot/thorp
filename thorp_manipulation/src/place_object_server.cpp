@@ -5,17 +5,17 @@
 #include <tf/tf.h>
 #include <ros/ros.h>
 
-// auxiliary libraries
-#include <thorp_toolkit/geometry.hpp>
-namespace ttk = thorp_toolkit;
-
 // MoveIt!
 #include <moveit/move_group_pick_place_capability/capability_names.h>
 #include <moveit_msgs/PlaceLocation.h>
 
-// Thorp stuff
-#include <thorp_msgs/ThorpError.h>
+// auxiliary libraries
 #include <thorp_toolkit/planning_scene.hpp>
+#include <thorp_toolkit/geometry.hpp>
+namespace ttk = thorp_toolkit;
+
+// other Thorp stuff
+#include <thorp_msgs/ThorpError.h>
 
 #include "thorp_manipulation/place_object_server.hpp"
 
@@ -97,7 +97,7 @@ int32_t PlaceObjectServer::place(const std::string& obj_name, const std::string&
 
   // Look for obj_name in the planning scene's list of attached collision objects
   geometry_msgs::PoseStamped attached_pose; geometry_msgs::Vector3 obj_size;
-  int32_t result = thorp_toolkit::getAttachedObjectData(obj_name, attached_pose, obj_size);
+  int32_t result = ttk::getAttachedObjectData(obj_name, attached_pose, obj_size);
   if (result < 0)
   {
     // Error occurred while getting object data...

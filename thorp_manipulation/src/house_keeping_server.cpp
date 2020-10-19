@@ -4,6 +4,9 @@
 
 #include <moveit_msgs/GetPlanningScene.h>
 
+#include <thorp_toolkit/planning_scene.hpp>
+namespace ttk = thorp_toolkit;
+
 #include "thorp_manipulation/house_keeping_server.hpp"
 
 
@@ -63,7 +66,7 @@ bool HouseKeepingServer::forceRestingCB(std_srvs::EmptyRequest &request, std_srv
       value = true;
 
   bool moved = false;
-  if (planning_scene_interface().applyPlanningScene(ps))
+  if (ttk::planningScene().applyPlanningScene(ps))
   {
     if (arm().setNamedTarget("resting"))
     {
@@ -88,7 +91,7 @@ bool HouseKeepingServer::forceRestingCB(std_srvs::EmptyRequest &request, std_srv
     ROS_ERROR("[house keeping] Apply relaxed planning scene failed");
   }
 
-  if (!planning_scene_interface().applyPlanningScene(planning_scene_))
+  if (!ttk::planningScene().applyPlanningScene(planning_scene_))
   {
     ROS_ERROR("[house keeping] Restore original planning scene failed");
   }
@@ -139,20 +142,22 @@ bool HouseKeepingServer::forceRestingCB(std_srvs::EmptyRequest &request, std_srv
 
 bool HouseKeepingServer::clearGripperCB(std_srvs::EmptyRequest &request, std_srvs::EmptyResponse &response)
 {
-  ROS_INFO("[house keeping] Ensure we don't retain any object attached to the gripper");
-
   bool detach_result = arm().detachObject();
-  // Remove the detached object from the planning scene so the gripper doesn't "collide" with it
-  planning_scene_interface().removeCollisionObjects(std::vector<std::string>{attached_object});
-  attached_object = "";
   bool gripper_result = setGripper(gripper_open, false);
+  if (!attached_object.empty())
+  {
+    // Remove the detached object from the planning scene so the gripper doesn't "collide" with it
+    ROS_INFO("[house keeping] Remove object '%s', detached from gripper", attached_object.c_str());
+    ttk::planningScene().removeCollisionObjects(std::vector<std::string>{attached_object});
+    attached_object = "";
+  }
   return gripper_result && detach_result;
 }
 
 bool HouseKeepingServer::gripperBusyCB(std_srvs::TriggerRequest &request, std_srvs::TriggerResponse &response)
 {
   std::map<std::string, moveit_msgs::AttachedCollisionObject> attached_objects =
-    planning_scene_interface().getAttachedObjects();
+    ttk::planningScene().getAttachedObjects();
   for (const auto& ao: attached_objects)
     ROS_ERROR_STREAM(" " << ao.first<< "     "<< ao.second.object.id<<  "    mio: " <<attached_object);
 
@@ -183,7 +188,7 @@ bool HouseKeepingServer::gripperBusyCB(std_srvs::TriggerRequest &request, std_sr
   // if (!gripper_busy && !attached_object.empty())   someone should call clearGripperCB if this is true, but i let for the executive
   //  bool detach_result = arm().detachObject();
   // Remove the detached object from the planning scene so the gripper doesn't "collide" with it
-  //planning_scene_interface().removeCollisionObjects(std::vector<std::string>{attached_object});
+  //ttk::planningScene().removeCollisionObjects(std::vector<std::string>{attached_object});
   //attached_object = "";
 
   if (gripper_busy)

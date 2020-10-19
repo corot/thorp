@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include <geometry_msgs/PoseStamped.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 
 
