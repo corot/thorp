@@ -3,3 +3,4 @@
 .settings
 cmake-build-debug
 thorp_behavior
+thorp_perception/meshes
