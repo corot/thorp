@@ -32,7 +32,7 @@
 
   <!--  ********** Keyboard user interaction **********  -->
   <!-- We do it required so it will shutdown the whole demo on exit -->
-  <node pkg="thorp_bringup" type="keyboard_ctrl.py" name="$(arg app_name)_key_ctrl" output="screen" required="false"
+  <node pkg="thorp_bringup" type="keyboard_ctrl.py" name="$(arg app_name)_key_ctrl" output="screen" required="true"
         args="$(arg app_name)">
     <param name="window_geometry" value="360x240"/>
     <param name="window_caption" value="Object manipulation user commands"/>

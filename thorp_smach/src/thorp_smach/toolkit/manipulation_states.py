@@ -24,19 +24,19 @@ def FoldArm():
     """ Concurrently fold arm and close the gripper """
     sm = smach.Concurrence(outcomes=['succeeded', 'preempted', 'aborted'],
                            default_outcome='succeeded',
-                           outcome_map={'succeeded': {'CloseGripper': 'succeeded',
-                                                      'MoveToResting': 'succeeded'},
-                                        'preempted': {'CloseGripper': 'preempted',
-                                                      'MoveToResting': 'preempted'},
-                                        'aborted': {'CloseGripper': 'aborted',
-                                                    'MoveToResting': 'aborted'}})
+                           outcome_map={'succeeded': {'CLOSE_GRIPPER': 'succeeded',
+                                                      'GOTO_RESTING': 'succeeded'},
+                                        'preempted': {'CLOSE_GRIPPER': 'preempted',
+                                                      'GOTO_RESTING': 'preempted'},
+                                        'aborted': {'CLOSE_GRIPPER': 'aborted',
+                                                    'GOTO_RESTING': 'aborted'}})
     with sm:
-        smach.Concurrence.add('CloseGripper',
+        smach.Concurrence.add('CLOSE_GRIPPER',
                               smach_ros.SimpleActionState('gripper_controller/gripper_action',
                                                           control_msgs.GripperCommandAction,
                                                           goal=control_msgs.GripperCommandGoal(
                                                               control_msgs.GripperCommand(0.025, 0.0))))
-        smach.Concurrence.add('MoveToResting',
+        smach.Concurrence.add('GOTO_RESTING',
                               StoredConfig('resting'))
 
     return sm
@@ -80,12 +80,12 @@ def ObjectDetection():
                             output_keys=['objects', 'object_names', 'support_surf'])
 
     with sm:
-        smach.StateMachine.add('ClearOctomap',
+        smach.StateMachine.add('CLEAR_OCTOMAP',
                                smach_ros.ServiceState('clear_octomap',
                                                       std_srvs.Empty),
-                               transitions={'succeeded': 'ObjectDetection',
+                               transitions={'succeeded': 'OBJECT_DETECTION',
                                             'preempted': 'preempted',
-                                            'aborted': 'ObjectDetection'})
+                                            'aborted': 'OBJECT_DETECTION'})
         # app config
         sm.userdata.frame = rospy.get_param('~arm_link', 'arm_base_link')
         sm.userdata.table_height = rospy.get_param('~table_height', -0.03)
@@ -97,23 +97,19 @@ def ObjectDetection():
             ud['object_names'] = ['block' + str(i) for i in range(1, len(result.blocks.poses) + 1)]
             ud['support_surf'] = 'table'
 
-        smach.StateMachine.add('ObjectDetection',
+        smach.StateMachine.add('OBJECT_DETECTION',
                                smach_ros.SimpleActionState('block_detection',
                                                            BlockDetectionAction,
                                                            goal_slots=['frame', 'table_height', 'block_size'],
                                                            result_slots=['blocks'],
                                                            result_cb=result_cb,
                                                            output_keys=['objects', 'object_names', 'support_surf']),
-                               remapping={'frame': 'frame',
-                                          'table_height': 'table_height',
-                                          'block_size': 'block_size',
-                                          'blocks': 'blocks'},
-                               transitions={'succeeded': 'ObjDetectedCondition',
+                               transitions={'succeeded': 'OBJ_DETECTED_COND',
                                             'preempted': 'preempted',
                                             'aborted': 'aborted'})
         #   TODO cambiazo,,,,  borrar esto cuando tenga decente obj rec
         #
-        # smach.StateMachine.add('ObjectDetection',
+        # smach.StateMachine.add('OBJECT_DETECTION',
         #                        smach_ros.SimpleActionState('object_detection',
         #                                                    thorp_msgs.DetectObjectsAction,
         #                                                    goal_slots=['output_frame'],
@@ -121,23 +117,22 @@ def ObjectDetection():
         #                        remapping={'output_frame': 'output_frame',
         #                                   'object_names': 'object_names',
         #                                   'support_surf': 'support_surf'},
-        #                        transitions={'succeeded': 'ObjDetectedCondition',
+        #                        transitions={'succeeded': 'OBJ_DETECTED_COND',
         #                                     'preempted': 'preempted',
         #                                     'aborted': 'aborted'})
 
-        smach.StateMachine.add('ObjDetectedCondition',
+        smach.StateMachine.add('OBJ_DETECTED_COND',
                                ObjDetectedCondition(),
-                               remapping={'object_names': 'object_names'},
                                transitions={'satisfied': 'succeeded',
                                             'preempted': 'preempted',
-                                            'fold_arm': 'FoldArm',
-                                            'retry': 'ClearOctomap'})
+                                            'fold_arm': 'FOLD_ARM',
+                                            'retry': 'CLEAR_OCTOMAP'})
 
-        smach.StateMachine.add('FoldArm',
+        smach.StateMachine.add('FOLD_ARM',
                                FoldArm(),
-                               transitions={'succeeded': 'ClearOctomap',
+                               transitions={'succeeded': 'CLEAR_OCTOMAP',
                                             'preempted': 'preempted',
-                                            'aborted': 'ClearOctomap'})
+                                            'aborted': 'CLEAR_OCTOMAP'})
 
     return sm
 
@@ -156,19 +151,16 @@ def PickupObject(attempts=3):
                                 input_keys=['object_name', 'support_surf', 'max_effort'],
                                 output_keys=[])
         with sm:
-            smach.StateMachine.add('PickupObject',
+            smach.StateMachine.add('PICKUP_OBJECT',
                                    smach_ros.SimpleActionState('pickup_object',
                                                                thorp_msgs.PickupObjectAction,
                                                                goal_slots=['object_name', 'support_surf', 'max_effort'],
                                                                result_slots=[]),
-                                   remapping={'object_name': 'object_name',
-                                              'support_surf': 'support_surf',
-                                              'max_effort': 'max_effort'},
                                    transitions={'succeeded': 'succeeded',
                                                 'preempted': 'preempted',
-                                                'aborted': 'ClearOctomap'})
+                                                'aborted': 'CLEAR_OCTOMAP'})
 
-            smach.StateMachine.add('ClearOctomap',
+            smach.StateMachine.add('CLEAR_OCTOMAP',
                                    smach_ros.ServiceState('clear_octomap',
                                                           std_srvs.Empty),
                                    transitions={'succeeded': 'continue',
@@ -200,19 +192,16 @@ def PlaceObject(attempts=3):
                                 input_keys=['object_name', 'support_surf', 'place_pose'],
                                 output_keys=[])
         with sm:
-            smach.StateMachine.add('PlaceObject',
+            smach.StateMachine.add('PLACE_OBJECT',
                                    smach_ros.SimpleActionState('place_object',
                                                                thorp_msgs.PlaceObjectAction,
                                                                goal_slots=['object_name', 'support_surf', 'place_pose'],
                                                                result_slots=[]),
-                                   remapping={'object_name': 'object_name',
-                                              'support_surf': 'support_surf',
-                                              'place_pose': 'place_pose'},
                                    transitions={'succeeded': 'succeeded',
                                                 'preempted': 'preempted',
-                                                'aborted': 'ClearOctomap'})
+                                                'aborted': 'CLEAR_OCTOMAP'})
 
-            smach.StateMachine.add('ClearOctomap',
+            smach.StateMachine.add('CLEAR_OCTOMAP',
                                    smach_ros.ServiceState('clear_octomap',
                                                           std_srvs.Empty),
                                    transitions={'succeeded': 'continue',
@@ -231,16 +220,16 @@ def PlaceObject(attempts=3):
 
 
 def PlaceInTray():
-    """  Place a given object in the tray  """
+    """  Place a given object on the tray  """
     sm = smach.Sequence(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'],
                         connector_outcome='succeeded',
                         input_keys=['object_name'])
     sm.userdata.support_surf = 'tray'
     with sm:
-        smach.Sequence.add('GetPoseInTray', GetPoseInTray())
-        smach.Sequence.add('PlaceObjOnTray', PlaceObject(),
+        smach.Sequence.add('POSE_IN_TRAY', GetPoseInTray())
+        smach.Sequence.add('PLACE_ON_TRAY', PlaceObject(),
                            remapping={'place_pose': 'pose_in_tray'})
-        smach.Sequence.add('ReadjustPose', DisplaceObject(),
+        smach.Sequence.add('READJUST_POSE', DisplaceObject(),
                            remapping={'new_pose': 'pose_in_tray'})
 
     return sm
@@ -339,11 +328,11 @@ def GatherBlocks():
     pick_1_obj_sm = smach.StateMachine(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'],
                                        input_keys=['object_name', 'support_surf', 'max_effort'])
     with pick_1_obj_sm:
-        smach.StateMachine.add('PickupObject', PickupObject(),
-                               transitions={'succeeded': 'PlaceInTray',
+        smach.StateMachine.add('PICKUP_OBJECT', PickupObject(),
+                               transitions={'succeeded': 'PLACE_ON_TRAY',
                                             'preempted': 'preempted',
                                             'aborted': 'aborted'})
-        smach.StateMachine.add('PlaceInTray', PlaceInTray(),
+        smach.StateMachine.add('PLACE_ON_TRAY', PlaceInTray(),
                                transitions={'succeeded': 'succeeded',
                                             'preempted': 'preempted',
                                             'aborted': 'CLEAR_GRIPPER',

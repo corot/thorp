@@ -24,85 +24,63 @@ with sm:
     sm.userdata.ucmd_outcome = thorp_msgs.UserCommandResult()
     sm.userdata.od_attempt = 0
     sm.userdata.output_frame = rospy.get_param('~rec_objects_frame', 'map')
-    sm.userdata.pick_effort = 0.3
-    #     sm.userdata.object_names   = []
-    #     sm.userdata.object_name    = std_msg.String()
-    #     sm.userdata.pick_pose      = geometry_msg.PoseStamped()
-    #     sm.userdata.place_pose     = geometry_msg.PoseStamped()
-    #     sm.userdata.named_pose_target_type = thorp_msgs.MoveToTargetGoal.NAMED_TARGET
-    #     sm.userdata.arm_folded_named_pose = 'resting'
-    #     sm.userdata.close_gripper  = control_msg.GripperCommand()
-    #     sm.userdata.close_gripper.position = 0.0
-    #     sm.userdata.open_gripper   = control_msg.GripperCommand()
-    #     sm.userdata.open_gripper.position = 0.05
+    sm.userdata.max_effort = 0.3  # TODO: can I drop this?
 
-    smach.StateMachine.add('ExecuteUserCommand',
+    smach.StateMachine.add('EXE_USER_CMD',
                            ExecuteUserCommand(rospy.get_param('object_manip_key_ctrl/valid_commands')),
-                           transitions={'start': 'ObjectDetection',
-                                        'reset': 'ObjectDetection',
+                           transitions={'start': 'OBJECT_DETECTION',
+                                        'reset': 'OBJECT_DETECTION',
                                         'clear': 'CLEAR_GRIPPER',
-                                        'fold': 'FoldArm',
-                                        'stop': 'FoldArmAndRelax',
+                                        'fold': 'FOLD_ARM',
+                                        'stop': 'FOLD_ARM_AND_RELAX',
                                         'invalid_command': 'error'})
 
-    smach.StateMachine.add('ObjectDetection',
+    smach.StateMachine.add('OBJECT_DETECTION',
                            ObjectDetection(),
-                           remapping={'output_frame': 'output_frame',
-                                      'object_names': 'object_names',
-                                      'support_surf': 'support_surf'},
-                           transitions={'succeeded': 'DragAndDrop',
+                           transitions={'succeeded': 'DRAG_AND_DROP',
                                         'preempted': 'preempted',
                                         'aborted': 'error'})
 
-    smach.StateMachine.add('DragAndDrop',
+    smach.StateMachine.add('DRAG_AND_DROP',
                            smach_ros.SimpleActionState('drag_and_drop',
                                                        thorp_msgs.DragAndDropAction,
                                                        goal_slots=['object_names', 'output_frame'],
                                                        result_slots=['object_name', 'pick_pose', 'place_pose']),
-                           remapping={'object_names': 'object_names',
-                                      'object_name': 'object_name',
-                                      'pick_pose': 'pick_pose',
-                                      'place_pose': 'place_pose'},
-                           transitions={'succeeded': 'PickupObject',
+                           transitions={'succeeded': 'PICKUP_OBJECT',
                                         'preempted': 'preempted',
-                                        'aborted': 'ObjectDetection'})
+                                        'aborted': 'OBJECT_DETECTION'})
 
-    smach.StateMachine.add('PickupObject',
+    smach.StateMachine.add('PICKUP_OBJECT',
                            PickupObject(),
-                           remapping={'object_name': 'object_name',
-                                      'support_surf': 'support_surf',
-                                      'max_effort': 'pick_effort'},
-                           transitions={'succeeded': 'PlaceObject',
+                           transitions={'succeeded': 'PLACE_OBJECT',
                                         'preempted': 'preempted',
-                                        'aborted': 'ObjectDetection'})
+                                        'aborted': 'OBJECT_DETECTION'})
 
-    smach.StateMachine.add('PlaceObject',
+    smach.StateMachine.add('PLACE_OBJECT',
                            PlaceObject(),
-                           remapping={'object_name': 'object_name',
-                                      'place_pose': 'place_pose'},
-                           transitions={'succeeded': 'ObjectDetection',
+                           transitions={'succeeded': 'OBJECT_DETECTION',
                                         'preempted': 'preempted',
                                         'aborted': 'CLEAR_GRIPPER'})
 
     smach.StateMachine.add('CLEAR_GRIPPER',
                            smach_ros.ServiceState('clear_gripper', std_srvs.Empty),
-                           transitions={'succeeded': 'DragAndDrop',
+                           transitions={'succeeded': 'DRAG_AND_DROP',
                                         'preempted': 'preempted',
                                         'aborted': 'aborted'})
 
-    smach.StateMachine.add('FoldArm',
+    smach.StateMachine.add('FOLD_ARM',
                            FoldArm(),
-                           transitions={'succeeded': 'ObjectDetection',
+                           transitions={'succeeded': 'OBJECT_DETECTION',
                                         'preempted': 'preempted',
-                                        'aborted': 'ObjectDetection'})
+                                        'aborted': 'OBJECT_DETECTION'})
 
-    smach.StateMachine.add('FoldArmAndRelax',
+    smach.StateMachine.add('FOLD_ARM_AND_RELAX',
                            FoldArm(),
-                           transitions={'succeeded': 'RelaxArmAndStop',
+                           transitions={'succeeded': 'RELAX_ARM_AND_STOP',
                                         'preempted': 'preempted',
                                         'aborted': 'error'})
 
-    smach.StateMachine.add('RelaxArmAndStop',
+    smach.StateMachine.add('RELAX_ARM_AND_STOP',
                            smach_ros.ServiceState('servos/relax_all',
                                                   arbotix_srvs.Relax),
                            transitions={'succeeded': 'stop',

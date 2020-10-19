@@ -47,14 +47,14 @@ def ObjectDetection():
                             output_keys=['objects', 'object_names', 'support_surf'])
 
     with sm:
-        smach.StateMachine.add('ClearOctomap',
+        smach.StateMachine.add('CLEAR_OCTOMAP',
                                smach_ros.ServiceState('clear_octomap',
                                                       std_srvs.Empty),
-                               transitions={'succeeded': 'ObjectDetection',
+                               transitions={'succeeded': 'OBJECT_DETECTION',
                                             'preempted': 'preempted',
-                                            'aborted': 'ObjectDetection'})
+                                            'aborted': 'OBJECT_DETECTION'})
 
-        smach.StateMachine.add('ObjectDetection',
+        smach.StateMachine.add('OBJECT_DETECTION',
                                smach_ros.SimpleActionState('object_detection',
                                                            thorp_msgs.DetectObjectsAction,
                                                            goal_slots=['output_frame'],
@@ -62,22 +62,22 @@ def ObjectDetection():
                                remapping={'output_frame': 'output_frame',
                                           'object_names': 'object_names',
                                           'support_surf': 'support_surf'},
-                               transitions={'succeeded': 'ObjDetectedCondition',
+                               transitions={'succeeded': 'OBJ_DETECTED_COND',
                                             'preempted': 'preempted',
                                             'aborted': 'aborted'})
 
-        smach.StateMachine.add('ObjDetectedCondition',
+        smach.StateMachine.add('OBJ_DETECTED_COND',
                                ObjDetectedCondition(),
                                remapping={'object_names': 'object_names'},
                                transitions={'satisfied': 'succeeded',
                                             'preempted': 'preempted',
-                                            'fold_arm': 'FoldArm',
-                                            'retry': 'ClearOctomap'})
+                                            'fold_arm': 'FOLD_ARM',
+                                            'retry': 'CLEAR_OCTOMAP'})
 
-        smach.StateMachine.add('FoldArm',
+        smach.StateMachine.add('FOLD_ARM',
                                FoldArm(),
-                               transitions={'succeeded': 'ClearOctomap',
+                               transitions={'succeeded': 'CLEAR_OCTOMAP',
                                             'preempted': 'preempted',
-                                            'aborted': 'ClearOctomap'})
+                                            'aborted': 'CLEAR_OCTOMAP'})
 
     return sm

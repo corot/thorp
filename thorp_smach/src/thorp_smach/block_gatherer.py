@@ -4,8 +4,6 @@ import rospy
 import smach
 import smach_ros
 
-import std_srvs.srv as std_srvs
-
 from turtlebot_arm_block_manipulation.msg import *
 from thorp_smach.toolkit.manipulation_states import GatherBlocks
 from thorp_smach.toolkit.comon_states import wait_for_sim_time
@@ -31,22 +29,18 @@ def main():
             ud['blocks'] = result.blocks
             ud['object_names'] = ['block' + str(i) for i in range(1, len(result.blocks.poses) + 1)]
 
-        smach.StateMachine.add('BlockDetection',
+        smach.StateMachine.add('BLOCK_DETECTION',
                                smach_ros.SimpleActionState('block_detection',
                                                            BlockDetectionAction,
                                                            goal_slots=['frame', 'table_height', 'block_size'],
                                                            result_slots=['blocks'],
                                                            result_cb=result_cb,
                                                            output_keys=['blocks', 'object_names']),
-                               remapping={'frame': 'frame',
-                                          'table_height': 'table_height',
-                                          'block_size': 'block_size',
-                                          'blocks': 'blocks'},
-                               transitions={'succeeded': 'GatherBlocks',
+                               transitions={'succeeded': 'GATHER_BLOCKS',
                                             'aborted': 'aborted',
                                             'preempted': 'preempted'})
 
-        smach.StateMachine.add('GatherBlocks', GatherBlocks(),
+        smach.StateMachine.add('GATHER_BLOCKS', GatherBlocks(),
                                remapping={'blocks': 'objects'},
                                transitions={'succeeded': 'succeeded',
                                             'aborted': 'aborted',
