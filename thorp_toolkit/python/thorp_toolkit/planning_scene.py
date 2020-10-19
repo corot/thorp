@@ -1,5 +1,6 @@
 import rospy
 
+from moveit_msgs.msg import CollisionObject
 from moveit_commander.planning_scene_interface import PlanningSceneInterface
 
 from .singleton import Singleton
@@ -9,7 +10,7 @@ class PlanningScene:
     """ Singleton providing a simplified interface to the planning scene """
     __metaclass__ = Singleton
 
-    def __init__(self, topic='~visual_markers', lifetime=60):
+    def __init__(self):
         self.__psi__ = PlanningSceneInterface()
         rospy.sleep(0.5)  # wait a moment until the publisher is ready
 
@@ -18,3 +19,22 @@ class PlanningScene:
 
     def remove_obj(self, obj_name):
         self.__psi__.remove_world_object(obj_name)
+
+    def displace_obj(self, obj_name, new_pose):
+        objs = self.__psi__.get_objects([obj_name])
+        if not objs:
+            rospy.logerr("Object '%s' not found on planning scene")
+            return False
+        for co in objs.values():
+            co.header = new_pose.header
+            if co.primitive_poses:
+                co.primitives = []
+                co.primitive_poses[0] = new_pose.pose
+            if co.mesh_poses:
+                co.meshes = []
+                co.mesh_poses[0] = new_pose.pose
+            if co.plane_poses:
+                co.planes = []
+                co.plane_poses[0] = new_pose.pose
+            co.operation = CollisionObject.MOVE
+            self.__psi__._pub_co.publish(co)
