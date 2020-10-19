@@ -1,0 +1,54 @@
+<!--
+Object gatherer app:
+  - Thorp Gazebo simulation
+  - IPA coverage planning
+  - Executive SMACH and visualization
+
+Explore the entire environment searching for cats, and attack them whenever found.
+ -->
+
+<launch>
+  <arg name="app_name" value="object_gatherer"/>
+
+  <!--  ***** Simulated mobile manipulator Thorp ******  -->
+
+  <include file="$(find thorp_simulation)/launch/thorp_gazebo.launch">
+    <arg name="world_name"     value="obj_house"/>
+    <arg name="initial_pose_x" value="8.0"/>
+    <arg name="initial_pose_y" value="4.0"/>
+    <arg name="initial_pose_a" value="0.0"/>
+  </include>
+
+
+  <!--  ********* Perception and manipulation *********  -->
+  <node name="block_detection_action_server" pkg="turtlebot_arm_block_manipulation" type="block_detection_action_server" output="screen" respawn="true">
+    <rosparam param="table_pose">[0.09, 0.0, -0.015]</rosparam>
+    <remap from="/camera/depth_registered/points" to="/xtion/depth_registered/points"/>
+  </node>
+
+  <include file="$(find thorp_perception)/launch/perception.launch">
+    <arg name="pipeline" value="RAIL"/>
+  </include>
+
+  <include file="$(find thorp_manipulation)/launch/manipulation.launch">
+    <arg name="simulation" value="true"/>
+    <arg name="debug" value="false"/>
+  </include>
+
+
+  <!--  ****************** Utilities ******************  -->
+
+
+  <!--  ************ IPA coverage planning ************  -->
+  <include file="$(find thorp_bringup)/launch/includes/exploration.launch.xml"/>
+
+
+  <!--  ****** Executive smach and visualization ******  -->
+
+  <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="true"/>
+
+  <node pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
+
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/gathering.rviz" output="screen" respawn="true"/>
+</launch>

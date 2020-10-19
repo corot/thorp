@@ -1,9 +1,29 @@
 import rospy
 import smach
 import smach_ros
+import threading
+
+import geometry_msgs.msg as geo_msgs
+import rosgraph_msgs.msg as rosgraph_msgs
 
 import thorp_msgs.msg as thorp_msgs
 import cob_perception_msgs.msg as cob_msgs
+import rail_manipulation_msgs.msg as rail_msgs
+import rail_manipulation_msgs.srv as rail_srvs
+
+from thorp_toolkit.geometry import pose2d2str, TF2
+
+
+def wait_for_sim_time():
+    """
+    In sim, wait for clock to start (I start gazebo paused, so smach action clients start waiting at time 0,
+    but first clock marks ~90s, after spawner unpauses physics)
+    """
+    if rospy.get_param('/use_sim_time', False):
+        if not rospy.wait_for_message('/clock', rosgraph_msgs.Clock, rospy.Duration(60)):
+            rospy.logfatal("No clock msgs after 60 seconds, being use_sim_time true")
+            return False
+    return True
 
 
 class UDHasKey(smach.State):
@@ -80,3 +100,51 @@ class MonitorObjects(smach_ros.MonitorState):
         outcome = 'detected' if rospy.get_time() - self.detected_at <= self.persistence else 'not_detected'
         rospy.loginfo("Monitor ended with outcome " + outcome)
         return outcome
+
+
+class MonitorTables(smach.State):
+    """
+    Look for tables until one is found or we run out of time. Returns:
+    - 'detected' if a table is seen
+    - 'not_detected' otherwise
+    """
+
+    def __init__(self):
+        super(MonitorTables, self).__init__(output_keys=['detected_table', 'detected_table_pose'])
+        self.table_sub = rospy.Subscriber("rail_segmentation/segmented_table", rail_msgs.SegmentedObject, self.table_cb)
+        self.table_event = threading.Condition()
+        self.segment_srv = rospy.ServiceProxy('rail_segmentation/segment_objects', rail_srvs.SegmentObjects)
+        self.segment_srv.wait_for_service(30.0)
+        self.detected_table = None
+
+    def table_cb(self, msg):
+        self.detected_table = msg
+        self.table_event.acquire()
+        self.table_event.notify()
+        self.table_event.release()
+
+    def execute(self, ud):
+        self.detected_table = None
+        rate = rospy.Rate(10)
+        while not rospy.is_shutdown():
+            self.segment_srv()
+            self.table_event.acquire()
+            self.table_event.wait(0.1)
+            self.table_event.release()
+            if self.detected_table:
+                print self.detected_table.point_cloud.header
+                pose = geo_msgs.PoseStamped(self.detected_table.point_cloud.header,
+                                            geo_msgs.Pose(self.detected_table.centroid, self.detected_table.orientation))
+                ud['detected_table'] = self.detected_table
+                ud['detected_table_pose'] = TF2().transform_pose(pose, pose.header.frame_id, 'map')
+                rospy.loginfo("Detected table of size %.1fx%.1f at %s",
+                              self.detected_table.width, self.detected_table.depth, pose2d2str(pose.pose))
+                return 'detected'
+            else:
+                # nothing detected; TODO timeout   return 'not_detected'
+                pass
+            try:
+                rate.sleep()
+            except rospy.ROSInterruptException:
+                break
+
