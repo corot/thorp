@@ -24,6 +24,16 @@ namespace thorp_toolkit
 moveit::planning_interface::PlanningSceneInterface& planningScene();
 
 /**
+ * Extract pose and size from a collision object
+ * @param obj Source collision object
+ * @param obj_pose Extracted object pose
+ * @param obj_size Extracted object size
+ * @return A ThorpError code, 1 for SUCCESS, negative values for failures
+ */
+int32_t extractObjectData(const moveit_msgs::CollisionObject& obj,
+                          geometry_msgs::PoseStamped& obj_pose, geometry_msgs::Vector3& obj_size);
+
+/**
  * Look for obj_name in the list of collision objects and retrieve its pose and size
  * @param obj_name Object to look for
  * @param obj_pose Resulting object pose
@@ -34,11 +44,12 @@ int32_t getObjectData(const std::string& obj_name,
                       geometry_msgs::PoseStamped& obj_pose, geometry_msgs::Vector3& obj_size);
 
 /**
- * Look for obj_name in the list of attached collision objects and retrieve its pose relative to the attaching frame
+ * Look for obj_name in the list of attached collision objects and retrieve its pose and size
  * @param obj_name Attached object to look for
- * @param obj_pose Resulting object pose. No stamped, as it's relative to attaching frame (gripper_link)
+ * @param obj_pose Resulting object pose, relative to attaching frame (normally gripper_link)
  * @return A ThorpError code, 1 for SUCCESS, negative values for failures
  */
-int32_t getAttachedObjectPose(const std::string& obj_name, geometry_msgs::Pose& obj_pose);
+int32_t getAttachedObjectData(const std::string& obj_name,
+                              geometry_msgs::PoseStamped& obj_pose, geometry_msgs::Vector3& obj_size);
 
 }

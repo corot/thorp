@@ -24,28 +24,9 @@ moveit::planning_interface::PlanningSceneInterface& planningScene()
   return planning_scene_interface;
 }
 
-int32_t getObjectData(const std::string& obj_name,
-                      geometry_msgs::PoseStamped& obj_pose, geometry_msgs::Vector3& obj_size)
+int32_t extractObjectData(const moveit_msgs::CollisionObject& obj,
+                          geometry_msgs::PoseStamped& obj_pose, geometry_msgs::Vector3& obj_size)
 {
-  // Look for obj_name in the list of collision objects
-  std::map<std::string, moveit_msgs::CollisionObject> objects =
-      planningScene().getObjects(std::vector<std::string>(1, obj_name));
-  if (objects.size() == 0)
-  {
-    ROS_ERROR("[planning scene] Collision object '%s' not found", obj_name.c_str());
-    return thorp_msgs::ThorpError::OBJECT_NOT_FOUND;
-  }
-
-  if (objects.size() > 1)
-  {
-    // This should not happen, as object detection tries to provide unique names to all objects...
-    ROS_WARN("[planning scene] More than one (%lu) collision objects with name '%s' found!",
-             objects.size(), obj_name.c_str());
-  }
-
-  // We need object's pose and size for picking
-  const moveit_msgs::CollisionObject& obj = objects[obj_name];
-
   obj_pose.header = obj.header;
 
   // We get object's pose from the mesh/primitive poses; try first with the meshes
@@ -62,7 +43,7 @@ int32_t getObjectData(const std::string& obj_name,
     }
     else
     {
-      ROS_ERROR("[planning scene] Collision object '%s' has no meshes", obj_name.c_str());
+      ROS_ERROR("[planning scene] Collision object '%s' has no meshes", obj.id.c_str());
       return thorp_msgs::ThorpError::OBJECT_SIZE_NOT_FOUND;
     }
   }
@@ -75,21 +56,45 @@ int32_t getObjectData(const std::string& obj_name,
     }
     else
     {
-      ROS_ERROR("[planning scene] Collision object '%s' has no primitives", obj_name.c_str());
+      ROS_ERROR("[planning scene] Collision object '%s' has no primitives", obj.id.c_str());
       return thorp_msgs::ThorpError::OBJECT_SIZE_NOT_FOUND;
     }
   }
   else
   {
-    ROS_ERROR("[planning scene] Collision object '%s' has no mesh/primitive poses", obj_name.c_str());
+    ROS_ERROR("[planning scene] Collision object '%s' has no mesh/primitive poses", obj.id.c_str());
     return thorp_msgs::ThorpError::OBJECT_POSE_NOT_FOUND;
   }
 
   return thorp_msgs::ThorpError::SUCCESS;
 }
 
+int32_t getObjectData(const std::string& obj_name,
+                      geometry_msgs::PoseStamped& obj_pose, geometry_msgs::Vector3& obj_size)
+{
+  // Look for obj_name in the list of collision objects
+  std::map<std::string, moveit_msgs::CollisionObject> objects =
+      planningScene().getObjects(std::vector<std::string>(1, obj_name));
 
-int32_t getAttachedObjectPose(const std::string& obj_name, geometry_msgs::Pose& obj_pose)
+  if (objects.size() == 0)
+  {
+    ROS_ERROR("[planning scene] Collision object '%s' not found", obj_name.c_str());
+    return thorp_msgs::ThorpError::OBJECT_NOT_FOUND;
+  }
+
+  if (objects.size() > 1)
+  {
+    // This should not happen, as object detection tries to provide unique names to all objects...
+    ROS_WARN("[planning scene] More than one (%lu) collision objects with name '%s' found!",
+             objects.size(), obj_name.c_str());
+  }
+
+  return extractObjectData(objects[obj_name], obj_pose, obj_size);
+}
+
+
+int32_t getAttachedObjectData(const std::string& obj_name,
+                              geometry_msgs::PoseStamped& obj_pose, geometry_msgs::Vector3& obj_size)
 {
   // Look for obj_name in the list of attached objects
   std::map<std::string, moveit_msgs::AttachedCollisionObject> objects =
@@ -109,24 +114,7 @@ int32_t getAttachedObjectPose(const std::string& obj_name, geometry_msgs::Pose& 
              objects.size(), obj_name.c_str());
   }
 
-  // We just need object's pose so we can subtract its pose from the place location poses
-  const moveit_msgs::AttachedCollisionObject& obj = objects[obj_name];
-
-  if (obj.object.primitive_poses.size() > 0)
-  {
-    obj_pose = obj.object.primitive_poses[0];
-  }
-  else if (obj.object.mesh_poses.size() > 0)
-  {
-    obj_pose = obj.object.mesh_poses[0];
-  }
-  else
-  {
-    ROS_ERROR("[planning scene] Attached collision object '%s' has no pose!", obj_name.c_str());
-    return thorp_msgs::ThorpError::OBJECT_POSE_NOT_FOUND;
-  }
-
-  return thorp_msgs::ThorpError::SUCCESS;
+  return extractObjectData(objects[obj_name].object, obj_pose, obj_size);
 }
 
 }
