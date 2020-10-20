@@ -200,11 +200,11 @@
         <gripper_link>gripper_active_link</gripper_link>
       </arm>
       <forces_angle_tolerance>100</forces_angle_tolerance>
-      <update_rate>4</update_rate>
+      <update_rate>40</update_rate>
       <grip_count_threshold>1</grip_count_threshold>
       <max_grip_count>4</max_grip_count>
       <release_tolerance>0.005</release_tolerance>
-      <disable_collisions_on_attach>false</disable_collisions_on_attach>
+      <disable_collisions_on_attach>true</disable_collisions_on_attach>
       <contact_topic>__default_topic__</contact_topic>
     </plugin>
   </gazebo>
