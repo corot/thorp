@@ -6,7 +6,7 @@ import smach_ros
 
 from turtlebot_arm_block_manipulation.msg import *
 from thorp_smach.toolkit.manipulation_states import GatherBlocks
-from thorp_smach.toolkit.comon_states import wait_for_sim_time
+from thorp_smach.toolkit.comon_states import wait_for_sim_time, wait_for_mbf
 
 
 def main():
@@ -50,6 +50,9 @@ def main():
     # Create and start the introspection server
     sis = smach_ros.IntrospectionServer('server_name', sm, '/SM_ROOT')
     sis.start()
+
+    # MBF is the last component to start, so wait for it before running the sm
+    wait_for_mbf()
 
     # Execute the state machine
     outcome = sm.execute()

@@ -26,6 +26,20 @@ def wait_for_sim_time():
     return True
 
 
+def wait_for_mbf():
+    """
+    Wait for Move Base Flex to start
+    """
+    try:
+        rospy.wait_for_service('move_base_flex/check_point_cost', 30)
+        return True
+    except rospy.ROSInterruptException:
+        return False
+    except rospy.ROSException:
+        rospy.logwarn("Move Base Flex not available after 30 seconds")
+        return False
+
+
 class UDHasKey(smach.State):
     """
     Check if our userdata contains a given key. Returns
