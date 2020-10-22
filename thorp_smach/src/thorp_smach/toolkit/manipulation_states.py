@@ -137,8 +137,8 @@ def ObjectDetection():
     return sm
 
 
-def PickupObject(attempts=3):
-    """  Pickup a given object, retrying up to a given number of times  """
+def PickupObject(attempts=1):
+    """  Pickup a given object, optionally retrying up to a given number of times  """
     it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted'],
                         input_keys=['object_name', 'support_surf', 'max_effort'],
                         output_keys=[],
@@ -171,15 +171,14 @@ def PickupObject(attempts=3):
         #  - we should open the gripper, in case we have picked an object
         #  - check error and, if collision between parts of the arm, move a bit the arm  -->  not enough info
         #  - this doesn't make too much sense as a loop... better try all our tricks and exit
-        #  - can I reuse the same for place and MoveToTarget???
 
         smach.Iterator.set_contained_state('', sm, loop_outcomes=['continue'])
 
     return it
 
 
-def PlaceObject(attempts=3):
-    """  Place a given object, retrying up to a given number of times  """
+def PlaceObject(attempts=1):
+    """  Place a given object, optionally retrying up to a given number of times  """
     it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted'],
                         input_keys=['object_name', 'support_surf', 'place_pose'],
                         output_keys=[],
@@ -212,7 +211,6 @@ def PlaceObject(attempts=3):
         #  - we should open the gripper, in case we have picked an object
         #  - check error and, if collision between parts of the arm, move a bit the arm  -->  not enough info
         #  - this doesn't make too much sense as a loop... better try all our tricks and exit
-        #  - can I reuse the same for place and MoveToTarget???
 
         smach.Iterator.set_contained_state('', sm, loop_outcomes=['continue'])
 
@@ -260,7 +258,6 @@ class DisplaceObject(smach.State):
         smach.State.__init__(self,
                              outcomes=['succeeded'],
                              input_keys=['object_name', 'new_pose'])
-        self.clearance = rospy.get_param('place_on_tray_clearance', 0.03)
 
     def execute(self, ud):
         new_pose = ud['new_pose']
@@ -279,7 +276,6 @@ class GetPoseInTray(smach.State):
         smach.State.__init__(self,
                              outcomes=['succeeded', 'tray_full'],
                              output_keys=['pose_in_tray'])
-        self.clearance = rospy.get_param('place_on_tray_clearance', 0.03)  # place objects 3cm above the tray
         self.tray_link = rospy.get_param('tray_link', 'tray_link')
         self.tray_full = False
         self.slots_x = int(cfg.TRAY_SIDE_X / cfg.TRAY_SLOT + 0.1)  # avoid float division pitfall
@@ -288,6 +284,8 @@ class GetPoseInTray(smach.State):
         self.offset_y = 0.0 if self.slots_y % 2 else cfg.TRAY_SLOT / 2.0
         self.next_x = 0
         self.next_y = 0
+        # TODO / WARN:  0.05, 0.05  falla con   Manipulation plan 4 failed at stage 'approach & translate' on thread 0
+        # y move_group peta!!!
 
         # add a collision object for the tray surface, right above the mesh
         PlanningScene().add_tray(create_3d_pose(0, 0, 0.0015, 0, 0, 0, self.tray_link),
@@ -296,7 +294,8 @@ class GetPoseInTray(smach.State):
         points = []
         for _ in range(self.slots_x * self.slots_y):
             points.append(self._next_pose().pose.position)
-        Visualization().add_markers(Visualization().create_point_list(create_2d_pose(0,0,0,self.tray_link),points,[1,0,0,1]))
+        Visualization().add_markers(Visualization().create_point_list(create_2d_pose(0, 0, 0, self.tray_link),
+                                                                      points, [1, 0, 0, 1]))  # solid red points
         Visualization().publish_markers()
         self.tray_full = False
 
@@ -308,11 +307,10 @@ class GetPoseInTray(smach.State):
 
     def _next_pose(self):
         # Get next empty location coordinates
-        # TODO / WARN:  0.05, 0.05  va a fallar xq colisiona con arm mount!!!
         x = (self.next_x - self.slots_x/2) * cfg.TRAY_SLOT + self.offset_x
         y = (self.next_y - self.slots_y/2) * cfg.TRAY_SLOT + self.offset_y
-        z = 0.0125  # TODO: should be obj.size.z/2, os something like that;  what I do in object manip does half size.z
-        z += cfg.PLACING_HEIGHT_ON_TRAY
+        z = 0.0125  # TODO: should be obj.size.z/2; replace once I have proper object recognition
+        z += cfg.PLACING_HEIGHT_ON_TRAY  # place objects 3cm above the tray, so they fall into position
         self.next_x = (self.next_x + 1) % self.slots_x
         if self.next_x == 0:
             self.next_y = (self.next_y + 1) % self.slots_y
