@@ -15,7 +15,7 @@ namespace thorp_manipulation
 std::string ThorpArmController::attached_object;
 
 
-bool ThorpArmController::setGripper(float opening, bool wait_for_complete)
+bool ThorpArmController::setGripper(double opening, bool wait_for_complete)
 {
   ROS_DEBUG("[arm controller] Set gripper opening to %f", opening);
   if (!gripper().setJointValueTarget("gripper_joint", opening))

@@ -109,7 +109,7 @@ protected:
    * @param wait_for_complete Wait or not for the execution of the trajectory to complete
    * @return True of success, false otherwise
    */
-  bool setGripper(float opening, bool wait_for_complete = true);
+  bool setGripper(double opening, bool wait_for_complete = true);
 
   /**
    * Provide a meaningful text for each MoveIt error code.
@@ -213,11 +213,6 @@ protected:
       default:
         return "unrecognized error code";
     }
-  }
-
-  inline float fRand(float min, float max)
-  {
-    return ((float(rand()) / float(RAND_MAX)) * (max - min)) + min;
   }
 };
 
