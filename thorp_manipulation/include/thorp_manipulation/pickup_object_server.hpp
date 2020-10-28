@@ -4,14 +4,9 @@
 
 #pragma once
 
-
 // Thorp pickup object action server
 #include <actionlib/server/simple_action_server.h>
 #include <thorp_msgs/PickupObjectAction.h>
-
-// MoveIt! pickup action client
-#include <actionlib/client/simple_action_client.h>
-#include <moveit_msgs/PickupAction.h>
 
 #include "thorp_manipulation/thorp_arm_controller.hpp"
 
@@ -24,15 +19,11 @@ class PickupObjectServer : public ThorpArmController
 private:
   // Thorp pickup object action server
   actionlib::SimpleActionServer<thorp_msgs::PickupObjectAction> as_;
-  std::string action_name_;
-
-  // MoveIt! pickup action client
-  actionlib::SimpleActionClient<moveit_msgs::PickupAction> ac_;
 
   const int PICK_ATTEMPTS = 5;
 
 public:
-  PickupObjectServer(const std::string name);
+  PickupObjectServer(const std::string& name);
   ~PickupObjectServer();
 
   void executeCB(const thorp_msgs::PickupObjectGoal::ConstPtr& goal);

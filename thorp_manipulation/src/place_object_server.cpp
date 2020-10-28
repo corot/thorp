@@ -6,7 +6,6 @@
 #include <ros/ros.h>
 
 // MoveIt!
-#include <moveit/move_group_pick_place_capability/capability_names.h>
 #include <moveit_msgs/PlaceLocation.h>
 
 // auxiliary libraries
@@ -23,15 +22,10 @@ namespace ttk = thorp_toolkit;
 namespace thorp_manipulation
 {
 
-PlaceObjectServer::PlaceObjectServer(const std::string name) :
-  action_name_(name),
-  as_(name, boost::bind(&PlaceObjectServer::executeCB, this, _1), false),
-  ac_(move_group::PLACE_ACTION, true)
+PlaceObjectServer::PlaceObjectServer(const std::string& name) :
+  as_(name, boost::bind(&PlaceObjectServer::executeCB, this, _1), false)
 {
-  // Wait for MoveIt! place action server
-  ROS_INFO("[place object] Waiting for MoveIt! place action server...");
-  ac_.waitForServer();
-  ROS_INFO("[place object] Available! Starting our own server...");
+  ROS_INFO("[place object] Starting place action server...");
 
   // Register feedback callback for our server; executeCB is run on a separated thread, so it can be cancelled
   as_.registerPreemptCallback(boost::bind(&PlaceObjectServer::preemptCB, this));
@@ -89,12 +83,6 @@ void PlaceObjectServer::preemptCB()
 int32_t PlaceObjectServer::place(const std::string& obj_name, const std::string& surface,
                                  const geometry_msgs::PoseStamped& pose)
 {
-  if (!ac_.isServerConnected())
-  {
-    ROS_ERROR("[place object] MoveIt! place action server not connected");
-    return thorp_msgs::ThorpError::SERVER_NOT_AVAILABLE;
-  }
-
   // Look for obj_name in the planning scene's list of attached collision objects
   geometry_msgs::PoseStamped attached_pose; geometry_msgs::Vector3 obj_size;
   int32_t result = ttk::getAttachedObjectData(obj_name, attached_pose, obj_size);
@@ -106,25 +94,17 @@ int32_t PlaceObjectServer::place(const std::string& obj_name, const std::string&
 
   ROS_INFO("[place object] Placing object '%s' at pose [%s]...", obj_name.c_str(), ttk::pose2cstr3D(pose));
 
-  moveit_msgs::PlaceGoal goal;
-  goal.attached_object_name = obj_name;
-  goal.group_name = arm().getName();
-  goal.support_surface_name = surface;
-  goal.allowed_planning_time = arm().getPlanningTime();
-  goal.allow_gripper_support_collision = true;
-  goal.planning_options.plan_only = false;
-  goal.planning_options.look_around = false;
-  goal.planning_options.replan = true;
-  goal.planning_options.replan_delay = 0.1;
-  goal.planning_options.planning_scene_diff.is_diff = true;
-  goal.planning_options.planning_scene_diff.robot_state.is_diff = true;
-
-  result = makePlaceLocations(pose, attached_pose, obj_size, obj_name, surface, goal.place_locations);
+  std::vector<moveit_msgs::PlaceLocation> locations;
+  result = makePlaceLocations(pose, attached_pose, obj_size, obj_name, surface, locations);
   if (result < 0)
   {
     // Error occurred while making grasps...
     return result;
   }
+
+  moveit_msgs::PlaceGoal goal = arm().constructPlaceGoal(obj_name, locations, false);
+  goal.support_surface_name = surface;
+  goal.allow_gripper_support_collision = true;
 
   // Allow some leeway in position (meters) and orientation (radians)
   arm().setGoalPositionTolerance(0.001);  // TODO: same values already set on parent class; add to the goal if needed
@@ -133,34 +113,23 @@ int32_t PlaceObjectServer::place(const std::string& obj_name, const std::string&
   // Allow replanning to increase the odds of a solution
   arm().allowReplanning(true);
 
-  ac_.sendGoal(goal);
-
-  if (!ac_.waitForResult(ros::Duration(30)))  // TODO param or add to goal
-  {
-    preemptCB();
-    ac_.cancelAllGoals();
-    ROS_WARN("[place object] Place action timed out after 30s");
-    return moveit::planning_interface::MoveItErrorCode::TIMED_OUT;
-  }
+  moveit::planning_interface::MoveItErrorCode place_result = arm().place(goal);
 
   if (preempted_)
   {
-    ac_.cancelAllGoals();
     ROS_WARN("[place object] Place action preempted");
     return moveit::planning_interface::MoveItErrorCode::PREEMPTED;
   }
 
-  result = ac_.getResult()->error_code.val;
-  if (ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+  if (place_result)
   {
     ROS_INFO("[place object] Place succeeded!");
   }
   else
   {
-    ROS_ERROR("[place object] Place fail with error code [%d] (%s): %s",
-              result, ac_.getState().toString().c_str(), ac_.getState().getText().c_str());
+    ROS_ERROR("[place object] Place fail with error code %d: %s", place_result.val, mec2str(place_result));
   }
-  return result;
+  return place_result.val;
 }
 
 int32_t PlaceObjectServer::makePlaceLocations(const geometry_msgs::PoseStamped& target_pose,
@@ -194,14 +163,14 @@ int32_t PlaceObjectServer::makePlaceLocations(const geometry_msgs::PoseStamped& 
     ROS_DEBUG("[place object] Compensate place pose with the attached object pose [%s]. Results: [%s]",
               ttk::pose2cstr3D(obj_pose.pose), ttk::pose2cstr3D(l.place_pose.pose));
 
-    l.pre_place_approach.direction.vector.x = 0.5;
+    l.pre_place_approach.direction.vector.x = +1;
     l.pre_place_approach.direction.header.frame_id = arm().getEndEffectorLink();
-    l.pre_place_approach.min_distance = 0.05;
+    l.pre_place_approach.min_distance = 0.015;  // TODO probably dangerous; make proportional to the pitch
     l.pre_place_approach.desired_distance = 0.1;
 
-    l.post_place_retreat.direction.vector.x = -0.5;
+    l.post_place_retreat.direction.vector.x = -1;
     l.post_place_retreat.direction.header.frame_id = arm().getEndEffectorLink();
-    l.post_place_retreat.min_distance = 0.05;
+    l.post_place_retreat.min_distance = 0.015;
     l.post_place_retreat.desired_distance = 0.1;
 
     l.post_place_posture.joint_names.push_back("gripper_joint");

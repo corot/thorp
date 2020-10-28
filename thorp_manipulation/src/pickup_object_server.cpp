@@ -5,7 +5,6 @@
 #include <ros/ros.h>
 
 // MoveIt!
-#include <moveit/move_group_pick_place_capability/capability_names.h>
 #include <moveit_msgs/Grasp.h>
 
 // auxiliary libraries
@@ -23,15 +22,10 @@ namespace ttk = thorp_toolkit;
 namespace thorp_manipulation
 {
 
-PickupObjectServer::PickupObjectServer(const std::string name) :
-  action_name_(name),
-  as_(name, boost::bind(&PickupObjectServer::executeCB, this, _1), false),
-  ac_(move_group::PICKUP_ACTION, true)
+PickupObjectServer::PickupObjectServer(const std::string& name) :
+  as_(name, boost::bind(&PickupObjectServer::executeCB, this, _1), false)
 {
-  // Wait for MoveIt! pickup action server
-  ROS_INFO("[pickup object] Waiting for MoveIt! pickup action server...");
-  ac_.waitForServer();
-  ROS_INFO("[pickup object] Available! Starting our own server...");
+  ROS_INFO("[pickup object] Starting pickup action server...");
 
   // Register feedback callback for our server; executeCB is run on a separated thread, so it can be cancelled
   as_.registerPreemptCallback(boost::bind(&PickupObjectServer::preemptCB, this));
@@ -88,12 +82,6 @@ void PickupObjectServer::preemptCB()
 
 int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::string& surface, float max_effort)
 {
-  if (!ac_.isServerConnected())
-  {
-    ROS_ERROR("[pickup object] MoveIt! pickup action server not connected");
-    return thorp_msgs::ThorpError::SERVER_NOT_AVAILABLE;
-  }
-
   // Look for obj_name in the planning scene's list of collision objects
   geometry_msgs::PoseStamped obj_pose; geometry_msgs::Vector3 obj_size;
   int32_t result = ttk::getObjectData(obj_name, obj_pose, obj_size);
@@ -107,26 +95,18 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
            obj_name.c_str(), ttk::vector2cstr3D(obj_size), ttk::point2cstr2D(obj_pose.pose.position));
 
   // Prepare and send pick goal
-  moveit_msgs::PickupGoal goal;
-  goal.target_name = obj_name;
-  goal.group_name = arm().getName();
-  goal.end_effector = gripper().getName();
-  goal.support_surface_name = surface;
-  goal.allowed_planning_time = arm().getPlanningTime();
-  goal.allow_gripper_support_collision = true;
-  goal.planning_options.plan_only = false;
-  goal.planning_options.look_around = false;
-  goal.planning_options.replan = true;
-  goal.planning_options.replan_delay = 0.1; // ???
-  goal.planning_options.planning_scene_diff.is_diff = true;
-  goal.planning_options.planning_scene_diff.robot_state.is_diff = true;
-
-  result = makeGrasps(obj_pose, obj_size, obj_name, surface, max_effort, goal.possible_grasps);
+  std::vector<moveit_msgs::Grasp> grasps;
+  result = makeGrasps(obj_pose, obj_size, obj_name, surface, max_effort, grasps);
   if (result < 0)
   {
     // Error occurred while making grasps...
     return result;
   }
+
+  moveit_msgs::PickupGoal goal = arm().constructPickupGoal(obj_name, grasps, false);
+  goal.end_effector = gripper().getName();
+  goal.support_surface_name = surface;
+  goal.allow_gripper_support_collision = true;
 
   // TODO: play with the many other options:
   // goal.attached_object_touch_links : string[] --> defaults to gripper; can change by just fingers
@@ -155,34 +135,23 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
   // Allow replanning to increase the odds of a solution
   arm().allowReplanning(true);
 
-  ac_.sendGoal(goal);
-
-  if (!ac_.waitForResult(ros::Duration(30)))  // TODO param or add to goal
-  {
-    preemptCB();
-    ac_.cancelAllGoals();
-    ROS_WARN("[pickup object] Pick action timed out after 30s");
-    return moveit::planning_interface::MoveItErrorCode::TIMED_OUT;
-  }
+  moveit::planning_interface::MoveItErrorCode pick_result = arm().pick(goal);
 
   if (preempted_)
   {
-    ac_.cancelAllGoals();
     ROS_WARN("[pickup object] Pick action preempted");
     return moveit::planning_interface::MoveItErrorCode::PREEMPTED;
   }
 
-  result = ac_.getResult()->error_code.val;
-  if (ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+  if (pick_result)
   {
     ROS_INFO("[pickup object] Pick succeeded!");
   }
   else
   {
-    ROS_ERROR("[pickup object] Pick fail with error code [%d] (%s): %s",
-              result, ac_.getState().toString().c_str(), ac_.getState().getText().c_str());
+    ROS_ERROR("[pickup object] Pick fail with error code %d: %s", pick_result.val, mec2str(pick_result));
   }
-  return result;
+  return pick_result.val;
 }
 
 
@@ -203,14 +172,14 @@ int32_t PickupObjectServer::makeGrasps(const geometry_msgs::PoseStamped& obj_pos
     if (!validateTargetPose(g.grasp_pose, false, true, false, attempt))
       return thorp_msgs::ThorpError::INVALID_TARGET_POSE;
 
-    g.pre_grasp_approach.direction.vector.x = 0.5;
+    g.pre_grasp_approach.direction.vector.x = +1;
     g.pre_grasp_approach.direction.header.frame_id = arm().getEndEffectorLink();
-    g.pre_grasp_approach.min_distance = 0.05;
+    g.pre_grasp_approach.min_distance = 0.025;
     g.pre_grasp_approach.desired_distance = 0.1;
 
     g.post_grasp_retreat.direction.header.frame_id = arm().getEndEffectorLink();
-    g.post_grasp_retreat.direction.vector.x = -0.5;
-    g.post_grasp_retreat.min_distance = 0.05;
+    g.post_grasp_retreat.direction.vector.x = -1;
+    g.post_grasp_retreat.min_distance = 0.025;
     g.post_grasp_retreat.desired_distance = 0.1;
 
     g.pre_grasp_posture.joint_names.push_back("gripper_joint");
