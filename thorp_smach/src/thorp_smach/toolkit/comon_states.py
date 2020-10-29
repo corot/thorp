@@ -2,10 +2,12 @@ import rospy
 import smach
 import smach_ros
 import threading
+import actionlib
 
 import geometry_msgs.msg as geo_msgs
 import rosgraph_msgs.msg as rosgraph_msgs
 
+import mbf_msgs.msg as mbf_msgs
 import thorp_msgs.msg as thorp_msgs
 import cob_perception_msgs.msg as cob_msgs
 import rail_manipulation_msgs.msg as rail_msgs
@@ -28,16 +30,13 @@ def wait_for_sim_time():
 
 def wait_for_mbf():
     """
-    Wait for Move Base Flex to start
+    Wait for Move Base Flex's move_base action (the last to be started) getting available
     """
-    try:
-        rospy.wait_for_service('move_base_flex/check_point_cost', 30)
-        return True
-    except rospy.ROSInterruptException:
-        return False
-    except rospy.ROSException:
+    mb_ac = actionlib.SimpleActionClient("/move_base_flex/move_base", mbf_msgs.MoveBaseAction)
+    available = mb_ac.wait_for_server(rospy.Duration(30))
+    if not available:
         rospy.logwarn("Move Base Flex not available after 30 seconds")
-        return False
+    return available
 
 
 class UDHasKey(smach.State):
