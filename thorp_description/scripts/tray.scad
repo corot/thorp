@@ -1,11 +1,22 @@
 side = 150;
-height = 15;
+height = 20;
 thickness = 2;
+opening = 1.05;
+side_w_walls = side + 2*thickness;
 
-difference()
+union()
 {
-  translate([-side/2, -side/2, 0])
-    cube([side, side, height]);
-  translate([-side/2 + thickness, -side/2 + thickness, thickness])
-    cube([side - 2*thickness, side - 2*thickness, height]);
+  difference()
+  {
+    linear_extrude(height = height, scale = opening)
+      translate([-side_w_walls/2, -side_w_walls/2, 0])
+        square([side_w_walls, side_w_walls]);
+
+    linear_extrude(height = height, scale = opening)
+      translate([-side/2, -side/2, 0])
+        square([side, side]);
+  }
+
+  translate([-side_w_walls/2, -side_w_walls/2, 0])
+    cube([side_w_walls, side_w_walls, thickness]);
 }
