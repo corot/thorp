@@ -17,7 +17,11 @@ Explore the entire environment searching for cats, and attack them whenever foun
     <arg name="initial_pose_x" value="8.0"/>
     <arg name="initial_pose_y" value="4.0"/>
     <arg name="initial_pose_a" value="0.0"/>
+    <arg name="localization"   value="fake"/>
   </include>
+
+  <!-- Spawn objects randomly around the house -->
+  <node pkg="thorp_simulation" type="spawn_objects.py" name="objects_spawner" output="screen"/>
 
 
   <!--  ********* Perception and manipulation *********  -->
