@@ -77,7 +77,7 @@ def ObjectDetection():
 
     sm = smach.StateMachine(outcomes=['succeeded', 'preempted', 'aborted'],
                             input_keys=['od_attempt', 'output_frame'],
-                            output_keys=['objects', 'object_names', 'support_surf'])
+                            output_keys=['objects', 'object_names', 'support_surf',     'blocks'])
 
     with sm:
         smach.StateMachine.add('CLEAR_OCTOMAP',
@@ -86,13 +86,14 @@ def ObjectDetection():
                                transitions={'succeeded': 'OBJECT_DETECTION',
                                             'preempted': 'preempted',
                                             'aborted': 'OBJECT_DETECTION'})
+
         # app config
         sm.userdata.frame = rospy.get_param('~arm_link', 'arm_base_link')
         sm.userdata.table_height = rospy.get_param('~table_height', -0.03)
         sm.userdata.block_size = rospy.get_param('~block_size', 0.025)
 
         def result_cb(ud, status, result):
-            # ud['blocks'] = result.blocks
+            #ud['blocks'] = result.blocks
             ud['objects'] = result.blocks
             ud['object_names'] = ['block' + str(i) for i in range(1, len(result.blocks.poses) + 1)]
             ud['support_surf'] = 'table'
@@ -135,6 +136,56 @@ def ObjectDetection():
                                             'aborted': 'CLEAR_OCTOMAP'})
 
     return sm
+
+
+class TargetSelection(smach.State):
+    """
+    Select the closest object within arm reach
+    """
+
+    def __init__(self):
+        smach.State.__init__(self,
+                             outcomes=['have_target', 'no_targets'],
+                             input_keys=['objects', 'object_names', 'objs_to_skip'],
+                             output_keys=['target'])
+
+    def execute(self, ud):
+        targets = []
+        for i, obj_pose in enumerate(ud['objects'].poses):
+            dist = distance_2d(obj_pose)  # assumed in arm base reference frame
+            if dist <= cfg.MAX_ARM_REACH:
+                targets.append((ud['object_names'][i], dist))
+        targets = sorted(targets, key=lambda t: t[1])  # sort by increasing distance
+        if len(targets) > ud['objs_to_skip']:
+            target, dist = targets[ud['objs_to_skip']]
+            rospy.loginfo("Next target will be '%s' located at %.2fm (%d skipped)", target, dist, ud['objs_to_skip'])
+            ud['target'] = target
+            return 'have_target'
+        elif targets:
+            pass  # TODO: retry if we have picked something after the last failure
+        rospy.loginfo("No targets within the %.2fm arm reach (%d skipped)", cfg.MAX_ARM_REACH, ud['objs_to_skip'])
+        return 'no_targets'
+
+
+class SkipOneObject(smach.State):
+    """
+    Select the closest object within arm reach
+    """
+
+    def __init__(self, max_failures=2):
+        smach.State.__init__(self,
+                             outcomes=['succeeded', 'max_failures'],
+                             input_keys=['objs_to_skip'],
+                             output_keys=['objs_to_skip'])
+        self.max_failures = max_failures
+
+    def execute(self, ud):
+        if ud['objs_to_skip'] < self.max_failures:
+            ud['objs_to_skip'] += 1
+            rospy.loginfo("Skipping %d objects", ud['objs_to_skip'])
+            return 'succeeded'
+        rospy.logwarn("%d failures; not skipping more objects", self.max_failures)
+        return 'max_failures'
 
 
 def PickupObject(attempts=1):
@@ -284,12 +335,7 @@ class GetPoseInTray(smach.State):
         self.offset_y = 0.0 if self.slots_y % 2 else cfg.TRAY_SLOT / 2.0
         self.next_x = 0
         self.next_y = 0
-        # TODO / WARN:  0.05, 0.05  falla con   Manipulation plan 4 failed at stage 'approach & translate' on thread 0
-        # y move_group peta!!!
 
-        # add a collision object for the tray surface, right above the mesh
-        PlanningScene().add_tray(create_3d_pose(0, 0, 0.0015, 0, 0, 0, self.tray_link),
-                                 (cfg.TRAY_SIDE_X, cfg.TRAY_SIDE_Y, 0.002))
         # visualize place poses (for debugging)
         points = []
         for _ in range(self.slots_x * self.slots_y):
@@ -302,6 +348,10 @@ class GetPoseInTray(smach.State):
     def execute(self, ud):
         if self.tray_full:
             return 'tray_full'
+
+        # add a collision object for the tray surface, right above the mesh
+        PlanningScene().add_tray(create_3d_pose(0, 0, 0.0015, 0, 0, 0, self.tray_link),
+                                 (cfg.TRAY_SIDE_X, cfg.TRAY_SIDE_Y, 0.002))
         ud['pose_in_tray'] = self._next_pose()
         return 'succeeded'
 
@@ -322,35 +372,60 @@ class GetPoseInTray(smach.State):
 def GatherBlocks():
     """  Pick all the objects in the list a place in the tray  """
 
-    # pick a single object
-    pick_1_obj_sm = smach.StateMachine(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'],
-                                       input_keys=['object_name', 'support_surf', 'max_effort'])
+    def result_cb(ud, status, result):
+        ud['blocks'] = result.blocks
+        ud['objects'] = result.blocks
+        ud['object_names'] = ['block' + str(i) for i in range(1, len(result.blocks.poses) + 1)]
+
+    # pick a single object sm
+    pick_1_obj_sm = smach.StateMachine(outcomes=['continue', 'succeeded', 'aborted', 'preempted', 'tray_full'],
+                                       input_keys=['support_surf', 'max_effort'])
+    pick_1_obj_sm.userdata.frame = rospy.get_param('~arm_link', 'arm_base_link')
+    pick_1_obj_sm.userdata.table_height = rospy.get_param('~table_height', -0.03)
+    pick_1_obj_sm.userdata.block_size = rospy.get_param('~block_size', 0.025)
+    pick_1_obj_sm.userdata.objs_to_skip = 0
     with pick_1_obj_sm:
+        smach.StateMachine.add('BLOCK_DETECTION',
+                               smach_ros.SimpleActionState('block_detection',
+                                                           BlockDetectionAction,
+                                                           goal_slots=['frame', 'table_height', 'block_size'],
+                                                           result_slots=['blocks'],
+                                                           result_cb=result_cb,
+                                                           output_keys=['blocks', 'objects', 'object_names']),
+                               transitions={'succeeded': 'SELECT_TARGET',
+                                            'aborted': 'aborted',
+                                            'preempted': 'preempted'})
+        smach.StateMachine.add('SELECT_TARGET', TargetSelection(),
+                               transitions={'have_target': 'PICKUP_OBJECT',
+                                            'no_targets': 'succeeded'},
+                               remapping={'target': 'object_name'})
         smach.StateMachine.add('PICKUP_OBJECT', PickupObject(),
                                transitions={'succeeded': 'PLACE_ON_TRAY',
                                             'preempted': 'preempted',
-                                            'aborted': 'aborted'})
+                                            'aborted': 'SKIP_OBJECT'})
         smach.StateMachine.add('PLACE_ON_TRAY', PlaceInTray(),
-                               transitions={'succeeded': 'succeeded',
+                               transitions={'succeeded': 'continue',
                                             'preempted': 'preempted',
                                             'aborted': 'CLEAR_GRIPPER',
                                             'tray_full': 'tray_full'})
         smach.StateMachine.add('CLEAR_GRIPPER', smach_ros.ServiceState('clear_gripper', std_srvs.Empty),
-                               transitions={'succeeded': 'aborted',
+                               transitions={'succeeded': 'SKIP_OBJECT',
                                             'preempted': 'aborted',
                                             'aborted': 'aborted'})
+        smach.StateMachine.add('SKIP_OBJECT', SkipOneObject(),
+                               transitions={'succeeded': 'BLOCK_DETECTION',
+                                            'max_failures': 'aborted'})
 
     it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted', 'tray_full'],
-                        input_keys=['object_names'],  #, 'support_surf'],
+                        input_keys=[],   #'object_names'],  #, 'support_surf'],
                         output_keys=[],
-                        it=lambda: it.userdata.object_names,
-                        it_label='object_name',
+                        it=range(25),  # kind of while true
+                        it_label='iteration',
                         exhausted_outcome='succeeded')
     it.userdata.max_effort = 0.3        # TODO  pick_effort in obj manip  is this really used???  should depend on the obj???
     it.userdata.support_surf = 'table'  # TODO this comes from perception
     with it:
-        smach.Iterator.set_contained_state('', pick_1_obj_sm, loop_outcomes=[], break_outcomes=['tray_full'])
-
+        smach.Iterator.set_contained_state('', pick_1_obj_sm, loop_outcomes=['continue'])
     return it
 
 
