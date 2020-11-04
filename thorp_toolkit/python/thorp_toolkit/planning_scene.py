@@ -11,13 +11,15 @@ class PlanningScene:
     __metaclass__ = Singleton
 
     def __init__(self):
-        self.__psi__ = PlanningSceneInterface()
-        rospy.sleep(0.5)  # wait a moment until the publisher is ready
+        self.__psi__ = PlanningSceneInterface(synchronous=True)
 
     def add_tray(self, pose, size):
         self.__psi__.add_box('tray', pose, size)
 
-    def remove_obj(self, obj_name):
+    def remove_obj(self, obj_name=None):
+        """
+        Remove an object from planning scene, or all if no name is provided
+        """
         self.__psi__.remove_world_object(obj_name)
 
     def displace_obj(self, obj_name, new_pose):
