@@ -67,9 +67,9 @@ class Visualization:
         """ Add pose markers to the marker array """
         self._markers_array.extend(self.create_pose_marker(pose))
 
-    def add_text_marker(self, pose, text, size=0.02):
+    def add_text_marker(self, pose, text, size=0.02, color=None):
         """ Add pose markers to the marker array """
-        self._markers_array.append(self.create_text_marker(pose, text, size))
+        self._markers_array.append(self.create_text_marker(pose, text, size, color))
 
     def add_point_markers(self, poses, size=0.01, color=None):
         """ Add point markers to the marker array """
@@ -78,7 +78,11 @@ class Visualization:
 
     def add_box_marker(self, pose, dimensions, color=None):
         """ Add box marker to the marker array """
-        self._markers_array.append(self.create_box_marker(pose, dimensions, color))
+        self._markers_array.append(self.create_geometry_primitive_marker(pose, dimensions, color, Marker.CUBE))
+
+    def add_disc_marker(self, pose, dimensions, color=None):
+        """ Add disc marker to the marker array """
+        self._markers_array.append(self.create_geometry_primitive_marker(pose, dimensions, color, Marker.CYLINDER))
 
     @classmethod
     def rand_color(cls, alpha=1.0):
@@ -114,10 +118,10 @@ class Visualization:
         return marker
 
     @classmethod
-    def create_box_marker(cls, pose, dimensions, color=None, namespace='box_marker'):
-        """ Create a box visualization marker object"""
+    def create_geometry_primitive_marker(cls, pose, dimensions, color=None, shape=Marker.CUBE, namespace='gp_marker'):
+        """ Create a geometry primitive visualization marker object: CUBE, SPHERE or CYLINDER """
         marker = Marker()
-        marker.type = Marker.CUBE
+        marker.type = shape
         marker.ns = namespace
         while len(dimensions) < 3:
             dimensions.append(0)
@@ -197,7 +201,7 @@ class Visualization:
             if prim.type != 1:  # only box support
                 continue
             p_st = PoseStamped(header=col_obj.header, pose=col_obj.primitive_poses[i])
-            markers.append(cls.create_box_marker(p_st, prim.dimensions, color=color, namespace=namespace))
+            markers.append(cls.create_geometry_primitive_marker(p_st, prim.dimensions, color, namespace=namespace))
         return markers
 
     @classmethod
