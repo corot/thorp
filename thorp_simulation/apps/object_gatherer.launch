@@ -25,7 +25,7 @@ Explore the entire environment searching for cats, and attack them whenever foun
 
 
   <!--  ********* Perception and manipulation *********  -->
-  <node name="block_detection_action_server" pkg="turtlebot_arm_block_manipulation" type="block_detection_action_server" output="screen" respawn="true">
+  <node name="block_detection_action_server" pkg="turtlebot_arm_block_manipulation" type="block_detection_action_server" output="screen" respawn="true"   launch-prefix="gdb -ex run --args">
     <rosparam param="table_pose">[0.09, 0.0, -0.015]</rosparam>
     <remap from="/camera/depth_registered/points" to="/xtion/depth_registered/points"/>
   </node>
@@ -47,9 +47,9 @@ Explore the entire environment searching for cats, and attack them whenever foun
   <include file="$(find thorp_bringup)/launch/includes/exploration.launch.xml"/>
 
 
-  <!--  ****** Executive smach and visualization ******  -->
+  <!--  ****** Executive smach and visualization ******
 
-  <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="true"/>
+  <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="true"/>  -->
 
   <node pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
 
