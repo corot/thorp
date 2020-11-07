@@ -1,21 +1,18 @@
 import rospy
 import smach
 import smach_ros
+import threading
 
 import std_srvs.srv as std_srvs
 import thorp_msgs.msg as thorp_msgs
-import control_msgs.msg as control_msgs
-import geometry_msgs.msg as geometry_msgs
+import geometry_msgs.msg as geo_msgs
 
-from copy import deepcopy
-from collections import namedtuple
-from visualization_msgs.msg import Marker, MarkerArray
+import cob_perception_msgs.msg as cob_msgs
+import rail_manipulation_msgs.msg as rail_msgs
+import rail_manipulation_msgs.srv as rail_srvs
 
-from thorp_toolkit.geometry import TF2, to_transform, transform_pose, apply_transform,\
-                                   create_2d_pose, create_3d_pose, distance_2d
-from thorp_toolkit.visualization import Visualization
-
-import config as cfg
+from thorp_toolkit.geometry import pose2d2str, TF2
+from manipulation_states import FoldArm
 
 
 def ObjectDetection():
@@ -81,3 +78,87 @@ def ObjectDetection():
                                             'aborted': 'CLEAR_OCTOMAP'})
 
     return sm
+
+
+class MonitorObjects(smach_ros.MonitorState):
+    """
+    Monitor tracked objects for a subset of objects. Returns:
+    - 'succeeded' if anyone is seen within 'persistence' seconds
+    - 'aborted' otherwise
+    """
+
+    def __init__(self, objects):
+        super(MonitorObjects, self).__init__("tracked_objects",
+                                             cob_msgs.DetectionArray,
+                                             self.monitor_cb,
+                                             output_keys=['tracked_object', 'tracked_object_pose'])
+        self.objects = objects
+        self.persistence = 1.0
+        self.detected_at = - self.persistence
+
+    def monitor_cb(self, ud, msg):
+        for detection in msg.detections:
+            if detection.label in self.objects:
+                self.detected_at = rospy.get_time()
+                ud['tracked_object'] = detection
+                ud['tracked_object_pose'] = detection.pose
+                rospy.loginfo("Detected " + detection.label)
+                # I retort a bit MonitorState's logic; returning here False means 'invalid' msg, but it makes the state
+                # to finish, that is what I want. MonitorState's execute will return 'invalid', but I just ignore it.
+                # Returning True means keep receiving msgs, again what I want.
+                return False
+        return True
+
+    def execute(self, ud):
+        super(MonitorObjects, self).execute(ud)
+        outcome = 'succeeded' if rospy.get_time() - self.detected_at <= self.persistence else 'aborted'
+        rospy.loginfo("Monitor ended with outcome " + outcome)
+        return outcome
+
+
+class MonitorTables(smach.State):
+    """
+    Look for tables until one is found or we run out of time. Returns:
+    - 'detected' if a table is seen
+    - 'aborted' otherwise
+    """
+
+    def __init__(self):
+        super(MonitorTables, self).__init__(outcomes=['succeeded', 'aborted'],
+                                            output_keys=['detected_table', 'detected_table_pose'])
+        self.detected_table = None
+        self.table_event = threading.Condition()
+        self.table_sub = rospy.Subscriber("rail_segmentation/segmented_table", rail_msgs.SegmentedObject, self.table_cb)
+        self.segment_srv = rospy.ServiceProxy('rail_segmentation/segment_objects', rail_srvs.SegmentObjects)
+        self.segment_srv.wait_for_service(30.0)
+
+    def table_cb(self, msg):
+        self.detected_table = msg
+        self.table_event.acquire()
+        self.table_event.notify()
+        self.table_event.release()
+
+    def execute(self, ud):
+        self.detected_table = None
+        rate = rospy.Rate(10)
+        while not rospy.is_shutdown():
+            self.segment_srv()
+            self.table_event.acquire()
+            self.table_event.wait(0.1)
+            self.table_event.release()
+            if self.detected_table:
+                print self.detected_table.point_cloud.header
+                pose = geo_msgs.PoseStamped(self.detected_table.point_cloud.header,
+                                            geo_msgs.Pose(self.detected_table.centroid, self.detected_table.orientation))
+                ud['detected_table'] = self.detected_table
+                ud['detected_table_pose'] = TF2().transform_pose(pose, pose.header.frame_id, 'map')
+                rospy.loginfo("Detected table of size %.1fx%.1f at %s",
+                              self.detected_table.width, self.detected_table.depth, pose2d2str(pose.pose))
+                return 'succeeded'
+            else:
+                # nothing detected; TODO timeout   return 'not_detected'
+                pass
+            try:
+                rate.sleep()
+            except rospy.ROSInterruptException:
+                break

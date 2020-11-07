@@ -3,22 +3,20 @@ import smach
 import smach_ros
 
 import std_srvs.srv as std_srvs
-import thorp_msgs.msg as thorp_msgs
-import control_msgs.msg as control_msgs
 import geometry_msgs.msg as geometry_msgs
 from turtlebot_arm_block_manipulation.msg import BlockDetectionAction
 
 from copy import deepcopy
 from collections import namedtuple
 
-from thorp_toolkit.planning_scene import PlanningScene
-from thorp_toolkit.geometry import TF2, to_transform, transform_pose, apply_transform,\
-                                   create_2d_pose, create_3d_pose, pose2d2str, distance_2d
+from thorp_toolkit.geometry import TF2, to_transform, transform_pose, apply_transform, create_2d_pose, distance_2d
 from thorp_toolkit.visualization import Visualization
 
-import config as cfg
-from navigation_states import GetRobotPose, GoToPose
+from perception_states import MonitorTables
+from navigation_states import GetRobotPose, GoToPose, ExePath, PoseAsPath
 from manipulation_states import FoldArm, PickupObject, PlaceInTray
+
+import config as cfg
 
 
 def ObjectDetection():
@@ -268,7 +266,6 @@ class CalcPickPoses(smach.State):
         pose_array.poses.append(deepcopy(closest_pose.pose))
         pose_array.poses[-1].position.z += 0.025  # mark the closest pose
         self.poses_viz.publish(pose_array)
-
         return 'succeeded'
 
 
@@ -383,12 +380,19 @@ def GatherObjects():
         smach.Sequence.add('GET_ROBOT_POSE', GetRobotPose())
         smach.Sequence.add('CALC_PICK_POSES', CalcPickPoses(cfg.PICKING_DIST_TO_TABLE),
                            transitions={'no_valid_table': 'aborted'})
-        smach.Sequence.add('APPROACH_TABLE', GoToPose(dist_tolerance=cfg.TIGHT_DIST_TOLERANCE,     # we try to
-                                                      angle_tolerance=cfg.TIGHT_ANGLE_TOLERANCE),  # be precise
+        smach.Sequence.add('APPROACH_TABLE', GoToPose(dist_tolerance=cfg.LOOSE_DIST_TOLERANCE,     # just approach
+                                                      angle_tolerance=cfg.LOOSE_ANGLE_TOLERANCE),  # the table
                            transitions={'aborted': 'aborted',
                                         'preempted': 'preempted'},
                            remapping={'target_pose': 'closest_picking_pose'})
-        # TODO: ALIGN_TO_TABLE
+        smach.Sequence.add('DETECT_TABLES', MonitorTables(),
+                           transitions={'aborted': 'aborted'})
+        smach.Sequence.add('POSES_AS_PATH', PoseAsPath(),
+                           remapping={'pose': 'closest_picking_pose'})
+        smach.Sequence.add('ALIGN_TO_TABLE', ExePath(dist_tolerance=cfg.TIGHT_DIST_TOLERANCE,     # we try to
+                                                     angle_tolerance=cfg.TIGHT_ANGLE_TOLERANCE),  # be precise
+                           transitions={'aborted': 'aborted',
+                                        'preempted': 'preempted'})
 
     # explore a single room
     pick_objects_sm = smach.Sequence(outcomes=['succeeded', 'aborted', 'preempted'],

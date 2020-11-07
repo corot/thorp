@@ -4,16 +4,15 @@ import rospy
 import smach
 import smach_ros
 
-import toolkit.config as cfg
-import visualization_msgs.msg as viz_msgs
+import thorp_msgs.msg as thorp_msgs
+import thorp_msgs.srv as thorp_srvs
 
-from math import pi
-from thorp_toolkit.geometry import TF2, quaternion_msg_from_rpy
-from explore_house import explore_house_sm
-from toolkit.comon_states import *
-from toolkit.navigation_states import *
-from toolkit.exploration_states import *
-from toolkit.cannon_ctrl_states import *
+from thorp_toolkit.geometry import TF2
+from thorp_toolkit.visualization import Visualization
+
+from toolkit.navigation_states import FollowPose
+from toolkit.perception_states import MonitorObjects
+from toolkit.exploration_states import ExploreHouse
 
 
 class Attack(FollowPose):
@@ -28,7 +27,6 @@ class Attack(FollowPose):
         # cannon commands service client
         rospy.wait_for_service('cannon_command', 30.0)
         self.cannon_srv = rospy.ServiceProxy('cannon_command', thorp_srvs.CannonCmd)
-        self.target_pub = rospy.Publisher('attack_target', viz_msgs.Marker, queue_size=1)
 
     def _goal_feedback_cb(self, feedback):
         super(Attack, self)._goal_feedback_cb(feedback)
@@ -59,25 +57,9 @@ class Attack(FollowPose):
             rospy.logerr("Cannon commands service call failed: %s", err)
 
     def _highlight_target(self, pose, fire=False):
-        m = viz_msgs.Marker()
-        m.id = 1
-        m.ns = 'highlight_target'
-        m.action = viz_msgs.Marker.ADD
-        m.lifetime = rospy.Duration(1)
-        m.header.frame_id = 'map'
-        m.pose = TF2().transform_pose(pose, pose.header.frame_id, 'map').pose
-        m.pose.position.z = 0.00005
-        m.pose.orientation = quaternion_msg_from_rpy(0.0, 0.0, 0.0)
-        m.type = viz_msgs.Marker.CYLINDER
-        m.scale.x = 1.0
-        m.scale.y = 1.0
-        m.scale.z = 0.0001
-        if fire:
-            m.color.r = 0.8
-        else:
-            m.color.b = 0.8
-        m.color.a = 0.4
-        self.target_pub.publish(m)
+        Visualization().add_disc_marker(TF2().transform_pose(pose, pose.header.frame_id, 'map'),
+                                        [1.0, 1.0], [0.8, 0.0, 0.0, 0.6] if fire else [0.0, 0.0, 0.8, 0.4])
+        Visualization().publish_markers()
 
 
 def cat_hunter_sm():
@@ -103,7 +85,7 @@ def cat_hunter_sm():
 
     # gets called when ALL child states are terminated
     def out_cb(outcome_map):
-        if outcome_map['LOOK_FOR_CATS'] == 'detected':
+        if outcome_map['LOOK_FOR_CATS'] == 'succeeded':
             return 'detected'
         if outcome_map['EXPLORE_HOUSE'] == 'succeeded':
             return 'not_detected'
@@ -116,7 +98,7 @@ def cat_hunter_sm():
                                   child_termination_cb=child_term_cb,
                                   outcome_cb=out_cb)
     with search_sm:
-        smach.Concurrence.add('EXPLORE_HOUSE', explore_house_sm())
+        smach.Concurrence.add('EXPLORE_HOUSE', ExploreHouse())
         smach.Concurrence.add('LOOK_FOR_CATS', MonitorObjects(['cat', 'dog', 'horse']))
 
     # Full SM: plan rooms visit sequence and explore each room in turn

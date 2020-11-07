@@ -4,16 +4,11 @@ import rospy
 import smach
 import smach_ros
 
-import toolkit.config as cfg
-import visualization_msgs.msg as viz_msgs
+from thorp_toolkit.geometry import TF2
 
-from math import pi
-from thorp_toolkit.geometry import TF2, quaternion_msg_from_rpy
-from turtlebot_arm_block_manipulation.msg import BlockDetectionAction
-from explore_house import explore_house_sm
-from toolkit.comon_states import *
-from toolkit.navigation_states import *
-from toolkit.exploration_states import *
+from toolkit.comon_states import wait_for_sim_time, wait_for_mbf
+from toolkit.perception_states import MonitorTables
+from toolkit.exploration_states import ExploreHouse
 from toolkit.gathering_states import GatherObjects
 
 
@@ -40,7 +35,7 @@ def object_gatherer_sm():
 
     # gets called when ALL child states are terminated
     def out_cb(outcome_map):
-        if outcome_map['DETECT_TABLES'] == 'detected':
+        if outcome_map['DETECT_TABLES'] == 'succeeded':
             return 'detected'
         # if outcome_map['EXPLORE_HOUSE'] == 'succeeded':
         #     return 'not_detected'
@@ -68,9 +63,12 @@ def object_gatherer_sm():
                                             'aborted': 'aborted',
                                             'preempted': 'preempted'})
         smach.StateMachine.add('GATHER', GatherObjects(),
-                               transitions={'succeeded': 'SEARCH',
-                                            'aborted': 'SEARCH',
-                                            'preempted': 'SEARCH'})
+                               transitions={'succeeded': 'detected',
+                                            'aborted': 'aborted',
+                                            'preempted': 'preempted'})
+                               # transitions={'succeeded': 'SEARCH',
+                               #              'aborted': 'SEARCH',
+                               #              'preempted': 'SEARCH'})
     return sm
 
 

@@ -5,16 +5,9 @@ import smach_ros
 import std_srvs.srv as std_srvs
 import thorp_msgs.msg as thorp_msgs
 import control_msgs.msg as control_msgs
-import geometry_msgs.msg as geometry_msgs
-from turtlebot_arm_block_manipulation.msg import BlockDetectionAction
-
-from copy import deepcopy
-from collections import namedtuple
-from visualization_msgs.msg import Marker, MarkerArray
 
 from thorp_toolkit.planning_scene import PlanningScene
-from thorp_toolkit.geometry import TF2, to_transform, transform_pose, apply_transform,\
-                                   create_2d_pose, create_3d_pose, pose2d2str, distance_2d
+from thorp_toolkit.geometry import create_2d_pose, create_3d_pose, pose2d2str
 from thorp_toolkit.visualization import Visualization
 
 import config as cfg
@@ -38,7 +31,6 @@ def FoldArm():
                                                               control_msgs.GripperCommand(0.025, 0.0))))
         smach.Concurrence.add('GOTO_RESTING',
                               StoredConfig('resting'))
-
     return sm
 
 
@@ -87,7 +79,6 @@ def PickupObject(attempts=1):
         #  - this doesn't make too much sense as a loop... better try all our tricks and exit
 
         smach.Iterator.set_contained_state('', sm, loop_outcomes=['continue'])
-
     return it
 
 
@@ -127,7 +118,6 @@ def PlaceObject(attempts=1):
         #  - this doesn't make too much sense as a loop... better try all our tricks and exit
 
         smach.Iterator.set_contained_state('', sm, loop_outcomes=['continue'])
-
     return it
 
 
@@ -143,7 +133,6 @@ def PlaceInTray():
                            remapping={'place_pose': 'pose_in_tray'})
         smach.Sequence.add('READJUST_POSE', DisplaceObject(),
                            remapping={'new_pose': 'pose_in_tray'})
-
     return sm
 
 
