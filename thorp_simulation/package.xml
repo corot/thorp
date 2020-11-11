@@ -30,7 +30,6 @@
   <run_depend>turtlebot_description</run_depend>
   <run_depend>turtlebot_navigation</run_depend>
   <run_depend>diagnostic_aggregator</run_depend>
-  <run_depend>depthimage_to_laserscan</run_depend>
   <run_depend>rail_collada_models</run_depend>
   <run_depend>controller_manager</run_depend>
   <run_depend>effort_controllers</run_depend>
