@@ -63,10 +63,6 @@ class Visualization:
         elif isinstance(markers, Marker):
             self._markers_array.append(markers)
 
-    def add_pose_marker(self, pose):
-        """ Add pose markers to the marker array """
-        self._markers_array.extend(self.create_pose_marker(pose))
-
     def add_text_marker(self, pose, text, size=0.02, color=None):
         """ Add pose markers to the marker array """
         self._markers_array.append(self.create_text_marker(pose, text, size, color))
@@ -181,8 +177,6 @@ class Visualization:
         marker.ns = namespace
         marker.text = text
         marker.color = cls.rgba_from_list(color)
-        marker.scale.x = size
-        marker.scale.y = size
         marker.scale.z = size
         return marker
 

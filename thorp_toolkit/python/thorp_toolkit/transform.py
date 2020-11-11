@@ -10,16 +10,16 @@ import tf.transformations
 import rospy
 
 
-class Transformation(object):
+class Transform(object):
     """
-    Represents a transformation.
+    Represents a transform.
      - multiplication via * operator
      - inverse
-     - convert to ros pose and transformation messages
+     - convert to ros pose and transform geometry messages
     """
 
     def __init__(self, x=0.0, y=0.0, z=0.0, qx=0.0, qy=0.0, qz=0.0, qw=1.0, frame_id=None):
-        super(Transformation, self).__init__()
+        super(Transform, self).__init__()
         assert not frame_id or isinstance(frame_id, str)
 
         self.translation = [x, y, z]
@@ -56,7 +56,7 @@ class Transformation(object):
             res.header = copy.deepcopy(data.header)
             res.child_frame_id = copy.deepcopy(data.child_frame_id)
             return res.from_geometry_msg_transform(data.transform)
-        elif isinstance(data, Transformation):
+        elif isinstance(data, Transform):
             return copy.deepcopy(data)
         elif isinstance(data, geometry_msgs.msg.Pose):
             return res.from_geometry_msg_pose(data)
@@ -182,8 +182,8 @@ class Transformation(object):
         Otherwise first.rotation = self.rotation, but second.translation != self.translation!
         :return:
         """
-        translation = Transformation(*self.translation)
-        rotation = Transformation.create(self)
+        translation = Transform(*self.translation)
+        rotation = Transform.create(self)
         rotation.translation = [0, 0, 0]
 
         if translation_first:
@@ -202,7 +202,7 @@ class Transformation(object):
         return self
 
     def inverse(self):
-        t = Transformation().from_matrix(numpy.linalg.inv(self.to_matrix()))
+        t = Transform().from_matrix(numpy.linalg.inv(self.to_matrix()))
         t.header = copy.deepcopy(self.header)
         t.header.frame_id = copy.deepcopy(self.child_frame_id)
         t.child_frame_id = copy.deepcopy(self.header.frame_id)
@@ -338,14 +338,14 @@ class Transformation(object):
             t = map(float, [tr['x'], tr['y'], tr['z']])  # cman can return numpy ob
             q_d = d['rotation']
 
-            t_foo = Transformation()
+            t_foo = Transform()
             t_foo.rotation_from_euler(q_d['r'], q_d['p'], q_d['y'])
             q = list(t_foo.q)
         except KeyError:
             rospy.logerr("Could not parse '%s' into Transformation" % str(d))
             return None
 
-        new_trafo = Transformation(*(t+q+[frame_id]))
+        new_trafo = Transform(*(t + q + [frame_id]))
         new_trafo.child_frame_id = d.get('child_frame_id', None)
 
         return new_trafo
@@ -358,12 +358,12 @@ class Transformation(object):
         return float(norm(delta))
 
     def __mul__(self, other):
-        if not isinstance(other, Transformation):
+        if not isinstance(other, Transform):
             raise TypeError
             
         l = self.to_matrix()
         r = other.to_matrix()
-        result = Transformation()
+        result = Transform()
         result.from_matrix(tf.transformations.concatenate_matrices(l, r))
         result.header = copy.deepcopy(self.header)
         if self.child_frame_id and other.header.frame_id  and self.child_frame_id != other.header.frame_id:
@@ -395,7 +395,7 @@ class Transformation(object):
         return not self == other
 
     def __eq__(self, other):
-        if not isinstance(other, Transformation):
+        if not isinstance(other, Transform):
             return False
 
         if self.header.frame_id and other.header.frame_id:
