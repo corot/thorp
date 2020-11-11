@@ -3,6 +3,7 @@ import smach
 import smach_ros
 import dynamic_reconfigure.client
 
+import geometry_msgs.msg as geo_msgs
 import nav_msgs.msg as nav_msgs
 import mbf_msgs.msg as mbf_msgs
 import thorp_msgs.msg as thorp_msgs
@@ -124,6 +125,9 @@ class ExePath(smach_ros.SimpleActionState):
         self.prev_dist_tolerance = None
         self.prev_angle_tolerance = None
 
+        # Show target pose (MBF only shows it when calling get_path)
+        self.target_pose_pub = rospy.Publisher('/move_base_flex/current_goal', geo_msgs.PoseStamped)
+
         # Create a dynamic reconfigure client to change goal tolerance values, if needed
         self.params_ns = '/move_base_flex/' + controller
         try:
@@ -144,6 +148,8 @@ class ExePath(smach_ros.SimpleActionState):
             new_config = {'xy_goal_tolerance': self.dist_tolerance,
                           'yaw_goal_tolerance': self.angle_tolerance}
             self.reconfigure_client.update_configuration(new_config)
+        if goal.path.poses:
+            self.target_pose_pub.publish(goal.path.poses[-1])
 
     def result_cb(self, ud, status, result):
         if self.prev_dist_tolerance and self.prev_angle_tolerance:
