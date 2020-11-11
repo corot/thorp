@@ -1,6 +1,7 @@
 from math import *
 from copy import deepcopy
-from .singleton import Singleton
+from numbers import Number
+from singleton import Singleton
 
 import rospy
 import tf2_ros
@@ -47,10 +48,23 @@ def __get_naked_poses(pose1, pose2):
     return __get_naked_pose(pose1), __get_naked_pose(pose2)
 
 
+def norm_angle(angle):
+    """ Normalize an angle between -pi and +pi """
+    angle = angle % (2 * pi)
+    if angle > pi:
+        angle -= 2 * pi
+    return angle
+
+
+def angles_diff(angle1, angle2):
+    """ Normalized difference between two angles """
+    return norm_angle(angle2 - angle1)
+
+
 def heading(pose1, pose2=None):
     if not pose2:
         pose2 = pose1
-        pose1 = geometry_msgs.Pose() # 0, 0, 0 pose, i.e. origin
+        pose1 = geometry_msgs.Pose()  # 0, 0, 0 pose, i.e. origin
     return atan2(pose2.position.y - pose1.position.y, pose2.position.x - pose1.position.x)
 
 
@@ -239,6 +253,46 @@ def pose3d2str(pose):
         raise rospy.ROSException("Input parameter pose is not a valid geometry_msgs pose object")
     return "[x: {:.2f}, y: {:.2f}, z: {:.2f}, roll: {:.2f}, pitch: {:.2f}, yaw: {:.2f}{}]" \
            .format(p.position.x, p.position.y, p.position.z, roll(p), pitch(p), yaw(p), f)
+
+
+def translate_pose(pose, delta, axis_or_theta, relative=True):
+    """ Apply a displacement to a geometry_msgs pose along a given angle or axis (x, y or z).
+        If relative is false, the translation ignores pose's orientation """
+    p = __get_naked_pose(pose)
+
+    if isinstance(axis_or_theta, Number):
+        theta = axis_or_theta
+    elif axis_or_theta == 'x':
+        theta = 0.0
+    elif axis_or_theta == 'y':
+        theta = pi/2
+    elif axis_or_theta == 'z':
+        p.position.z += delta
+        return __set_naked_pose(pose, p)
+    else:
+        raise rospy.ROSException(axis_or_theta + " is neither a number nor a valid axis ('x', 'y' or 'z')")
+    if relative:
+        theta = norm_angle(theta + yaw(p))
+    p.position.x += cos(theta) * delta
+    p.position.y += sin(theta) * delta
+    return __set_naked_pose(pose, p)
+
+
+def rotate_pose(pose, theta, euler):
+    """ Rotate a geometry_msgs pose along the given euler angle (roll, pitch or yaw) """
+    p = __get_naked_pose(pose)
+    if euler == 'roll':
+        new_roll = norm_angle(roll(p) + theta)
+        p.orientation.x, p.orientation.y, p.orientation.z, p.orientation.w = quaternion_from_euler(new_roll, 0, 0)
+    elif euler == 'pitch':
+        new_pitch = norm_angle(pitch(p) + theta)
+        p.orientation.x, p.orientation.y, p.orientation.z, p.orientation.w = quaternion_from_euler(0, new_pitch, 0)
+    elif euler == 'yaw':
+        new_yaw = norm_angle(yaw(p) + theta)
+        p.orientation.x, p.orientation.y, p.orientation.z, p.orientation.w = quaternion_from_euler(0, 0, new_yaw)
+    else:
+        raise rospy.ROSException(euler + " is not a valid euler angle (roll, pitch or yaw)")
+    return pose
 
 
 def transform_pose(pose, tf):
