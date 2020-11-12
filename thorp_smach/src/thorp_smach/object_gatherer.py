@@ -54,6 +54,7 @@ def object_gatherer_sm():
     # Full SM: plan rooms visit sequence and explore each room in turn
     sm = smach.StateMachine(outcomes=['detected',
                                       'not_detected',
+                                      'tray_full',
                                       'aborted',
                                       'preempted'])
     with sm:
@@ -65,7 +66,8 @@ def object_gatherer_sm():
         smach.StateMachine.add('GATHER', GatherObjects(),
                                transitions={'succeeded': 'detected',
                                             'aborted': 'aborted',
-                                            'preempted': 'preempted'})
+                                            'preempted': 'preempted',
+                                            'tray_full': 'tray_full'})
                                # transitions={'succeeded': 'SEARCH',
                                #              'aborted': 'SEARCH',
                                #              'preempted': 'SEARCH'})

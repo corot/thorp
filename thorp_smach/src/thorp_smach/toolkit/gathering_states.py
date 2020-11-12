@@ -487,7 +487,8 @@ def GatherObjects():
         #  TODO  smach.Sequence.add('PICK_OBJECTS', PickReachableObjs())
         smach.Sequence.add('GET_AWAY_POSE', PoseAsPath(),
                            remapping={'pose': 'approach_pose'})
-        smach.Sequence.add('AWAY_FROM_TABLE', ExePath(),  # use default tolerances; no precision needed here
+        smach.Sequence.add('AWAY_FROM_TABLE', ExePath(dist_tolerance=cfg.TIGHT_DIST_TOLERANCE,  # we try to
+                                                      angle_tolerance=cfg.TIGHT_ANGLE_TOLERANCE),  # be precise
                            transitions={'aborted': 'aborted',
                                         'preempted': 'preempted'})
 

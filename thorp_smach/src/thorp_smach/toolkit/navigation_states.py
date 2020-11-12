@@ -126,7 +126,7 @@ class ExePath(smach_ros.SimpleActionState):
         self.prev_angle_tolerance = None
 
         # Show target pose (MBF only shows it when calling get_path)
-        self.target_pose_pub = rospy.Publisher('/move_base_flex/current_goal', geo_msgs.PoseStamped)
+        self.target_pose_pub = rospy.Publisher('/move_base_flex/current_goal', geo_msgs.PoseStamped, queue_size=1)
 
         # Create a dynamic reconfigure client to change goal tolerance values, if needed
         self.params_ns = '/move_base_flex/' + controller

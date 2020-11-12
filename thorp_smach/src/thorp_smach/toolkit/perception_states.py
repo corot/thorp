@@ -11,7 +11,8 @@ import cob_perception_msgs.msg as cob_msgs
 import rail_manipulation_msgs.msg as rail_msgs
 import rail_manipulation_msgs.srv as rail_srvs
 
-from thorp_toolkit.geometry import pose2d2str, TF2
+from thorp_toolkit.geometry import pose2d2str, TF2                   ,yaw,to_transform, quaternion_msg_from_yaw
+from thorp_toolkit.semantic_map import SemanticMap
 from manipulation_states import FoldArm
 
 
@@ -147,13 +148,21 @@ class MonitorTables(smach.State):
             self.table_event.wait(0.1)
             self.table_event.release()
             if self.detected_table:
-                print self.detected_table.point_cloud.header
                 pose = geo_msgs.PoseStamped(self.detected_table.point_cloud.header,
-                                            geo_msgs.Pose(self.detected_table.centroid, self.detected_table.orientation))
+                                            geo_msgs.Pose(self.detected_table.center, self.detected_table.orientation))
+                pose = TF2().transform_pose(pose, pose.header.frame_id, 'map')
+                pose.pose.orientation = quaternion_msg_from_yaw(0)  #  assume tables aligned with x
+                                                        # TODO restore once I fix RAIL to provide propper orientation
+                width, length = self.detected_table.width, self.detected_table.depth
+                table_tf = to_transform(pose, 'table_frame')
+                TF2().publish_transform(table_tf)
                 ud['detected_table'] = self.detected_table
-                ud['detected_table_pose'] = TF2().transform_pose(pose, pose.header.frame_id, 'map')
-                rospy.loginfo("Detected table of size %.1fx%.1f at %s",
-                              self.detected_table.width, self.detected_table.depth, pose2d2str(pose.pose))
+                ud['detected_table_pose'] = pose
+                rospy.loginfo("Detected table of size %.1f x %.1f at %s", width, length, pose2d2str(pose))
+                # Add the table contour as an obstacle to global costmap, so we can plan around it
+                # We don't add to the local costmap because that would impair approaching for picking
+                # TODO: detected_table.name is empty; tweak RAIL to provide it or add sequential names here
+                SemanticMap().add_obstacle(self.detected_table.name, pose, [width, length, 0.0], 'global')
                 return 'succeeded'
             else:
                 # nothing detected; TODO timeout   return 'not_detected'
