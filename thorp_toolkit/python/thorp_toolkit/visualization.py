@@ -5,7 +5,7 @@ from std_msgs.msg import ColorRGBA
 from geometry_msgs.msg import PoseStamped
 from visualization_msgs.msg import Marker, MarkerArray
 
-from .singleton import Singleton
+from singleton import Singleton
 
 
 class Visualization:

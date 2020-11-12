@@ -150,5 +150,59 @@ const char* pose2cstr3D(const tf::Stamped<tf::Pose>& pose)
   return ___buffers___[___next_buffer___];
 }
 
+bool clipSegment(double edge_left, double edge_right, double edge_bottom, double edge_top,
+                 double x0src, double y0src, double x1src, double y1src,
+                 double& x0clip, double& y0clip, double& x1clip, double& y1clip)
+{
+  double t0 = 0.0;
+  double t1 = 1.0;
+  double xdelta = x1src - x0src;
+  double ydelta = y1src - y0src;
+  double p, q, r;
+
+  for (int edge = 0; edge < 4; edge++)
+  {   // Traverse through left, right, bottom, top edges.
+    if (edge == 0)
+    {
+      p = -xdelta;
+      q = -(edge_left - x0src);
+    }
+    if (edge == 1)
+    {
+      p = xdelta;
+      q = (edge_right - x0src);
+    }
+    if (edge == 2)
+    {
+      p = -ydelta;
+      q = -(edge_bottom - y0src);
+    }
+    if (edge == 3)
+    {
+      p = ydelta;
+      q = (edge_top - y0src);
+    }
+    r = q / p;
+    if (p == 0 && q < 0) return false;   // Don't draw line at all. (parallel line outside)
+
+    if (p < 0)
+    {
+      if (r > t1) return false;          // Don't draw line at all.
+      else if (r > t0) t0 = r;           // Line is clipped!
+    }
+    else if (p > 0)
+    {
+      if (r < t0) return false;          // Don't draw line at all.
+      else if (r < t1) t1 = r;           // Line is clipped!
+    }
+  }
+
+  x0clip = x0src + t0 * xdelta;
+  y0clip = y0src + t0 * ydelta;
+  x1clip = x0src + t1 * xdelta;
+  y1clip = y0src + t1 * ydelta;
+
+  return true;        // (clipped) line is drawn
+}
 
 } /* namespace thorp_toolkit */

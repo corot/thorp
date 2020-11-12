@@ -1,5 +1,8 @@
 /*
- * Author: Jorge Santos
+ * geometry.hpp
+ *
+ *  Created on: Apr 11, 2013
+ *      Author: jorge
  */
 
 #pragma once
@@ -12,7 +15,7 @@
 #include <geometry_msgs/PoseStamped.h>
 
 
-namespace thorp_toolkit
+namespace mag_common_libs
 {
 
 /**
@@ -20,7 +23,7 @@ namespace thorp_toolkit
  * @param a Unnormalized angle
  * @return Normalized angle
  */
-inline double normAngle(double a)
+inline double wrapAngle(double a)
 {
   a = fmod(a + M_PI, 2*M_PI);
   return a < 0.0 ? a + M_PI : a - M_PI;
@@ -67,20 +70,6 @@ inline double roll(const geometry_msgs::PoseStamped& pose)
 }
 
 /**
- * Shortcut to take the roll of a stamped transform
- * @param tf the transform
- * @return transform's roll
- */
-inline double roll(const geometry_msgs::TransformStamped& tf)
-{
-  tf::Quaternion q;
-  tf::quaternionMsgToTF(tf.transform.rotation, q);
-  double roll, pitch, yaw;
-  tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
-  return roll;
-}
-
-/**
  * Shortcut to take the pitch of a transform
  * @param tf the transform
  * @return transform's pitch
@@ -121,20 +110,6 @@ inline double pitch(const geometry_msgs::PoseStamped& pose)
 }
 
 /**
- * Shortcut to take the pitch of a stamped transform
- * @param tf the transform
- * @return transform's pitch
- */
-inline double pitch(const geometry_msgs::TransformStamped& tf)
-{
-  tf::Quaternion q;
-  tf::quaternionMsgToTF(tf.transform.rotation, q);
-  double roll, pitch, yaw;
-  tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
-  return pitch;
-}
-
-/**
  * Shortcut to take the yaw of a transform
  * @param tf the transform
  * @return transform's yaw
@@ -162,16 +137,6 @@ inline double yaw(const geometry_msgs::Pose& pose)
 inline double yaw(const geometry_msgs::PoseStamped& pose)
 {
   return tf::getYaw(pose.pose.orientation);
-}
-
-/**
- * Shortcut to take the yaw of a stamped transform
- * @param tf the transform
- * @return transform's yaw
- */
-inline double yaw(const geometry_msgs::TransformStamped& tf)
-{
-  return tf::getYaw(tf.transform.rotation);
 }
 
 
@@ -392,7 +357,32 @@ inline double distance3D(const tf::Transform& a, const tf::Transform& b = tf::Tr
 {
   return std::sqrt(std::pow(b.getOrigin().x() - a.getOrigin().x(), 2)
                  + std::pow(b.getOrigin().y() - a.getOrigin().y(), 2)
-                 + std::pow(b.getOrigin().z() - a.getOrigin().z(), 2));
+                 + std::pow(b.getOrigin().z() - a.getOrigin().z(), 2));;
+}
+
+
+/**
+ * Euclidean distance between a pose and the closest pose to it in a trajectory; z coordinate is ignored.
+ * Provides also the closest pose's index in the trajectory.
+ * @param p pose
+ * @param t trajectory
+ * @param closest_pose closest pose index
+ * @return Distance
+ */
+inline double distance2D(const geometry_msgs::PoseStamped& p,
+                         const std::vector<geometry_msgs::PoseStamped>& t, size_t& closest_pose)
+{
+  double min_distance = std::numeric_limits<double>::infinity();
+  for (size_t i = 0; i < t.size(); i++)
+  {
+    double distance = distance2D(p, t[i]);
+    if (distance < min_distance)
+    {
+      min_distance = distance;
+      closest_pose = i;
+    }
+  }
+  return min_distance;
 }
 
 /**
@@ -423,16 +413,6 @@ inline double heading(const geometry_msgs::Point& p)
 inline double heading(const geometry_msgs::Pose& p)
 {
   return std::atan2(p.position.y, p.position.x);
-}
-
-/**
- * Heading angle from origin to stamped pose p
- * @param p the pose
- * @return heading angle
- */
-inline double heading(const geometry_msgs::PoseStamped& p)
-{
-  return std::atan2(p.pose.position.y, p.pose.position.x);
 }
 
 /**
@@ -613,31 +593,124 @@ inline bool samePose(const geometry_msgs::PoseStamped& a, const geometry_msgs::P
   return sameFrame(a, b) && samePose(a.pose, b.pose, xy_tolerance, yaw_tolerance);
 }
 
-std::string vector2str3D(const geometry_msgs::Vector3& vector);
-std::string vector2str3D(const geometry_msgs::Vector3Stamped& vector);
-std::string point2str2D(const geometry_msgs::Point& point);
-std::string point2str2D(const geometry_msgs::PointStamped& point);
-std::string point2str3D(const geometry_msgs::Point& point);
-std::string point2str3D(const geometry_msgs::PointStamped& point);
-std::string pose2str2D(const geometry_msgs::Pose& pose);
-std::string pose2str2D(const geometry_msgs::PoseStamped& pose);
-std::string pose2str2D(const tf::Stamped<tf::Pose>& pose);
-std::string pose2str3D(const geometry_msgs::Pose& pose);
-std::string pose2str3D(const geometry_msgs::PoseStamped& pose);
-std::string pose2str3D(const tf::Stamped<tf::Pose>& pose);
+/**
+ * Transform in_pose from on frame to another
+ * @param from_frame initial frame
+ * @param to_frame target frame
+ * @param in_pose initial pose
+ * @param out_pose transformed pose
+ * @return true if transformation succeeded.
+ */
+bool transformPose(const std::string& from_frame, const std::string& to_frame,
+                   const geometry_msgs::PoseStamped& in_pose, geometry_msgs::PoseStamped& out_pose);
 
-const char* vector2cstr3D(const geometry_msgs::Vector3& vector);
-const char* vector2cstr3D(const geometry_msgs::Vector3Stamped& vector);
-const char* point2cstr2D(const geometry_msgs::Point& point);
-const char* point2cstr2D(const geometry_msgs::PointStamped& point);
-const char* point2cstr3D(const geometry_msgs::Point& point);
-const char* point2cstr3D(const geometry_msgs::PointStamped& point);
-const char* pose2cstr2D(const geometry_msgs::Pose& pose);
-const char* pose2cstr2D(const geometry_msgs::PoseStamped& pose);
-const char* pose2cstr2D(const tf::Stamped<tf::Pose>& pose);
-const char* pose2cstr3D(const geometry_msgs::Pose& pose);
-const char* pose2cstr3D(const geometry_msgs::PoseStamped& pose);
-const char* pose2cstr3D(const tf::Stamped<tf::Pose>& pose);
+/**
+ * Transform in_pose from on frame to another
+ * @param from_frame initial frame
+ * @param to_frame target frame
+ * @param in_pose initial pose
+ * @param out_pose transformed pose
+ * @return true if transformation succeeded.
+ */
+bool transformPose(const std::string& from_frame, const std::string& to_frame,
+                   const geometry_msgs::Pose& in_pose, geometry_msgs::Pose& out_pose);
+
+
+/**
+ * Return the minimum value from a geometry_msgs/Vector3
+ * @param v vector
+ * @return minimum value
+ */
+inline double minValue(const geometry_msgs::Vector3& v)
+{
+  return std::min(std::min(v.x, v.y), v.z);
+}
+
+/**
+ * Return the maximum value from a geometry_msgs/Vector3
+ * @param v vector
+ * @return maximum value
+ */
+inline double maxValue(const geometry_msgs::Vector3& v)
+{
+  return std::max(std::max(v.x, v.y), v.z);
+}
+
+/**
+ * Calculate the area of a triangle
+ */
+float areaTriangle(int x1, int y1, int x2, int y2, int x3, int y3);
+
+/**
+ * Check if point P(x, y) lies inside the triangle formed
+ * by A(x1, y1), B(x2, y2) and C(x3, y3)
+ */
+bool insideTriangle(int x1, int y1, int x2, int y2, int x3, int y3, int x, int y);
+
+
+/**
+ * Calculates the slope of a list of points.
+ * @param x points x-coordinates
+ * @param y points y-coordinates
+ * @return the calculated slope
+ */
+inline double slope(const std::deque<double>& x, const std::deque<double>& y)
+{
+  const auto n    = x.size();
+  const auto s_x  = std::accumulate(x.begin(), x.end(), 0.0);
+  const auto s_y  = std::accumulate(y.begin(), y.end(), 0.0);
+  const auto s_xx = std::inner_product(x.begin(), x.end(), x.begin(), 0.0);
+  const auto s_xy = std::inner_product(x.begin(), x.end(), y.begin(), 0.0);
+  const auto b    = (n * s_xy - s_x * s_y) / (n * s_xx - s_x * s_x);
+  return b;
+}
+
+
+/**
+ * Minimum distance from a point to a line segment
+ * @param px point x-coordinate
+ * @param py point y-coordinate
+ * @param s1x segment's point 1 x-coordinate
+ * @param s1y segment's point 1 y-coordinate
+ * @param s2x segment's point 2 x-coordinate
+ * @param s2y segment's point 2 y-coordinate
+ * @return distance
+ */
+double pointSegmentDistance(double px, double py, double s1x, double s1y, double s2x, double s2y);
+
+/**
+ * Do a finite length ray intersects a line segment?
+ * @param r1x rays's start point x-coordinate
+ * @param r1y rays's start point y-coordinate
+ * @param r2x rays's end point x-coordinate
+ * @param r2y rays's end point y-coordinate
+ * @param s1x segment's point 1 x-coordinate
+ * @param s1y segment's point 1 y-coordinate
+ * @param s2x segment's point 2 x-coordinate
+ * @param s2y segment's point 2 y-coordinate
+ * @param ix  intersection point (if any) x-coordinate
+ * @param iy  intersection point (if any) y-coordinate
+ * @param distance Distance from rays's start to intersection point
+ * @return True if ray intersects the segment
+ */
+bool raySegmentIntersection(double r1x, double r1y, double r2x, double r2y,
+                            double s1x, double s1y, double s2x, double s2y,
+                            double& ix, double& iy, double& distance);
+
+/**
+ * Do a zero-centered, finite length ray intersects a circle?
+ * @param rx rays's end point x-coordinate
+ * @param ry rays's end point y-coordinate
+ * @param cx circle's center x-coordinate
+ * @param cy circle's center y-coordinate
+ * @param radius circle's radius
+ * @param ix closest intersection point (if any) x-coordinate
+ * @param iy closest intersection point (if any) y-coordinate
+ * @param distance Distance from rays's start (zero) to intersection point
+ * @return True if ray intersects the circle
+ */
+bool rayCircleIntersection(double rx, double ry, double cx, double cy, double radius,
+                           double& ix, double& iy, double& distance);
 
 /**
  * Clip line segment to fit within a bounding box using Liang-Barsky function by Daniel White
@@ -662,4 +735,4 @@ bool clipSegment(double edge_left, double edge_right, double edge_bottom, double
                  double x0src, double y0src, double x1src, double y1src,
                  double& x0clip, double& y0clip, double& x1clip, double& y1clip);
 
-} /* namespace thorp_toolkit */
+} /* namespace mag_common_libs */

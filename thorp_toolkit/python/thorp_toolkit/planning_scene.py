@@ -3,7 +3,7 @@ import rospy
 from moveit_msgs.msg import CollisionObject
 from moveit_commander.planning_scene_interface import PlanningSceneInterface
 
-from .singleton import Singleton
+from singleton import Singleton
 
 
 class PlanningScene:
