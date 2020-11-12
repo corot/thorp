@@ -30,3 +30,15 @@ range_sensor_layer:
   ns:     /mobile_base/sensors
   topics: [sonars/m90, sonars/m72, sonars/m54, sonars/m36, sonars/m18, sonars/0, sonars/p18, sonars/p36, sonars/p54, sonars/p72, sonars/p90,
            infrared/arm, infrared/l155, infrared/l180, infrared/r180, infrared/r155]
+
+semantic_layer:
+  enabled: true
+  show_debug_markers: true
+  object_types:
+  - type: "obstacle"      # using all the default values, so can be omitted; listed here for documenting purposes
+    cost: 1.0             # maximum cost, that of a lethal obstacle
+    fill: false           # do not fill object convex hull, just mark the perimeter
+    use_maximum: false    # overwrite existing cost value with cost x LETHAL_OBSTACLE
+    force_update: false   # do not force costmap update; wait until next update cycle
+    width_padding: 0.0    # do not pad object: keep original width
+    length_padding: 0.0   # and length

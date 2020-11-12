@@ -8,5 +8,6 @@ global_costmap:
   plugins:
     - {name: static_layer,       type: "costmap_2d::StaticLayer"}
     - {name: range_sensor_layer, type: "range_sensor_layer::RangeSensorLayer"}
+    - {name: semantic_layer,     type: "thorp_costmap_layers::SemanticLayer"}
     - {name: obstacle_layer,     type: "costmap_2d::VoxelLayer"}
     - {name: inflation_layer,    type: "costmap_2d::InflationLayer"}

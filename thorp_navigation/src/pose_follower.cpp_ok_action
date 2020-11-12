@@ -1,0 +1,225 @@
+/*
+ * Author: Jorge Santos
+ * Based on https://github.com/turtlebot/turtlebot_apps/blob/indigo/turtlebot_follower/src/follower.cpp
+ */
+
+#include <ros/ros.h>
+#include <geometry_msgs/Twist.h>
+#include <actionlib/server/simple_action_server.h>
+#include <thorp_msgs/FollowPoseAction.h>
+#include <turtlebot_msgs/SetFollowState.h>
+#include <dynamic_reconfigure/server.h>
+
+#include <thorp_toolkit/tf.hpp>
+namespace ttk = thorp_toolkit;
+
+#include "thorp_navigation/FollowerConfig.h"
+
+
+namespace thorp_navigation
+{
+
+/**
+ * The pose follower node. Subscribes to a pose and publishes command vel messages to approach and
+ * head to it up to a given distance.
+ */
+class PoseFollower
+{
+public:
+  /*!
+   * @brief The constructor for the follower.
+   */
+  PoseFollower()
+      : d_target_(1.0), v_scale_(1.0), w_scale_(5.0), pnh_("~"),
+        follow_as_(pnh_, "follow", boost::bind(&PoseFollower::executeCB, this, _1), false)
+  {
+  }
+
+  virtual ~PoseFollower()
+  {
+    delete config_srv_;
+  }
+
+  /*!
+   * @brief init method; read non-dynamic parameters and set up ROS interface.
+   */
+  virtual void init()
+  {
+    ros::NodeHandle nh;
+
+    pnh_.param("robot_frame", robot_frame_, std::string("base_footprint"));
+    pnh_.param("no_pose_timeout", no_pose_timeout_, 0.5);
+
+    twist_pub_ = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
+    pose_sub_ = nh.subscribe("target_pose", 1, &PoseFollower::poseCallback, this);
+
+    switch_srv_ = pnh_.advertiseService("change_state", &PoseFollower::changeModeSrvCb, this);
+
+    config_srv_ = new dynamic_reconfigure::Server<thorp_navigation::FollowerConfig>(pnh_);
+    dynamic_reconfigure::Server<thorp_navigation::FollowerConfig>::CallbackType f =
+      boost::bind(&PoseFollower::reconfigure, this, _1, _2);
+    config_srv_->setCallback(f);
+
+    follow_as_.start();
+
+    // Create (stopped by now) a one-shot timer to stop the robot if no more poses are received within no_pose_timeout
+    no_pose_timeout_triggered_ = false;
+    no_pose_timer_ =
+      pnh_.createTimer(ros::Duration(no_pose_timeout_), &PoseFollower::timerCallback, this, true, false);
+  }
+
+private:
+  double d_target_; /**< The closest distance to the target we can reach */
+  double v_scale_;  /**< The scaling factor for translational robot speed */
+  double w_scale_;  /**< The scaling factor for rotational robot speed */
+  bool enabled_;    /**< Enable/disable following; just prevents motor commands */
+  std::string robot_frame_; /**< Reference frame, used to calculate distance and heading errors */
+
+  ros::NodeHandle pnh_;
+
+  ros::Subscriber pose_sub_;
+  ros::Publisher twist_pub_;
+
+  ros::Timer no_pose_timer_;  /**< No pose messages received timer */
+  double no_pose_timeout_;    /**< No pose messages received timeout */
+  bool no_pose_timeout_triggered_;    /**< No pose messages received timeout */
+
+  // Service for start/stop following
+  ros::ServiceServer switch_srv_;
+
+  actionlib::SimpleActionServer<thorp_msgs::FollowPoseAction> follow_as_;
+  std::string action_name_;
+  // create messages that are used to published feedback/result
+  thorp_msgs::FollowPoseFeedback feedback_;
+
+  // Dynamic reconfigure server
+  dynamic_reconfigure::Server<thorp_navigation::FollowerConfig> *config_srv_;
+
+  void reconfigure(thorp_navigation::FollowerConfig &config, uint32_t level)
+  {
+    enabled_ = config.enabled;
+    v_scale_ = config.v_scale;
+    w_scale_ = config.w_scale;
+    d_target_ = config.distance;
+    ROS_DEBUG("Reconfigured: %d %g %g %g", enabled_, v_scale_, w_scale_, d_target_);
+  }
+
+  /*!
+   * @brief Callback for target pose.
+   * Publishes cmd_vel messages to reach the pose up to a preset distance.
+   * @param msg The target pose message.
+   */
+  void poseCallback(const geometry_msgs::PoseStamped &msg)
+  {
+    if (!enabled_)
+      return;
+
+    // transform target pose into robot reference frame
+    geometry_msgs::PoseStamped target_pose;
+    ttk::transformPose(msg.header.frame_id, robot_frame_, msg, target_pose);
+
+    // calculate distance and heading to the target pose
+    double x = target_pose.pose.position.x;
+    double y = target_pose.pose.position.y;
+    double z = target_pose.pose.position.z;
+    double distance = ttk::distance2D(target_pose);
+    double heading = ttk::heading(target_pose);
+
+    //geometry_msgs::Twist cmd;
+    if (std::abs(heading) > M_PI/2.0)
+    {
+      feedback_.cmd.angular.z = heading * w_scale_;
+      ROS_INFO_THROTTLE(1, "Rotating at %.2frad/s to target pose %.2f %.2f; distance: %.2f, heading: %.2f",
+                        feedback_.cmd.angular.z, x, y, distance, heading);
+    }
+    else
+    {
+      feedback_.cmd.linear.x = (distance - d_target_) * v_scale_;
+      feedback_.cmd.angular.z = heading * w_scale_;
+      ROS_INFO_THROTTLE(1, "Following at %.2fm/s, %.2frad/s target pose %.2f %.2f; distance: %.2f, heading: %.2f",
+                        feedback_.cmd.linear.x, feedback_.cmd.angular.z, x, y, distance, heading);
+    }
+    feedback_.dist_to_target = distance;
+    feedback_.angle_to_target = heading;
+   // feedback_.cmd = cmd;
+    follow_as_.publishFeedback(feedback_);
+    twist_pub_.publish(feedback_.cmd);
+
+
+    // Reset timeout to stop the robot if no more poses are received within a short time
+    no_pose_timer_.stop();
+    no_pose_timer_.start();
+    ROS_ERROR("RESET TIMER");
+  }
+
+  void timerCallback(const ros::TimerEvent& event)
+  {
+    ROS_INFO("No pose msgs received for %gs: following stopped", no_pose_timeout_);
+    twist_pub_.publish(geometry_msgs::Twist());
+    no_pose_timeout_triggered_ = true;
+  }
+
+  void executeCB(const thorp_msgs::FollowPoseGoal::ConstPtr &goal)
+  {
+    ROS_INFO("Following started!");
+    ros::Rate rate(10);
+    enabled_ = true;
+    no_pose_timeout_triggered_ = false;  // TODO   mover el meollo aqui,,, va a ser mas limpio
+
+    while (ros::ok())
+    {
+      if (follow_as_.isPreemptRequested())
+      {
+        follow_as_.setPreempted();
+        ROS_INFO("Following preempted");
+        break;
+      }
+
+      if (no_pose_timeout_triggered_)
+      {
+        thorp_msgs::FollowPoseResult result;
+        result.outcome = thorp_msgs::FollowPoseResult::NO_POSE_TIMEOUT;
+        follow_as_.setAborted(result);
+        ROS_INFO("Following stopped ");
+        break;
+      }
+      ros::spinOnce();
+      rate.sleep();
+    }
+    enabled_ = false;
+    no_pose_timeout_triggered_ = false;
+  }
+
+  bool changeModeSrvCb(turtlebot_msgs::SetFollowState::Request &request,
+                       turtlebot_msgs::SetFollowState::Response &response)
+  {
+    if (enabled_ && request.state==request.STOPPED)
+    {
+      ROS_INFO("Change mode service request: following stopped");
+      twist_pub_.publish(geometry_msgs::Twist());
+      enabled_ = false;
+    }
+    else if (!enabled_ && request.state==request.FOLLOW)
+    {
+      ROS_INFO("Change mode service request: following (re)started");
+      enabled_ = true;
+    }
+
+    response.result = response.OK;
+    return true;
+  }
+
+};
+
+}  // thorp_navigation namespace
+
+
+int main(int argc, char **argv)
+{
+  ros::init(argc, argv, "pose_follower");
+
+  thorp_navigation::PoseFollower pf;
+  pf.init();
+
+  ros::spin();
+}
