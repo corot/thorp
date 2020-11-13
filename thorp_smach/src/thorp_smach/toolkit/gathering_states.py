@@ -2,220 +2,22 @@ import rospy
 import smach
 import smach_ros
 
-import std_srvs.srv as std_srvs
 import geometry_msgs.msg as geometry_msgs
 from turtlebot_arm_block_manipulation.msg import BlockDetectionAction
 
 from copy import deepcopy
+from itertools import permutations
 from collections import namedtuple
 
-from thorp_toolkit.geometry import TF2, to_transform, translate_pose, transform_pose, apply_transform,\
-                                   create_2d_pose, distance_2d
+from thorp_toolkit.geometry import TF2, to_transform, translate_pose, transform_pose, create_2d_pose, distance_2d
 from thorp_toolkit.transform import Transform
 from thorp_toolkit.visualization import Visualization
 
 from perception_states import MonitorTables
 from navigation_states import GetRobotPose, GoToPose, ExePath, PoseAsPath
-from manipulation_states import FoldArm, PickupObject, PlaceInTray
+from pick_objects_states import PickReachableObjs
 
 import config as cfg
-
-
-def ObjectDetection():
-    """  Object detection sub state machine; iterates over object_detection action state and recovery
-         mechanism until an object is detected, it's preempted or there's an error (aborted outcome) """
-
-    class ObjDetectedCondition(smach.State):
-        """ Check for the object detection result to retry if no objects where detected """
-
-        def __init__(self):
-            smach.State.__init__(self, outcomes=['preempted', 'satisfied', 'fold_arm', 'retry'],
-                                 input_keys=['od_attempt', 'object_names'],
-                                 output_keys=['od_attempt'])
-
-        def execute(self, userdata):
-            if self.preempt_requested():
-                self.service_preempt()
-                return 'preempted'
-            if len(userdata.object_names) > 0:
-                userdata.od_attempt = 0
-                return 'satisfied'
-            userdata.od_attempt += 1
-            if userdata.od_attempt == 1:
-                return 'fold_arm'
-            return 'retry'
-
-    sm = smach.StateMachine(outcomes=['succeeded', 'preempted', 'aborted'],
-                            input_keys=['od_attempt', 'output_frame'],
-                            output_keys=['objects', 'object_names', 'support_surf',     'blocks'])
-
-    with sm:
-        smach.StateMachine.add('CLEAR_OCTOMAP',
-                               smach_ros.ServiceState('clear_octomap',
-                                                      std_srvs.Empty),
-                               transitions={'succeeded': 'OBJECT_DETECTION',
-                                            'preempted': 'preempted',
-                                            'aborted': 'OBJECT_DETECTION'})
-
-        # app config
-        sm.userdata.frame = rospy.get_param('~arm_link', 'arm_base_link')
-        sm.userdata.table_height = rospy.get_param('~table_height', -0.03)
-        sm.userdata.block_size = rospy.get_param('~block_size', 0.025)
-
-        def result_cb(ud, status, result):
-            #ud['blocks'] = result.blocks
-            ud['objects'] = result.blocks
-            ud['object_names'] = ['block' + str(i) for i in range(1, len(result.blocks.poses) + 1)]
-            ud['support_surf'] = 'table'
-
-        smach.StateMachine.add('OBJECT_DETECTION',
-                               smach_ros.SimpleActionState('block_detection',
-                                                           BlockDetectionAction,
-                                                           goal_slots=['frame', 'table_height', 'block_size'],
-                                                           result_slots=['blocks'],
-                                                           result_cb=result_cb,
-                                                           output_keys=['objects', 'object_names', 'support_surf']),
-                               transitions={'succeeded': 'OBJ_DETECTED_COND',
-                                            'preempted': 'preempted',
-                                            'aborted': 'aborted'})
-        #   TODO cambiazo,,,,  borrar esto cuando tenga decente obj rec
-        #
-        # smach.StateMachine.add('OBJECT_DETECTION',
-        #                        smach_ros.SimpleActionState('object_detection',
-        #                                                    thorp_msgs.DetectObjectsAction,
-        #                                                    goal_slots=['output_frame'],
-        #                                                    result_slots=['objects', 'object_names', 'support_surf']),
-        #                        remapping={'output_frame': 'output_frame',
-        #                                   'object_names': 'object_names',
-        #                                   'support_surf': 'support_surf'},
-        #                        transitions={'succeeded': 'OBJ_DETECTED_COND',
-        #                                     'preempted': 'preempted',
-        #                                     'aborted': 'aborted'})
-
-        smach.StateMachine.add('OBJ_DETECTED_COND',
-                               ObjDetectedCondition(),
-                               transitions={'satisfied': 'succeeded',
-                                            'preempted': 'preempted',
-                                            'fold_arm': 'FOLD_ARM',
-                                            'retry': 'CLEAR_OCTOMAP'})
-
-        smach.StateMachine.add('FOLD_ARM',
-                               FoldArm(),
-                               transitions={'succeeded': 'CLEAR_OCTOMAP',
-                                            'preempted': 'preempted',
-                                            'aborted': 'CLEAR_OCTOMAP'})
-
-    return sm
-
-
-class TargetSelection(smach.State):
-    """
-    Select the closest object within arm reach
-    """
-
-    def __init__(self):
-        smach.State.__init__(self,
-                             outcomes=['have_target', 'no_targets'],
-                             input_keys=['objects', 'object_names', 'objs_to_skip'],
-                             output_keys=['target'])
-
-    def execute(self, ud):
-        targets = []
-        for i, obj_pose in enumerate(ud['objects'].poses):
-            dist = distance_2d(obj_pose)  # assumed in arm base reference frame
-            if dist <= cfg.MAX_ARM_REACH:
-                targets.append((ud['object_names'][i], dist))
-        targets = sorted(targets, key=lambda t: t[1])  # sort by increasing distance
-        if len(targets) > ud['objs_to_skip']:
-            target, dist = targets[ud['objs_to_skip']]
-            rospy.loginfo("Next target will be '%s' located at %.2fm (%d skipped)", target, dist, ud['objs_to_skip'])
-            ud['target'] = target
-            return 'have_target'
-        elif targets:
-            pass  # TODO: retry if we have picked something after the last failure
-        rospy.loginfo("No targets within the %.2fm arm reach (%d skipped)", cfg.MAX_ARM_REACH, ud['objs_to_skip'])
-        return 'no_targets'
-
-
-class SkipOneObject(smach.State):
-    """
-    Select the closest object within arm reach
-    """
-
-    def __init__(self, max_failures=2):
-        smach.State.__init__(self,
-                             outcomes=['succeeded', 'max_failures'],
-                             input_keys=['objs_to_skip'],
-                             output_keys=['objs_to_skip'])
-        self.max_failures = max_failures
-
-    def execute(self, ud):
-        if ud['objs_to_skip'] < self.max_failures:
-            ud['objs_to_skip'] += 1
-            rospy.loginfo("Skipping %d objects", ud['objs_to_skip'])
-            return 'succeeded'
-        rospy.logwarn("%d failures; not skipping more objects", self.max_failures)
-        return 'max_failures'
-
-
-def PickReachableObjs():
-    """  Pick all the objects within reach and place in the tray  """
-
-    def result_cb(ud, status, result):
-        ud['blocks'] = result.blocks
-        ud['objects'] = result.blocks
-        ud['object_names'] = ['block' + str(i) for i in range(1, len(result.blocks.poses) + 1)]
-
-    # pick a single object sm
-    pick_1_obj_sm = smach.StateMachine(outcomes=['continue', 'succeeded', 'aborted', 'preempted', 'tray_full'],
-                                       input_keys=['support_surf', 'max_effort'])
-    pick_1_obj_sm.userdata.frame = rospy.get_param('~arm_link', 'arm_base_link')
-    pick_1_obj_sm.userdata.table_height = rospy.get_param('~table_height', -0.03)
-    pick_1_obj_sm.userdata.block_size = rospy.get_param('~block_size', 0.025)
-    pick_1_obj_sm.userdata.objs_to_skip = 0
-    with pick_1_obj_sm:
-        smach.StateMachine.add('BLOCK_DETECTION',
-                               smach_ros.SimpleActionState('block_detection',
-                                                           BlockDetectionAction,
-                                                           goal_slots=['frame', 'table_height', 'block_size'],
-                                                           result_slots=['blocks'],
-                                                           result_cb=result_cb,
-                                                           output_keys=['blocks', 'objects', 'object_names']),
-                               transitions={'succeeded': 'SELECT_TARGET',
-                                            'aborted': 'aborted',
-                                            'preempted': 'preempted'})
-        smach.StateMachine.add('SELECT_TARGET', TargetSelection(),
-                               transitions={'have_target': 'PICKUP_OBJECT',
-                                            'no_targets': 'succeeded'},
-                               remapping={'target': 'object_name'})
-        smach.StateMachine.add('PICKUP_OBJECT', PickupObject(),
-                               transitions={'succeeded': 'PLACE_ON_TRAY',
-                                            'preempted': 'preempted',
-                                            'aborted': 'SKIP_OBJECT'})
-        smach.StateMachine.add('PLACE_ON_TRAY', PlaceInTray(),
-                               transitions={'succeeded': 'continue',
-                                            'preempted': 'preempted',
-                                            'aborted': 'CLEAR_GRIPPER',
-                                            'tray_full': 'tray_full'})
-        smach.StateMachine.add('CLEAR_GRIPPER', smach_ros.ServiceState('clear_gripper', std_srvs.Empty),
-                               transitions={'succeeded': 'SKIP_OBJECT',
-                                            'preempted': 'aborted',
-                                            'aborted': 'aborted'})
-        smach.StateMachine.add('SKIP_OBJECT', SkipOneObject(),
-                               transitions={'succeeded': 'BLOCK_DETECTION',
-                                            'max_failures': 'aborted'})
-
-    it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted', 'tray_full'],
-                        input_keys=[],   #'object_names'],  #, 'support_surf'],
-                        output_keys=[],
-                        it=range(25),  # kind of while true
-                        it_label='iteration',
-                        exhausted_outcome='succeeded')
-    it.userdata.max_effort = 0.3        # TODO  pick_effort in obj manip  is this really used???  should depend on the obj???
-    it.userdata.support_surf = 'table'  # TODO this comes from perception
-    with it:
-        smach.Iterator.set_contained_state('', pick_1_obj_sm, loop_outcomes=['continue'])
-    return it
 
 
 class CalcPickPoses(smach.State):
@@ -272,7 +74,8 @@ class CalcPickPoses(smach.State):
 
 # Object to pick and pick location named tuples; required for grouping objects  TODO make local if I don't export as output key
 Object = namedtuple('Object', ['dist', 'name', 'pose'])
-PickLoc = namedtuple('PickLoc', ['size', 'name', 'pose', 'objs', 'arm_pose', 'approach_pose'])
+PickLoc = namedtuple('PickLoc', ['size', 'name', 'pose', 'objs', 'dist', 'arm_pose', 'approach_pose'])
+PickPlan = namedtuple('PickPlan', ['size', 'dist', 'plocs'])
 
 
 class PickLocFields(smach.State):
@@ -299,7 +102,7 @@ class GroupObjects(smach.State):
     """
     def __init__(self, manip_frame):
         smach.State.__init__(self, outcomes=['succeeded', 'no_objects'],
-                             input_keys=['objects', 'table', 'picking_poses'],
+                             input_keys=['objects', 'robot_pose', 'picking_poses'],
                              output_keys=['picking_locs'])
         self.manip_frame = manip_frame
 
@@ -308,6 +111,8 @@ class GroupObjects(smach.State):
         map_to_arm_tf = Transform.create(TF2().lookup_transform(self.manip_frame, 'map'))  # map to arm tf
         pick_locs = []
         for name, pose in ud['picking_poses'].items():
+            # current distance from the robot; not used by now
+            dist_from_robot = distance_2d(pose, ud['robot_pose'])
             # apply base to arm tf, so we get arm pose on map reference for each location
             map_to_bfp_tf = Transform.create(pose)
             arm_pose_mrf = (map_to_bfp_tf * bfp_to_arm_tf).to_geometry_msg_pose_stamped()
@@ -320,36 +125,34 @@ class GroupObjects(smach.State):
                 dist = distance_2d(obj_pose_mrf, arm_pose_mrf)  # both on map rf
                 if dist <= cfg.MAX_ARM_REACH:
                     objs.append(Object(dist, 'block' + str(i + 1), obj_pose))
-            objs = sorted(objs, key=lambda o: o.dist)  # sort by increasing distance from the arm
+            if not objs:
+                continue  # no objects reachable from here; keep going
+            # sort objects by increasing distance from the arm; that should make picking easier,
+            # as we won't hit closer objects when going over them (not 100% sure if this is true)
+            objs = sorted(objs, key=lambda o: o.dist)
             # provide also the approach pose, at APPROACH_DIST_TO_TABLE meters from the table
             approach_pose = deepcopy(pose)
             translate_pose(approach_pose, - (cfg.APPROACH_DIST_TO_TABLE - cfg.PICKING_DIST_TO_TABLE), 'x')
-            pick_locs.append(PickLoc(len(objs), name, pose, objs, arm_pose_mrf, approach_pose))
-        sorted_pls = sorted(pick_locs, key=lambda pl: pl.size)  # sort by increasing number of reachable objects
-        self.viz_pick_locs(sorted_pls)
+            pick_locs.append(PickLoc(len(objs), name, pose, objs, dist_from_robot, arm_pose_mrf, approach_pose))
+        self.viz_pick_locs(pick_locs)
 
-        # traverse pick locations from less to more populated, and discard those containing only duplicated objects
-        # (or no objects at all), so we can skip them
-        # TODO: favor somehow the current pose
-        pls_to_remove = []
-        for ploc in sorted_pls:
-            dup_objs = 0
-            for obj in ploc.objs:
-                for other_pl in [pl for pl in sorted_pls if pl != ploc and pl not in pls_to_remove]:
-                    if obj.name in [o.name for o in other_pl.objs]:
-                        dup_objs += 1
-            if dup_objs == ploc.size:
-                pls_to_remove.append(ploc)
-        for ploc in pls_to_remove:
-            sorted_pls.remove(ploc)
-        self.viz_pick_locs(sorted_pls)
+        # find the most efficient sequence of picking locations: try all permutations, sort and get the first
+        possible_plans = []
+        for perm in permutations(pick_locs):
+            perm = list(perm)  # convert to list, so we can remove elements
+            self.filter_pick_locs(perm)
+            possible_plans.append(PickPlan(len(perm), self.traveled_dist(ud['robot_pose'], perm), perm))
+        # sort by  1) less locations to visit  2) less travelled distance (in case of match)
+        sorted_plans = sorted(possible_plans, key=lambda p: (p.size, p.dist))
+        sorted_plocs = sorted_plans[0].plocs
+        self.viz_pick_locs(sorted_plocs)
 
         # remove duplicated objects from the location where they are at the longest distance to the arm
         objs_to_remove = []
-        for ploc in sorted_pls:
+        for ploc in sorted_plocs:
             dup_objs = 0
             for obj in ploc.objs:
-                for other_pl in [pl for pl in sorted_pls if pl != ploc]:
+                for other_pl in [pl for pl in sorted_plocs if pl != ploc]:
                     for other_obj in other_pl.objs:
                         if obj.name == other_obj.name:
                             if obj.dist >= other_obj.dist:
@@ -362,13 +165,40 @@ class GroupObjects(smach.State):
         for ploc, obj in objs_to_remove:
             ploc.objs.remove(obj)
         # update pick locations objects count (a bit cumbersome with named tuples)
-        for i, ploc in enumerate(sorted_pls):
+        for i, ploc in enumerate(sorted_plocs):
             if ploc.size != len(ploc.objs):
-                sorted_pls[i] = ploc._replace(size=len(ploc.objs))
-        sorted_pls = sorted(sorted_pls, key=lambda pl: pl.size)  # sort again after removing duplicates
-        self.viz_pick_locs(sorted_pls)
-        ud['picking_locs'] = sorted_pls
+                sorted_plocs[i] = ploc._replace(size=len(ploc.objs))
+        sorted_plocs = sorted(sorted_plocs, key=lambda pl: pl.size)  # sort again after removing duplicates
+        self.viz_pick_locs(sorted_plocs)
+        ud['picking_locs'] = sorted_plocs
         return 'succeeded'
+
+    @staticmethod
+    def traveled_dist(robot_pose, pick_locs):
+        """
+        The total distance the robot will travel from its current location after visiting all pick locations
+        """
+        total_dist = distance_2d(robot_pose, pick_locs[0].pose)
+        for ploc1, ploc2 in zip(pick_locs, pick_locs[1:]):
+            total_dist += distance_2d(ploc1.pose, ploc2.pose)
+        return total_dist
+
+    @staticmethod
+    def filter_pick_locs(pick_locs):
+        """
+        Traverse pick locations in order, discarding those whose objects are all present in other locations
+        (that is, we can skip them when picking without missing any object)
+        """
+        pls_to_remove = []
+        for ploc in pick_locs:
+            objs_in_this = {o.name for o in ploc.objs}
+            objs_in_others = set()
+            for other_pl in [pl for pl in pick_locs if pl.name != ploc.name and pl not in pls_to_remove]:
+                objs_in_others.update(o.name for o in other_pl.objs)
+            if objs_in_this.issubset(objs_in_others):
+                pls_to_remove.append(ploc)
+        for ploc in pls_to_remove:
+            pick_locs.remove(ploc)
 
     def viz_pick_locs(self, pick_locs):
         Visualization().clear_markers()
