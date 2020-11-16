@@ -1,7 +1,6 @@
 import rospy
 import smach
 import smach_ros
-import dynamic_reconfigure.client
 
 import geometry_msgs.msg as geo_msgs
 import nav_msgs.msg as nav_msgs
@@ -9,6 +8,7 @@ import mbf_msgs.msg as mbf_msgs
 import thorp_msgs.msg as thorp_msgs
 
 from thorp_toolkit.geometry import TF2
+from thorp_toolkit.reconfigure import Reconfigure
 
 import config as cfg
 
@@ -74,17 +74,7 @@ class GoToPose(smach_ros.SimpleActionState):
         self.rec_behaviors = rec_behaviors
         self.dist_tolerance = dist_tolerance
         self.angle_tolerance = angle_tolerance
-        self.prev_dist_tolerance = None
-        self.prev_angle_tolerance = None
-
-        # Create a dynamic reconfigure client to change goal tolerance values, if needed
         self.params_ns = '/move_base_flex/' + controller
-        try:
-            rospy.loginfo("Waiting for '%s' dynamic reconfigure service...", self.params_ns)
-            self.reconfigure_client = dynamic_reconfigure.client.Client(self.params_ns, timeout=60)
-            rospy.loginfo("Dynamic reconfigure service '%s' alive!", self.params_ns)
-        except rospy.exceptions.ROSException as err:
-            rospy.logerr("'%s' dynamic reconfiguration not available: %s", self.params_ns, str(err))
 
     def make_goal(self, ud, goal):
         if self.planner:
@@ -94,21 +84,14 @@ class GoToPose(smach_ros.SimpleActionState):
         if self.rec_behaviors:
             goal.recovery_behaviors = self.rec_behaviors
         if self.dist_tolerance and self.angle_tolerance:
-            # Set configured tolerance values and keep previous to restore before leaving the state
-            self.prev_dist_tolerance = rospy.get_param(self.params_ns + '/xy_goal_tolerance')
-            self.prev_angle_tolerance = rospy.get_param(self.params_ns + '/yaw_goal_tolerance')
-            new_config = {'xy_goal_tolerance': self.dist_tolerance,
-                          'yaw_goal_tolerance': self.angle_tolerance}
-            self.reconfigure_client.update_configuration(new_config)
+            # Set configured tolerance values
+            Reconfigure().update_config(self.params_ns, {'xy_goal_tolerance': self.dist_tolerance,
+                                                         'yaw_goal_tolerance': self.angle_tolerance})
 
     def result_cb(self, ud, status, result):
-        if self.prev_dist_tolerance and self.prev_angle_tolerance:
-            # Restore previous tolerance values
-            prev_config = {'xy_goal_tolerance': self.prev_angle_tolerance,
-                           'yaw_goal_tolerance': self.prev_angle_tolerance}
-            self.reconfigure_client.update_configuration(prev_config)
-            self.prev_dist_tolerance = None
-            self.prev_angle_tolerance = None
+        if self.dist_tolerance and self.angle_tolerance:
+            # Restore previous tolerance values before leaving the state
+            Reconfigure().restore_config(self.params_ns, ['xy_goal_tolerance', 'yaw_goal_tolerance'])
 
 
 class ExePath(smach_ros.SimpleActionState):
@@ -122,43 +105,26 @@ class ExePath(smach_ros.SimpleActionState):
         self.controller = controller
         self.dist_tolerance = dist_tolerance
         self.angle_tolerance = angle_tolerance
-        self.prev_dist_tolerance = None
-        self.prev_angle_tolerance = None
+        self.params_ns = '/move_base_flex/' + controller
 
         # Show target pose (MBF only shows it when calling get_path)
         self.target_pose_pub = rospy.Publisher('/move_base_flex/current_goal', geo_msgs.PoseStamped, queue_size=1)
-
-        # Create a dynamic reconfigure client to change goal tolerance values, if needed
-        self.params_ns = '/move_base_flex/' + controller
-        try:
-            rospy.loginfo("Waiting for '%s' dynamic reconfigure service...", self.params_ns)
-            self.reconfigure_client = dynamic_reconfigure.client.Client(self.params_ns, timeout=60)
-            rospy.loginfo("Dynamic reconfigure service '%s' alive!", self.params_ns)
-        except rospy.exceptions.ROSException as err:
-            rospy.logerr("'%s' dynamic reconfiguration not available: %s", self.params_ns, str(err))
 
     def make_goal(self, ud, goal):
         goal.path = ud['path']
         if self.controller:
             goal.controller = self.controller
         if self.dist_tolerance and self.angle_tolerance:
-            # Set configured tolerance values and keep previous to restore before leaving the state
-            self.prev_dist_tolerance = rospy.get_param(self.params_ns + '/xy_goal_tolerance')
-            self.prev_angle_tolerance = rospy.get_param(self.params_ns + '/yaw_goal_tolerance')
-            new_config = {'xy_goal_tolerance': self.dist_tolerance,
-                          'yaw_goal_tolerance': self.angle_tolerance}
-            self.reconfigure_client.update_configuration(new_config)
+            # Set configured tolerance values
+            Reconfigure().update_config(self.params_ns, {'xy_goal_tolerance': self.dist_tolerance,
+                                                         'yaw_goal_tolerance': self.angle_tolerance})
         if goal.path.poses:
             self.target_pose_pub.publish(goal.path.poses[-1])
 
     def result_cb(self, ud, status, result):
-        if self.prev_dist_tolerance and self.prev_angle_tolerance:
-            # Restore previous tolerance values
-            prev_config = {'xy_goal_tolerance': self.prev_angle_tolerance,
-                           'yaw_goal_tolerance': self.prev_angle_tolerance}
-            self.reconfigure_client.update_configuration(prev_config)
-            self.prev_dist_tolerance = None
-            self.prev_angle_tolerance = None
+        if self.dist_tolerance and self.angle_tolerance:
+            # Restore previous tolerance values before leaving the state
+            Reconfigure().restore_config(self.params_ns, ['xy_goal_tolerance', 'yaw_goal_tolerance'])
 
     def _goal_feedback_cb(self, feedback):
         super(ExePath, self)._goal_feedback_cb(feedback)
