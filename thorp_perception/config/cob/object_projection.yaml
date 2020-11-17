@@ -1,0 +1,18 @@
+# Set your depth image topic here, default is for openni2
+#depth_topic: "/kinect/depth_registered/hw_registered/image_rect"
+depth_topic: "/kinect/depth_registered/image_raw"
+
+# Set your face detection topic here
+face_topic: "/object_detection/detections"
+
+# Set your output topic here
+output_topic: "/object_detection/detections/with_pose"
+
+# Set your depth focal length
+focal_length: 587.8
+
+# cx of depth camera
+cx: 351
+
+# cy for depth camera
+cy: 227

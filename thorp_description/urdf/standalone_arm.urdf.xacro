@@ -8,6 +8,13 @@
     <!-- Included URDF Files -->
     <xacro:include filename="$(find turtlebot_arm_description)/urdf/turtlebot_arm.xacro" />
 
+      <!-- Used for fixing robot to Gazebo 'base_link' -->
+  <link name="world"/>
+
+  <joint name="fixed" type="fixed">
+    <parent link="world"/>
+    <child link="base_link"/>
+  </joint>
     <!-- As we don't have here a turtlebot, add a base_link link as its location reference -->
     <link name="base_link"/>
 
@@ -30,4 +37,31 @@
            as pick and place and other demos assume this location -->
       <origin xyz="0.1 0.03 0.435"/>
     </xacro:turtlebot_arm>
+
+
+  <!-- Gazebo configuration for arm and cannon servos control -->
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+      <legacyModeNS>false</legacyModeNS>
+    </plugin>
+  </gazebo>
+
+  <xacro:macro name="servo_transmission" params="name">
+    <transmission name="${name}_trans">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="${name}_joint">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="${name}_motor">
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+    </transmission>
+  </xacro:macro>
+
+  <xacro:servo_transmission name="arm_shoulder_pan"/>
+  <xacro:servo_transmission name="arm_shoulder_lift"/>
+  <xacro:servo_transmission name="arm_elbow_flex"/>
+  <xacro:servo_transmission name="arm_wrist_flex"/>
+  <xacro:servo_transmission name="gripper"/>
 </robot>

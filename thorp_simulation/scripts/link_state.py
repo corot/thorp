@@ -1,15 +1,20 @@
 #!/usr/bin/env python
 
+"""
+Print pose and velocity in Gazebo for a given link
+"""
+
+import sys
 import rospy
 
 from gazebo_msgs.msg import LinkStates
 
-from thorp_toolkit.geometry import roll, pitch, yaw, pose3d2str
+from thorp_toolkit.geometry import pose3d2str
 
 
 def link_states_cb(msg):
     try:
-        index = msg.name.index('thorp::arm_shoulder_lift_link')
+        index = msg.name.index('thorp::' + sys.argv[1])
         print(pose3d2str(msg.pose[index]))
         print(msg.twist[index])
     except ValueError:

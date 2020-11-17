@@ -6,7 +6,7 @@
   <arg name="pipeline"/>  <!-- ORK / COB / RAIL -->
   <arg name="target_objects" default="[]"/>
 
-  <!--  ************ Thorp perception nodes ***********  -->
+  <!--  ************ Thorp perception nodes ***********
 
   <node pkg="thorp_perception" type="object_detection_server" name="object_detection_server" output="screen" respawn="true">
     <param name="ork_execute_timeout" value="5.0"/>
@@ -17,6 +17,8 @@
 
   <node pkg="object_recognition_ros" type="object_information_server" name="object_information_server" output="screen" respawn="true">
   </node>
+  TODO: only works with ORK by now, so disabled.  If I use more than 1 pipeline, I need to choose different servers depending on the pipeline
+    -->
 
   <!--  **************** ORK pipeline *****************  -->
   <group if="$(eval pipeline == 'ORK')">
@@ -47,7 +49,7 @@
       <rosparam command="load" file="$(find thorp_perception)/config/cob/object_projection.yaml"/>
     </node>
 
-    <node name="cob_object_tracking" pkg="thorp_perception" type="object_tracking.py" output="screen"       respawn="false">
+    <node name="cob_object_tracking" pkg="thorp_perception" type="object_tracking.py" output="screen" respawn="true">
       <rosparam param="target_objects" subst_value="True">$(arg target_objects)</rosparam>
     </node>
   </group>

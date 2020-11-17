@@ -37,5 +37,5 @@ def link_states_cb(msg):
 if __name__ == "__main__":
     rospy.init_node("gazebo_ground_truth")
     period = 1.0 / rospy.get_param("frequency", 20.0)
-    rospy.Subscriber("gazebo/link_states", LinkStates, link_states_cb)
+    rospy.Subscriber("gazebo/link_states", LinkStates, link_states_cb, queue_size=1)
     rospy.spin()

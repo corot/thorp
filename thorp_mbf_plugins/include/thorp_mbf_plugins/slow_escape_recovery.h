@@ -19,7 +19,8 @@ namespace thorp_mbf_plugins
 /**
  * @brief Search tree node
  */
-struct CmdVelNode {
+struct CmdVelNode
+{
   CmdVelNode(int depth, double pose_x, double pose_y, double heading, geometry_msgs::Twist cmd_vel,
              CmdVelNode* prev = nullptr, double cost = std::numeric_limits<double>::infinity()) :
       depth_(depth), pose_x_(pose_x), pose_y_(pose_y), heading_(heading), cmd_vel_(cmd_vel), prev_(prev),
