@@ -17,4 +17,4 @@ MAX_ARM_REACH = 0.3
 TRAY_SIDE_X = 0.15
 TRAY_SIDE_Y = 0.15
 TRAY_DEPTH = 0.02
-TRAY_SLOT = 0.03  # better a divisor of both tray sides
+TRAY_SLOT = 0.0375  # better a divisor of both tray sides

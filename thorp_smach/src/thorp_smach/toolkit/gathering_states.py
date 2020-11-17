@@ -1,9 +1,7 @@
 import rospy
 import smach
-import smach_ros
 
 import geometry_msgs.msg as geometry_msgs
-from turtlebot_arm_block_manipulation.msg import BlockDetectionAction
 
 from copy import deepcopy
 from itertools import permutations
@@ -14,7 +12,7 @@ from thorp_toolkit.transform import Transform
 from thorp_toolkit.visualization import Visualization
 
 from comon_states import SetNamedConfig, DismissNamedConfig
-from perception_states import MonitorTables
+from perception_states import MonitorTables, BlockDetection
 from navigation_states import GetRobotPose, GoToPose, ExePath, PoseAsPath
 from pick_objects_states import PickReachableObjs
 
@@ -101,11 +99,11 @@ class GroupObjects(smach.State):
     If an object can be reached from two of the remaining locations, we choose
     the one that places the object closer to the robot arm.
     """
-    def __init__(self, manip_frame):
+    def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded', 'no_objects'],
                              input_keys=['objects', 'robot_pose', 'picking_poses'],
                              output_keys=['picking_locs'])
-        self.manip_frame = manip_frame
+        self.manip_frame = rospy.get_param('~manipulation_frame', 'arm_base_link')
 
     def execute(self, ud):
         bfp_to_arm_tf = Transform.create(TF2().lookup_transform('base_footprint', self.manip_frame))  # base to arm tf
@@ -258,14 +256,11 @@ def GatherObjects():
      - approach each detected table and pick all the objects of the chosen shape
     """
 
-    # explore a single room
+    # approach to the table, detects objects over it, and make a picking plan
     approach_table_sm = smach.Sequence(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'],
                                        connector_outcome='succeeded',
                                        input_keys=['detected_table', 'detected_table_pose'],
                                        output_keys=['picking_poses', 'closest_picking_pose', 'picking_plan'])
-    approach_table_sm.userdata.frame = rospy.get_param('~arm_link', 'arm_base_link')
-    approach_table_sm.userdata.table_height = rospy.get_param('~table_height', -0.03)
-    approach_table_sm.userdata.block_size = rospy.get_param('~block_size', 0.025)
     with approach_table_sm:
         smach.Sequence.add('GET_ROBOT_POSE1', GetRobotPose())
         smach.Sequence.add('CALC_APPROACHES', CalcPickPoses(cfg.APPROACH_DIST_TO_TABLE),
@@ -281,29 +276,22 @@ def GatherObjects():
                            transitions={'aborted': 'aborted'})
         smach.Sequence.add('CALC_PICK_POSES', CalcPickPoses(cfg.PICKING_DIST_TO_TABLE),
                            transitions={'no_valid_table': 'aborted'})
-        smach.Sequence.add('DETECT_OBJECTS',  # TODO: will replace with a proper object detection once I have it
-                           smach_ros.SimpleActionState('block_detection',
-                                                       BlockDetectionAction,
-                                                       goal_slots=['frame', 'table_height', 'block_size'],
-                                                       result_slots=['blocks']),
+        smach.Sequence.add('DETECT_OBJECTS', BlockDetection(),
                            transitions={'aborted': 'aborted',
                                         'preempted': 'preempted'},
                            remapping={'blocks': 'detected_objects'})
-        smach.Sequence.add('GROUP_OBJECTS', GroupObjects(approach_table_sm.userdata.frame),
+        smach.Sequence.add('GROUP_OBJECTS', GroupObjects(),
                            transitions={'no_objects': 'aborted'},
                            remapping={'objects': 'detected_objects',
                                       'table': 'detected_table'})
         smach.Sequence.add('MAKE_PICKING_PLAN', MakePickingPlan())
 
-    # pick all objects in table
+    # go to a picking location and pick all objects reachable from there
     pick_objects_sm = smach.Sequence(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'],
                                      connector_outcome='succeeded',
                                      input_keys=['detected_table', 'picking_poses', 'picking_loc'])
-    pick_objects_sm.userdata.frame = rospy.get_param('~arm_link', 'arm_base_link')
-    pick_objects_sm.userdata.table_height = rospy.get_param('~table_height', -0.03)
-    pick_objects_sm.userdata.block_size = rospy.get_param('~block_size', 0.025)
 
-    with pick_objects_sm:  # TODO go to every picking location with objects to pick, following by proximity order    how??? until there are no objects left
+    with pick_objects_sm:
         smach.Sequence.add('PICK_LOC_FIELDS', PickLocFields())
         smach.Sequence.add('GOTO_APPROACH', GoToPose(),  # use default tolerances; no precision needed here
                            transitions={'aborted': 'aborted',
@@ -315,7 +303,7 @@ def GatherObjects():
         smach.Sequence.add('ALIGN_TO_TABLE', ExePath(),
                            transitions={'aborted': 'aborted',
                                         'preempted': 'preempted'})
-        #  TODO  smach.Sequence.add('PICK_OBJECTS', PickReachableObjs())
+        smach.Sequence.add('PICK_OBJECTS', PickReachableObjs())
         smach.Sequence.add('GET_AWAY_POSE', PoseAsPath(),
                            remapping={'pose': 'approach_pose'})
         smach.Sequence.add('AWAY_FROM_TABLE', ExePath(),
@@ -323,6 +311,7 @@ def GatherObjects():
                                         'preempted': 'preempted'})
         smach.Sequence.add('STANDARD_CTRL', DismissNamedConfig('precise_controlling'))
 
+    # iterate over all picking locations in the plan
     pick_objects_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted', 'tray_full'],
                                      input_keys=['detected_table', 'picking_poses', 'picking_plan'],
                                      output_keys=[],

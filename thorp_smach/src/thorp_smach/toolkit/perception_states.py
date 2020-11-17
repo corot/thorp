@@ -7,6 +7,7 @@ import std_srvs.srv as std_srvs
 import thorp_msgs.msg as thorp_msgs
 import geometry_msgs.msg as geo_msgs
 
+from turtlebot_arm_block_manipulation.msg import BlockDetectionAction
 import cob_perception_msgs.msg as cob_msgs
 import rail_manipulation_msgs.msg as rail_msgs
 import rail_manipulation_msgs.srv as rail_srvs
@@ -79,6 +80,33 @@ def ObjectDetection():
                                             'aborted': 'CLEAR_OCTOMAP'})
 
     return sm
+
+
+class BlockDetection(smach_ros.SimpleActionState):
+    """
+    Block detection state:
+    use turtlebot_arm_block_manipulation demo's simple block detector until I have a proper object detection
+    """
+
+    def __init__(self):
+        super(BlockDetection, self).__init__('block_detection',
+                                             BlockDetectionAction,
+                                             goal_cb=self.make_goal,
+                                             result_cb=self.result_cb,
+                                             output_keys=['blocks', 'objects', 'object_names', 'support_surf'])
+
+    def make_goal(self, ud, goal):
+        goal.frame = rospy.get_param('~arm_link', 'arm_base_link')
+        goal.table_height = rospy.get_param('~table_height', -0.03)
+        goal.block_size = rospy.get_param('~block_size', 0.025)
+
+    def result_cb(self, ud, status, result):
+        ud['blocks'] = result.blocks
+        ud['objects'] = result.blocks
+        # blocks only contains poses, so we need to invent values for 'object_names' and 'support_surf' fields
+        # the real ObjectDetection state will provide more detailed information
+        ud['object_names'] = ['block' + str(i) for i in range(1, len(result.blocks.poses) + 1)]
+        ud['support_surf'] = 'table'
 
 
 class MonitorObjects(smach_ros.MonitorState):
@@ -156,13 +184,15 @@ class MonitorTables(smach.State):
                 width, length = self.detected_table.width, self.detected_table.depth
                 table_tf = to_transform(pose, 'table_frame')
                 TF2().publish_transform(table_tf)
+                kk=self.detected_table.marker
                 ud['detected_table'] = self.detected_table
                 ud['detected_table_pose'] = pose
                 rospy.loginfo("Detected table of size %.1f x %.1f at %s", width, length, pose2d2str(pose))
                 # Add the table contour as an obstacle to global costmap, so we can plan around it
-                # We don't add to the local costmap because that would impair approaching for picking
+                # We also add an shrinked version to the local costmap so no to impair approaching for picking
                 # TODO: detected_table.name is empty; tweak RAIL to provide it or add sequential names here
                 SemanticMap().add_obstacle(self.detected_table.name, pose, [width, length, 0.0], 'global')
+                SemanticMap().add_obstacle(self.detected_table.name, pose, [width - 0.2, length - 0.2, 0.0], 'local')
                 return 'succeeded'
             else:
                 # nothing detected; TODO timeout   return 'not_detected'
