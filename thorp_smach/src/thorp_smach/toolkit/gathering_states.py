@@ -13,6 +13,7 @@ from thorp_toolkit.geometry import TF2, to_transform, translate_pose, transform_
 from thorp_toolkit.transform import Transform
 from thorp_toolkit.visualization import Visualization
 
+from comon_states import SetNamedConfig, DismissNamedConfig
 from perception_states import MonitorTables
 from navigation_states import GetRobotPose, GoToPose, ExePath, PoseAsPath
 from pick_objects_states import PickReachableObjs
@@ -310,17 +311,17 @@ def GatherObjects():
                            remapping={'target_pose': 'approach_pose'})
         smach.Sequence.add('GET_PICK_POSE', PoseAsPath(),
                            remapping={'pose': 'picking_pose'})
-        smach.Sequence.add('ALIGN_TO_TABLE', ExePath(dist_tolerance=cfg.TIGHT_DIST_TOLERANCE,  # we try to
-                                                     angle_tolerance=cfg.TIGHT_ANGLE_TOLERANCE),  # be precise
+        smach.Sequence.add('PRECISE_CTRL', SetNamedConfig('precise_controlling'))
+        smach.Sequence.add('ALIGN_TO_TABLE', ExePath(),
                            transitions={'aborted': 'aborted',
                                         'preempted': 'preempted'})
         #  TODO  smach.Sequence.add('PICK_OBJECTS', PickReachableObjs())
         smach.Sequence.add('GET_AWAY_POSE', PoseAsPath(),
                            remapping={'pose': 'approach_pose'})
-        smach.Sequence.add('AWAY_FROM_TABLE', ExePath(dist_tolerance=cfg.TIGHT_DIST_TOLERANCE,  # we try to
-                                                      angle_tolerance=cfg.TIGHT_ANGLE_TOLERANCE),  # be precise
+        smach.Sequence.add('AWAY_FROM_TABLE', ExePath(),
                            transitions={'aborted': 'aborted',
                                         'preempted': 'preempted'})
+        smach.Sequence.add('STANDARD_CTRL', DismissNamedConfig('precise_controlling'))
 
     pick_objects_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted', 'tray_full'],
                                      input_keys=['detected_table', 'picking_poses', 'picking_plan'],
@@ -346,7 +347,10 @@ def GatherObjects():
                                             'preempted': 'preempted'})
         smach.StateMachine.add('PICK_OBJECTS', pick_objects_it,
                                transitions={'succeeded': 'succeeded',
-                                            'aborted': 'aborted',
+                                            'aborted': 'STANDARD_CTRL',  # ensure we restore original configuration
                                             'preempted': 'preempted',
                                             'tray_full': 'tray_full'})
+        smach.StateMachine.add('STANDARD_CTRL', DismissNamedConfig('precise_controlling'),
+                               transitions={'succeeded': 'aborted',
+                                            'aborted': 'aborted'})
     return sm

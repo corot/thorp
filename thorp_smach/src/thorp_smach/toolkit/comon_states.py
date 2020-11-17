@@ -7,6 +7,8 @@ import rosgraph_msgs.msg as rosgraph_msgs
 import mbf_msgs.msg as mbf_msgs
 import thorp_msgs.msg as thorp_msgs
 
+from thorp_toolkit.reconfigure import Reconfigure
+
 
 def wait_for_sim_time():
     """
@@ -49,6 +51,34 @@ class UDHasKey(smach.State):
             return 'true'
         except KeyError:
             return 'false'
+
+
+class SetNamedConfig(smach.State):
+    """
+    Set a given named configuration. Returns
+    - 'true' if succeeded
+    - 'false' otherwise
+    """
+    def __init__(self, config_name):
+        super(SetNamedConfig, self).__init__(outcomes=['succeeded', 'aborted'])
+        self.config_name = config_name
+
+    def execute(self, ud):
+        return 'succeeded' if Reconfigure().use_named_config(self.config_name) else 'aborted'
+
+
+class DismissNamedConfig(smach.State):
+    """
+    Dismiss a given named configuration. Returns
+    - 'true' if succeeded
+    - 'false' otherwise
+    """
+    def __init__(self, config_name):
+        super(DismissNamedConfig, self).__init__(outcomes=['succeeded', 'aborted'])
+        self.config_name = config_name
+
+    def execute(self, ud):
+        return 'succeeded' if Reconfigure().dismiss_named_config(self.config_name) else 'aborted'
 
 
 class ExecuteUserCommand(smach.State):

@@ -5,6 +5,7 @@ import smach
 import smach_ros
 
 from thorp_toolkit.geometry import TF2
+from thorp_toolkit.reconfigure import Reconfigure
 
 from toolkit.comon_states import wait_for_sim_time, wait_for_mbf
 from toolkit.perception_states import MonitorTables
@@ -78,6 +79,8 @@ if __name__ == '__main__':
     rospy.init_node('smach_object_gatherer')
 
     TF2()  # start listener asap to avoid delays when running
+
+    Reconfigure().load_named_configs()  # load named configurations from the default location
 
     wait_for_sim_time()
 

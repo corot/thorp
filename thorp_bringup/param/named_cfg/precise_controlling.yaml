@@ -1,0 +1,18 @@
+move_base_flex/TEBPlanner:
+  max_vel_x: 0.2
+  max_vel_theta: 2.0
+
+  min_obstacle_dist: 0.177  # Set to physical robot radius
+  inflation_dist: 0.5
+  costmap_obstacles_behind_robot_dist: 0.75
+
+  xy_goal_tolerance: 0.035
+  yaw_goal_tolerance: 0.05
+
+move_base_flex/local_costmap:
+  update_frequency: 10.0
+  publish_frequency: 5.0
+  width: 2.0
+  height: 2.0
+  resolution: 0.005
+  robot_radius: 0.177
