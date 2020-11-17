@@ -9,7 +9,7 @@
  -->
 
 <launch>
-  <arg name="localization"    default="amcl"/>  <!-- amcl/fake -->
+  <arg name="localization"    default="amcl"/>    <!-- amcl, static, gazebo -->
   <arg name="move_base_flex"  default="true"/>
   <arg name="base_frame_id"   default="base_footprint"/>  
   <arg name="odom_frame_id"   default="odom"/> 
@@ -75,10 +75,14 @@
     <arg name="initial_pose_a"  value="$(arg initial_pose_a)"/>
   </include>
 
-  <!--  ************** Fake Localization *************  -->
-  <node if="$(eval localization == 'fake')"
-        pkg="tf2_ros" type="static_transform_publisher" name="fake_localization" output="screen" respawn="true"
+  <!--  ************* Static localization *************  -->
+  <node if="$(eval localization == 'static')"
+        pkg="tf2_ros" type="static_transform_publisher" name="static_localization" output="screen" respawn="true"
         args="$(arg initial_pose_x) $(arg initial_pose_y) 0.0 0.0 0.0 $(arg initial_pose_a) map odom"/>
+
+  <!--  ************* Gazebo ground truth *************  -->
+  <node if="$(eval localization == 'gazebo')"
+        pkg="thorp_simulation" type="gazebo_ground_truth.py" name="gazebo_ground_truth" output="screen" respawn="true"/>
 
   <!--  **** Watchdog to keep the pose on rebooting ***  -->
   <node if="$(arg save_robot_pose)"

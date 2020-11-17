@@ -17,6 +17,7 @@ Explore the entire environment searching for cats, and attack them whenever foun
     <arg name="initial_pose_x" default="8.6"/>
     <arg name="initial_pose_y" default="4.0"/>
     <arg name="initial_pose_a" default="0.0"/>
+    <arg name="localization"   value="gazebo"/>
   </include>
 
   <!-- Spawn objects randomly around the house -->

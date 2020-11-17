@@ -214,7 +214,7 @@ def to_pose3d(pose, timestamp=rospy.Time(), frame=None):
     raise rospy.ROSException("Input parameter pose is not a geometry_msgs.Pose2D object")
 
 
-def to_transform(pose, child_frame):
+def to_transform(pose, child_frame=None):
     if isinstance(pose, geometry_msgs.Pose2D):
         return geometry_msgs.Transform(geometry_msgs.Vector3(pose.x, pose.y, 0.0), quaternion_msg_from_yaw(pose.theta))
     elif isinstance(pose, geometry_msgs.Pose):
@@ -352,7 +352,7 @@ class TF2:
 
     def lookup_transform(self, frame_from, frame_to, timestamp=rospy.Time(0.0), timeout=rospy.Duration(1.0)):
         try:
-            return self.__buff__.lookup_transform(frame_to, frame_from, timestamp, timeout)
+            return self.__buff__.lookup_transform(frame_from, frame_to, timestamp, timeout)
         except (tf2_ros.LookupException,
                 tf2_ros.ConnectivityException,
                 tf2_ros.ExtrapolationException,

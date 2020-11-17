@@ -108,8 +108,8 @@ class GroupObjects(smach.State):
         self.manip_frame = manip_frame
 
     def execute(self, ud):
-        bfp_to_arm_tf = Transform.create(TF2().lookup_transform(self.manip_frame, 'base_footprint'))  # base to arm tf
-        map_to_arm_tf = Transform.create(TF2().lookup_transform(self.manip_frame, 'map'))  # map to arm tf
+        bfp_to_arm_tf = Transform.create(TF2().lookup_transform('base_footprint', self.manip_frame))  # base to arm tf
+        map_to_arm_tf = Transform.create(TF2().lookup_transform('map', self.manip_frame))  # map to arm tf
         pick_locs = []
         for name, pose in ud['picking_poses'].items():
             # current distance from the robot; not used by now

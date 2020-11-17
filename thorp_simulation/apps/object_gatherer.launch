@@ -17,7 +17,7 @@ Explore the entire environment searching for cats, and attack them whenever foun
     <arg name="initial_pose_x" value="8.0"/>
     <arg name="initial_pose_y" value="4.0"/>
     <arg name="initial_pose_a" value="0.0"/>
-    <arg name="localization"   value="fake"/>
+    <arg name="localization"   value="gazebo"/>
   </include>
 
   <!-- Spawn objects randomly around the house -->
@@ -49,9 +49,9 @@ Explore the entire environment searching for cats, and attack them whenever foun
 
   <!--  ****** Executive smach and visualization ******
 
-  <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="true"/>  -->
+  <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="true"/>
 
-  <node pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
+  <node pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>  broooken  -->
 
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/gathering.rviz" output="screen" respawn="true"/>

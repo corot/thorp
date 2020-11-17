@@ -12,7 +12,7 @@
   <arg name="paused"         default="true"/>
 
   <arg name="move_base_flex" default="true"/>
-  <arg name="localization"   default="amcl"/>
+  <arg name="localization"   default="amcl"/>  <!-- amcl, static, gazebo -->
 
   <!-- To specify a simulated world other than the default 'playground', provide either word_name
        (without path nor extension), or specific files (with full path) for both map and world.
