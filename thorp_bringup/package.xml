@@ -20,6 +20,7 @@
   <run_depend>openni2_launch</run_depend>
   <run_depend>freenect_launch</run_depend>
   <run_depend>depthimage_to_laserscan</run_depend>
+  <run_depend>pointcloud_to_laserscan</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>kobuki_auto_docking</run_depend>
   <run_depend>kobuki_safety_controller</run_depend>

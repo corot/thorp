@@ -9,7 +9,7 @@ Panels:
         - /Local Planners1/DWA1/Trajectories1
         - /Global Costmap1/Updated bounds1/Status1
         - /Global Costmap1/Updated bounds1/Namespaces1
-      Splitter Ratio: 0.8590250611305237
+      Splitter Ratio: 0.6358839273452759
     Tree Height: 470
   - Class: rviz/Selection
     Name: Selection
@@ -29,7 +29,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: LaserScan (kinect)
+    SyncSource: ""
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -787,8 +787,6 @@ Visualization Manager:
           Value: false
         kinect_rgb_optical_frame:
           Value: false
-        map:
-          Value: false
         odom:
           Value: false
         opencm_link:
@@ -923,215 +921,7 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        map:
-          odom:
-            base_footprint:
-              base_link:
-                base_laser_link:
-                  {}
-                caster_back_link:
-                  {}
-                caster_front_link:
-                  {}
-                cliff_sensor_front_link:
-                  {}
-                cliff_sensor_left_link:
-                  {}
-                cliff_sensor_right_link:
-                  {}
-                gyro_link:
-                  {}
-                ir_l155_link:
-                  {}
-                ir_l180_link:
-                  {}
-                ir_r155_link:
-                  {}
-                ir_r180_link:
-                  {}
-                kinect_rgb_frame:
-                  kinect_depth_frame:
-                    kinect_depth_optical_frame:
-                      {}
-                  kinect_link:
-                    {}
-                  kinect_rgb_optical_frame:
-                    {}
-                plate_bottom_link:
-                  {}
-                plate_middle_link:
-                  {}
-                plate_top_link:
-                  arm_base_link:
-                    arm_shoulder_pan_servo_link:
-                      arm_shoulder_pan_link:
-                        arm_shoulder_lift_servo_link:
-                          arm_shoulder_lift_link:
-                            arm_shoulder_F10_0_link:
-                              arm_shoulder_F10_1_link:
-                                arm_shoulder_F10_2_link:
-                                  arm_shoulder_F3_0_link:
-                                    arm_elbow_flex_servo_link:
-                                      arm_elbow_flex_link:
-                                        arm_elbow_F10_0_link:
-                                          arm_elbow_F10_1_link:
-                                            arm_elbow_F10_2_link:
-                                              arm_elbow_F3_0_link:
-                                                arm_wrist_flex_servo_link:
-                                                  arm_wrist_flex_link:
-                                                    arm_wrist_F3_0_link:
-                                                      gripper_servo_link:
-                                                        gripper_active_link:
-                                                          gripper_active_finger_link:
-                                                            {}
-                                                        gripper_static_link:
-                                                          gripper_static_finger_link:
-                                                            {}
-                                                    gripper_link:
-                                                      {}
-                    ir_arm_link:
-                      {}
-                    pole_bottom_10_link:
-                      {}
-                    pole_bottom_11_link:
-                      {}
-                    pole_bottom_12_link:
-                      {}
-                    pole_bottom_13_link:
-                      {}
-                    pole_bottom_14_link:
-                      {}
-                    pole_bottom_15_link:
-                      {}
-                  arm_mount_link:
-                    cannon_servo_link:
-                      cannon_shaft_link:
-                        cannon_link:
-                          cannon_tube1_hollow_link:
-                            {}
-                          cannon_tube1_link:
-                            {}
-                          cannon_tube2_hollow_link:
-                            {}
-                          cannon_tube2_link:
-                            {}
-                          cannon_tube3_hollow_link:
-                            {}
-                          cannon_tube3_link:
-                            {}
-                          cannon_tube4_hollow_link:
-                            {}
-                          cannon_tube4_link:
-                            {}
-                          cannon_tube5_hollow_link:
-                            {}
-                          cannon_tube5_link:
-                            {}
-                          cannon_tube6_hollow_link:
-                            {}
-                          cannon_tube6_link:
-                            {}
-                          ir_cannon_link:
-                            {}
-                  opencm_link:
-                    {}
-                  pole_bottom_16_link:
-                    {}
-                  pole_bottom_17_link:
-                    {}
-                  pole_top_10_link:
-                    {}
-                  pole_top_20_link:
-                    {}
-                  senz3d_mount_link:
-                    pole_middle_11_link:
-                      {}
-                    pole_middle_21_link:
-                      {}
-                    pole_top_12_link:
-                      {}
-                    pole_top_22_link:
-                      {}
-                    senz3d_calib_link:
-                      senz3d_rgb_frame:
-                        senz3d_depth_frame:
-                          senz3d_depth_optical_frame:
-                            {}
-                        senz3d_link:
-                          senz3d_gazebo_optical_frame:
-                            {}
-                        senz3d_rgb_optical_frame:
-                          {}
-                    xtion_mount_link:
-                      xtion_rgb_frame:
-                        xtion_depth_frame:
-                          xtion_depth_optical_frame:
-                            {}
-                        xtion_link:
-                          {}
-                        xtion_rgb_optical_frame:
-                          {}
-                  tray_link:
-                    {}
-                pole_bottom_0_link:
-                  {}
-                pole_bottom_1_link:
-                  {}
-                pole_bottom_2_link:
-                  {}
-                pole_bottom_3_link:
-                  {}
-                pole_bottom_4_link:
-                  {}
-                pole_bottom_5_link:
-                  {}
-                pole_kinect_0_link:
-                  {}
-                pole_kinect_1_link:
-                  {}
-                pole_middle_0_link:
-                  {}
-                pole_middle_1_link:
-                  {}
-                pole_middle_2_link:
-                  {}
-                pole_middle_3_link:
-                  {}
-                pole_top_0_link:
-                  {}
-                pole_top_1_link:
-                  {}
-                pole_top_2_link:
-                  {}
-                pole_top_3_link:
-                  {}
-                sonars_mount_link:
-                  s_0_link:
-                    {}
-                  s_m18_link:
-                    {}
-                  s_m36_link:
-                    {}
-                  s_m54_link:
-                    {}
-                  s_m72_link:
-                    {}
-                  s_m90_link:
-                    {}
-                  s_p18_link:
-                    {}
-                  s_p36_link:
-                    {}
-                  s_p54_link:
-                    {}
-                  s_p72_link:
-                    {}
-                  s_p90_link:
-                    {}
-                wheel_left_link:
-                  {}
-                wheel_right_link:
-                  {}
+        {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -1159,7 +949,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.009999999776482582
       Style: Squares
-      Topic: /scan
+      Topic: /kinect/scan
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -1754,8 +1544,7 @@ Visualization Manager:
               Marker Topic: /move_base_flex/TEBPlanner/teb_markers
               Name: Markers
               Namespaces:
-                PointObstacles: true
-                TebContainer: true
+                {}
               Queue Size: 100
               Value: true
           Enabled: true
@@ -1779,8 +1568,7 @@ Visualization Manager:
           Marker Topic: /move_base_flex/global_costmap/semantic_layer/updated_bounds_marker
           Name: Updated bounds
           Namespaces:
-            semantic layer 1: true
-            semantic layer 2: true
+            {}
           Queue Size: 100
           Value: true
       Enabled: true

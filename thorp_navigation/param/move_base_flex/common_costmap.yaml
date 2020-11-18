@@ -5,21 +5,22 @@ inflation_layer:
   cost_scaling_factor: 10.0
 
 obstacle_layer:
-  max_obstacle_height: 0.80
+  max_obstacle_height: 1.0  # robot ~0.9
   obstacle_range: 2.0  # half local map side
   raytrace_range: 2.5
 
-  # voxel map configuration; z-voxels 0, 1, 2 and 4 are filled respectively by bumpers, sonars, kinect and virtual sensor
+  # voxel map configuration; z-voxels 0, 1 and 4 are filled respectively by bumpers, kinect and xtion
   map_type: voxel
   origin_z: 0.0
   z_resolution: 0.2
-  z_voxels: 3
+  z_voxels: 5
   publish_voxel_map: true
 
-  observation_sources: kinect virtual bumpers
+  observation_sources: xtion kinect virtual bumpers
 
-  kinect:  {data_type: LaserScan, topic: scan, marking: true, clearing: true, min_obstacle_height: 0.2, max_obstacle_height: 0.4}
-  virtual: {data_type: LaserScan, topic: virtual, marking: true, clearing: true, min_obstacle_height: 0.4, max_obstacle_height: 0.8}
+  xtion:   {data_type: LaserScan, topic: xtion/scan, marking: true, clearing: true, min_obstacle_height: 0.8, max_obstacle_height: 1.0}
+  kinect:  {data_type: LaserScan, topic: kinect/scan, marking: true, clearing: true, min_obstacle_height: 0.2, max_obstacle_height: 0.4}
+  virtual: {data_type: LaserScan, topic: virtual, marking: true, clearing: true, min_obstacle_height: 0.4, max_obstacle_height: 0.8}   ### TODO DROP?????
   bumpers: {data_type: PointCloud2, topic: bumpers, marking: true, clearing: false, min_obstacle_height: 0.0, max_obstacle_height: 0.2}
 
 range_sensor_layer:

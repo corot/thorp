@@ -41,7 +41,7 @@
     <remap from="odom" to="odom"/>
     <remap from="base_pose_ground_truth" to="base_pose_ground_truth"/>
     <remap from="cmd_vel" to="mobile_base/commands/velocity"/>
-    <remap from="base_scan" to="scan"/>
+    <remap from="base_scan" to="kinect/scan"/>
   </node>
 
   <!--  ***************** Robot Model *****************  -->

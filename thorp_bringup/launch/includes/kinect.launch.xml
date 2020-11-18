@@ -11,7 +11,7 @@
   <arg unless="$(arg depth_registration)" name="depth" value="depth"/>
 
   <!-- Laserscan processing -->
-  <arg name="scan_topic"                        value="scan" />
+  <arg name="scan_topic"                        value="$(arg camera_name)/scan"/>
   <arg name="scan_processing"                   value="true" />
 
   <include file="$(find freenect_launch)/launch/freenect.launch">
