@@ -1,0 +1,3 @@
+range_min: 0.45
+scan_height: 10  # Pixel rows to use to generate the laserscan. For each column, the scan will
+                 # return the minimum value for those pixels centered vertically in the image

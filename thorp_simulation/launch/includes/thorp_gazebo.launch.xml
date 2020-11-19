@@ -23,29 +23,14 @@
 
   <!-- Fake laser from Kinect (2D slice) and Xtion (3D projection) -->
   <node pkg="depthimage_to_laserscan" type="depthimage_to_laserscan" name="depthimage_to_laserscan" output="screen" respawn="true">
-    <param name="scan_height" value="10"/>
+    <rosparam file="$(find thorp_bringup)/param/kinect/depthimage_to_laserscan.yaml" command="load"/>
     <param name="output_frame_id" value="kinect_depth_frame"/>
-    <param name="range_min" value="0.45"/>
     <remap from="image" to="kinect/depth_registered/image_raw"/>
     <remap from="scan" to="kinect/scan"/>
   </node>
 
   <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan" output="screen" respawn="true">
-    <rosparam>
-      target_frame: xtion_mount_link  # horizontally-aligned frame at the same height of the camera
-      transform_tolerance: 0.01
-      min_height: -0.865       # frame is at 0.876, so provide 1 cm for irregularities in the ground
-      max_height: +0.025       # right above the camera
-      angle_min: -0.58         # horizontal fov is 58 degrees
-      angle_max: +0.58
-      angle_increment: 0.0087  # M_PI/360.0
-      scan_time: 0.05
-      range_min: 0.45
-      range_max: 2.5           # inf readings must be within range_max for clearing, but
-      use_inf: false           # bigger than voxel layer obstacle_range for not marking
-      inf_epsilon: -0.0001     # any negative value here will work to achieve this ^
-      concurrency_level: 1     # single threaded
-    </rosparam>
+    <rosparam file="$(find thorp_bringup)/param/xtion/pointcloud_to_laserscan.yaml" command="load"/>
     <remap from="cloud_in" to="xtion/depth_registered/points"/>
     <remap from="scan" to="xtion/scan"/>
   </node>
