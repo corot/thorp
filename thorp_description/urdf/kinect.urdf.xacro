@@ -5,40 +5,42 @@
   <xacro:property name="kinect_cam_py" value="-0.0125"/>
 
   <!-- 3D sensor macro -->
-  <!-- Parameterised in part by the values in turtlebot_properties.urdf.xacro, so don't require origin -->
+  <!-- Parameterised in part by the values in turtlebot_properties.urdf.xacro, so don't require origin
+       Note that camera_link must match with RGB frame so both simulated and real-world observations match,
+       as Gazebo uses camera_link as the optical center (we differ from turtlebot kinect.urdf.xacro) -->
   <xacro:macro name="kinect_camera" params="parent name">
     <joint name="${name}_rgb_joint" type="fixed">
       <origin xyz="${cam_px} ${kinect_cam_py} ${cam_pz}" rpy="${cam_or} ${cam_op} ${cam_oy}"/>
       <parent link="${parent}"/>
-      <child link="${name}_rgb_frame" />
+      <child link="${name}_rgb_frame"/>
     </joint>
     <link name="${name}_rgb_frame"/>
 
     <joint name="${name}_rgb_optical_joint" type="fixed">
-      <origin xyz="0 0 0" rpy="${-M_PI/2} 0 ${-M_PI/2}" />
+      <origin xyz="0 0 0" rpy="${-M_PI/2} 0 ${-M_PI/2}"/>
       <parent link="${name}_rgb_frame" />
-      <child link="${name}_rgb_optical_frame" />
+      <child link="${name}_rgb_optical_frame"/>
     </joint>
     <link name="${name}_rgb_optical_frame"/>
 
     <joint name="${name}_joint" type="fixed">
-      <origin xyz="-0.031 ${-kinect_cam_py} -0.016" rpy="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <parent link="${name}_rgb_frame"/>
       <child link="${name}_link"/>
-    </joint>  
-      <link name="${name}_link">
+    </joint>
+    <link name="${name}_link">
       <visual>
-       <origin xyz="0 0 0" rpy="0 0 ${M_PI/2}"/>
+       <origin xyz="-0.031 ${-kinect_cam_py} -0.016" rpy="0 0 ${M_PI/2}"/>
         <geometry>
          <mesh filename="package://turtlebot_description/meshes/sensors/kinect.dae"/>
         </geometry>
       </visual>
-  	  <collision>
-        <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
-  	    <geometry>
-  	      <box size="0.07271 0.27794 0.073"/>
-  	    </geometry>
-  	  </collision>
+      <collision>
+        <origin xyz="-0.031 ${-kinect_cam_py} -0.016" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.07271 0.27794 0.073"/>
+        </geometry>
+      </collision>
       <inertial>
         <mass value="0.564" />
         <origin xyz="0 0 0" />
@@ -48,23 +50,23 @@
       </inertial>
     </link>
 
-    <!-- The fixed joints & links below are usually published by static_transformers launched by the OpenNi launch 
+    <!-- The fixed joints & links below are usually published by static_transformers launched by the OpenNi launch
          files. However, for Gazebo simulation we need them, so we add them here.
          (Hence, don't publish them additionally!) -->
-	<joint name="${name}_depth_joint" type="fixed">
-	  <origin xyz="0 ${2 * -kinect_cam_py} 0" rpy="0 0 0" />
-	  <parent link="${name}_rgb_frame" />
-	  <child link="${name}_depth_frame" />
-	</joint>
-	<link name="${name}_depth_frame"/>
+    <joint name="${name}_depth_joint" type="fixed">
+      <origin xyz="0 ${2 * -kinect_cam_py} 0" rpy="0 0 0"/>
+      <parent link="${name}_rgb_frame"/>
+      <child link="${name}_depth_frame"/>
+    </joint>
+    <link name="${name}_depth_frame"/>
 
-	<joint name="${name}_depth_optical_joint" type="fixed">
-	  <origin xyz="0 0 0" rpy="${-M_PI/2} 0 ${-M_PI/2}" />
-	  <parent link="${name}_depth_frame" />
-	  <child link="${name}_depth_optical_frame" />
-	</joint>
-	<link name="${name}_depth_optical_frame"/>
-	
+    <joint name="${name}_depth_optical_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="${-M_PI/2} 0 ${-M_PI/2}"/>
+      <parent link="${name}_depth_frame"/>
+      <child link="${name}_depth_optical_frame"/>
+    </joint>
+    <link name="${name}_depth_optical_frame"/>
+
     <!-- RGBD sensor for simulation -->
     <xacro:thorp_sim_3dsensor name="${name}" depth_registration="true"/>
   </xacro:macro>

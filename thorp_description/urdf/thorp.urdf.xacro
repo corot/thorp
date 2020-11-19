@@ -19,7 +19,6 @@
 
   <xacro:include filename="$(find turtlebot_description)/urdf/turtlebot_common_library.urdf.xacro"/>
   <xacro:include filename="$(find turtlebot_description)/urdf/stacks/hexagons.urdf.xacro"/>
-  <xacro:include filename="$(find turtlebot_description)/urdf/sensors/kinect.urdf.xacro"/>
   <xacro:include filename="$(find turtlebot_arm_description)/urdf/turtlebot_arm.xacro"/>
   <xacro:include filename="$(find kobuki_description)/urdf/kobuki.urdf.xacro"/>
   <xacro:include filename="$(find thorp_description)/urdf/thorp_gazebo.urdf.xacro"/>

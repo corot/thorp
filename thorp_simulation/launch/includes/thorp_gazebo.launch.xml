@@ -24,7 +24,7 @@
   <!-- Fake laser from Kinect (2D slice) and Xtion (3D projection) -->
   <node pkg="depthimage_to_laserscan" type="depthimage_to_laserscan" name="depthimage_to_laserscan" output="screen" respawn="true">
     <rosparam file="$(find thorp_bringup)/param/kinect/depthimage_to_laserscan.yaml" command="load"/>
-    <param name="output_frame_id" value="kinect_depth_frame"/>
+    <param name="output_frame_id" value="kinect_rgb_frame"/>
     <remap from="image" to="kinect/depth_registered/image_raw"/>
     <remap from="scan" to="kinect/scan"/>
   </node>
