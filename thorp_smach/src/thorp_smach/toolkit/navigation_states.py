@@ -9,6 +9,9 @@ import thorp_msgs.msg as thorp_msgs
 
 from thorp_toolkit.geometry import TF2
 from thorp_toolkit.reconfigure import Reconfigure
+from thorp_toolkit.semantic_map import SemanticMap
+
+from common_states import SetNamedConfig, DismissNamedConfig
 
 import config as cfg
 
@@ -54,6 +57,30 @@ class PosesAsPath(smach.State):
     def execute(self, ud):
         assert ud['poses'], "PosesAsPath: poses list is empty"
         ud['path'] = nav_msgs.Path(ud['poses'][0].header, ud['poses'])
+        return 'succeeded'
+
+
+class AddSemanticObj(smach.State):
+    """ Add an object to the semantic map of one or both costmaps """
+
+    def __init__(self):
+        super(AddSemanticObj, self).__init__(outcomes=['succeeded'],
+                                             input_keys=['name', 'type', 'pose', 'size', 'costmap'])
+
+    def execute(self, ud):
+        SemanticMap().add_object(ud['name'], ud['type'], ud['pose'], ud['size'], ud['costmap'])
+        return 'succeeded'
+
+
+class RemoveSemanticObj(smach.State):
+    """ Remove an object from the semantic map of one or both costmaps """
+
+    def __init__(self):
+        super(RemoveSemanticObj, self).__init__(outcomes=['succeeded'],
+                                                input_keys=['name', 'type', 'costmap'])
+
+    def execute(self, ud):
+        SemanticMap().remove_object(ud['name'], ud['type'], ud['costmap'])
         return 'succeeded'
 
 
@@ -176,6 +203,54 @@ class ExePathFailed(smach.State):
                 return 'next_wp'
 
             return 'aborted'
+
+
+class ClearTableWay(smach.State):
+    """ Clear an area on local costmap so the controller can approach the table """
+
+    def __init__(self):
+        super(ClearTableWay, self).__init__(outcomes=['succeeded'],
+                                            input_keys=['table', 'pose'])
+
+    def execute(self, ud):
+        SemanticMap().add_object(ud['table'].name, 'free_space', ud['pose'], [0.5, 0.4], 'local')
+        rospy.Timer(rospy.Duration(5),
+                    lambda: SemanticMap().remove_object(ud['table'].name, 'free_space', 'local'),
+                    oneshot=True)
+        return 'succeeded'
+
+
+class AlignToTable(smach.Sequence):
+    def __init__(self):
+        super(AlignToTable, self).__init__(outcomes=['succeeded',
+                                                     'aborted',
+                                                     'preempted'],
+                                           connector_outcome='succeeded',
+                                           input_keys=['table', 'pose'],
+                                           output_keys=['outcome', 'message'])
+        with self:
+            smach.Sequence.add('CLEAR_WAY', ClearTableWay())
+            smach.Sequence.add('POSE_AS_PATH', PoseAsPath())
+            smach.Sequence.add('PRECISE_CTRL', SetNamedConfig('precise_controlling'))
+            smach.Sequence.add('ALIGN_TO_TABLE', ExePath())
+
+
+class DetachFromTable(smach.Sequence):
+    def __init__(self):
+        super(DetachFromTable, self).__init__(outcomes=['succeeded',
+                                                        'aborted',
+                                                        'preempted'],
+                                              connector_outcome='succeeded',
+                                              input_keys=['table', 'pose'],
+                                              output_keys=['outcome', 'message'])
+        with self:
+            smach.Sequence.add('POSE_AS_PATH', PoseAsPath())
+            smach.Sequence.add('AWAY_FROM_TABLE', ExePath())
+            smach.Sequence.add('STANDARD_CTRL', DismissNamedConfig('precise_controlling'))
+            # self.userdata.name = 'table'  #### TODO:  teeeeeerrible
+            # self.userdata.type = 'free_space'
+            # self.userdata.costmap = 'local'
+            # smach.Sequence.add('RESTORE_COSTMAP', RemoveSemanticObj())
 
 
 class ExeSparsePath(smach.StateMachine):

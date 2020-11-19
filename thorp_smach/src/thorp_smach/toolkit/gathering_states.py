@@ -11,9 +11,9 @@ from thorp_toolkit.geometry import TF2, to_transform, translate_pose, transform_
 from thorp_toolkit.transform import Transform
 from thorp_toolkit.visualization import Visualization
 
-from comon_states import SetNamedConfig, DismissNamedConfig
+from common_states import DismissNamedConfig
 from perception_states import MonitorTables, BlockDetection
-from navigation_states import GetRobotPose, GoToPose, ExePath, PoseAsPath
+from navigation_states import GetRobotPose, GoToPose, AlignToTable, DetachFromTable
 from pick_objects_states import PickReachableObjs
 
 import config as cfg
@@ -27,14 +27,14 @@ class CalcPickPoses(smach.State):
 
     def __init__(self, distance):
         smach.State.__init__(self, outcomes=['succeeded', 'no_valid_table'],
-                             input_keys=['detected_table', 'detected_table_pose', 'robot_pose'],
+                             input_keys=['table', 'table_pose', 'robot_pose'],
                              output_keys=['picking_poses', 'closest_picking_pose'])
         self.distance = distance
         self.poses_viz = rospy.Publisher('manipulation/picking_poses', geometry_msgs.PoseArray, queue_size=1)
 
     def execute(self, ud):
-        table = ud['detected_table']
-        table_pose = ud['detected_table_pose']  # expected on map frame, as robot_pose
+        table = ud['table']
+        table_pose = ud['table_pose']  # expected on map frame, as robot_pose
         if not table or not table_pose:
             rospy.logerr("Detected table contains None!")
             return 'no_table'
@@ -256,13 +256,12 @@ def GatherObjects():
      - approach each detected table and pick all the objects of the chosen shape
     """
 
-    # approach to the table, detects objects over it, and make a picking plan
-    approach_table_sm = smach.Sequence(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'],
+    # approach to the table
+    approach_table_sm = smach.Sequence(outcomes=['succeeded', 'aborted', 'preempted'],
                                        connector_outcome='succeeded',
-                                       input_keys=['detected_table', 'detected_table_pose'],
-                                       output_keys=['picking_poses', 'closest_picking_pose', 'picking_plan'])
+                                       input_keys=['table', 'table_pose'])
     with approach_table_sm:
-        smach.Sequence.add('GET_ROBOT_POSE1', GetRobotPose())
+        smach.Sequence.add('GET_ROBOT_POSE', GetRobotPose())
         smach.Sequence.add('CALC_APPROACHES', CalcPickPoses(cfg.APPROACH_DIST_TO_TABLE),
                            transitions={'no_valid_table': 'aborted'},
                            remapping={'picking_poses': 'approach_poses',
@@ -271,7 +270,13 @@ def GatherObjects():
                            transitions={'aborted': 'aborted',
                                         'preempted': 'preempted'},
                            remapping={'target_pose': 'closest_approach_pose'})
-        smach.Sequence.add('GET_ROBOT_POSE2', GetRobotPose())
+
+    # detects objects over the table, and make a picking plan
+    make_pick_plan_sm = smach.Sequence(outcomes=['succeeded', 'aborted', 'preempted'],
+                                       connector_outcome='succeeded',
+                                       output_keys=['picking_poses', 'closest_picking_pose', 'picking_plan'])
+    with make_pick_plan_sm:
+        smach.Sequence.add('GET_ROBOT_POSE', GetRobotPose())
         smach.Sequence.add('DETECT_TABLES', MonitorTables(),  # re-detect when nearby for more precision
                            transitions={'aborted': 'aborted'})
         smach.Sequence.add('CALC_PICK_POSES', CalcPickPoses(cfg.PICKING_DIST_TO_TABLE),
@@ -282,14 +287,13 @@ def GatherObjects():
                            remapping={'blocks': 'detected_objects'})
         smach.Sequence.add('GROUP_OBJECTS', GroupObjects(),
                            transitions={'no_objects': 'aborted'},
-                           remapping={'objects': 'detected_objects',
-                                      'table': 'detected_table'})
+                           remapping={'objects': 'detected_objects'})
         smach.Sequence.add('MAKE_PICKING_PLAN', MakePickingPlan())
 
     # go to a picking location and pick all objects reachable from there
     pick_objects_sm = smach.Sequence(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'],
                                      connector_outcome='succeeded',
-                                     input_keys=['detected_table', 'picking_poses', 'picking_loc'])
+                                     input_keys=['table', 'picking_loc'])
 
     with pick_objects_sm:
         smach.Sequence.add('PICK_LOC_FIELDS', PickLocFields())
@@ -297,29 +301,21 @@ def GatherObjects():
                            transitions={'aborted': 'aborted',
                                         'preempted': 'preempted'},
                            remapping={'target_pose': 'approach_pose'})
-        smach.Sequence.add('GET_PICK_POSE', PoseAsPath(),
+        smach.Sequence.add('ALIGN_TO_TABLE', AlignToTable(),
+                           transitions={'aborted': 'aborted',
+                                        'preempted': 'preempted'},
                            remapping={'pose': 'picking_pose'})
-        smach.Sequence.add('PRECISE_CTRL', SetNamedConfig('precise_controlling'))
-        smach.Sequence.add('ALIGN_TO_TABLE', ExePath(),
-                           transitions={'aborted': 'aborted',
-                                        'preempted': 'preempted'})
         smach.Sequence.add('PICK_OBJECTS', PickReachableObjs())
-        smach.Sequence.add('GET_AWAY_POSE', PoseAsPath(),
+        smach.Sequence.add('DETACH_FROM_TABLE', DetachFromTable(),
                            remapping={'pose': 'approach_pose'})
-        smach.Sequence.add('AWAY_FROM_TABLE', ExePath(),
-                           transitions={'aborted': 'aborted',
-                                        'preempted': 'preempted'})
-        smach.Sequence.add('STANDARD_CTRL', DismissNamedConfig('precise_controlling'))
 
     # iterate over all picking locations in the plan
     pick_objects_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted', 'tray_full'],
-                                     input_keys=['detected_table', 'picking_poses', 'picking_plan'],
+                                     input_keys=['table', 'picking_plan'],
                                      output_keys=[],
                                      it=lambda: pick_objects_it.userdata.picking_plan,
                                      it_label='picking_loc',
                                      exhausted_outcome='succeeded')
-    pick_objects_it.userdata.max_effort = 0.3        # TODO  pick_effort in obj manip  is this really used???  should depend on the obj???
-    pick_objects_it.userdata.support_surf = 'table'  # TODO this comes from perception
     with pick_objects_it:
         smach.Iterator.set_contained_state('', pick_objects_sm, loop_outcomes=['succeeded'])
 
@@ -328,9 +324,13 @@ def GatherObjects():
                                       'aborted',
                                       'preempted',
                                       'tray_full'],
-                            input_keys=['detected_table', 'detected_table_pose'])
+                            input_keys=['table', 'table_pose'])
     with sm:
         smach.StateMachine.add('APPROACH_TABLE', approach_table_sm,
+                               transitions={'succeeded': 'MAKE_PICK_PLAN',
+                                            'aborted': 'aborted',
+                                            'preempted': 'preempted'})
+        smach.StateMachine.add('MAKE_PICK_PLAN', make_pick_plan_sm,
                                transitions={'succeeded': 'PICK_OBJECTS',
                                             'aborted': 'aborted',
                                             'preempted': 'preempted'})

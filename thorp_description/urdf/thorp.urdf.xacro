@@ -209,7 +209,10 @@
 
   <!-- Seems like Gazebo kinect plugin needs to use a centered frame instead of separated rgb and depth.
        No idea if this makes any sense, but it works! I also move the optical tf a bit forward to make
-       pointcloud match better the model; this is absolutely arbitrary...  TODO sure???  -->
+       pointcloud match better the model; this is absolutely arbitrary...
+       yay,,, I understand now better; gazebo knows nothing about optical axis, just uses camera link
+       (or whatever link u attach the plugin to) to retro-project the scene; so I need this hack to make
+       camera and optical frames match (and would need another hack without depth registration) -->
   <xacro:if value="$(arg simulation)">
     <joint name="senz3d_gazebo_optical_joint" type="fixed">
       <origin xyz="0.004 0.0 0.0" rpy="${-M_PI/2} 0.0 ${-M_PI/2}"/>
@@ -276,10 +279,7 @@
     </xacro:unless>
   </xacro:xtion_camera>
 
-  <!-- Seems like Gazebo kinect plugin needs to use a centered frame instead of separated rgb and depth.
-       No idea if this makes any sense, but it works! I also move the optical tf a bit forward to make
-       pointcloud match better the model; this is absolutely arbitrary...
-
+  <!--
   <xacro:if value="$(arg simulation)">
     <joint name="xtion_gazebo_optical_joint" type="fixed">
       <origin xyz="0.004 0.0 0.0" rpy="${-M_PI/2} 0.0 ${-M_PI/2}"/>
@@ -287,8 +287,8 @@
       <child link="xtion_gazebo_optical_frame"/>
     </joint>
     <link name="xtion_gazebo_optical_frame"/>
-  </xacro:if>        TODO: I think I can remove this because I use registered depth images        -->
-
+  </xacro:if>        TODO: I think I can remove this because I use registered depth images
+                      yes,,, see explanation with Senz3D;  remove all this once all work on real robot too -->
 
   <!-- Sonar sensors forming a half ring centered on (and slightly above) base_link -->
   <joint name="sonars_joint" type="fixed">

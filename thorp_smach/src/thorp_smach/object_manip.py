@@ -8,7 +8,7 @@ import std_srvs.srv as std_srvs
 import thorp_msgs.msg as thorp_msgs
 import arbotix_msgs.srv as arbotix_srvs
 
-from toolkit.comon_states import ExecuteUserCommand
+from toolkit.common_states import ExecuteUserCommand
 from toolkit.perception_states import ObjectDetection
 from toolkit.manipulation_states import FoldArm, PickupObject, PlaceObject
 

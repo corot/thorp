@@ -154,7 +154,7 @@ class MonitorTables(smach.State):
 
     def __init__(self):
         super(MonitorTables, self).__init__(outcomes=['succeeded', 'aborted'],
-                                            output_keys=['detected_table', 'detected_table_pose'])
+                                            output_keys=['table', 'table_pose'])
         self.detected_table = None
         self.table_event = threading.Condition()
         self.table_sub = rospy.Subscriber("rail_segmentation/segmented_table", rail_msgs.SegmentedObject, self.table_cb)
@@ -162,16 +162,20 @@ class MonitorTables(smach.State):
         self.segment_srv.wait_for_service(30.0)
 
     def table_cb(self, msg):
+        print "TABLE!!!"
         self.detected_table = msg
         self.table_event.acquire()
         self.table_event.notify()
         self.table_event.release()
+        print "TABLE!!!   released"
 
     def execute(self, ud):
         self.detected_table = None
         rate = rospy.Rate(10)
         while not rospy.is_shutdown():
+            print 'segment'
             self.segment_srv()
+            print 'done'
             self.table_event.acquire()
             self.table_event.wait(0.1)
             self.table_event.release()
@@ -184,15 +188,19 @@ class MonitorTables(smach.State):
                 width, length = self.detected_table.width, self.detected_table.depth
                 table_tf = to_transform(pose, 'table_frame')
                 TF2().publish_transform(table_tf)
+                print self.detected_table.point_cloud.header
+                print 'centroid ', self.detected_table.centroid
+                print 'center   ', self.detected_table.center
+                print 'yaw      ', yaw(self.detected_table.orientation)
                 kk=self.detected_table.marker
-                ud['detected_table'] = self.detected_table
-                ud['detected_table_pose'] = pose
+                ud['table'] = self.detected_table
+                ud['table_pose'] = pose
                 rospy.loginfo("Detected table of size %.1f x %.1f at %s", width, length, pose2d2str(pose))
                 # Add the table contour as an obstacle to global costmap, so we can plan around it
                 # We also add an shrinked version to the local costmap so no to impair approaching for picking
                 # TODO: detected_table.name is empty; tweak RAIL to provide it or add sequential names here
-                SemanticMap().add_obstacle(self.detected_table.name, pose, [width, length, 0.0], 'global')
-                SemanticMap().add_obstacle(self.detected_table.name, pose, [width - 0.2, length - 0.2, 0.0], 'local')
+                # SemanticMap().add_obstacle(self.detected_table.name, pose, [width, length, 0.0], 'global')
+                # SemanticMap().add_obstacle(self.detected_table.name, pose, [width - 0.2, length - 0.2, 0.0], 'local')    TDDO  a ver q pasa
                 return 'succeeded'
             else:
                 # nothing detected; TODO timeout   return 'not_detected'

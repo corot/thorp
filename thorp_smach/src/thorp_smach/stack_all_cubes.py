@@ -5,7 +5,7 @@ import smach
 import smach_ros
 
 import thorp_toolkit as ttk
-from thorp_smach.toolkit.comon_states import ExecuteUserCommand
+from thorp_smach.toolkit.common_states import ExecuteUserCommand
 from thorp_smach.toolkit.manipulation_states import FoldArm, PickupObject, PlaceObject, ObjectDetection
 
 import thorp_msgs.msg as thorp_msgs

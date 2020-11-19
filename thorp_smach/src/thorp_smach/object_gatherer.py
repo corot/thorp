@@ -7,7 +7,7 @@ import smach_ros
 from thorp_toolkit.geometry import TF2
 from thorp_toolkit.reconfigure import Reconfigure
 
-from toolkit.comon_states import wait_for_sim_time, wait_for_mbf
+from toolkit.common_states import wait_for_sim_time, wait_for_mbf
 from toolkit.perception_states import MonitorTables
 from toolkit.exploration_states import ExploreHouse
 from toolkit.gathering_states import GatherObjects
@@ -45,7 +45,7 @@ def object_gatherer_sm():
     # creating the concurrence state machine
     search_sm = smach.Concurrence(outcomes=['detected', 'not_detected', 'aborted', 'preempted'],
                                   default_outcome='not_detected',
-                                  output_keys=['detected_table', 'detected_table_pose'],
+                                  output_keys=['table', 'table_pose'],
                                   child_termination_cb=child_term_cb,
                                   outcome_cb=out_cb)
     with search_sm:

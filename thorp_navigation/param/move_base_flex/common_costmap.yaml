@@ -43,3 +43,7 @@ semantic_layer:
     force_update: false   # do not force costmap update; wait until next update cycle
     width_padding: 0.0    # do not pad object: keep original width
     length_padding: 0.0   # and length
+  - type: "free_space"
+    cost: 0.0             # an area to clear, setting zero cost
+    fill: true            # fill cleared area convex hull
+    use_maximum: false    # overwrite existing cost value

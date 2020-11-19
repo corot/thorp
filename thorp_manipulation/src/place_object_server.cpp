@@ -165,12 +165,12 @@ int32_t PlaceObjectServer::makePlaceLocations(const geometry_msgs::PoseStamped& 
 
     l.pre_place_approach.direction.vector.x = +1;
     l.pre_place_approach.direction.header.frame_id = arm().getEndEffectorLink();
-    l.pre_place_approach.min_distance = 0.015;  // TODO probably dangerous; make proportional to the pitch
+    l.pre_place_approach.min_distance = 0.01;  // TODO probably dangerous; make proportional to the pitch
     l.pre_place_approach.desired_distance = 0.1;
 
     l.post_place_retreat.direction.vector.x = -1;
     l.post_place_retreat.direction.header.frame_id = arm().getEndEffectorLink();
-    l.post_place_retreat.min_distance = 0.015;
+    l.post_place_retreat.min_distance = 0.01;
     l.post_place_retreat.desired_distance = 0.1;
 
     l.post_place_posture.joint_names.push_back("gripper_joint");

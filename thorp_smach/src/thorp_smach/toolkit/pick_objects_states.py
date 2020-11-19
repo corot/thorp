@@ -121,10 +121,10 @@ def PickReachableObjs():
     """  Pick all the objects within reach and place in the tray  """
 
     # pick a single object sm
-    pick_1_obj_sm = smach.StateMachine(outcomes=['continue', 'succeeded', 'aborted', 'preempted', 'tray_full'],
-                                       input_keys=['support_surf', 'max_effort'])
+    pick_1_obj_sm = smach.StateMachine(outcomes=['continue', 'succeeded', 'aborted', 'preempted', 'tray_full'])
 
     pick_1_obj_sm.userdata.objs_to_skip = 0
+    pick_1_obj_sm.userdata.max_effort = 0.3     # TODO  required by PickupObject, but.... pick_effort in obj manip  is this really used???  should depend on the obj???
     with pick_1_obj_sm:
         smach.StateMachine.add('BLOCK_DETECTION', BlockDetection(),
                                transitions={'succeeded': 'SELECT_TARGET',
@@ -152,18 +152,15 @@ def PickReachableObjs():
                                             'max_failures': 'aborted'})
 
     pick_reach_objs_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted', 'tray_full'],
-                                        input_keys=[],   #'object_names'],  #, 'support_surf'],
+                                        input_keys=[],
                                         output_keys=[],
                                         it=range(25),  # kind of while true
                                         it_label='iteration',
                                         exhausted_outcome='succeeded')
-    pick_reach_objs_it.userdata.max_effort = 0.3        # TODO  pick_effort in obj manip  is this really used???  should depend on the obj???
-    pick_reach_objs_it.userdata.support_surf = 'table'  # TODO this comes from perception
     with pick_reach_objs_it:
         smach.Iterator.set_contained_state('', pick_1_obj_sm, loop_outcomes=['continue'])
 
-    pick_reach_objs_sm = smach.StateMachine(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'],
-                                            input_keys=['support_surf', 'max_effort'])
+    pick_reach_objs_sm = smach.StateMachine(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'])
     pick_reach_objs_sm.userdata.objs_to_skip = 0
     with pick_reach_objs_sm:
         smach.StateMachine.add('PICKUP_OBJECTS', pick_reach_objs_it,

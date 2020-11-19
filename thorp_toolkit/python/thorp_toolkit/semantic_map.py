@@ -18,13 +18,15 @@ class SemanticMap:
                                            PlanningSceneWorld, queue_size=1)
         self._gcm_sl_pub = rospy.Publisher('move_base_flex/global_costmap/semantic_layer/add_objects',
                                            PlanningSceneWorld, queue_size=1)
+        rospy.sleep(0.25)  # wait a moment until the publishers are ready
 
-    def add_obstacle(self, name, pose, size, costmap='both'):
+    def add_object(self, name, type, pose, size, costmap='both'):
         """
-        Add an obstacle to one or both costmaps. Pose will be transformed to map frame.
-        :param name: obstacle name
-        :param pose: obstacle pose (PoseStamped)
-        :param size: obstacle size (3 floats list)
+        Add an semantic object to one or both costmaps. Pose will be transformed to map frame.
+        :param name: object name
+        :param type: object type (obstacle, free space, etc.)
+        :param pose: object pose (PoseStamped)
+        :param size: object size (3 floats list)
         :param costmap: 'local', 'global' or 'both'
         """
         sp = SolidPrimitive()
@@ -33,7 +35,7 @@ class SemanticMap:
         co = CollisionObject()
         co.operation = CollisionObject.ADD
         co.id = name
-        co.type.db = json.dumps({'table': 'NONE', 'type': 'obstacle', 'name': name})
+        co.type.db = json.dumps({'table': 'NONE', 'type': type, 'name': name})
         co.header.frame_id = 'map'
         co.header.stamp = pose.header.stamp
         co.primitives.append(sp)
@@ -44,22 +46,23 @@ class SemanticMap:
             self._lcm_sl_pub.publish(psw)
         if costmap in ['global', 'both']:
             self._gcm_sl_pub.publish(psw)
-        rospy.loginfo("Added obstacle '%s' at %s to %s costmap", name, pose2d2str(pose), costmap)
+        rospy.loginfo("Added object %s of type %s at %s to %s costmap", name, type, pose2d2str(pose), costmap)
 
-    def remove_obstacle(self, name, costmap='both'):
+    def remove_object(self, name, type, costmap='both'):
         """
-        Remove an obstacle from one or both costmaps.
-        :param name: obstacle name
+        Remove an object from one or both costmaps.
+        :param name: object name
+        :param type: object type
         :param costmap: 'local', 'global' or 'both'
         """
         co = CollisionObject()
         co.operation = CollisionObject.REMOVE
         co.id = name
-        co.type.db = json.dumps({'table': 'NONE', 'type': 'obstacle', 'name': name})
+        co.type.db = json.dumps({'table': 'NONE', 'type': type, 'name': name})
         psw = PlanningSceneWorld()
         psw.collision_objects.append(co)
         if costmap in ['local', 'both']:
             self._lcm_sl_pub.publish(psw)
         if costmap in ['global', 'both']:
             self._gcm_sl_pub.publish(psw)
-        rospy.loginfo("Removed obstacle '%s' from %s costmap", name, costmap)
+        rospy.loginfo("Removed object %s of type %s from %s costmap", name, type, costmap)
