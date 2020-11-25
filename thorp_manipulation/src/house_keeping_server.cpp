@@ -142,11 +142,11 @@ bool HouseKeepingServer::forceRestingCB(std_srvs::EmptyRequest &request, std_srv
 
 bool HouseKeepingServer::clearGripperCB(std_srvs::EmptyRequest &request, std_srvs::EmptyResponse &response)
 {
-  bool detach_result = arm().detachObject();
   bool gripper_result = setGripper(gripper_open);
+  bool detach_result = arm().detachObject();  // after, as gripper would "collide" with a grasped but unattached object 
   if (!attached_object.empty())
   {
-    // Remove the detached object from the planning scene so the gripper doesn't "collide" with it
+    // Remove the detached object from the planning scene so the arm doesn't "collide" with the floating ghost
     ROS_INFO("[house keeping] Remove object '%s', detached from gripper", attached_object.c_str());
     ttk::planningScene().removeCollisionObjects(std::vector<std::string>{attached_object});
     attached_object = "";
@@ -163,7 +163,7 @@ bool HouseKeepingServer::gripperBusyCB(std_srvs::TriggerRequest &request, std_sr
 
   if (!attached_objects.empty())
   {
-    ROS_ASSERT_MSG(attached_objects.size()==1, "More than one (%lu) attached objects???", attached_objects.size());
+    ROS_ASSERT_MSG(attached_objects.size() == 1, "More than one (%lu) attached objects???", attached_objects.size());
     response.success = true;
     response.message = attached_objects.begin()->first;
   }
