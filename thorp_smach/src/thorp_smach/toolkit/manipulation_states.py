@@ -13,127 +13,158 @@ from thorp_toolkit.visualization import Visualization
 import config as cfg
 
 
-def FoldArm():
+class ClearOctomap(smach_ros.ServiceState):
+    def __init__(self):
+        super(ClearOctomap, self).__init__('clear_octomap', std_srvs.Empty)
+
+
+class ClearGripper(smach_ros.ServiceState):
+    def __init__(self):
+        super(ClearGripper, self).__init__('clear_gripper', std_srvs.Empty)
+
+
+class GripperBusy(smach_ros.ServiceState):
+    def __init__(self):
+        super(GripperBusy, self).__init__('gripper_busy', std_srvs.Trigger,
+                                          response_cb=self.response_cb,
+                                          output_keys=['attached_object'],
+                                          outcomes=['true', 'false', 'error'])
+        self.gripper_busy = False
+        self.attached_obj = None
+
+    def response_cb(self, ud, response):
+        self.gripper_busy = response.success
+        ud['attached_object'] = response.message
+
+    def execute(self, ud):
+        outcome = super(GripperBusy, self).execute(ud)
+        if outcome == 'succeeded':
+            return str(self.gripper_busy).lower()
+        return 'error'
+
+
+class FoldArm(smach.Concurrence):
     """ Concurrently fold arm and close the gripper """
-    sm = smach.Concurrence(outcomes=['succeeded', 'preempted', 'aborted'],
-                           default_outcome='succeeded',
-                           outcome_map={'succeeded': {'CLOSE_GRIPPER': 'succeeded',
-                                                      'GOTO_RESTING': 'succeeded'},
-                                        'preempted': {'CLOSE_GRIPPER': 'preempted',
-                                                      'GOTO_RESTING': 'preempted'},
-                                        'aborted': {'CLOSE_GRIPPER': 'aborted',
-                                                    'GOTO_RESTING': 'aborted'}})
-    with sm:
-        smach.Concurrence.add('CLOSE_GRIPPER',
-                              smach_ros.SimpleActionState('gripper_controller/gripper_action',
-                                                          control_msgs.GripperCommandAction,
-                                                          goal=control_msgs.GripperCommandGoal(
-                                                              control_msgs.GripperCommand(0.025, 0.0))))
-        smach.Concurrence.add('GOTO_RESTING',
-                              StoredConfig('resting'))
-    return sm
+    def __init__(self):
+        super(FoldArm, self).__init__(outcomes=['succeeded', 'preempted', 'aborted'],
+                                      default_outcome='succeeded',
+                                      outcome_map={'succeeded': {'CLOSE_GRIPPER': 'succeeded',
+                                                                 'GOTO_RESTING': 'succeeded'},
+                                                   'preempted': {'CLOSE_GRIPPER': 'preempted',
+                                                                 'GOTO_RESTING': 'preempted'},
+                                                   'aborted': {'CLOSE_GRIPPER': 'aborted',
+                                                               'GOTO_RESTING': 'aborted'}})
+        with self:
+            smach.Concurrence.add('CLOSE_GRIPPER',
+                                  smach_ros.SimpleActionState('gripper_controller/gripper_action',
+                                                              control_msgs.GripperCommandAction,
+                                                              goal=control_msgs.GripperCommandGoal(
+                                                                  control_msgs.GripperCommand(0.025, 0.0))))
+            smach.Concurrence.add('GOTO_RESTING',
+                                  StoredConfig('resting'))
 
 
-def StoredConfig(config):
+class StoredConfig(smach_ros.SimpleActionState):
     """ Move arm into one of the stored configuration (resting, right_up, etc.) """
-    return smach_ros.SimpleActionState('move_to_target',
-                                       thorp_msgs.MoveToTargetAction,
-                                       goal=thorp_msgs.MoveToTargetGoal(
-                                           thorp_msgs.MoveToTargetGoal.NAMED_TARGET,
-                                           config, None, None))
+    def __init__(self, config):
+        super(StoredConfig, self).__init__('move_to_target',
+                                           thorp_msgs.MoveToTargetAction,
+                                           goal=thorp_msgs.MoveToTargetGoal(
+                                               thorp_msgs.MoveToTargetGoal.NAMED_TARGET,
+                                               config, None, None))
 
 
-def PickupObject(attempts=1):
-    """  Pickup a given object, optionally retrying up to a given number of times  """
-    it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted'],
-                        input_keys=['object_name', 'support_surf', 'max_effort'],
-                        output_keys=[],
-                        it=lambda: range(0, attempts),
-                        it_label='attempt',
-                        exhausted_outcome='aborted')
+class PickupObject(smach.Iterator):
+    """
+    Pickup a given object, optionally retrying up to a given number of times.
+    If we already have an object attached, we clear the gripper before picking.
+    """
+    def __init__(self, attempts=2):
+        super(PickupObject, self).__init__(outcomes=['succeeded', 'preempted', 'aborted'],
+                                           input_keys=['object_name', 'support_surf', 'max_effort'],
+                                           output_keys=[],
+                                           it=lambda: range(0, attempts),
+                                           it_label='attempt',
+                                           exhausted_outcome='aborted')
+        with self:
+            sm = smach.StateMachine(outcomes=['succeeded', 'preempted', 'aborted', 'continue'],
+                                    input_keys=['object_name', 'support_surf', 'max_effort'],
+                                    output_keys=[])
+            with sm:
+                smach.StateMachine.add('GRIPPER_BUSY?', GripperBusy(),
+                                       transitions={'true': 'CLEAR_GRIPPER',
+                                                    'false': 'PICKUP_OBJECT',
+                                                    'error': 'aborted'})
+                smach.StateMachine.add('CLEAR_GRIPPER', ClearGripper(),
+                                       transitions={'succeeded': 'PICKUP_OBJECT'})
+                smach.StateMachine.add('PICKUP_OBJECT',
+                                       smach_ros.SimpleActionState('pickup_object',
+                                                                   thorp_msgs.PickupObjectAction,
+                                                                   goal_slots=['object_name',
+                                                                               'support_surf',
+                                                                               'max_effort'],
+                                                                   result_slots=['error']),
+                                       transitions={###   TODO 'succeeded': 'succeeded',
+                                                    ###'preempted': 'preempted',
+                                                    'aborted': 'CLEAR_OCTOMAP'})
+                smach.StateMachine.add('CLEAR_OCTOMAP', ClearOctomap(),
+                                       transitions={'succeeded': 'continue',
+                                                    'preempted': 'preempted',
+                                                    'aborted': 'aborted'})
+            # TODOs:
+            #  - check error and, if collision between parts of the arm, move a bit the arm  -->  not enough info
+            #  - this doesn't make too much sense as a loop... better try all our tricks and exit
+            smach.Iterator.set_contained_state('', sm, loop_outcomes=['continue'])
 
-    with it:
-        sm = smach.StateMachine(outcomes=['succeeded', 'preempted', 'aborted', 'continue'],
-                                input_keys=['object_name', 'support_surf', 'max_effort'],
-                                output_keys=[])
-        with sm:
-            smach.StateMachine.add('PICKUP_OBJECT',
-                                   smach_ros.SimpleActionState('pickup_object',
-                                                               thorp_msgs.PickupObjectAction,
-                                                               goal_slots=['object_name', 'support_surf', 'max_effort'],
-                                                               result_slots=[]),
-                                   transitions={'succeeded': 'succeeded',
-                                                'preempted': 'preempted',
-                                                'aborted': 'CLEAR_OCTOMAP'})
 
-            smach.StateMachine.add('CLEAR_OCTOMAP',
-                                   smach_ros.ServiceState('clear_octomap',
-                                                          std_srvs.Empty),
-                                   transitions={'succeeded': 'continue',
-                                                'preempted': 'preempted',
-                                                'aborted': 'aborted'})
-
-        # TODOs:
-        #  - we should open the gripper, in case we have picked an object
-        #  - check error and, if collision between parts of the arm, move a bit the arm  -->  not enough info
-        #  - this doesn't make too much sense as a loop... better try all our tricks and exit
-
-        smach.Iterator.set_contained_state('', sm, loop_outcomes=['continue'])
-    return it
-
-
-def PlaceObject(attempts=1):
+class PlaceObject(smach.Iterator):
     """  Place a given object, optionally retrying up to a given number of times  """
-    it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted'],
-                        input_keys=['object_name', 'support_surf', 'place_pose'],
-                        output_keys=[],
-                        it=lambda: range(0, attempts),
-                        it_label='attempt',
-                        exhausted_outcome='aborted')
+    def __init__(self, attempts=2):
+        super(PlaceObject, self).__init__(outcomes=['succeeded', 'preempted', 'aborted'],
+                                          input_keys=['object_name', 'support_surf', 'place_pose'],
+                                          output_keys=[],
+                                          it=lambda: range(0, attempts),
+                                          it_label='attempt',
+                                          exhausted_outcome='aborted')
+        with self:
+            sm = smach.StateMachine(outcomes=['succeeded', 'preempted', 'aborted', 'continue'],
+                                    input_keys=['object_name', 'support_surf', 'place_pose'],
+                                    output_keys=[])
+            with sm:
+                smach.StateMachine.add('PLACE_OBJECT',
+                                       smach_ros.SimpleActionState('place_object',
+                                                                   thorp_msgs.PlaceObjectAction,
+                                                                   goal_slots=['object_name',
+                                                                               'support_surf',
+                                                                               'place_pose'],
+                                                                   result_slots=[]),
+                                       transitions={#######'succeeded': 'succeeded',
+                                                    ##########'preempted': 'preempted',
+                                                    'aborted': 'CLEAR_OCTOMAP'})
+                smach.StateMachine.add('CLEAR_OCTOMAP', ClearOctomap(),
+                                       transitions={'succeeded': 'continue'})
+                                                   ### 'preempted': 'preempted',
+                                                   #### 'aborted': 'aborted'})
 
-    with it:
-        sm = smach.StateMachine(outcomes=['succeeded', 'preempted', 'aborted', 'continue'],
-                                input_keys=['object_name', 'support_surf', 'place_pose'],
-                                output_keys=[])
-        with sm:
-            smach.StateMachine.add('PLACE_OBJECT',
-                                   smach_ros.SimpleActionState('place_object',
-                                                               thorp_msgs.PlaceObjectAction,
-                                                               goal_slots=['object_name', 'support_surf', 'place_pose'],
-                                                               result_slots=[]),
-                                   transitions={'succeeded': 'succeeded',
-                                                'preempted': 'preempted',
-                                                'aborted': 'CLEAR_OCTOMAP'})
-
-            smach.StateMachine.add('CLEAR_OCTOMAP',
-                                   smach_ros.ServiceState('clear_octomap',
-                                                          std_srvs.Empty),
-                                   transitions={'succeeded': 'continue',
-                                                'preempted': 'preempted',
-                                                'aborted': 'aborted'})
-
-        # TODOs:
-        #  - we should open the gripper, in case we have picked an object
-        #  - check error and, if collision between parts of the arm, move a bit the arm  -->  not enough info
-        #  - this doesn't make too much sense as a loop... better try all our tricks and exit
-
-        smach.Iterator.set_contained_state('', sm, loop_outcomes=['continue'])
-    return it
+            # TODOs:
+            #  - check error and, if collision between parts of the arm, move a bit the arm  -->  not enough info
+            #  - this doesn't make too much sense as a loop... better try all our tricks and exit
+            smach.Iterator.set_contained_state('', sm, loop_outcomes=['continue'])
 
 
-def PlaceInTray():
+class PlaceInTray(smach.Sequence):
     """  Place a given object on the tray  """
-    sm = smach.Sequence(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'],
-                        connector_outcome='succeeded',
-                        input_keys=['object_name'])
-    sm.userdata.support_surf = 'tray'
-    with sm:
-        smach.Sequence.add('POSE_IN_TRAY', GetPoseInTray())
-        smach.Sequence.add('PLACE_ON_TRAY', PlaceObject(),
-                           remapping={'place_pose': 'pose_in_tray'})
-        smach.Sequence.add('READJUST_POSE', DisplaceObject(),
-                           remapping={'new_pose': 'pose_in_tray'})
-    return sm
+    def __init__(self):
+        super(PlaceInTray, self).__init__(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'],
+                                          connector_outcome='succeeded',
+                                          input_keys=['object_name'])
+        self.userdata.support_surf = 'tray'
+        with self:
+            smach.Sequence.add('POSE_IN_TRAY', GetPoseInTray())
+            smach.Sequence.add('PLACE_ON_TRAY', PlaceObject(),
+                               remapping={'place_pose': 'pose_in_tray'})
+            smach.Sequence.add('READJUST_POSE', DisplaceObject(),
+                               remapping={'new_pose': 'pose_in_tray'})
 
 
 class GetPoseInTray(smach.State):
