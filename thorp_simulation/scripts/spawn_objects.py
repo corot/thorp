@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
+import sys
 import rospy
 import rospkg
 
-from math import pi
+from math import pi, copysign
 from random import uniform, randrange
 
 from gazebo_msgs.srv import SpawnModel
@@ -16,7 +17,8 @@ from thorp_toolkit.geometry import distance_2d, create_3d_pose
 objects = [{'name': 'doll_table_0',
             'size': (0.35, 0.35),
             'objs': [{'name': 'wood_cube_2_5cm',
-                      'count': 15}]}]
+                      'count': 7}],
+            'dist': 'uniform'}]  # different distributions: 'uniform', 'diagonal', 'xor', '+/+'
 MIN_DIST = 0.08
 
 
@@ -43,9 +45,29 @@ if __name__ == "__main__":
             i = 0
             added_poses = [create_3d_pose(0, 0, 0, 0, 0, 0)]  # fake pose to avoid the (non-reachable) table's center
             while i < obj['count']:
-                # we check that the distance to all previously added objects is below a threshold to space the objects
+                # even distribution
                 x = uniform(-surf['size'][0]/2.0, +surf['size'][0]/2.0)
                 y = uniform(-surf['size'][1]/2.0, +surf['size'][1]/2.0)
+
+                if surf['dist'] == 'diagonal':
+                    # half table by diagonal
+                    if x + y < 0:
+                        x = -x
+                        y = -y
+                elif surf['dist'] == 'xor':
+                    # +x/-y or -x/+y quadrants
+                    if x * y < 0:
+                        x = copysign(x, y)
+                elif surf['dist'] == '+/+':
+                    # only +x/+y quadrant
+                    x = abs(x)
+                    y = abs(y)
+                elif surf['dist'] == 'uniform':
+                    pass
+                else:
+                    print("ERROR: unknown distribution " + surf['dist'])
+                    sys.exit(-1)
+
                 z = 0.45
                 pose = create_3d_pose(x, y, z, 0, 0, uniform(-pi, +pi))
                 # pose = create_3d_pose(uniform(-0.2, +0.2), uniform(-0.2, +0.2), 0.45, 0.0, 0.0, uniform(-pi, +pi))
@@ -54,6 +76,7 @@ if __name__ == "__main__":
                 # y = uniform(0.075, 0.2) * [-1, +1][randrange(2)]
                 # z = 0.45
                 #pose = create_3d_pose(x, y, z, 0, 0, uniform(-pi, +pi))
+                # we check that the distance to all previously added objects is below a threshold to space the objects
                 if close_to_prev_pose(pose, added_poses):
                     continue
                 added_poses.append(pose)
