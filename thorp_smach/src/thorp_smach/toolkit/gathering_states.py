@@ -12,7 +12,7 @@ from thorp_toolkit.transform import Transform
 from thorp_toolkit.visualization import Visualization
 
 from common_states import DismissNamedConfig
-from perception_states import MonitorTables, BlockDetection
+from perception_states import MonitorTables, BlockDetection, ObjectsDetected
 from navigation_states import GetRobotPose, GoToPose, AlignToTable, DetachFromTable
 from pick_objects_states import PickReachableObjs
 
@@ -119,10 +119,12 @@ class GroupObjects(smach.State):
             objs = []
             for i, obj_pose in enumerate(ud['objects'].poses):
                 # transform object pose from arm to map frame, so we can compare distances to picking locations
+                # we must limit max arm reach with our navigation tolerance when reaching the goal, as that will
+                # be our probable picking pose, instead of the ideal one received as input
                 arm_to_obj_tf = Transform.create(obj_pose)
                 obj_pose_mrf = (map_to_arm_tf * arm_to_obj_tf).to_geometry_msg_pose_stamped()
                 dist = distance_2d(obj_pose_mrf, arm_pose_mrf)  # both on map rf
-                if dist <= cfg.MAX_ARM_REACH:
+                if dist <= cfg.MAX_ARM_REACH - cfg.TIGHT_DIST_TOLERANCE:
                     objs.append(Object(dist, 'block' + str(i + 1), obj_pose))
             if not objs:
                 continue  # no objects reachable from here; keep going
@@ -133,7 +135,6 @@ class GroupObjects(smach.State):
             approach_pose = deepcopy(pose)
             translate_pose(approach_pose, - (cfg.APPROACH_DIST_TO_TABLE - cfg.PICKING_DIST_TO_TABLE), 'x')
             pick_locs.append(PickLoc(len(objs), name, pose, objs, dist_from_robot, arm_pose_mrf, approach_pose))
-        self.viz_pick_locs(pick_locs)
 
         # find the most efficient sequence of picking locations: try all permutations, sort and get the first
         possible_plans = []
@@ -144,7 +145,6 @@ class GroupObjects(smach.State):
         # sort by  1) less locations to visit  2) less travelled distance (in case of match)
         sorted_plans = sorted(possible_plans, key=lambda p: (p.size, p.dist))
         sorted_plocs = sorted_plans[0].plocs
-        self.viz_pick_locs(sorted_plocs)
 
         # remove duplicated objects from the location where they are at the longest distance to the arm
         objs_to_remove = []
@@ -319,7 +319,7 @@ def GatherObjects():
     with pick_objects_it:
         smach.Iterator.set_contained_state('', pick_objects_sm, loop_outcomes=['succeeded'])
 
-    # Full SM: plan rooms visit sequence and explore each room in turn
+    # Full SM: approach the table, make a picking plan and execute it, double-checking that we left no object behind
     sm = smach.StateMachine(outcomes=['succeeded',
                                       'aborted',
                                       'preempted',
@@ -335,10 +335,19 @@ def GatherObjects():
                                             'aborted': 'aborted',
                                             'preempted': 'preempted'})
         smach.StateMachine.add('PICK_OBJECTS', pick_objects_it,
-                               transitions={'succeeded': 'succeeded',
-                                            'aborted': 'STANDARD_CTRL',  # ensure we restore original configuration
+                               transitions={'succeeded': 'DETECT_OBJECTS',  # double-check that we left no object behind
+                                            'aborted': 'STANDARD_CTRL',     # restore original configuration on error
                                             'preempted': 'preempted',
                                             'tray_full': 'tray_full'})
+        smach.StateMachine.add('DETECT_OBJECTS', BlockDetection(),
+                               transitions={'succeeded': 'OBJECTS_LEFT',
+                                            'aborted': 'aborted',
+                                            'preempted': 'preempted'},
+                               remapping={'blocks': 'detected_objects'})
+        smach.StateMachine.add('OBJECTS_LEFT', ObjectsDetected(),
+                               transitions={'true': 'APPROACH_TABLE',   # at least one object left; restart picking
+                                            'false': 'STANDARD_CTRL'},  # restore original configuration when done
+                               remapping={'objects': 'detected_objects'})
         smach.StateMachine.add('STANDARD_CTRL', DismissNamedConfig('precise_controlling'),
                                transitions={'succeeded': 'aborted',
                                             'aborted': 'aborted'})

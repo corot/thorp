@@ -1,13 +1,12 @@
+from random import randrange
+
 import rospy
 import smach
-import smach_ros
-
-import std_srvs.srv as std_srvs
 
 from thorp_toolkit.geometry import distance_2d
 
 from perception_states import BlockDetection
-from manipulation_states import FoldArm, PickupObject, PlaceInTray
+from manipulation_states import ClearOctomap, ClearGripper, FoldArm, PickupObject, PlaceInTray
 
 import config as cfg
 
@@ -42,9 +41,7 @@ def ObjectDetection():
                             output_keys=['objects', 'object_names', 'support_surf',     'blocks'])
 
     with sm:
-        smach.StateMachine.add('CLEAR_OCTOMAP',
-                               smach_ros.ServiceState('clear_octomap',
-                                                      std_srvs.Empty),
+        smach.StateMachine.add('CLEAR_OCTOMAP', ClearOctomap(),
                                transitions={'succeeded': 'OBJECT_DETECTION',
                                             'preempted': 'preempted',
                                             'aborted': 'OBJECT_DETECTION'})
@@ -52,18 +49,15 @@ def ObjectDetection():
                                transitions={'succeeded': 'OBJ_DETECTED_COND',
                                             'preempted': 'preempted',
                                             'aborted': 'aborted'})
-        smach.StateMachine.add('OBJ_DETECTED_COND',
-                               ObjDetectedCondition(),
+        smach.StateMachine.add('OBJ_DETECTED_COND', ObjDetectedCondition(),
                                transitions={'satisfied': 'succeeded',
                                             'preempted': 'preempted',
                                             'fold_arm': 'FOLD_ARM',
                                             'retry': 'CLEAR_OCTOMAP'})
-        smach.StateMachine.add('FOLD_ARM',
-                               FoldArm(),
+        smach.StateMachine.add('FOLD_ARM', FoldArm(),
                                transitions={'succeeded': 'CLEAR_OCTOMAP',
                                             'preempted': 'preempted',
                                             'aborted': 'CLEAR_OCTOMAP'})
-
     return sm
 
 
@@ -87,11 +81,15 @@ class TargetSelection(smach.State):
         targets = sorted(targets, key=lambda t: t[1])  # sort by increasing distance
         if len(targets) > ud['objs_to_skip']:
             target, dist = targets[ud['objs_to_skip']]
-            rospy.loginfo("Next target will be '%s' located at %.2fm (%d skipped)", target, dist, ud['objs_to_skip'])
+            rospy.loginfo("Next target will be '%s', located at %.2fm (%d skipped)", target, dist, ud['objs_to_skip'])
             ud['target'] = target
             return 'have_target'
         elif targets:
-            pass  # TODO: retry if we have picked something after the last failure
+            # retry failed objects at random order
+            target, dist = targets[randrange(0, ud['objs_to_skip'])]
+            rospy.loginfo("Retrying target '%s', located at %.2fm (%d to retry)", target, dist, ud['objs_to_skip'])
+            ud['target'] = target
+            return 'have_target'
         rospy.loginfo("No targets within the %.2fm arm reach (%d skipped)", cfg.MAX_ARM_REACH, ud['objs_to_skip'])
         return 'no_targets'
 
@@ -121,9 +119,9 @@ def PickReachableObjs():
     """  Pick all the objects within reach and place in the tray  """
 
     # pick a single object sm
-    pick_1_obj_sm = smach.StateMachine(outcomes=['continue', 'succeeded', 'aborted', 'preempted', 'tray_full'])
+    pick_1_obj_sm = smach.StateMachine(outcomes=['continue', 'succeeded', 'aborted', 'preempted', 'tray_full'],
+                                       input_keys=['objs_to_skip'])
 
-    pick_1_obj_sm.userdata.objs_to_skip = 0
     pick_1_obj_sm.userdata.max_effort = 0.3     # TODO  required by PickupObject, but.... pick_effort in obj manip  is this really used???  should depend on the obj???
     with pick_1_obj_sm:
         smach.StateMachine.add('BLOCK_DETECTION', BlockDetection(),
@@ -143,7 +141,7 @@ def PickReachableObjs():
                                             'preempted': 'preempted',
                                             'aborted': 'CLEAR_GRIPPER',
                                             'tray_full': 'tray_full'})
-        smach.StateMachine.add('CLEAR_GRIPPER', smach_ros.ServiceState('clear_gripper', std_srvs.Empty),
+        smach.StateMachine.add('CLEAR_GRIPPER', ClearGripper(),
                                transitions={'succeeded': 'SKIP_OBJECT',
                                             'preempted': 'aborted',
                                             'aborted': 'aborted'})
@@ -152,7 +150,7 @@ def PickReachableObjs():
                                             'max_failures': 'aborted'})
 
     pick_reach_objs_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted', 'tray_full'],
-                                        input_keys=[],
+                                        input_keys=['objs_to_skip'],
                                         output_keys=[],
                                         it=range(25),  # kind of while true
                                         it_label='iteration',

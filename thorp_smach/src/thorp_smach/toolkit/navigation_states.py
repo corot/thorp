@@ -215,7 +215,7 @@ class ClearTableWay(smach.State):
     def execute(self, ud):
         SemanticMap().add_object(ud['table'].name, 'free_space', ud['pose'], [0.5, 0.4], 'local')
         rospy.Timer(rospy.Duration(5),
-                    lambda: SemanticMap().remove_object(ud['table'].name, 'free_space', 'local'),
+                    lambda te: SemanticMap().remove_object(ud['table'].name, 'free_space', 'local'),
                     oneshot=True)
         return 'succeeded'
 
@@ -247,10 +247,6 @@ class DetachFromTable(smach.Sequence):
             smach.Sequence.add('POSE_AS_PATH', PoseAsPath())
             smach.Sequence.add('AWAY_FROM_TABLE', ExePath())
             smach.Sequence.add('STANDARD_CTRL', DismissNamedConfig('precise_controlling'))
-            # self.userdata.name = 'table'  #### TODO:  teeeeeerrible
-            # self.userdata.type = 'free_space'
-            # self.userdata.costmap = 'local'
-            # smach.Sequence.add('RESTORE_COSTMAP', RemoveSemanticObj())
 
 
 class ExeSparsePath(smach.StateMachine):

@@ -14,7 +14,7 @@ import rail_manipulation_msgs.srv as rail_srvs
 
 from thorp_toolkit.geometry import pose2d2str, TF2                   ,yaw,to_transform, quaternion_msg_from_yaw
 from thorp_toolkit.semantic_map import SemanticMap
-from manipulation_states import FoldArm
+from manipulation_states import FoldArm, ClearOctomap
 
 
 def ObjectDetection():
@@ -46,9 +46,7 @@ def ObjectDetection():
                             output_keys=['objects', 'object_names', 'support_surf'])
 
     with sm:
-        smach.StateMachine.add('CLEAR_OCTOMAP',
-                               smach_ros.ServiceState('clear_octomap',
-                                                      std_srvs.Empty),
+        smach.StateMachine.add('CLEAR_OCTOMAP', ClearOctomap(),
                                transitions={'succeeded': 'OBJECT_DETECTION',
                                             'preempted': 'preempted',
                                             'aborted': 'OBJECT_DETECTION'})
@@ -107,6 +105,22 @@ class BlockDetection(smach_ros.SimpleActionState):
         # the real ObjectDetection state will provide more detailed information
         ud['object_names'] = ['block' + str(i) for i in range(1, len(result.blocks.poses) + 1)]
         ud['support_surf'] = 'table'
+
+
+class ObjectsDetected(smach.State):
+    """
+    Check whether we have detected any object
+    """
+
+    def __init__(self):
+        super(ObjectsDetected, self).__init__(outcomes=['true', 'false'],
+                                              input_keys=['object_names'],
+                                              output_keys=['objects_count'])
+
+    def execute(self, ud):
+        objects_count = len(ud['object_names'])
+        ud['objects_count'] = objects_count
+        return 'true' if objects_count > 0 else 'false'
 
 
 class MonitorObjects(smach_ros.MonitorState):
