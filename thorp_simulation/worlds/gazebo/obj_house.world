@@ -37,13 +37,6 @@
       <pose>7.4 5.6 0 0 0 0</pose>
     </include>
 
-    <!-- A doll table -->
-    <include>
-      <uri>model://doll_table</uri>
-      <name>doll_table_0</name>
-      <pose>9.0 4.0 0 0 0 0</pose>
-    </include>
-
     <gui fullscreen='0'>
       <camera name='user_camera'>
         <pose>9.0 0.0 2.5 0.0 0.5 1.5708</pose>

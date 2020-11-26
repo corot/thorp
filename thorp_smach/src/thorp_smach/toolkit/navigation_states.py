@@ -206,7 +206,9 @@ class ExePathFailed(smach.State):
 
 
 class ClearTableWay(smach.State):
-    """ Clear an area on local costmap so the controller can approach the table """
+    """
+    Clear an area on local costmap so the controller can approach the table, and restore it after a given time
+    """
 
     def __init__(self):
         super(ClearTableWay, self).__init__(outcomes=['succeeded'],
@@ -214,7 +216,7 @@ class ClearTableWay(smach.State):
 
     def execute(self, ud):
         SemanticMap().add_object(ud['table'].name, 'free_space', ud['pose'], [0.5, 0.4], 'local')
-        rospy.Timer(rospy.Duration(5),
+        rospy.Timer(rospy.Duration(cfg.CLEAR_TABLE_WAY_TIMEOUT),
                     lambda te: SemanticMap().remove_object(ud['table'].name, 'free_space', 'local'),
                     oneshot=True)
         return 'succeeded'

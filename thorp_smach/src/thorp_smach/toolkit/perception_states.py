@@ -186,7 +186,7 @@ class MonitorTables(smach.State):
     def execute(self, ud):
         self.detected_table = None
         rate = rospy.Rate(10)
-        while not rospy.is_shutdown():
+        while not self.preempt_requested() and not rospy.is_shutdown():
             print 'segment'
             self.segment_srv()
             print 'done'
@@ -223,3 +223,5 @@ class MonitorTables(smach.State):
                 rate.sleep()
             except rospy.ROSInterruptException:
                 break
+        print "DETECT TABLE PREEMPTED........................................"
+        return 'aborted'

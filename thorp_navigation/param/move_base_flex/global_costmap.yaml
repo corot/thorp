@@ -4,6 +4,7 @@ global_costmap:
   update_frequency: 1.0
   publish_frequency: 0.5
   transform_tolerance: 0.5
+  track_unknown_space: true
 
   plugins:
     - {name: static_layer,       type: "costmap_2d::StaticLayer"}

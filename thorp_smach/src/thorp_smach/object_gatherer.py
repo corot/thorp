@@ -24,8 +24,8 @@ def object_gatherer_sm():
     def child_term_cb(outcome_map):
 
         # terminate all running states if FOO finished with outcome 'outcome3'
-        # if outcome_map['EXPLORE_HOUSE']:
-        #     return True
+        if outcome_map['EXPLORE_HOUSE']:
+            return True
 
         # terminate all running states if BAR finished
         if outcome_map['DETECT_TABLES']:
@@ -38,9 +38,9 @@ def object_gatherer_sm():
     def out_cb(outcome_map):
         if outcome_map['DETECT_TABLES'] == 'succeeded':
             return 'detected'
-        # if outcome_map['EXPLORE_HOUSE'] == 'succeeded':
-        #     return 'not_detected'
-        #return outcome_map['EXPLORE_HOUSE']
+        if outcome_map['EXPLORE_HOUSE'] == 'succeeded':
+            return 'not_detected'
+        return outcome_map['EXPLORE_HOUSE']
 
     # creating the concurrence state machine
     search_sm = smach.Concurrence(outcomes=['detected', 'not_detected', 'aborted', 'preempted'],
@@ -49,7 +49,7 @@ def object_gatherer_sm():
                                   child_termination_cb=child_term_cb,
                                   outcome_cb=out_cb)
     with search_sm:
-       # smach.Concurrence.add('EXPLORE_HOUSE', explore_house_sm())
+        smach.Concurrence.add('EXPLORE_HOUSE', ExploreHouse())
         smach.Concurrence.add('DETECT_TABLES', MonitorTables())
 
     # Full SM: plan rooms visit sequence and explore each room in turn
@@ -65,7 +65,7 @@ def object_gatherer_sm():
                                             'aborted': 'aborted',
                                             'preempted': 'preempted'})
         smach.StateMachine.add('GATHER', GatherObjects(),
-                               transitions={'succeeded': 'detected',
+                               transitions={'succeeded': 'SEARCH',
                                             'aborted': 'aborted',
                                             'preempted': 'preempted',
                                             'tray_full': 'tray_full'})

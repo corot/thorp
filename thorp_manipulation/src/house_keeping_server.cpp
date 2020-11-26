@@ -143,7 +143,7 @@ bool HouseKeepingServer::forceRestingCB(std_srvs::EmptyRequest &request, std_srv
 bool HouseKeepingServer::clearGripperCB(std_srvs::EmptyRequest &request, std_srvs::EmptyResponse &response)
 {
   bool gripper_result = setGripper(gripper_open);
-  bool detach_result = arm().detachObject();  // after, as gripper would "collide" with a grasped but unattached object 
+  bool detach_result = arm().detachObject();  // after, as gripper would "collide" with a grasped but unattached object
   if (!attached_object.empty())
   {
     // Remove the detached object from the planning scene so the arm doesn't "collide" with the floating ghost
