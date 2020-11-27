@@ -104,13 +104,9 @@ class PickupObject(smach.Iterator):
                                                                                'support_surf',
                                                                                'max_effort'],
                                                                    result_slots=['error']),
-                                       transitions={###   TODO 'succeeded': 'succeeded',
-                                                    ###'preempted': 'preempted',
-                                                    'aborted': 'CLEAR_OCTOMAP'})
+                                       transitions={'aborted': 'CLEAR_OCTOMAP'})
                 smach.StateMachine.add('CLEAR_OCTOMAP', ClearOctomap(),
-                                       transitions={'succeeded': 'continue',
-                                                    'preempted': 'preempted',
-                                                    'aborted': 'aborted'})
+                                       transitions={'succeeded': 'continue'})
             # TODOs:
             #  - check error and, if collision between parts of the arm, move a bit the arm  -->  not enough info
             #  - this doesn't make too much sense as a loop... better try all our tricks and exit
@@ -138,13 +134,9 @@ class PlaceObject(smach.Iterator):
                                                                                'support_surf',
                                                                                'place_pose'],
                                                                    result_slots=[]),
-                                       transitions={#######'succeeded': 'succeeded',
-                                                    ##########'preempted': 'preempted',
-                                                    'aborted': 'CLEAR_OCTOMAP'})
+                                       transitions={'aborted': 'CLEAR_OCTOMAP'})
                 smach.StateMachine.add('CLEAR_OCTOMAP', ClearOctomap(),
                                        transitions={'succeeded': 'continue'})
-                                                   ### 'preempted': 'preempted',
-                                                   #### 'aborted': 'aborted'})
 
             # TODOs:
             #  - check error and, if collision between parts of the arm, move a bit the arm  -->  not enough info
