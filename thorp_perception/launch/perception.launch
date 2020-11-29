@@ -57,15 +57,9 @@
   <!--  ************ RAIL Object Detection ************  -->
   <group if="$(eval pipeline == 'RAIL')">
     <node pkg="rail_segmentation" type="rail_segmentation" name="rail_segmentation" output="screen" respawn="true">
-      <param name="debug" value="true"/>
-      <param name="point_cloud_topic" value="/xtion/depth_registered/points"/>
-      <param name="zones_config" value="$(find thorp_perception)/config/rail/zones.yaml"/>
-      <param name="min_cluster_size" value="200"/>
-      <param name="max_cluster_size" value="10000"/>
-      <param name="cluster_tolerance" value="0.01"/>
-      <param name="use_color" value="true"/>
-      <param name="crop_first" value="false"/>
-      <param name="label_markers" value="true"/>
+      <rosparam command="load" file="$(find thorp_perception)/config/rail/segmentation.yaml" subst_value="True">
+        $(find thorp_perception)
+      </rosparam>
     </node>
   </group>
 </launch>

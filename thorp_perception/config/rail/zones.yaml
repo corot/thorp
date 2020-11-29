@@ -1,4 +1,4 @@
-- name: "Default Zone"
+- name: "Robot front"
   remove_surface: true
   require_surface: true
   parent_frame_id: "map"
