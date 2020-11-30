@@ -16,6 +16,7 @@ class Reconfigure:
         self.srv_clients = {}
         self.prev_values = {}
         self.named_configs = {}
+        self.active_named_configs = []
 
     def update_config(self, ns, config):
         """
@@ -75,6 +76,7 @@ class Reconfigure:
         if config_name not in self.named_configs:
             rospy.logerr("Named configuration '%s' not loaded", config_name)
             return False
+        self.active_named_configs.append(config_name)
         named_config = self.named_configs[config_name]
         for ns, config in named_config.items():
             if not self.update_config(ns, config):
@@ -91,6 +93,10 @@ class Reconfigure:
         if config_name not in self.named_configs:
             rospy.logerr("Named configuration '%s' not loaded", config_name)
             return False
+        if config_name not in self.active_named_configs:
+            rospy.logwarn("Named configuration '%s' not currently in use", config_name)
+            return False
+        self.active_named_configs.remove(config_name)
         named_config = self.named_configs[config_name]
         for ns, config in named_config.items():
             if not self.restore_config(ns, config.keys()):
