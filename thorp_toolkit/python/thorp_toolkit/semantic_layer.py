@@ -9,8 +9,8 @@ from geometry import pose2d2str, TF2
 from singleton import Singleton
 
 
-class SemanticMap:
-    """ Singleton providing a simplified interface for adding/removing objects to the semantic map """
+class SemanticLayer:
+    """ Singleton providing a simplified interface for adding/removing objects to the costmaps semantic layer """
     __metaclass__ = Singleton
 
     def __init__(self):

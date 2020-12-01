@@ -100,7 +100,7 @@ class GroupObjects(smach.State):
     the one that places the object closer to the robot arm.
     """
     def __init__(self):
-        smach.State.__init__(self, outcomes=['succeeded', 'no_objects'],
+        smach.State.__init__(self, outcomes=['succeeded', 'no_reachable_objs'],
                              input_keys=['objects', 'robot_pose', 'picking_poses'],
                              output_keys=['picking_locs'])
         self.manip_frame = rospy.get_param('~manipulation_frame', 'arm_base_link')
@@ -135,6 +135,9 @@ class GroupObjects(smach.State):
             approach_pose = deepcopy(pose)
             translate_pose(approach_pose, - (cfg.APPROACH_DIST_TO_TABLE - cfg.PICKING_DIST_TO_TABLE), 'x')
             pick_locs.append(PickLoc(len(objs), name, pose, objs, dist_from_robot, arm_pose_mrf, approach_pose))
+        if not pick_locs:
+            rospy.loginfo("No reachable objects")
+            return 'no_reachable_objs'
 
         # find the most efficient sequence of picking locations: try all permutations, sort and get the first
         possible_plans = []
@@ -177,6 +180,8 @@ class GroupObjects(smach.State):
         """
         The total distance the robot will travel from its current location after visiting all pick locations
         """
+        if not pick_locs:
+            return 0.0
         total_dist = distance_2d(robot_pose, pick_locs[0].pose)
         for ploc1, ploc2 in zip(pick_locs, pick_locs[1:]):
             total_dist += distance_2d(ploc1.pose, ploc2.pose)
@@ -270,21 +275,27 @@ def GatherObjects():
                            remapping={'target_pose': 'closest_approach_pose'})
 
     # detects objects over the table, and make a picking plan
-    make_pick_plan_sm = smach.Sequence(outcomes=['succeeded', 'aborted', 'preempted'],
-                                       connector_outcome='succeeded',
-                                       output_keys=['picking_poses', 'closest_picking_pose', 'picking_plan'])
+    make_pick_plan_sm = smach.StateMachine(outcomes=['succeeded', 'aborted', 'preempted', 'no_reachable_objs'],
+                                           output_keys=['picking_poses', 'closest_picking_pose', 'picking_plan'])
     with make_pick_plan_sm:
-        smach.Sequence.add('GET_ROBOT_POSE', GetRobotPose())
-        smach.Sequence.add('DETECT_TABLES', MonitorTables(),  # re-detect when nearby for more precision
-                           transitions={'aborted': 'aborted'})
-        smach.Sequence.add('CALC_PICK_POSES', CalcPickPoses(cfg.PICKING_DIST_TO_TABLE),
-                           transitions={'no_valid_table': 'aborted'})
-        smach.Sequence.add('DETECT_OBJECTS', BlockDetection(),
-                           remapping={'blocks': 'detected_objects'})
-        smach.Sequence.add('GROUP_OBJECTS', GroupObjects(),
-                           transitions={'no_objects': 'aborted'},
-                           remapping={'objects': 'detected_objects'})
-        smach.Sequence.add('MAKE_PICKING_PLAN', MakePickingPlan())
+        smach.StateMachine.add('GET_ROBOT_POSE', GetRobotPose(),
+                               transitions={'succeeded': 'DETECT_TABLES'})
+        smach.StateMachine.add('DETECT_TABLES', MonitorTables(2),  # re-detect when nearby for more precision
+                               transitions={'succeeded': 'CALC_PICK_POSES'})  # (or fail if cannot see again)
+        smach.StateMachine.add('CALC_PICK_POSES', CalcPickPoses(cfg.PICKING_DIST_TO_TABLE),
+                               transitions={'succeeded': 'DETECT_OBJECTS',
+                                            'no_valid_table': 'aborted'})
+        smach.StateMachine.add('DETECT_OBJECTS', BlockDetection(),
+                               transitions={'succeeded': 'OBJECTS_FOUND?'},
+                               remapping={'blocks': 'detected_objects'})
+        smach.StateMachine.add('OBJECTS_FOUND?', ObjectsDetected(),
+                               transitions={'true': 'GROUP_OBJECTS',
+                                            'false': 'no_reachable_objs'},
+                               remapping={'objects': 'detected_objects'})
+        smach.StateMachine.add('GROUP_OBJECTS', GroupObjects(),
+                               transitions={'succeeded': 'MAKE_PICKING_PLAN'},
+                               remapping={'objects': 'detected_objects'})
+        smach.StateMachine.add('MAKE_PICKING_PLAN', MakePickingPlan())
 
     # go to a picking location and pick all objects reachable from there
     pick_objects_sm = smach.Sequence(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'],
@@ -321,7 +332,8 @@ def GatherObjects():
         smach.StateMachine.add('APPROACH_TABLE', approach_table_sm,
                                transitions={'succeeded': 'MAKE_PICK_PLAN'})
         smach.StateMachine.add('MAKE_PICK_PLAN', make_pick_plan_sm,
-                               transitions={'succeeded': 'PICK_OBJECTS'})
+                               transitions={'succeeded': 'PICK_OBJECTS',
+                                            'no_reachable_objs': 'succeeded'})
         smach.StateMachine.add('PICK_OBJECTS', pick_objects_it,
                                transitions={'succeeded': 'DETECT_OBJECTS',  # double-check that we left no object behind
                                             'aborted': 'STANDARD_CTRL',     # restore original configuration on error
@@ -331,7 +343,7 @@ def GatherObjects():
                                remapping={'blocks': 'detected_objects'})
         smach.StateMachine.add('OBJECTS_LEFT', ObjectsDetected(),
                                transitions={'true': 'APPROACH_TABLE',   # at least one object left; restart picking
-                                            'false': 'STANDARD_CTRL'},  # restore original configuration when done
+                                            'false': 'succeeded'},      # otherwise we are done
                                remapping={'objects': 'detected_objects'})
         smach.StateMachine.add('STANDARD_CTRL', DismissNamedConfig('precise_controlling'),
                                transitions={'succeeded': 'aborted'})

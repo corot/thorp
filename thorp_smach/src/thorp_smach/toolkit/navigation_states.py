@@ -7,9 +7,9 @@ import nav_msgs.msg as nav_msgs
 import mbf_msgs.msg as mbf_msgs
 import thorp_msgs.msg as thorp_msgs
 
-from thorp_toolkit.geometry import TF2
+from thorp_toolkit.geometry import TF2, heading, quaternion_msg_from_yaw
 from thorp_toolkit.reconfigure import Reconfigure
-from thorp_toolkit.semantic_map import SemanticMap
+from thorp_toolkit.semantic_layer import SemanticLayer
 
 from common_states import SetNamedConfig, DismissNamedConfig
 
@@ -25,8 +25,7 @@ class GetRobotPose(smach.State):
 
     def execute(self, ud):
         try:
-            # set as Pose, no PoseStamped, as required by FindRoomSequenceWithCheckpointsGoal
-            ud['robot_pose'] = TF2().transform_pose(None, 'base_footprint', 'map').pose
+            ud['robot_pose'] = TF2().transform_pose(None, 'base_footprint', 'map')
             return 'succeeded'
         except rospy.ROSException as err:
             rospy.logerr("Get robot pose failed: %s", str(err))
@@ -68,7 +67,7 @@ class AddSemanticObj(smach.State):
                                              input_keys=['name', 'type', 'pose', 'size', 'costmap'])
 
     def execute(self, ud):
-        SemanticMap().add_object(ud['name'], ud['type'], ud['pose'], ud['size'], ud['costmap'])
+        SemanticLayer().add_object(ud['name'], ud['type'], ud['pose'], ud['size'], ud['costmap'])
         return 'succeeded'
 
 
@@ -80,7 +79,7 @@ class RemoveSemanticObj(smach.State):
                                                 input_keys=['name', 'type', 'costmap'])
 
     def execute(self, ud):
-        SemanticMap().remove_object(ud['name'], ud['type'], ud['costmap'])
+        SemanticLayer().remove_object(ud['name'], ud['type'], ud['costmap'])
         return 'succeeded'
 
 
@@ -157,6 +156,24 @@ class ExePath(smach_ros.SimpleActionState):
         super(ExePath, self)._goal_feedback_cb(feedback)
 
 
+class LookToPose(ExePath):
+    """ Turn toward a given pose """
+    def __init__(self):
+        super(LookToPose, self).__init__()
+        super(ExePath, self).register_input_keys(['robot_pose', 'target_pose'])  # extend ExePath inputs
+
+    # this decorator is the only way I found to add additional input keys (normally is used on CBState)
+    @smach.cb_interface(input_keys=['robot_pose', 'target_pose'])
+    def make_goal(ud, goal):
+        # Create a single-pose path with the current robot location but heading toward the target pose
+        heading_to_target = heading(ud['robot_pose'].pose, ud['target_pose'].pose)
+        import copy
+        pose = copy.deepcopy(ud['robot_pose'])
+        pose.pose.orientation = quaternion_msg_from_yaw(heading_to_target)
+        goal.path = nav_msgs.Path(pose.header, [pose])
+        goal.controller = cfg.DEFAULT_CONTROLLER
+
+
 class Recovery(smach_ros.SimpleActionState):
     def __init__(self):
         super(Recovery, self).__init__('move_base_flex/recovery',
@@ -215,9 +232,9 @@ class ClearTableWay(smach.State):
                                             input_keys=['table', 'pose'])
 
     def execute(self, ud):
-        SemanticMap().add_object(ud['table'].name, 'free_space', ud['pose'], [0.5, 0.4], 'local')
+        SemanticLayer().add_object(ud['table'].name, 'free_space', ud['pose'], [0.5, 0.4], 'local')
         rospy.Timer(rospy.Duration(cfg.CLEAR_TABLE_WAY_TIMEOUT),
-                    lambda te: SemanticMap().remove_object(ud['table'].name, 'free_space', 'local'),
+                    lambda te: SemanticLayer().remove_object(ud['table'].name, 'free_space', 'local'),
                     oneshot=True)
         return 'succeeded'
 

@@ -12,8 +12,8 @@ import cob_perception_msgs.msg as cob_msgs
 import rail_manipulation_msgs.msg as rail_msgs
 import rail_manipulation_msgs.srv as rail_srvs
 
+from thorp_toolkit.semantic_layer import SemanticLayer
 from thorp_toolkit.geometry import pose2d2str, TF2                   ,yaw,to_transform, quaternion_msg_from_yaw
-from thorp_toolkit.semantic_map import SemanticMap
 from manipulation_states import FoldArm, ClearOctomap
 
 
@@ -162,13 +162,14 @@ class MonitorObjects(smach_ros.MonitorState):
 class MonitorTables(smach.State):
     """
     Look for tables until one is found or we run out of time. Returns:
-    - 'detected' if a table is seen
+    - 'succeeded' if a table is seen before timeout (unlimited by default)
     - 'aborted' otherwise
     """
 
-    def __init__(self):
-        super(MonitorTables, self).__init__(outcomes=['succeeded', 'aborted'],
+    def __init__(self, timeout=0.0):
+        super(MonitorTables, self).__init__(outcomes=['succeeded', 'preempted', 'aborted'],
                                             output_keys=['table', 'table_pose'])
+        self.timeout = timeout
         self.detected_table = None
         self.table_event = threading.Condition()
         self.table_sub = rospy.Subscriber("rail_segmentation/segmented_table", rail_msgs.SegmentedObject, self.table_cb)
@@ -176,20 +177,17 @@ class MonitorTables(smach.State):
         self.segment_srv.wait_for_service(30.0)
 
     def table_cb(self, msg):
-        print "TABLE!!!"
         self.detected_table = msg
         self.table_event.acquire()
         self.table_event.notify()
         self.table_event.release()
-        print "TABLE!!!   released"
 
     def execute(self, ud):
         self.detected_table = None
-        rate = rospy.Rate(10)
+        start_time = rospy.get_time()
+        rate = rospy.Rate(2.5)
         while not self.preempt_requested() and not rospy.is_shutdown():
-            print 'segment'
             self.segment_srv()
-            print 'done'
             self.table_event.acquire()
             self.table_event.wait(0.1)
             self.table_event.release()
@@ -202,26 +200,27 @@ class MonitorTables(smach.State):
                 width, length = self.detected_table.width, self.detected_table.depth
                 table_tf = to_transform(pose, 'table_frame')
                 TF2().publish_transform(table_tf)
-                print self.detected_table.point_cloud.header
-                print 'centroid ', self.detected_table.centroid
-                print 'center   ', self.detected_table.center
-                print 'yaw      ', yaw(self.detected_table.orientation)
-                kk=self.detected_table.marker
+                # print self.detected_table.point_cloud.header
+                # print 'centroid ', self.detected_table.centroid
+                # print 'center   ', self.detected_table.center
+                # print 'yaw      ', yaw(self.detected_table.orientation)
+                # kk=self.detected_table.marker
                 ud['table'] = self.detected_table
                 ud['table_pose'] = pose
                 rospy.loginfo("Detected table of size %.1f x %.1f at %s", width, length, pose2d2str(pose))
                 # Add the table contour as an obstacle to global costmap, so we can plan around it
                 # We also add an shrinked version to the local costmap so no to impair approaching for picking
                 # TODO: detected_table.name is empty; tweak RAIL to provide it or add sequential names here
-                # SemanticMap().add_obstacle(self.detected_table.name, pose, [width, length, 0.0], 'global')
-                # SemanticMap().add_obstacle(self.detected_table.name, pose, [width - 0.2, length - 0.2, 0.0], 'local')    TDDO  a ver q pasa
+                # SemanticLayer().add_obstacle(self.detected_table.name, pose, [width, length, 0.0], 'global')
+                # SemanticLayer().add_obstacle(self.detected_table.name, pose, [width - 0.2, length - 0.2, 0.0], 'local')    TDDO  a ver q pasa
                 return 'succeeded'
-            else:
-                # nothing detected; TODO timeout   return 'not_detected'
-                pass
+            elif self.timeout and rospy.get_time() - start_time > self.timeout:
+                rospy.logwarn("No table detected after %g seconds (timeout %g)", rospy.get_time() - start_time)
+                return 'aborted'
             try:
                 rate.sleep()
             except rospy.ROSInterruptException:
                 break
-        print "DETECT TABLE PREEMPTED........................................"
-        return 'aborted'
+        rospy.logwarn("Detect table has been preempted after %g seconds (timeout %g)",
+                      rospy.get_time() - start_time, self.timeout)
+        return 'preempted'

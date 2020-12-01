@@ -62,10 +62,18 @@ def angles_diff(angle1, angle2):
 
 
 def heading(pose1, pose2=None):
+    """ Heading angle from one pose to another.
+        Poses are assumed to have the same reference frame. """
     if not pose2:
         pose2 = pose1
         pose1 = geometry_msgs.Pose()  # 0, 0, 0 pose, i.e. origin
-    return atan2(pose2.position.y - pose1.position.y, pose2.position.x - pose1.position.x)
+    p1, p2 = __get_naked_poses(pose1, pose2)
+    return atan2(p2.position.y - p1.position.y, p2.position.x - p1.position.x)
+
+
+def distance(x1, y1, x2, y2):
+    """ Euclidean distance between 2D points """
+    return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2))
 
 
 def distance_2d(pose1, pose2=None):
@@ -85,9 +93,10 @@ def distance_3d(pose1, pose2=None):
     if not pose2:
         pose2 = pose1
         pose1 = geometry_msgs.Pose()  # 0, 0, 0 pose, i.e. origin
-    return sqrt(pow(pose2.position.x - pose1.position.x, 2)
-              + pow(pose2.position.y - pose1.position.y, 2)
-              + pow(pose2.position.z - pose1.position.z, 2))
+    p1, p2 = __get_naked_poses(pose1, pose2)
+    return sqrt(pow(p2.position.x - p1.position.x, 2)
+              + pow(p2.position.y - p1.position.y, 2)
+              + pow(p2.position.z - p1.position.z, 2))
 
 
 def get_euler(pose_or_quat):

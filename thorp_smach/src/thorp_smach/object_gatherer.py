@@ -8,6 +8,7 @@ from thorp_toolkit.geometry import TF2
 from thorp_toolkit.reconfigure import Reconfigure
 
 from toolkit.common_states import wait_for_sim_time, wait_for_mbf
+from toolkit.navigation_states import GetRobotPose, LookToPose
 from toolkit.perception_states import MonitorTables
 from toolkit.exploration_states import ExploreHouse
 from toolkit.gathering_states import GatherObjects
@@ -42,7 +43,7 @@ def object_gatherer_sm():
             return 'not_detected'
         return outcome_map['EXPLORE_HOUSE']
 
-    # creating the concurrence state machine
+    # concurrence state machine: detect tables while exploring the house
     search_sm = smach.Concurrence(outcomes=['detected', 'not_detected', 'aborted', 'preempted'],
                                   default_outcome='not_detected',
                                   output_keys=['table', 'table_pose'],
@@ -52,7 +53,18 @@ def object_gatherer_sm():
         smach.Concurrence.add('EXPLORE_HOUSE', ExploreHouse())
         smach.Concurrence.add('DETECT_TABLES', MonitorTables())
 
-    # Full SM: plan rooms visit sequence and explore each room in turn
+    # confirm detection state machine
+    confirm_sm = smach.Sequence(outcomes=['succeeded', 'aborted', 'preempted'],
+                                connector_outcome='succeeded',
+                                input_keys=['table', 'table_pose'],
+                                output_keys=['table', 'table_pose'])
+    with confirm_sm:
+        smach.Sequence.add('GET_ROBOT_POSE', GetRobotPose())
+        smach.Sequence.add('TURN_TO_TABLE', LookToPose(),
+                           remapping={'target_pose': 'table_pose'})
+        smach.Sequence.add('CONFIRM_TABLE', MonitorTables(2))  # 2s timeout
+
+    # Full SM: explore the house and gather objects from all detected tables
     sm = smach.StateMachine(outcomes=['detected',
                                       'not_detected',
                                       'tray_full',
@@ -60,9 +72,13 @@ def object_gatherer_sm():
                                       'preempted'])
     with sm:
         smach.StateMachine.add('SEARCH', search_sm,
-                               transitions={'detected': 'GATHER',
+                               transitions={'detected': 'CONFIRM',
                                             'not_detected': 'not_detected',
                                             'aborted': 'aborted',
+                                            'preempted': 'preempted'})
+        smach.StateMachine.add('CONFIRM', confirm_sm,
+                               transitions={'succeeded': 'GATHER',
+                                            'aborted': 'SEARCH',
                                             'preempted': 'preempted'})
         smach.StateMachine.add('GATHER', GatherObjects(),
                                transitions={'succeeded': 'SEARCH',

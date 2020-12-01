@@ -25,8 +25,7 @@ def explore_house_sm():
         smach.Sequence.add('SEGMENT_ROOMS', SegmentRooms())
         smach.Sequence.add('GET_ROBOT_POSE', GetRobotPose())
         smach.Sequence.add('PLAN_ROOM_SEQUENCE', PlanRoomSequence(),
-                           remapping={'robot_start_coordinate': 'robot_pose',
-                                      'input_map': 'map_image'})
+                           remapping={'input_map': 'map_image'})
 
     # explore a single room
     explore_1_room_sm = smach.Sequence(outcomes=['succeeded', 'aborted', 'preempted'],

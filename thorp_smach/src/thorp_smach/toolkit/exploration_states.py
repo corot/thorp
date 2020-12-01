@@ -97,12 +97,17 @@ class PlanRoomSequence(smach_ros.SimpleActionState):
     def __init__(self):
         super(PlanRoomSequence, self).__init__('exploration/room_sequence_planning_server',
                                                ipa_building_msgs.FindRoomSequenceWithCheckpointsAction,
+                                               goal_cb=self.make_goal,
                                                goal_slots=['input_map', 'map_origin', 'map_resolution',
-                                                           'robot_radius', 'robot_start_coordinate',
-                                                           'room_information_in_pixel'],
+                                                           'robot_radius', 'room_information_in_pixel'],
                                                result_cb=self.result_cb,
+                                               input_keys=['robot_pose'],
                                                output_keys=['room_sequence'])
         self.img_pub = rospy.Publisher('exploration/room_sequence_img', sensor_msgs.Image, queue_size=1, latch=True)
+
+    def make_goal(self, ud, goal):
+        # cannot pass as goal slot cause room_sequence_planning_server wants a Pose, not a PoseStamped
+        goal.robot_start_coordinate = ud['robot_pose'].pose
 
     def result_cb(self, ud, status, result):
         # room numbers start with 1, so we get them with index + 1
@@ -221,7 +226,6 @@ def ExploreHouse():
                                transitions={'succeeded': 'PLAN_ROOM_SEQ'})
         smach.StateMachine.add('PLAN_ROOM_SEQ', PlanRoomSequence(),
                                transitions={'succeeded': 'EXPLORE_HOUSE'},
-                               remapping={'robot_start_coordinate': 'robot_pose',
-                                          'input_map': 'map_image'})
+                               remapping={'input_map': 'map_image'})
         smach.StateMachine.add('EXPLORE_HOUSE', explore_house_it)
     return sm
