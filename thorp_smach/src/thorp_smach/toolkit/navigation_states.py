@@ -7,7 +7,7 @@ import nav_msgs.msg as nav_msgs
 import mbf_msgs.msg as mbf_msgs
 import thorp_msgs.msg as thorp_msgs
 
-from thorp_toolkit.geometry import TF2, heading, quaternion_msg_from_yaw
+from thorp_toolkit.geometry import TF2, pose2d2str, heading, quaternion_msg_from_yaw
 from thorp_toolkit.reconfigure import Reconfigure
 from thorp_toolkit.semantic_layer import SemanticLayer
 
@@ -213,9 +213,9 @@ class ExePathFailed(smach.State):
         except IndexError:
             rospy.loginfo("Recovery behaviors exhausted after %d consecutive failures", self.consecutive_failures)
             self.consecutive_failures = 0
-            if current_waypoint >= 0:
-                next_wp_pose = ud['path'].poses[0]
-                rospy.loginfo("Try to navigate to the next waypoint: %d, %s", current_waypoint, next_wp_pose)
+            if current_waypoint >= 0 and ud['path'].poses:
+                next_wp_pose = ud['path'].poses.pop(0)
+                rospy.loginfo("Navigate to the next waypoint: %d, %s", current_waypoint, pose2d2str(next_wp_pose))
                 ud['next_wp'] = next_wp_pose
                 return 'next_wp'
 
@@ -294,7 +294,7 @@ class ExeSparsePath(smach.StateMachine):
             smach.StateMachine.add('NEXT_WP', GoToPose(dist_tolerance=cfg.LOOSE_DIST_TOLERANCE,
                                                        angle_tolerance=cfg.INF_ANGLE_TOLERANCE),
                                    transitions={'succeeded': 'EXE_PATH',
-                                                'aborted': 'aborted',
+                                                'aborted': 'FAILURE',
                                                 'preempted': 'preempted'},
                                    remapping={'target_pose': 'next_wp'})
 

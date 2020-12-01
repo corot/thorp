@@ -9,7 +9,7 @@ from thorp_toolkit.reconfigure import Reconfigure
 
 from toolkit.common_states import wait_for_sim_time, wait_for_mbf
 from toolkit.navigation_states import GetRobotPose, LookToPose
-from toolkit.perception_states import MonitorTables
+from toolkit.perception_states import MonitorTables, TableMarkVisited, TableWasVisited
 from toolkit.exploration_states import ExploreHouse
 from toolkit.gathering_states import GatherObjects
 
@@ -20,6 +20,18 @@ def object_gatherer_sm():
      - explore house while looking for tables
      - approach each detected table and pick all the objects of the chosen shape
     """
+
+    # look for tables state machine
+    detect_tables_sm = smach.StateMachine(outcomes=['succeeded', 'aborted', 'preempted'],
+                                          output_keys=['table', 'table_pose'])
+    with detect_tables_sm:
+        smach.StateMachine.add('DETECT_TABLES', MonitorTables(),
+                               transitions={'succeeded': 'VISITED_TABLE?',
+                                            'aborted': 'aborted',
+                                            'preempted': 'preempted'})
+        smach.StateMachine.add('VISITED_TABLE?', TableWasVisited(),
+                               transitions={'true': 'DETECT_TABLES',
+                                            'false': 'succeeded'})
 
     # gets called when ANY child state terminates
     def child_term_cb(outcome_map):
@@ -51,7 +63,7 @@ def object_gatherer_sm():
                                   outcome_cb=out_cb)
     with search_sm:
         smach.Concurrence.add('EXPLORE_HOUSE', ExploreHouse())
-        smach.Concurrence.add('DETECT_TABLES', MonitorTables())
+        smach.Concurrence.add('DETECT_TABLES', detect_tables_sm)
 
     # confirm detection state machine
     confirm_sm = smach.Sequence(outcomes=['succeeded', 'aborted', 'preempted'],
@@ -63,6 +75,7 @@ def object_gatherer_sm():
         smach.Sequence.add('TURN_TO_TABLE', LookToPose(),
                            remapping={'target_pose': 'table_pose'})
         smach.Sequence.add('CONFIRM_TABLE', MonitorTables(2))  # 2s timeout
+        smach.Sequence.add('MARK_VISITED', TableMarkVisited())
 
     # Full SM: explore the house and gather objects from all detected tables
     sm = smach.StateMachine(outcomes=['detected',

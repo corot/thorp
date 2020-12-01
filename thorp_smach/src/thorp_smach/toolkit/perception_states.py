@@ -3,7 +3,6 @@ import smach
 import smach_ros
 import threading
 
-import std_srvs.srv as std_srvs
 import thorp_msgs.msg as thorp_msgs
 import geometry_msgs.msg as geo_msgs
 
@@ -12,7 +11,7 @@ import cob_perception_msgs.msg as cob_msgs
 import rail_manipulation_msgs.msg as rail_msgs
 import rail_manipulation_msgs.srv as rail_srvs
 
-from thorp_toolkit.semantic_layer import SemanticLayer
+from thorp_toolkit.semantic_map import SemanticMap
 from thorp_toolkit.geometry import pose2d2str, TF2                   ,yaw,to_transform, quaternion_msg_from_yaw
 from manipulation_states import FoldArm, ClearOctomap
 
@@ -159,6 +158,36 @@ class MonitorObjects(smach_ros.MonitorState):
         return outcome
 
 
+class TableWasVisited(smach.State):
+    """
+    Check whether a table has been visited before
+    """
+
+    def __init__(self):
+        super(TableWasVisited, self).__init__(outcomes=['true', 'false'],
+                                              input_keys=['table', 'table_pose'])
+
+    def execute(self, ud):
+        intersecting_objs = SemanticMap().objects_at(ud['table_pose'], (ud['table'].depth, ud['table'].width))
+        outcome = 'true' if len(intersecting_objs) > 0 else 'false'
+        print "TABLE VISITED???   ", outcome
+        return outcome
+
+
+class TableMarkVisited(smach.State):
+    """
+    Check whether we have detected any object
+    """
+
+    def __init__(self):
+        super(TableMarkVisited, self).__init__(outcomes=['succeeded'],
+                                               input_keys=['table', 'table_pose'])
+
+    def execute(self, ud):
+        SemanticMap().add_object(ud['table'], 'table', ud['table_pose'], (ud['table'].depth, ud['table'].width))
+        return 'succeeded'
+
+
 class MonitorTables(smach.State):
     """
     Look for tables until one is found or we run out of time. Returns:
@@ -215,7 +244,7 @@ class MonitorTables(smach.State):
                 # SemanticLayer().add_obstacle(self.detected_table.name, pose, [width - 0.2, length - 0.2, 0.0], 'local')    TDDO  a ver q pasa
                 return 'succeeded'
             elif self.timeout and rospy.get_time() - start_time > self.timeout:
-                rospy.logwarn("No table detected after %g seconds (timeout %g)", rospy.get_time() - start_time)
+                rospy.logwarn("No table detected after %g seconds", rospy.get_time() - start_time)
                 return 'aborted'
             try:
                 rate.sleep()
