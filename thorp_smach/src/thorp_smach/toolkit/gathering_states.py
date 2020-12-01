@@ -272,6 +272,8 @@ def GatherObjects():
                            remapping={'picking_poses': 'approach_poses',
                                       'closest_picking_pose': 'closest_approach_pose'})
         smach.Sequence.add('APPROACH_TABLE', GoToPose(),  # use default tolerances; no precision needed here
+                           transitions={'aborted': 'aborted',
+                                        'preempted': 'preempted'},
                            remapping={'target_pose': 'closest_approach_pose'})
 
     # detects objects over the table, and make a picking plan
@@ -281,12 +283,15 @@ def GatherObjects():
         smach.StateMachine.add('GET_ROBOT_POSE', GetRobotPose(),
                                transitions={'succeeded': 'DETECT_TABLES'})
         smach.StateMachine.add('DETECT_TABLES', MonitorTables(2),  # re-detect when nearby for more precision
-                               transitions={'succeeded': 'CALC_PICK_POSES'})  # (or fail if cannot see again)
+                               transitions={'succeeded': 'CALC_PICK_POSES',  # (or fail if cannot see again)
+                                            'aborted': 'aborted'})
         smach.StateMachine.add('CALC_PICK_POSES', CalcPickPoses(cfg.PICKING_DIST_TO_TABLE),
                                transitions={'succeeded': 'DETECT_OBJECTS',
                                             'no_valid_table': 'aborted'})
         smach.StateMachine.add('DETECT_OBJECTS', BlockDetection(),
-                               transitions={'succeeded': 'OBJECTS_FOUND?'},
+                               transitions={'succeeded': 'OBJECTS_FOUND?',
+                                            'aborted': 'aborted',
+                                            'preempted': 'preempted'},
                                remapping={'blocks': 'detected_objects'})
         smach.StateMachine.add('OBJECTS_FOUND?', ObjectsDetected(),
                                transitions={'true': 'GROUP_OBJECTS',
@@ -305,8 +310,12 @@ def GatherObjects():
     with pick_objects_sm:
         smach.Sequence.add('PICK_LOC_FIELDS', PickLocFields())
         smach.Sequence.add('GOTO_APPROACH', GoToPose(),  # use default tolerances; no precision needed here
+                           transitions={'aborted': 'aborted',
+                                        'preempted': 'preempted'},
                            remapping={'target_pose': 'approach_pose'})
         smach.Sequence.add('ALIGN_TO_TABLE', AlignToTable(),
+                           transitions={'aborted': 'aborted',
+                                        'preempted': 'preempted'},
                            remapping={'pose': 'picking_pose'})
         smach.Sequence.add('PICK_OBJECTS', PickReachableObjs())
         smach.Sequence.add('DETACH_FROM_TABLE', DetachFromTable(),
@@ -330,21 +339,29 @@ def GatherObjects():
                             input_keys=['table', 'table_pose'])
     with sm:
         smach.StateMachine.add('APPROACH_TABLE', approach_table_sm,
-                               transitions={'succeeded': 'MAKE_PICK_PLAN'})
+                               transitions={'succeeded': 'MAKE_PICK_PLAN',
+                                            'aborted': 'aborted',
+                                            'preempted': 'preempted'})
         smach.StateMachine.add('MAKE_PICK_PLAN', make_pick_plan_sm,
                                transitions={'succeeded': 'PICK_OBJECTS',
+                                            'aborted': 'aborted',
+                                            'preempted': 'preempted',
                                             'no_reachable_objs': 'succeeded'})
         smach.StateMachine.add('PICK_OBJECTS', pick_objects_it,
                                transitions={'succeeded': 'DETECT_OBJECTS',  # double-check that we left no object behind
                                             'aborted': 'STANDARD_CTRL',     # restore original configuration on error
+                                            'preempted': 'preempted',
                                             'tray_full': 'tray_full'})
         smach.StateMachine.add('DETECT_OBJECTS', BlockDetection(),
-                               transitions={'succeeded': 'OBJECTS_LEFT'},
+                               transitions={'succeeded': 'OBJECTS_LEFT',
+                                            'aborted': 'aborted',
+                                            'preempted': 'preempted'},
                                remapping={'blocks': 'detected_objects'})
         smach.StateMachine.add('OBJECTS_LEFT', ObjectsDetected(),
                                transitions={'true': 'APPROACH_TABLE',   # at least one object left; restart picking
                                             'false': 'succeeded'},      # otherwise we are done
                                remapping={'objects': 'detected_objects'})
         smach.StateMachine.add('STANDARD_CTRL', DismissNamedConfig('precise_controlling'),
-                               transitions={'succeeded': 'aborted'})
+                               transitions={'succeeded': 'aborted',
+                                            'aborted': 'aborted'})
     return sm

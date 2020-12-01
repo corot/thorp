@@ -193,11 +193,15 @@ def ExploreHouse():
                                                    'segmented_map', 'room_number', 'room_information_in_meter'])
     with explore_1_room_sm:
         smach.Sequence.add('GET_ROBOT_POSE', GetRobotPose())
-        smach.Sequence.add('PLAN_ROOM_EXPL', PlanRoomExploration())
+        smach.Sequence.add('PLAN_ROOM_EXPL', PlanRoomExploration(),
+                           transitions={'aborted': 'aborted',
+                                        'preempted': 'preempted'})
         smach.Sequence.add('POSES_AS_PATH', PosesAsPath(),
                            remapping={'poses': 'coverage_path_pose_stamped'})
         smach.Sequence.add('GOTO_START_POSE', GoToPose(dist_tolerance=cfg.LOOSE_DIST_TOLERANCE,   # just close enough
                                                        angle_tolerance=cfg.INF_ANGLE_TOLERANCE),  # ignore orientation
+                           transitions={'aborted': 'aborted',
+                                        'preempted': 'preempted'},
                            remapping={'target_pose': 'start_pose'})
         smach.Sequence.add('TRAVERSE_POSES', ExeSparsePath())
 
@@ -221,11 +225,19 @@ def ExploreHouse():
                                transitions={'true': 'GET_ROBOT_POSE',
                                             'false': 'SEGMENT_ROOMS'})
         smach.StateMachine.add('SEGMENT_ROOMS', SegmentRooms(),
-                               transitions={'succeeded': 'GET_ROBOT_POSE'})
+                               transitions={'succeeded': 'GET_ROBOT_POSE',
+                                            'aborted': 'aborted',
+                                            'preempted': 'preempted'})
         smach.StateMachine.add('GET_ROBOT_POSE', GetRobotPose(),
-                               transitions={'succeeded': 'PLAN_ROOM_SEQ'})
+                               transitions={'succeeded': 'PLAN_ROOM_SEQ',
+                                            'aborted': 'aborted'})
         smach.StateMachine.add('PLAN_ROOM_SEQ', PlanRoomSequence(),
-                               transitions={'succeeded': 'EXPLORE_HOUSE'},
+                               transitions={'succeeded': 'EXPLORE_HOUSE',
+                                            'aborted': 'aborted',
+                                            'preempted': 'preempted'},
                                remapping={'input_map': 'map_image'})
-        smach.StateMachine.add('EXPLORE_HOUSE', explore_house_it)
+        smach.StateMachine.add('EXPLORE_HOUSE', explore_house_it,
+                               transitions={'succeeded': 'succeeded',
+                                            'aborted': 'aborted',
+                                            'preempted': 'preempted'})
     return sm

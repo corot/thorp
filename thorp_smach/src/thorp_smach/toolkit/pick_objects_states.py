@@ -43,15 +43,20 @@ def ObjectDetection():
     with sm:
         smach.StateMachine.add('CLEAR_OCTOMAP', ClearOctomap(),
                                transitions={'succeeded': 'OBJECT_DETECTION',
+                                            'preempted': 'preempted',
                                             'aborted': 'OBJECT_DETECTION'})
         smach.StateMachine.add('OBJECT_DETECTION', BlockDetection(),
-                               transitions={'succeeded': 'OBJ_DETECTED_COND'})
+                               transitions={'succeeded': 'OBJ_DETECTED_COND',
+                                            'preempted': 'preempted',
+                                            'aborted': 'aborted'})
         smach.StateMachine.add('OBJ_DETECTED_COND', ObjDetectedCondition(),
                                transitions={'satisfied': 'succeeded',
+                                            'preempted': 'preempted',
                                             'fold_arm': 'FOLD_ARM',
                                             'retry': 'CLEAR_OCTOMAP'})
         smach.StateMachine.add('FOLD_ARM', FoldArm(),
                                transitions={'succeeded': 'CLEAR_OCTOMAP',
+                                            'preempted': 'preempted',
                                             'aborted': 'CLEAR_OCTOMAP'})
     return sm
 
@@ -120,20 +125,26 @@ def PickReachableObjs():
     pick_1_obj_sm.userdata.max_effort = 0.3     # TODO  required by PickupObject, but.... pick_effort in obj manip  is this really used???  should depend on the obj???
     with pick_1_obj_sm:
         smach.StateMachine.add('BLOCK_DETECTION', BlockDetection(),
-                               transitions={'succeeded': 'SELECT_TARGET'})
+                               transitions={'succeeded': 'SELECT_TARGET',
+                                            'aborted': 'aborted',
+                                            'preempted': 'preempted'})
         smach.StateMachine.add('SELECT_TARGET', TargetSelection(),
                                transitions={'have_target': 'PICKUP_OBJECT',
                                             'no_targets': 'succeeded'},
                                remapping={'target': 'object_name'})
         smach.StateMachine.add('PICKUP_OBJECT', PickupObject(),
                                transitions={'succeeded': 'PLACE_ON_TRAY',
+                                            'preempted': 'preempted',
                                             'aborted': 'SKIP_OBJECT'})
         smach.StateMachine.add('PLACE_ON_TRAY', PlaceInTray(),
                                transitions={'succeeded': 'continue',
+                                            'preempted': 'preempted',
                                             'aborted': 'CLEAR_GRIPPER',
                                             'tray_full': 'tray_full'})
         smach.StateMachine.add('CLEAR_GRIPPER', ClearGripper(),
-                               transitions={'succeeded': 'SKIP_OBJECT'})
+                               transitions={'succeeded': 'SKIP_OBJECT',
+                                            'preempted': 'aborted',
+                                            'aborted': 'aborted'})
         smach.StateMachine.add('SKIP_OBJECT', SkipOneObject(),
                                transitions={'succeeded': 'BLOCK_DETECTION',
                                             'max_failures': 'aborted'})
@@ -151,12 +162,19 @@ def PickReachableObjs():
     pick_reach_objs_sm.userdata.objs_to_skip = 0
     with pick_reach_objs_sm:
         smach.StateMachine.add('PICKUP_OBJECTS', pick_reach_objs_it,
-                               transitions={'succeeded': 'FOLD_ARM'})
+                               transitions={'succeeded': 'FOLD_ARM',
+                                            'preempted': 'preempted',
+                                            'aborted': 'aborted'})
         smach.StateMachine.add('FOLD_ARM', FoldArm(),
-                               transitions={'succeeded': 'BLOCK_DETECTION'})
+                               transitions={'succeeded': 'BLOCK_DETECTION',
+                                            'preempted': 'preempted',
+                                            'aborted': 'aborted'})
         smach.StateMachine.add('BLOCK_DETECTION', BlockDetection(),
-                               transitions={'succeeded': 'SELECT_TARGET'})
+                               transitions={'succeeded': 'SELECT_TARGET',
+                                            'aborted': 'aborted',
+                                            'preempted': 'preempted'})
         smach.StateMachine.add('SELECT_TARGET', TargetSelection(),  # just used to check if there are more blocks
                                transitions={'have_target': 'PICKUP_OBJECTS',
                                             'no_targets': 'succeeded'})
+
     return pick_reach_objs_sm
