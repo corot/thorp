@@ -214,9 +214,13 @@ class ExePathFailed(smach.State):
             rospy.loginfo("Recovery behaviors exhausted after %d consecutive failures", self.consecutive_failures)
             self.consecutive_failures = 0
             if current_waypoint >= 0 and ud['path'].poses:
-                next_wp_pose = ud['path'].poses.pop(0)
+                next_wp_pose = ud['path'].poses[0]
                 rospy.loginfo("Navigate to the next waypoint: %d, %s", current_waypoint, pose2d2str(next_wp_pose))
                 ud['next_wp'] = next_wp_pose
+                if len(ud['path'].poses) > 1:
+                    # if not the last, consume the waypoint, so follower skips it, whatever happens
+                    # we cannot remove the last one, or follower will fail with INVALID_PATH if path is empty
+                    ud['path'].poses.pop(0)
                 return 'next_wp'
 
             return 'aborted'
@@ -288,13 +292,13 @@ class ExeSparsePath(smach.StateMachine):
                                                 'aborted': 'aborted'})
             smach.StateMachine.add('RECOVER', Recovery(),
                                    transitions={'succeeded': 'EXE_PATH',
-                                                'aborted': 'aborted',
+                                                'aborted': 'FAILURE',
                                                 'preempted': 'preempted'},
                                    remapping={'behavior': 'recovery_behavior'})
             smach.StateMachine.add('NEXT_WP', GoToPose(dist_tolerance=cfg.LOOSE_DIST_TOLERANCE,
                                                        angle_tolerance=cfg.INF_ANGLE_TOLERANCE),
                                    transitions={'succeeded': 'EXE_PATH',
-                                                'aborted': 'FAILURE',
+                                                'aborted': 'EXE_PATH',  # also if failed; at least we have skip a wp
                                                 'preempted': 'preempted'},
                                    remapping={'target_pose': 'next_wp'})
 
