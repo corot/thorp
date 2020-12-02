@@ -1,6 +1,7 @@
 debug: true
 point_cloud_topic: /xtion/depth_registered/points
 zones_config: $(find thorp_perception)/config/rail/zones.yaml
+min_surface_size: 10000
 min_cluster_size: 200
 max_cluster_size: 10000
 cluster_tolerance: 0.01
