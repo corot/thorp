@@ -91,7 +91,7 @@ def explore_house_sm():
 
 
 if __name__ == '__main__':
-    rospy.init_node('smach_explore_house')
+    rospy.init_node('explore_house_smach')
 
     TF2()  # start listener asap
 

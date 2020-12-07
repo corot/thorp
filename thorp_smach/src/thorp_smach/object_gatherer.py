@@ -105,7 +105,7 @@ def object_gatherer_sm():
 
 
 if __name__ == '__main__':
-    rospy.init_node('smach_object_gatherer')
+    rospy.init_node('object_gatherer_smach')
 
     TF2()  # start listener asap to avoid delays when running
 

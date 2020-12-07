@@ -11,7 +11,7 @@ from thorp_smach.toolkit.common_states import wait_for_sim_time
 
 
 def main():
-    rospy.init_node('smach_block_manip')
+    rospy.init_node('block_manip_smach')
 
     if not wait_for_sim_time():
         return

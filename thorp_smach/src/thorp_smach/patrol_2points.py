@@ -11,7 +11,7 @@ from actionlib import *
 
 
 def main():
-    rospy.init_node('smach_example_actionlib')
+    rospy.init_node('example_actionlib_smach')
 
     sm = smach.StateMachine(outcomes=['success',
                                       'aborted',

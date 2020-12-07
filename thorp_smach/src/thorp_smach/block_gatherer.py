@@ -9,7 +9,7 @@ from thorp_smach.toolkit.common_states import wait_for_sim_time, wait_for_mbf
 
 
 def main():
-    rospy.init_node('smach_block_gatherer')
+    rospy.init_node('block_gatherer_smach')
 
     if not wait_for_sim_time():
         return

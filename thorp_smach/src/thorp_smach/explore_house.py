@@ -1,16 +1,13 @@
 #!/usr/bin/env python
 
 import rospy
-import smach
 import smach_ros
 
 from toolkit.exploration_states import ExploreHouse
 
 
 if __name__ == '__main__':
-    rospy.init_node('smach_explore_house')
-
-   # TF2()  # start listener asap to avoid delays when running
+    rospy.init_node('explore_house_smach')
 
     sm = ExploreHouse()
 

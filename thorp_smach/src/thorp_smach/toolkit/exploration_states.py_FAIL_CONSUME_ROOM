@@ -182,20 +182,22 @@ class PlanRoomExploration(smach_ros.SimpleActionState):
 
 class RoomCompleted(smach.State):
     """
-    Mark current room as completed
+    Check whether we have detected any object
     """
 
     def __init__(self):
         super(RoomCompleted, self).__init__(outcomes=['succeeded'],
-                                            input_keys=['completed_rooms', 'room_number'],
-                                            output_keys=['completed_rooms'])
+                                            input_keys=['room_sequence'],
+                                            output_keys=['room_sequence'])
 
     def execute(self, ud):
-        rospy.loginfo("Room %d completed", ud['room_number'])
-        if 'completed_rooms' in ud:
-            ud['completed_rooms'].append(ud['room_number'])
+        if not ud['room_sequence']:
+            rospy.logerr("Room sequence is empty")  # we shouldn't be here...
+        elif len(ud['room_sequence']) == 1:
+            rospy.loginfo("Last room %d completed!", ud['room_sequence'].pop(0))
         else:
-            ud['completed_rooms'] = [ud['room_number']]
+            rospy.loginfo("Room %d completed; next will be %d (%d remaining)",
+                          ud['room_sequence'].pop(0), ud['room_sequence'][0], len(ud['room_sequence']))
         return 'succeeded'
 
 
@@ -213,8 +215,8 @@ class ExploreHouse(smach.StateMachine):
                                            connector_outcome='succeeded',
                                            input_keys=['map_image', 'map_resolution', 'map_origin', 'robot_radius',
                                                        'segmented_map', 'room_number', 'room_information_in_meter',
-                                                       'completed_rooms'],
-                                           output_keys=['completed_rooms'])
+                                                       'room_sequence'],
+                                           output_keys=['room_sequence'])
         with explore_1_room_sm:
             smach.Sequence.add('GET_ROBOT_POSE', GetRobotPose())
             smach.Sequence.add('PLAN_ROOM_EXPL', PlanRoomExploration(),
@@ -235,8 +237,8 @@ class ExploreHouse(smach.StateMachine):
                                           input_keys=['map_image', 'map_resolution', 'map_origin', 'robot_radius',
                                                       'segmented_map', 'room_sequence', 'room_information_in_meter',
                                                       'room_sequence'],
-                                          output_keys=['completed_rooms'],
-                                          it=self.get_room_sequence,
+                                          output_keys=['room_sequence'],
+                                          it=lambda: self.userdata.room_sequence,
                                           it_label='room_number',
                                           exhausted_outcome='succeeded')
         with explore_house_it:
@@ -266,13 +268,3 @@ class ExploreHouse(smach.StateMachine):
                                    transitions={'succeeded': 'succeeded',
                                                 'aborted': 'aborted',
                                                 'preempted': 'preempted'})
-
-    def get_room_sequence(self):
-        """
-        Provide the sequence of rooms to visit to the iterator, removing those room already visited in previous runs
-        :return: filtered sequence of rooms to visit
-        """
-        if 'completed_rooms' in self.userdata:
-            self.userdata.room_sequence = \
-                [r for r in self.userdata.room_sequence if r not in self.userdata.completed_rooms]
-        return self.userdata.room_sequence
