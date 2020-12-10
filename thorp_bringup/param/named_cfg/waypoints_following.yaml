@@ -1,0 +1,2 @@
+move_base_flex/TEBPlanner:
+  weight_viapoint: 200  # overweight viapoints to stick closely to the path

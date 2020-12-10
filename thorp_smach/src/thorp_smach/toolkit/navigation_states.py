@@ -5,6 +5,7 @@ import smach_ros
 import geometry_msgs.msg as geo_msgs
 import nav_msgs.msg as nav_msgs
 import mbf_msgs.msg as mbf_msgs
+import rr_path_smoother.srv as ps_srvs
 import thorp_msgs.msg as thorp_msgs
 
 from thorp_toolkit.geometry import TF2, pose2d2str, heading, quaternion_msg_from_yaw
@@ -14,6 +15,8 @@ from thorp_toolkit.semantic_layer import SemanticLayer
 from common_states import SetNamedConfig, DismissNamedConfig
 
 import config as cfg
+
+Reconfigure().load_named_configs()  # load named configurations from the default location
 
 
 class GetRobotPose(smach.State):
@@ -195,6 +198,7 @@ class ExePathFailed(smach.State):
     def execute(self, ud):
         # Cut path up to current waypoint, so we don't redo it from the beginning after recovering
         # ExePath must provide this specific message at the end of the result message in case of failure
+        # TODO: TEB doesn't so the 'next_wp' trick only works for path follower
         cwp_index = ud['message'].find('current waypoint: ')
         if cwp_index >= 0:
             current_waypoint = int(ud['message'][cwp_index + len('current waypoint: '):])
@@ -303,6 +307,51 @@ class ExeSparsePath(smach.StateMachine):
                                    remapping={'target_pose': 'next_wp'})
 
 
+class FollowWaypoints(smach.StateMachine):
+    """
+    Follow a list of waypoints after converting them into a smooth path executable by an MBF controller
+    """
+    def __init__(self, controller=cfg.DEFAULT_CONTROLLER):
+        super(FollowWaypoints, self).__init__(outcomes=['succeeded',
+                                                        'aborted',
+                                                        'preempted'],
+                                              input_keys=['waypoints'],
+                                              output_keys=['outcome', 'message'])
+        with self:
+            smach.StateMachine.add('FOLLOW_WP_CTRL', SetNamedConfig('waypoints_following'),
+                                   transitions={'succeeded': 'SMOOTH_PATH',
+                                                'aborted': 'aborted'})
+            smach.StateMachine.add('SMOOTH_PATH', SmoothPath(),
+                                   transitions={'succeeded': 'EXE_PATH',
+                                                'aborted': 'FAILURE',
+                                                'preempted': 'preempted'})
+            smach.StateMachine.add('EXE_PATH', ExePath(controller,
+                                                       cfg.LOOSE_DIST_TOLERANCE,
+                                                       cfg.INF_ANGLE_TOLERANCE),  # ignore final yaw
+                                   transitions={'succeeded': 'succeeded',
+                                                'aborted': 'FAILURE',
+                                                'preempted': 'preempted'},
+                                   remapping={'target_pose': 'start_pose'})
+            smach.StateMachine.add('FAILURE', ExePathFailed(),
+                                   transitions={'recover': 'RECOVER',
+                                                'next_wp': 'NEXT_WP',
+                                                'aborted': 'aborted'})
+            smach.StateMachine.add('RECOVER', Recovery(),
+                                   transitions={'succeeded': 'EXE_PATH',
+                                                'aborted': 'FAILURE',
+                                                'preempted': 'preempted'},
+                                   remapping={'behavior': 'recovery_behavior'})
+            smach.StateMachine.add('NEXT_WP', GoToPose(dist_tolerance=cfg.LOOSE_DIST_TOLERANCE,
+                                                       angle_tolerance=cfg.INF_ANGLE_TOLERANCE),
+                                   transitions={'succeeded': 'EXE_PATH',
+                                                'aborted': 'EXE_PATH',  # also if failed; at least we have skip a wp
+                                                'preempted': 'preempted'},
+                                   remapping={'target_pose': 'next_wp'})
+            smach.StateMachine.add('STANDARD_CTRL', DismissNamedConfig('waypoints_following'),  # TODO: finally container
+                                   transitions={'succeeded': 'SMOOTH_PATH',
+                                                'aborted': 'aborted'})
+
+
 class TraversePoses(smach.Iterator):
     """ Visit a list of stamped poses """
     def __init__(self, dist_tolerance=cfg.LOOSE_DIST_TOLERANCE, angle_tolerance=cfg.LOOSE_ANGLE_TOLERANCE):
@@ -333,3 +382,20 @@ class FollowPose(smach_ros.SimpleActionState):
 
     def result_cb(self, ud, status, result):
         pass
+
+
+class SmoothPath(smach_ros.ServiceState):
+    """
+    Call path smoother with a list of waypoints to obtain a collision-free, smooth path connecting them
+    """
+    def __init__(self):
+        super(SmoothPath, self).__init__('path_smoother/connect_waypoints', ps_srvs.ConnectWaypoints,
+                                         request_cb=self.request_cb,
+                                         request_slots=['waypoints'],
+                                         response_slots=['path'])
+
+    def request_cb(self, ud, request):
+        request.max_steps = 5
+        request.max_radius = 0.5
+        request.resolution = 0.15
+        request.publish_output = True

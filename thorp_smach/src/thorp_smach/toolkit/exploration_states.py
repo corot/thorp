@@ -12,8 +12,8 @@ import ipa_building_msgs.msg as ipa_building_msgs
 
 from thorp_toolkit.geometry import TF2, to_pose2d, create_2d_pose
 
-from common_states import UDHasKey
-from navigation_states import GetRobotPose, GoToPose, PosesAsPath, ExeSparsePath
+from common_states import UDHasKey, UDInsertInList
+from navigation_states import GetRobotPose, GoToPose, FollowWaypoints
 
 import config as cfg
 
@@ -220,14 +220,16 @@ class ExploreHouse(smach.StateMachine):
             smach.Sequence.add('PLAN_ROOM_EXPL', PlanRoomExploration(),
                                transitions={'aborted': 'aborted',
                                             'preempted': 'preempted'})
-            smach.Sequence.add('POSES_AS_PATH', PosesAsPath(),
-                               remapping={'poses': 'coverage_path_pose_stamped'})
             smach.Sequence.add('GOTO_START_POSE', GoToPose(dist_tolerance=cfg.LOOSE_DIST_TOLERANCE,   # close enough
                                                            angle_tolerance=cfg.INF_ANGLE_TOLERANCE),  # ignore yaw
                                transitions={'aborted': 'aborted',
                                             'preempted': 'preempted'},
                                remapping={'target_pose': 'start_pose'})
-            smach.Sequence.add('TRAVERSE_POSES', ExeSparsePath())
+            smach.Sequence.add('INSERT_START_POSE', UDInsertInList(0),
+                               remapping={'element': 'start_pose',
+                                          'list': 'coverage_path_pose_stamped'})
+            smach.Sequence.add('TRAVERSE_POSES', FollowWaypoints(),
+                               remapping={'waypoints': 'coverage_path_pose_stamped'})
             smach.Sequence.add('ROOM_COMPLETED', RoomCompleted())
 
         # iterate over all rooms and explore following the planned sequence

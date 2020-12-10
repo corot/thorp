@@ -1,0 +1,12 @@
+path_smoother_costmap:
+  global_frame: map
+  robot_base_frame: base_footprint
+  update_frequency: 1.0
+  publish_frequency: 0.5
+  transform_tolerance: 0.5
+  track_unknown_space: true
+  robot_radius: 0.01 # allow pass within inscribed radius; the controller will deal with the obstacles
+  static:
+    map_topic: map
+  plugins:
+    - {name: static_map, type: "costmap_2d::StaticLayer"}

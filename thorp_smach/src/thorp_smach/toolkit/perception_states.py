@@ -214,7 +214,7 @@ class MonitorTables(smach.State):
     def execute(self, ud):
         self.detected_table = None
         start_time = rospy.get_time()
-        rate = rospy.Rate(2.5)
+        rate = rospy.Rate(1.0)
         while not self.preempt_requested() and not rospy.is_shutdown():
             self.segment_srv()
             self.table_event.acquire()

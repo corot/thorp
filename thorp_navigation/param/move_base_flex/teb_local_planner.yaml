@@ -12,7 +12,7 @@ TEBPlanner:
   allow_init_with_backwards_motion: False
   max_global_plan_lookahead_dist: 3.0
   global_plan_viapoint_sep: 0.4
-  global_plan_prune_distance: 1
+  global_plan_prune_distance: 0.4  # prune path shortly after passing to avoid reverting direction on loops
   exact_arc_length: False
   feasibility_check_no_poses: 5
   publish_feedback: False
@@ -73,7 +73,7 @@ TEBPlanner:
   weight_inflation: 0.2
   weight_dynamic_obstacle: 10
   weight_dynamic_obstacle_inflation: 0.2
-  weight_viapoint: 2
+  weight_viapoint: 10
   weight_adapt_factor: 2
 
 # Homotopy Class Planner

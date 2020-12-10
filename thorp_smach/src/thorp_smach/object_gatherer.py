@@ -109,8 +109,6 @@ if __name__ == '__main__':
 
     TF2()  # start listener asap to avoid delays when running
 
-    Reconfigure().load_named_configs()  # load named configurations from the default location
-
     wait_for_sim_time()
 
     sm = object_gatherer_sm()

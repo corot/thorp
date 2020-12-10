@@ -35,7 +35,7 @@ def wait_for_mbf():
 
 class UDHasKey(smach.State):
     """
-    Check if our userdata contains a given key. Returns
+    Check if our userdata contains a given position. Returns
     - 'true' if present
     - 'false' otherwise
     """
@@ -51,6 +51,29 @@ class UDHasKey(smach.State):
             return 'true'
         except KeyError:
             return 'false'
+
+
+class UDInsertInList(smach.State):
+    """
+    Insert an element in a list at a given position.
+    Both 'list' and 'element' are provided as userdata keys. Returns
+    - 'succeeded' if succeeded
+    - 'aborted' otherwise
+    """
+
+    def __init__(self, position):
+        super(UDInsertInList, self).__init__(outcomes=['succeeded', 'aborted'],
+                                             input_keys=['list', 'element'],
+                                             output_keys=['list'])
+        self.position = position
+
+    def execute(self, ud):
+        try:
+            ud['list'].insert(self.position, ud['element'])
+            return 'succeeded'
+        except IndexError as err:
+            rospy.logerr("Position out of bounds (%d >= %d)", self.position, len(ud['list']))
+            return 'aborted'
 
 
 class SetNamedConfig(smach.State):
