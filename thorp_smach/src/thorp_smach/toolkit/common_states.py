@@ -35,7 +35,7 @@ def wait_for_mbf():
 
 class UDHasKey(smach.State):
     """
-    Check if our userdata contains a given position. Returns
+    Check if our userdata contains a given key. Returns
     - 'true' if present
     - 'false' otherwise
     """
@@ -46,11 +46,44 @@ class UDHasKey(smach.State):
         self.key = key
 
     def execute(self, ud):
-        try:
-            ud[self.key]
-            return 'true'
-        except KeyError:
-            return 'false'
+        return 'true' if self.key in ud else 'false'
+
+
+class UDIfKey(smach.State):
+    """
+    Check if our userdata contains a given key and its content evaluates to True. Returns
+    - 'true' if present and True
+    - 'false' otherwise
+    """
+
+    def __init__(self, key):
+        super(UDIfKey, self).__init__(outcomes=['true', 'false'],
+                                      input_keys=[key])
+        self.key = key
+
+    def execute(self, ud):
+        return 'true' if self.key in ud and ud[self.key] else 'false'
+
+
+class UDSetToNone(smach.State):
+    """
+    Set a userdata key to None, if it exists. Returns
+    - 'succeeded' if the key exists
+    - 'aborted' otherwise
+    """
+
+    def __init__(self, key):
+        super(UDSetToNone, self).__init__(outcomes=['succeeded', 'aborted'],
+                                          input_keys=[key],
+                                          output_keys=[key])
+        self.key = key
+
+    def execute(self, ud):
+        if self.key in ud:
+            ud[self.key] = None
+            return 'succeeded'
+        rospy.logerr("Trying to set o None unavailable key '%s'", self.key)
+        return 'aborted'
 
 
 class UDInsertInList(smach.State):
@@ -122,3 +155,4 @@ class ExecuteUserCommand(smach.State):
             rospy.logwarn("Invalid User Command: '%s'", ud['user_command'].command)
             ud['ucmd_outcome'] = thorp_msgs.UserCommandResult('invalid_command')
             return 'invalid_command'
+

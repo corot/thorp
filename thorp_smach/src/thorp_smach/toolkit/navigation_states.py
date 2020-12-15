@@ -37,7 +37,6 @@ class GetRobotPose(smach.State):
 
 class PoseAsPath(smach.State):
     """ Add a path to the userdata containing just the input pose """
-
     def __init__(self):
         super(PoseAsPath, self).__init__(outcomes=['succeeded'],
                                          input_keys=['pose'],
@@ -307,7 +306,7 @@ class ExeSparsePath(smach.StateMachine):
                                    remapping={'target_pose': 'next_wp'})
 
 
-class FollowWaypoints(smach.StateMachine):
+class FollowWaypoints(smach.DoOnExit):
     """
     Follow a list of waypoints after converting them into a smooth path executable by an MBF controller
     """
@@ -347,9 +346,7 @@ class FollowWaypoints(smach.StateMachine):
                                                 'aborted': 'EXE_PATH',  # also if failed; at least we have skip a wp
                                                 'preempted': 'preempted'},
                                    remapping={'target_pose': 'next_wp'})
-            smach.StateMachine.add('STANDARD_CTRL', DismissNamedConfig('waypoints_following'),  # TODO: finally container
-                                   transitions={'succeeded': 'SMOOTH_PATH',
-                                                'aborted': 'aborted'})
+            smach.DoOnExit.add_finally('STANDARD_CTRL', DismissNamedConfig('waypoints_following'))
 
 
 class TraversePoses(smach.Iterator):
