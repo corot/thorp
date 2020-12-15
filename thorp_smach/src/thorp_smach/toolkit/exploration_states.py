@@ -12,7 +12,7 @@ import ipa_building_msgs.msg as ipa_building_msgs
 
 from thorp_toolkit.geometry import TF2, to_pose2d, create_2d_pose
 
-from common_states import UDIfKey, UDHasKey, UDSetToNone, UDInsertInList
+from userdata_states import UDIfKey, UDHasKey, UDSetToNone, UDInsertInList
 from navigation_states import GetRobotPose, GoToPose, FollowWaypoints
 
 import config as cfg
