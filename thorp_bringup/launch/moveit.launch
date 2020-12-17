@@ -19,7 +19,7 @@
 
   <!-- Run Rviz and load the default config to see the state of the move_group node -->
   <node pkg="rviz" type="rviz" name="rviz" output="screen" respawn="true"
-        args="-d $(find thorp_bringup)/rviz/view_manip.rviz"/>
+        args="-d $(find thorp_bringup)/rviz/manipulation.rviz"/>
 
 
   <!--  ******* Fake localization and odometry ********  -->

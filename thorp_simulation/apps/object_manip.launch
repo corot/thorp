@@ -49,5 +49,5 @@
 
   <node pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
 
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_manip.rviz"/>
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/manipulation.rviz"/>
 </launch>

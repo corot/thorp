@@ -8,7 +8,7 @@
 
   <!-- Run Rviz and load the default config to see recognized tabletop objects -->
   <node pkg="rviz" type="rviz" name="rviz" output="screen" respawn="true"
-        args="-d $(find thorp_bringup)/rviz/view_perc.rviz"/>
+        args="-d $(find thorp_bringup)/rviz/perception.rviz"/>
 
   <!-- Run dynamic reconfiguration to tweak the parameters of the camera filters -->
   <node pkg="rqt_reconfigure" type="rqt_reconfigure" name="dyn_reconfigure" output="screen" respawn="true"/>

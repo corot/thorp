@@ -63,5 +63,5 @@
 
   <!--  **************** Visualization ****************  -->
   <node if="$(arg visualization)"
-        name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_nav.rviz"/>
+        name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/navigation.rviz" output="screen" respawn="true"/>
 </launch>

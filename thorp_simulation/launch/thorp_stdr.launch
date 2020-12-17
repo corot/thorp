@@ -106,5 +106,6 @@ TODO: I can recover this if I can rename the robot and once I start using a thor
   <param name="move_base_flex/global_costmap/obstacle_layer/scan/max_obstacle_height" value="$(arg max_obstacle_height)"/>
 
   <!--  **************** Visualization ****************  -->
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/view_nav.rviz"/>
+  <node if="$(arg visualization)"
+        name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/navigation.rviz" output="screen" respawn="true"/>
 </launch>
