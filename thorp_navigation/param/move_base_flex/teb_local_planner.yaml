@@ -60,14 +60,14 @@ TEBPlanner:
   optimization_verbose: False
   penalty_epsilon: 0.05
   obstacle_cost_exponent: 4
-  weight_max_vel_x: 2
+  weight_max_vel_x: 4
   weight_max_vel_theta: 1
   weight_acc_lim_x: 1
   weight_acc_lim_theta: 1
   weight_kinematics_nh: 1000
   weight_kinematics_forward_drive: 100
   weight_kinematics_turning_radius: 1
-  weight_optimaltime: 1 # must be > 0
+  weight_optimaltime: 4 # must be > 0
   weight_shortest_path: 0
   weight_obstacle: 100
   weight_inflation: 0.2
