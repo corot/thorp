@@ -11,6 +11,7 @@ import thorp_msgs.msg as thorp_msgs
 from thorp_toolkit.geometry import TF2, pose2d2str, heading, quaternion_msg_from_yaw
 from thorp_toolkit.reconfigure import Reconfigure
 from thorp_toolkit.semantic_layer import SemanticLayer
+from thorp_toolkit.progress_tracker import ProgressTracker
 
 from common_states import SetNamedConfig, DismissNamedConfig
 
@@ -123,16 +124,19 @@ class GoToPose(smach_ros.SimpleActionState):
 
 
 class ExePath(smach_ros.SimpleActionState):
-    def __init__(self, controller=cfg.DEFAULT_CONTROLLER, dist_tolerance=None, angle_tolerance=None):
+    def __init__(self, controller=cfg.DEFAULT_CONTROLLER, dist_tolerance=None, angle_tolerance=None,
+                 track_progress=False):
         super(ExePath, self).__init__('move_base_flex/exe_path',
                                       mbf_msgs.ExePathAction,
                                       goal_cb=self.make_goal,
-                                      input_keys=['path'],
                                       result_cb=self.result_cb,
-                                      result_slots=['outcome', 'message'])
+                                      result_slots=['outcome', 'message'],
+                                      input_keys=['path', 'waypoints'],
+                                      output_keys=['reached_wp'])
         self.controller = controller
         self.dist_tolerance = dist_tolerance
         self.angle_tolerance = angle_tolerance
+        self.track_progress = track_progress
         self.params_ns = '/move_base_flex/' + controller
 
         # Show target pose (MBF only shows it when calling get_path)
@@ -149,13 +153,20 @@ class ExePath(smach_ros.SimpleActionState):
         if goal.path.poses:
             self.target_pose_pub.publish(goal.path.poses[-1])
 
+        if self.track_progress:
+            self.progress_tracker = ProgressTracker(ud['waypoints'], cfg.WP_REACHED_THRESHOLD)
+
     def result_cb(self, ud, status, result):
         if self.dist_tolerance and self.angle_tolerance:
             # Restore previous tolerance values before leaving the state
             Reconfigure().restore_config(self.params_ns, ['xy_goal_tolerance', 'yaw_goal_tolerance'])
+        if self.track_progress:
+            ud['reached_wp'] = self.progress_tracker.reached_waypoint()
 
     def _goal_feedback_cb(self, feedback):
         super(ExePath, self)._goal_feedback_cb(feedback)
+        if self.track_progress:
+            self.progress_tracker.update_pose(feedback.current_pose)
 
 
 class LookToPose(ExePath):
@@ -189,22 +200,28 @@ class ExePathFailed(smach.State):
 
     def __init__(self):
         super(ExePathFailed, self).__init__(outcomes=['recover', 'next_wp', 'aborted'],
-                                            input_keys=['path', 'outcome', 'message'],
-                                            output_keys=['path', 'next_wp', 'recovery_behavior'])
+                                            input_keys=['path', 'waypoints', 'reached_wp', 'outcome', 'message'],
+                                            output_keys=['path', 'waypoints', 'next_wp', 'recovery_behavior'])
         self.recovery_behaviors = cfg.EXE_PATH_RECOVERY
         self.consecutive_failures = 0
+        self.next_waypoint = None
 
     def execute(self, ud):
         # Cut path up to current waypoint, so we don't redo it from the beginning after recovering
         # ExePath must provide this specific message at the end of the result message in case of failure
-        # TODO: TEB doesn't so the 'next_wp' trick only works for path follower
         cwp_index = ud['message'].find('current waypoint: ')
         if cwp_index >= 0:
-            current_waypoint = int(ud['message'][cwp_index + len('current waypoint: '):])
-            ud['path'].poses = ud['path'].poses[current_waypoint:]
-        else:
-            rospy.logwarn("No current waypoint provided")
-            current_waypoint = -1
+            # TODO I must adapt this to integrate the progress tracker with the smoothed path logic (or remove entirely path follower support)
+            self.next_waypoint = int(ud['message'][cwp_index + len('current waypoint: '):])
+            ud['path'].poses = ud['path'].poses[self.next_waypoint:]
+        elif ud['reached_wp'] is not None and ud['reached_wp'] != self.next_waypoint:
+            # TEB logic using progress tracker:   is very brittle, but seems to work!  hope I can do better w/ BTs
+            #  ignore None on 'reached_wp', as it's normally a failure after a recovery attempt
+            self.next_waypoint = ud['reached_wp'] + 1
+            ud['waypoints'] = ud['waypoints'][self.next_waypoint:]
+        # else:
+        #     rospy.logwarn("No current waypoint provided")
+        #     self.next_waypoint = -1
 
         try:
             rb = self.recovery_behaviors[self.consecutive_failures]
@@ -216,14 +233,13 @@ class ExePathFailed(smach.State):
         except IndexError:
             rospy.loginfo("Recovery behaviors exhausted after %d consecutive failures", self.consecutive_failures)
             self.consecutive_failures = 0
-            if current_waypoint >= 0 and ud['path'].poses:
-                next_wp_pose = ud['path'].poses[0]
-                rospy.loginfo("Navigate to the next waypoint: %d, %s", current_waypoint, pose2d2str(next_wp_pose))
+            if self.next_waypoint is not None and ud['waypoints']:
+                next_wp_pose = ud['waypoints'][0]
+                rospy.loginfo("Navigate to the next waypoint: %d, %s", self.next_waypoint, pose2d2str(next_wp_pose))
                 ud['next_wp'] = next_wp_pose
-                if len(ud['path'].poses) > 1:
-                    # if not the last, consume the waypoint, so follower skips it, whatever happens
-                    # we cannot remove the last one, or follower will fail with INVALID_PATH if path is empty
-                    ud['path'].poses.pop(0)
+                if len(ud['waypoints']) > 1:
+                    # if not the last, consume a waypoint, so we try with the 2nd next if we fail to go to the next
+                    ud['waypoints'].pop(0)
                 return 'next_wp'
 
             return 'aborted'
@@ -326,11 +342,11 @@ class FollowWaypoints(smach.DoOnExit):
                                                 'preempted': 'preempted'})
             smach.StateMachine.add('EXE_PATH', ExePath(controller,
                                                        cfg.LOOSE_DIST_TOLERANCE,
-                                                       cfg.INF_ANGLE_TOLERANCE),  # ignore final yaw
+                                                       cfg.INF_ANGLE_TOLERANCE,  # ignore final yaw
+                                                       True),                    # track progress
                                    transitions={'succeeded': 'succeeded',
                                                 'aborted': 'FAILURE',
-                                                'preempted': 'preempted'},
-                                   remapping={'target_pose': 'start_pose'})
+                                                'preempted': 'preempted'})
             smach.StateMachine.add('FAILURE', ExePathFailed(),
                                    transitions={'recover': 'RECOVER',
                                                 'next_wp': 'NEXT_WP',

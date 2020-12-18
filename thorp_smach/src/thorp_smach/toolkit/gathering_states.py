@@ -71,7 +71,9 @@ class CalcPickPoses(smach.State):
         return 'succeeded'
 
 
-# Object to pick and pick location named tuples; required for grouping objects  TODO make local if I don't export as output position
+# Object to pick and pick location named tuples; required for grouping objects
+# TODO 1 make local if I don't export as output position
+# TODO 2 make smach viz fail; convert into ROS msgs?
 Object = namedtuple('Object', ['dist', 'name', 'pose'])
 PickLoc = namedtuple('PickLoc', ['size', 'name', 'pose', 'objs', 'dist', 'arm_pose', 'approach_pose'])
 PickPlan = namedtuple('PickPlan', ['size', 'dist', 'plocs'])

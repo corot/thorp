@@ -67,10 +67,14 @@ class Visualization:
         """ Add pose markers to the marker array """
         self._markers_array.append(self.create_text_marker(pose, text, size, color))
 
-    def add_point_markers(self, poses, size=0.01, color=None):
+    def add_point_markers(self, poses, size=0.02, color=None):
         """ Add point markers to the marker array """
-        self._markers_array.extend(self.create_point_markers(
-            poses, size, color))
+        self._markers_array.extend(self.create_point_markers(poses, size, color))
+
+    def add_line_marker(self, poses, size=0.01, color=None):
+        """ Add line marker to the marker array """
+        points = [p.pose.position for p in poses]
+        self._markers_array.append(self.create_line_marker(points, poses[0].header, size, color))
 
     def add_box_marker(self, pose, dimensions, color=None):
         """ Add box marker to the marker array """
@@ -87,7 +91,7 @@ class Visualization:
     @classmethod
     def rgba_from_list(cls, color_list):
         """ Create color from a list of colors, if alpha is not set, it will be set to 1.0 """
-        if color_list is None:  # just non invasive blue if you dont care
+        if color_list is None:  # just non invasive blue if you don't care
             return ColorRGBA(0, 0, 1, 0.9)
         if isinstance(color_list, ColorRGBA):
             return color_list

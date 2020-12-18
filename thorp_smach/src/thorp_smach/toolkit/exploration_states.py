@@ -243,8 +243,8 @@ class ExploreHouse(smach.StateMachine):
                                    remapping={'waypoints': 'coverage_path_pose_stamped'})
             smach.StateMachine.add('ROOM_COMPLETED', RoomCompleted(),
                                    transitions={'succeeded': 'succeeded'})
-            smach.DoOnExit.add_finally('CLEAR_EXPLORE_PLAN', UDSetToNone('coverage_path'),  # we only keep running
-                                       run_on=['succeeded', 'aborted'])                     # current plan on preempted
+            smach.DoOnExit.add_finally('CLEAR_EXPLORE_PLAN', UDSetToNone('coverage_path'),  # we only keep current plan
+                                       run_on=['succeeded', 'aborted'])  # when preempted (as is normally for gathering)
 
         # iterate over all rooms and explore following the planned sequence
         explore_house_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted'],
