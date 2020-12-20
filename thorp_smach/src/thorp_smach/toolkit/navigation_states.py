@@ -162,6 +162,8 @@ class ExePath(smach_ros.SimpleActionState):
             Reconfigure().restore_config(self.params_ns, ['xy_goal_tolerance', 'yaw_goal_tolerance'])
         if self.track_progress:
             ud['reached_wp'] = self.progress_tracker.reached_waypoint()
+        if self.track_progress:
+            self.progress_tracker.reset()  # to clear the markers, but... viz is a singleton, so I'll clear ALL markers!
 
     def _goal_feedback_cb(self, feedback):
         super(ExePath, self)._goal_feedback_cb(feedback)
