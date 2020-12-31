@@ -33,19 +33,12 @@
    <!--                        Laserscan
      This uses lazy subscribing, so will not activate until scan is requested.
    -->
-  <group if="$(arg scan_processing)">
+  <group ns="$(arg camera_name)" if="$(arg scan_processing)">
     <node pkg="nodelet" type="nodelet" name="depthimage_to_laserscan"
-          args="load depthimage_to_laserscan/DepthImageToLaserScanNodelet $(arg camera_name)/$(arg camera_name)_nodelet_manager">
+          args="load depthimage_to_laserscan/DepthImageToLaserScanNodelet $(arg camera_name)_nodelet_manager">
       <rosparam file="$(find thorp_bringup)/param/$(arg camera_name)/depthimage_to_laserscan.yaml" command="load"/>
       <param name="output_frame_id" value="/$(arg camera_name)_depth_frame"/>
-      <remap from="image" to="$(arg camera_name)/$(arg depth)/image_raw"/>
-      <remap from="scan" to="$(arg scan_topic)"/>
-
-      <!-- Somehow topics here get prefixed by "$(arg camera_name)" when not inside an app namespace,
-           so in this case "$(arg scan_topic)" must provide an absolute topic name (issue #88).
-           Probably is a bug in the nodelet manager: https://github.com/ros/nodelet_core/issues/7 -->
-      <remap from="$(arg camera_name)/image" to="$(arg camera_name)/$(arg depth)/image_raw"/>
-      <remap from="$(arg camera_name)/scan" to="$(arg scan_topic)"/>
+      <remap from="image" to="$(arg depth)/image_raw"/>
     </node>
   </group>
 </launch>
