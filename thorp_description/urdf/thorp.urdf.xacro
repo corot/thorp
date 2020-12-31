@@ -11,7 +11,6 @@
     - Turtlebot arm
     - Tray next to it
     - Rocket launcher
-    - Auxiliary 3D sensor (Creative Senz3D)
     - Manipulation 3D sensor (Asus Xtion Pro)
 -->
 
@@ -22,7 +21,6 @@
   <xacro:include filename="$(find turtlebot_arm_description)/urdf/turtlebot_arm.xacro"/>
   <xacro:include filename="$(find kobuki_description)/urdf/kobuki.urdf.xacro"/>
   <xacro:include filename="$(find thorp_description)/urdf/thorp_gazebo.urdf.xacro"/>
-  <xacro:include filename="$(find thorp_description)/urdf/senz3d.urdf.xacro"/>
   <xacro:include filename="$(find thorp_description)/urdf/cannon.urdf.xacro"/>
   <xacro:include filename="$(find thorp_description)/urdf/kinect.urdf.xacro"/>
   <xacro:include filename="$(find thorp_description)/urdf/xtion.urdf.xacro"/>
@@ -129,13 +127,13 @@
 
   <!-- Tray for gathering objects -->
   <!-- Dimensions: 150x150x15 mm; mesh base is at z=0 relative to tray_link (we can -->
-  <!-- ignore thickness, as it's only 2mm). It's supported by two bottom stack poles -->
-  <xacro:stack_bottom_pole parent="plate_top_link" number="16" x_loc="0.015" y_loc="-0.0585" z_loc="${0.035/2}"/>
-  <xacro:stack_bottom_pole parent="plate_top_link" number="17" x_loc="0.015" y_loc="-0.1265" z_loc="${0.035/2}"/>
+  <!-- ignore thickness, as it's only 2mm). It's supported by two middle stack poles -->
+  <xacro:stack_middle_pole parent="plate_top_link" number="16" x_loc="0.015" y_loc="-0.0585" z_loc="${0.047/2}" roll="${M_PI}"/>
+  <xacro:stack_middle_pole parent="plate_top_link" number="17" x_loc="0.015" y_loc="-0.1265" z_loc="${0.047/2}" roll="${M_PI}"/>
   <xacro:property name="tray_depth" value="0.015"/>
   <xacro:property name="tray_side" value="0.15"/>
   <joint name="tray_joint" type="fixed">
-    <origin xyz="0.015 -0.0925 ${0.006/2 + 0.0435}" rpy="0.0 0.0 0.0"/>
+    <origin xyz="0.015 -0.0925 ${0.006/2 + 0.0508}" rpy="0.0 0.0 0.0"/>
     <parent link="plate_top_link"/>
     <child link="tray_link"/>
   </joint>
@@ -159,13 +157,13 @@
   </link>
 
 
-  <!-- Auxiliary Senz3D camera plus mounting on Thorp -->
-  
-  <!-- Mounting poles: a pair of top poles -->
+  <!-- Manipulation Asus Xtion Pro camera mounted on top plate -->
+
+  <!-- First level of mounting poles: a pair of top poles -->
   <xacro:stack_top_pole parent="plate_top_link" number="10" x_loc="-0.1124" y_loc=" 0.098" z_loc="${0.006/2 + 0.2032/2}"/>
   <xacro:stack_top_pole parent="plate_top_link" number="20" x_loc="-0.1124" y_loc="-0.098" z_loc="${0.006/2 + 0.2032/2}"/>
   
-  <!-- Mounting plate -->
+  <!-- Intermediate plate to give consistence (used to be the mounting for the Senz3D camera) -->
   <joint name="senz3d_mount_joint" type="fixed">
     <origin xyz="-0.1124 0.0 ${0.006/2 + 0.2032 + 0.005/2}" rpy="0.0 0.0 0.0"/>
     <parent link="plate_top_link"/>
@@ -190,46 +188,7 @@
     <xacro:box_inertia length="0.03" width="0.22" height="0.006" mass="0.040"/>
   </link>
 
-  <!-- The camera itself -->
-  <joint name="senz3d_calib_joint" type="fixed">
-    <!-- Ideal extrinsic parameters obtained from robot model -->
-    <xacro:if value="$(arg simulation)">
-      <origin xyz="0.02 0.013 0.022" rpy="0.0 0.0 0.0"/>
-    </xacro:if>
-    <!-- Extrinsic parameters obtained through arm-camera calibration:
-         http://wiki.ros.org/turtlebot_arm_kinect_calibration -->
-    <!-- NOTE: Not required by now in its role of auxiliary camera -->
-    <xacro:unless value="$(arg simulation)">
-      <origin xyz="0.02 0.013 0.022" rpy="0.0 0.0 0.0"/>
-    </xacro:unless>
-    <parent link="senz3d_mount_link"/>
-    <child link="senz3d_calib_link"/>
-  </joint>
-  <link name="senz3d_calib_link"/>
-
-  <!-- Seems like Gazebo kinect plugin needs to use a centered frame instead of separated rgb and depth.
-       No idea if this makes any sense, but it works! I also move the optical tf a bit forward to make
-       pointcloud match better the model; this is absolutely arbitrary...
-       yay,,, I understand now better; gazebo knows nothing about optical axis, just uses camera link
-       (or whatever link u attach the plugin to) to retro-project the scene; so I need this hack to make
-       camera and optical frames match (and would need another hack without depth registration) -->
-  <xacro:if value="$(arg simulation)">
-    <joint name="senz3d_gazebo_optical_joint" type="fixed">
-      <origin xyz="0.004 0.0 0.0" rpy="${-M_PI/2} 0.0 ${-M_PI/2}"/>
-      <parent link="senz3d_link"/>
-      <child link="senz3d_gazebo_optical_frame"/>
-    </joint>
-    <link name="senz3d_gazebo_optical_frame"/>
-  </xacro:if>
-
-  <xacro:sensor_senz3d parent="senz3d_calib_link" name="senz3d">
-    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
-  </xacro:sensor_senz3d>
-
-
-  <!-- Manipulation Asus Xtion Pro camera mounted on top of the Senz3D's mounting plate -->
-  
-  <!-- Mounting poles: two columns made with one top and one middle poles stacked -->
+  <!-- Second level of mounting poles: two columns made with one top and one middle poles stacked -->
   <!-- The Z loc of the lower top poles is : 1/2*plate height + 3/2*top pole height -->
   <!-- The Z loc of the upper middle poles is : 1/2*plate height + top pole height + 1/2*middle pole height (with screw) -->
   <xacro:stack_top_pole parent="senz3d_mount_link" number="12" x_loc="0.0" y_loc=" 0.098" z_loc="${0.005/2 + 0.2032/2}"/>
@@ -237,7 +196,7 @@
   <xacro:stack_middle_pole parent="senz3d_mount_link" number="11" x_loc="0.0" y_loc=" 0.098" z_loc="${0.005/2 + 0.2032 + 0.0608/2}"/>
   <xacro:stack_middle_pole parent="senz3d_mount_link" number="21" x_loc="0.0" y_loc="-0.098" z_loc="${0.005/2 + 0.2032 + 0.0608/2}"/>
 
-  <!-- Mounting plate. The Z loc of the upper middle poles is: -->
+  <!-- Camera mounting plate. The Z loc of the upper middle poles is: -->
   <!--   1/2 * Senz3D mounting plate height + middle pole height (without screw) + top pole height + mounting's poles housing -->
   <joint name="xtion_mount_joint" type="fixed">
     <origin xyz="0.0 0.0 ${0.005/2 + 0.05 + 0.2032 + 0.005}" rpy="0.0 0.0 0.0"/>
@@ -288,7 +247,16 @@
     </joint>
     <link name="xtion_gazebo_optical_frame"/>
   </xacro:if>        TODO: I think I can remove this because I use registered depth images
-                      yes,,, see explanation with Senz3D;  remove all this once all work on real robot too -->
+                      yes,,, see explanation with Senz3D;  remove all this once all work on real robot too
+
+
+  from Senz3D: Seems like Gazebo kinect plugin needs to use a centered frame instead of separated rgb and depth.
+       No idea if this makes any sense, but it works! I also move the optical tf a bit forward to make
+       pointcloud match better the model; this is absolutely arbitrary...
+       yay,,, I understand now better; gazebo knows nothing about optical axis, just uses camera link
+       (or whatever link u attach the plugin to) to retro-project the scene; so I need this hack to make
+       camera and optical frames match (and would need another hack without depth registration)
+                      -->
 
   <!-- Sonar sensors forming a half ring centered on (and slightly above) base_link -->
   <joint name="sonars_joint" type="fixed">
