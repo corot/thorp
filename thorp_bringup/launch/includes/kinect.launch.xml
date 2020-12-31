@@ -37,7 +37,6 @@
     <node pkg="nodelet" type="nodelet" name="depthimage_to_laserscan"
           args="load depthimage_to_laserscan/DepthImageToLaserScanNodelet $(arg camera_name)_nodelet_manager">
       <rosparam file="$(find thorp_bringup)/param/$(arg camera_name)/depthimage_to_laserscan.yaml" command="load"/>
-      <param name="output_frame_id" value="/$(arg camera_name)_depth_frame"/>
       <remap from="image" to="$(arg depth)/image_raw"/>
     </node>
   </group>
