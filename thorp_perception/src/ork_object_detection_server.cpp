@@ -214,7 +214,7 @@ private:
       planning_scene_interface_.addCollisionObjects(std::vector<moveit_msgs::CollisionObject>(1, table_co));
 
       // Add "table" as the support surface on action result
-      result.support_surf = table_co.id;
+      result.support_surf.id = table_co.id;
     }
     else
     {
