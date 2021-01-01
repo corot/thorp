@@ -19,28 +19,38 @@ try:
     # For each object, check if we already have a STL mesh. If not, generate it with OpenSCAD. We must convert to
     # binary, as OpenSCAD can only export ASCII STL by now (see https://github.com/openscad/openscad/issues/1555)
     # For already binary meshes, conversion just does nothing.
-    # Last field is for gazebo material (see http://wiki.ros.org/simulator_gazebo/Tutorials/ListOfMaterials)
+    # Forth field is for gazebo material (see http://wiki.ros.org/simulator_gazebo/Tutorials/ListOfMaterials)
+    # The remaining values are the bounding box dimensions and mass, used to calculate the inertia tensor.
 
-    objects = [['coke', 'A universal can of coke', 'coke.stl', 'Red'],
-               ['lipstick', 'Uriage lipstick, 7.4cm long', 'lipstick.stl', 'Blue'],
-               ['tower', 'Untextured 2 x 2.5 cm side stacked cubes', 'tower.stl', 'SkyBlue'],
-               ['cube', 'Untextured 2.5 cm side cube', 'cube.stl', 'White'],
-               ['square', 'Untextured 3.2 cm side square', 'square.stl', 'Green'],
-               ['rectangle', 'Untextured 2.8 x 3.8 cm rectangle', 'rectangle.stl', 'Yellow'],
-               ['triangle', 'Untextured 3.3 cm side triangle', 'triangle.stl', 'Purple'],
-               ['pentagon', 'Untextured 2.1 cm side pentagon', 'pentagon.stl', 'Indigo'],
-               ['circle', 'Untextured 1.7 cm radius circle', 'circle.stl', 'Blue'],
-               ['star', 'Untextured 1.7 cm radius, 5 points star', 'star.stl', 'Red'],
-               ['diamond', 'Untextured 2.6 cm side diamond', 'diamond.stl', 'Orange'],
-               ['cross', 'Untextured 3.7 x 3.7 cm cross', 'cross.stl', "Grey"],
-               ['clover', 'Untextured 3.7 x 3.7 cm clover', 'clover.stl', 'Green']]
+    objects = [['lipstick', 'Uriage lipstick, 7.4cm long', 'lipstick.stl', 'Blue', 0.01, 0.01, 0.074, 0.006],
+               ['tower', 'Untextured 2 x 2.5 cm side stacked cubes', 'tower.stl', 'SkyBlue', 0.025, 0.025, 0.05, 0.0146],
+               ['cube', 'Untextured 2.5 cm side cube', 'cube.stl', 'White', 0.025, 0.025, 0.025, 0.0073],
+               ['square', 'Untextured 3.2 cm side square', 'square.stl', 'Green', 0.032, 0.011, 0.032, 0.006],
+               ['rectangle', 'Untextured 2.8 x 3.8 cm rectangle', 'rectangle.stl', 'Yellow', 0.028, 0.011, 0.038, 0.006],
+               ['triangle', 'Untextured 3.3 cm side triangle', 'triangle.stl', 'Purple', 0.033, 0.011, 0.028, 0.004],
+               ['pentagon', 'Untextured 2.1 cm side pentagon', 'pentagon.stl', 'Indigo', 0.032, 0.011, 0.032, 0.006],
+               ['circle', 'Untextured 1.7 cm radius circle', 'circle.stl', 'Blue', 0.032, 0.011, 0.032, 0.006],
+               ['star', 'Untextured 1.7 cm radius, 5 points star', 'star.stl', 'Red', 0.032, 0.011, 0.032, 0.006],
+               ['diamond', 'Untextured 2.6 cm side diamond', 'diamond.stl', 'Orange', 0.026, 0.011, 0.026, 0.006],
+               ['cross', 'Untextured 3.7 x 3.7 cm cross', 'cross.stl', "Grey", 0.037, 0.011, 0.037, 0.005],
+               ['clover', 'Untextured 3.7 x 3.7 cm clover', 'clover.stl', 'Green', 0.037, 0.011, 0.037, 0.006]]
+
+    inertial_template = '<mass>{mass}</mass>\n' \
+                        '          <pose>0 0 {hz} 0 0 0</pose>\n' \
+                        '          <inertia>\n' \
+                        '            <ixx>{ixx}</ixx>\n' \
+                        '            <ixy>0</ixy>\n' \
+                        '            <ixz>0</ixz>\n' \
+                        '            <iyy>{iyy}</iyy>\n' \
+                        '            <iyz>0</iyz>\n' \
+                        '            <izz>{izz}</izz>\n' \
+                        '          </inertia>'
 
     meshes_path = rospack.get_path('thorp_perception') + "/meshes/"
     models_path = rospack.get_path('thorp_simulation') + "/worlds/gazebo/models/"
     for object in objects:
         # Run gen_meshes.scad to generate an STL mesh for each of the objects in the list
         if not os.path.exists(meshes_path + object[0] + '.stl'):
-            ###   TODO  obj_name = object[2][:-4]  just need the list..  takes as param, w/ all as default
             print(subprocess.check_output(['openscad', '-DOBJ="' + object[0] + '"', '-o', 'tmp.ascii.stl',
                                            'generate_meshes.scad']))
             print(subprocess.check_output(['admesh', '-b', meshes_path + object[0] + '.stl', 'tmp.ascii.stl']))
@@ -54,10 +64,18 @@ try:
         # Run mesh sampler on each mesh to generate a pointcloud on pcd format
         if not os.path.exists(meshes_path + object[0] + '.pcd'):
             print(subprocess.check_output(['rosrun', 'rail_mesh_icp', 'mesh_sampler_node',
-                                           meshes_path + object[0] + '.ply', meshes_path + object[0] + '.pcd']))
+                                           meshes_path + object[0] + '.ply', meshes_path + object[0] + '.pcd',
+                                           '-n_samples', '10000', '-leaf_size', '0.0025']))
 
         # Create a gazebo model using template descriptors and linking the created meshes
         if not os.path.exists(models_path + object[0]):
+            variables = {'mass': object[7],
+                         'hz': object[6] / 2.0,  # half height
+                         'ixx': object[7] / 12 * (object[5]**2 + object[6]**2),
+                         'iyy': object[7] / 12 * (object[4]**2 + object[6]**2),
+                         'izz': object[7] / 12 * (object[5]**2 + object[4]**2)}
+            # bounding box inertia: https://en.wikipedia.org/wiki/List_of_moments_of_inertia#List_of_3D_inertia_tensors
+            inertial = inertial_template.format(**variables)
             os.mkdir(models_path + object[0], 0o755)
             os.symlink(meshes_path + object[0] + '.stl', models_path + object[0] + '/model.stl')
             with open(models_path + object[0] + '/model.config', "w") as f:
@@ -65,7 +83,8 @@ try:
                                                                           'desc': object[1]}))
             with open(models_path + object[0] + '/model.sdf', "w") as f:
                 f.write(template(models_path + 'templates/model.sdf', {'name': object[0],
-                                                                       'color': object[3]}))
+                                                                       'color': object[3],
+                                                                       'inertial': inertial}))
 
 except rospkg.common.ResourceNotFound as err:
     print("get package path failed: " + str(err))

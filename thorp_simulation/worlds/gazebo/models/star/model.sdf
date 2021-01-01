@@ -1,0 +1,57 @@
+<?xml version="1.0" ?>
+<sdf version='1.4'>
+    <model name='star'>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://star/model.stl</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Red</name>
+            </script>
+          </material>
+        </visual>
+        <collision name='collision'>
+          <geometry>
+            <mesh>
+              <uri>model://star/model.stl</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <bounce/>
+            <friction>
+              <ode/>
+            </friction>
+            <contact>
+              <ode/>
+            </contact>
+          </surface>
+        </collision>
+        <velocity_decay>
+          <linear>0</linear>
+          <angular>0</angular>
+        </velocity_decay>
+        <inertial>
+          <mass>0.006</mass>
+          <pose>0 0 0.016 0 0 0</pose>
+          <inertia>
+            <ixx>5.725e-07</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1.024e-06</iyy>
+            <iyz>0</iyz>
+            <izz>5.725e-07</izz>
+          </inertia>
+        </inertial>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+        <gravity>1</gravity>
+      </link>
+      <static>0</static>
+    </model>
+</sdf>
