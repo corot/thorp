@@ -7,7 +7,6 @@ Panels:
         - /RobotModel1
         - /TF1
         - /TF1/Frames1
-        - /Camera1/Visibility1
       Splitter Ratio: 0.590503990650177
     Tree Height: 728
   - Class: rviz/Selection
@@ -397,16 +396,6 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        pole_bottom_16_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_bottom_17_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         pole_bottom_1_link:
           Alpha: 1
           Show Axes: false
@@ -448,6 +437,16 @@ Visualization Manager:
           Show Trail: false
           Value: true
         pole_middle_11_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_middle_16_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_middle_17_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -567,40 +566,11 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        senz3d_calib_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        senz3d_depth_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        senz3d_depth_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        senz3d_gazebo_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        senz3d_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         senz3d_mount_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        senz3d_rgb_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        senz3d_rgb_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
         sonars_mount_link:
           Alpha: 1
           Show Axes: false
@@ -654,565 +624,18 @@ Visualization Manager:
       Value: true
       Visual Enabled: true
     - Class: rviz/TF
-      Enabled: true
+      Enabled: false
       Frame Timeout: 15
       Frames:
         All Enabled: true
-        arm_base_link:
-          Value: true
-        arm_elbow_F10_0_link:
-          Value: true
-        arm_elbow_F10_1_link:
-          Value: true
-        arm_elbow_F10_2_link:
-          Value: true
-        arm_elbow_F3_0_link:
-          Value: true
-        arm_elbow_flex_link:
-          Value: true
-        arm_elbow_flex_servo_link:
-          Value: true
-        arm_mount_link:
-          Value: true
-        arm_shoulder_F10_0_link:
-          Value: true
-        arm_shoulder_F10_1_link:
-          Value: true
-        arm_shoulder_F10_2_link:
-          Value: true
-        arm_shoulder_F3_0_link:
-          Value: true
-        arm_shoulder_lift_link:
-          Value: true
-        arm_shoulder_lift_servo_link:
-          Value: true
-        arm_shoulder_pan_link:
-          Value: true
-        arm_shoulder_pan_servo_link:
-          Value: true
-        arm_wrist_F3_0_link:
-          Value: true
-        arm_wrist_flex_link:
-          Value: true
-        arm_wrist_flex_servo_link:
-          Value: true
-        base_footprint:
-          Value: true
-        base_link:
-          Value: true
-        cannon_link:
-          Value: true
-        cannon_servo_link:
-          Value: true
-        cannon_shaft_link:
-          Value: true
-        cannon_tube1_hollow_link:
-          Value: true
-        cannon_tube1_link:
-          Value: true
-        cannon_tube2_hollow_link:
-          Value: true
-        cannon_tube2_link:
-          Value: true
-        cannon_tube3_hollow_link:
-          Value: true
-        cannon_tube3_link:
-          Value: true
-        cannon_tube4_hollow_link:
-          Value: true
-        cannon_tube4_link:
-          Value: true
-        cannon_tube5_hollow_link:
-          Value: true
-        cannon_tube5_link:
-          Value: true
-        cannon_tube6_hollow_link:
-          Value: true
-        cannon_tube6_link:
-          Value: true
-        caster_back_link:
-          Value: true
-        caster_front_link:
-          Value: true
-        cliff_sensor_front_link:
-          Value: true
-        cliff_sensor_left_link:
-          Value: true
-        cliff_sensor_right_link:
-          Value: true
-        gripper_active_finger_link:
-          Value: true
-        gripper_active_link:
-          Value: true
-        gripper_link:
-          Value: true
-        gripper_servo_link:
-          Value: true
-        gripper_static_finger_link:
-          Value: true
-        gripper_static_link:
-          Value: true
-        gyro_link:
-          Value: true
-        ir_arm_link:
-          Value: true
-        ir_cannon_link:
-          Value: true
-        ir_l155_link:
-          Value: true
-        ir_l180_link:
-          Value: true
-        ir_r155_link:
-          Value: true
-        ir_r180_link:
-          Value: true
-        kinect_depth_frame:
-          Value: true
-        kinect_depth_optical_frame:
-          Value: true
-        kinect_link:
-          Value: true
-        kinect_rgb_frame:
-          Value: true
-        kinect_rgb_optical_frame:
-          Value: true
-        opencm_link:
-          Value: true
-        plate_bottom_link:
-          Value: true
-        plate_middle_link:
-          Value: true
-        plate_top_link:
-          Value: true
-        pole_bottom_0_link:
-          Value: true
-        pole_bottom_10_link:
-          Value: true
-        pole_bottom_11_link:
-          Value: true
-        pole_bottom_12_link:
-          Value: true
-        pole_bottom_13_link:
-          Value: true
-        pole_bottom_14_link:
-          Value: true
-        pole_bottom_15_link:
-          Value: true
-        pole_bottom_16_link:
-          Value: true
-        pole_bottom_17_link:
-          Value: true
-        pole_bottom_1_link:
-          Value: true
-        pole_bottom_2_link:
-          Value: true
-        pole_bottom_3_link:
-          Value: true
-        pole_bottom_4_link:
-          Value: true
-        pole_bottom_5_link:
-          Value: true
-        pole_kinect_0_link:
-          Value: true
-        pole_kinect_1_link:
-          Value: true
-        pole_middle_0_link:
-          Value: true
-        pole_middle_11_link:
-          Value: true
-        pole_middle_1_link:
-          Value: true
-        pole_middle_21_link:
-          Value: true
-        pole_middle_2_link:
-          Value: true
-        pole_middle_3_link:
-          Value: true
-        pole_top_0_link:
-          Value: true
-        pole_top_10_link:
-          Value: true
-        pole_top_12_link:
-          Value: true
-        pole_top_1_link:
-          Value: true
-        pole_top_20_link:
-          Value: true
-        pole_top_22_link:
-          Value: true
-        pole_top_2_link:
-          Value: true
-        pole_top_3_link:
-          Value: true
-        s_0_link:
-          Value: true
-        s_m18_link:
-          Value: true
-        s_m36_link:
-          Value: true
-        s_m54_link:
-          Value: true
-        s_m72_link:
-          Value: true
-        s_m90_link:
-          Value: true
-        s_p18_link:
-          Value: true
-        s_p36_link:
-          Value: true
-        s_p54_link:
-          Value: true
-        s_p72_link:
-          Value: true
-        s_p90_link:
-          Value: true
-        senz3d_calib_link:
-          Value: true
-        senz3d_depth_frame:
-          Value: true
-        senz3d_depth_optical_frame:
-          Value: true
-        senz3d_gazebo_optical_frame:
-          Value: true
-        senz3d_link:
-          Value: true
-        senz3d_mount_link:
-          Value: true
-        senz3d_rgb_frame:
-          Value: true
-        senz3d_rgb_optical_frame:
-          Value: true
-        sonars_mount_link:
-          Value: true
-        tray_link:
-          Value: true
-        wheel_left_link:
-          Value: true
-        wheel_right_link:
-          Value: true
-        xtion_depth_frame:
-          Value: true
-        xtion_depth_optical_frame:
-          Value: true
-        xtion_link:
-          Value: true
-        xtion_mount_link:
-          Value: true
-        xtion_rgb_frame:
-          Value: true
-        xtion_rgb_optical_frame:
-          Value: true
       Marker Scale: 0.30000001192092896
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        base_footprint:
-          base_link:
-            caster_back_link:
-              {}
-            caster_front_link:
-              {}
-            cliff_sensor_front_link:
-              {}
-            cliff_sensor_left_link:
-              {}
-            cliff_sensor_right_link:
-              {}
-            gyro_link:
-              {}
-            ir_l155_link:
-              {}
-            ir_l180_link:
-              {}
-            ir_r155_link:
-              {}
-            ir_r180_link:
-              {}
-            kinect_rgb_frame:
-              kinect_depth_frame:
-                kinect_depth_optical_frame:
-                  {}
-              kinect_link:
-                {}
-              kinect_rgb_optical_frame:
-                {}
-            plate_bottom_link:
-              {}
-            plate_middle_link:
-              {}
-            plate_top_link:
-              arm_base_link:
-                arm_shoulder_pan_servo_link:
-                  arm_shoulder_pan_link:
-                    arm_shoulder_lift_servo_link:
-                      arm_shoulder_lift_link:
-                        arm_shoulder_F10_0_link:
-                          arm_shoulder_F10_1_link:
-                            arm_shoulder_F10_2_link:
-                              arm_shoulder_F3_0_link:
-                                arm_elbow_flex_servo_link:
-                                  arm_elbow_flex_link:
-                                    arm_elbow_F10_0_link:
-                                      arm_elbow_F10_1_link:
-                                        arm_elbow_F10_2_link:
-                                          arm_elbow_F3_0_link:
-                                            arm_wrist_flex_servo_link:
-                                              arm_wrist_flex_link:
-                                                arm_wrist_F3_0_link:
-                                                  gripper_servo_link:
-                                                    gripper_active_link:
-                                                      gripper_active_finger_link:
-                                                        {}
-                                                    gripper_static_link:
-                                                      gripper_static_finger_link:
-                                                        {}
-                                                gripper_link:
-                                                  {}
-                ir_arm_link:
-                  {}
-                pole_bottom_10_link:
-                  {}
-                pole_bottom_11_link:
-                  {}
-                pole_bottom_12_link:
-                  {}
-                pole_bottom_13_link:
-                  {}
-                pole_bottom_14_link:
-                  {}
-                pole_bottom_15_link:
-                  {}
-              arm_mount_link:
-                cannon_servo_link:
-                  cannon_shaft_link:
-                    cannon_link:
-                      cannon_tube1_hollow_link:
-                        {}
-                      cannon_tube1_link:
-                        {}
-                      cannon_tube2_hollow_link:
-                        {}
-                      cannon_tube2_link:
-                        {}
-                      cannon_tube3_hollow_link:
-                        {}
-                      cannon_tube3_link:
-                        {}
-                      cannon_tube4_hollow_link:
-                        {}
-                      cannon_tube4_link:
-                        {}
-                      cannon_tube5_hollow_link:
-                        {}
-                      cannon_tube5_link:
-                        {}
-                      cannon_tube6_hollow_link:
-                        {}
-                      cannon_tube6_link:
-                        {}
-                      ir_cannon_link:
-                        {}
-              opencm_link:
-                {}
-              pole_bottom_16_link:
-                {}
-              pole_bottom_17_link:
-                {}
-              pole_top_10_link:
-                {}
-              pole_top_20_link:
-                {}
-              senz3d_mount_link:
-                pole_middle_11_link:
-                  {}
-                pole_middle_21_link:
-                  {}
-                pole_top_12_link:
-                  {}
-                pole_top_22_link:
-                  {}
-                senz3d_calib_link:
-                  senz3d_rgb_frame:
-                    senz3d_depth_frame:
-                      senz3d_depth_optical_frame:
-                        {}
-                    senz3d_link:
-                      senz3d_gazebo_optical_frame:
-                        {}
-                    senz3d_rgb_optical_frame:
-                      {}
-                xtion_mount_link:
-                  xtion_rgb_frame:
-                    xtion_depth_frame:
-                      xtion_depth_optical_frame:
-                        {}
-                    xtion_link:
-                      {}
-                    xtion_rgb_optical_frame:
-                      {}
-              tray_link:
-                {}
-            pole_bottom_0_link:
-              {}
-            pole_bottom_1_link:
-              {}
-            pole_bottom_2_link:
-              {}
-            pole_bottom_3_link:
-              {}
-            pole_bottom_4_link:
-              {}
-            pole_bottom_5_link:
-              {}
-            pole_kinect_0_link:
-              {}
-            pole_kinect_1_link:
-              {}
-            pole_middle_0_link:
-              {}
-            pole_middle_1_link:
-              {}
-            pole_middle_2_link:
-              {}
-            pole_middle_3_link:
-              {}
-            pole_top_0_link:
-              {}
-            pole_top_1_link:
-              {}
-            pole_top_2_link:
-              {}
-            pole_top_3_link:
-              {}
-            sonars_mount_link:
-              s_0_link:
-                {}
-              s_m18_link:
-                {}
-              s_m36_link:
-                {}
-              s_m54_link:
-                {}
-              s_m72_link:
-                {}
-              s_m90_link:
-                {}
-              s_p18_link:
-                {}
-              s_p36_link:
-                {}
-              s_p54_link:
-                {}
-              s_p72_link:
-                {}
-              s_p90_link:
-                {}
-            wheel_left_link:
-              {}
-            wheel_right_link:
-              {}
+        {}
       Update Interval: 0
-      Value: true
-    - Class: rviz/Camera
-      Enabled: false
-      Image Rendering: background and overlay
-      Image Topic: /senz3d/rgb/image_color
-      Name: Camera
-      Overlay Alpha: 0.5
-      Queue Size: 2
-      Transport Hint: raw
-      Unreliable: false
-      Value: false
-      Visibility:
-        DepthCloud: true
-        Grid: true
-        Image: true
-        PointCloud2: false
-        RobotModel: true
-        TF: true
-        Value: true
-      Zoom Factor: 1
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz/PointCloud2
-      Color: 255; 255; 255
-      Color Transformer: RGB8
-      Decay Time: 0
-      Enabled: false
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 4096
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: PointCloud2
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.004999999888241291
-      Style: Flat Squares
-      Topic: /xtion/depth_registered/points
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: false
-    - Alpha: 1
-      Auto Size:
-        Auto Size Factor: 1
-        Value: true
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz/DepthCloud
-      Color: 255; 255; 255
-      Color Image Topic: /xtion/rgb/image_raw
-      Color Transformer: RGB8
-      Color Transport Hint: raw
-      Decay Time: 0
-      Depth Map Topic: /xtion/depth_registered/image_raw
-      Depth Map Transport Hint: raw
-      Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 4096
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: DepthCloud
-      Occlusion Compensation:
-        Occlusion Time-Out: 30
-        Value: false
-      Position Transformer: XYZ
-      Queue Size: 5
-      Selectable: true
-      Size (Pixels): 3
-      Style: Flat Squares
-      Topic Filter: true
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: true
-    - Class: rviz/Image
-      Enabled: false
-      Image Topic: /calibrate_kinect_checkerboard/calibration_pattern_out
-      Max Value: 1
-      Median window: 5
-      Min Value: 0
-      Name: Image
-      Normalize Range: true
-      Queue Size: 2
-      Transport Hint: raw
-      Unreliable: false
       Value: false
   Enabled: true
   Global Options:
@@ -1242,37 +665,33 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 0.4911201298236847
+      Distance: 1.1309289932250977
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.07675255089998245
-        Y: -0.03599422797560692
-        Z: 0.3477970063686371
+        X: 0.012456711381673813
+        Y: -0.010670281946659088
+        Z: 0.4847046434879303
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.2601991295814514
+      Pitch: 0.21019922196865082
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 5.273603439331055
+      Yaw: 4.773593425750732
     Saved: ~
 Window Geometry:
-  Camera:
-    collapsed: false
   Displays:
     collapsed: false
   Height: 1025
   Hide Left Dock: false
   Hide Right Dock: false
-  Image:
-    collapsed: false
-  QMainWindow State: 000000ff00000000fd00000004000000000000016a00000363fc020000000bfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d00000363000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d00650072006102000001ab000002190000015d00000137fb0000000c00430061006d00650072006102000002fe00000170000003630000027cfb0000000a0049006d00610067006500000002d1000000cf0000001600ffffff000000010000010f00000363fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003d00000363000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000780000000a9fc0100000002fb0000000c00430061006d0065007200610200000258000000e7000003cd000002f3fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000073d0000003efc0100000002fb0000000800540069006d006501000000000000073d000002eb00fffffffb0000000800540069006d00650100000000000004500000000000000000000004b80000036300000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000004000000000000016a00000363fc020000000bfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d00000363000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d00650072006102000001ab000002190000015d00000137fb0000000c00430061006d00650072006102000002fe00000170000003630000027cfb0000000a0049006d00610067006500000002d1000000cf0000000000000000000000010000010f00000363fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003d00000363000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000780000000a9fc0100000002fb0000000c00430061006d0065007200610200000258000000e7000003cd000002f3fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000073d0000003efc0100000002fb0000000800540069006d006501000000000000073d000002eb00fffffffb0000000800540069006d00650100000000000004500000000000000000000004b80000036300000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -1282,5 +701,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1853
-  X: 1987
+  X: 67
   Y: 27
