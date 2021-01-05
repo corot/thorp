@@ -418,87 +418,6 @@
       <sim_time>99 740000000</sim_time>
       <real_time>99 804881595</real_time>
       <wall_time>1418610574 651490043</wall_time>
-      <model name='Dumpster'>
-        <pose>0.999949 -3.44458 0.000918 -0 -0 -6e-06</pose>
-        <link name='link'>
-          <pose>0.999949 -3.44458 0.000918 -0 -0 -6e-06</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
-      <model name='bookshelf'>
-        <pose>0 1.53026 0 0 -0 0</pose>
-        <link name='link'>
-          <pose>0 1.53026 0 0 -0 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
-      <model name='cube_20k'>
-        <pose>1.40943 -1.00012 0.000105 0.000206 -0.000361 0.892368</pose>
-        <link name='link'>
-          <pose>1.4094 -1.00033 0.500105 0.000206 -0.000361 0.892368</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
-      <model name='doll_table_0'>
-        <pose>0.45 0 0 0 -0 0</pose>
-        <link name='link'>
-          <pose>0.45 0 0 0 -0 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
-      <model name='jersey_barrier'>
-        <pose>-4 -1 0 0 0 -0.7</pose>
-        <link name='link'>
-          <pose>-4 -1 0 0 0 -0.7</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
-      <model name='unit_cylinder_1'>
-        <pose>-2 -3.4888 0.49912 -0 -0 -0</pose>
-        <link name='link'>
-          <pose>-2 -3.4888 0.49912 -0 -0 -0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
-      <model name='wood_cube_2_5cm_0'>
-        <pose>0.279395 0.017524 0.423961 -8.07794e-28 1e-06 -7e-06</pose>
-        <link name='link'>
-          <pose>0.279395 0.017524 0.436461 -8.07794e-28 1e-06 -7e-06</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
-      <model name='wood_cube_2_5cm_1'>
-        <pose>0.357627 -0.037121 0.423961 -2e-06 2e-06 2e-06</pose>
-        <link name='link'>
-          <pose>0.357627 -0.037121 0.436461 -2e-06 2e-06 2e-06</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
-      <model name='wood_cube_2_5cm_2'>
-        <pose>0.302415 -0.160046 0.423981 -2e-06 2e-06 2e-06</pose>
-        <link name='link'>
-          <pose>0.302415 -0.160046 0.436481 -2e-06 2e-06 2e-06</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
     </state>
     <gui fullscreen='0'>
       <camera name='user_camera'>
@@ -665,28 +584,33 @@
         <kinematic>0</kinematic>
         <gravity>1</gravity>
       </link>
-      <pose>1.41131 -1 0 0 -0 0.9</pose>
+      <pose>2.41131 -2 0 0 -0 0.9</pose>
       <static>1</static>
     </model>
     <include>
       <uri>model://doll_table</uri>
       <name>doll_table_0</name>
-      <pose>0.57697 0 0 0 -0 0</pose>
+      <pose>0.45 0 0 0 -0 0</pose>
     </include>
     <include>
-      <uri>model://wood_cube_2_5cm</uri>
-      <name>wood_cube_2_5cm_0</name>
-      <pose>-0.428382 -2 0 0 -0 0</pose>
+      <uri>model://square</uri>
+      <name>cube</name>
+      <pose>0.279395 0.017524 0.423961  0.0 0.0 0.2</pose>
     </include>
     <include>
-      <uri>model://wood_cube_2_5cm</uri>
-      <name>wood_cube_2_5cm_1</name>
-      <pose>-1 -2 0 0 0 0</pose>
+      <uri>model://cross</uri>
+      <name>clover</name>
+      <pose>0.357627 -0.037121 0.423961 0.0 0.0 1.4</pose>
     </include>
     <include>
-      <uri>model://wood_cube_2_5cm</uri>
-      <name>wood_cube_2_5cm_2</name>
-      <pose>-1 -1 0 0 0 0</pose>
+      <uri>model://circle</uri>
+      <name>triangle</name>
+      <pose>0.302415 -0.160046 0.423981 0.0 0.0 1.1</pose>
+    </include>
+    <include>
+      <uri>model://rectangle</uri>
+      <name>tower</name>
+      <pose>0.322415 0.100046 0.423981 0.0 0.0 0.1</pose>
     </include>
   </world>
 </sdf>
