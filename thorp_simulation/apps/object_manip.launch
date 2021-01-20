@@ -16,15 +16,10 @@
     <arg name="localization"   value="gazebo"/>
   </include>
 
-  <!--  ********* Perception and manipulation *********
+  <!--  ********* Perception and manipulation ********* -->
   <include file="$(find thorp_perception)/launch/perception.launch">
     <arg name="pipeline" value="RAIL"/>
-  </include>  TODO restore once I have proper obj recognition -->
-  <node name="block_detection_action_server" pkg="turtlebot_arm_block_manipulation" type="block_detection_action_server" output="screen" respawn="true">
-    <rosparam param="table_pose">[0.09, 0.0, -0.015]</rosparam>
-    <remap from="/camera/depth_registered/points" to="/xtion/depth_registered/points"/>
-  </node>
-
+  </include>
 
   <include file="$(find thorp_manipulation)/launch/manipulation.launch">
     <arg name="simulation" value="true"/>
@@ -43,11 +38,11 @@
   </node>
 
   <!--  ****** Executive smach and visualization ******  -->
-  <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="true">
+  <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="false">
     <param name="rec_objects_frame" value="map"/>
   </node>
 
   <node pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
 
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/manipulation.rviz"/>
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/manipulation.rviz" respawn="true"/>
 </launch>

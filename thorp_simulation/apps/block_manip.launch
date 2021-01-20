@@ -49,7 +49,7 @@
 
   <!--  ****** Executive smach and visualization ******  -->
 
-  <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="true">
+  <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="false">
     <param name="arm_link" value="arm_base_link"/>
     <param name="gripper_open" value="0.045"/>
     <param name="gripper_closed" value="0.02"/>

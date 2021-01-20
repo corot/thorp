@@ -24,7 +24,7 @@ over all rooms and explore them following the planned sequence.
   <include file="$(find thorp_bringup)/launch/includes/exploration.launch.xml"/>
 
   <!--  ****** Executive smach and visualization ******  -->
-  <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="true"/>
+  <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="false"/>
 
   <node pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
 
