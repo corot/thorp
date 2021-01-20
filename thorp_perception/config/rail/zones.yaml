@@ -5,7 +5,7 @@
   child_frame_id: "xtion_depth_frame"
   bounding_frame_id: "base_footprint"
   segmentation_frame_id: "base_footprint"
-  x_min: +0.2
+  x_min: +0.15    # TODO restore 0.2 if I can make a smaller zone for obj rec, and keep this for surface recognition
   x_max: +2.5
   y_min: -1.0
   y_max: +1.0

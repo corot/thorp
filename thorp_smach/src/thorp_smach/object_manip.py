@@ -13,7 +13,7 @@ from toolkit.perception_states import ObjectDetection
 from toolkit.manipulation_states import FoldArm, PickupObject, PlaceObject
 
 
-rospy.init_node('object_manipulation_smach')
+rospy.init_node('object_manip_smach')
 
 # Object manipulation top-level sm
 sm = smach.StateMachine(outcomes=['stop', 'error', 'aborted', 'preempted'],

@@ -104,8 +104,8 @@ class PickupObject(smach.Iterator):
                                                                                'support_surf',
                                                                                'max_effort'],
                                                                    result_slots=['error']),
-                                       transitions={###   TODO 'succeeded': 'succeeded',
-                                                    ###'preempted': 'preempted',
+                                       transitions={'succeeded': 'succeeded',
+                                                    'preempted': 'preempted',
                                                     'aborted': 'CLEAR_OCTOMAP'})
                 smach.StateMachine.add('CLEAR_OCTOMAP', ClearOctomap(),
                                        transitions={'succeeded': 'continue',

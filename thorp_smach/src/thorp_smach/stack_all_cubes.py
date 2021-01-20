@@ -77,12 +77,12 @@ with sm:
     sm.userdata.arm_ref_frame = rospy.get_param('~arm_ctrl_ref_frame', 'arm_base_link')
     sm.userdata.output_frame = rospy.get_param('~rec_objects_frame', 'map')
     sm.userdata.cube_height = 0.025  # TODO get from Collision object!
-    #     sm.userdata.named_pose_target_type = thorp_msgs.MoveToTargetGoal.NAMED_TARGET
-    #     sm.userdata.arm_folded_named_pose = 'resting'
-    #     sm.userdata.close_gripper  = control_msgs.GripperCommand()
-    #     sm.userdata.close_gripper.position = 0.0
-    #     sm.userdata.open_gripper   = control_msgs.GripperCommand()
-    #     sm.userdata.open_gripper.position = 0.05
+    #     sm.ud.named_pose_target_type = thorp_msgs.MoveToTargetGoal.NAMED_TARGET
+    #     sm.ud.arm_folded_named_pose = 'resting'
+    #     sm.ud.close_gripper  = control_msgs.GripperCommand()
+    #     sm.ud.close_gripper.position = 0.0
+    #     sm.ud.open_gripper   = control_msgs.GripperCommand()
+    #     sm.ud.open_gripper.position = 0.05
 
     # Other fields created at runtime are objects, object_names, object_name, base_cube_name, base_cube_pose and other_cubes
 

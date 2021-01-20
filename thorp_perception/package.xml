@@ -20,12 +20,14 @@
   <build_depend>shape_msgs</build_depend>
   <build_depend>object_recognition_msgs</build_depend>
   <build_depend>rail_manipulation_msgs</build_depend>
+  <build_depend>rail_mesh_icp</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>moveit_msgs</build_depend>
   <build_depend>moveit_ros_planning_interface</build_depend>
   <build_depend>cv_bridge</build_depend>
   <build_depend>image_geometry</build_depend>
   <build_depend>image_transport</build_depend>
+  <build_depend>OpenMP</build_depend>
 
   <build_depend>thorp_msgs</build_depend>
   <build_depend>thorp_toolkit</build_depend>
@@ -49,7 +51,7 @@
 
   <run_depend>rail_manipulation_msgs</run_depend>
   <run_depend>rail_segmentation</run_depend>
-  <run_depend>rail_mesh_icp/</run_depend>
+  <run_depend>rail_mesh_icp</run_depend>
 
   <run_depend>object_recognition_ros</run_depend>
   <run_depend>object_recognition_tabletop</run_depend>

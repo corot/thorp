@@ -94,12 +94,47 @@ public:
                             const ros::Time& time = ros::Time(), const ros::Duration& timeout = ros::Duration(2));
 };
 
-
+/**
+ * Convert a transform into a pose msg
+ * @param tf input
+ * @param pose output
+ */
 void tf2pose(const tf::Transform& tf, geometry_msgs::Pose& pose);
+
+/**
+ * Convert a transform msg into a pose msg
+ * @param tf input
+ * @param pose output
+ */
+void tf2pose(const geometry_msgs::Transform& tf, geometry_msgs::Pose& pose);
+
+/**
+ * Convert a stamped transform into a stamped pose msg
+ * @param tf input
+ * @param pose output
+ */
 void tf2pose(const tf::StampedTransform& tf, geometry_msgs::PoseStamped& pose);
 
+/**
+ * Convert a stamped transform msg into a stamped pose msg
+ * @param tf input
+ * @param pose output
+ */
+ void tf2pose(const geometry_msgs::TransformStamped& tf, geometry_msgs::PoseStamped& pose);
+
+/**
+ * Convert a pose msg into a transform
+ * @param pose input
+ * @param tf output
+ */
 void pose2tf(const geometry_msgs::Pose& pose, tf::Transform& tf);
-void pose2tf(const geometry_msgs::PoseStamped& pose, tf::StampedTransform& tf);
+
+/**
+ * Convert a stamped pose msg into a stamped transform
+ * @param pose input
+ * @param tf output
+ */
+ void pose2tf(const geometry_msgs::PoseStamped& pose, tf::StampedTransform& tf);
 
 
 } /* namespace thorp_toolkit */

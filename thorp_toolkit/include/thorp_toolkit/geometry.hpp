@@ -174,6 +174,16 @@ inline double yaw(const geometry_msgs::TransformStamped& tf)
   return tf::getYaw(tf.transform.rotation);
 }
 
+/**
+ * Check if a 2D pose is pointing more along x or y axis
+ * @param pose the pose
+ * @return true if pointing more along x axis, false if along y
+ */
+inline bool xAligned(const geometry_msgs::Pose& pose)
+{
+  double abs_yaw = std::abs(tf::getYaw(pose.orientation));
+  return abs_yaw < M_PI/4.0 || abs_yaw > M_PI*3.0/4.0;
+}
 
 /**
  * Compares frame ids ignoring the leading /, as it is frequently omitted.

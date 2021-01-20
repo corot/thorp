@@ -6,23 +6,18 @@
   <arg name="pipeline"/>  <!-- ORK / COB / RAIL -->
   <arg name="target_objects" default="[]"/>
 
-  <!--  ************ Thorp perception nodes ***********
-
-  <node pkg="thorp_perception" type="object_detection_server" name="object_detection_server" output="screen" respawn="true">
-    <param name="ork_execute_timeout" value="5.0"/>
-    <param name="recognize_objs_calls" value="5"/>
-
-    <remap from="rgb_image" to="xtion/rgb/image_raw"/>
-  </node>
-
-  <node pkg="object_recognition_ros" type="object_information_server" name="object_information_server" output="screen" respawn="true">
-  </node>
-  TODO: only works with ORK by now, so disabled.  If I use more than 1 pipeline, I need to choose different servers depending on the pipeline
-    -->
-
   <!--  **************** ORK pipeline *****************  -->
   <group if="$(eval pipeline == 'ORK')">
     <arg name="external_camera" default="false"/>
+
+    <node pkg="thorp_perception" type="object_detection_server" name="object_detection_server" output="screen" respawn="true">
+      <param name="ork_execute_timeout" value="5.0"/>
+      <param name="recognize_objs_calls" value="5"/>
+
+      <remap from="rgb_image" to="xtion/rgb/image_raw"/>
+    </node>
+
+    <node pkg="object_recognition_ros" type="object_information_server" name="object_information_server" output="screen" respawn="true"/>
 
     <include if="$(arg external_camera)" file="$(find thorp_perception)/launch/includes/obj_rec.launch.xml" ns="tabletop">
       <arg name="as_server"    value="true"/>
@@ -56,10 +51,64 @@
 
   <!--  ************ RAIL Object Detection ************  -->
   <group if="$(eval pipeline == 'RAIL')">
+    <node pkg="thorp_perception" type="rail_object_detection_server" name="object_detection_server" output="screen" respawn="true">
+  <!--
+      <param name="ork_execute_timeout" value="5.0"/>
+      <param name="recognize_objs_calls" value="5"/>
+
+      <remap from="rgb_image" to="xtion/rgb/image_raw"/>
+  -->
+    </node>
+
     <node pkg="rail_segmentation" type="rail_segmentation" name="rail_segmentation" output="screen" respawn="true">
       <rosparam command="load" file="$(find thorp_perception)/config/rail/segmentation.yaml" subst_value="True">
         $(find thorp_perception)
       </rosparam>
     </node>
+
+    <!-- gives static world tf of initial estimate for reference
+    <node pkg="tf" type="static_transform_publisher" name="base_link_broadcaster" args="$(arg initial_estimate) map initial_estimate 10" />-->
+
+    <include file="$(find thorp_perception)/launch/includes/template_matcher.launch.xml">
+      <arg name="object"  value="circle"/>
+    </include>
+    <include file="$(find thorp_perception)/launch/includes/template_matcher.launch.xml">
+      <arg name="object"  value="clover"/>
+    </include>
+    <include file="$(find thorp_perception)/launch/includes/template_matcher.launch.xml">
+      <arg name="object"  value="cross"/>
+    </include>
+    <include file="$(find thorp_perception)/launch/includes/template_matcher.launch.xml">
+      <arg name="object"  value="cube"/>
+    </include>
+    <include file="$(find thorp_perception)/launch/includes/template_matcher.launch.xml">
+      <arg name="object"  value="diamond"/>
+    </include>
+    <include file="$(find thorp_perception)/launch/includes/template_matcher.launch.xml">
+      <arg name="object"  value="pentagon"/>
+    </include>
+    <include file="$(find thorp_perception)/launch/includes/template_matcher.launch.xml">
+      <arg name="object"  value="rectangle"/>
+    </include>
+    <include file="$(find thorp_perception)/launch/includes/template_matcher.launch.xml">
+      <arg name="object"  value="square"/>
+    </include>
+    <include file="$(find thorp_perception)/launch/includes/template_matcher.launch.xml">
+      <arg name="object"  value="star"/>
+    </include>
+    <include file="$(find thorp_perception)/launch/includes/template_matcher.launch.xml">
+      <arg name="object"  value="tower"/>
+    </include>
+    <include file="$(find thorp_perception)/launch/includes/template_matcher.launch.xml">
+      <arg name="object"  value="triangle"/>
+    </include>
+
+    <!-- launch icp_matcher
+    <node pkg="rail_mesh_icp" type="icp_matcher_node" name="icp_matcher_node" output="screen" respawn="true">
+      <param name="max_dist"            value="0.01"/>
+      <param name="num_iterations"      value="1000000"/>
+      <param name="translation_epsilon" value="0.0000000000001"/>
+      <param name="model_fit_epsilon"   value="0.0000000000001"/>
+    </node>-->
   </group>
 </launch>

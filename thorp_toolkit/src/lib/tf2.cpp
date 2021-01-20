@@ -115,11 +115,29 @@ void tf2pose(const tf::Transform& tf, geometry_msgs::Pose& pose)
   tf::quaternionTFToMsg(tf.getRotation(), pose.orientation);
 }
 
+void tf2pose(const geometry_msgs::Transform& tf, geometry_msgs::Pose& pose)
+{
+  pose.position.x = tf.translation.x;
+  pose.position.y = tf.translation.y;
+  pose.position.z = tf.translation.z;
+  pose.orientation = tf.rotation;
+}
+
 void tf2pose(const tf::StampedTransform& tf, geometry_msgs::PoseStamped& pose)
 {
   pose.header.stamp    = tf.stamp_;
   pose.header.frame_id = tf.frame_id_;
   tf2pose(tf, pose.pose);
+}
+
+void tf2pose(const geometry_msgs::TransformStamped& tf, geometry_msgs::PoseStamped& pose)
+{
+  pose.header.stamp    = tf.header.stamp;
+  pose.header.frame_id = tf.header.frame_id;
+  pose.pose.position.x = tf.transform.translation.x;
+  pose.pose.position.y = tf.transform.translation.y;
+  pose.pose.position.z = tf.transform.translation.z;
+  pose.pose.orientation = tf.transform.rotation;
 }
 
 void pose2tf(const geometry_msgs::Pose& pose, tf::Transform& tf)

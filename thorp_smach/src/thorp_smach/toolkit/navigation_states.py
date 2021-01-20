@@ -21,7 +21,7 @@ Reconfigure().load_named_configs()  # load named configurations from the default
 
 
 class GetRobotPose(smach.State):
-    """ Add current robot pose to userdata """
+    """ Add current robot pose to ud """
 
     def __init__(self):
         super(GetRobotPose, self).__init__(outcomes=['succeeded', 'aborted'],
@@ -37,7 +37,7 @@ class GetRobotPose(smach.State):
 
 
 class PoseAsPath(smach.State):
-    """ Add a path to the userdata containing just the input pose """
+    """ Add a path to the ud containing just the input pose """
     def __init__(self):
         super(PoseAsPath, self).__init__(outcomes=['succeeded'],
                                          input_keys=['pose'],
@@ -49,7 +49,7 @@ class PoseAsPath(smach.State):
 
 
 class PosesAsPath(smach.State):
-    """ Add a path to the userdata containing the list of input poses """
+    """ Add a path to the ud containing the list of input poses """
 
     def __init__(self):
         super(PosesAsPath, self).__init__(outcomes=['succeeded'],

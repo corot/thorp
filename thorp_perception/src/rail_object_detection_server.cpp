@@ -2,15 +2,12 @@
  * Author: Jorge Santos
  */
 
+#include <omp.h>
 #include <ros/ros.h>
 
 // input: RAIL segmentation and object recognition
 #include <rail_manipulation_msgs/SegmentObjects.h>
-
-// output: ORK's tabletop object recognition
-#include <object_recognition_msgs/TableArray.h>
-#include <object_recognition_msgs/RecognizedObjectArray.h>
-#include <object_recognition_msgs/GetObjectInformation.h>
+#include <rail_mesh_icp/TemplateMatch.h>
 
 // action server: make things easier for interactive manipulation
 #include <actionlib/server/simple_action_server.h>
@@ -21,9 +18,14 @@
 #include <moveit_msgs/PlanningScene.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 
+// auxiliary libraries
+#include <thorp_toolkit/tf2.hpp>
+#include <thorp_toolkit/geometry.hpp>
+namespace ttk = thorp_toolkit;
+
 // local includes for utility classes
-#include "thorp_perception/object_detection_bin.hpp"
-#include "thorp_perception/object_detection_table.hpp"
+//#include "thorp_perception/object_detection_bin.hpp"
+//#include "thorp_perception/object_detection_table.hpp"
 
 
 namespace thorp_perception
@@ -33,8 +35,20 @@ class ObjectDetectionServer
 {
 private:
 
+  std::vector<std::string> obj_types_ = {"tower",
+                                         "cube",
+                                         "square",
+                                         "rectangle",
+                                         "triangle",
+                                         "pentagon",
+                                         "circle",
+                                         "star",
+                                         "diamond",
+                                         "cross",
+                                         "clover"};
   // Action client for the ORK object recognition and server
-  ros::ServiceClient rail_srv_;
+  ros::ServiceClient segment_srv_;
+  std::map<std::string, ros::ServiceClient> match_srvs_;
 
   // Action server to handle it conveniently for our object manipulation demo
   actionlib::SimpleActionServer<thorp_msgs::DetectObjectsAction> od_as_;
@@ -50,13 +64,14 @@ private:
   std::string output_frame_;
 
   // Object detection and classification parameters
-  double ork_execute_timeout_;
-  double ork_preempt_timeout_;
-  int    recognize_objs_calls_;
+  double max_matching_error_;
+//  double ork_execute_timeout_;
+//  double ork_preempt_timeout_;
+//  int    recognize_objs_calls_;
 
-  std::unique_ptr<ObjectDetectionBins>  objs_detection_;
-  std::unique_ptr<ObjectDetectionTable> table_detection_;
-  std::shared_ptr<ObjectDetectionColor> color_detection_;
+//  std::unique_ptr<ObjectDetectionBins>  objs_detection_;
+//  std::unique_ptr<ObjectDetectionTable> table_detection_;
+//  std::shared_ptr<ObjectDetectionColor> color_detection_;
 
 public:
 
@@ -69,21 +84,36 @@ public:
     ros::NodeHandle pnh("~");
 //    pnh.param("ork_execute_timeout",  ork_execute_timeout_,  5.0);
 //    pnh.param("ork_preempt_timeout",  ork_preempt_timeout_,  1.0);
-    pnh.param("recognize_objs_calls", recognize_objs_calls_, 1);
+//    pnh.param("recognize_objs_calls", recognize_objs_calls_, 1);
+    pnh.param("max_matching_error", max_matching_error_, 1e-4);
 
-    rail_srv_ = nh.serviceClient<rail_manipulation_msgs::SegmentObjects>("rail_segmentation/segment_objects");
+    segment_srv_ = nh.serviceClient<rail_manipulation_msgs::SegmentObjects>("rail_segmentation/segment_objects");
     ROS_INFO("[object detection] Waiting for rail_segmentation/segment_objects service to start...");
-    if (! rail_srv_.waitForExistence(ros::Duration(60.0)))
+    if (! segment_srv_.waitForExistence(ros::Duration(60.0)))
     {
       ROS_ERROR("[object detection] rail_segmentation/segment_objects service not available after 1 minute");
       ROS_ERROR("[object detection] Shutting down node...");
       throw;
     }
-
     ROS_INFO("[object detection] rail_segmentation/segment_objects service started; ready for sending goals.");
 
+    for (const auto& obj_type: obj_types_)
+    {
+      std::ostringstream ss; ss << "template_matcher_" << obj_type << "/match_template";
+      std::string service_name = ss.str();
+      match_srvs_[obj_type] = nh.serviceClient<rail_mesh_icp::TemplateMatch>(service_name);
+      ROS_INFO_STREAM("[object detection] Waiting for " << service_name << " service to start...");
+      if (!match_srvs_[obj_type].waitForExistence(ros::Duration(60.0)))
+      {
+        ROS_ERROR_STREAM("[object detection] " << service_name << " service not available after 1 minute");
+        ROS_ERROR_STREAM("[object detection] Shutting down node...");
+        throw;
+      }
+      ROS_INFO_STREAM("[object detection] " << service_name << " service started; ready for sending goals.");
+    }
+
     // Register feedback callback for our server; executeCB is run on a separated thread, so it can be cancelled
-    od_as_.registerPreemptCallback(boost::bind(&ObjectDetectionServer::preemptCB, this));
+    od_as_.registerPreemptCallback(boost::bind(&ObjectDetectionServer::preemptCB, this)); //TODO   seguro q no va,,,,
     od_as_.start();
 
     // Publish empty objects and table to clear ORK RViz visualizations
@@ -92,42 +122,49 @@ public:
 //    clear_table_pub_ =
 //        nh.advertise<object_recognition_msgs::TableArray>("/tabletop/table_array", 1, true);
 
-    color_detection_ = std::make_shared<ObjectDetectionColor>(nh);
-    objs_detection_.reset(new ObjectDetectionBins(color_detection_));
-    table_detection_.reset(new ObjectDetectionTable());
+//    color_detection_ = std::make_shared<ObjectDetectionColor>(nh);
+//    objs_detection_.reset(new ObjectDetectionBins(color_detection_));
+//    table_detection_.reset(new ObjectDetectionTable());
   }
 
   void executeCB(const thorp_msgs::DetectObjectsGoal::ConstPtr& goal)
   {
     ROS_INFO("[object detection] Received goal!");
+    thorp_msgs::DetectObjectsResult result;
 
     // Clear results from previous goals
     planning_scene_interface_.removeCollisionObjects(planning_scene_interface_.getKnownObjectNames());
-    table_detection_->clear();
-    objs_detection_->clear();
+//    table_detection_->clear();
+//    objs_detection_->clear();
 
     output_frame_ = goal->output_frame;
-    table_detection_->setOutputFrame(output_frame_);
+//    table_detection_->setOutputFrame(output_frame_);
 
     // Call ORK tabletop action server and wait for the action to return
     // We do it CALLS_TO_TABLETOP times and accumulate the results on bins to provide more reliable results
-    ROS_INFO("[object detection] Calling rail_segmentation/segment_objects service for %d times...",
-             recognize_objs_calls_);
+    ROS_INFO("[object detection] Calling rail_segmentation/segment_objects service...");
 //    for (int i = 0; i < recognize_objs_calls_; ++i)
 //    {
 ///      ros::spinOnce();  // keep spinning so table messages callbacks are processed
 
       rail_manipulation_msgs::SegmentObjects srv;
-      rail_manipulation_msgs::SegmentedObjectList segmented_objects;
-      if (rail_srv_.call(srv))
+      if (segment_srv_.call(srv))
       {
         ROS_INFO("[object detection] rail_segmentation/segment_objects service call succeeded");
       }
       else
       {
-        ROS_WARN("[object detection] rail_segmentation/segment_objects service call failed");
+        ROS_ERROR("[object detection] rail_segmentation/segment_objects service call failed");
+        od_as_.setAborted(result, "Segment objects service call failed");
+        return;
       }
 
+      if (srv.response.segmented_objects.objects.empty())
+      {
+        ROS_WARN("[object detection] No surface found");
+        od_as_.setSucceeded(result, "No surface found");
+        return;
+      }
 //      std::vector<object_recognition_msgs::RecognizedObject> rec_objects(srv.response.segmented_objects.objects.size());
 //      for (int i = 0; i < srv.response.segmented_objects.objects.size(); ++i)
 //      {
@@ -149,34 +186,70 @@ public:
 //        string[] object_names
 //        string   support_surf
 //
-      moveit_msgs::PlanningScene ps;
-      ps.is_diff = true;
+    std::vector<moveit_msgs::ObjectColor> obj_colors;
+//    ps.is_diff = true;
 
-      thorp_msgs::DetectObjectsResult result;
-      result.objects.resize(srv.response.segmented_objects.objects.size());
-      result.object_names.resize(srv.response.segmented_objects.objects.size());
-      ps.object_colors.resize(srv.response.segmented_objects.objects.size());
-      // TODO  result.support_surf   = table_co.id;
-      for (int i = 0; i < srv.response.segmented_objects.objects.size(); ++i)
-      {
-        auto& rail_obj = srv.response.segmented_objects.objects[i];
-        result.objects[i].header = srv.response.segmented_objects.header;
-        result.objects[i].id = std::to_string(i + 1);  // TODO rail_obj.name is empty,,,  I need to recognize!!!
-        result.objects[i].operation = moveit_msgs::CollisionObject::ADD;
-        result.objects[i].primitive_poses.resize(1);
-        result.objects[i].primitive_poses.front().position = rail_obj.centroid;  // or center???
-        result.objects[i].primitive_poses.front().orientation = rail_obj.orientation;
-        result.objects[i].primitives.resize(1);
-        result.objects[i].primitives.front().type = shape_msgs::SolidPrimitive::BOX;
-        result.objects[i].primitives.front().dimensions = {rail_obj.width, rail_obj.depth, rail_obj.height};
+//    result.objects.resize(srv.response.segmented_objects.objects.size());
+//    result.object_names.resize(srv.response.segmented_objects.objects.size());
+    obj_colors.resize(srv.response.segmented_objects.objects.size());
 
-        ps.object_colors[i].id = rail_obj.name;  // TODO probably empty
-        ps.object_colors[i].color.r = rail_obj.rgb[0];
-        ps.object_colors[i].color.g = rail_obj.rgb[1];
-        ps.object_colors[i].color.b = rail_obj.rgb[2];
-        ps.object_colors[i].color.a = 1.0;
-        //result.objects[i].mesh_poses =
-        //result.objects[i].meshes =
+    auto& rail_obj = srv.response.segmented_objects.objects.front();
+    result.support_surf.header = srv.response.segmented_objects.header;
+    result.support_surf.id = "table";
+    result.support_surf.operation = moveit_msgs::CollisionObject::ADD;
+    result.support_surf.primitive_poses.resize(1);
+    result.support_surf.primitive_poses.front().position = rail_obj.center;
+    result.support_surf.primitive_poses.front().orientation = rail_obj.orientation;
+    result.support_surf.primitives.resize(1);
+    result.support_surf.primitives.front().type = shape_msgs::SolidPrimitive::BOX;
+    result.support_surf.primitives.front().dimensions = {rail_obj.depth, rail_obj.width, rail_obj.height};
+    ROS_INFO("[object detection] Adding table at %s as a collision object",
+             ttk::point2cstr3D(result.support_surf.primitive_poses[0].position));
+    planning_scene_interface_.addCollisionObjects(std::vector<moveit_msgs::CollisionObject>(1, result.support_surf));
+
+//    moveit_msgs::ObjectColor obj_color;
+    obj_colors[0].id = result.support_surf.id;
+    obj_colors[0].color.r = rail_obj.rgb[0];
+    obj_colors[0].color.g = rail_obj.rgb[1];
+    obj_colors[0].color.b = rail_obj.rgb[2];
+    obj_colors[0].color.a = 1.0;
+//    obj_colors.push_back(oc);
+
+    std::map<std::string, unsigned int> detected;
+
+    for (int i = 1; i < srv.response.segmented_objects.objects.size(); ++i)
+    {
+      rail_obj = srv.response.segmented_objects.objects[i];
+
+      moveit_msgs::CollisionObject co;
+      co.header = srv.response.segmented_objects.header;
+      co.operation = moveit_msgs::CollisionObject::ADD;
+      co.primitive_poses.resize(1);
+//      co.primitive_poses.front().position = rail_obj.center;
+//      co.primitive_poses.front().orientation = rail_obj.orientation;
+      co.primitives.resize(1);
+      co.primitives.front().type = shape_msgs::SolidPrimitive::BOX;
+      if (!identifyObject(rail_obj, co.primitive_poses.front()))
+        continue;
+      bool x_aligned = ttk::xAligned(co.primitive_poses.front());
+      double length = x_aligned ? rail_obj.width : rail_obj.depth;
+      double width = x_aligned ? rail_obj.depth : rail_obj.width;
+      ROS_ERROR_STREAM(""<<rail_obj.name << "   " <<x_aligned << "   " <<length << "   " <<width);
+      co.primitives.front().dimensions = {length, width, rail_obj.height};
+      detected[rail_obj.name] += 1;
+      co.id = rail_obj.name + " " + std::to_string(detected[rail_obj.name]);
+      // matched poses have z = 0; raise the co's primitive to cover the pointcloud
+      co.primitive_poses.front().position.z += rail_obj.height / 2.0;
+      result.objects.push_back(co);
+      result.object_names.push_back(co.id);
+
+      obj_colors[i].id = co.id;
+      obj_colors[i].color.r = rail_obj.rgb[0];
+      obj_colors[i].color.g = rail_obj.rgb[1];
+      obj_colors[i].color.b = rail_obj.rgb[2];
+      obj_colors[i].color.a = 1.0;
+      //result.objects[i].mesh_poses =
+      //result.objects[i].meshes =
 //        result.objects[i].confidence = rail_obj.confidence;
 //        result.objects[i].point_clouds.emplace_back(rail_obj.point_cloud);
 ////        result.objects[i].bounding_mesh =   shape_msgs/Mesh   rail_obj.bounding_volume
@@ -189,7 +262,8 @@ public:
 //        string[] object_names
 //        string   support_surf
 
-        ROS_INFO("[object detection] Objects %s detected %d", rail_obj.name.c_str(), rail_obj.recognized);
+      ROS_INFO("[object detection] Object at %s classified as %s",
+               ttk::pose2cstr2D(co.primitive_poses.front()), rail_obj.name.c_str());
 //
 //        sensor_msgs/Image image                                 # Segmented RGB image
 //        geometry_msgs/Point centroid                            # Centroid of the point cloud
@@ -208,7 +282,7 @@ public:
 //        Grasp[] grasps                                          # List of grasps (if recognized)
 //        visualization_msgs/Marker marker                        # The downsampled visualization of the object
 //        int32[] image_indices                                   # Indices of the segmented points in the 2D image coordinate
-      }
+    }
 
 //      // Classify objects detected in each call to tabletop into bins based on distance to bin's centroid
 //      objs_detection_->addObservations(result->recognized_objects.objects);
@@ -219,14 +293,14 @@ public:
     // Add a detected object per bin to the goal result, if the bin is consistent enough
     // Add a detected object per bin to the goal result and to the planning scene as a collision object
     // Only bins receiving detections on most of the ORK tabletop calls are considered consistent enough
-    if (result.objects.size() > 0)
+    if (!result.objects.empty())
     {
-      planning_scene_interface_.addCollisionObjects(result.objects, ps.object_colors);
+      planning_scene_interface_.addCollisionObjects(result.objects, obj_colors);
 
-      ROS_INFO("[object detection] Succeeded! %d objects detected", result.objects.size());
+      ROS_INFO("[object detection] Succeeded! %lu objects detected", result.objects.size());
 
       // Add also the table as a collision object, so it gets filtered out from MoveIt! octomap
-      addTable(result);
+  ////    addTable(result);
 
 //      // Clear recognized objects and tables from RViz by publishing empty messages, so they don't
 //      // mangle with interactive markers; shoddy... ORK visualizations should have expiration time
@@ -241,7 +315,7 @@ public:
     }
     else
     {
-      ROS_INFO("[object detection] Succeeded, but couldn't find any object");
+      ROS_INFO("[object detection] Succeeded, but couldn't find any object on the support surface");
     }
 
     od_as_.setSucceeded(result);
@@ -253,8 +327,53 @@ public:
   }
 
 private:
+  bool identifyObject(rail_manipulation_msgs::SegmentedObject& obj, geometry_msgs::Pose& pose)
+  {
+    std::map<std::string, double> score;
+    std::map<std::string, geometry_msgs::TransformStamped> poses;
 
-  int addObjects(thorp_msgs::DetectObjectsResult& result)
+    #pragma omp parallel for    // NOLINT
+    for (size_t i = 0; i < obj_types_.size(); ++i)
+    {
+      const auto& obj_type = obj_types_[i];
+      rail_mesh_icp::TemplateMatch srv;
+      srv.request.initial_estimate.translation.x = obj.center.x;
+      srv.request.initial_estimate.translation.y = obj.center.y;
+      srv.request.initial_estimate.translation.z = obj.center.z - obj.height / 2.0; // templates' base is at z = 0
+      srv.request.initial_estimate.rotation = obj.orientation;
+      ///srv.request.initial_estimate.rotation.w = 1;  // RAIL orientation is shit, so just assume objects are front-facing
+      srv.request.target_cloud = obj.point_cloud;
+      if (match_srvs_[obj_type].call(srv))
+      {
+        score[obj_type] = srv.response.match_error;
+        poses[obj_type] = srv.response.template_pose;
+        ROS_INFO_STREAM("[object detection] " << obj_type << " template match service succeeded; score: "
+                        << score[obj_type]);
+      }
+      else
+      {
+        ROS_ERROR_STREAM("[object detection] " << obj_type << " template match service failed");
+        score[obj_type] = 1.0;
+      }
+    }
+
+    const auto& best_match = std::min_element(score.begin(), score.end(),
+                                              [](const auto& l, const auto& r) { return l.second < r.second; });
+    // check if best match is good enough
+    if (best_match->second > max_matching_error_)
+    {
+      ROS_INFO_STREAM("[object detection] Best match (" << best_match->first << ") error above tolerance ("
+                      << best_match->second << " > " << max_matching_error_ << ")");
+      return false;
+    }
+    ROS_INFO_STREAM("[object detection] Best match is " << best_match->first << ", with error " << best_match->second);
+    ttk::tf2pose(poses[best_match->first].transform, pose);
+    obj.name = best_match->first;
+    obj.recognized = true;
+    return true;
+  }
+
+/*  int addObjects(thorp_msgs::DetectObjectsResult& result)
   {
     moveit_msgs::PlanningScene ps;
     ps.is_diff = true;
@@ -288,7 +407,7 @@ private:
     {
       ROS_WARN("[object detection] No near-horizontal table detected!");
     }
-  }
+  }*/
 };
 
 };  // namespace thorp_perception

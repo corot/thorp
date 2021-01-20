@@ -4,7 +4,7 @@ import smach
 
 class UDHasKey(smach.State):
     """
-    Check if our userdata contains a given key. Returns
+    Check if our ud contains a given key. Returns
     - 'true' if present
     - 'false' otherwise
     """
@@ -20,7 +20,7 @@ class UDHasKey(smach.State):
 
 class UDIfKey(smach.State):
     """
-    Check if our userdata contains a given key and its content evaluates to True. Returns
+    Check if our ud contains a given key and its content evaluates to True. Returns
     - 'true' if present and True
     - 'false' otherwise
     """
@@ -36,7 +36,7 @@ class UDIfKey(smach.State):
 
 class UDSetToNone(smach.State):
     """
-    Set a userdata key to None, if it exists. Returns
+    Set a ud key to None, if it exists. Returns
     - 'succeeded' if the key exists
     - 'aborted' otherwise
     """
@@ -58,7 +58,7 @@ class UDSetToNone(smach.State):
 class UDInsertInList(smach.State):
     """
     Insert an element in a list at a given position.
-    Both 'list' and 'element' are provided as userdata keys. Returns
+    Both 'list' and 'element' are provided as ud keys. Returns
     - 'succeeded' if succeeded
     - 'aborted' otherwise
     """

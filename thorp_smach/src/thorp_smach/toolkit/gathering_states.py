@@ -12,7 +12,7 @@ from thorp_toolkit.transform import Transform
 from thorp_toolkit.visualization import Visualization
 
 from common_states import DismissNamedConfig
-from perception_states import MonitorTables, BlockDetection, ObjectsDetected
+from perception_states import ObjectDetectionRAIL, BlockDetection, ObjectsDetected
 from navigation_states import GetRobotPose, GoToPose, AlignToTable, DetachFromTable
 from pick_objects_states import PickReachableObjs
 
@@ -284,7 +284,7 @@ def GatherObjects():
     with make_pick_plan_sm:
         smach.StateMachine.add('GET_ROBOT_POSE', GetRobotPose(),
                                transitions={'succeeded': 'DETECT_TABLES'})
-        smach.StateMachine.add('DETECT_TABLES', MonitorTables(2),  # re-detect when nearby for more precision
+        smach.StateMachine.add('DETECT_TABLES', ObjectDetectionRAIL(2),  # re-detect when nearby for more precision
                                transitions={'succeeded': 'CALC_PICK_POSES',  # (or fail if cannot see again)
                                             'aborted': 'aborted'})
         smach.StateMachine.add('CALC_PICK_POSES', CalcPickPoses(cfg.PICKING_DIST_TO_TABLE),
