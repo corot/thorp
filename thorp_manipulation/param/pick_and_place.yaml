@@ -5,3 +5,4 @@ fall_short_distance_delta: 0.015     # Increment distance... no justification, r
                                      # just put the target in the center of the gripper!
 gripper_asymmetry_yaw_delta: 0.1     # Increment the yaw to compensate that only the right finger
                                      # opens, and so there's more grasping room on the right
+gripper_tightening_closing: 0.004    # additional gripper closing to tighten grasped objects

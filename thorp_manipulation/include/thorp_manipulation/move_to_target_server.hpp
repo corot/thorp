@@ -28,7 +28,7 @@ private:
   std::string action_name_;
 
 public:
-  MoveToTargetServer(const std::string name);
+  explicit MoveToTargetServer(const std::string& name);
   ~MoveToTargetServer();
 
   void executeCB(const thorp_msgs::MoveToTargetGoal::ConstPtr& goal);

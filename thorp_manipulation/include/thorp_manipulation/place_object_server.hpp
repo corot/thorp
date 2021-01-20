@@ -23,7 +23,7 @@ private:
   const int PLACE_ATTEMPTS = 5;
 
 public:
-  PlaceObjectServer(const std::string& name);
+  explicit PlaceObjectServer(const std::string& name);
   ~PlaceObjectServer();
 
   void executeCB(const thorp_msgs::PlaceObjectGoal::ConstPtr& goal);

@@ -23,7 +23,7 @@ private:
   const int PICK_ATTEMPTS = 5;
 
 public:
-  PickupObjectServer(const std::string& name);
+  explicit PickupObjectServer(const std::string& name);
   ~PickupObjectServer();
 
   void executeCB(const thorp_msgs::PickupObjectGoal::ConstPtr& goal);
@@ -36,7 +36,9 @@ private:
                      const std::string& target_name, const std::string& surface, float max_effort,
                      std::vector<moveit_msgs::Grasp>& grasps);
 
-  double gripperClosing(const geometry_msgs::PoseStamped& target_pose, const geometry_msgs::Vector3& target_size);
+  double gripperClosing(const geometry_msgs::PoseStamped& grasp_pose,
+                        const geometry_msgs::PoseStamped& obj_pose,
+                        const geometry_msgs::Vector3& obj_size);
 };
 
 };

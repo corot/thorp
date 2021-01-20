@@ -15,7 +15,7 @@ namespace thorp_manipulation
 {
 
 
-MoveToTargetServer::MoveToTargetServer(const std::string name) :
+MoveToTargetServer::MoveToTargetServer(const std::string& name) :
     action_name_(name), as_(name, boost::bind(&MoveToTargetServer::executeCB, this, _1), false)
 {
   // Register feedback callback for our server; executeCB is run on a separated thread, so it can be cancelled

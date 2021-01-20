@@ -139,16 +139,13 @@ int32_t PlaceObjectServer::makePlaceLocations(const geometry_msgs::PoseStamped& 
                                               std::vector<moveit_msgs::PlaceLocation>& place_locations)
 {
   // Try up to PLACE_ATTEMPTS place locations with slightly different poses
-
   // target pose is expected to be the center of the object once placed in the support surface
-  geometry_msgs::PoseStamped place_pose = target_pose;
-  place_pose.pose.position.z += obj_size.z / 2.0;  // gripper pose is at the top of the object, so we must add z/2
-
   for (int attempt = 0; attempt < PLACE_ATTEMPTS; ++attempt)
   {
     moveit_msgs::PlaceLocation l;
-    l.place_pose = place_pose;
-    if (!validateTargetPose(l.place_pose, false, true, false, attempt))
+    l.place_pose = target_pose;
+    l.place_pose.pose.position.z += obj_size.z / 2.0;  // gripper pose is at the top of the object, so we must add z/2
+    if (!validateTargetPose(l.place_pose, true, true, true, attempt))
       return thorp_msgs::ThorpError::INVALID_TARGET_POSE;
 
     // MoveGroup::place will transform the provided place pose with the attached body pose, so the object retains
@@ -184,7 +181,7 @@ int32_t PlaceObjectServer::makePlaceLocations(const geometry_msgs::PoseStamped& 
 
     place_locations.push_back(l);
 
-    ROS_DEBUG("[place object] Place attempt %d at pose [%s]...", attempt, ttk::pose2cstr3D(place_pose));
+    ROS_DEBUG("[place object] Place attempt %d at pose [%s]...", attempt, ttk::pose2cstr3D(l.place_pose));
   }
 
   return place_locations.size();
