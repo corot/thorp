@@ -5,11 +5,10 @@ import smach
 import smach_ros
 
 from thorp_toolkit.geometry import TF2
-from thorp_toolkit.reconfigure import Reconfigure
 
 from toolkit.common_states import wait_for_sim_time, wait_for_mbf
 from toolkit.navigation_states import GetRobotPose, LookToPose
-from toolkit.perception_states import ObjectDetectionRAIL, TableMarkVisited, TableWasVisited
+from toolkit.perception_states import MonitorTables, TableMarkVisited, TableWasVisited
 from toolkit.exploration_states import ExploreHouse
 from toolkit.gathering_states import GatherObjects
 
@@ -25,7 +24,7 @@ def object_gatherer_sm():
     detect_tables_sm = smach.StateMachine(outcomes=['succeeded', 'aborted', 'preempted'],
                                           output_keys=['table', 'table_pose'])
     with detect_tables_sm:
-        smach.StateMachine.add('DETECT_TABLES', ObjectDetectionRAIL(),
+        smach.StateMachine.add('DETECT_TABLES', MonitorTables(),
                                transitions={'succeeded': 'VISITED_TABLE?',
                                             'aborted': 'aborted',
                                             'preempted': 'preempted'})
@@ -74,7 +73,7 @@ def object_gatherer_sm():
         smach.Sequence.add('GET_ROBOT_POSE', GetRobotPose())
         smach.Sequence.add('TURN_TO_TABLE', LookToPose(),
                            remapping={'target_pose': 'table_pose'})
-        smach.Sequence.add('CONFIRM_TABLE', ObjectDetectionRAIL(2))  # 2s timeout
+        smach.Sequence.add('CONFIRM_TABLE', MonitorTables(2.0))  # 2s timeout
         smach.Sequence.add('MARK_VISITED', TableMarkVisited())
 
     # Full SM: explore the house and gather objects from all detected tables

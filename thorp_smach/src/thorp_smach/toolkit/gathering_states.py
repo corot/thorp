@@ -12,7 +12,7 @@ from thorp_toolkit.transform import Transform
 from thorp_toolkit.visualization import Visualization
 
 from common_states import DismissNamedConfig
-from perception_states import ObjectDetectionRAIL, BlockDetection, ObjectsDetected
+from perception_states import MonitorTables, ObjectDetection, ObjectsDetected
 from navigation_states import GetRobotPose, GoToPose, AlignToTable, DetachFromTable
 from pick_objects_states import PickReachableObjs
 
@@ -56,7 +56,8 @@ class CalcPickPoses(smach.State):
         picking_poses = {}
         for name, pose in poses:
             pose = transform_pose(pose, table_tf)
-            pose_array.poses.append(pose.pose)
+            pose_array.poses.append(deepcopy(pose.pose))
+            pose_array.poses[-1].position.z += 0.025  # raise over costmap to make it visible
             picking_poses[name] = pose
             dist = distance_2d(pose, ud['robot_pose'])
             if dist < closest_dist:
@@ -66,7 +67,7 @@ class CalcPickPoses(smach.State):
         ud['closest_picking_pose'] = closest_pose
         pose_array.header = deepcopy(closest_pose.header)
         pose_array.poses.append(deepcopy(closest_pose.pose))
-        pose_array.poses[-1].position.z += 0.025  # mark the closest pose
+        pose_array.poses[-1].position.z += 0.05  # remark the closest pose with a double arrow
         self.poses_viz.publish(pose_array)
         return 'succeeded'
 
@@ -105,29 +106,31 @@ class GroupObjects(smach.State):
         smach.State.__init__(self, outcomes=['succeeded', 'no_reachable_objs'],
                              input_keys=['objects', 'robot_pose', 'picking_poses'],
                              output_keys=['picking_locs'])
-        self.manip_frame = rospy.get_param('~manipulation_frame', 'arm_base_link')
+        self.manip_frame = rospy.get_param('~rec_objects_frame', 'arm_base_link')
 
     def execute(self, ud):
         bfp_to_arm_tf = Transform.create(TF2().lookup_transform('base_footprint', self.manip_frame))  # base to arm tf
         map_to_arm_tf = Transform.create(TF2().lookup_transform('map', self.manip_frame))  # map to arm tf
+        map_to_fbp_tf = Transform.create(TF2().lookup_transform('map', 'base_footprint'))  # map to arm tf
         pick_locs = []
         for name, pose in ud['picking_poses'].items():
             # current distance from the robot; not used by now
             dist_from_robot = distance_2d(pose, ud['robot_pose'])
             # apply base to arm tf, so we get arm pose on map reference for each location
-            map_to_bfp_tf = Transform.create(pose)
-            arm_pose_mrf = (map_to_bfp_tf * bfp_to_arm_tf).to_geometry_msg_pose_stamped()
+            # map_to_bfp_tf = Transform.create(pose)
+            arm_pose_mrf = (Transform.create(pose) * bfp_to_arm_tf).to_geometry_msg_pose_stamped()
             # detected objects poses are in arm reference, so their modulo is the distance to the arm
             objs = []
-            for i, obj_pose in enumerate(ud['objects'].poses):
+            for i, obj in enumerate(ud['objects']):
+                obj_pose = obj.primitive_poses[0]
                 # transform object pose from arm to map frame, so we can compare distances to picking locations
                 # we must limit max arm reach with our navigation tolerance when reaching the goal, as that will
                 # be our probable picking pose, instead of the ideal one received as input
-                arm_to_obj_tf = Transform.create(obj_pose)
-                obj_pose_mrf = (map_to_arm_tf * arm_to_obj_tf).to_geometry_msg_pose_stamped()
+                ##arm_to_obj_tf = Transform.create(obj_pose)
+                obj_pose_mrf = (map_to_fbp_tf * Transform.create(obj_pose)).to_geometry_msg_pose_stamped()
                 dist = distance_2d(obj_pose_mrf, arm_pose_mrf)  # both on map rf
                 if dist <= cfg.MAX_ARM_REACH - cfg.TIGHT_DIST_TOLERANCE:
-                    objs.append(Object(dist, 'block' + str(i + 1), obj_pose))
+                    objs.append(Object(dist, obj.id, obj_pose))
             if not objs:
                 continue  # no objects reachable from here; keep going
             # sort objects by increasing distance from the arm; that should make picking easier,
@@ -284,24 +287,21 @@ def GatherObjects():
     with make_pick_plan_sm:
         smach.StateMachine.add('GET_ROBOT_POSE', GetRobotPose(),
                                transitions={'succeeded': 'DETECT_TABLES'})
-        smach.StateMachine.add('DETECT_TABLES', ObjectDetectionRAIL(2),  # re-detect when nearby for more precision
+        smach.StateMachine.add('DETECT_TABLES', MonitorTables(2.0),  # re-detect when nearby for more precision
                                transitions={'succeeded': 'CALC_PICK_POSES',  # (or fail if cannot see again)
                                             'aborted': 'aborted'})
         smach.StateMachine.add('CALC_PICK_POSES', CalcPickPoses(cfg.PICKING_DIST_TO_TABLE),
                                transitions={'succeeded': 'DETECT_OBJECTS',
                                             'no_valid_table': 'aborted'})
-        smach.StateMachine.add('DETECT_OBJECTS', BlockDetection(),
+        smach.StateMachine.add('DETECT_OBJECTS', ObjectDetection(),
                                transitions={'succeeded': 'OBJECTS_FOUND?',
                                             'aborted': 'aborted',
-                                            'preempted': 'preempted'},
-                               remapping={'blocks': 'detected_objects'})
+                                            'preempted': 'preempted'})
         smach.StateMachine.add('OBJECTS_FOUND?', ObjectsDetected(),
                                transitions={'true': 'GROUP_OBJECTS',
-                                            'false': 'no_reachable_objs'},
-                               remapping={'objects': 'detected_objects'})
+                                            'false': 'no_reachable_objs'})
         smach.StateMachine.add('GROUP_OBJECTS', GroupObjects(),
-                               transitions={'succeeded': 'MAKE_PICKING_PLAN'},
-                               remapping={'objects': 'detected_objects'})
+                               transitions={'succeeded': 'MAKE_PICKING_PLAN'})
         smach.StateMachine.add('MAKE_PICKING_PLAN', MakePickingPlan())
 
     # go to a picking location and pick all objects reachable from there
@@ -354,15 +354,13 @@ def GatherObjects():
                                             'aborted': 'STANDARD_CTRL',     # restore original configuration on error
                                             'preempted': 'preempted',
                                             'tray_full': 'tray_full'})
-        smach.StateMachine.add('DETECT_OBJECTS', BlockDetection(),
+        smach.StateMachine.add('DETECT_OBJECTS', ObjectDetection(),
                                transitions={'succeeded': 'OBJECTS_LEFT',
                                             'aborted': 'aborted',
-                                            'preempted': 'preempted'},
-                               remapping={'blocks': 'detected_objects'})
+                                            'preempted': 'preempted'})
         smach.StateMachine.add('OBJECTS_LEFT', ObjectsDetected(),
                                transitions={'true': 'APPROACH_TABLE',   # at least one object left; restart picking
-                                            'false': 'succeeded'},      # otherwise we are done
-                               remapping={'objects': 'detected_objects'})
+                                            'false': 'succeeded'})      # otherwise we are done
         smach.StateMachine.add('STANDARD_CTRL', DismissNamedConfig('precise_controlling'),
                                transitions={'succeeded': 'aborted',
                                             'aborted': 'aborted'})

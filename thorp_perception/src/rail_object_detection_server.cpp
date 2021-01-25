@@ -191,7 +191,7 @@ public:
 
 //    result.objects.resize(srv.response.segmented_objects.objects.size());
 //    result.object_names.resize(srv.response.segmented_objects.objects.size());
-    obj_colors.resize(srv.response.segmented_objects.objects.size());
+//    obj_colors.resize(srv.response.segmented_objects.objects.size());
 
     auto& rail_obj = srv.response.segmented_objects.objects.front();
     result.support_surf.header = srv.response.segmented_objects.header;
@@ -207,13 +207,13 @@ public:
              ttk::point2cstr3D(result.support_surf.primitive_poses[0].position));
     planning_scene_interface_.addCollisionObjects(std::vector<moveit_msgs::CollisionObject>(1, result.support_surf));
 
-//    moveit_msgs::ObjectColor obj_color;
-    obj_colors[0].id = result.support_surf.id;
-    obj_colors[0].color.r = rail_obj.rgb[0];
-    obj_colors[0].color.g = rail_obj.rgb[1];
-    obj_colors[0].color.b = rail_obj.rgb[2];
-    obj_colors[0].color.a = 1.0;
-//    obj_colors.push_back(oc);
+    moveit_msgs::ObjectColor obj_color;
+    obj_color.id = result.support_surf.id;
+    obj_color.color.r = rail_obj.rgb[0];
+    obj_color.color.g = rail_obj.rgb[1];
+    obj_color.color.b = rail_obj.rgb[2];
+    obj_color.color.a = 1.0;
+    obj_colors.push_back(obj_color);
 
     std::map<std::string, unsigned int> detected;
 
@@ -243,11 +243,12 @@ public:
       result.objects.push_back(co);
       result.object_names.push_back(co.id);
 
-      obj_colors[i].id = co.id;
-      obj_colors[i].color.r = rail_obj.rgb[0];
-      obj_colors[i].color.g = rail_obj.rgb[1];
-      obj_colors[i].color.b = rail_obj.rgb[2];
-      obj_colors[i].color.a = 1.0;
+      obj_color.id = co.id;
+      obj_color.color.r = rail_obj.rgb[0];
+      obj_color.color.g = rail_obj.rgb[1];
+      obj_color.color.b = rail_obj.rgb[2];
+      obj_color.color.a = 1.0;
+      obj_colors.push_back(obj_color);
       //result.objects[i].mesh_poses =
       //result.objects[i].meshes =
 //        result.objects[i].confidence = rail_obj.confidence;
@@ -345,14 +346,16 @@ private:
       srv.request.target_cloud = obj.point_cloud;
       if (match_srvs_[obj_type].call(srv))
       {
+        ROS_INFO_STREAM("[object detection] " << obj_type << " template match service succeeded; score: "
+                                              << score[obj_type]);
+        #pragma omp critical
         score[obj_type] = srv.response.match_error;
         poses[obj_type] = srv.response.template_pose;
-        ROS_INFO_STREAM("[object detection] " << obj_type << " template match service succeeded; score: "
-                        << score[obj_type]);
       }
       else
       {
         ROS_ERROR_STREAM("[object detection] " << obj_type << " template match service failed");
+        #pragma omp critical
         score[obj_type] = 1.0;
       }
     }

@@ -8,7 +8,6 @@ import geometry_msgs.msg as geo_msgs
 
 from turtlebot_arm_block_manipulation.msg import BlockDetectionAction
 import cob_perception_msgs.msg as cob_msgs
-import rail_manipulation_msgs.msg as rail_msgs
 from rail_manipulation_msgs.srv import SegmentObjects
 from rail_mesh_icp.srv import TemplateMatch
 
@@ -17,7 +16,7 @@ from thorp_toolkit.geometry import pose2d2str, TF2                   ,yaw,to_tra
 from manipulation_states import FoldArm, ClearOctomap
 
 
-def ObjectDetection():
+def ObjectDetectionSM():
     """  Object detection sub state machine; iterates over object_detection action state and recovery
          mechanism until an object is detected, it's preempted or there's an error (aborted outcome) """
 
@@ -81,7 +80,8 @@ def ObjectDetection():
 class BlockDetection(smach_ros.SimpleActionState):
     """
     Block detection state:
-    use turtlebot_arm_block_manipulation demo's simple block detector until I have a proper object detection
+    use turtlebot_arm_block_manipulation demo's simple block detector
+    Deprecated: we prefer the more advance object detection
     """
 
     def __init__(self):
@@ -103,6 +103,25 @@ class BlockDetection(smach_ros.SimpleActionState):
         # the real ObjectDetection state will provide more detailed information
         ud['object_names'] = ['block' + str(i) for i in range(1, len(result.blocks.poses) + 1)]
         ud['support_surf'] = 'table'
+
+
+class ObjectDetection(smach_ros.SimpleActionState):
+    """
+    Object detection state:
+    Tries to segmentate a support surface and classify the tabletop objects. Returns the objects as
+    a list of moveit_msgs/CollisionObject msgs, the object names and the name of the support surface.
+    """
+
+    def __init__(self):
+        super(ObjectDetection, self).__init__('object_detection',
+                                              thorp_msgs.DetectObjectsAction,
+                                              result_slots=['objects'],
+                                              result_cb=self.result_cb,
+                                              output_keys=['object_names', 'support_surf'])
+
+    def result_cb(self, ud, status, result):
+        ud['object_names'] = [co.id for co in result.objects]
+        ud['support_surf'] = result.support_surf.id  # only interested in the co name (TODO cannot access subfields on ud?)
 
 
 class ObjectsDetected(smach.State):
@@ -169,7 +188,6 @@ class TableWasVisited(smach.State):
     def execute(self, ud):
         intersecting_objs = SemanticMap().objects_at(ud['table_pose'], (ud['table'].depth, ud['table'].width))
         outcome = 'true' if len(intersecting_objs) > 0 else 'false'
-        print "TABLE VISITED???   ", outcome
         return outcome
 
 
@@ -195,32 +213,25 @@ class MonitorTables(smach.State):
     """
 
     def __init__(self, timeout=0.0):
-        super(ObjectDetectionRAIL, self).__init__(outcomes=['succeeded', 'preempted', 'aborted'],
-                                                  output_keys=['table', 'table_pose'])
+        super(MonitorTables, self).__init__(outcomes=['succeeded', 'preempted', 'aborted'],
+                                            output_keys=['table', 'table_pose'])
         self.timeout = timeout
         self.segment_srv = rospy.ServiceProxy('rail_segmentation/segment_objects', SegmentObjects)
         self.segment_srv.wait_for_service(30.0)
 
     def execute(self, ud):
         start_time = rospy.get_time()
-        rate = rospy.Rate(1.0)
+        rate = rospy.Rate(2.0)
         while not self.preempt_requested() and not rospy.is_shutdown():
-            segmented_objs = self.segment_srv().segmented_objects.objects
+            segmented_objs = self.segment_srv(only_surface=True).segmented_objects.objects
             if segmented_objs:
                 table = segmented_objs[0]
                 pose = geo_msgs.PoseStamped(table.point_cloud.header,
                                             geo_msgs.Pose(table.center, table.orientation))
                 pose = TF2().transform_pose(pose, pose.header.frame_id, 'map')
-                pose.pose.orientation = quaternion_msg_from_yaw(0)  #  assume tables aligned with x
-                                                        # TODO restore once I fix RAIL to provide propper orientation
                 width, length = table.width, table.depth
                 table_tf = to_transform(pose, 'table_frame')
                 TF2().publish_transform(table_tf)
-                # print table.point_cloud.header
-                # print 'centroid ', table.centroid
-                # print 'center   ', table.center
-                # print 'yaw      ', yaw(table.orientation)
-                # kk=table.marker
                 ud['table'] = table
                 ud['table_pose'] = pose
                 rospy.loginfo("Detected table of size %.1f x %.1f at %s", width, length, pose2d2str(pose))

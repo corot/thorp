@@ -4,10 +4,7 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /RAIL1
         - /RAIL1/Table1/Namespaces1
-        - /Gatherer1
-        - /Gatherer1/Visual markers1/Status1
         - /Manipulation1/Pick/Place Pose1
         - /Manipulation1/Pick/Place Pose2
       Splitter Ratio: 0.5247058868408203
@@ -130,12 +127,22 @@ Visualization Manager:
           Value: false
         caster_front_link:
           Value: false
+        circle:
+          Value: true
         cliff_sensor_front_link:
           Value: false
         cliff_sensor_left_link:
           Value: false
         cliff_sensor_right_link:
           Value: false
+        clover:
+          Value: true
+        cross:
+          Value: true
+        cube:
+          Value: true
+        diamond:
+          Value: true
         gripper_active_finger_link:
           Value: false
         gripper_active_link:
@@ -178,6 +185,8 @@ Visualization Manager:
           Value: false
         opencm_link:
           Value: false
+        pentagon:
+          Value: true
         plate_bottom_link:
           Value: false
         plate_middle_link:
@@ -217,9 +226,9 @@ Visualization Manager:
         pole_middle_11_link:
           Value: false
         pole_middle_16_link:
-          Value: true
+          Value: false
         pole_middle_17_link:
-          Value: true
+          Value: false
         pole_middle_1_link:
           Value: false
         pole_middle_21_link:
@@ -244,6 +253,8 @@ Visualization Manager:
           Value: false
         pole_top_3_link:
           Value: false
+        rectangle:
+          Value: true
         s_0_link:
           Value: false
         s_m18_link:
@@ -270,8 +281,18 @@ Visualization Manager:
           Value: false
         sonars_mount_link:
           Value: false
+        square:
+          Value: true
+        star:
+          Value: true
+        table_frame:
+          Value: true
+        tower:
+          Value: true
         tray_link:
           Value: false
+        triangle:
+          Value: true
         wheel_left_link:
           Value: false
         wheel_right_link:
@@ -288,7 +309,7 @@ Visualization Manager:
           Value: false
         xtion_rgb_optical_frame:
           Value: false
-      Marker Scale: 2
+      Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
@@ -491,6 +512,30 @@ Visualization Manager:
                   {}
                 wheel_right_link:
                   {}
+              circle:
+                {}
+              clover:
+                {}
+              cross:
+                {}
+              cube:
+                {}
+              diamond:
+                {}
+              pentagon:
+                {}
+              rectangle:
+                {}
+              square:
+                {}
+              star:
+                {}
+              tower:
+                {}
+              triangle:
+                {}
+          table_frame:
+            {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -1370,21 +1415,22 @@ Visualization Manager:
     - Class: rviz/Group
       Displays:
         - Class: rviz/Marker
-          Enabled: false
+          Enabled: true
           Marker Topic: /rail_segmentation/table_marker
           Name: Table
           Namespaces:
-            {}
+            "": true
           Queue Size: 100
-          Value: false
+          Value: true
         - Class: rviz/MarkerArray
-          Enabled: false
+          Enabled: true
           Marker Topic: /rail_segmentation/markers
           Name: Segmented Objects
           Namespaces:
-            {}
+            "": true
+            segmentation_labels: true
           Queue Size: 100
-          Value: false
+          Value: true
         - Alpha: 1
           Autocompute Intensity Bounds: true
           Autocompute Value Bounds:
@@ -1439,7 +1485,7 @@ Visualization Manager:
           Color: 255; 255; 255
           Color Transformer: RGB8
           Decay Time: 0
-          Enabled: true
+          Enabled: false
           Invert Rainbow: false
           Max Color: 255; 255; 255
           Max Intensity: 4096
@@ -1456,7 +1502,7 @@ Visualization Manager:
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true
-          Value: true
+          Value: false
         - Alpha: 1
           Autocompute Intensity Bounds: true
           Autocompute Value Bounds:
@@ -1469,7 +1515,7 @@ Visualization Manager:
           Color: 255; 255; 255
           Color Transformer: RGB8
           Decay Time: 0
-          Enabled: true
+          Enabled: false
           Invert Rainbow: false
           Max Color: 255; 255; 255
           Max Intensity: 4096
@@ -1486,7 +1532,7 @@ Visualization Manager:
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true
-          Value: true
+          Value: false
         - Alpha: 1
           Autocompute Intensity Bounds: true
           Autocompute Value Bounds:
@@ -1499,7 +1545,7 @@ Visualization Manager:
           Color: 255; 255; 255
           Color Transformer: RGB8
           Decay Time: 0
-          Enabled: true
+          Enabled: false
           Invert Rainbow: false
           Max Color: 255; 255; 255
           Max Intensity: 4096
@@ -1516,7 +1562,7 @@ Visualization Manager:
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true
-          Value: true
+          Value: false
       Enabled: true
       Name: RAIL
     - Class: rviz/Group
@@ -1593,15 +1639,7 @@ Visualization Manager:
           Value: true
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /smach_object_gatherer/visual_markers
-          Name: Visual markers
-          Namespaces:
-            {}
-          Queue Size: 100
-          Value: true
-        - Class: rviz/MarkerArray
-          Enabled: true
-          Marker Topic: /smach_block_gatherer/visual_markers
+          Marker Topic: /object_gatherer_smach/visual_markers
           Name: Visual markers
           Namespaces:
             {}
@@ -2222,52 +2260,56 @@ Visualization Manager:
           Value: true
       Enabled: true
       Name: Manipulation
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz/PointCloud2
-      Color: 255; 255; 255
-      Color Transformer: ""
-      Decay Time: 0
-      Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 4096
-      Min Color: 0; 0; 0
-      Min Intensity: 0
+    - Class: rviz/Group
+      Displays:
+        - Alpha: 1
+          Autocompute Intensity Bounds: true
+          Autocompute Value Bounds:
+            Max Value: 10
+            Min Value: -10
+            Value: true
+          Axis: Z
+          Channel Name: intensity
+          Class: rviz/PointCloud2
+          Color: 255; 255; 255
+          Color Transformer: ""
+          Decay Time: 0
+          Enabled: true
+          Invert Rainbow: false
+          Max Color: 255; 255; 255
+          Max Intensity: 4096
+          Min Color: 0; 0; 0
+          Min Intensity: 0
+          Name: PC
+          Position Transformer: ""
+          Queue Size: 10
+          Selectable: true
+          Size (Pixels): 3
+          Size (m): 0.009999999776482582
+          Style: Flat Squares
+          Topic: /block_detection_action_server/block_output
+          Unreliable: false
+          Use Fixed Frame: true
+          Use rainbow: true
+          Value: true
+        - Alpha: 1
+          Arrow Length: 0.30000001192092896
+          Axes Length: 0.30000001192092896
+          Axes Radius: 0.009999999776482582
+          Class: rviz/PoseArray
+          Color: 255; 25; 0
+          Enabled: true
+          Head Length: 0.07000000029802322
+          Head Radius: 0.029999999329447746
+          Name: Poses
+          Shaft Length: 0.23000000417232513
+          Shaft Radius: 0.009999999776482582
+          Shape: Arrow (Flat)
+          Topic: /turtlebot_blocks
+          Unreliable: false
+          Value: true
+      Enabled: false
       Name: Blocks
-      Position Transformer: ""
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.009999999776482582
-      Style: Flat Squares
-      Topic: /block_detection_action_server/block_output
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: true
-    - Alpha: 1
-      Arrow Length: 0.30000001192092896
-      Axes Length: 0.30000001192092896
-      Axes Radius: 0.009999999776482582
-      Class: rviz/PoseArray
-      Color: 255; 25; 0
-      Enabled: true
-      Head Length: 0.07000000029802322
-      Head Radius: 0.029999999329447746
-      Name: Blocks
-      Shaft Length: 0.23000000417232513
-      Shaft Radius: 0.009999999776482582
-      Shape: Arrow (Flat)
-      Topic: /turtlebot_blocks
-      Unreliable: false
-      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -2295,25 +2337,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 8.346269607543945
+      Distance: 10.384824752807617
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 9.535750389099121
-        Y: 2.831392765045166
-        Z: -1.430511474609375e-6
+        X: 7.343256950378418
+        Y: 2.219304323196411
+        Z: -2.384185791015625e-6
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.6147966980934143
+      Pitch: 1.1147959232330322
       Target Frame: <Fixed Frame>
       Value: XYOrbit (rviz)
-      Yaw: 3.118544578552246
+      Yaw: 4.758553981781006
     Saved: ~
 Window Geometry:
   Displays:

@@ -9,7 +9,7 @@ import thorp_msgs.msg as thorp_msgs
 import arbotix_msgs.srv as arbotix_srvs
 
 from toolkit.common_states import ExecuteUserCommand
-from toolkit.perception_states import ObjectDetection
+from toolkit.perception_states import ObjectDetectionSM
 from toolkit.manipulation_states import FoldArm, PickupObject, PlaceObject
 
 
@@ -24,8 +24,8 @@ with sm:
     sm.userdata.ucmd_progress = thorp_msgs.UserCommandFeedback()
     sm.userdata.ucmd_outcome = thorp_msgs.UserCommandResult()
     sm.userdata.od_attempt = 0
-    sm.userdata.output_frame = rospy.get_param('~rec_objects_frame', 'map')
-    sm.userdata.max_effort = 0.3  # TODO: can I drop this?
+    sm.userdata.output_frame = rospy.get_param('~rec_objects_frame', 'map')  # ignored by RAIL
+    sm.userdata.max_effort = 0.03
 
     smach.StateMachine.add('EXE_USER_CMD',
                            ExecuteUserCommand(rospy.get_param('object_manip_key_ctrl/valid_commands')),
@@ -37,7 +37,7 @@ with sm:
                                         'invalid_command': 'error'})
 
     smach.StateMachine.add('OBJECT_DETECTION',
-                           ObjectDetection(),
+                           ObjectDetectionSM(),
                            transitions={'succeeded': 'DRAG_AND_DROP',
                                         'preempted': 'preempted',
                                         'aborted': 'error'})

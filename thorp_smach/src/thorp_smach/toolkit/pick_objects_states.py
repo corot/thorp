@@ -3,62 +3,12 @@ from random import randrange
 import rospy
 import smach
 
-from thorp_toolkit.geometry import distance_2d
+from thorp_toolkit.geometry import TF2, distance_2d
 
-from perception_states import BlockDetection
-from manipulation_states import ClearOctomap, ClearGripper, FoldArm, PickupObject, PlaceInTray
+from perception_states import ObjectDetection
+from manipulation_states import ClearGripper, FoldArm, PickupObject, PlaceInTray
 
 import config as cfg
-
-
-def ObjectDetection():
-    """  Object detection sub state machine; iterates over object_detection action state and recovery
-         mechanism until an object is detected, it's preempted or there's an error (aborted outcome) """
-
-    # TODO copy of the perception state but using BlockDetection!  actually, not in use, I think   but would solve the folding to uncover obstacles....  mmmm ...  remove if not used
-    class ObjDetectedCondition(smach.State):
-        """ Check for the object detection result to retry if no objects where detected """
-
-        def __init__(self):
-            smach.State.__init__(self, outcomes=['preempted', 'satisfied', 'fold_arm', 'retry'],
-                                 input_keys=['od_attempt', 'object_names'],
-                                 output_keys=['od_attempt'])
-
-        def execute(self, userdata):
-            if self.preempt_requested():
-                self.service_preempt()
-                return 'preempted'
-            if len(userdata.object_names) > 0:
-                userdata.od_attempt = 0
-                return 'satisfied'
-            userdata.od_attempt += 1
-            if userdata.od_attempt == 1:
-                return 'fold_arm'
-            return 'retry'
-
-    sm = smach.StateMachine(outcomes=['succeeded', 'preempted', 'aborted'],
-                            input_keys=['od_attempt', 'output_frame'],
-                            output_keys=['objects', 'object_names', 'support_surf',     'blocks'])
-
-    with sm:
-        smach.StateMachine.add('CLEAR_OCTOMAP', ClearOctomap(),
-                               transitions={'succeeded': 'OBJECT_DETECTION',
-                                            'preempted': 'preempted',
-                                            'aborted': 'OBJECT_DETECTION'})
-        smach.StateMachine.add('OBJECT_DETECTION', BlockDetection(),
-                               transitions={'succeeded': 'OBJ_DETECTED_COND',
-                                            'preempted': 'preempted',
-                                            'aborted': 'aborted'})
-        smach.StateMachine.add('OBJ_DETECTED_COND', ObjDetectedCondition(),
-                               transitions={'satisfied': 'succeeded',
-                                            'preempted': 'preempted',
-                                            'fold_arm': 'FOLD_ARM',
-                                            'retry': 'CLEAR_OCTOMAP'})
-        smach.StateMachine.add('FOLD_ARM', FoldArm(),
-                               transitions={'succeeded': 'CLEAR_OCTOMAP',
-                                            'preempted': 'preempted',
-                                            'aborted': 'CLEAR_OCTOMAP'})
-    return sm
 
 
 class TargetSelection(smach.State):
@@ -71,11 +21,14 @@ class TargetSelection(smach.State):
                              outcomes=['have_target', 'no_targets'],
                              input_keys=['objects', 'object_names', 'objs_to_skip'],
                              output_keys=['target'])
+        manip_frame = rospy.get_param('~rec_objects_frame', 'arm_base_link')
+        self.arm_on_bfp_rf = TF2().transform_pose(None, manip_frame, 'base_footprint')
 
     def execute(self, ud):
         targets = []
-        for i, obj_pose in enumerate(ud['objects'].poses):
-            dist = distance_2d(obj_pose)  # assumed in arm base reference frame
+        for i, obj in enumerate(ud['objects']):
+            obj_pose = obj.primitive_poses[0]   #### try!!!!   no,,,,  are in bfp frame,,,  decidir,,, deberia detectar on arm frame???  o convertir todo?  bfp quizas no es lo + apropiado....
+            dist = distance_2d(obj_pose, self.arm_on_bfp_rf)  # assumed in arm base reference frame
             if dist <= cfg.MAX_ARM_REACH:
                 targets.append((ud['object_names'][i], dist))
         targets = sorted(targets, key=lambda t: t[1])  # sort by increasing distance
@@ -122,9 +75,9 @@ def PickReachableObjs():
     pick_1_obj_sm = smach.StateMachine(outcomes=['continue', 'succeeded', 'aborted', 'preempted', 'tray_full'],
                                        input_keys=['objs_to_skip'])
 
-    pick_1_obj_sm.userdata.max_effort = 0.3     # TODO  required by PickupObject, but.... pick_effort in obj manip  is this really used???  should depend on the obj???
+    pick_1_obj_sm.userdata.max_effort = cfg.GRIPPER_MAX_EFFORT
     with pick_1_obj_sm:
-        smach.StateMachine.add('BLOCK_DETECTION', BlockDetection(),
+        smach.StateMachine.add('DETECT_OBJECTS', ObjectDetection(),
                                transitions={'succeeded': 'SELECT_TARGET',
                                             'aborted': 'aborted',
                                             'preempted': 'preempted'})
@@ -146,7 +99,7 @@ def PickReachableObjs():
                                             'preempted': 'aborted',
                                             'aborted': 'aborted'})
         smach.StateMachine.add('SKIP_OBJECT', SkipOneObject(),
-                               transitions={'succeeded': 'BLOCK_DETECTION',
+                               transitions={'succeeded': 'DETECT_OBJECTS',
                                             'max_failures': 'aborted'})
 
     pick_reach_objs_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted', 'tray_full'],
@@ -166,14 +119,14 @@ def PickReachableObjs():
                                             'preempted': 'preempted',
                                             'aborted': 'aborted'})
         smach.StateMachine.add('FOLD_ARM', FoldArm(),
-                               transitions={'succeeded': 'BLOCK_DETECTION',
+                               transitions={'succeeded': 'DETECT_OBJECTS',
                                             'preempted': 'preempted',
                                             'aborted': 'aborted'})
-        smach.StateMachine.add('BLOCK_DETECTION', BlockDetection(),
+        smach.StateMachine.add('DETECT_OBJECTS', ObjectDetection(),
                                transitions={'succeeded': 'SELECT_TARGET',
                                             'aborted': 'aborted',
                                             'preempted': 'preempted'})
-        smach.StateMachine.add('SELECT_TARGET', TargetSelection(),  # just used to check if there are more blocks
+        smach.StateMachine.add('SELECT_TARGET', TargetSelection(),  # just used to check if there are more objects
                                transitions={'have_target': 'PICKUP_OBJECTS',
                                             'no_targets': 'succeeded'})
 
