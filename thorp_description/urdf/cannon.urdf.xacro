@@ -58,9 +58,9 @@
       <material name="Black"/>
     </visual>
     <collision>
-      <origin xyz="0.019 0.0 0.0" rpy="0.0 ${+M_PI/2} 0.0"/>
+      <origin xyz="0.022 0.0 0.0" rpy="0.0 ${+M_PI/2} 0.0"/>
       <geometry>
-        <cylinder radius="0.01" length="0.066"/>
+        <cylinder radius="0.007" length="0.054"/>
       </geometry>
     </collision>
     <xacro:cylinder_inertia radius="0.01" height="0.03" mass="0.01" x="0.01" P="${+M_PI/2}"/>
