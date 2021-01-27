@@ -66,7 +66,7 @@ public:
       return;
     }
 
-    if (! ttk::TF2::transformPose(output_frame_, msg.header.frame_id, table.pose, table_pose))
+    if (! ttk::TF2::instance().transformPose(output_frame_, msg.header.frame_id, table.pose, table_pose))
     {
       ROS_WARN("[object detection] Table with pose [%s] discarded: unable to transform to output frame [%s]",
                ttk::pose2cstr3D(table_pose), output_frame_.c_str());

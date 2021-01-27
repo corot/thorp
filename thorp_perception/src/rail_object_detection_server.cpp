@@ -5,6 +5,12 @@
 #include <omp.h>
 #include <ros/ros.h>
 
+
+// PCL
+#include <pcl_ros/point_cloud.h>
+#include <pcl_ros/transforms.h>
+#include <pcl/common/common.h>
+
 // input: RAIL segmentation and object recognition
 #include <rail_manipulation_msgs/SegmentObjects.h>
 #include <rail_mesh_icp/TemplateMatch.h>
@@ -207,6 +213,8 @@ public:
              ttk::point2cstr3D(result.support_surf.primitive_poses[0].position));
     planning_scene_interface_.addCollisionObjects(std::vector<moveit_msgs::CollisionObject>(1, result.support_surf));
 
+    ttk::TF2::instance().sendTransform(result.support_surf.primitive_poses.front(),
+                                       "base_footprint", result.support_surf.id);
     moveit_msgs::ObjectColor obj_color;
     obj_color.id = result.support_surf.id;
     obj_color.color.r = rail_obj.rgb[0];
@@ -232,10 +240,10 @@ public:
       if (!identifyObject(rail_obj, co.primitive_poses.front()))
         continue;
       bool x_aligned = ttk::xAligned(co.primitive_poses.front());
-      double length = x_aligned ? rail_obj.width : rail_obj.depth;
-      double width = x_aligned ? rail_obj.depth : rail_obj.width;
-      ROS_ERROR_STREAM(""<<rail_obj.name << "   " <<x_aligned << "   " <<length << "   " <<width);
-      co.primitives.front().dimensions = {length, width, rail_obj.height};
+      double length = std::max(rail_obj.depth, rail_obj.width);
+      double width = std::min(rail_obj.depth, rail_obj.width);
+      ROS_ERROR_STREAM(""<<rail_obj.name << "   " <<x_aligned << "   " << rail_obj.width << "   " << rail_obj.depth << "   -->    " <<length << "   " <<width);
+      co.primitives.front().dimensions = { length, width, rail_obj.height };
       detected[rail_obj.name] += 1;
       co.id = rail_obj.name + " " + std::to_string(detected[rail_obj.name]);
       // matched poses have z = 0; raise the co's primitive to cover the pointcloud
@@ -342,7 +350,6 @@ private:
       srv.request.initial_estimate.translation.y = obj.center.y;
       srv.request.initial_estimate.translation.z = obj.center.z - obj.height / 2.0; // templates' base is at z = 0
       srv.request.initial_estimate.rotation = obj.orientation;
-      ///srv.request.initial_estimate.rotation.w = 1;  // RAIL orientation is shit, so just assume objects are front-facing
       srv.request.target_cloud = obj.point_cloud;
       if (match_srvs_[obj_type].call(srv))
       {
@@ -369,13 +376,56 @@ private:
                       << best_match->second << " > " << max_matching_error_ << ")");
       return false;
     }
+
     ROS_INFO_STREAM("[object detection] Best match is " << best_match->first << ", with error " << best_match->second);
-    ttk::tf2pose(poses[best_match->first].transform, pose);
     obj.name = best_match->first;
     obj.recognized = true;
+
+    // recalculate dimensions with the corrected orientation
+    if (recalcDimensions(obj, poses[best_match->first].transform))   // TODO pass
+    {
+      // matched tf orientation is almost always worse, son don't use it
+      ////TODO  ttk::tf2pose(poses[best_match->first].transform, pose);
+    }
+    else
+    {
+      pose.position.x = obj.center.x;   /// TODO move this up and remove the pose argument
+      pose.position.y = obj.center.y;
+      pose.position.z = obj.center.z - obj.height / 2.0; // templates' base is at z = 0
+      pose.orientation = obj.orientation;
+    }
     return true;
   }
 
+  bool recalcDimensions(rail_manipulation_msgs::SegmentedObject& obj, const geometry_msgs::Transform& tf____KK)
+  {
+    geometry_msgs::Transform tf;
+    tf.translation.x = obj.center.x;
+    tf.translation.y = obj.center.y;
+    tf.translation.z = obj.center.z - obj.height / 2.0; // templates' base is at z = 0
+    tf.rotation = obj.orientation;
+    ttk::TF2::instance().sendTransform(tf, "base_footprint", obj.name + "_O");       // TODO disable w/ param
+    ttk::TF2::instance().sendTransform(tf____KK, "base_footprint", obj.name + "_M");  // TODO remove
+    pcl::PointCloud<pcl::PointXYZRGB> tmp_pc;  // explain
+    pcl::fromROSMsg(obj.point_cloud, tmp_pc);
+    pcl_ros::transformPointCloud(tmp_pc, tmp_pc, tf);
+
+    Eigen::Vector4f min_pt, max_pt;
+    pcl::getMinMax3D(tmp_pc, min_pt, max_pt);
+    ROS_ERROR("%f -> %f", tf::getYaw(obj.orientation), tf::getYaw(tf____KK.rotation));
+    double new_width = max_pt[0] - min_pt[0];
+    double new_depth = max_pt[1] - min_pt[1];
+    if (new_width * new_depth < obj.width * obj.depth)  // TODO explain
+    {
+      ROS_ERROR("W:  %f -> %f", obj.width, new_width);
+      ROS_ERROR("D:  %f -> %f", obj.depth, new_depth);
+      ROS_ERROR("A:  %f -> %f", obj.width * obj.depth, new_width * new_depth);
+      obj.width = new_width;
+      obj.depth = new_depth;
+      return false;    ///    esto tendria sentido en segmenter, igual que con la mesa
+    }
+    return false;
+  }
 /*  int addObjects(thorp_msgs::DetectObjectsResult& result)
   {
     moveit_msgs::PlanningScene ps;

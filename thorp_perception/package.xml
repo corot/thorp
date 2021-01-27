@@ -16,6 +16,7 @@
 
   <build_depend>tf</build_depend>
   <build_depend>roscpp</build_depend>
+  <build_depend>pcl_ros</build_depend>
   <build_depend>actionlib</build_depend>
   <build_depend>shape_msgs</build_depend>
   <build_depend>object_recognition_msgs</build_depend>
@@ -34,6 +35,7 @@
 
   <run_depend>tf</run_depend>
   <run_depend>roscpp</run_depend>
+  <run_depend>pcl_ros</run_depend>
   <run_depend>actionlib</run_depend>
   <run_depend>shape_msgs</run_depend>
   <run_depend>geometry_msgs</run_depend>

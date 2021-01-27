@@ -55,7 +55,7 @@ bool ThorpArmController::validateTargetPose(geometry_msgs::PoseStamped& target, 
     // Target's timestamp is irrelevant, and can trigger a TransformException if very recent; zero it!
     target.header.stamp = ros::Time(0.0);
     tf::quaternionTFToMsg(tf::createIdentityQuaternion(), target.pose.orientation);
-    if (!ttk::TF2::transformPose(arm_ref_frame, target, target))
+    if (!ttk::TF2::instance().transformPose(arm_ref_frame, target, target))
       return false;
   }
 
@@ -63,7 +63,7 @@ bool ThorpArmController::validateTargetPose(geometry_msgs::PoseStamped& target, 
   // calculate the target 3D distance and the high target correction, as that's the arm's operation
   // plane (the height at which it can reach further), 6cm above arm_base_link.
   geometry_msgs::TransformStamped arm_base_to_servo_tf;
-  if (!ttk::TF2::lookupTransform("arm_shoulder_lift_servo_link", arm_ref_frame, arm_base_to_servo_tf))
+  if (!ttk::TF2::instance().lookupTransform("arm_shoulder_lift_servo_link", arm_ref_frame, arm_base_to_servo_tf))
     return false;
   double x = target.pose.position.x;
   double y = target.pose.position.y;

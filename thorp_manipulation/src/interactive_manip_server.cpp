@@ -117,7 +117,7 @@ public:
       geometry_msgs::PoseStamped obj_pose; geometry_msgs::Vector3 obj_size;
       if (ttk::getObjectData(obj_name, obj_pose, obj_size) > 0)
       {
-        ttk::TF2::transformPose(output_frame, obj_pose, obj_pose);
+        ttk::TF2::instance().transformPose(output_frame, obj_pose, obj_pose);
         addMarker(obj_name, obj_pose, obj_size, active);
       }
     }

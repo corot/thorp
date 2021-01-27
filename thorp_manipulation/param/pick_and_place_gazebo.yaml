@@ -5,4 +5,4 @@ vertical_backlash_delta: 0.0
 fall_short_distance_delta: 0.0
 gripper_asymmetry_yaw_delta: 0.01
 ###place_support_surf_clearance: 0.005  # distance to the support surface on placing (avoids crushing the object against the surface)   use instead cfg.PLACING_HEIGHT_ON_TABLE
-gripper_tightening_closing: 0.006    # additional gripper closing to tighten grasped objects
+gripper_tightening_closing: 0.004    # additional gripper closing to tighten grasped objects

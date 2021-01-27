@@ -5,10 +5,12 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /RAIL1/Table1/Namespaces1
+        - /RAIL1/Segmented Objects1
+        - /RAIL1/Segmented Objects1/Namespaces1
         - /Manipulation1/Pick/Place Pose1
         - /Manipulation1/Pick/Place Pose2
       Splitter Ratio: 0.5247058868408203
-    Tree Height: 611
+    Tree Height: 555
   - Class: rviz/Help
     Name: Help
   - Class: rviz/Views
@@ -127,22 +129,12 @@ Visualization Manager:
           Value: false
         caster_front_link:
           Value: false
-        circle:
-          Value: true
         cliff_sensor_front_link:
           Value: false
         cliff_sensor_left_link:
           Value: false
         cliff_sensor_right_link:
           Value: false
-        clover:
-          Value: true
-        cross:
-          Value: true
-        cube:
-          Value: true
-        diamond:
-          Value: true
         gripper_active_finger_link:
           Value: false
         gripper_active_link:
@@ -185,8 +177,6 @@ Visualization Manager:
           Value: false
         opencm_link:
           Value: false
-        pentagon:
-          Value: true
         plate_bottom_link:
           Value: false
         plate_middle_link:
@@ -253,8 +243,6 @@ Visualization Manager:
           Value: false
         pole_top_3_link:
           Value: false
-        rectangle:
-          Value: true
         s_0_link:
           Value: false
         s_m18_link:
@@ -281,18 +269,8 @@ Visualization Manager:
           Value: false
         sonars_mount_link:
           Value: false
-        square:
-          Value: true
-        star:
-          Value: true
-        table_frame:
-          Value: true
-        tower:
-          Value: true
         tray_link:
           Value: false
-        triangle:
-          Value: true
         wheel_left_link:
           Value: false
         wheel_right_link:
@@ -512,30 +490,6 @@ Visualization Manager:
                   {}
                 wheel_right_link:
                   {}
-              circle:
-                {}
-              clover:
-                {}
-              cross:
-                {}
-              cube:
-                {}
-              diamond:
-                {}
-              pentagon:
-                {}
-              rectangle:
-                {}
-              square:
-                {}
-              star:
-                {}
-              tower:
-                {}
-              triangle:
-                {}
-          table_frame:
-            {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -1116,7 +1070,6 @@ Visualization Manager:
       MoveIt_Allow_External_Program: false
       MoveIt_Allow_Replanning: false
       MoveIt_Allow_Sensor_Positioning: false
-      MoveIt_Goal_Tolerance: 0
       MoveIt_Planning_Attempts: 10
       MoveIt_Planning_Time: 5
       MoveIt_Use_Cartesian_Path: false
@@ -1419,7 +1372,7 @@ Visualization Manager:
           Marker Topic: /rail_segmentation/table_marker
           Name: Table
           Namespaces:
-            "": true
+            {}
           Queue Size: 100
           Value: true
         - Class: rviz/MarkerArray
@@ -1427,8 +1380,7 @@ Visualization Manager:
           Marker Topic: /rail_segmentation/markers
           Name: Segmented Objects
           Namespaces:
-            "": true
-            segmentation_labels: true
+            {}
           Queue Size: 100
           Value: true
         - Alpha: 1
@@ -1617,7 +1569,7 @@ Visualization Manager:
           Use Fixed Frame: true
           Use rainbow: true
           Value: false
-      Enabled: true
+      Enabled: false
       Name: COB
     - Class: rviz/Group
       Displays:
@@ -2337,15 +2289,15 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 10.384824752807617
+      Distance: 12.404645919799805
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 7.343256950378418
-        Y: 2.219304323196411
+        X: 7.950570583343506
+        Y: 1.8336548805236816
         Z: -2.384185791015625e-6
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
@@ -2375,7 +2327,7 @@ Window Geometry:
     collapsed: false
   Onboard Camera:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000200000000000001eb000003a7fc020000000bfb000000100044006900730070006c006100790073010000003d000002e6000000c900fffffffb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e00670000000153000001940000018900fffffffb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e00670100000175000001d70000000000000000fb0000000800480065006c00700000000342000000bb0000006e00fffffffb0000000a0049006d006100670065000000030a000000b70000001600fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730000000339000000ab0000005c00fffffffb0000000c00430061006d006500720061020000000000000170000003b1000002c8fb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000004100fffffffc00000329000000bb000000330100001cfa000000000100000002fb0000000a0049006d0061006700650100000000ffffffff0000005e00fffffffb00000020005300650067006d0065006e00740065006400200049006d00610067006500730100000000000002ed000000b600fffffffb0000001a0052006f006f006d002000530065007100750065006e006300650000000292000000a70000001600fffffffb000000220052006f006f006d0020005300650067006d0065006e0074006100740069006f006e0000000319000000cb0000001600ffffff000000010000014d000003a7fc0200000003fb0000000a00560069006500770073000000003d000003a7000000a400fffffffb0000001c004f006e0062006f006100720064002000430061006d0065007200610000000033000003850000001600fffffffc00000028000003da0000000000fffffffa000000010100000002fb0000001e00450078007400650072006e0061006c002000430061006d0065007200610000000000ffffffff000000a500fffffffb0000000c00430061006d0065007200610000000596000001ea00000000000000000000054c000003a700000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000200000000000001f3000003a7fc020000000bfb000000100044006900730070006c006100790073010000003d000002ae000000c900fffffffb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e006700000001cb000001880000018800fffffffb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e00670100000175000001d70000000000000000fb0000000800480065006c00700000000342000000bb0000006e00fffffffb0000000a0049006d006100670065000000030a000000b70000001600fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730000000339000000ab0000005c00fffffffb0000000c00430061006d006500720061020000000000000170000003b1000002c8fb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000001600000016fc000002f1000000f3000000330100001cfa000000000100000002fb0000000a0049006d0061006700650100000000ffffffff0000005e00fffffffb00000020005300650067006d0065006e00740065006400200049006d00610067006500730100000000000002ed000000b600fffffffb0000001a0052006f006f006d002000530065007100750065006e006300650000000292000000a70000001600fffffffb000000220052006f006f006d0020005300650067006d0065006e0074006100740069006f006e0000000319000000cb0000001600ffffff000000010000014d000003a7fc0200000003fb0000000a00560069006500770073000000003d000003a7000000a400fffffffb0000001c004f006e0062006f006100720064002000430061006d0065007200610000000033000003850000001600fffffffc00000028000003da0000000000fffffffa000000010100000002fb0000001e00450078007400650072006e0061006c002000430061006d0065007200610000000000ffffffff000000a500fffffffb0000000c00430061006d0065007200610000000596000001ea000000000000000000000544000003a700000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Room Segmentation:
     collapsed: false
   Room Sequence:

@@ -9,6 +9,8 @@
 #include <tf/tf.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/static_transform_broadcaster.h>
 
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseStamped.h>
@@ -26,8 +28,10 @@ private:
   static std::unique_ptr<TF2> inst_ptr_;
   static std::mutex mutex_;
 
-  static tf2_ros::Buffer buffer_;
+  tf2_ros::Buffer buffer_;
   tf2_ros::TransformListener listener_;
+  tf2_ros::TransformBroadcaster bcaster_;
+  tf2_ros::StaticTransformBroadcaster sbcaster_;
 
   TF2() : listener_(buffer_) {}
 
@@ -49,7 +53,7 @@ public:
    * On the first run, it creates a singleton object and places it into the static
    * field. On subsequent runs, it returns a reference to the existing object.
    */
-  static TF2& getInstance();
+  static TF2& instance();
 
 
   /**
@@ -58,12 +62,12 @@ public:
    * @param source_frame The frame where the data originated
    * @param time The time at which the value of the transform is desired. (0 will get the latest)
    * @param timeout How long to block before failing. Defaults to 2.0, enough time to fill an empty
-   * buffer, so we can call this function anytime without calling getInstance beforehand.
+   * buffer, so we can call this function anytime without calling instance beforehand.
    * @return true if transformation succeeded.
    */
-  static bool lookupTransform(const std::string& target_frame, const std::string& source_frame,
-                              geometry_msgs::TransformStamped& transform,
-                              const ros::Time& time = ros::Time(), const ros::Duration& timeout = ros::Duration(2));
+  bool lookupTransform(const std::string& target_frame, const std::string& source_frame,
+                       geometry_msgs::TransformStamped& transform,
+                       const ros::Time& time = ros::Time(), const ros::Duration& timeout = ros::Duration(2));
 
   /**
    * Transform in_pose to the target frame
@@ -71,12 +75,12 @@ public:
    * @param in_pose initial pose
    * @param out_pose transformed pose
    * @param timeout How long to block before failing. Defaults to 2.0, enough time to fill an empty
-   * buffer, so we can call this function anytime without calling getInstance beforehand.
+   * buffer, so we can call this function anytime without calling instance beforehand.
    * @return true if transformation succeeded.
    */
-  static bool transformPose(const std::string& target_frame,
-                            const geometry_msgs::PoseStamped& in_pose, geometry_msgs::PoseStamped& out_pose,
-                            const ros::Duration& timeout = ros::Duration(2));
+  bool transformPose(const std::string& target_frame,
+                     const geometry_msgs::PoseStamped& in_pose, geometry_msgs::PoseStamped& out_pose,
+                     const ros::Duration& timeout = ros::Duration(2));
 
   /**
    * Get the transform between two frames by frame ID.
@@ -86,12 +90,18 @@ public:
    * @param out_pose transformed pose
    * @param time The time at which the value of the transform is desired. (0 will get the latest)
    * @param timeout How long to block before failing. Defaults to 2.0, enough time to fill an empty
-   * buffer, so we can call this function anytime without calling getInstance beforehand.
+   * buffer, so we can call this function anytime without calling instance beforehand.
    * @return true if transformation succeeded.
    */
-  static bool transformPose(const std::string& target_frame, const std::string& source_frame,
-                            const geometry_msgs::Pose& in_pose, geometry_msgs::Pose& out_pose,
-                            const ros::Time& time = ros::Time(), const ros::Duration& timeout = ros::Duration(2));
+  bool transformPose(const std::string& target_frame, const std::string& source_frame,
+                     const geometry_msgs::Pose& in_pose, geometry_msgs::Pose& out_pose,
+                     const ros::Time& time = ros::Time(), const ros::Duration& timeout = ros::Duration(2));
+
+  void sendTransform(const geometry_msgs::TransformStamped& tf);
+
+  void sendTransform(const geometry_msgs::Transform& tf, const std::string& from, const std::string& to);
+
+  void sendTransform(const geometry_msgs::Pose& pose, const std::string& from, const std::string& to);
 };
 
 /**

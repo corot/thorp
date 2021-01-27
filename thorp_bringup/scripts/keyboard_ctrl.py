@@ -74,7 +74,7 @@ if __name__ == '__main__':
             app_name = sys.argv[1]
             rospy.init_node(app_name + '_key_ctrl')
         else:
-            rospy.init_node('smach_app_key_ctrl')
+            rospy.init_node('app_key_ctrl_smach')
         
         # window.mainloop() will block, ignoring Ctrl+C signal, so we stop it manually on ROS shutdown
         rospy.on_shutdown(quit_tk)

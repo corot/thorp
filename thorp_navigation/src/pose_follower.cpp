@@ -221,7 +221,7 @@ private:
         else
         {
           // transform target pose into robot reference frame
-          ttk::TF2::transformPose(robot_frame_, target_pose_, target_pose_in_robot_frame);
+          ttk::TF2::instance().transformPose(robot_frame_, target_pose_, target_pose_in_robot_frame);
           // Transform failure will print an appropriate error message, and the frame_id will be empty
         }
       }
