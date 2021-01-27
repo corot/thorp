@@ -2,12 +2,13 @@
   <arg name="initial_pose_x" default="0.0"/>
   <arg name="initial_pose_y" default="0.0"/>
   <arg name="initial_pose_a" default="0.0"/>
+  <arg name="spawn_delay"    default="5.0"/>  <!-- delay model spawning to give gazebo time to start -->
 
   <include file="$(find thorp_bringup)/launch/includes/state_publisher.launch.xml">
     <arg name="simulation" value="true"/>
   </include>
 
-  <!-- Gazebo model spawner -->
+  <!-- Spawn thorp gazebo model with the arm on resting state -->
   <node name="spawn_turtlebot_model" pkg="gazebo_ros" type="spawn_model" output="screen"
         args="-urdf -param robot_description -model thorp
               -x $(arg initial_pose_x)
@@ -19,7 +20,8 @@
               -J arm_wrist_flex_joint 1.4
               -J gripper_link_joint 0.0
               -J cannon_joint 0.0
-              -unpause"/>  <!--  we spawn arm model on resting state -->
+              -unpause"
+        launch-prefix="bash -c 'sleep $(arg spawn_delay); $0 $@'"/>
 
   <!-- Fake laser from Kinect (2D slice) and Xtion (3D projection) -->
   <node pkg="depthimage_to_laserscan" type="depthimage_to_laserscan" name="depthimage_to_laserscan" output="screen" respawn="true">
