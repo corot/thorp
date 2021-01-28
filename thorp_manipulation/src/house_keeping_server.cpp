@@ -21,8 +21,8 @@ HouseKeepingServer::HouseKeepingServer()
   arm_trajectory_pub_ = nh.advertise<trajectory_msgs::JointTrajectory>("arm_controller/command", 1);
   force_resting_srv_  = nh.advertiseService("force_resting", &HouseKeepingServer::forceRestingCB, this);
   clear_gripper_srv_  = nh.advertiseService("clear_gripper", &HouseKeepingServer::clearGripperCB, this);
-  gripper_busy_srv_   = nh.advertiseService("gripper_busy",  &HouseKeepingServer::gripperBusyCB,  this);
-
+  gripper_busy_srv_   = nh.advertiseService("gripper_busy", &HouseKeepingServer::gripperBusyCB, this);
+  grasp_events_sub_   = nh.subscribe("gazebo/grasp_events", 1, &HouseKeepingServer::graspEventCB, this);
   // Get default planning scene so I can restore it after temporal changes
   planning_scene_srv_ = nh.serviceClient<moveit_msgs::GetPlanningScene>("get_planning_scene");
   if (planning_scene_srv_.waitForExistence(ros::Duration(30.0)))
@@ -156,6 +156,7 @@ bool HouseKeepingServer::clearGripperCB(std_srvs::EmptyRequest &request, std_srv
 
 bool HouseKeepingServer::gripperBusyCB(std_srvs::TriggerRequest &request, std_srvs::TriggerResponse &response)
 {
+  // Logic check: ask planning scene if we have an object attached
   std::map<std::string, moveit_msgs::AttachedCollisionObject> attached_objects =
     ttk::planningScene().getAttachedObjects();
   for (const auto& ao: attached_objects)
@@ -170,8 +171,26 @@ bool HouseKeepingServer::gripperBusyCB(std_srvs::TriggerRequest &request, std_sr
   else
     response.success = false;
 
+  // return true;     TODO: maybe I separated these 2 checks,,, either 2 srvs or add a flag to the current service
+
+  // Physical check for simulation TODO: add physical check for the real robot and choose the appropriate one
+  if (last_grasp_event_.object.empty())
+  {
+    ROS_WARN("No gazebo grasp events received");
+    response.success = false;
+  }
+  else if (!last_grasp_event_.attached)
+  {
+    ROS_WARN("Last gazebo grasp event was detached");
+    response.success = false;
+  }
+  else
+  {
+    ROS_INFO("Object %s attached to %s", last_grasp_event_.object.c_str(), last_grasp_event_.arm.c_str());
+    response.success = true;
+    response.message = last_grasp_event_.object;
+  }
   return true;
-  // TODO:  this is much simpler and reliable... I keep by now, until I can do a "physical check", still interesting, but too hard
 
 
   // Check if we are holding an object by closing a bit the gripper and measuring if joint effort increases
@@ -202,6 +221,11 @@ bool HouseKeepingServer::gripperBusyCB(std_srvs::TriggerRequest &request, std_sr
   setGripper(opening_before, false);
 
   return gripper_result;
+}
+
+void HouseKeepingServer::graspEventCB(const gazebo_grasp_plugin::GazeboGraspEvent& event)
+{
+  last_grasp_event_ = event;
 }
 
 };

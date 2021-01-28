@@ -27,7 +27,7 @@ class TargetSelection(smach.State):
     def execute(self, ud):
         targets = []
         for i, obj in enumerate(ud['objects']):
-            obj_pose = obj.primitive_poses[0]   #### try!!!!   no,,,,  are in bfp frame,,,  decidir,,, deberia detectar on arm frame???  o convertir todo?  bfp quizas no es lo + apropiado....
+            obj_pose = obj.primitive_poses[0]
             dist = distance_2d(obj_pose, self.arm_on_bfp_rf)  # assumed in arm base reference frame
             if dist <= cfg.MAX_ARM_REACH:
                 targets.append((ud['object_names'][i], dist))
@@ -68,66 +68,66 @@ class SkipOneObject(smach.State):
         return 'max_failures'
 
 
-def PickReachableObjs():
+class PickReachableObjs(smach.StateMachine):
     """  Pick all the objects within reach and place in the tray  """
 
-    # pick a single object sm
-    pick_1_obj_sm = smach.StateMachine(outcomes=['continue', 'succeeded', 'aborted', 'preempted', 'tray_full'],
-                                       input_keys=['objs_to_skip'])
+    def __init__(self):
+        super(PickReachableObjs, self).__init__(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'])
 
-    pick_1_obj_sm.userdata.max_effort = cfg.GRIPPER_MAX_EFFORT
-    with pick_1_obj_sm:
-        smach.StateMachine.add('DETECT_OBJECTS', ObjectDetection(),
-                               transitions={'succeeded': 'SELECT_TARGET',
-                                            'aborted': 'aborted',
-                                            'preempted': 'preempted'})
-        smach.StateMachine.add('SELECT_TARGET', TargetSelection(),
-                               transitions={'have_target': 'PICKUP_OBJECT',
-                                            'no_targets': 'succeeded'},
-                               remapping={'target': 'object_name'})
-        smach.StateMachine.add('PICKUP_OBJECT', PickupObject(),
-                               transitions={'succeeded': 'PLACE_ON_TRAY',
-                                            'preempted': 'preempted',
-                                            'aborted': 'SKIP_OBJECT'})
-        smach.StateMachine.add('PLACE_ON_TRAY', PlaceInTray(),
-                               transitions={'succeeded': 'continue',
-                                            'preempted': 'preempted',
-                                            'aborted': 'CLEAR_GRIPPER',
-                                            'tray_full': 'tray_full'})
-        smach.StateMachine.add('CLEAR_GRIPPER', ClearGripper(),
-                               transitions={'succeeded': 'SKIP_OBJECT',
-                                            'preempted': 'aborted',
-                                            'aborted': 'aborted'})
-        smach.StateMachine.add('SKIP_OBJECT', SkipOneObject(),
-                               transitions={'succeeded': 'DETECT_OBJECTS',
-                                            'max_failures': 'aborted'})
+        # pick a single object sm
+        pick_1_obj_sm = smach.StateMachine(outcomes=['continue', 'succeeded', 'aborted', 'preempted', 'tray_full'],
+                                           input_keys=['objs_to_skip'])
 
-    pick_reach_objs_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted', 'tray_full'],
-                                        input_keys=['objs_to_skip'],
-                                        output_keys=[],
-                                        it=range(25),  # kind of while true
-                                        it_label='iteration',
-                                        exhausted_outcome='succeeded')
-    with pick_reach_objs_it:
-        smach.Iterator.set_contained_state('', pick_1_obj_sm, loop_outcomes=['continue'])
+        pick_1_obj_sm.userdata.max_effort = cfg.GRIPPER_MAX_EFFORT
+        with pick_1_obj_sm:
+            smach.StateMachine.add('DETECT_OBJECTS', ObjectDetection(),
+                                   transitions={'succeeded': 'SELECT_TARGET',
+                                                'aborted': 'aborted',
+                                                'preempted': 'preempted'})
+            smach.StateMachine.add('SELECT_TARGET', TargetSelection(),
+                                   transitions={'have_target': 'PICKUP_OBJECT',
+                                                'no_targets': 'succeeded'},
+                                   remapping={'target': 'object_name'})
+            smach.StateMachine.add('PICKUP_OBJECT', PickupObject(),
+                                   transitions={'succeeded': 'PLACE_ON_TRAY',
+                                                'preempted': 'preempted',
+                                                'aborted': 'SKIP_OBJECT'})
+            smach.StateMachine.add('PLACE_ON_TRAY', PlaceInTray(),
+                                   transitions={'succeeded': 'continue',
+                                                'preempted': 'preempted',
+                                                'aborted': 'CLEAR_GRIPPER',
+                                                'tray_full': 'tray_full'})
+            smach.StateMachine.add('CLEAR_GRIPPER', ClearGripper(),
+                                   transitions={'succeeded': 'SKIP_OBJECT',
+                                                'preempted': 'aborted',
+                                                'aborted': 'aborted'})
+            smach.StateMachine.add('SKIP_OBJECT', SkipOneObject(),
+                                   transitions={'succeeded': 'DETECT_OBJECTS',
+                                                'max_failures': 'aborted'})
 
-    pick_reach_objs_sm = smach.StateMachine(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'])
-    pick_reach_objs_sm.userdata.objs_to_skip = 0
-    with pick_reach_objs_sm:
-        smach.StateMachine.add('PICKUP_OBJECTS', pick_reach_objs_it,
-                               transitions={'succeeded': 'FOLD_ARM',
-                                            'preempted': 'preempted',
-                                            'aborted': 'aborted'})
-        smach.StateMachine.add('FOLD_ARM', FoldArm(),
-                               transitions={'succeeded': 'DETECT_OBJECTS',
-                                            'preempted': 'preempted',
-                                            'aborted': 'aborted'})
-        smach.StateMachine.add('DETECT_OBJECTS', ObjectDetection(),
-                               transitions={'succeeded': 'SELECT_TARGET',
-                                            'aborted': 'aborted',
-                                            'preempted': 'preempted'})
-        smach.StateMachine.add('SELECT_TARGET', TargetSelection(),  # just used to check if there are more objects
-                               transitions={'have_target': 'PICKUP_OBJECTS',
-                                            'no_targets': 'succeeded'})
+        pick_reach_objs_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted', 'tray_full'],
+                                            input_keys=['objs_to_skip'],
+                                            output_keys=[],
+                                            it=range(25),  # kind of while true
+                                            it_label='iteration',
+                                            exhausted_outcome='succeeded')
+        with pick_reach_objs_it:
+            smach.Iterator.set_contained_state('', pick_1_obj_sm, loop_outcomes=['continue'])
 
-    return pick_reach_objs_sm
+        self.userdata.objs_to_skip = 0
+        with self:
+            smach.StateMachine.add('PICKUP_OBJECTS', pick_reach_objs_it,
+                                   transitions={'succeeded': 'FOLD_ARM',
+                                                'preempted': 'preempted',
+                                                'aborted': 'aborted'})
+            smach.StateMachine.add('FOLD_ARM', FoldArm(),
+                                   transitions={'succeeded': 'DETECT_OBJECTS',
+                                                'preempted': 'preempted',
+                                                'aborted': 'aborted'})
+            smach.StateMachine.add('DETECT_OBJECTS', ObjectDetection(),
+                                   transitions={'succeeded': 'SELECT_TARGET',
+                                                'aborted': 'aborted',
+                                                'preempted': 'preempted'})
+            smach.StateMachine.add('SELECT_TARGET', TargetSelection(),  # just used to check if there are more objects
+                                   transitions={'have_target': 'PICKUP_OBJECTS',
+                                                'no_targets': 'succeeded'})

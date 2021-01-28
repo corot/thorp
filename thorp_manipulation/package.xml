@@ -25,6 +25,7 @@
   <build_depend>moveit_core</build_depend>
   <build_depend>interactive_markers</build_depend>
   <build_depend>visualization_msgs</build_depend>
+  <build_depend>gazebo_grasp_plugin</build_depend>
   <build_depend>thorp_msgs</build_depend>
   <build_depend>thorp_toolkit</build_depend>
 
@@ -39,6 +40,7 @@
   <run_depend>moveit_commander</run_depend>
   <run_depend>interactive_markers</run_depend>
   <run_depend>visualization_msgs</run_depend>
+  <run_depend>gazebo_grasp_plugin</run_depend>
   <run_depend>thorp_msgs</run_depend>
   <run_depend>thorp_toolkit</run_depend>
 

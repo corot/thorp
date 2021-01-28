@@ -78,6 +78,7 @@ class PickupObject(smach.Iterator):
     """
     Pickup a given object, optionally retrying up to a given number of times.
     If we already have an object attached, we clear the gripper before picking.
+    If pickup succeeds, we still check if we have the object physically grasped.
     """
     def __init__(self, attempts=2):
         super(PickupObject, self).__init__(outcomes=['succeeded', 'preempted', 'aborted'],
@@ -104,16 +105,22 @@ class PickupObject(smach.Iterator):
                                                                                'support_surf',
                                                                                'max_effort'],
                                                                    result_slots=['error']),
-                                       transitions={'succeeded': 'succeeded',
+                                       transitions={'succeeded': 'OBJECT_GRASPED?',
                                                     'preempted': 'preempted',
                                                     'aborted': 'CLEAR_OCTOMAP'})
+                smach.StateMachine.add('OBJECT_GRASPED?', GripperBusy(),
+                                       transitions={'true': 'succeeded',
+                                                    'false': 'CLEAR_ATTACHED',
+                                                    'error': 'aborted'})
+                smach.StateMachine.add('CLEAR_ATTACHED', ClearGripper(),      # clear the falsely attached object; don't
+                                       transitions={'succeeded': 'aborted'})  # retry, as it's not available anymore
                 smach.StateMachine.add('CLEAR_OCTOMAP', ClearOctomap(),
                                        transitions={'succeeded': 'continue',
                                                     'preempted': 'preempted',
                                                     'aborted': 'aborted'})
-            # TODOs:
-            #  - check error and, if collision between parts of the arm, move a bit the arm  -->  not enough info
-            #  - this doesn't make too much sense as a loop... better try all our tricks and exit
+            # TODO: check error and, if collision between parts of the arm, move a bit the arm
+            # TODO: check error and, if collision between the arm and an obj, fold arm and redetect
+            #    moveit always return -1 -->  not enough info
             smach.Iterator.set_contained_state('', sm, loop_outcomes=['continue'])
 
 
@@ -138,13 +145,13 @@ class PlaceObject(smach.Iterator):
                                                                                'support_surf',
                                                                                'place_pose'],
                                                                    result_slots=[]),
-                                       transitions={#######'succeeded': 'succeeded',
-                                                    ##########'preempted': 'preempted',
+                                       transitions={'succeeded': 'succeeded',
+                                                    'preempted': 'preempted',
                                                     'aborted': 'CLEAR_OCTOMAP'})
                 smach.StateMachine.add('CLEAR_OCTOMAP', ClearOctomap(),
-                                       transitions={'succeeded': 'continue'})
-                                                   ### 'preempted': 'preempted',
-                                                   #### 'aborted': 'aborted'})
+                                       transitions={'succeeded': 'continue',
+                                                    'preempted': 'preempted',
+                                                    'aborted': 'aborted'})
 
             # TODOs:
             #  - check error and, if collision between parts of the arm, move a bit the arm  -->  not enough info

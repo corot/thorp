@@ -1,7 +1,6 @@
 import rospy
 import smach
 import smach_ros
-import threading
 
 import thorp_msgs.msg as thorp_msgs
 import geometry_msgs.msg as geo_msgs
@@ -12,13 +11,16 @@ from rail_manipulation_msgs.srv import SegmentObjects
 from rail_mesh_icp.srv import TemplateMatch
 
 from thorp_toolkit.semantic_map import SemanticMap
-from thorp_toolkit.geometry import pose2d2str, TF2                   ,yaw,to_transform, quaternion_msg_from_yaw
+from thorp_toolkit.geometry import pose2d2str, TF2, to_transform
 from manipulation_states import FoldArm, ClearOctomap
 
 
 def ObjectDetectionSM():
-    """  Object detection sub state machine; iterates over object_detection action state and recovery
-         mechanism until an object is detected, it's preempted or there's an error (aborted outcome) """
+    """
+    Object detection sub state machine; iterates over object_detection action state and recovery
+    mechanism until an object is detected, it's preempted or there's an error (aborted outcome)
+    TODO: deprecated; doesn't make much sense, I think...
+    """
 
     class ObjDetectedCondition(smach.State):
         """ Check for the object detection result to retry if no objects where detected """
@@ -253,6 +255,9 @@ class MonitorTables(smach.State):
         return 'preempted'
 
 
+
+# TODO: remove; I used to debut RAIL server
+from thorp_toolkit.geometry import yaw, quaternion_msg_from_yaw
 
 class ObjectDetectionRAIL(smach.State):
     """
