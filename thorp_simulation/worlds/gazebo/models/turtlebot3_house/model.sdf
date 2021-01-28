@@ -4156,6 +4156,7 @@
       </collision>
     </link>
     <model name='Mailbox'>
+      <static>1</static>
       <link name='link'>
         <collision name='collision'>
           <geometry>
@@ -5195,7 +5196,7 @@
       <pose frame=''>-4.69354 4.89439 0 0 -0 0</pose>
     </model>
     <model name='table'>
-      <static>0</static>
+      <static>1</static>
       <link name='link'>
         <collision name='surface'>
           <pose frame=''>0 0 1 0 -0 0</pose>
