@@ -71,6 +71,8 @@ private:
 
   // Object detection and classification parameters
   double max_matching_error_;
+
+  double elongated_threshold_;
 //  double ork_execute_timeout_;
 //  double ork_preempt_timeout_;
 //  int    recognize_objs_calls_;
@@ -92,6 +94,7 @@ public:
 //    pnh.param("ork_preempt_timeout",  ork_preempt_timeout_,  1.0);
 //    pnh.param("recognize_objs_calls", recognize_objs_calls_, 1);
     pnh.param("max_matching_error", max_matching_error_, 1e-4);
+    pnh.param("elongated_threshold", elongated_threshold_, 1.2);
 
     segment_srv_ = nh.serviceClient<rail_manipulation_msgs::SegmentObjects>("rail_segmentation/segment_objects");
     ROS_INFO("[object detection] Waiting for rail_segmentation/segment_objects service to start...");
@@ -199,16 +202,16 @@ public:
 //    result.object_names.resize(srv.response.segmented_objects.objects.size());
 //    obj_colors.resize(srv.response.segmented_objects.objects.size());
 
-    auto& rail_obj = srv.response.segmented_objects.objects.front();
+    auto& table = srv.response.segmented_objects.objects.front();
     result.support_surf.header = srv.response.segmented_objects.header;
     result.support_surf.id = "table";
     result.support_surf.operation = moveit_msgs::CollisionObject::ADD;
     result.support_surf.primitive_poses.resize(1);
-    result.support_surf.primitive_poses.front().position = rail_obj.center;
-    result.support_surf.primitive_poses.front().orientation = rail_obj.orientation;
+    result.support_surf.primitive_poses.front().position = table.center;
+    result.support_surf.primitive_poses.front().orientation = table.orientation;
     result.support_surf.primitives.resize(1);
     result.support_surf.primitives.front().type = shape_msgs::SolidPrimitive::BOX;
-    result.support_surf.primitives.front().dimensions = {rail_obj.depth, rail_obj.width, rail_obj.height};
+    result.support_surf.primitives.front().dimensions = {table.depth, table.width, table.height};
     ROS_INFO("[object detection] Adding table at %s as a collision object",
              ttk::point2cstr3D(result.support_surf.primitive_poses[0].position));
     planning_scene_interface_.addCollisionObjects(std::vector<moveit_msgs::CollisionObject>(1, result.support_surf));
@@ -217,9 +220,9 @@ public:
                                        "base_footprint", result.support_surf.id);
     moveit_msgs::ObjectColor obj_color;
     obj_color.id = result.support_surf.id;
-    obj_color.color.r = rail_obj.rgb[0];
-    obj_color.color.g = rail_obj.rgb[1];
-    obj_color.color.b = rail_obj.rgb[2];
+    obj_color.color.r = table.rgb[0];
+    obj_color.color.g = table.rgb[1];
+    obj_color.color.b = table.rgb[2];
     obj_color.color.a = 1.0;
     obj_colors.push_back(obj_color);
 
@@ -227,7 +230,9 @@ public:
 
     for (int i = 1; i < srv.response.segmented_objects.objects.size(); ++i)
     {
-      rail_obj = srv.response.segmented_objects.objects[i];
+      auto& rail_obj = srv.response.segmented_objects.objects[i];
+      if (!validatePose(rail_obj, table))
+        continue;
 
       moveit_msgs::CollisionObject co;
       co.header = srv.response.segmented_objects.header;
@@ -237,15 +242,15 @@ public:
 //      co.primitive_poses.front().orientation = rail_obj.orientation;
       co.primitives.resize(1);
       co.primitives.front().type = shape_msgs::SolidPrimitive::BOX;
-      if (!identifyObject(rail_obj, co.primitive_poses.front()))
+      if (!identifyObject(rail_obj, co.primitive_poses.front()))  // TODO move up if I don't pass the pose anymore
         continue;
       bool x_aligned = ttk::xAligned(co.primitive_poses.front());
       double length = std::max(rail_obj.depth, rail_obj.width);
       double width = std::min(rail_obj.depth, rail_obj.width);
-      ROS_ERROR_STREAM(""<<rail_obj.name << "   " <<x_aligned << "   " << rail_obj.width << "   " << rail_obj.depth << "   -->    " <<length << "   " <<width);
       co.primitives.front().dimensions = { length, width, rail_obj.height };
       detected[rail_obj.name] += 1;
       co.id = rail_obj.name + " " + std::to_string(detected[rail_obj.name]);
+      ROS_ERROR_STREAM(""<<co.id << "   x-a? " <<x_aligned << "   " << rail_obj.width << "   " << rail_obj.depth << "   -->    " <<length << "   " <<width);
       // matched poses have z = 0; raise the co's primitive to cover the pointcloud
       co.primitive_poses.front().position.z += rail_obj.height / 2.0;
       result.objects.push_back(co);
@@ -336,6 +341,29 @@ public:
   }
 
 private:
+  bool validatePose(const rail_manipulation_msgs::SegmentedObject& obj,
+                    const rail_manipulation_msgs::SegmentedObject& table)
+  {
+    double TOLERANCE = 0.01;
+    // reject objects embedded in the table (possibly table parts not properly removed)...
+    if ((obj.center.z - obj.height / 2.0) < (table.center.z + table.height / 2.0 - TOLERANCE))
+    {
+      ROS_WARN("[object detection] Object at %s discarded as embedded in the table (%g < %g - %g)",
+               ttk::point2cstr3D(obj.center), obj.center.z - obj.height / 2.0, table.center.z + table.height / 2.0,
+               TOLERANCE);
+      return false;
+    }
+    // ...or floating above the table (possibly the gripper after a pick/place operation)
+    if ((obj.center.z - obj.height / 2.0) > (table.center.z + table.height / 2.0 + TOLERANCE))
+    {
+      ROS_WARN("[object detection] Object at %s discarded as floating over the table (%g > %g + %g)",
+               ttk::point2cstr3D(obj.center), obj.center.z - obj.height / 2.0, table.center.z + table.height / 2.0,
+               TOLERANCE);
+      return false;
+    }
+    return true;
+  }
+
   bool identifyObject(rail_manipulation_msgs::SegmentedObject& obj, geometry_msgs::Pose& pose)
   {
     std::map<std::string, double> score;
@@ -381,38 +409,57 @@ private:
     obj.name = best_match->first;
     obj.recognized = true;
 
+    geometry_msgs::Transform tf;
+    tf.translation.x = obj.center.x;
+    tf.translation.y = obj.center.y;
+    tf.translation.z = obj.center.z - obj.height / 2.0; // templates' base is at z = 0
+    tf.rotation = obj.orientation;
+    ttk::TF2::instance().sendTransform(tf, "base_footprint", obj.name + "_PCA");       // TODO disable w/ param
+    ttk::TF2::instance().sendTransform(poses[best_match->first].transform, "base_footprint", obj.name + "_TM");  // TODO remove
+    ttk::tf2pose(tf, pose);
+//    pose.position.x = obj.center.x;   /// TODO move this up and remove the pose argument
+//    pose.position.y = obj.center.y;
+//    pose.position.z = obj.center.z - obj.height / 2.0; // templates' base is at z = 0
+//    pose.orientation = obj.orientation;
+
     // recalculate dimensions with the corrected orientation
-    if (recalcDimensions(obj, poses[best_match->first].transform))   // TODO pass
+    if (recalcDimensions(obj, tf))   // TODO pass
     {
       // matched tf orientation is almost always worse, son don't use it
       ////TODO  ttk::tf2pose(poses[best_match->first].transform, pose);
     }
     else
     {
-      pose.position.x = obj.center.x;   /// TODO move this up and remove the pose argument
-      pose.position.y = obj.center.y;
-      pose.position.z = obj.center.z - obj.height / 2.0; // templates' base is at z = 0
-      pose.orientation = obj.orientation;
+
     }
+
+    double aspect_ratio = std::max(obj.width, obj.depth) / std::min(obj.width, obj.depth);
+
+    if (aspect_ratio < elongated_threshold_)
+    {
+      ROS_INFO("Aspect ratio within elongated threshold (%f < %g); recalculate dimensions rotated 45 degrees",
+               aspect_ratio, elongated_threshold_);
+
+      tf.rotation = tf::createQuaternionMsgFromYaw(tf::getYaw(tf.rotation) + M_PI_4);
+      if (recalcDimensions(obj, tf))
+        pose.orientation = tf.rotation;
+
+      ttk::TF2::instance().sendTransform(tf, "base_footprint", obj.name + "_R45");       // TODO disable w/ param
+    }
+
+
     return true;
   }
 
-  bool recalcDimensions(rail_manipulation_msgs::SegmentedObject& obj, const geometry_msgs::Transform& tf____KK)
+  bool recalcDimensions(rail_manipulation_msgs::SegmentedObject& obj, const geometry_msgs::Transform& tf)
   {
-    geometry_msgs::Transform tf;
-    tf.translation.x = obj.center.x;
-    tf.translation.y = obj.center.y;
-    tf.translation.z = obj.center.z - obj.height / 2.0; // templates' base is at z = 0
-    tf.rotation = obj.orientation;
-    ttk::TF2::instance().sendTransform(tf, "base_footprint", obj.name + "_O");       // TODO disable w/ param
-    ttk::TF2::instance().sendTransform(tf____KK, "base_footprint", obj.name + "_M");  // TODO remove
     pcl::PointCloud<pcl::PointXYZRGB> tmp_pc;  // explain
     pcl::fromROSMsg(obj.point_cloud, tmp_pc);
     pcl_ros::transformPointCloud(tmp_pc, tmp_pc, tf);
 
     Eigen::Vector4f min_pt, max_pt;
     pcl::getMinMax3D(tmp_pc, min_pt, max_pt);
-    ROS_ERROR("%f -> %f", tf::getYaw(obj.orientation), tf::getYaw(tf____KK.rotation));
+    ROS_ERROR("%f -> %f", tf::getYaw(obj.orientation), tf::getYaw(tf.rotation));
     double new_width = max_pt[0] - min_pt[0];
     double new_depth = max_pt[1] - min_pt[1];
     if (new_width * new_depth < obj.width * obj.depth)  // TODO explain
@@ -422,7 +469,7 @@ private:
       ROS_ERROR("A:  %f -> %f", obj.width * obj.depth, new_width * new_depth);
       obj.width = new_width;
       obj.depth = new_depth;
-      return false;    ///    esto tendria sentido en segmenter, igual que con la mesa
+      return true;    ///    esto tendria sentido en segmenter, igual que con la mesa
     }
     return false;
   }
