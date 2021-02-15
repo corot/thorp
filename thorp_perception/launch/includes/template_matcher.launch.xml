@@ -7,7 +7,7 @@
 <!--    <arg name="cloud_topic"             default="/xtion/depth_registered/points"/>-->
     <arg name="template_file_path"      default="$(find thorp_perception)/meshes/$(arg object).pcd"/>
 <!--    <arg name="initial_estimate"        default="1.9 0.1 0.83 1.57 0 0"/>
-    <arg name="template_offset"         default="0.144 0.118 0.148 0 0 -0.785"/>-->
+    <arg name="template_offset"         default="0 0 0 0 0 1.570796327"/> -->
     <arg name="output_frame"            default="$(arg object)"/>
     <arg name="visualize_output"        default="true"/>
     <arg name="debug"                   default="true"/>

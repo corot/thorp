@@ -269,7 +269,7 @@ class ObjectDetectionRAIL(smach.State):
     def __init__(self, timeout=0.0):
         super(ObjectDetectionRAIL, self).__init__(outcomes=['succeeded', 'preempted', 'aborted'],
                                                   output_keys=['table', 'table_pose', 'objects'])
-        self.templates = ['clover'] #, 'clover', 'triangle', 'tower']
+        self.templates = ['tower','cube'] #, 'clover', 'triangle', 'tower']
         self.templates = ['tower',
                           'cube',
                           'square',
@@ -317,10 +317,15 @@ class ObjectDetectionRAIL(smach.State):
             # TODO: detected_table.name is empty; tweak RAIL to provide it or add sequential names here
             # SemanticLayer().add_obstacle(table.name, pose, [width, length, 0.0], 'global')
             # SemanticLayer().add_obstacle(table.name, pose, [width - 0.2, length - 0.2, 0.0], 'local')    TDDO  a ver q pasa
-            for segmented_obj in segmented_objs[1:]:
+            for i, segmented_obj in enumerate(segmented_objs[1:]):
                 initial_estimate = geo_msgs.Transform(segmented_obj.center, segmented_obj.orientation)
+                ietf = geo_msgs.TransformStamped()
+                ietf.child_frame_id = 'PCA_' + str(i)
+                ietf.header.frame_id = 'base_footprint'
+                ietf.transform = initial_estimate
+                TF2().publish_transform(ietf)
                 initial_estimate.translation.z -= segmented_obj.height / 2.0  # our templates' base is at z = 0
-                #####initial_estimate.rotation = quaternion_msg_from_yaw(0.0)
+                initial_estimate.rotation = quaternion_msg_from_yaw(0.0)
                 print (yaw(initial_estimate.rotation)*180)/3.1416
                 min_error = float('inf')
                 best_fit = None
@@ -333,6 +338,12 @@ class ObjectDetectionRAIL(smach.State):
                     # print segmented_obj.center.z
                     resp = self.match_srvs[template](initial_estimate, segmented_obj.point_cloud)
                     print template, resp.match_error, rospy.get_time() - start_time
+                    # tmtf = geo_msgs.TransformStamped()
+                    # tmtf.child_frame_id = 'TM_' + str(i)
+                    # tmtf.header.frame_id = 'base_footprint'
+                    # tmtf.transform = resp.template_pose
+                    resp.template_pose.child_frame_id = 'TM'# + str(i)
+                    TF2().publish_transform(resp.template_pose)
                     if resp.match_error < min_error:
                         min_error = resp.match_error
                         best_fit = template
