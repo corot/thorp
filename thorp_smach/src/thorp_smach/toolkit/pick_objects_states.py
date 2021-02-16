@@ -39,7 +39,7 @@ class TargetSelection(smach.State):
             return 'have_target'
         elif targets:
             # retry failed objects at random order
-            target, dist = targets[randrange(0, ud['objs_to_skip'])]
+            target, dist = targets[randrange(0, min(len(targets), ud['objs_to_skip']))]
             rospy.loginfo("Retrying target '%s', located at %.2fm (%d to retry)", target, dist, ud['objs_to_skip'])
             ud['target'] = target
             return 'have_target'
@@ -52,7 +52,7 @@ class SkipOneObject(smach.State):
     Select the closest object within arm reach
     """
 
-    def __init__(self, max_failures=2):
+    def __init__(self, max_failures=3):
         smach.State.__init__(self,
                              outcomes=['succeeded', 'max_failures'],
                              input_keys=['objs_to_skip'],
