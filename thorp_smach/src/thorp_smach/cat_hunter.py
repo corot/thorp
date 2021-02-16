@@ -2,7 +2,6 @@
 
 import rospy
 import smach
-import smach_ros
 
 import thorp_msgs.msg as thorp_msgs
 import thorp_msgs.srv as thorp_srvs
@@ -10,6 +9,7 @@ import thorp_msgs.srv as thorp_srvs
 from thorp_toolkit.geometry import TF2
 from thorp_toolkit.visualization import Visualization
 
+from toolkit.common_states import run_sm
 from toolkit.navigation_states import FollowPose
 from toolkit.perception_states import MonitorObjects
 from toolkit.exploration_states import ExploreHouse
@@ -122,21 +122,4 @@ def cat_hunter_sm():
 if __name__ == '__main__':
     rospy.init_node('cat_hunter_smach')
 
-    TF2()  # start listener asap to avoid delays when running
-
-    sm = cat_hunter_sm()
-
-    # Create and start the introspection server
-    sis = smach_ros.IntrospectionServer('server_name', sm, '/SM_ROOT')
-    sis.start()
-
-    # Execute the state machine
-    t0 = rospy.get_time()
-    outcome = sm.execute()
-    rospy.loginfo("Hunt completed in %.2fs with outcome '%s'", rospy.get_time() - t0, outcome)
-
-    # Wait for ctrl-c to stop the application
-    rospy.spin()
-    sis.stop()
-
-    rospy.signal_shutdown('All done.')
+    run_sm(cat_hunter_sm(), rospy.get_param('~app_name'))

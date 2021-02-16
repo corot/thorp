@@ -9,6 +9,7 @@ Explore the entire environment searching for cats, and attack them whenever foun
 
 <launch>
   <arg name="app_name" value="object_gatherer"/>
+  <arg name="viz_smach" default="false"/>
 
   <!--  ***** Simulated mobile manipulator Thorp ******  -->
 
@@ -44,10 +45,13 @@ Explore the entire environment searching for cats, and attack them whenever foun
 
   <!--  ****** Executive smach and visualization ******  -->
 
-  <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="false"/>
+  <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="false">
+    <param name="app_name" value="$(arg app_name)"/>
+    <param name="viz_smach" value="$(arg viz_smach)"/>
+  </node>
 
-  <node pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
-
+  <node if="$(arg viz_smach)"
+       pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/gathering.rviz" output="screen" respawn="true"/>
 </launch>

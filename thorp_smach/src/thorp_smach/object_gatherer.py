@@ -2,13 +2,11 @@
 
 import rospy
 import smach
-import smach_ros
 
-from thorp_toolkit.geometry import TF2
-
-from toolkit.common_states import wait_for_sim_time, wait_for_mbf
+from toolkit.common_states import run_sm
 from toolkit.navigation_states import GetRobotPose, LookToPose
 from toolkit.perception_states import MonitorTables, TableMarkVisited, TableWasVisited
+from toolkit.manipulation_states import FoldArm
 from toolkit.exploration_states import ExploreHouse
 from toolkit.gathering_states import GatherObjects
 
@@ -77,11 +75,11 @@ def object_gatherer_sm():
         smach.Sequence.add('MARK_VISITED', TableMarkVisited())
 
     # Full SM: explore the house and gather objects from all detected tables
-    sm = smach.StateMachine(outcomes=['detected',
-                                      'not_detected',
-                                      'tray_full',
-                                      'aborted',
-                                      'preempted'])
+    sm = smach.DoOnExit(outcomes=['detected',
+                                  'not_detected',
+                                  'tray_full',
+                                  'aborted',
+                                  'preempted'])
     with sm:
         smach.StateMachine.add('SEARCH', search_sm,
                                transitions={'detected': 'CONFIRM',
@@ -100,32 +98,11 @@ def object_gatherer_sm():
                                # transitions={'succeeded': 'SEARCH',
                                #              'aborted': 'SEARCH',
                                #              'preempted': 'SEARCH'})
+        smach.DoOnExit.add_finally('FOLD_ARM', FoldArm())  # fold arm on exit regardless of the outcome
     return sm
 
 
 if __name__ == '__main__':
     rospy.init_node('object_gatherer_smach')
 
-    TF2()  # start listener asap to avoid delays when running
-
-    wait_for_sim_time()
-
-    sm = object_gatherer_sm()
-
-    # Create and start the introspection server
-    sis = smach_ros.IntrospectionServer('server_name', sm, '/SM_ROOT')
-    sis.start()
-
-    # MBF is the last component to start, so wait for it before running the sm
-    wait_for_mbf()
-
-    # Execute the state machine
-    t0 = rospy.get_time()
-    outcome = sm.execute()
-    rospy.loginfo("Gathering completed in %.2fs with outcome '%s'", rospy.get_time() - t0, outcome)
-
-    # Wait for ctrl-c to stop the application
-    rospy.spin()
-    sis.stop()
-
-    rospy.signal_shutdown('All done.')
+    run_sm(object_gatherer_sm(), rospy.get_param('~app_name'))

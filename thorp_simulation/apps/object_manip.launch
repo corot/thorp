@@ -6,6 +6,7 @@
 
 <launch>
   <arg name="app_name" value="object_manip"/>
+  <arg name="viz_smach" default="false"/>
 
   <!--  ***** Simulated mobile manipulator Thorp ******  -->
   <include file="$(find thorp_simulation)/launch/thorp_gazebo.launch">
@@ -39,10 +40,12 @@
 
   <!--  ****** Executive smach and visualization ******  -->
   <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="false">
-    <param name="rec_objects_frame" value="map"/>
+    <param name="app_name" value="$(arg app_name)"/>
+    <param name="viz_smach" value="$(arg viz_smach)"/>
   </node>
 
-  <node pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
+  <node if="$(arg viz_smach)"
+       pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/manipulation.rviz" respawn="true"/>
 </launch>

@@ -10,6 +10,7 @@ over all rooms and explore them following the planned sequence.
 
 <launch>
   <arg name="app_name" value="explore_house"/>
+  <arg name="viz_smach" default="false"/>
 
   <!--  ***** Simulated mobile manipulator Thorp ******  -->
   <include file="$(find thorp_simulation)/launch/thorp_stage.launch">
@@ -24,9 +25,13 @@ over all rooms and explore them following the planned sequence.
   <include file="$(find thorp_bringup)/launch/includes/exploration.launch.xml"/>
 
   <!--  ****** Executive smach and visualization ******  -->
-  <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="false"/>
+  <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="false">
+    <param name="app_name" value="$(arg app_name)"/>
+    <param name="viz_smach" value="$(arg viz_smach)"/>
+  </node>
 
-  <node pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
+  <node if="$(arg viz_smach)"
+       pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/exploration.rviz"/>
 </launch>
