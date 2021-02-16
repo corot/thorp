@@ -14,9 +14,6 @@
     <arg name="latch_initial_estimate"  default="false"/>
     <arg name="provide_processed_cloud" default="true"/>
 
-    <!-- gives static world tf of initial estimate for reference
-    <node pkg="tf" type="static_transform_publisher" name="base_link_broadcaster" args="$(arg initial_estimate) map initial_estimate 10" /> -->
-
     <!-- launch template matching for demo world with schunk machine -->
     <node pkg="rail_mesh_icp" type="template_matcher_node" name="template_matcher_$(arg object)" output="screen" respawn="true">
         <!--<param name="pcl_topic"               value="$(arg cloud_topic)"/>-->

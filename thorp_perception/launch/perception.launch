@@ -52,12 +52,22 @@
   <!--  ************ RAIL Object Detection ************  -->
   <group if="$(eval pipeline == 'RAIL')">
     <node pkg="thorp_perception" type="rail_object_detection_server" name="object_detection_server" output="screen" respawn="true">
-  <!--
-      <param name="ork_execute_timeout" value="5.0"/>
-      <param name="recognize_objs_calls" value="5"/>
-
-      <remap from="rgb_image" to="xtion/rgb/image_raw"/>
-  -->
+      <rosparam param="object_types">
+        ["circle",
+         "clover",
+         "cross",
+         "cube",
+         "diamond",
+         "pentagon",
+         "rectangle",
+         "square",
+         "star",
+         "tower",
+         "triangle"]
+      </rosparam>
+      <param name="publish_static_tf" value="false"/>
+      <param name="max_matching_error" value="1e-4"/>
+      <param name="output_frame" value="base_footprint"/>
     </node>
 
     <node pkg="rail_segmentation" type="rail_segmentation" name="rail_segmentation" output="screen" respawn="true">
@@ -65,9 +75,6 @@
         $(find thorp_perception)
       </rosparam>
     </node>
-
-    <!-- gives static world tf of initial estimate for reference
-    <node pkg="tf" type="static_transform_publisher" name="base_link_broadcaster" args="$(arg initial_estimate) map initial_estimate 10" />-->
 
     <include file="$(find thorp_perception)/launch/includes/template_matcher.launch.xml">
       <arg name="object"  value="circle"/>
@@ -102,13 +109,5 @@
     <include file="$(find thorp_perception)/launch/includes/template_matcher.launch.xml">
       <arg name="object"  value="triangle"/>
     </include>
-
-    <!-- launch icp_matcher
-    <node pkg="rail_mesh_icp" type="icp_matcher_node" name="icp_matcher_node" output="screen" respawn="true">
-      <param name="max_dist"            value="0.01"/>
-      <param name="num_iterations"      value="1000000"/>
-      <param name="translation_epsilon" value="0.0000000000001"/>
-      <param name="model_fit_epsilon"   value="0.0000000000001"/>
-    </node>-->
   </group>
 </launch>

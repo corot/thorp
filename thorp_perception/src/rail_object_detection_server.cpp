@@ -20,7 +20,6 @@
 
 // MoveIt!
 #include <moveit_msgs/ObjectColor.h>
-#include <moveit_msgs/PlanningScene.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 
 // auxiliary libraries
@@ -35,18 +34,6 @@ namespace thorp_perception
 class ObjectDetectionServer
 {
 private:
-
-  std::vector<std::string> obj_types_ = {"tower",
-                                         "cube",
-                                         "square",
-                                         "rectangle",
-                                         "triangle",
-                                         "pentagon",
-                                         "circle",
-                                         "star",
-                                         "diamond",
-                                         "cross",
-                                         "clover"};
   // Service clients for RAIL object segmentation and template matchers
   ros::ServiceClient segment_srv_;
   std::map<std::string, ros::ServiceClient> match_srvs_;
@@ -59,7 +46,9 @@ private:
 
   bool publish_static_tf_;      ///< Publish static transforms for the segmented objects and surface
   double max_matching_error_;   ///< Object recognition template matching threshold
-  double elongated_threshold_;  ///< PCL's PCA is only valid for elongated objects (above this threshold)
+  std::string output_frame_;    ///< Recognized objects reference frame; we cannot use goal's field because
+                                ///< RAIL segmentation zone's frame cannot be reconfigured on runtime
+  std::vector<std::string> obj_types_;  ///< Recognized object types: list of templates we try to match to
 
 public:
 
@@ -71,8 +60,21 @@ public:
 
     pnh.param("publish_static_tf", publish_static_tf_, false);  // good for debugging but pollutes a lot
     pnh.param("max_matching_error", max_matching_error_, 1e-4);
-    pnh.param("elongated_threshold", elongated_threshold_, 1.2);
-    // TODO and replace "base_footprint" with a param,, or read RAIL param, if possible
+    pnh.param("output_frame", output_frame_, std::string("base_footprint"));
+
+    XmlRpc::XmlRpcValue otv;
+    pnh.param("object_types", otv, otv);
+    if (otv.size() == 0)
+    {
+      ROS_ERROR("[object detection] No recognized object types provided; aborting...");
+      return;
+    }
+    ROS_INFO("[object detection] Recognized object types: ");
+    for (int i = 0; i < otv.size(); i++)
+    {
+      obj_types_.push_back(otv[i]);
+      ROS_INFO_STREAM("                   - " << obj_types_[i]);
+    }
 
     // Connect to rail_segmentation/segment_objects service
     segment_srv_ = nh.serviceClient<rail_manipulation_msgs::SegmentObjects>("rail_segmentation/segment_objects");
@@ -153,7 +155,7 @@ public:
 
     if (publish_static_tf_)
       ttk::TF2::instance().sendTransform(result.support_surf.primitive_poses.front(),
-                                         "base_footprint", result.support_surf.id);
+                                         output_frame_, result.support_surf.id);
     moveit_msgs::ObjectColor obj_color;
     obj_color.id = result.support_surf.id;
     obj_color.color.r = table.rgb[0];
@@ -165,8 +167,16 @@ public:
     std::map<std::string, unsigned int> detected;
 
     // Process segmented objects following the support surface, and add them to the planning scene
-    for (int i = 1; i < srv.response.segmented_objects.objects.size(); ++i)   // TODO check preempted
+    for (int i = 1; i < srv.response.segmented_objects.objects.size(); ++i)
     {
+      if (od_as_.isPreemptRequested())
+      {
+        od_as_.setPreempted(result, "Preempted after processing " + std::to_string(i) + "/"
+                                  + std::to_string(srv.response.segmented_objects.objects.size())
+                                  + " segmented objects");
+        return;
+      }
+
       auto& rail_obj = srv.response.segmented_objects.objects[i];
       // reject objects of incongruent dimensions or with impossible poses, e.g. floating or embedded in the table
       if (!validateObject(rail_obj, table))
@@ -192,10 +202,8 @@ public:
       detected[rail_obj.name] += 1;
       co.id = rail_obj.name + " " + std::to_string(detected[rail_obj.name]);
       if (publish_static_tf_)
-        ttk::TF2::instance().sendTransform(co.primitive_poses.front(), "base_footprint", co.id);
+        ttk::TF2::instance().sendTransform(co.primitive_poses.front(), output_frame_, co.id);
 
-      bool x_aligned = ttk::xAligned(co.primitive_poses.front());   // TODO remoooooooove
-                           ROS_ERROR_STREAM(""<<co.id << "   x-a? " <<x_aligned << "   " << rail_obj.width << "   " << rail_obj.depth << "   -->    " <<length << "   " <<width);
       // matched poses have z = 0; raise the co's primitive to entirely cover the pointcloud
       co.primitive_poses.front().position.z += rail_obj.height / 2.0;
       result.objects.push_back(co);
@@ -319,24 +327,6 @@ private:
 
     ttk::tf2pose(poses[best_match->first].transform, pose);
     ROS_DEBUG("Yaw updated:    %f -> %f", tf::getYaw(obj.orientation), tf::getYaw(pose.orientation));
-
-
-
-
-    geometry_msgs::Transform tf;
-    tf.translation.x = obj.center.x;
-    tf.translation.y = obj.center.y;
-    tf.translation.z = obj.center.z - obj.height / 2.0; // templates' base is at z = 0
-    tf.rotation = obj.orientation;
-    ttk::TF2::instance().sendTransform(tf, "base_footprint", obj.name + "_PCA");       // TODO removeeeeee
-
-//    if (publish_static_tf_)
-//      ttk::TF2::instance().sendTransform(poses[best_match->first].transform, "base_footprint", obj.name + "_TM");  // TODO remove
- //   ttk::tf2pose(tf, pose);
-//    pose.position.x = obj.center.x;   /// TODO move this up and remove the pose argument
-//    pose.position.y = obj.center.y;
-//    pose.position.z = obj.center.z - obj.height / 2.0; // templates' base is at z = 0
-//    pose.orientation = obj.orientation;
 
     return true;
   }
