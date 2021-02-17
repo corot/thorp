@@ -9,8 +9,8 @@
 <!--    <arg name="initial_estimate"        default="1.9 0.1 0.83 1.57 0 0"/>
     <arg name="template_offset"         default="0 0 0 0 0 1.570796327"/> -->
     <arg name="output_frame"            default="$(arg object)"/>
-    <arg name="visualize_output"        default="true"/>
-    <arg name="debug"                   default="true"/>
+    <arg name="visualize_output"        default="false"/>
+    <arg name="debug"                   default="false"/>
     <arg name="latch_initial_estimate"  default="false"/>
     <arg name="provide_processed_cloud" default="true"/>
 

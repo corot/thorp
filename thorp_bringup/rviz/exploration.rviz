@@ -58,18 +58,572 @@ Visualization Manager:
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
-      Enabled: false
+      Enabled: true
       Links:
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
+        arm_base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        arm_elbow_F10_0_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_elbow_F10_1_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_elbow_F10_2_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_elbow_F3_0_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_elbow_flex_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_elbow_flex_servo_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_mount_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_shoulder_F10_0_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_shoulder_F10_1_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_shoulder_F10_2_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_shoulder_F3_0_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_shoulder_lift_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_shoulder_lift_servo_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_shoulder_pan_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_shoulder_pan_servo_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_wrist_F3_0_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_wrist_flex_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_wrist_flex_servo_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        base_footprint:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_servo_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_shaft_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube1_hollow_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube1_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube2_hollow_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube2_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube3_hollow_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube3_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube4_hollow_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube4_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube5_hollow_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube5_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube6_hollow_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube6_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        caster_back_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        caster_front_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cliff_sensor_front_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        cliff_sensor_left_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        cliff_sensor_right_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        gripper_active_finger_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gripper_active_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gripper_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        gripper_servo_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gripper_static_finger_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gripper_static_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gyro_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        ir_arm_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        ir_cannon_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        ir_l155_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        ir_l180_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        ir_r155_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        ir_r180_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        kinect_depth_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        kinect_depth_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        kinect_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        kinect_rgb_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        kinect_rgb_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        opencm_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        plate_bottom_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        plate_middle_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        plate_top_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_0_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_10_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_11_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_12_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_13_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_14_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_15_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_1_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_2_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_3_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_4_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_5_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_kinect_0_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_kinect_1_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_middle_0_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_middle_11_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_middle_16_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_middle_17_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_middle_1_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_middle_21_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_middle_2_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_middle_3_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_top_0_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_top_10_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_top_12_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_top_1_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_top_20_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_top_22_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_top_2_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_top_3_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_0_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_m18_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_m36_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_m54_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_m72_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_m90_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_p18_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_p36_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_p54_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_p72_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_p90_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        senz3d_mount_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        sonars_mount_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        tray_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wheel_left_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wheel_right_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        xtion_depth_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        xtion_depth_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        xtion_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        xtion_mount_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        xtion_rgb_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        xtion_rgb_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
       Name: RobotModel
       Robot Description: robot_description
       TF Prefix: ""
       Update Interval: 0
-      Value: false
+      Value: true
       Visual Enabled: true
     - Alpha: 1
       Class: rviz/Polygon
@@ -230,10 +784,6 @@ Visualization Manager:
           Value: false
         pole_bottom_15_link:
           Value: false
-        pole_bottom_16_link:
-          Value: true
-        pole_bottom_17_link:
-          Value: true
         pole_bottom_1_link:
           Value: false
         pole_bottom_2_link:
@@ -252,6 +802,10 @@ Visualization Manager:
           Value: false
         pole_middle_11_link:
           Value: false
+        pole_middle_16_link:
+          Value: true
+        pole_middle_17_link:
+          Value: true
         pole_middle_1_link:
           Value: false
         pole_middle_21_link:
@@ -298,21 +852,7 @@ Visualization Manager:
           Value: false
         s_p90_link:
           Value: false
-        senz3d_calib_link:
-          Value: false
-        senz3d_depth_frame:
-          Value: false
-        senz3d_depth_optical_frame:
-          Value: false
-        senz3d_gazebo_optical_frame:
-          Value: false
-        senz3d_link:
-          Value: false
         senz3d_mount_link:
-          Value: false
-        senz3d_rgb_frame:
-          Value: false
-        senz3d_rgb_optical_frame:
           Value: false
         sonars_mount_link:
           Value: false
@@ -452,9 +992,9 @@ Visualization Manager:
                             {}
                   opencm_link:
                     {}
-                  pole_bottom_16_link:
+                  pole_middle_16_link:
                     {}
-                  pole_bottom_17_link:
+                  pole_middle_17_link:
                     {}
                   pole_top_10_link:
                     {}
@@ -469,16 +1009,6 @@ Visualization Manager:
                       {}
                     pole_top_22_link:
                       {}
-                    senz3d_calib_link:
-                      senz3d_rgb_frame:
-                        senz3d_depth_frame:
-                          senz3d_depth_optical_frame:
-                            {}
-                        senz3d_link:
-                          senz3d_gazebo_optical_frame:
-                            {}
-                        senz3d_rgb_optical_frame:
-                          {}
                     xtion_mount_link:
                       xtion_rgb_frame:
                         xtion_depth_frame:
@@ -1159,7 +1689,6 @@ Visualization Manager:
               Marker Topic: /move_base_flex/TEBPlanner/teb_markers
               Name: Markers
               Namespaces:
-                PointObstacles: true
                 TebContainer: true
                 ViaPoints: true
               Queue Size: 100

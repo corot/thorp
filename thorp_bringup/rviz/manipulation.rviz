@@ -4,11 +4,8 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /MotionPlanning1/Scene Geometry1
         - /Xtion1/Auto Size1
-        - /TF1
         - /TF1/Frames1
-        - /RAIL1
         - /RAIL1/Segmented Objects1/Namespaces1
         - /COB1/Image1
       Splitter Ratio: 0.6091369986534119
@@ -1270,7 +1267,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: Intensity
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 4096
@@ -1287,7 +1284,7 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
+      Value: false
     - Alpha: 1
       Auto Size:
         Auto Size Factor: 1
@@ -1307,13 +1304,51 @@ Visualization Manager:
       Decay Time: 0
       Depth Map Topic: /xtion/depth_registered/image_raw
       Depth Map Transport Hint: raw
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 4096
       Min Color: 0; 0; 0
       Min Intensity: 0
       Name: Xtion
+      Occlusion Compensation:
+        Occlusion Time-Out: 30
+        Value: false
+      Position Transformer: XYZ
+      Queue Size: 5
+      Selectable: true
+      Size (Pixels): 3
+      Style: Flat Squares
+      Topic Filter: true
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Alpha: 1
+      Auto Size:
+        Auto Size Factor: 1
+        Value: true
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/DepthCloud
+      Color: 255; 255; 255
+      Color Image Topic: /kinect/rgb/image_color
+      Color Transformer: RGB8
+      Color Transport Hint: raw
+      Decay Time: 0
+      Depth Map Topic: /kinect/depth_registered/image_raw
+      Depth Map Transport Hint: raw
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: Kinect
       Occlusion Compensation:
         Occlusion Time-Out: 30
         Value: false
@@ -1339,51 +1374,13 @@ Visualization Manager:
       Channel Name: intensity
       Class: rviz/DepthCloud
       Color: 255; 255; 255
-      Color Image Topic: /kinect/rgb/image_color
-      Color Transformer: RGB8
-      Color Transport Hint: raw
-      Decay Time: 0
-      Depth Map Topic: /kinect/depth_registered/image_raw
-      Depth Map Transport Hint: raw
-      Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 4096
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: Kinect
-      Occlusion Compensation:
-        Occlusion Time-Out: 30
-        Value: false
-      Position Transformer: XYZ
-      Queue Size: 5
-      Selectable: true
-      Size (Pixels): 3
-      Style: Flat Squares
-      Topic Filter: true
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: true
-    - Alpha: 1
-      Auto Size:
-        Auto Size Factor: 1
-        Value: true
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz/DepthCloud
-      Color: 255; 255; 255
       Color Image Topic: /external_camera/rgb/image_raw
       Color Transformer: RGB8
       Color Transport Hint: raw
       Decay Time: 0
       Depth Map Topic: /external_camera/depth/image_raw
       Depth Map Transport Hint: raw
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 4096
@@ -1401,7 +1398,7 @@ Visualization Manager:
       Topic Filter: true
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
+      Value: false
     - Class: rviz/InteractiveMarkers
       Enable Transparency: true
       Enabled: true
@@ -1516,36 +1513,18 @@ Visualization Manager:
           Value: false
         caster_front_link:
           Value: false
-        circle:
-          Value: false
         cliff_sensor_front_link:
           Value: false
         cliff_sensor_left_link:
           Value: false
         cliff_sensor_right_link:
           Value: false
-        clover:
-          Value: false
-        cross:
-          Value: false
-        cross_M:
-          Value: true
-        cross_O:
-          Value: true
-        cube:
-          Value: false
-        cube_M:
-          Value: true
-        cube_O:
-          Value: true
-        diamond:
-          Value: false
         gripper_active_finger_link:
           Value: false
         gripper_active_link:
           Value: false
         gripper_link:
-          Value: true
+          Value: false
         gripper_servo_link:
           Value: false
         gripper_static_finger_link:
@@ -1582,12 +1561,6 @@ Visualization Manager:
           Value: false
         opencm_link:
           Value: false
-        pentagon:
-          Value: false
-        pentagon_M:
-          Value: true
-        pentagon_O:
-          Value: true
         plate_bottom_link:
           Value: false
         plate_middle_link:
@@ -1654,8 +1627,6 @@ Visualization Manager:
           Value: false
         pole_top_3_link:
           Value: false
-        rectangle:
-          Value: false
         s_0_link:
           Value: false
         s_m18_link:
@@ -1682,30 +1653,8 @@ Visualization Manager:
           Value: false
         sonars_mount_link:
           Value: false
-        square:
-          Value: false
-        star:
-          Value: false
-        star_M:
-          Value: true
-        star_O:
-          Value: true
-        table:
-          Value: true
-        tower:
-          Value: false
-        tower_M:
-          Value: true
-        tower_O:
-          Value: true
         tray_link:
           Value: false
-        triangle:
-          Value: false
-        triangle_M:
-          Value: true
-        triangle_O:
-          Value: true
         wheel_left_link:
           Value: false
         wheel_right_link:
@@ -1925,74 +1874,24 @@ Visualization Manager:
                   {}
                 wheel_right_link:
                   {}
-              circle:
-                {}
-              clover:
-                {}
-              cross:
-                {}
-              cross_M:
-                {}
-              cross_O:
-                {}
-              cube:
-                {}
-              cube_M:
-                {}
-              cube_O:
-                {}
-              diamond:
-                {}
-              pentagon:
-                {}
-              pentagon_M:
-                {}
-              pentagon_O:
-                {}
-              rectangle:
-                {}
-              square:
-                {}
-              star:
-                {}
-              star_M:
-                {}
-              star_O:
-                {}
-              table:
-                {}
-              tower:
-                {}
-              tower_M:
-                {}
-              tower_O:
-                {}
-              triangle:
-                {}
-              triangle_M:
-                {}
-              triangle_O:
-                {}
       Update Interval: 0
       Value: true
     - Class: rviz/Group
       Displays:
         - Class: rviz/Marker
-          Enabled: true
+          Enabled: false
           Marker Topic: /rail_segmentation/table_marker
           Name: Table
           Namespaces:
-            "": true
-            orig_bbox: true
-            rotated_bbox: true
+            {}
           Queue Size: 100
-          Value: true
+          Value: false
         - Alpha: 1
           Axes Length: 0.4000000059604645
           Axes Radius: 0.019999999552965164
           Class: rviz/Pose
           Color: 255; 25; 0
-          Enabled: true
+          Enabled: false
           Head Length: 0.30000001192092896
           Head Radius: 0.10000000149011612
           Name: Table Pose
@@ -2001,16 +1900,15 @@ Visualization Manager:
           Shape: Axes
           Topic: /rail_segmentation/table_pose
           Unreliable: false
-          Value: true
+          Value: false
         - Class: rviz/MarkerArray
-          Enabled: true
+          Enabled: false
           Marker Topic: /rail_segmentation/markers
           Name: Segmented Objects
           Namespaces:
-            "": true
-            segmentation_labels: false
+            {}
           Queue Size: 100
-          Value: true
+          Value: false
         - Alpha: 1
           Autocompute Intensity Bounds: true
           Autocompute Value Bounds:
@@ -2023,7 +1921,7 @@ Visualization Manager:
           Color: 255; 255; 255
           Color Transformer: RGB8
           Decay Time: 0
-          Enabled: true
+          Enabled: false
           Invert Rainbow: false
           Max Color: 255; 255; 255
           Max Intensity: 4096
@@ -2040,7 +1938,7 @@ Visualization Manager:
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true
-          Value: true
+          Value: false
         - Class: rviz/Image
           Enabled: false
           Image Topic: /rail_segmentation/debug_img
@@ -2197,7 +2095,7 @@ Visualization Manager:
           Use Fixed Frame: true
           Use rainbow: true
           Value: false
-      Enabled: true
+      Enabled: false
       Name: COB
     - Class: rviz/Group
       Displays:
@@ -2278,7 +2176,7 @@ Visualization Manager:
           Topic: /gripper_pose
           Unreliable: false
           Value: true
-      Enabled: true
+      Enabled: false
       Name: Blocks
   Enabled: true
   Global Options:
@@ -2303,25 +2201,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 0.6562082171440125
+      Distance: 0.5049457550048828
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.29584944248199463
-        Y: -0.00701851537451148
-        Z: 0.44857504963874817
+        X: 0.30187371373176575
+        Y: 0.005377061199396849
+        Z: 0.4407016932964325
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.1997966766357422
+      Pitch: 0.5647979974746704
       Target Frame: base_link
       Value: Orbit (rviz)
-      Yaw: 4.013596057891846
+      Yaw: 3.90360951423645
     Saved: ~
 Window Geometry:
   Displays:

@@ -109,6 +109,8 @@ public:
 
   void executeCB(const thorp_msgs::DetectObjectsGoal::ConstPtr& goal)
   {
+    ros::Time time_start = ros::Time::now();
+
     ROS_INFO("[object detection] Received goal!");
     thorp_msgs::DetectObjectsResult result;
 
@@ -223,12 +225,13 @@ public:
     {
       planning_scene_interface_.addCollisionObjects(result.objects, obj_colors);
 
-      ROS_INFO("[object detection] Succeeded! %lu objects detected", result.objects.size());
-
+      ROS_INFO("[object detection] Succeeded! %lu objects detected (time: %.2f s)", result.objects.size(),
+               (ros::Time::now() - time_start).toSec());
     }
     else
     {
-      ROS_INFO("[object detection] Succeeded, but couldn't find any object on the support surface");
+      ROS_INFO("[object detection] Succeeded, but couldn't find any tabletop object (time: %.2f s)",
+               (ros::Time::now() - time_start).toSec());
     }
 
     od_as_.setSucceeded(result);
