@@ -35,8 +35,10 @@ Explore the entire environment searching for cats, and attack them whenever foun
         args="cat_orange cat_black"/>
 
 
-  <!--  ************ IPA coverage planning ************  -->
-  <include file="$(find thorp_bringup)/launch/includes/exploration.launch.xml"/>
+  <!--  ****** IPA coverage planning using kinect *****  -->
+  <include file="$(find thorp_bringup)/launch/includes/exploration.launch.xml">
+    <arg name="camera" value="kinect"/>
+  </include>
 
 
   <!--  ****** Executive smach and visualization ******  -->

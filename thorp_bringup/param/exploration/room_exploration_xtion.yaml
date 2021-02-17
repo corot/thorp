@@ -1,0 +1,12 @@
+# room exploration parameters using xtion
+
+# small field of view covering the area where the xtion can detect tables using RAIL segmentation
+# (must be well within the detection zone in use)
+field_of_view_points: [[0.25, 0.25, 0.0],
+                       [0.25,-0.25, 0.0],
+                       [1.25,-0.65, 0.0],
+                       [1.25, 0.65, 0.0]]
+room_exploration_algorithm: 4  # Use the convex SPP exploration algorithm
+display_trajectory: false
+execute_path: false  # we do ourselves (this just sends goal by goal to move_base)
+return_path: true

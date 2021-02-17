@@ -21,8 +21,10 @@ over all rooms and explore them following the planned sequence.
     <arg name="initial_pose_a" value="0.0"/>
   </include>
 
-  <!--  ************ IPA coverage planning ************  -->
-  <include file="$(find thorp_bringup)/launch/includes/exploration.launch.xml"/>
+  <!--  ****** IPA coverage planning using kinect *****  -->
+  <include file="$(find thorp_bringup)/launch/includes/exploration.launch.xml">
+    <arg name="camera" value="kinect"/>
+  </include>
 
   <!--  ****** Executive smach and visualization ******  -->
   <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="false">

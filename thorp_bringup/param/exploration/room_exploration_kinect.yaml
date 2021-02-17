@@ -1,4 +1,4 @@
-# room exploration parameters
+# room exploration parameters using kinect
 
 # this field of view fits a Kinect sensor mounted in the standard position on a TB2, assuming 60 deg. horizontal fov
 # (well below actual 84.1° to ensure we see the whole target) and 0.5/2.0m as min/max distances (y = tan(fov/2)*dist)

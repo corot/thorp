@@ -45,8 +45,10 @@ Explore the entire environment searching for cats, and attack them whenever foun
   <!--  ****************** Utilities ******************  -->
 
 
-  <!--  ************ IPA coverage planning ************  -->
-  <include file="$(find thorp_bringup)/launch/includes/exploration.launch.xml"/>
+  <!--  ****** IPA coverage planning using xtion ******  -->
+  <include file="$(find thorp_bringup)/launch/includes/exploration.launch.xml">
+    <arg name="camera" value="xtion"/>
+  </include>
 
 
   <!--  ****** Executive smach and visualization ******  -->
