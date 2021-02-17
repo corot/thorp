@@ -194,7 +194,7 @@ private:
     // Add a detected object per bin to the goal result and to the planning scene as a collision object
     // Only bins receiving detections on most of the ORK tabletop calls are considered consistent enough
     objs_detection_->getDetectedObjects(recognize_objs_calls_/1.5, output_frame_,
-                                        result.objects, result.object_names, ps.object_colors);
+                                        result.objects, ps.object_colors);
     if (result.objects.size() > 0)
     {
       planning_scene_interface_.addCollisionObjects(result.objects, ps.object_colors);
@@ -214,7 +214,7 @@ private:
       planning_scene_interface_.addCollisionObjects(std::vector<moveit_msgs::CollisionObject>(1, table_co));
 
       // Add "table" as the support surface on action result
-      result.support_surf.id = table_co.id;
+      result.surface.id = table_co.id;
     }
     else
     {

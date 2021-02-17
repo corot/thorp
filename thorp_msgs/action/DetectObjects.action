@@ -6,9 +6,8 @@ string output_frame
 
 # result definition
 
-moveit_msgs/CollisionObject support_surf
+moveit_msgs/CollisionObject surface
 moveit_msgs/CollisionObject[] objects
-string[] object_names
 
 ---
 

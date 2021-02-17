@@ -27,11 +27,10 @@ def ObjectDetectionSM():
 
         def __init__(self):
             smach.State.__init__(self, outcomes=['preempted', 'satisfied', 'fold_arm', 'retry'],
-                                 input_keys=['od_attempt', 'object_names', 'table'],
-                                 output_keys=['od_attempt', 'support_surf'])
+                                 input_keys=['od_attempt', 'object_names'],
+                                 output_keys=['od_attempt'])
 
         def execute(self, ud):
-            ud['support_surf'] = ud['table'].id  # TODO ugly... cannot access subfields on ud?
             if self.preempt_requested():
                 self.service_preempt()
                 return 'preempted'
@@ -45,7 +44,7 @@ def ObjectDetectionSM():
 
     sm = smach.StateMachine(outcomes=['succeeded', 'preempted', 'aborted'],
                             input_keys=['od_attempt', 'output_frame'],
-                            output_keys=['table', 'objects', 'object_names', 'support_surf'])
+                            output_keys=['objects', 'object_names', 'support_surf'])
 
     with sm:
         smach.StateMachine.add('CLEAR_OCTOMAP', ClearOctomap(),
@@ -53,12 +52,7 @@ def ObjectDetectionSM():
                                             'preempted': 'preempted',
                                             'aborted': 'OBJECT_DETECTION'})
 
-        smach.StateMachine.add('OBJECT_DETECTION',
-                               smach_ros.SimpleActionState('object_detection',
-                                                           thorp_msgs.DetectObjectsAction,
-                                                           goal_slots=['output_frame'],
-                                                           result_slots=['objects', 'object_names', 'support_surf']),
-                               remapping={'support_surf': 'table'},
+        smach.StateMachine.add('OBJECT_DETECTION', ObjectDetection(),
                                transitions={'succeeded': 'OBJ_DETECTED_COND',
                                             'preempted': 'preempted',
                                             'aborted': 'aborted'})
@@ -123,7 +117,7 @@ class ObjectDetection(smach_ros.SimpleActionState):
 
     def result_cb(self, ud, status, result):
         ud['object_names'] = [co.id for co in result.objects]
-        ud['support_surf'] = result.support_surf.id  # only interested in the co name (TODO cannot access subfields on ud?)
+        ud['support_surf'] = result.surface.id  # only interested in the co name (TODO cannot access subfields on ud?)
 
 
 class ObjectsDetected(smach.State):

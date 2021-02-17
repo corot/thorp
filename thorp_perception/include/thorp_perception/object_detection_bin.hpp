@@ -177,7 +177,7 @@ public:
   }
 
   int getDetectedObjects(unsigned int min_detections, const std::string& output_frame,
-                         std::vector<moveit_msgs::CollisionObject>& objects, std::vector<std::string>& obj_names,
+                         std::vector<moveit_msgs::CollisionObject>& objects,
                          std::vector<moveit_msgs::ObjectColor>& obj_colors)
   {
     std::map<std::string, unsigned int> obj_name_occurences;
@@ -223,8 +223,6 @@ public:
       co.operation = moveit_msgs::CollisionObject::ADD;
       co.meshes.resize(1, obj_info.ground_truth_mesh);
       co.mesh_poses.push_back(out_pose);
-
-      obj_names.push_back(obj_name);
       objects.push_back(co);
 
       // Provide the detected color to the collision object

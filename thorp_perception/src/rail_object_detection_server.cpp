@@ -140,24 +140,24 @@ public:
     // Process segmented support surface (normally a table) and add to the planning
     // scene as a MoveIt! collision object, so it gets filtered out from the octomap
     auto& table = srv.response.segmented_objects.objects.front();
-    result.support_surf.header = srv.response.segmented_objects.header;
-    result.support_surf.id = "table";
-    result.support_surf.operation = moveit_msgs::CollisionObject::ADD;
-    result.support_surf.primitive_poses.resize(1);
-    result.support_surf.primitive_poses.front().position = table.center;
-    result.support_surf.primitive_poses.front().orientation = table.orientation;
-    result.support_surf.primitives.resize(1);
-    result.support_surf.primitives.front().type = shape_msgs::SolidPrimitive::BOX;
-    result.support_surf.primitives.front().dimensions = {table.depth, table.width, table.height};
+    result.surface.header = srv.response.segmented_objects.header;
+    result.surface.id = "table";
+    result.surface.operation = moveit_msgs::CollisionObject::ADD;
+    result.surface.primitive_poses.resize(1);
+    result.surface.primitive_poses.front().position = table.center;
+    result.surface.primitive_poses.front().orientation = table.orientation;
+    result.surface.primitives.resize(1);
+    result.surface.primitives.front().type = shape_msgs::SolidPrimitive::BOX;
+    result.surface.primitives.front().dimensions = {table.depth, table.width, table.height};
     ROS_INFO("[object detection] Adding table at %s as a collision object",
-             ttk::point2cstr3D(result.support_surf.primitive_poses[0].position));
-    planning_scene_interface_.addCollisionObjects(std::vector<moveit_msgs::CollisionObject>(1, result.support_surf));
+             ttk::point2cstr3D(result.surface.primitive_poses[0].position));
+    planning_scene_interface_.addCollisionObjects(std::vector<moveit_msgs::CollisionObject>(1, result.surface));
 
     if (publish_static_tf_)
-      ttk::TF2::instance().sendTransform(result.support_surf.primitive_poses.front(),
-                                         output_frame_, result.support_surf.id);
+      ttk::TF2::instance().sendTransform(result.surface.primitive_poses.front(),
+                                         output_frame_, result.surface.id);
     moveit_msgs::ObjectColor obj_color;
-    obj_color.id = result.support_surf.id;
+    obj_color.id = result.surface.id;
     obj_color.color.r = table.rgb[0];
     obj_color.color.g = table.rgb[1];
     obj_color.color.b = table.rgb[2];
@@ -207,7 +207,6 @@ public:
       // matched poses have z = 0; raise the co's primitive to entirely cover the pointcloud
       co.primitive_poses.front().position.z += rail_obj.height / 2.0;
       result.objects.push_back(co);
-      result.object_names.push_back(co.id);
 
       // use segmented pointcloud's color for the co
       obj_color.id = co.id;
