@@ -23,7 +23,7 @@ over all rooms and explore them following the planned sequence.
 
   <!--  ****** IPA coverage planning using kinect *****  -->
   <include file="$(find thorp_bringup)/launch/includes/exploration.launch.xml">
-    <arg name="camera" value="kinect"/>
+    <arg name="camera" value="xtion"/>
   </include>
 
   <!--  ****** Executive smach and visualization ******  -->

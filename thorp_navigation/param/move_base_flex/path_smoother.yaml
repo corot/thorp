@@ -1,3 +1,5 @@
+allow_unknown_space: true  # allow traversing unknown space (we use an empty map for smoothing)
+
 path_smoother_costmap:
   global_frame: map
   robot_base_frame: base_footprint
@@ -5,8 +7,9 @@ path_smoother_costmap:
   publish_frequency: 0.5
   transform_tolerance: 0.5
   track_unknown_space: true
-  robot_radius: 0.01 # allow pass within inscribed radius; the controller will deal with the obstacles
-  static:
+  robot_radius: 0.18  # irrelevant a long as the static map is disabled
+  static_map:
+    enabled: false  # we don't care about obstacles; TEB will cope with them
     map_topic: map
   plugins:
     - {name: static_map, type: "costmap_2d::StaticLayer"}

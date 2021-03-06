@@ -12,7 +12,7 @@ TEBPlanner:
   allow_init_with_backwards_motion: False
   max_global_plan_lookahead_dist: 3.0
   global_plan_viapoint_sep: 0.4
-  global_plan_prune_distance: 0.4  # prune path shortly after passing to avoid reverting direction on loops
+  global_plan_prune_distance: 0.2  # prune path shortly after passing to avoid reverting direction on loops
   exact_arc_length: False
   feasibility_check_no_poses: 5
   publish_feedback: False
@@ -48,7 +48,7 @@ TEBPlanner:
   dynamic_obstacle_inflation_dist: 0.6
   include_dynamic_obstacles: True
 
-  costmap_converter_plugin: ""
+  costmap_converter_plugin: ""  # treat each occupied costmap cell as a single point-obstacle
   costmap_converter_spin_thread: True
   costmap_converter_rate: 5
 
@@ -69,7 +69,7 @@ TEBPlanner:
   weight_kinematics_forward_drive: 100
   weight_kinematics_turning_radius: 1
   weight_optimaltime: 4 # must be > 0
-  weight_shortest_path: 0
+  weight_shortest_path: 2
   weight_obstacle: 100
   weight_inflation: 0.2
   weight_dynamic_obstacle: 10
