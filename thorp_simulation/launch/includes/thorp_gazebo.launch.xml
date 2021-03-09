@@ -37,6 +37,9 @@
     <remap from="scan" to="xtion/scan"/>
   </node>
 
+  <!-- Bumper/cliff sensors as pointcloud, so they can be integrated on the costmaps  -->
+  <include file="$(find turtlebot_bringup)/launch/includes/kobuki/bumper2pc.launch.xml"/>
+
   <!-- Read the configuration and load controllers for the arm, gripper and cannon -->
   <rosparam file="$(find thorp_simulation)/param/controllers.yaml" command="load"/>
   <node name="controller_spawner" pkg="controller_manager" type="spawner" output="screen"

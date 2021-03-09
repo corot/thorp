@@ -50,9 +50,4 @@
     <arg name="initial_pose_y"  value="$(arg initial_pose_y)"/>
     <arg name="initial_pose_a"  value="$(arg initial_pose_a)"/>
   </include>
-
-  <!-- Bumper/cliff events to pointcloud, so can be integrated on move_base's costmaps  -->
-  <!-- TODO (not working, as it needs sensors/core messages and kobuki plugin only provides the events)
-       Make a new nodelet bumper2range and PR to Yujin -->
-  <include file="$(find turtlebot_bringup)/launch/includes/kobuki/bumper2pc.launch.xml"/>
 </launch>
