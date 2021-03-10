@@ -14,6 +14,7 @@ from thorp_toolkit.semantic_layer import SemanticLayer
 from thorp_toolkit.progress_tracker import ProgressTracker
 
 from common_states import SetNamedConfig, DismissNamedConfig
+from userdata_states import UDInsertInList, UDListSlicing, UDApplyFn
 
 import config as cfg
 
@@ -34,6 +35,41 @@ class GetRobotPose(smach.State):
         except rospy.ROSException as err:
             rospy.logerr("Get robot pose failed: %s", str(err))
             return 'aborted'
+
+
+class PrependCurrentPose(smach.Sequence):
+    """
+    Prepend current robot pose to the given path.
+    Normally we do this to ensure that we follow the whole path without skipping to the nearest pose.
+    This also helps progress tracker when the first waypoint is already behind.
+    """
+    def __init__(self):
+        super(PrependCurrentPose, self).__init__(outcomes=['succeeded', 'aborted'],
+                                                 connector_outcome='succeeded',
+                                                 input_keys=['path'],
+                                                 output_keys=['path'])
+        with self:
+            smach.Sequence.add('GET_ROBOT_POSE', GetRobotPose())
+            smach.Sequence.add('INSERT_CURRENT_POSE', UDInsertInList(0),
+                               remapping={'element': 'robot_pose',
+                                          'list': 'path'})
+
+
+class DelTraversedWPs(smach.Sequence):
+    """
+    Deleted waypoints up to the last reached one.
+    """
+    def __init__(self):
+        super(DelTraversedWPs, self).__init__(outcomes=['succeeded', 'aborted'],
+                                              connector_outcome='succeeded',
+                                              input_keys=['waypoints', 'reached_wp'],
+                                              output_keys=['waypoints'])
+        with self:
+            smach.Sequence.add('INC_REACHED_WP_BY_1', UDApplyFn('reached_wp', lambda x: None if x is None else x + 1))
+                                   #####remapping={'key': 'reached_wp'})
+            smach.Sequence.add('DEL_TRAVERSED_WPS', UDListSlicing(),
+                               remapping={'list': 'waypoints',
+                                          'start': 'reached_wp'})
 
 
 class PoseAsPath(smach.State):
@@ -154,6 +190,8 @@ class ExePath(smach_ros.SimpleActionState):
             self.target_pose_pub.publish(goal.path.poses[-1])
 
         if self.track_progress:
+            rospy.loginfo("Progress tracker initialized with %d waypoints and reached threshold %g m",
+                          len(ud['waypoints']), cfg.WP_REACHED_THRESHOLD)
             self.progress_tracker = ProgressTracker(ud['waypoints'], cfg.WP_REACHED_THRESHOLD)
 
     def result_cb(self, ud, status, result):
@@ -161,7 +199,12 @@ class ExePath(smach_ros.SimpleActionState):
             # Restore previous tolerance values before leaving the state
             Reconfigure().restore_config(self.params_ns, ['xy_goal_tolerance', 'yaw_goal_tolerance'])
         if self.track_progress:
-            ud['reached_wp'] = self.progress_tracker.reached_waypoint()
+            reached_waypoint = self.progress_tracker.reached_waypoint()
+            if reached_waypoint is None:
+                rospy.loginfo("Progress tracker didn't reach even the first waypoint")
+            else:
+                rospy.loginfo("Progress tracker reached waypoint: %d", reached_waypoint)
+            ud['reached_wp'] = reached_waypoint
         if self.track_progress:
             self.progress_tracker.reset()  # to clear the markers, but... viz is a singleton, so I'll clear ALL markers!
 
@@ -213,17 +256,17 @@ class ExePathFailed(smach.State):
         # ExePath must provide this specific message at the end of the result message in case of failure
         cwp_index = ud['message'].find('current waypoint: ')
         if cwp_index >= 0:
-            # TODO I must adapt this to integrate the progress tracker with the smoothed path logic (or remove entirely path follower support)
+            # TODO I must adapt this to integrate the progress tracker with the smoothed path logic (or remove entirely path follower support)   and remove 'path' key
             self.next_waypoint = int(ud['message'][cwp_index + len('current waypoint: '):])
             ud['path'].poses = ud['path'].poses[self.next_waypoint:]
-        elif ud['reached_wp'] is not None and ud['reached_wp'] != self.next_waypoint:
+        elif ud['reached_wp'] is not None:
             # TEB logic using progress tracker:   is very brittle, but seems to work!  hope I can do better w/ BTs
             #  ignore None on 'reached_wp', as it's normally a failure after a recovery attempt
             self.next_waypoint = ud['reached_wp'] + 1
             ud['waypoints'] = ud['waypoints'][self.next_waypoint:]
-        # else:
-        #     rospy.logwarn("No current waypoint provided")
-        #     self.next_waypoint = -1
+        else:
+            rospy.logwarn("No current waypoint provided; assuming we didn't reach even the first waypoint")
+            self.next_waypoint = 1
 
         try:
             rb = self.recovery_behaviors[self.consecutive_failures]
@@ -239,9 +282,6 @@ class ExePathFailed(smach.State):
                 next_wp_pose = ud['waypoints'][0]
                 rospy.loginfo("Navigate to the next waypoint: %d, %s", self.next_waypoint, pose2d2str(next_wp_pose))
                 ud['next_wp'] = next_wp_pose
-                if len(ud['waypoints']) > 1:
-                    # if not the last, consume a waypoint, so we try with the 2nd next if we fail to go to the next
-                    ud['waypoints'].pop(0)
                 return 'next_wp'
 
             return 'aborted'
@@ -333,14 +373,14 @@ class FollowWaypoints(smach.DoOnExit):
                                                         'aborted',
                                                         'preempted'],
                                               input_keys=['waypoints'],
-                                              output_keys=['outcome', 'message'])
+                                              output_keys=['waypoints', 'reached_wp', 'outcome', 'message'])
         with self:
             smach.StateMachine.add('FOLLOW_WP_CTRL', SetNamedConfig('waypoints_following'),
                                    transitions={'succeeded': 'SMOOTH_PATH',
                                                 'aborted': 'aborted'})
             smach.StateMachine.add('SMOOTH_PATH', SmoothPath(),
                                    transitions={'succeeded': 'EXE_PATH',
-                                                'aborted': 'FAILURE',
+                                                'aborted': 'aborted',
                                                 'preempted': 'preempted'})
             smach.StateMachine.add('EXE_PATH', ExePath(controller,
                                                        cfg.LOOSE_DIST_TOLERANCE,
@@ -361,9 +401,14 @@ class FollowWaypoints(smach.DoOnExit):
             smach.StateMachine.add('NEXT_WP', GoToPose(dist_tolerance=cfg.LOOSE_DIST_TOLERANCE,
                                                        angle_tolerance=cfg.INF_ANGLE_TOLERANCE),
                                    transitions={'succeeded': 'EXE_PATH',
-                                                'aborted': 'EXE_PATH',  # also if failed; at least we have skip a wp
+                                                'aborted': 'SKIP_WP',  # also if failed; at least we have skip a wp
                                                 'preempted': 'preempted'},
                                    remapping={'target_pose': 'next_wp'})
+            self.userdata.ONE = 1
+            smach.StateMachine.add('SKIP_WP', UDListSlicing(),
+                                   remapping={'list': 'waypoints',
+                                              'start': 'ONE'},
+                                   transitions={'succeeded': 'EXE_PATH'})
             smach.DoOnExit.add_finally('STANDARD_CTRL', DismissNamedConfig('waypoints_following'))
 
 

@@ -130,7 +130,7 @@ def spawn_surfaces():
             x = uniform(min_x, max_x)
             y = uniform(min_y, max_y)
             z = 0.0
-            pose = create_3d_pose(x, y, z, 0, 0, 0)  # uniform(-pi, +pi))  TODO cannot detect surface orientation by now
+            pose = create_3d_pose(x, y, z, 0, 0, uniform(-pi, +pi))
             # we check that the distance to all previously added surfaces is below a threshold to space the surfaces
             if close_to_prev_pose(pose, added_poses, SURFS_MIN_DIST):
                 continue
@@ -138,6 +138,8 @@ def spawn_surfaces():
             # check also that the surface is in open space
             if close_to_obstacle(x, y, surf):
                 continue
+
+            # TODO: and not too close to the robot
 
             added_poses.append(pose)
             model_name = surf['name'] + '_' + str(surf_index + 10)   # allow for some objects added by hand

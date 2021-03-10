@@ -11,8 +11,10 @@ from rail_manipulation_msgs.srv import SegmentObjects
 from rail_mesh_icp.srv import TemplateMatch
 
 from thorp_toolkit.semantic_map import SemanticMap
-from thorp_toolkit.geometry import pose2d2str, TF2, to_transform
+from thorp_toolkit.geometry import point3d2str, pose2d2str, TF2, to_transform
 from manipulation_states import FoldArm, ClearOctomap
+
+import config as cfg
 
 
 def ObjectDetectionSM():
@@ -198,6 +200,30 @@ class TableMarkVisited(smach.State):
 
     def execute(self, ud):
         SemanticMap().add_object(ud['table'], 'table', ud['table_pose'], (ud['table'].depth, ud['table'].width))
+        return 'succeeded'
+
+
+class CheckTableSize(smach.State):
+    """
+    Check whether the given table dimensions are within the expected limits. Returns:
+    TODO: I'm not calculating properly the dimensions of non-square tables, so this check is flawed for those tables
+    TODO: remove the temporal hack of rejecting non-square tables!
+    - 'succeeded' if table dimensions are valid
+    - 'aborted' otherwise
+    """
+
+    def __init__(self):
+        super(CheckTableSize, self).__init__(outcomes=['succeeded', 'aborted'],
+                                             input_keys=['table'])
+
+    def execute(self, ud):
+        center, width, length = ud['table'].center, ud['table'].width, ud['table'].depth
+        if min(width, length) < cfg.TABLE_MIN_SIDE or max(width, length) > cfg.TABLE_MAX_SIDE:
+            rospy.loginfo("Table at %s rejected due to incongruent size: %.2f x %.2f", point3d2str(center), width, length)
+            return 'aborted'
+        if abs(width - length) > 0.1:
+            rospy.loginfo("Table at %s rejected as non-square: %.2f x %.2f", point3d2str(center), width, length)
+            return 'aborted'
         return 'succeeded'
 
 

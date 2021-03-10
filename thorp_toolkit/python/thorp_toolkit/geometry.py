@@ -237,6 +237,32 @@ def to_transform(pose, child_frame=None):
     raise rospy.ROSException("Input parameter pose is not a valid geometry_msgs pose object")
 
 
+def point2d2str(point):
+    """ Provide a string representation of a geometry_msgs 2D point """
+    if isinstance(point, geometry_msgs.Point):
+        p = point
+        f = ''
+    elif isinstance(point, geometry_msgs.PointStamped):
+        p = point.point
+        f = ', ' + point.header.frame_id
+    else:
+        raise rospy.ROSException("Input parameter point is not a valid geometry_msgs point object")
+    return "[x: {:.2f}, y: {:.2f}{}]".format(p.x, p.y, f)
+
+
+def point3d2str(point):
+    """ Provide a string representation of a geometry_msgs 3D point """
+    if isinstance(point, geometry_msgs.Point):
+        p = point
+        f = ''
+    elif isinstance(point, geometry_msgs.PointStamped):
+        p = point.point
+        f = ', ' + point.header.frame_id
+    else:
+        raise rospy.ROSException("Input parameter point is not a valid geometry_msgs point object")
+    return "[x: {:.2f}, y: {:.2f}, z: {:.2f}{}]".format(p.x, p.y, p.z, f)
+
+
 def pose2d2str(pose):
     """ Provide a string representation of a geometry_msgs 2D pose """
     if isinstance(pose, geometry_msgs.Pose):

@@ -13,7 +13,7 @@ import ipa_building_msgs.msg as ipa_building_msgs
 from thorp_toolkit.geometry import TF2, to_pose2d, create_2d_pose
 
 from userdata_states import UDIfKey, UDHasKey, UDSetToNone, UDInsertInList
-from navigation_states import GetRobotPose, GoToPose, FollowWaypoints
+from navigation_states import GetRobotPose, GoToPose, FollowWaypoints, DelTraversedWPs, PrependCurrentPose
 
 import config as cfg
 
@@ -216,7 +216,7 @@ class ExploreHouse(smach.StateMachine):
                                            output_keys=['completed_rooms'])
         with explore_1_room_sm:
             smach.StateMachine.add('HAVE_EXPLORE_PLAN?', UDIfKey('coverage_path'),  # already have a explore plan?
-                                   transitions={'true': 'TRAVERSE_POSES',            # then skip to traverse poses
+                                   transitions={'true': 'INSERT_CURRENT_POSE',      # then skip to traverse poses
                                                 'false': 'GET_ROBOT_POSE'})
             smach.StateMachine.add('GET_ROBOT_POSE', GetRobotPose(),
                                    transitions={'succeeded': 'PLAN_ROOM_EXPL',
@@ -229,22 +229,29 @@ class ExploreHouse(smach.StateMachine):
                                                                angle_tolerance=cfg.INF_ANGLE_TOLERANCE),  # ignore yaw
                                    transitions={'succeeded': 'INSERT_START_POSE',
                                                 'preempted': 'preempted',
-                                                'aborted': 'aborted'},
+                                                'aborted': 'INSERT_CURRENT_POSE'},
                                    remapping={'target_pose': 'start_pose'})
             smach.StateMachine.add('INSERT_START_POSE', UDInsertInList(0),
                                    transitions={'succeeded': 'TRAVERSE_POSES',
                                                 'aborted': 'aborted'},
                                    remapping={'element': 'start_pose',
                                               'list': 'coverage_path_pose_stamped'})
+            smach.StateMachine.add('INSERT_CURRENT_POSE', PrependCurrentPose(),  # otherwise we can retake the remaining
+                                   transitions={'succeeded': 'TRAVERSE_POSES',   # plan wherever it is closer from us,
+                                                'aborted': 'aborted'},           # instead of from the beginning
+                                   remapping={'path': 'coverage_path_pose_stamped'})
             smach.StateMachine.add('TRAVERSE_POSES', FollowWaypoints(),
                                    transitions={'succeeded': 'ROOM_COMPLETED',
-                                                'preempted': 'preempted',
+                                                'preempted': 'DEL_TRAVERSED_WPS',
                                                 'aborted': 'aborted'},
+                                   remapping={'waypoints': 'coverage_path_pose_stamped'})
+            smach.StateMachine.add('DEL_TRAVERSED_WPS', DelTraversedWPs(),  # deleted the traversed waypoints so we can
+                                   transitions={'succeeded': 'preempted'},  # resume exploration from where we left it
                                    remapping={'waypoints': 'coverage_path_pose_stamped'})
             smach.StateMachine.add('ROOM_COMPLETED', RoomCompleted(),
                                    transitions={'succeeded': 'succeeded'})
             smach.DoOnExit.add_finally('CLEAR_EXPLORE_PLAN', UDSetToNone('coverage_path'),  # we only keep current plan
-                                       run_on=['succeeded', 'aborted'])  # when preempted (as is normally for gathering)
+                                       run_on=['succeeded', 'aborted'])     # when preempted (so we can resume)
 
         # iterate over all rooms and explore following the planned sequence
         explore_house_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted'],

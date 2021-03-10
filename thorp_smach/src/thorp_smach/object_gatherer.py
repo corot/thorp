@@ -5,7 +5,7 @@ import smach
 
 from toolkit.common_states import run_sm
 from toolkit.navigation_states import GetRobotPose, LookToPose
-from toolkit.perception_states import MonitorTables, TableMarkVisited, TableWasVisited
+from toolkit.perception_states import MonitorTables, TableMarkVisited, TableWasVisited, CheckTableSize
 from toolkit.manipulation_states import FoldArm
 from toolkit.exploration_states import ExploreHouse
 from toolkit.gathering_states import GatherObjects
@@ -73,6 +73,7 @@ def object_gatherer_sm():
                            remapping={'target_pose': 'table_pose'})
         smach.Sequence.add('CONFIRM_TABLE', MonitorTables(2.0))  # 2s timeout
         smach.Sequence.add('MARK_VISITED', TableMarkVisited())
+        smach.Sequence.add('VALIDATE_SIZE', CheckTableSize())
 
     # Full SM: explore the house and gather objects from all detected tables
     sm = smach.DoOnExit(outcomes=['detected',

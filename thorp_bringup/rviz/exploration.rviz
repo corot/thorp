@@ -630,7 +630,7 @@ Visualization Manager:
       Color: 25; 255; 0
       Enabled: true
       Name: Footprint
-      Topic: /path_smoother/path_smoother_costmap/footprint
+      Topic: /move_base_flex/local_costmap/footprint
       Unreliable: false
       Value: true
     - Class: rviz/TF
@@ -1689,6 +1689,7 @@ Visualization Manager:
               Marker Topic: /move_base_flex/TEBPlanner/teb_markers
               Name: Markers
               Namespaces:
+                PointObstacles: true
                 TebContainer: true
                 ViaPoints: true
               Queue Size: 100

@@ -7,6 +7,7 @@ Panels:
         - /RAIL1/Table1/Namespaces1
         - /RAIL1/Segmented Objects1
         - /RAIL1/Segmented Objects1/Namespaces1
+        - /Exploration1/Coverage Path1
         - /Manipulation1/Pick/Place Pose1
         - /Manipulation1/Pick/Place Pose2
       Splitter Ratio: 0.5247058868408203
@@ -269,6 +270,8 @@ Visualization Manager:
           Value: false
         sonars_mount_link:
           Value: false
+        table_frame:
+          Value: true
         tray_link:
           Value: false
         wheel_left_link:
@@ -490,6 +493,8 @@ Visualization Manager:
                   {}
                 wheel_right_link:
                   {}
+          table_frame:
+            {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -1372,7 +1377,9 @@ Visualization Manager:
           Marker Topic: /rail_segmentation/table_marker
           Name: Table
           Namespaces:
-            {}
+            orig_bbox: true
+            rotated_bbox: true
+            segmentation_objects: true
           Queue Size: 100
           Value: true
         - Class: rviz/MarkerArray
@@ -1414,7 +1421,7 @@ Visualization Manager:
           Use rainbow: true
           Value: false
         - Class: rviz/Image
-          Enabled: false
+          Enabled: true
           Image Topic: /rail_segmentation/debug_img
           Max Value: 1
           Median window: 5
@@ -1424,7 +1431,7 @@ Visualization Manager:
           Queue Size: 2
           Transport Hint: raw
           Unreliable: false
-          Value: false
+          Value: true
         - Alpha: 1
           Autocompute Intensity Bounds: true
           Autocompute Value Bounds:
@@ -1520,7 +1527,7 @@ Visualization Manager:
     - Class: rviz/Group
       Displays:
         - Class: rviz/Image
-          Enabled: false
+          Enabled: true
           Image Topic: /object_detection/detections_image
           Max Value: 1
           Median window: 5
@@ -1530,7 +1537,7 @@ Visualization Manager:
           Queue Size: 2
           Transport Hint: raw
           Unreliable: false
-          Value: false
+          Value: true
         - Alpha: 1
           Auto Size:
             Auto Size Factor: 1
@@ -1594,7 +1601,8 @@ Visualization Manager:
           Marker Topic: /object_gatherer_smach/visual_markers
           Name: Visual markers
           Namespaces:
-            {}
+            gp_marker: true
+            point_list: true
           Queue Size: 100
           Value: true
       Enabled: true
@@ -1617,7 +1625,7 @@ Visualization Manager:
             Y: 0
             Z: 0
           Pose Color: 255; 85; 255
-          Pose Style: None
+          Pose Style: Axes
           Radius: 0.029999999329447746
           Shaft Diameter: 0.10000000149011612
           Shaft Length: 0.10000000149011612
@@ -1681,11 +1689,12 @@ Visualization Manager:
           Marker Topic: /exploration/room_sequence_planning_server/room_sequence_marker
           Name: Room Sequence Plan
           Namespaces:
-            {}
+            room_sequence_checkpoints: true
+            room_sequence_rooms: true
           Queue Size: 100
           Value: true
         - Class: rviz/Image
-          Enabled: true
+          Enabled: false
           Image Topic: /exploration/img
           Max Value: 1
           Median window: 5
@@ -1695,7 +1704,7 @@ Visualization Manager:
           Queue Size: 2
           Transport Hint: raw
           Unreliable: false
-          Value: true
+          Value: false
       Enabled: true
       Name: Exploration
     - Class: rviz/Group
@@ -1968,7 +1977,9 @@ Visualization Manager:
                   Marker Topic: /move_base_flex/TEBPlanner/teb_markers
                   Name: Markers
                   Namespaces:
-                    {}
+                    PointObstacles: true
+                    TebContainer: true
+                    ViaPoints: true
                   Queue Size: 100
                   Value: true
               Enabled: true
@@ -2289,25 +2300,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 12.404645919799805
+      Distance: 5.760768413543701
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 7.950570583343506
-        Y: 1.8336548805236816
+        X: 9.327861785888672
+        Y: 1.813406229019165
         Z: -2.384185791015625e-6
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.1147959232330322
+      Pitch: 1.1197959184646606
       Target Frame: <Fixed Frame>
       Value: XYOrbit (rviz)
-      Yaw: 4.758553981781006
+      Yaw: 4.753553867340088
     Saved: ~
 Window Geometry:
   Displays:
@@ -2327,7 +2338,7 @@ Window Geometry:
     collapsed: false
   Onboard Camera:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000200000000000001f3000003a7fc020000000bfb000000100044006900730070006c006100790073010000003d000002ae000000c900fffffffb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e006700000001cb000001880000018800fffffffb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e00670100000175000001d70000000000000000fb0000000800480065006c00700000000342000000bb0000006e00fffffffb0000000a0049006d006100670065000000030a000000b70000001600fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730000000339000000ab0000005c00fffffffb0000000c00430061006d006500720061020000000000000170000003b1000002c8fb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000001600000016fc000002f1000000f3000000330100001cfa000000000100000002fb0000000a0049006d0061006700650100000000ffffffff0000005e00fffffffb00000020005300650067006d0065006e00740065006400200049006d00610067006500730100000000000002ed000000b600fffffffb0000001a0052006f006f006d002000530065007100750065006e006300650000000292000000a70000001600fffffffb000000220052006f006f006d0020005300650067006d0065006e0074006100740069006f006e0000000319000000cb0000001600ffffff000000010000014d000003a7fc0200000003fb0000000a00560069006500770073000000003d000003a7000000a400fffffffb0000001c004f006e0062006f006100720064002000430061006d0065007200610000000033000003850000001600fffffffc00000028000003da0000000000fffffffa000000010100000002fb0000001e00450078007400650072006e0061006c002000430061006d0065007200610000000000ffffffff000000a500fffffffb0000000c00430061006d0065007200610000000596000001ea000000000000000000000544000003a700000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000200000000000001f3000003a7fc020000000bfb000000100044006900730070006c006100790073010000003d000002ae000000c900fffffffb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e006700000001cb000001880000017d00fffffffb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e00670100000175000001d70000000000000000fb0000000800480065006c00700000000342000000bb0000006e00fffffffb0000000a0049006d006100670065000000030a000000b70000001600fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730000000339000000ab0000005c00fffffffb0000000c00430061006d006500720061020000000000000170000003b1000002c8fb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000004100fffffffc000002f1000000f30000001600fffffffa000000010100000002fb0000000a0049006d0061006700650000000000ffffffff0000005e00fffffffb00000020005300650067006d0065006e00740065006400200049006d00610067006500730100000000000002ed000000b600fffffffb0000001a0052006f006f006d002000530065007100750065006e006300650000000292000000a70000001600fffffffb000000220052006f006f006d0020005300650067006d0065006e0074006100740069006f006e0000000319000000cb0000001600ffffff000000010000014d000003a7fc0200000003fb0000000a00560069006500770073000000003d000003a7000000a400fffffffb0000001c004f006e0062006f006100720064002000430061006d0065007200610000000033000003850000001600fffffffc00000028000003da0000000000fffffffa000000010100000002fb0000001e00450078007400650072006e0061006c002000430061006d0065007200610000000000ffffffff000000a500fffffffb0000000c00430061006d0065007200610000000596000001ea000000000000000000000544000003a700000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Room Segmentation:
     collapsed: false
   Room Sequence:

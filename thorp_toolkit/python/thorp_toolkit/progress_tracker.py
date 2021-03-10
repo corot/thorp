@@ -11,6 +11,10 @@ class ProgressTracker:
         self._next_wp = 0
         self._reached = False
         self._min_dist = float('inf')
+        # visualize semi-transparent waypoints; will become solid once reached
+        for wp in self._waypoints:
+            Visualization().add_disc_marker(wp, (0.2, 0.2, 0.000001), (0, 0, 1.0, 0.25))
+        Visualization().publish_markers()
 
     def reset(self):
         self._next_wp = 0
@@ -27,7 +31,7 @@ class ProgressTracker:
             return  # already arrived
         dist = distance_2d(robot_pose, self._waypoints[self._next_wp])
         if self._reached and dist > self._min_dist:
-            Visualization().add_disc_marker(self._waypoints[self._next_wp], (0.2, 0.2, 0.1))
+            Visualization().add_disc_marker(self._waypoints[self._next_wp], (0.2, 0.2, 0.000001))
             Visualization().publish_markers()
             self._next_wp += 1
             if self._next_wp < len(self._waypoints):
