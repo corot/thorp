@@ -11,12 +11,12 @@ from thorp_toolkit.geometry import TF2, to_transform, translate_pose, transform_
 from thorp_toolkit.transform import Transform
 from thorp_toolkit.visualization import Visualization
 
-from common_states import DismissNamedConfig
-from perception_states import MonitorTables, ObjectDetection, ObjectsDetected
-from navigation_states import GetRobotPose, GoToPose, AlignToTable, DetachFromTable
-from pick_objects_states import PickReachableObjs
+from common import DismissNamedConfig
+from perception import MonitorTables, ObjectDetection, ObjectsDetected
+from navigation import GetRobotPose, GoToPose, AlignToTable, DetachFromTable
+from pick_objects import PickReachableObjs
 
-import config as cfg
+from thorp_smach import config as cfg
 
 
 class CalcPickPoses(smach.State):

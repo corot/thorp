@@ -7,6 +7,7 @@
 
 <launch>
   <arg name="app_name" value="block_manip"/>
+  <arg name="viz_smach" default="false"/>
 
   <arg name="external_camera" default="false"/>
 
@@ -50,6 +51,9 @@
   <!--  ****** Executive smach and visualization ******  -->
 
   <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="false">
+    <param name="app_name" value="$(arg app_name)"/>
+    <param name="viz_smach" value="$(arg viz_smach)"/>
+
     <param name="arm_link" value="arm_base_link"/>
     <param name="gripper_open" value="0.045"/>
     <param name="gripper_closed" value="0.02"/>
@@ -58,7 +62,8 @@
     <param name="block_size" value="0.025"/>
   </node>
 
-  <node pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
+  <node if="$(arg viz_smach)"
+       pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
 
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/manipulation.rviz"/>
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/manipulation.rviz" output="screen" respawn="true"/>
 </launch>

@@ -1,20 +1,14 @@
 #!/usr/bin/env python
 
-import rospy
-import smach
-import smach_ros
-
-import toolkit.config as cfg
-
-from toolkit.navigation_states import *
-from toolkit.exploration_states import *
+from states.exploration import *
+from utils import run_sm
 
 
-def explore_house_sm():
+def traverse_house_sm():
     """
-    Explore house SM:
+    Traverse house SM:
      - segment map into rooms and plan visit sequence
-     - iterate over all rooms and explore following the planned sequence
+     - Go to each room following the planned sequence
     """
     # segment house into rooms and plan visit sequence
     plan_room_seq_sm = smach.Sequence(outcomes=['succeeded', 'aborted', 'preempted'],
@@ -91,23 +85,6 @@ def explore_house_sm():
 
 
 if __name__ == '__main__':
-    rospy.init_node('explore_house_smach')
+    rospy.init_node('traverse_house_smach')
 
-    TF2()  # start listener asap
-
-    sm = explore_house_sm()
-
-    # Create and start the introspection server
-    sis = smach_ros.IntrospectionServer('server_name', sm, '/SM_ROOT')
-    sis.start()
-
-    # Execute the state machine
-    t0 = rospy.get_time()
-    outcome = sm.execute()
-    rospy.loginfo("Exploration completed in %.2fs", rospy.get_time() - t0)
-
-    # Wait for ctrl-c to stop the application
-    rospy.spin()
-    sis.stop()
-
-    rospy.signal_shutdown('All done.')
+    run_sm(traverse_house_sm(), rospy.get_param('~app_name'))

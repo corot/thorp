@@ -3,13 +3,14 @@
 import rospy
 import smach
 
-from toolkit.common_states import run_sm
-from toolkit.navigation_states import GetRobotPose, LookToPose
-from toolkit.perception_states import MonitorTables, TableMarkVisited, TableWasVisited, CheckTableSize
-from toolkit.manipulation_states import FoldArm
-from toolkit.exploration_states import ExploreHouse
-from toolkit.gathering_states import GatherObjects
+from states.navigation import GetRobotPose, LookToPose
+from states.perception import MonitorTables, TableMarkVisited, TableWasVisited, CheckTableSize
+from states.manipulation import FoldArm
+from states.exploration import ExploreHouse
+from states.gathering import GatherObjects
 from containers.do_on_exit import DoOnExit as DoOnExitContainer
+
+from utils import run_sm
 
 
 def object_gatherer_sm():

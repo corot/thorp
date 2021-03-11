@@ -12,9 +12,9 @@ from rail_mesh_icp.srv import TemplateMatch
 
 from thorp_toolkit.semantic_map import SemanticMap
 from thorp_toolkit.geometry import point3d2str, pose2d2str, TF2, to_transform
-from manipulation_states import FoldArm, ClearOctomap
+from manipulation import FoldArm, ClearOctomap
 
-import config as cfg
+from thorp_smach import config as cfg
 
 
 def ObjectDetectionSM():

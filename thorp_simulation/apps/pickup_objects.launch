@@ -1,11 +1,13 @@
 <!--
-  Simulated version of Thorp's object manipulation app:
-  - Full Thorp Gazebo simulation
+Pickup reachable objects app:
+  - Thorp Gazebo simulation
   - Executive SMACH and visualization
+
+Pick all objects at hand in the table in front.
  -->
 
 <launch>
-  <arg name="app_name" value="object_manip"/>
+  <arg name="app_name" value="pickup_objects"/>
   <arg name="viz_smach" default="false"/>
 
   <!--  ***** Simulated mobile manipulator Thorp ******  -->
@@ -26,17 +28,6 @@
     <arg name="simulation" value="true"/>
     <arg name="debug" value="false"/>
   </include>
-
-  <!--  ********** Keyboard user interaction **********  -->
-  <!-- We do it required so it will shutdown the whole demo on exit -->
-  <node pkg="thorp_bringup" type="keyboard_ctrl.py" name="$(arg app_name)_key_ctrl" output="screen" required="true"
-        args="$(arg app_name)">
-    <param name="window_geometry" value="360x240"/>
-    <param name="window_caption" value="Object manipulation user commands"/>
-    <param name="text_font" value="Comic Sans MS"/>
-    <param name="font_size" value="12"/>
-    <rosparam param="valid_commands">['start', 'stop', 'reset', 'clear', 'fold']</rosparam>
-  </node>
 
   <!--  ****** Executive smach and visualization ******  -->
   <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="false">

@@ -13,11 +13,11 @@ from thorp_toolkit.reconfigure import Reconfigure
 from thorp_toolkit.semantic_layer import SemanticLayer
 from thorp_toolkit.progress_tracker import ProgressTracker
 
-from common_states import SetNamedConfig, DismissNamedConfig
-from userdata_states import UDInsertInList, UDListSlicing, UDApplyFn
+from common import SetNamedConfig, DismissNamedConfig
+from userdata import UDInsertInList, UDListSlicing, UDApplyFn
 from thorp_smach.containers.do_on_exit import DoOnExit as DoOnExitContainer
 
-import config as cfg
+from thorp_smach import config as cfg
 
 Reconfigure().load_named_configs()  # load named configurations from the default location
 

@@ -12,11 +12,11 @@ import ipa_building_msgs.msg as ipa_building_msgs
 
 from thorp_toolkit.geometry import TF2, to_pose2d, create_2d_pose
 
-from userdata_states import UDIfKey, UDHasKey, UDSetToNone, UDInsertInList
-from navigation_states import GetRobotPose, GoToPose, FollowWaypoints, DelTraversedWPs, PrependCurrentPose
+from userdata import UDIfKey, UDHasKey, UDSetToNone, UDInsertInList
+from navigation import GetRobotPose, GoToPose, FollowWaypoints, DelTraversedWPs, PrependCurrentPose
 from thorp_smach.containers.do_on_exit import DoOnExit as DoOnExitContainer
 
-import config as cfg
+from thorp_smach import config as cfg
 
 
 class SegmentRooms(smach_ros.SimpleActionState):

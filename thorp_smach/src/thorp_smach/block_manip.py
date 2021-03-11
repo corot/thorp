@@ -7,7 +7,8 @@ import smach_ros
 import geometry_msgs.msg as geometry_msg
 
 from turtlebot_arm_block_manipulation.msg import *
-from thorp_smach.toolkit.common_states import wait_for_sim_time
+
+from utils import wait_for_sim_time
 
 
 def main():

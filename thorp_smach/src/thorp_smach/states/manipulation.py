@@ -10,7 +10,7 @@ from thorp_toolkit.planning_scene import PlanningScene
 from thorp_toolkit.geometry import create_2d_pose, create_3d_pose, pose2d2str
 from thorp_toolkit.visualization import Visualization
 
-import config as cfg
+from thorp_smach import config as cfg
 
 
 class ClearOctomap(smach_ros.ServiceState):

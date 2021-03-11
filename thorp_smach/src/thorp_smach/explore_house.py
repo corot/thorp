@@ -2,8 +2,9 @@
 
 import rospy
 
-from toolkit.common_states import run_sm
-from toolkit.exploration_states import ExploreHouse
+from states.exploration import ExploreHouse
+
+from utils import run_sm
 
 
 if __name__ == '__main__':

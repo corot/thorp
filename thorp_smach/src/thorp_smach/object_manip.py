@@ -8,9 +8,9 @@ import std_srvs.srv as std_srvs
 import thorp_msgs.msg as thorp_msgs
 import arbotix_msgs.srv as arbotix_srvs
 
-from toolkit.common_states import ExecuteUserCommand
-from toolkit.perception_states import ObjectDetectionSM
-from toolkit.manipulation_states import FoldArm, PickupObject, PlaceObject
+from states.common import ExecuteUserCommand
+from states.perception import ObjectDetectionSM
+from states.manipulation import FoldArm, PickupObject, PlaceObject
 
 
 rospy.init_node('object_manip_smach')

@@ -4,8 +4,9 @@ import rospy
 import smach
 import smach_ros
 
-from thorp_smach.toolkit.gathering_states import PickReachableObjs
-from thorp_smach.toolkit.common_states import wait_for_sim_time, wait_for_mbf
+from thorp_smach.states.gathering import PickReachableObjs
+
+from utils import wait_for_sim_time, wait_for_mbf
 
 
 def main():

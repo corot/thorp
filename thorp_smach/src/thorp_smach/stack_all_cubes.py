@@ -5,14 +5,13 @@ import smach
 import smach_ros
 
 import thorp_toolkit as ttk
-from thorp_smach.toolkit.common_states import ExecuteUserCommand
-from thorp_smach.toolkit.manipulation_states import FoldArm, PickupObject, PlaceObject, ObjectDetection
+from thorp_smach.states.common import ExecuteUserCommand
+from thorp_smach.states.perception import ObjectDetection
+from thorp_smach.states.manipulation import FoldArm, PickupObject, PlaceObject
 
 import thorp_msgs.msg as thorp_msgs
 import control_msgs.msg as control_msgs
 import arbotix_msgs.srv as arbotix_srvs
-
-from actionlib import *
 
 
 class GetDetectedCubes(smach.State):

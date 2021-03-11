@@ -5,10 +5,10 @@ import smach
 
 from thorp_toolkit.geometry import TF2, distance_2d
 
-from perception_states import ObjectDetection
-from manipulation_states import ClearGripper, FoldArm, PickupObject, PlaceInTray
+from perception import ObjectDetection
+from manipulation import ClearGripper, FoldArm, PickupObject, PlaceInTray
 
-import config as cfg
+from thorp_smach import config as cfg
 
 
 class TargetSelection(smach.State):
