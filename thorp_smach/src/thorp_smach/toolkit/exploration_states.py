@@ -14,6 +14,7 @@ from thorp_toolkit.geometry import TF2, to_pose2d, create_2d_pose
 
 from userdata_states import UDIfKey, UDHasKey, UDSetToNone, UDInsertInList
 from navigation_states import GetRobotPose, GoToPose, FollowWaypoints, DelTraversedWPs, PrependCurrentPose
+from thorp_smach.containers.do_on_exit import DoOnExit as DoOnExitContainer
 
 import config as cfg
 
@@ -209,11 +210,11 @@ class ExploreHouse(smach.StateMachine):
         super(ExploreHouse, self).__init__(outcomes=['succeeded', 'aborted', 'preempted'])
 
         # explore a single room
-        explore_1_room_sm = smach.DoOnExit(outcomes=['succeeded', 'aborted', 'preempted'],
-                                           input_keys=['map_image', 'map_resolution', 'map_origin', 'robot_radius',
-                                                       'segmented_map', 'room_number', 'room_information_in_meter',
-                                                       'completed_rooms'],
-                                           output_keys=['completed_rooms'])
+        explore_1_room_sm = DoOnExitContainer(outcomes=['succeeded', 'aborted', 'preempted'],
+                                              input_keys=['map_image', 'map_resolution', 'map_origin', 'robot_radius',
+                                                          'segmented_map', 'room_number', 'room_information_in_meter',
+                                                          'completed_rooms'],
+                                              output_keys=['completed_rooms'])
         with explore_1_room_sm:
             smach.StateMachine.add('HAVE_EXPLORE_PLAN?', UDIfKey('coverage_path'),  # already have a explore plan?
                                    transitions={'true': 'INSERT_CURRENT_POSE',      # then skip to traverse poses
@@ -250,8 +251,8 @@ class ExploreHouse(smach.StateMachine):
                                    remapping={'waypoints': 'coverage_path_pose_stamped'})
             smach.StateMachine.add('ROOM_COMPLETED', RoomCompleted(),
                                    transitions={'succeeded': 'succeeded'})
-            smach.DoOnExit.add_finally('CLEAR_EXPLORE_PLAN', UDSetToNone('coverage_path'),  # we only keep current plan
-                                       run_on=['succeeded', 'aborted'])     # when preempted (so we can resume)
+            DoOnExitContainer.add_finally('CLEAR_EXPLORE_PLAN', UDSetToNone('coverage_path'),  # we only keep current
+                                          run_on=['succeeded', 'aborted'])   # plan when preempted (so we can resume)
 
         # iterate over all rooms and explore following the planned sequence
         explore_house_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted'],

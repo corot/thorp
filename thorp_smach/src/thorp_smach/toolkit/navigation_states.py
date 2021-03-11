@@ -15,6 +15,7 @@ from thorp_toolkit.progress_tracker import ProgressTracker
 
 from common_states import SetNamedConfig, DismissNamedConfig
 from userdata_states import UDInsertInList, UDListSlicing, UDApplyFn
+from thorp_smach.containers.do_on_exit import DoOnExit as DoOnExitContainer
 
 import config as cfg
 
@@ -364,7 +365,7 @@ class ExeSparsePath(smach.StateMachine):
                                    remapping={'target_pose': 'next_wp'})
 
 
-class FollowWaypoints(smach.DoOnExit):
+class FollowWaypoints(DoOnExitContainer):
     """
     Follow a list of waypoints after converting them into a smooth path executable by an MBF controller
     """
@@ -409,7 +410,7 @@ class FollowWaypoints(smach.DoOnExit):
                                    remapping={'list': 'waypoints',
                                               'start': 'ONE'},
                                    transitions={'succeeded': 'EXE_PATH'})
-            smach.DoOnExit.add_finally('STANDARD_CTRL', DismissNamedConfig('waypoints_following'))
+            DoOnExitContainer.add_finally('STANDARD_CTRL', DismissNamedConfig('waypoints_following'))
 
 
 class TraversePoses(smach.Iterator):

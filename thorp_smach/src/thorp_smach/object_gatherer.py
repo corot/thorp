@@ -9,6 +9,7 @@ from toolkit.perception_states import MonitorTables, TableMarkVisited, TableWasV
 from toolkit.manipulation_states import FoldArm
 from toolkit.exploration_states import ExploreHouse
 from toolkit.gathering_states import GatherObjects
+from containers.do_on_exit import DoOnExit as DoOnExitContainer
 
 
 def object_gatherer_sm():
@@ -76,11 +77,11 @@ def object_gatherer_sm():
         smach.Sequence.add('VALIDATE_SIZE', CheckTableSize())
 
     # Full SM: explore the house and gather objects from all detected tables
-    sm = smach.DoOnExit(outcomes=['detected',
-                                  'not_detected',
-                                  'tray_full',
-                                  'aborted',
-                                  'preempted'])
+    sm = DoOnExitContainer(outcomes=['detected',
+                                     'not_detected',
+                                     'tray_full',
+                                     'aborted',
+                                     'preempted'])
     with sm:
         smach.StateMachine.add('SEARCH', search_sm,
                                transitions={'detected': 'CONFIRM',
@@ -96,10 +97,7 @@ def object_gatherer_sm():
                                             'aborted': 'aborted',
                                             'preempted': 'preempted',
                                             'tray_full': 'tray_full'})
-                               # transitions={'succeeded': 'SEARCH',
-                               #              'aborted': 'SEARCH',
-                               #              'preempted': 'SEARCH'})
-        smach.DoOnExit.add_finally('FOLD_ARM', FoldArm())  # fold arm on exit regardless of the outcome
+        DoOnExitContainer.add_finally('FOLD_ARM', FoldArm())  # fold arm on exit regardless of the outcome
     return sm
 
 
