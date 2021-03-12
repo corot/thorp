@@ -4,12 +4,14 @@ Object gatherer app:
   - IPA coverage planning
   - Executive SMACH and visualization
 
-Explore the entire environment searching for cats, and attack them whenever found.
+Explore the entire environment gathering all tabletop objects of the requested types.
  -->
 
 <launch>
   <arg name="app_name" value="object_gatherer"/>
   <arg name="viz_smach" default="false"/>
+
+  <arg name="object_types" default=""/>  <!-- all objects by default -->
 
   <!--  ***** Simulated mobile manipulator Thorp ******  -->
 
@@ -50,6 +52,8 @@ Explore the entire environment searching for cats, and attack them whenever foun
   <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="false">
     <param name="app_name" value="$(arg app_name)"/>
     <param name="viz_smach" value="$(arg viz_smach)"/>
+
+    <param name="object_types" value="$(arg object_types)"/>
   </node>
 
   <node if="$(arg viz_smach)"

@@ -259,11 +259,9 @@ class MakePickingPlan(smach.State):
         return 'succeeded'
 
 
-def GatherObjects():
+def GatherObjects(target_types):
     """
-    Object gatherer SM:
-     - explore house while looking for tables
-     - approach each detected table and pick all the objects of the chosen shape
+    Object gatherer SM: approach the requested table and pick all the objects of the requested type
     """
 
     # approach to the table
@@ -283,6 +281,7 @@ def GatherObjects():
 
     # detects objects over the table, and make a picking plan
     make_pick_plan_sm = smach.StateMachine(outcomes=['succeeded', 'aborted', 'preempted', 'no_reachable_objs'],
+                                           input_keys=['object_types'],
                                            output_keys=['picking_poses', 'closest_picking_pose', 'picking_plan'])
     with make_pick_plan_sm:
         smach.StateMachine.add('GET_ROBOT_POSE', GetRobotPose(),
@@ -307,7 +306,7 @@ def GatherObjects():
     # go to a picking location and pick all objects reachable from there
     pick_objects_sm = smach.Sequence(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'],
                                      connector_outcome='succeeded',
-                                     input_keys=['table', 'picking_loc'])
+                                     input_keys=['table', 'picking_loc', 'object_types'])
 
     with pick_objects_sm:
         smach.Sequence.add('PICK_LOC_FIELDS', PickLocFields())
@@ -325,7 +324,7 @@ def GatherObjects():
 
     # iterate over all picking locations in the plan
     pick_objects_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted', 'tray_full'],
-                                     input_keys=['table', 'picking_plan'],
+                                     input_keys=['table', 'picking_plan', 'object_types'],
                                      output_keys=[],
                                      it=lambda: pick_objects_it.userdata.picking_plan,
                                      it_label='picking_loc',
@@ -339,6 +338,7 @@ def GatherObjects():
                                       'preempted',
                                       'tray_full'],
                             input_keys=['table', 'table_pose'])
+    sm.userdata.object_types = target_types
     with sm:
         smach.StateMachine.add('APPROACH_TABLE', approach_table_sm,
                                transitions={'succeeded': 'MAKE_PICK_PLAN',

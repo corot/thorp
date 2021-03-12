@@ -106,19 +106,25 @@ class BlockDetection(smach_ros.SimpleActionState):
 class ObjectDetection(smach_ros.SimpleActionState):
     """
     Object detection state:
-    Tries to segmentate a support surface and classify the tabletop objects. Returns the objects as
-    a list of moveit_msgs/CollisionObject msgs, the object names and the name of the support surface.
+    Tries to segmentate a support surface and classify the tabletop objects found on it. Returns only
+    the objects of types listed on 'object_types' input key (or all if it's not provided).
+    As output returns a list of moveit_msgs/CollisionObject msgs, plus the object names and the name of
+    the support surface.
     """
 
     def __init__(self):
         super(ObjectDetection, self).__init__('object_detection',
                                               thorp_msgs.DetectObjectsAction,
-                                              result_slots=['objects'],
                                               result_cb=self.result_cb,
-                                              output_keys=['object_names', 'support_surf'])
+                                              input_keys=['object_types'],
+                                              output_keys=['objects', 'object_names', 'support_surf'])
 
     def result_cb(self, ud, status, result):
-        ud['object_names'] = [co.id for co in result.objects]
+        objects = result.objects
+        if 'object_types' in ud and ud['object_types']:
+            objects = [co for co in objects if co.id.split()[0] in ud['object_types']]
+        ud['objects'] = objects
+        ud['object_names'] = [co.id for co in objects]  # TODO: drop and compose the list from 'objects' when needed
         ud['support_surf'] = result.surface.id  # only interested in the co name (TODO cannot access subfields on ud?)
 
 

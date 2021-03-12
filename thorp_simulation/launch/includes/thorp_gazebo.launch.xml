@@ -9,7 +9,7 @@
   </include>
 
   <!-- Spawn thorp gazebo model with the arm on resting state -->
-  <node name="spawn_turtlebot_model" pkg="gazebo_ros" type="spawn_model" output="screen"
+  <node name="spawn_thorp_model" pkg="gazebo_ros" type="spawn_model" output="screen"
         args="-urdf -param robot_description -model thorp
               -x $(arg initial_pose_x)
               -y $(arg initial_pose_y)

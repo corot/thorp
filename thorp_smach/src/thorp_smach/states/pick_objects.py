@@ -72,11 +72,12 @@ class PickReachableObjs(smach.StateMachine):
     """  Pick all the objects within reach and place in the tray  """
 
     def __init__(self):
-        super(PickReachableObjs, self).__init__(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'])
+        super(PickReachableObjs, self).__init__(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'],
+                                                input_keys=['object_types'])
 
         # pick a single object sm
         pick_1_obj_sm = smach.StateMachine(outcomes=['continue', 'succeeded', 'aborted', 'preempted', 'tray_full'],
-                                           input_keys=['objs_to_skip'])
+                                           input_keys=['object_types', 'objs_to_skip'])
 
         pick_1_obj_sm.userdata.max_effort = cfg.GRIPPER_MAX_EFFORT
         with pick_1_obj_sm:
@@ -106,7 +107,7 @@ class PickReachableObjs(smach.StateMachine):
                                                 'max_failures': 'aborted'})
 
         pick_reach_objs_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted', 'tray_full'],
-                                            input_keys=['objs_to_skip'],
+                                            input_keys=['object_types', 'objs_to_skip'],
                                             output_keys=[],
                                             it=range(25),  # kind of while true
                                             it_label='iteration',

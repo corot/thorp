@@ -13,11 +13,11 @@ from containers.do_on_exit import DoOnExit as DoOnExitContainer
 from utils import run_sm
 
 
-def object_gatherer_sm():
+def object_gatherer_sm(target_types):
     """
     Object gatherer SM:
      - explore house while looking for tables
-     - approach each detected table and pick all the objects of the chosen shape
+     - approach each detected table and pick all the objects of the chosen types
     """
 
     # look for tables state machine
@@ -93,7 +93,7 @@ def object_gatherer_sm():
                                transitions={'succeeded': 'GATHER',
                                             'aborted': 'SEARCH',
                                             'preempted': 'preempted'})
-        smach.StateMachine.add('GATHER', GatherObjects(),
+        smach.StateMachine.add('GATHER', GatherObjects(target_types),
                                transitions={'succeeded': 'SEARCH',
                                             'aborted': 'aborted',
                                             'preempted': 'preempted',
@@ -105,4 +105,5 @@ def object_gatherer_sm():
 if __name__ == '__main__':
     rospy.init_node('object_gatherer_smach')
 
-    run_sm(object_gatherer_sm(), rospy.get_param('~app_name'))
+    target_types = rospy.get_param('~object_types', '').split()
+    run_sm(object_gatherer_sm(target_types), rospy.get_param('~app_name'))
