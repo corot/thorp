@@ -29,14 +29,14 @@ def ObjectDetectionSM():
 
         def __init__(self):
             smach.State.__init__(self, outcomes=['preempted', 'satisfied', 'fold_arm', 'retry'],
-                                 input_keys=['od_attempt', 'object_names'],
+                                 input_keys=['od_attempt', 'objects'],
                                  output_keys=['od_attempt'])
 
         def execute(self, ud):
             if self.preempt_requested():
                 self.service_preempt()
                 return 'preempted'
-            if len(ud.object_names) > 0:
+            if len(ud['objects']) > 0:
                 ud.od_attempt = 0
                 return 'satisfied'
             ud.od_attempt += 1
@@ -46,7 +46,7 @@ def ObjectDetectionSM():
 
     sm = smach.StateMachine(outcomes=['succeeded', 'preempted', 'aborted'],
                             input_keys=['od_attempt', 'output_frame'],
-                            output_keys=['objects', 'object_names', 'support_surf'])
+                            output_keys=['objects', 'support_surf'])
 
     with sm:
         smach.StateMachine.add('CLEAR_OCTOMAP', ClearOctomap(),
@@ -87,7 +87,7 @@ class BlockDetection(smach_ros.SimpleActionState):
                                              BlockDetectionAction,
                                              goal_cb=self.make_goal,
                                              result_cb=self.result_cb,
-                                             output_keys=['blocks', 'objects', 'object_names', 'support_surf'])
+                                             output_keys=['blocks', 'objects', 'support_surf'])
 
     def make_goal(self, ud, goal):
         goal.frame = rospy.get_param('~arm_link', 'arm_base_link')
@@ -99,7 +99,6 @@ class BlockDetection(smach_ros.SimpleActionState):
         ud['objects'] = result.blocks
         # blocks only contains poses, so we need to invent values for 'object_names' and 'support_surf' fields
         # the real ObjectDetection state will provide more detailed information
-        ud['object_names'] = ['block' + str(i) for i in range(1, len(result.blocks.poses) + 1)]
         ud['support_surf'] = 'table'
 
 
@@ -117,14 +116,13 @@ class ObjectDetection(smach_ros.SimpleActionState):
                                               thorp_msgs.DetectObjectsAction,
                                               result_cb=self.result_cb,
                                               input_keys=['object_types'],
-                                              output_keys=['objects', 'object_names', 'support_surf'])
+                                              output_keys=['objects', 'support_surf'])
 
     def result_cb(self, ud, status, result):
         objects = result.objects
         if 'object_types' in ud and ud['object_types']:
             objects = [co for co in objects if co.id.split()[0] in ud['object_types']]
         ud['objects'] = objects
-        ud['object_names'] = [co.id for co in objects]  # TODO: drop and compose the list from 'objects' when needed
         ud['support_surf'] = result.surface.id  # only interested in the co name (TODO cannot access subfields on ud?)
 
 
@@ -135,11 +133,11 @@ class ObjectsDetected(smach.State):
 
     def __init__(self):
         super(ObjectsDetected, self).__init__(outcomes=['true', 'false'],
-                                              input_keys=['object_names'],
+                                              input_keys=['objects'],
                                               output_keys=['objects_count'])
 
     def execute(self, ud):
-        objects_count = len(ud['object_names'])
+        objects_count = len(ud['objects'])
         ud['objects_count'] = objects_count
         return 'true' if objects_count > 0 else 'false'
 

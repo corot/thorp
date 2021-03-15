@@ -27,6 +27,11 @@ with sm:
     sm.userdata.output_frame = rospy.get_param('~rec_objects_frame', 'map')  # ignored by RAIL
     sm.userdata.max_effort = 0.03
 
+    # drag_and_drop requires only a list of object names, while object_detection provides a list collision objects
+    def list_obj_names(ud, goal):
+        goal.object_names = [co.id for co in ud['objects']]
+        return goal
+
     smach.StateMachine.add('EXE_USER_CMD',
                            ExecuteUserCommand(rospy.get_param('object_manip_key_ctrl/valid_commands')),
                            transitions={'start': 'OBJECT_DETECTION',
@@ -45,7 +50,9 @@ with sm:
     smach.StateMachine.add('DRAG_AND_DROP',
                            smach_ros.SimpleActionState('drag_and_drop',
                                                        thorp_msgs.DragAndDropAction,
-                                                       goal_slots=['object_names', 'output_frame'],
+                                                       input_keys=['objects'],
+                                                       goal_cb=list_obj_names,
+                                                       goal_slots=['output_frame'],
                                                        result_slots=['object_name', 'pick_pose', 'place_pose']),
                            transitions={'succeeded': 'PICKUP_OBJECT',
                                         'preempted': 'preempted',

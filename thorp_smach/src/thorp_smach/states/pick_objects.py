@@ -19,7 +19,7 @@ class TargetSelection(smach.State):
     def __init__(self):
         smach.State.__init__(self,
                              outcomes=['have_target', 'no_targets'],
-                             input_keys=['objects', 'object_names', 'objs_to_skip'],
+                             input_keys=['objects', 'objs_to_skip'],
                              output_keys=['target'])
         manip_frame = rospy.get_param('~rec_objects_frame', 'arm_base_link')
         self.arm_on_bfp_rf = TF2().transform_pose(None, manip_frame, 'base_footprint')
@@ -30,7 +30,7 @@ class TargetSelection(smach.State):
             obj_pose = obj.primitive_poses[0]
             dist = distance_2d(obj_pose, self.arm_on_bfp_rf)  # assumed in arm base reference frame
             if dist <= cfg.MAX_ARM_REACH:
-                targets.append((ud['object_names'][i], dist))
+                targets.append((obj.id, dist))
         targets = sorted(targets, key=lambda t: t[1])  # sort by increasing distance
         if len(targets) > ud['objs_to_skip']:
             target, dist = targets[ud['objs_to_skip']]
