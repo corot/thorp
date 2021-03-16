@@ -11,7 +11,7 @@ from nav_msgs.msg import MapMetaData
 from mbf_msgs.srv import CheckPose, CheckPoseRequest
 from gazebo_msgs.srv import SpawnModel, DeleteModel
 
-from thorp_toolkit.geometry import distance_2d, create_2d_pose, create_3d_pose
+from thorp_toolkit.geometry import TF2, distance_2d, create_2d_pose, create_3d_pose
 
 # equivalent to command line:
 # rosrun gazebo_ros spawn_model -sdf -database wood_cube_2_5cm -model wood_cube_2_5cm_10 -reference_frame doll_table_0::link -x 0 -y 0 -z 0.45
@@ -39,6 +39,7 @@ objects = ['wood_cube_2_5cm',
            'diamond',
            'cross',
            'clover']
+spawned = {o: 0 for o in objects}
 models = {}
 
 SURFS_MIN_DIST = 1.5
@@ -50,6 +51,11 @@ def load_models():
     for obj in objects + [s['name'] for s in surfaces]:
         model_path = ros_pack.get_path('thorp_simulation') + '/worlds/gazebo/models/' + obj + '/model.sdf'
         models[obj] = open(model_path, 'r').read()
+
+
+def close_to_robot(pose, robot_pose, min_dist):
+    # check if the pose is closer than MIN_DIST to the current robot pose
+    return distance_2d(pose, robot_pose) < min_dist
 
 
 def close_to_prev_pose(pose, added_poses, min_dist):
@@ -117,12 +123,15 @@ def spawn_objects(surf, surf_index):
             initial_pose=pose,
             reference_frame=surf['name'] + '_' + str(surf_index) + '::link'
         )
-        if not resp.success:
+        if resp.success:
+            spawned[obj_name] += 1
+        else:
             rospy.logerr("Spawn object failed: %s", resp.status_message)
         obj_index += 1
 
 
 def spawn_surfaces():
+    robot_pose = TF2().transform_pose(None, 'base_footprint', 'map')
     added_poses = []  # to check that they are at least SURFS_MIN_DIST apart from each other
     for surf in surfaces:
         surf_index = 0
@@ -135,11 +144,13 @@ def spawn_surfaces():
             if close_to_prev_pose(pose, added_poses, SURFS_MIN_DIST):
                 continue
 
-            # check also that the surface is in open space
-            if close_to_obstacle(x, y, surf):
+            # check also that the surface is not too close to the robot
+            if close_to_robot(pose, robot_pose, SURFS_MIN_DIST):
                 continue
 
-            # TODO: and not too close to the robot
+            # and in open space
+            if close_to_obstacle(x, y, surf):
+                continue
 
             added_poses.append(pose)
             model_name = surf['name'] + '_' + str(surf_index + 10)   # allow for some objects added by hand
@@ -201,3 +212,4 @@ if __name__ == "__main__":
 
     load_models()
     spawn_surfaces()
+    print("Spawned objects:\n  " + '\n  '.join('{}: {}'.format(k, v) for k, v in spawned.items()))
