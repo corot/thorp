@@ -30,7 +30,6 @@
   <run_depend>geometry_msgs</run_depend>
   <run_depend>trajectory_msgs</run_depend>
   <run_depend>ipa_building_msgs</run_depend>
-  <run_depend>manipulation_msgs</run_depend>
   <run_depend>cob_perception_msgs</run_depend>
 
   <run_depend>thorp_msgs</run_depend>

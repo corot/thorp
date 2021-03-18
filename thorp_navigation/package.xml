@@ -29,5 +29,6 @@
   <exec_depend>navigation</exec_depend>
   <exec_depend>move_base_flex</exec_depend>
   <exec_depend>range_sensor_layer</exec_depend>
+  <exec_depend>turtlebot_navigation</exec_depend>
   <exec_depend>thorp_costmap_layers</exec_depend>
 </package>

@@ -2,7 +2,12 @@
 <package>
   <name>thorp_perception</name>
   <version>0.1.0</version>
-  <description>Thorp-specific launchers and configuration for the object recognition tools</description>
+  <description>
+   Thorp perception includes:
+    - pipelines (RAIL, COB, ORK) configuration and launchers
+    - high-level object recognition action server
+    - target objects generation scripts
+  </description>
   <maintainer email="jsantossimon@gmail.com">Jorge Santos Simón</maintainer>
   <author email="jsantossimon@gmail.com">Jorge Santos Simón</author>
 
@@ -28,7 +33,7 @@
   <build_depend>cv_bridge</build_depend>
   <build_depend>image_geometry</build_depend>
   <build_depend>image_transport</build_depend>
-  <build_depend>OpenMP</build_depend>
+  <build_depend>libomp-dev</build_depend>
 
   <build_depend>thorp_msgs</build_depend>
   <build_depend>thorp_toolkit</build_depend>
@@ -55,12 +60,12 @@
   <run_depend>rail_segmentation</run_depend>
   <run_depend>rail_mesh_icp</run_depend>
 
-  <run_depend>object_recognition_ros</run_depend>
-  <run_depend>object_recognition_tabletop</run_depend>
+  <run_depend>cob_people_object_detection_tensorflow</run_depend>
 
-  <!-- meshes handling tools -->
+  <!-- optional meshes handling tools:
   <run_depend>admesh</run_depend>
   <run_depend>meshlab</run_depend>
   <run_depend>couchdb</run_depend>
   <run_depend>openscad</run_depend>
+   -->
 </package>

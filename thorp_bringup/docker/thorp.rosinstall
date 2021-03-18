@@ -1,0 +1,145 @@
+# Thorp and hardware stacks
+
+- git:
+    local-name: thorp
+    uri: https://github.com/corot/thorp.git
+    version: master
+
+- git:
+    local-name: arbotix_ros
+    uri: https://github.com/corot/arbotix_ros.git
+    version: indigo-devel
+
+- git:
+    local-name: gazebo-pkgs
+    uri: https://github.com/corot/gazebo-pkgs.git
+    version: thorp
+
+- git:
+    local-name: dynamixel_motor
+    uri: https://github.com/nphoang1102/dynamixel_motor.git
+    version: master
+
+# Kobuki / Yujin stacks
+
+- git:
+    local-name: kobuki
+    uri: https://github.com/corot/kobuki.git
+    version: more_realistic_sim
+
+- git:
+    local-name: kobuki_core
+    uri: https://github.com/yujinrobot/kobuki_core.git
+    version: melodic  # devel is already ROS2
+
+- git:
+    local-name: kobuki_desktop
+    uri: https://github.com/yujinrobot/kobuki_desktop.git
+    version: melodic
+
+- git:
+    local-name: kobuki_msgs
+    uri: https://github.com/yujinrobot/kobuki_msgs.git
+    version: melodic
+
+- git:
+    uri: https://github.com/yujinrobot/yocs_msgs.git
+    local-name: yocs_msgs
+    version: devel
+
+- git:
+    uri: https://github.com/yujinrobot/yujin_ocs.git
+    local-name: yujin_ocs
+    version: devel
+
+# Turtlebot stacks
+
+- git:
+    local-name: turtlebot
+    uri: https://github.com/turtlebot/turtlebot.git
+    version: melodic
+
+- git:
+    uri: https://github.com/turtlebot/turtlebot_msgs.git
+    local-name: turtlebot_msgs
+    version: indigo
+
+- git:
+    local-name: turtlebot_interactions
+    uri: https://github.com/turtlebot/turtlebot_interactions.git
+    version: indigo
+
+- git:
+    local-name: turtlebot_arm
+    uri: https://github.com/corot/turtlebot_arm.git
+    version: melodic-devel
+
+# Navigation stacks
+
+- git:
+    local-name: move_base_flex
+    uri: https://github.com/magazino/move_base_flex.git
+    version: master
+
+- git:
+    local-name: navigation_layers
+    uri: https://github.com/corot/navigation_layers.git
+    version: master
+
+#- git:
+#    local-name: navigation_experimental
+#    uri: https://github.com/corot/navigation_experimental.git
+#    version: melodic-devel
+# collada,,, need to link something,,,
+# commit all my RAIL and clone here
+# also ros_people_object_detection has local changes!!!
+#- git:
+#    local-name: rail_collada_models
+#    uri: https://github.com/GT-RAIL/rail_collada_models.git
+#    version: develop
+- git:
+    local-name: teb_local_planner
+    uri: https://github.com/rst-tu-dortmund/teb_local_planner.git
+    version: melodic-devel
+
+- git:
+    local-name: ipa_coverage_planning
+    uri: https://github.com/corot/ipa_coverage_planning
+    version: thorp
+
+- git:
+    local-name: visp
+    uri: https://github.com/lagadic/visp.git
+    version: master
+
+- git:
+    local-name: visp_ros
+    uri: https://github.com/lagadic/visp_ros.git
+    version: master
+
+# Perception stacks
+
+- git:
+    local-name: rail_manipulation_msgs
+    uri: https://github.com/corot/rail_manipulation_msgs.git
+    version: melodic-devel
+
+- git:
+    local-name: rail_mesh_icp
+    uri: https://github.com/corot/rail_mesh_icp.git
+    version: melodic-devel
+
+- git:
+    local-name: rail_segmentation
+    uri: https://github.com/corot/rail_segmentation.git
+    version: melodic-devel
+
+- git:
+    local-name: people_object_detection
+    uri: https://github.com/cagbal/ros_people_object_detection_tensorflow
+    version: master
+
+- git:
+    local-name: cob_perception_common
+    uri: https://github.com/cagbal/cob_perception_common.git
+    version: indigo_dev
