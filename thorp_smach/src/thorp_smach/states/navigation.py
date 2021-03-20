@@ -5,8 +5,8 @@ import smach_ros
 import geometry_msgs.msg as geo_msgs
 import nav_msgs.msg as nav_msgs
 import mbf_msgs.msg as mbf_msgs
-import rr_path_smoother.srv as ps_srvs
 import thorp_msgs.msg as thorp_msgs
+import thorp_msgs.srv as thorp_srvs
 
 from thorp_toolkit.geometry import TF2, pose2d2str, heading, quaternion_msg_from_yaw
 from thorp_toolkit.reconfigure import Reconfigure
@@ -450,7 +450,7 @@ class SmoothPath(smach_ros.ServiceState):
     Call path smoother with a list of waypoints to obtain a collision-free, smooth path connecting them
     """
     def __init__(self):
-        super(SmoothPath, self).__init__('path_smoother/connect_waypoints', ps_srvs.ConnectWaypoints,
+        super(SmoothPath, self).__init__('path_smoother/connect_waypoints', thorp_srvs.ConnectWaypoints,
                                          request_cb=self.request_cb,
                                          request_slots=['waypoints'],
                                          response_slots=['path'])
@@ -459,4 +459,4 @@ class SmoothPath(smach_ros.ServiceState):
         request.max_steps = 5
         request.max_radius = 0.5
         request.resolution = 0.15
-        request.publish_output = True
+        request.visualize_path = True

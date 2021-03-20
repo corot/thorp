@@ -1,0 +1,13 @@
+# Make a smooth path connecting the given waypoints
+# In addition to smoothing the angles, we add interpolated poses to reach the requested resolution
+
+geometry_msgs/PoseStamped[] waypoints
+
+float32 max_steps  # Number of sampling iterations
+float32 max_radius # Maximum turning radius allowed
+float32 resolution # Discretization resolution
+bool allow_unknown # Allow path traversing unknown space
+bool visualize_path
+
+---
+nav_msgs/Path path

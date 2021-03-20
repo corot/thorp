@@ -55,6 +55,11 @@ public:
    */
   static TF2& instance();
 
+  /**
+   * Provide access to the TF2 buffer.
+   * @return Reference to TF2 buffer.
+   */
+  tf2_ros::Buffer& buffer();
 
   /**
    * Get the transform between two frames by frame ID.

@@ -46,11 +46,6 @@
     <remap from="odom" to="/odom"/>
   </node>
 
-  <!-- Path smoother, required to convert a list of waypoints into a path followable by our controllers  -->
-  <node pkg="rr_path_smoother" type="rr_path_smoother_node" name="path_smoother" output="screen" respawn="true">
-    <rosparam file="$(find thorp_navigation)/param/move_base_flex/path_smoother.yaml" command="load"/>
-  </node>
-
   <node pkg="mbf_costmap_nav" type="move_base_legacy_relay.py" name="move_base" output="screen" respawn="false">
     <rosparam file="$(find thorp_navigation)/param/move_base/move_base_params.yaml" command="load"/>
   </node>

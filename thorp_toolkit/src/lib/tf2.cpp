@@ -80,6 +80,10 @@ TF2& TF2::instance()
   return *inst_ptr_;
 }
 
+tf2_ros::Buffer& TF2::buffer()
+{
+  return buffer_;
+}
 
 bool TF2::lookupTransform(const std::string& target_frame, const std::string& source_frame,
                           geometry_msgs::TransformStamped& transform,
