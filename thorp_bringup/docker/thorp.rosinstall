@@ -65,6 +65,11 @@
     version: indigo
 
 - git:
+    local-name: turtlebot_apps
+    uri: https://github.com/turtlebot/turtlebot_apps.git
+    version: indigo
+
+- git:
     local-name: turtlebot_interactions
     uri: https://github.com/turtlebot/turtlebot_interactions.git
     version: indigo
@@ -75,6 +80,11 @@
     version: melodic-devel
 
 # Navigation stacks
+
+- git:
+    local-name: navigation
+    uri: https://github.com/corot/navigation.git
+    version: melodic-devel
 
 - git:
     local-name: move_base_flex

@@ -7,10 +7,9 @@ find_package(catkin REQUIRED roscpp actionlib geometry_msgs moveit_msgs moveit_c
 link_directories(${catkin_LIBRARY_DIRS})
 include_directories(include
                     SYSTEM
-                    ${catkin_INCLUDE_DIRS}
-                   )
+                    ${catkin_INCLUDE_DIRS})
 
-catkin_package(DEPENDS roscpp actionlib geometry_msgs moveit_msgs moveit_core  visualization_msgs
+catkin_package(DEPENDS roscpp actionlib geometry_msgs moveit_msgs moveit_core visualization_msgs
                        interactive_markers gazebo_grasp_plugin thorp_msgs thorp_toolkit)
 
 

@@ -37,12 +37,12 @@
   <run_depend>geometry_msgs</run_depend>
   <run_depend>moveit_msgs</run_depend>
   <run_depend>moveit_core</run_depend>
-  <run_depend>moveit_commander</run_depend>
   <run_depend>interactive_markers</run_depend>
   <run_depend>visualization_msgs</run_depend>
   <run_depend>gazebo_grasp_plugin</run_depend>
   <run_depend>thorp_msgs</run_depend>
   <run_depend>thorp_toolkit</run_depend>
+  <run_depend>thorp_moveit_config</run_depend>
 
   <run_depend>dynamixel_controllers</run_depend>
 </package>

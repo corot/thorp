@@ -30,8 +30,15 @@
   <depend>costmap_2d</depend>
   <depend>base_local_planner</depend>
 
-  <exec_depend>navigation</exec_depend>
-  <exec_depend>move_base_flex</exec_depend>
+  <exec_depend>amcl</exec_depend>
+  <exec_depend>dwa_local_planner</exec_depend>
+  <exec_depend>teb_local_planner</exec_depend>
+  <exec_depend>global_planner</exec_depend>
+  <exec_depend>map_server</exec_depend>
+  <exec_depend>clear_costmap_recovery</exec_depend>
+  <exec_depend>move_slow_and_clear</exec_depend>
+  <exec_depend>rotate_recovery</exec_depend>
+  <exec_depend>mbf_costmap_nav</exec_depend>
   <exec_depend>range_sensor_layer</exec_depend>
   <exec_depend>turtlebot_navigation</exec_depend>
   <exec_depend>thorp_costmap_layers</exec_depend>

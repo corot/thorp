@@ -14,7 +14,7 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <run_depend>tf</run_depend>
+  <run_depend>tf2_ros</run_depend>
   <run_depend>actionlib</run_depend>
   <run_depend>openni2_launch</run_depend>
   <run_depend>freenect_launch</run_depend>
