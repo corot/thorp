@@ -15,7 +15,7 @@ over all rooms and explore them following the planned sequence.
   <!--  ***** Simulated mobile manipulator Thorp ******  -->
   <include file="$(find thorp_simulation)/launch/thorp_stage.launch">
     <arg name="visualization"  value="false"/>
-    <arg name="world_name"     value="cat_house"/>
+    <arg name="world_name"     value="fun_house"/>
     <arg name="initial_pose_x" value="8.0"/>
     <arg name="initial_pose_y" value="4.0"/>
     <arg name="initial_pose_a" value="0.0"/>

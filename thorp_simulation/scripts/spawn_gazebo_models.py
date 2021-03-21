@@ -4,14 +4,15 @@ import sys
 import rospy
 import rospkg
 
-from math import pi, copysign
+from math import pi, copysign, sqrt
 from random import uniform, choice
+from itertools import product
 
 from nav_msgs.msg import MapMetaData
 from mbf_msgs.srv import CheckPose, CheckPoseRequest
 from gazebo_msgs.srv import SpawnModel, DeleteModel
 
-from thorp_toolkit.geometry import TF2, distance_2d, create_2d_pose, create_3d_pose
+from thorp_toolkit.geometry import TF2, distance_2d, create_2d_pose, create_3d_pose, pose2d2str
 
 # equivalent to command line:
 # rosrun gazebo_ros spawn_model -sdf -database wood_cube_2_5cm -model wood_cube_2_5cm_10 -reference_frame doll_table_0::link -x 0 -y 0 -z 0.45
@@ -40,15 +41,19 @@ objects = ['wood_cube_2_5cm',
            'cross',
            'clover']
 spawned = {o: 0 for o in objects}
+
+cats = [{'name': 'cat_black', 'count': 2},
+        {'name': 'cat_orange', 'count': 2}]
 models = {}
 
 SURFS_MIN_DIST = 1.5
 OBJS_MIN_DIST = 0.08
+CATS_MIN_DIST = 5.0
 
 
 def load_models():
     global models
-    for obj in objects + [s['name'] for s in surfaces]:
+    for obj in objects + [s['name'] for s in surfaces] + [c['name'] for c in cats] + ['rocket']:
         model_path = ros_pack.get_path('thorp_simulation') + '/worlds/gazebo/models/' + obj + '/model.sdf'
         models[obj] = open(model_path, 'r').read()
 
@@ -67,17 +72,14 @@ def close_to_prev_pose(pose, added_poses, min_dist):
     return False
 
 
-def close_to_obstacle(cx, cy, surf):
+def close_to_obstacle(x, y, clearance):
     # check if the surface is far way from any obstacle in the global costmap
     # we check the robot footprint in 9 poses, being the central one the surface pose;
     # if the footprint is not entirely on fully free space (0 cost), we reject the pose
-    x_offset = surf['size'][0] / 2.0 + 0.2
-    y_offset = surf['size'][1] / 2.0 + 0.2
-    for x in [cx - x_offset, cx, cx + x_offset]:
-        for y in [cy - y_offset, cy, cy + y_offset]:
-            resp = check_pose_srv(pose=create_2d_pose(x, y, 0.0, 'map'), costmap=CheckPoseRequest.GLOBAL_COSTMAP)
-            if resp.state > 0 or resp.cost > 0:
-                return True
+    resp = check_pose_srv(pose=create_2d_pose(x, y, 0.0, 'map'), safety_dist=clearance - robot_radius,
+                          costmap=CheckPoseRequest.GLOBAL_COSTMAP)
+    if resp.state > 0 or resp.cost > 0:
+        return True
     return False
 
 
@@ -131,10 +133,10 @@ def spawn_objects(surf, surf_index):
 
 
 def spawn_surfaces():
-    robot_pose = TF2().transform_pose(None, 'base_footprint', 'map')
-    added_poses = []  # to check that they are at least SURFS_MIN_DIST apart from each other
+    added_poses = []  # to check that tables are at least SURFS_MIN_DIST apart from each other
     for surf in surfaces:
         surf_index = 0
+        clearance = sqrt((surf['size'][0] / 2.0) ** 2 + (surf['size'][1] / 2.0) ** 2) + 0.2
         while surf_index < surf['count'] and not rospy.is_shutdown():
             x = uniform(min_x, max_x)
             y = uniform(min_y, max_y)
@@ -149,7 +151,7 @@ def spawn_surfaces():
                 continue
 
             # and in open space
-            if close_to_obstacle(x, y, surf):
+            if close_to_obstacle(x, y, clearance):
                 continue
 
             added_poses.append(pose)
@@ -166,6 +168,57 @@ def spawn_surfaces():
             else:
                 rospy.logerr("Spawn surface failed: %s", resp.status_message)
             surf_index += 1
+
+
+def spawn_cats():
+    added_poses = []  # to check that cats are at least CATS_MIN_DIST apart from each other
+    for cat in cats:
+        cat_index = 0
+        while cat_index < cat['count'] and not rospy.is_shutdown():
+            x = uniform(min_x, max_x)
+            y = uniform(min_y, max_y)
+            z = 0.0
+            pose = create_3d_pose(x, y, z, 0, 0, uniform(-pi, +pi))
+            # we check that the distance to all previously added surfaces is below a threshold to space the surfaces
+            if close_to_prev_pose(pose, added_poses, CATS_MIN_DIST):
+                continue
+
+            # check also that the surface is not too close to the robot
+            if close_to_robot(pose, robot_pose, CATS_MIN_DIST):
+                continue
+
+            # and not within an obstacle
+            if close_to_obstacle(x, y, 0.0):
+                continue
+
+            added_poses.append(pose)
+            model_name = cat['name'] + '_' + str(cat_index)
+            resp = spawn_model_client(
+                model_name=model_name,
+                model_xml=models[cat['name']],
+                initial_pose=pose,
+                reference_frame='ground_plane::link'
+            )
+            if resp.success:
+                rospy.loginfo("Spawn %s at %s", model_name, pose2d2str(pose))
+            else:
+                rospy.logerr("Spawn %s failed: %s", model_name, resp.status_message)
+            cat_index += 1
+
+
+def spawn_rockets():
+    # spawn 5 x 10 rockets
+    rocket_index = 1
+    for i, j in product(range(-5, 0), range(10)):
+        resp = spawn_model_client(
+            model_name='rocket' + str(rocket_index),
+            model_xml=models['rocket'],
+            initial_pose=create_2d_pose(i, j, 0),
+            reference_frame='ground_plane::link'
+        )
+        if not resp.success:
+            rospy.logerr("Spawn rocket%d failed: %s", rocket_index, resp.status_message)
+        rocket_index += 1
 
 
 def delete_all():
@@ -187,13 +240,17 @@ def delete_all():
 
 
 if __name__ == "__main__":
-    rospy.init_node("spawn_objects")
+    rospy.init_node("spawn_gazebo_models")
+
+    if len(sys.argv) == 1:
+        print("Usage spawn_gazebo_models.py objects | cats [-d]")
+        sys.exit(-1)
 
     ros_pack = rospkg.RosPack()
     spawn_model_client = rospy.ServiceProxy('/gazebo/spawn_sdf_model', SpawnModel)
     spawn_model_client.wait_for_service(30)
 
-    if len(sys.argv) > 1 and sys.argv[1] == '-d':
+    if len(sys.argv) > 2 and sys.argv[2] == '-d':
         # optionally delete previously spawned objects  TODO:  broken,, could call instead whenever a model fails to spawn
         delete_model_client = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
         delete_model_client.wait_for_service(30)
@@ -211,5 +268,15 @@ if __name__ == "__main__":
     check_pose_srv.wait_for_service(10)
 
     load_models()
-    spawn_surfaces()
-    print("Spawned objects:\n  " + '\n  '.join('{}: {}'.format(k, v) for k, v in spawned.items()))
+
+    robot_pose = TF2().transform_pose(None, 'base_footprint', 'map')
+    robot_radius = rospy.get_param('move_base_flex/local_costmap/robot_radius')
+
+    if sys.argv[1] == 'objects':
+        spawn_surfaces()
+        print("Spawned objects:\n  " + '\n  '.join('{}: {}'.format(k, v) for k, v in spawned.items()))
+    elif sys.argv[1] == 'cats':
+        spawn_rockets()
+        spawn_cats()
+
+    sys.exit(0)

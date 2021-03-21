@@ -16,7 +16,7 @@ Explore the entire environment gathering all tabletop objects of the requested t
   <!--  ***** Simulated mobile manipulator Thorp ******  -->
 
   <include file="$(find thorp_simulation)/launch/thorp_gazebo.launch">
-    <arg name="world_name"     value="obj_house"/>
+    <arg name="world_name"     value="fun_house"/>
     <arg name="initial_pose_x" value="8.0"/>
     <arg name="initial_pose_y" value="4.0"/>
     <arg name="initial_pose_a" value="0.0"/>
@@ -24,7 +24,7 @@ Explore the entire environment gathering all tabletop objects of the requested t
   </include>
 
   <!-- Spawn objects randomly around the house -->
-  <node pkg="thorp_simulation" type="spawn_objects.py" name="objects_spawner" output="screen"/>
+  <node pkg="thorp_simulation" type="spawn_gazebo_models.py" name="objects_spawner" output="screen" args="objects"/>
 
 
   <!--  ********* Perception and manipulation *********  -->

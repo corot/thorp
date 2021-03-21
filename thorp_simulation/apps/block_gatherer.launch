@@ -13,7 +13,7 @@ Explore the entire environment searching for cats, and attack them whenever foun
   <!--  ***** Simulated mobile manipulator Thorp ******  -->
 
   <include file="$(find thorp_simulation)/launch/thorp_gazebo.launch">
-    <arg name="world_name"     default="obj_house"/>
+    <arg name="world_name"     default="fun_house "/>
     <arg name="initial_pose_x" default="8.6"/>
     <arg name="initial_pose_y" default="4.0"/>
     <arg name="initial_pose_a" default="0.0"/>
@@ -21,7 +21,7 @@ Explore the entire environment searching for cats, and attack them whenever foun
   </include>
 
   <!-- Spawn objects randomly around the house -->
-  <node pkg="thorp_simulation" type="spawn_objects.py" name="objects_spawner" output="screen"/>
+  <node pkg="thorp_simulation" type="spawn_models.py" name="objects_spawner" output="screen"/>
 
 
   <!--  ********* Perception and manipulation *********  -->

@@ -49,7 +49,7 @@ class SegmentRooms(smach_ros.SimpleActionState):
         # import cv2
         # from cv_bridge import CvBridge
         # bridge = CvBridge()
-        # cv_image = cv2.imread('/home/jorge/catkin_ws/thorp/src/thorp/thorp_simulation/worlds/maps/cat_house.png',
+        # cv_image = cv2.imread('/home/jorge/catkin_ws/thorp/src/thorp/thorp_simulation/worlds/maps/fun_house.png',
         #                       cv2.IMREAD_UNCHANGED)
         # for i in range(cv_image.shape[0]):
         #     for j in range(cv_image.shape[1]):

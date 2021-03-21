@@ -14,11 +14,14 @@ Explore the entire environment searching for cats, and attack them whenever foun
   <!--  ***** Simulated mobile manipulator Thorp ******  -->
 
   <include file="$(find thorp_simulation)/launch/thorp_gazebo.launch">
-    <arg name="world_name"     value="cat_house"/>
+    <arg name="world_name"     value="fun_house"/>
     <arg name="initial_pose_x" value="8.0"/>
     <arg name="initial_pose_y" value="4.0"/>
     <arg name="initial_pose_a" value="0.0"/>
   </include>
+
+  <!-- Spawn some cutty cats randomly around the house -->
+  <node pkg="thorp_simulation" type="spawn_gazebo_models.py" name="objects_spawner" output="screen" args="cats"/>
 
 
   <!--  ***** Object recognition using the Kinect *****  -->
