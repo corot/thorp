@@ -54,7 +54,3 @@ Arm, sonars and IR sensors require a bit of extra work. Check their
   - fix explained [here](https://answers.gazebosim.org//question/22263/error-in-rest-request-for-accessing-apiignitionorg)
 - Tensorflow not working:
   - [Install tensorflow and right cuda version](https://www.tensorflow.org/install/gpu)
-- File or path does not exist [""] [model://doll_furniture/doll_table.dae]
-  - Clone [rail_collada_models](https://github.com/GT-RAIL/rail_collada_models)
-    and add [original_models](https://github.com/GT-RAIL/rail_collada_models/tree/develop/meshes/original_models)
-    to GAZEBO_MODEL_PATH

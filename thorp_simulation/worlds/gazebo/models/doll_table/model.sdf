@@ -6,7 +6,7 @@
         <visual name='visual'>
           <geometry>
             <mesh>
-              <uri>model://doll_furniture/doll_table.dae</uri>
+              <uri>model://doll_table/model.dae</uri>
               <scale>2 2 2</scale>
             </mesh>
           </geometry>
@@ -15,7 +15,7 @@
           <pose>0 0 -0.005 0 0 0</pose>
           <geometry>
             <mesh>
-              <uri>model://doll_furniture/doll_table.stl</uri>
+              <uri>model://doll_table/model.stl</uri>
               <scale>0.0514 0.0514 0.0514</scale>
             </mesh>
           </geometry>
