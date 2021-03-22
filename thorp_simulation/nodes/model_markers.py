@@ -127,7 +127,7 @@ if __name__ == "__main__":
         print("Usage: model_markers.py <list of interactive models>")
         sys.exit(0)
     try:
-        model_states = rospy.wait_for_message("gazebo/model_states", ModelStates, 10.0)
+        model_states = rospy.wait_for_message("gazebo/model_states", ModelStates, 30.0)
     except rospy.ROSInterruptException:
         sys.exit(0)
     except rospy.ROSException as err:

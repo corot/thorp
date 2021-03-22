@@ -23,6 +23,23 @@
               -unpause"
         launch-prefix="bash -c 'sleep $(arg spawn_delay); $0 $@'"/>
 
+  <!-- Read the configuration and load controllers for the arm, gripper and cannon -->
+  <rosparam file="$(find thorp_simulation)/param/controllers.yaml" command="load"/>
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" output="screen"
+        args="--timeout 30 joint_state_controller gripper_joint cannon_joint arm_controller"
+        launch-prefix="bash -c 'sleep $(arg spawn_delay); $0 $@'"/>
+
+  <!-- We provide GripperCommand action with arbotix controllers, as on real robot; but
+       the simulation flag will ensure that we don't load any physical robot controller  -->
+  <include file="$(find thorp_manipulation)/launch/includes/arm.launch.xml">
+    <arg name="simulation" value="true"/>
+  </include>
+
+  <!-- Same for the cannon: on simulation will talk with a simulated controller` -->
+  <include file="$(find thorp_cannon)/launch/cannon.launch">
+    <arg name="simulation" value="true"/>
+  </include>
+
   <!-- Fake laser from Kinect (2D slice) and Xtion (3D projection) -->
   <node pkg="depthimage_to_laserscan" type="depthimage_to_laserscan" name="depthimage_to_laserscan" output="screen" respawn="true">
     <rosparam file="$(find thorp_bringup)/param/kinect/depthimage_to_laserscan.yaml" command="load"/>
@@ -39,20 +56,4 @@
 
   <!-- Bumper/cliff sensors as pointcloud, so they can be integrated on the costmaps  -->
   <include file="$(find turtlebot_bringup)/launch/includes/kobuki/bumper2pc.launch.xml"/>
-
-  <!-- Read the configuration and load controllers for the arm, gripper and cannon -->
-  <rosparam file="$(find thorp_simulation)/param/controllers.yaml" command="load"/>
-  <node name="controller_spawner" pkg="controller_manager" type="spawner" output="screen"
-        args="--timeout 30 joint_state_controller gripper_joint cannon_joint arm_controller"/>
-
-  <!-- We provide GripperCommand action with arbotix controllers, as on real robot; but
-       the simulation flag will ensure that we don't load any physical robot controller  -->
-  <include file="$(find thorp_manipulation)/launch/includes/arm.launch.xml">
-    <arg name="simulation" value="true"/>
-  </include>
-
-  <!-- Same for the cannon: on simulation will talk with a simulated controller` -->
-  <include file="$(find thorp_cannon)/launch/cannon.launch">
-    <arg name="simulation" value="true"/>
-  </include>
 </launch>

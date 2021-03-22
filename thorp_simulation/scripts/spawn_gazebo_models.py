@@ -257,7 +257,7 @@ if __name__ == "__main__":
         delete_all()
 
     # get map bounds
-    map_metadata = rospy.wait_for_message('map_metadata', MapMetaData, 10)
+    map_metadata = rospy.wait_for_message('map_metadata', MapMetaData, 30)
     min_x = map_metadata.origin.position.x
     min_y = map_metadata.origin.position.y
     max_x = map_metadata.origin.position.x + map_metadata.width * map_metadata.resolution
