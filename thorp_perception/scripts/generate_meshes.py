@@ -46,8 +46,8 @@ try:
                         '            <izz>{izz}</izz>\n' \
                         '          </inertia>'
 
-    meshes_path = rospack.get_path('thorp_perception') + "/meshes/"
-    models_path = rospack.get_path('thorp_simulation') + "/worlds/gazebo/models/"
+    meshes_path = rospack.get_path('thorp_perception') + '/meshes/'
+    models_path = rospack.get_path('thorp_simulation') + '/worlds/gazebo/models/'
     for object in objects:
         # Run gen_meshes.scad to generate an STL mesh for each of the objects in the list
         if not os.path.exists(meshes_path + object[0] + '.stl'):
@@ -68,7 +68,8 @@ try:
                                            '-n_samples', '10000', '-leaf_size', '0.0025']))
 
         # Create a gazebo model using template descriptors and linking the created meshes
-        if not os.path.exists(models_path + object[0]):
+        model_path = models_path + object[0]
+        if not os.path.exists(model_path):
             variables = {'mass': object[7],
                          'hz': object[6] / 2.0,  # half height
                          'ixx': object[7] / 12 * (object[5]**2 + object[6]**2),
@@ -76,12 +77,15 @@ try:
                          'izz': object[7] / 12 * (object[5]**2 + object[4]**2)}
             # bounding box inertia: https://en.wikipedia.org/wiki/List_of_moments_of_inertia#List_of_3D_inertia_tensors
             inertial = inertial_template.format(**variables)
-            os.mkdir(models_path + object[0], 0o755)
-            os.symlink(meshes_path + object[0] + '.stl', models_path + object[0] + '/model.stl')
-            with open(models_path + object[0] + '/model.config', "w") as f:
+            os.mkdir(model_path, 0o755)
+            # create a symbolic link from model to mesh to avoid duplicated disk usage, but use a relative
+            # path so it remains valid when cloning the repo somewhere else, e.g on building a docker image
+            rel_mesh_path = os.path.relpath(meshes_path, model_path) + '/'
+            os.symlink(rel_mesh_path + object[0] + '.stl', model_path + '/model.stl')
+            with open(model_path + '/model.config', "w") as f:
                 f.write(template(models_path + 'templates/model.config', {'name': object[0],
                                                                           'desc': object[1]}))
-            with open(models_path + object[0] + '/model.sdf', "w") as f:
+            with open(model_path + '/model.sdf', "w") as f:
                 f.write(template(models_path + 'templates/model.sdf', {'name': object[0],
                                                                        'color': object[3],
                                                                        'inertial': inertial}))
