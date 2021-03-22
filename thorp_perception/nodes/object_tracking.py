@@ -11,12 +11,9 @@ Author:
 
 import rospy
 import tf2_ros
-import tf_conversions
 
-import numpy as np
 import collections
 
-from math import pi
 from copy import deepcopy
 from cv_bridge import CvBridge
 from thorp_toolkit.geometry import distance_3d

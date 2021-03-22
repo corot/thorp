@@ -20,7 +20,7 @@ Explore the entire environment searching for cats, and attack them whenever foun
     <arg name="initial_pose_a" value="0.0"/>
   </include>
 
-  <!-- Spawn some cutty cats randomly around the house -->
+  <!-- Spawn some cute cats randomly around the house -->
   <node pkg="thorp_simulation" type="spawn_gazebo_models.py" name="objects_spawner" output="screen" args="cats"/>
 
 
@@ -35,7 +35,7 @@ Explore the entire environment searching for cats, and attack them whenever foun
   <!--  ****************** Utilities ******************  -->
 
   <node name="model_markers" pkg="thorp_simulation" type="model_markers.py" output="screen" respawn="true"
-        args="cat_orange cat_black"/>
+        args="cat_orange_1 cat_orange_2 cat_black_1 cat_black_2"/>
 
 
   <!--  ****** IPA coverage planning using kinect *****  -->
