@@ -275,10 +275,11 @@ private:
 
   bool identifyObject(rail_manipulation_msgs::SegmentedObject& obj, geometry_msgs::Pose& pose)
   {
-    std::map<std::string, double> score;
+    std::map<std::string, double> error;
     std::map<std::string, geometry_msgs::TransformStamped> poses;
 
     // Call template matching services in parallel with the object pointcloud, one call per template
+    // Note that we log all errors multiplied by 1e6, as the values provided by the template matcher are very low
     #pragma omp parallel for    // NOLINT
     for (size_t i = 0; i < obj_types_.size(); ++i)
     {
@@ -294,32 +295,33 @@ private:
       srv.request.target_cloud = obj.point_cloud;
       if (match_srvs_[obj_type].call(srv))
       {
-        ROS_INFO_STREAM("[object detection] " << obj_type << " template match service succeeded; score: "
-                                              << score[obj_type]);
+        ROS_DEBUG_STREAM("[object detection] " << obj_type << " template match service succeeded; error: "
+                                               << srv.response.match_error * 1e6);
         #pragma omp critical
-        score[obj_type] = srv.response.match_error;
+        error[obj_type] = srv.response.match_error;
         poses[obj_type] = srv.response.template_pose;
       }
       else
       {
         ROS_ERROR_STREAM("[object detection] " << obj_type << " template match service failed");
         #pragma omp critical
-        score[obj_type] = 1.0;
+        error[obj_type] = 1.0;
       }
     }
 
-    // choose the template with the lowest error (RAIL call it score, very bad name)
-    const auto& best_match = std::min_element(score.begin(), score.end(),
+    // choose the template with the lowest error (PCL ICP call it score, very bad name imho)
+    const auto& best_match = std::min_element(error.begin(), error.end(),
                                               [](const auto& l, const auto& r) { return l.second < r.second; });
     // check if best match is good enough
     if (best_match->second > max_matching_error_)
     {
       ROS_INFO_STREAM("[object detection] Best match (" << best_match->first << ") error above tolerance ("
-                      << best_match->second << " > " << max_matching_error_ << ")");
+                      << best_match->second * 1e6 << " > " << max_matching_error_ * 1e6 << ")");
       return false;
     }
 
-    ROS_INFO_STREAM("[object detection] Best match is " << best_match->first << ", with error " << best_match->second);
+    ROS_INFO_STREAM("[object detection] Best match is " << best_match->first << ", with error "
+                    << best_match->second * 1e6);
 
     obj.name = best_match->first;
     obj.recognized = true;

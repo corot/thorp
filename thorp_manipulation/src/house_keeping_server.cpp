@@ -159,8 +159,8 @@ bool HouseKeepingServer::gripperBusyCB(std_srvs::TriggerRequest &request, std_sr
   // Logic check: ask planning scene if we have an object attached
   std::map<std::string, moveit_msgs::AttachedCollisionObject> attached_objects =
     ttk::planningScene().getAttachedObjects();
-  for (const auto& ao: attached_objects)
-    ROS_ERROR_STREAM(" " << ao.first<< "     "<< ao.second.object.id<<  "    mio: " <<attached_object);
+//  for (const auto& ao: attached_objects)
+//    ROS_ERROR_STREAM(" " << ao.first<< "     "<< ao.second.object.id<<  "    mio: " <<attached_object);
 
   if (!attached_objects.empty())
   {
@@ -181,7 +181,7 @@ bool HouseKeepingServer::gripperBusyCB(std_srvs::TriggerRequest &request, std_sr
   }
   else if (!last_grasp_event_.attached)
   {
-    ROS_WARN("Last gazebo grasp event was detached");
+    ROS_INFO("Last gazebo grasp event was detached");
     response.success = false;
   }
   else
