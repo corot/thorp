@@ -91,8 +91,8 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
     return result;
   }
 
-  ROS_INFO("[pickup object] Picking object '%s' with size [%s] at location [%s]...",
-           obj_name.c_str(), ttk::vector2cstr3D(obj_size), ttk::point2cstr2D(obj_pose.pose.position));
+  ROS_INFO("[pickup object] Picking object '%s' with size %.1fx%.1fx%.1f cm at %s...", obj_name.c_str(),
+           obj_size.x * 100, obj_size.y * 100, obj_size.z * 100, ttk::point2cstr2D(obj_pose.pose.position));
 
   // Prepare and send pick goal
   std::vector<moveit_msgs::Grasp> grasps;
@@ -172,12 +172,12 @@ int32_t PickupObjectServer::makeGrasps(const geometry_msgs::PoseStamped& obj_pos
     g.pre_grasp_approach.direction.vector.x = +1;
     g.pre_grasp_approach.direction.header.frame_id = arm().getEndEffectorLink();
     g.pre_grasp_approach.min_distance = 0.025;
-    g.pre_grasp_approach.desired_distance = 0.1;
+    g.pre_grasp_approach.desired_distance = 0.05;
 
     g.post_grasp_retreat.direction.header.frame_id = arm().getEndEffectorLink();
     g.post_grasp_retreat.direction.vector.x = -1;
     g.post_grasp_retreat.min_distance = 0.025;
-    g.post_grasp_retreat.desired_distance = 0.1;
+    g.post_grasp_retreat.desired_distance = 0.05;
 
     g.pre_grasp_posture.joint_names.push_back("gripper_joint");
     g.pre_grasp_posture.points.resize(1);
@@ -197,7 +197,7 @@ int32_t PickupObjectServer::makeGrasps(const geometry_msgs::PoseStamped& obj_pos
 
     grasps.push_back(g);
 
-    ROS_DEBUG("[pickup object] Pick attempt %d at pose [%s]...", attempt, ttk::pose2cstr3D(g.grasp_pose));
+    ROS_DEBUG("[pickup object] Pick attempt %d at pose %s...", attempt, ttk::pose2cstr3D(g.grasp_pose));
   }
 
   return grasps.size();
@@ -210,10 +210,12 @@ double PickupObjectServer::gripperClosing(const geometry_msgs::PoseStamped& gras
   double heading = ttk::heading(grasp_pose);  // obj direction from the arm (grasp pose must be in arm reference frame)
   double obj_yaw = ttk::yaw(obj_pose);        // obj orientation
   double abs_diff = std::abs(ttk::wrapAngle(obj_yaw - heading));
-  double closing = abs_diff < M_PI/4.0 || abs_diff > M_PI*3/4.0 ? obj_size.y : obj_size.x;
-  ROS_DEBUG_STREAM(" GRIPPER CLOSING  " << heading << "  " << obj_yaw << "   " << (abs_diff < M_PI/4.0 || abs_diff > M_PI*3/4.0 ? " USE Y    " : "  USE X    ")
-                                        << obj_size.x << "  " << obj_size.y << "      " << ttk::pose2str3D(obj_pose) << "      " << obj_pose.header.frame_id);
-  return closing - gripper_tightening_closing;   // reduce slightly for tightening
+  bool x_aligned = abs_diff < M_PI/4.0 || abs_diff > M_PI*3/4.0;
+  double closing = x_aligned ? obj_size.y : obj_size.x;
+  closing -= gripper_tightening_closing;      // reduce slightly for tightening
+  ROS_INFO("Gripper closing: %f (%f - %f -> using %s-dimension of: %f x %f)   tightening: %g",
+           closing, obj_yaw, heading, x_aligned ? "y" : "x", obj_size.x, obj_size.y, gripper_tightening_closing);
+  return closing;
 }
 
 };
