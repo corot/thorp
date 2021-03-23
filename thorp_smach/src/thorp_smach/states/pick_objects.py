@@ -29,7 +29,7 @@ class TargetSelection(smach.State):
         for i, obj in enumerate(ud['objects']):
             obj_pose = obj.primitive_poses[0]
             dist = distance_2d(obj_pose, self.arm_on_bfp_rf)  # assumed in arm base reference frame
-            if dist <= cfg.MAX_ARM_REACH:
+            if dist <= (cfg.MAX_ARM_REACH - 3e-3):  # 3 mm safety margin to account for perception noise
                 targets.append((obj.id, dist))
         targets = sorted(targets, key=lambda t: t[1])  # sort by increasing distance
         if len(targets) > ud['objs_to_skip']:
