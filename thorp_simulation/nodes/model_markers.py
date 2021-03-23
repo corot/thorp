@@ -7,19 +7,19 @@ Author:
     Jorge Santos
 """
 
+import sys
 import copy
 import rospy
 
-from math import pi
-from random import randint, uniform
-
-from interactive_markers.interactive_marker_server import *
-from interactive_markers.menu_handler import *
-from visualization_msgs.msg import *
+from interactive_markers.interactive_marker_server import InteractiveMarker, InteractiveMarkerServer, \
+                                                          InteractiveMarkerFeedback
+from interactive_markers.menu_handler import MenuHandler
+from visualization_msgs.msg import InteractiveMarkerControl, Marker
 from geometry_msgs.msg import PoseStamped, Twist
 from gazebo_msgs.msg import ModelState, ModelStates
 
-from thorp_toolkit.geometry import quaternion_msg_from_yaw, yaw, normalize_quaternion, pose3d2str, create_2d_pose
+from thorp_toolkit.common import wait_for_sim_time
+from thorp_toolkit.geometry import quaternion_msg_from_yaw, yaw, normalize_quaternion, pose3d2str
 
 server = None
 menu_handler = MenuHandler()
@@ -27,7 +27,7 @@ br = None
 counter = 0
 
 
-def processFeedback(feedback):
+def process_feedback(feedback):
     s = "Feedback from marker '" + feedback.marker_name
     s += "' / control '" + feedback.control_name + "'"
 
@@ -59,7 +59,9 @@ def make_model_marker(model):
     marker.scale.x = 0.01
     marker.scale.y = 0.01
     marker.scale.z = 0.01
-    marker.mesh_resource = "package://thorp_simulation/worlds/gazebo/models/" + model + "/meshes/Cat_v1_l3.obj"
+    model_type = '_'.join(model.split('_')[:-1])  # remove instance index to get the model type
+    marker.mesh_resource = "package://thorp_simulation/worlds/gazebo/models/" + model_type + "/meshes/Cat_v1_l3.obj"
+    # TODO: get mesh path from the model SDF file to make this generic
     marker.mesh_use_embedded_materials = True
     return marker
 
@@ -73,7 +75,7 @@ def make_model_control(msg, model):
 
 
 def save_marker(int_marker):
-    server.insert(int_marker, processFeedback)
+    server.insert(int_marker, process_feedback)
 
 
 #####################################################################
@@ -103,8 +105,26 @@ def make_interactive_marker(pose, model):
     control.interaction_mode = InteractiveMarkerControl.MOVE_AXIS
     int_marker.controls.append(control)
 
-    server.insert(int_marker, processFeedback)
+    server.insert(int_marker, process_feedback)
     menu_handler.apply(server, int_marker.name)
+
+
+def model_states_cb(msg):
+    global target_models
+    if not target_models:
+        # interactive markers created for all targets; we can stop listening for model states
+        model_states_sub.unregister()
+        return
+    models_added = 0
+    for index, model_name in enumerate(msg.name):
+        if model_name in target_models:
+            target_models.remove(model_name)
+            models_added += 1
+            make_interactive_marker(msg.pose[index], model_name)
+            rospy.loginfo("Interactive marker added at %s for model %s", pose3d2str(msg.pose[index]), model_name)
+
+    if models_added:
+        server.applyChanges()
 
 
 if __name__ == "__main__":
@@ -112,38 +132,25 @@ if __name__ == "__main__":
 
     server = InteractiveMarkerServer("model_markers")
 
-    menu_handler.insert("First Entry", callback=processFeedback)
-    menu_handler.insert("Second Entry", callback=processFeedback)
+    menu_handler.insert("First Entry", callback=process_feedback)
+    menu_handler.insert("Second Entry", callback=process_feedback)
     sub_menu_handle = menu_handler.insert("Submenu")
-    menu_handler.insert("First Entry", parent=sub_menu_handle, callback=processFeedback)
-    menu_handler.insert("Second Entry", parent=sub_menu_handle, callback=processFeedback)
+    menu_handler.insert("First Entry", parent=sub_menu_handle, callback=process_feedback)
+    menu_handler.insert("Second Entry", parent=sub_menu_handle, callback=process_feedback)
 
     state_pub = rospy.Publisher("gazebo/set_model_state", ModelState, queue_size=1)
     pose_pub = rospy.Publisher("target_object_pose", PoseStamped, queue_size=1)
 
-    target_models = sys.argv[1:]
-    if not target_models:
+    if len(sys.argv) < 2:
         rospy.logwarn("No target models provided; nothing to do")
-        print("Usage: model_markers.py <list of interactive models>")
+        print("Usage: model_markers.py <string of space-separated model names>")
         sys.exit(0)
-    try:
-        model_states = rospy.wait_for_message("gazebo/model_states", ModelStates, 30.0)
-    except rospy.ROSInterruptException:
-        sys.exit(0)
-    except rospy.ROSException as err:
-        rospy.logwarn(err)
-        rospy.logwarn("Creating markers for models %s on random poses", str(target_models))
-        model_states = ModelStates()
-        for model_name in target_models:
-            model_states.name.append(model_name)
-            model_states.pose.append(create_2d_pose(randint(1, 10), randint(1, 10), uniform(-pi, pi)))
+    target_models = sys.argv[1]
+    if type(target_models) != list:
+        target_models = target_models.split()
 
-    for index, model_name in enumerate(model_states.name):
-        if model_name in target_models:
-            make_interactive_marker(model_states.pose[index], model_name)
-            rospy.loginfo("Interactive marker added at %s for model %s",
-                          pose3d2str(model_states.pose[index]), model_name)
-
-    server.applyChanges()
+    # wait for clock to start before listening for models (we unpause simulation after spawning the robot)
+    wait_for_sim_time()
+    model_states_sub = rospy.Subscriber("gazebo/model_states", ModelStates, model_states_cb, queue_size=1)
 
     rospy.spin()

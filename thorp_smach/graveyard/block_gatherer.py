@@ -6,7 +6,7 @@ import smach_ros
 
 from thorp_smach.states.gathering import PickReachableObjs
 
-from utils import wait_for_sim_time, wait_for_mbf
+from thorp_smach.utils import wait_for_sim_time, wait_for_mbf
 
 
 def main():

@@ -35,7 +35,7 @@ Explore the entire environment searching for cats, and attack them whenever foun
   <!--  ****************** Utilities ******************  -->
 
   <node name="model_markers" pkg="thorp_simulation" type="model_markers.py" output="screen" respawn="true"
-        args="cat_orange_1 cat_orange_2 cat_black_1 cat_black_2"/>
+        args="'cat_orange_0 cat_orange_1 cat_black_0 cat_black_1'"/>
 
 
   <!--  ****** IPA coverage planning using kinect *****  -->
