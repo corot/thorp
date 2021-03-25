@@ -1,0 +1,8 @@
+allowed_space: 4  # allow traversing free, inscribed, lethal, unknown and outside space, each including all previous
+                  # use one of the constants defined on GetPath service response:
+                  # FREE      =  0 : robot is completely in traversable space, the most restrictive
+                  # INSCRIBED =  1 : robot is partially in inscribed space
+                  # LETHAL    =  2 : robot is partially in collision
+                  # UNKNOWN   =  3 : robot is partially in unknown space
+                  # OUTSIDE   =  4 : robot is completely outside the map, actually disables pose check
+path_resolution: 0.1  # resulting path resolution (distance between poses)

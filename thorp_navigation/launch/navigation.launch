@@ -37,9 +37,9 @@
     <arg name="smooth_velocity" value="$(arg smooth_velocity)"/>
   </include>
 
-  <!-- Path smoother, required to convert a list of waypoints into a path followable by our controllers  -->
-  <node pkg="thorp_navigation" type="path_smoother" name="path_smoother" output="screen" respawn="true">
-    <rosparam file="$(find thorp_navigation)/param/path_smoother.yaml" command="load"/>
+  <!-- Waypoints path, required to convert a list of waypoints into a path followable by our controllers  -->
+  <node pkg="thorp_navigation" type="waypoints_path" name="waypoints_path" output="screen" respawn="true">
+    <rosparam file="$(find thorp_navigation)/param/waypoints_path.yaml" command="load"/>
   </node>
 
   <!--  **************** Pose following ****************  -->

@@ -205,4 +205,25 @@ bool clipSegment(double edge_left, double edge_right, double edge_bottom, double
   return true;        // (clipped) line is drawn
 }
 
+
+double enclosedArea(const geometry_msgs::PoseStamped& pose_a,
+                    const geometry_msgs::PoseStamped& pose_b,
+                    const geometry_msgs::PoseStamped& pose_c)
+{
+  return std::abs((pose_a.pose.position.x * (pose_b.pose.position.y - pose_c.pose.position.y) +
+                   pose_b.pose.position.x * (pose_c.pose.position.y - pose_a.pose.position.y) +
+                   pose_c.pose.position.x * (pose_a.pose.position.y - pose_b.pose.position.y)) / 2);
+}
+
+double curvature(const geometry_msgs::PoseStamped& pose_a,
+                 const geometry_msgs::PoseStamped& pose_b,
+                 const geometry_msgs::PoseStamped& pose_c)
+{
+  double area = enclosedArea(pose_a, pose_b, pose_c);
+  double dist_ab = distance2D(pose_a, pose_b);
+  double dist_bc = distance2D(pose_b, pose_c);
+  double dist_ca = distance2D(pose_c, pose_a);
+  return 4 * area / (dist_ab * dist_bc * dist_ca);
+}
+
 } /* namespace thorp_toolkit */

@@ -1,25 +1,22 @@
 /**
- *  \file       path_smoother.hpp
+ *  \file       waypoints_path.hpp
  *  \brief      Class for smoothing paths using bspline
  */
 
 #pragma once
 
 #include <ros/ros.h>
-#include <geometry_msgs/Pose.h>
 #include <nav_msgs/Path.h>
-#include <costmap_2d/costmap_2d_ros.h>
-#include <base_local_planner/costmap_model.h>
+#include <geometry_msgs/Pose.h>
 
 /**
- * This class is responsible for creating smooth paths under these assumptions:
- * - The path may not pass through all checkpoints
- * - Input path states are valid w.r.t. the costmap
+ * This nodes allows creating smooth paths connecting a list of waypoints, passing by an upper bounded distance.
+ * The output path can be validated against the costmaps using MBF services
  */
-class PathSmoother
+class WaypointsPath
 {
 public:
-  PathSmoother();
+  WaypointsPath();
 
   /**
    * \brief Smoothen path by sampling intermediate points like a bspline
@@ -32,21 +29,17 @@ public:
   /**
    * \brief Publish discretized poses as markers
    * \param poses      Poses to be visualized
-   * \param ns         Marker namespace
    * \param red        Marker red value
    * \param green      Marker green value
    * \param blue       Marker blue value
    */
-  void publishPoses(const std::vector<geometry_msgs::PoseStamped>& poses, std::string ns,
-                    double red, double green, double blue);
+  void publishPoses(const std::vector<geometry_msgs::PoseStamped>& poses, double red, double green, double blue);
 
   /**
    * \brief Insert points between every pair of points on path until the distance between two points is less the
-   * resolution
    * \param path       Path to be subdivided
-   * \param resolution Discretization resolution
    */
-  static bool rediscretize(nav_msgs::Path& path, double resolution);
+  bool rediscretize(nav_msgs::Path& path);
 
   /**
    * \brief Weighted linear interpolation between two points. The interpolated pose's orientation will be the heading
@@ -56,8 +49,8 @@ public:
    * \param weight     Ratio of interpolation weight (range [0 1]) with 0 meaning end and 1 meaning start
    * \param result     Interpolated point
    */
-  static bool interpolate(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& end, double weight,
-                          geometry_msgs::PoseStamped& result);
+  bool interpolate(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& end, double weight,
+                   geometry_msgs::PoseStamped& result);
 
   bool connectWaypointsSrv(thorp_msgs::ConnectWaypoints::Request& req, thorp_msgs::ConnectWaypoints::Response& res);
 
@@ -73,11 +66,10 @@ private:
    * \brief Check if all points between two points after linear interpolation are valid
    * \param start      Start point for interpolation
    * \param end        End point for interpolation
-   * \param resolution Distance between each pair of interpolated points (in m)
    * \param highlight_invalid_pose Highlight the invalid state with a visual marker and log a warn
    */
   bool isMotionValid(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& end,
-                     double step_size = 0.05, bool highlight_invalid_pose = false);
+                     bool highlight_invalid_pose = false);
 
   /**
    * \brief Insert mid points between every pair of points on path
@@ -125,18 +117,16 @@ private:
   static double curvature(const geometry_msgs::PoseStamped& point_a, const geometry_msgs::PoseStamped& point_b,
                           const geometry_msgs::PoseStamped& point_c);
 
-  /// Allow smoothed path to traverse unknown space
-  bool allow_unknown_space_;
+  uint8_t allowed_space_;   ///< Allow paths traversing FREE < INSCRIBED < LETHAL < UNKNOWN < OUTSIDE space
 
-  /// Costmap2DROS object
-  std::shared_ptr<costmap_2d::Costmap2DROS> costmap_2d_;
+  double path_resolution_;  ///< Resulting path resolution (distance between poses)
 
-  /// Costmap model for footprint collision checking
-  std::shared_ptr<base_local_planner::CostmapModel> costmap_model_;
-
-  ros::NodeHandle pnh_;
+  // ROS API
+  ros::NodeHandle nh_, pnh_;
 
   ros::Publisher viz_result_pub_;
 
   ros::ServiceServer connect_wp_srv_;
+
+  ros::ServiceClient check_pose_srv_;
 };

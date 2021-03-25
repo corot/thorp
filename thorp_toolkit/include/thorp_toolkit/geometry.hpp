@@ -672,4 +672,26 @@ bool clipSegment(double edge_left, double edge_right, double edge_bottom, double
                  double x0src, double y0src, double x1src, double y1src,
                  double& x0clip, double& y0clip, double& x1clip, double& y1clip);
 
+/**
+ * Area of the triangle formed by three poses (see https://www.mathopenref.com/coordtrianglearea.html)
+ * @param pose_a
+ * @param pose_b
+ * @param pose_c
+ * @return area
+ */
+double enclosedArea(const geometry_msgs::PoseStamped& pose_a,
+                    const geometry_msgs::PoseStamped& pose_b,
+                    const geometry_msgs::PoseStamped& pose_c);
+
+/**
+ * Menger curvature using triple poses (see https://en.wikipedia.org/wiki/Menger_curvature)
+ * @param pose_a
+ * @param pose_b
+ * @param pose_c
+ * @return curvature
+ */
+double curvature(const geometry_msgs::PoseStamped& pose_a,
+                 const geometry_msgs::PoseStamped& pose_b,
+                 const geometry_msgs::PoseStamped& pose_c);
+
 } /* namespace thorp_toolkit */

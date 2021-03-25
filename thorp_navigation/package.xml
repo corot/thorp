@@ -27,10 +27,10 @@
   <depend>visp_bridge</depend>
   <depend>dynamic_reconfigure</depend>
   <depend>visualization_msgs</depend>
-  <depend>costmap_2d</depend>
-  <depend>base_local_planner</depend>
+  <depend>mbf_msgs</depend>
 
   <exec_depend>amcl</exec_depend>
+  <exec_depend>base_local_planner</exec_depend>
   <exec_depend>dwa_local_planner</exec_depend>
   <exec_depend>teb_local_planner</exec_depend>
   <exec_depend>global_planner</exec_depend>

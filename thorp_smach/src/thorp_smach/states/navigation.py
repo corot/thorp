@@ -174,6 +174,7 @@ class ExePath(smach_ros.SimpleActionState):
         self.dist_tolerance = dist_tolerance
         self.angle_tolerance = angle_tolerance
         self.track_progress = track_progress
+        self.progress_tracker = None
         self.params_ns = '/move_base_flex/' + controller
 
         # Show target pose (MBF only shows it when calling get_path)
@@ -244,11 +245,11 @@ class Recovery(smach_ros.SimpleActionState):
 class ExePathFailed(smach.State):
     """ Handle failures on ExePath state """
 
-    def __init__(self):
+    def __init__(self, recovery_behaviors=cfg.EXE_PATH_RECOVERY):
         super(ExePathFailed, self).__init__(outcomes=['recover', 'next_wp', 'aborted'],
                                             input_keys=['path', 'waypoints', 'reached_wp', 'outcome', 'message'],
                                             output_keys=['path', 'waypoints', 'next_wp', 'recovery_behavior'])
-        self.recovery_behaviors = cfg.EXE_PATH_RECOVERY
+        self.recovery_behaviors = recovery_behaviors
         self.consecutive_failures = 0
         self.next_waypoint = None
 
@@ -261,7 +262,7 @@ class ExePathFailed(smach.State):
             self.next_waypoint = int(ud['message'][cwp_index + len('current waypoint: '):])
             ud['path'].poses = ud['path'].poses[self.next_waypoint:]
         elif ud['reached_wp'] is not None:
-            # TEB logic using progress tracker:   is very brittle, but seems to work!  hope I can do better w/ BTs
+            # TEB logic using progress tracker: very brittle, but seems to work!  hope I can do better w/ BTs
             #  ignore None on 'reached_wp', as it's normally a failure after a recovery attempt
             self.next_waypoint = ud['reached_wp'] + 1
             ud['waypoints'] = ud['waypoints'][self.next_waypoint:]
@@ -367,7 +368,7 @@ class ExeSparsePath(smach.StateMachine):
 
 class FollowWaypoints(DoOnExitContainer):
     """
-    Follow a list of waypoints after converting them into a smooth path executable by an MBF controller
+    Follow a list of waypoints after converting them into a smooth path executable by MBF controllers
     """
     def __init__(self, controller=cfg.DEFAULT_CONTROLLER):
         super(FollowWaypoints, self).__init__(outcomes=['succeeded',
@@ -384,13 +385,13 @@ class FollowWaypoints(DoOnExitContainer):
                                                 'aborted': 'aborted',
                                                 'preempted': 'preempted'})
             smach.StateMachine.add('EXE_PATH', ExePath(controller,
-                                                       cfg.LOOSE_DIST_TOLERANCE,
-                                                       cfg.INF_ANGLE_TOLERANCE,  # ignore final yaw
-                                                       True),                    # track progress
+                                                       cfg.LOOSE_DIST_TOLERANCE,  # no precision required
+                                                       cfg.INF_ANGLE_TOLERANCE,   # ignore final yaw
+                                                       True),                     # track progress
                                    transitions={'succeeded': 'succeeded',
                                                 'aborted': 'FAILURE',
                                                 'preempted': 'preempted'})
-            smach.StateMachine.add('FAILURE', ExePathFailed(),
+            smach.StateMachine.add('FAILURE', ExePathFailed(cfg.FOLLOW_RECOVERY),
                                    transitions={'recover': 'RECOVER',
                                                 'next_wp': 'NEXT_WP',
                                                 'aborted': 'aborted'})
@@ -450,7 +451,7 @@ class SmoothPath(smach_ros.ServiceState):
     Call path smoother with a list of waypoints to obtain a collision-free, smooth path connecting them
     """
     def __init__(self):
-        super(SmoothPath, self).__init__('path_smoother/connect_waypoints', thorp_srvs.ConnectWaypoints,
+        super(SmoothPath, self).__init__('waypoints_path/connect_waypoints', thorp_srvs.ConnectWaypoints,
                                          request_cb=self.request_cb,
                                          request_slots=['waypoints'],
                                          response_slots=['path'])

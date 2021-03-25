@@ -1,5 +1,6 @@
 #include <tf/tf.h>
 
+#include <mbf_msgs/CheckPose.h>
 #include <visualization_msgs/MarkerArray.h>
 
 #include <thorp_msgs/ConnectWaypoints.h>
@@ -7,22 +8,28 @@
 #include <thorp_toolkit/geometry.hpp>
 namespace ttk = thorp_toolkit;
 
-#include "thorp_navigation/path_smoother.hpp"
+#include "thorp_navigation/waypoints_path.hpp"
 
-PathSmoother::PathSmoother() : pnh_("~")
+WaypointsPath::WaypointsPath() : pnh_("~")
 {
-  allow_unknown_space_ = pnh_.param("allow_unknown_space", false);
-  costmap_2d_ = std::shared_ptr<costmap_2d::Costmap2DROS>(new costmap_2d::Costmap2DROS("path_smoother_costmap",
-                                                                                       ttk::TF2::instance().buffer()));
-  costmap_2d_->start();
-  costmap_model_ = std::shared_ptr<base_local_planner::CostmapModel>(
-      new base_local_planner::CostmapModel(*costmap_2d_->getCostmap()));
+  allowed_space_ = pnh_.param("allowed_space", 2);  // FREE: 0, INSCRIBED: 1, LETHAL: 2, UNKNOWN: 3, OUTSIDE: 4
+  path_resolution_ = pnh_.param("path_resolution", 0.1);
+  if (path_resolution_ < 0.001)
+  {
+    ROS_ERROR("[waypoints path] Path resolution must be positive (%f provided)", path_resolution_);
+    return;
+  }
   viz_result_pub_ = pnh_.advertise<visualization_msgs::MarkerArray>("smoothed_path", 1, true);
-  connect_wp_srv_ = pnh_.advertiseService("connect_waypoints", &PathSmoother::connectWaypointsSrv, this);
-  ROS_INFO("Path smoother server ready");
+  connect_wp_srv_ = pnh_.advertiseService("connect_waypoints", &WaypointsPath::connectWaypointsSrv, this);
+  if (ros::service::waitForService("move_base_flex/check_pose_cost", ros::Duration(30)))
+    check_pose_srv_ = nh_.serviceClient<mbf_msgs::CheckPose>("move_base_flex/check_pose_cost", true);
+  else
+    ROS_WARN("[waypoints path] MBF check pose service not available after 30s; collisions check disabled");
+
+  ROS_INFO("[waypoints path] Waypoints path server ready");
 }
 
-bool PathSmoother::subdivide(nav_msgs::Path& path)
+bool WaypointsPath::subdivide(nav_msgs::Path& path)
 {
   if (path.poses.size() < 2)
   {
@@ -42,11 +49,11 @@ bool PathSmoother::subdivide(nav_msgs::Path& path)
   return true;
 }
 
-bool PathSmoother::rediscretize(nav_msgs::Path& path, double resolution)
+bool WaypointsPath::rediscretize(nav_msgs::Path& path)
 {
   if (path.poses.size() < 2)
   {
-    ROS_ERROR("At least 2 points in path is required");
+    ROS_ERROR("[waypoints path] At least 2 points in path is required");
     return false;
   }
   std::vector<geometry_msgs::PoseStamped> new_states, temp_states;
@@ -55,7 +62,7 @@ bool PathSmoother::rediscretize(nav_msgs::Path& path, double resolution)
   for (unsigned int i = 1; i < path.poses.size(); ++i)
   {
     double length = ttk::distance2D(new_states.back(), path.poses.at(i));
-    double step_size = resolution / length;
+    double step_size = path_resolution_ / length;
     for (double weight = step_size; weight < 1; weight += step_size)
     {
       geometry_msgs::PoseStamped temp_pose;
@@ -70,11 +77,11 @@ bool PathSmoother::rediscretize(nav_msgs::Path& path, double resolution)
   return true;
 }
 
-bool PathSmoother::insertAtDistance(nav_msgs::Path& path, double distance)
+bool WaypointsPath::insertAtDistance(nav_msgs::Path& path, double distance)
 {
   if (path.poses.size() < 2)
   {
-    ROS_ERROR("At least 2 points in path is required");
+    ROS_ERROR("[waypoints path] At least 2 points in path is required");
     return false;
   }
   std::vector<geometry_msgs::PoseStamped> new_states;
@@ -98,14 +105,13 @@ bool PathSmoother::insertAtDistance(nav_msgs::Path& path, double distance)
   return true;
 }
 
-bool PathSmoother::smoothBSpline(nav_msgs::Path& path, double max_steps, double max_radius)
+bool WaypointsPath::smoothBSpline(nav_msgs::Path& path, double max_steps, double max_radius)
 {
-  double resolution = costmap_2d_->getCostmap()->getResolution();
   for (unsigned int idx = 1; idx < path.poses.size(); ++idx)
   {
-    if (!isMotionValid(path.poses.at(idx - 1), path.poses.at(idx), resolution, true))
+    if (!isMotionValid(path.poses.at(idx - 1), path.poses.at(idx), true))
     {
-      ROS_ERROR("Input path is in collision, can't perform smoothing");
+      ROS_ERROR("[waypoints path] Input path is in collision, can't perform smoothing");
       return false;
     }
   }
@@ -121,17 +127,17 @@ bool PathSmoother::smoothBSpline(nav_msgs::Path& path, double max_steps, double 
     unsigned int num_inserted_poses = 0;
     for (unsigned int i = 2; i < path.poses.size() - 1; i += 2)
     {
-      if (isMotionValid(path.poses.at(i - 1), path.poses.at(i), resolution) &&
-          isMotionValid(path.poses.at(i), path.poses.at(i + 1), resolution))  // Check motion bw path.poses.at(i - 1)
-                                                                              // and path.poses[i - 1]for validity
+      if (isMotionValid(path.poses.at(i - 1), path.poses.at(i)) &&
+          isMotionValid(path.poses.at(i), path.poses.at(i + 1)))  // Check motion bw path.poses.at(i - 1)
+                                                                  // and path.poses[i - 1] for validity
       {
         interpolate(path.poses.at(i - 1), path.poses.at(i), 0.5, temp_pose_1);
         interpolate(path.poses.at(i), path.poses.at(i + 1), 0.5, temp_pose_2);
         interpolate(temp_pose_1, temp_pose_2, 0.5, temp_pose_1);
-        if (isMotionValid(path.poses.at(i - 1), temp_pose_1, resolution) &&
-            isMotionValid(temp_pose_1, path.poses.at(i + 1), resolution))  // Check motion bw path.poses[i-1] and
-                                                                           // temp_pose_1, temp_pose_1 and
-                                                                           // path.poses[i+1] for validity
+        if (isMotionValid(path.poses.at(i - 1), temp_pose_1) &&
+            isMotionValid(temp_pose_1, path.poses.at(i + 1)))  // Check motion bw path.poses[i-1] and
+                                                               // temp_pose_1, temp_pose_1 and
+                                                               // path.poses[i+1] for validity
         {
           if (ttk::distance2D(path.poses.at(i), temp_pose_1) > 0)  // Insert temp_pose_1 only if path.poses.at(i) and
                                                                    // temp_pose_1 aren't too close
@@ -148,29 +154,39 @@ bool PathSmoother::smoothBSpline(nav_msgs::Path& path, double max_steps, double 
   return true;
 }
 
-bool PathSmoother::isStateValid(const geometry_msgs::PoseStamped& pose, bool highlight_invalid_pose)
+bool WaypointsPath::isStateValid(const geometry_msgs::PoseStamped& pose, bool highlight_invalid_pose)
 {
-  // Transform footprint to the pose
-  std::vector<geometry_msgs::Point> oriented_footprint;
-  costmap_2d::transformFootprint(pose.pose.position.x, pose.pose.position.y, ttk::yaw(pose),
-      costmap_2d_->getRobotFootprint(), oriented_footprint);
-  // Evaluate cost of the footprint
-  double footprint_cost = costmap_model_->footprintCost(pose.pose.position, oriented_footprint, 0.0, 0.0);
-  bool valid = footprint_cost >= 0 || (allow_unknown_space_ && footprint_cost == -2.0);
-  if (!valid && highlight_invalid_pose)
+  if (!check_pose_srv_ || allowed_space_ >= mbf_msgs::CheckPoseResponse::OUTSIDE)
+    return true;  // no check service available or any space is allowed, so why bothering to check?
+
+  // Evaluate cost of the footprint at the given pose
+  mbf_msgs::CheckPose srv;
+  srv.request.pose = pose;
+  srv.request.costmap = mbf_msgs::CheckPoseRequest::GLOBAL_COSTMAP;
+  if (!check_pose_srv_.call(srv))
   {
-    // Highlight the problematic pose to allow easy debugging
-    ROS_WARN("Invalid state at %s; cost: %g", ttk::pose2cstr2D(pose), footprint_cost);
-    highlightPose(pose);
+    ROS_WARN("[waypoints path] MBF check pose service failed; assume pose is not valid");
+    return false;
   }
-  return valid;
+  if (srv.response.state > allowed_space_)
+  {
+    if (highlight_invalid_pose)
+    {
+      // Highlight the problematic pose to allow easy debugging
+      ROS_WARN("[waypoints path] Invalid state at %s: %c; cost: %ud",
+               ttk::pose2cstr2D(pose), srv.response.state, srv.response.cost);
+      highlightPose(pose);
+    }
+    return false;
+  }
+  return true;
 }
 
-bool PathSmoother::isMotionValid(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& end,
-                                 double resolution, bool highlight_invalid_pose)
+bool WaypointsPath::isMotionValid(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& end,
+                                  bool highlight_invalid_pose)
 {
   double length = ttk::distance2D(start, end);
-  double step_size = resolution / length;
+  double step_size = path_resolution_ / length;
   bool is_valid = true;
   geometry_msgs::PoseStamped interpolated_point;
   for (double weight = 0; weight < 1 && is_valid; weight += step_size)
@@ -184,12 +200,12 @@ bool PathSmoother::isMotionValid(const geometry_msgs::PoseStamped& start, const 
   return is_valid;
 }
 
-bool PathSmoother::interpolate(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& end,
-                               double weight, geometry_msgs::PoseStamped& result)
+bool WaypointsPath::interpolate(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& end,
+                                double weight, geometry_msgs::PoseStamped& result)
 {
   if (weight > 1 || weight < 0)
   {
-    ROS_ERROR("Weights should be within [0 1] range");
+    ROS_ERROR("[waypoints path] Weights should be within [0 1] range");
     return false;
   }
   result.pose.position.x = (1 - weight) * start.pose.position.x + weight * end.pose.position.x;
@@ -204,31 +220,9 @@ bool PathSmoother::interpolate(const geometry_msgs::PoseStamped& start, const ge
   return true;
 }
 
-double PathSmoother::enclosedArea(const geometry_msgs::PoseStamped& point_a,
-                                  const geometry_msgs::PoseStamped& point_b,
-                                  const geometry_msgs::PoseStamped& point_c)
-{
-  // Area of triangle https://www.mathopenref.com/coordtrianglearea.html
-  return std::abs((point_a.pose.position.x * (point_b.pose.position.y - point_c.pose.position.y) +
-                   point_b.pose.position.x * (point_c.pose.position.y - point_a.pose.position.y) +
-                   point_c.pose.position.x * (point_a.pose.position.y - point_b.pose.position.y)) / 2);
-}
-
-double PathSmoother::curvature(const geometry_msgs::PoseStamped& point_a,
-                               const geometry_msgs::PoseStamped& point_b,
-                               const geometry_msgs::PoseStamped& point_c)
-{
-  // Curvature using triple points https://en.wikipedia.org/wiki/Menger_curvature
-  double area = enclosedArea(point_a, point_b, point_c);
-  double dist_ab = ttk::distance2D(point_a, point_b);
-  double dist_bc = ttk::distance2D(point_b, point_c);
-  double dist_ca = ttk::distance2D(point_c, point_a);
-  return 4 * area / (dist_ab * dist_bc * dist_ca);
-}
-
-bool PathSmoother::insertInterpolatedIfValid(const geometry_msgs::PoseStamped& start,
-                                             const geometry_msgs::PoseStamped& end, double weight,
-                                             std::vector<geometry_msgs::PoseStamped>& pose_list)
+bool WaypointsPath::insertInterpolatedIfValid(const geometry_msgs::PoseStamped& start,
+                                              const geometry_msgs::PoseStamped& end, double weight,
+                                              std::vector<geometry_msgs::PoseStamped>& pose_list)
 {
   geometry_msgs::PoseStamped temp_pose;
   interpolate(start, end, weight, temp_pose);
@@ -241,22 +235,22 @@ bool PathSmoother::insertInterpolatedIfValid(const geometry_msgs::PoseStamped& s
     return false;
 }
 
-void PathSmoother::publishPoses(const std::vector<geometry_msgs::PoseStamped>& poses, std::string ns,
-                                double red, double green, double blue)
+void WaypointsPath::publishPoses(const std::vector<geometry_msgs::PoseStamped>& poses,
+                                 double red, double green, double blue)
 {
   visualization_msgs::MarkerArray path_marker;
   visualization_msgs::Marker clear_markers;
   clear_markers.action = visualization_msgs::Marker::DELETEALL;
-  clear_markers.ns = ns;
+  clear_markers.ns = "discretized_path";
   clear_markers.id = 0;
   path_marker.markers.push_back(clear_markers);
   int i = 1;
   for (auto& point : poses)
   {
     visualization_msgs::Marker pose_marker;
-    pose_marker.header.frame_id = costmap_2d_->getGlobalFrameID();
+    pose_marker.header.frame_id = "map";
     pose_marker.header.stamp = ros::Time::now();
-    pose_marker.ns = ns;
+    pose_marker.ns = "discretized_path";
     pose_marker.id = i;
     pose_marker.type = visualization_msgs::Marker::SPHERE;
     pose_marker.action = visualization_msgs::Marker::ADD;
@@ -276,7 +270,7 @@ void PathSmoother::publishPoses(const std::vector<geometry_msgs::PoseStamped>& p
   viz_result_pub_.publish(path_marker);
 }
 
-void PathSmoother::highlightPose(const geometry_msgs::PoseStamped& pose) const
+void WaypointsPath::highlightPose(const geometry_msgs::PoseStamped& pose) const
 {
   visualization_msgs::MarkerArray path_marker;
   visualization_msgs::Marker clear_markers;
@@ -285,7 +279,7 @@ void PathSmoother::highlightPose(const geometry_msgs::PoseStamped& pose) const
   clear_markers.id = 0;
   path_marker.markers.push_back(std::move(clear_markers));
   visualization_msgs::Marker pose_marker;
-  pose_marker.header.frame_id = costmap_2d_->getGlobalFrameID();
+  pose_marker.header.frame_id = "map";
   pose_marker.header.stamp = ros::Time::now();
   pose_marker.ns = "highlight";
   pose_marker.id = 0;
@@ -302,12 +296,22 @@ void PathSmoother::highlightPose(const geometry_msgs::PoseStamped& pose) const
   viz_result_pub_.publish(path_marker);
 }
 
-bool PathSmoother::connectWaypointsSrv(thorp_msgs::ConnectWaypoints::Request& req,
+bool WaypointsPath::connectWaypointsSrv(thorp_msgs::ConnectWaypoints::Request& req,
                                        thorp_msgs::ConnectWaypoints::Response& res)
 {
+  ros::Time t0 = ros::Time::now();
+  if (!check_pose_srv_)
+  {
+    // We use a persistent service client, so we must recheck that it's still there (but not block this call waiting!)
+    if (ros::service::waitForService("move_base_flex/check_pose_cost", ros::Duration(0.1)))
+      check_pose_srv_ = nh_.serviceClient<mbf_msgs::CheckPose>("move_base_flex/check_pose_cost", true);
+    else
+      ROS_WARN("[waypoints path] MBF check pose service not available; collisions check disabled");
+  }
+
   if (req.waypoints.empty())
   {
-    ROS_ERROR("Path smoother: empty waypoints list requested");
+    ROS_ERROR("[waypoints path] Empty waypoints list requested");
     return true;
   }
 
@@ -317,30 +321,30 @@ bool PathSmoother::connectWaypointsSrv(thorp_msgs::ConnectWaypoints::Request& re
   // Path smoothing only makes sense for more than 2 waypoints
   if (req.waypoints.size() > 2 && !smoothBSpline(res.path, req.max_steps, req.max_radius))
   {
-    ROS_ERROR("Path smoothing failed");
+    ROS_ERROR("[waypoints path] Path smoothing failed");
     return false;
   }
 
   // Path discretization only makes sense for more than 1 pose
-  if (req.waypoints.size() > 1 && !rediscretize(res.path, req.resolution))
+  if (req.waypoints.size() > 1 && !rediscretize(res.path))
   {
-    ROS_ERROR("Path discretization failed");
+    ROS_ERROR("[waypoints path] Path discretization failed");
     return false;
   }
 
   if (req.visualize_path)
-    publishPoses(res.path.poses, "discretized_path", 0.5, 0., 0.5);
+    publishPoses(res.path.poses, 0.2, 0.4, 0.6);
 
+  ROS_INFO("[waypoints path] Path created in %f seconds", (ros::Time::now() - t0).toSec());
   return true;
 }
 
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "path_smoother");
+  ros::init(argc, argv, "waypoints_path");
 
-  ros::NodeHandle private_nh("~");
-  PathSmoother path_smoother;
+  WaypointsPath waypoints_path;
   ros::spin();
 
   return EXIT_SUCCESS;

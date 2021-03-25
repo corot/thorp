@@ -1689,7 +1689,6 @@ Visualization Manager:
               Marker Topic: /move_base_flex/TEBPlanner/teb_markers
               Name: Markers
               Namespaces:
-                PointObstacles: true
                 TebContainer: true
                 ViaPoints: true
               Queue Size: 100
@@ -1861,7 +1860,7 @@ Visualization Manager:
           Marker Topic: /explore_house_smach/visual_markers
           Name: Reached Waypoints
           Namespaces:
-            gp_marker: true
+            {}
           Queue Size: 100
           Value: true
       Enabled: true
@@ -1924,7 +1923,7 @@ Visualization Manager:
     - Class: rviz/SetGoal
       Topic: /move_base_simple/goal
     - Class: rviz/PublishPoint
-      Single click: true
+      Single click: false
       Topic: /clicked_point
   Value: true
   Views:
