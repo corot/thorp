@@ -317,7 +317,6 @@ class AlignToTable(smach.Sequence):
         with self:
             smach.Sequence.add('CLEAR_WAY', ClearTableWay())
             smach.Sequence.add('POSE_AS_PATH', PoseAsPath())
-            smach.Sequence.add('PRECISE_CTRL', SetNamedConfig('precise_controlling'))
             smach.Sequence.add('ALIGN_TO_TABLE', ExePath())
 
 
@@ -332,7 +331,6 @@ class DetachFromTable(smach.Sequence):
         with self:
             smach.Sequence.add('POSE_AS_PATH', PoseAsPath())
             smach.Sequence.add('AWAY_FROM_TABLE', ExePath())
-            smach.Sequence.add('STANDARD_CTRL', DismissNamedConfig('precise_controlling'))
 
 
 class ExeSparsePath(smach.StateMachine):
@@ -384,10 +382,8 @@ class FollowWaypoints(DoOnExitContainer):
                                    transitions={'succeeded': 'EXE_PATH',
                                                 'aborted': 'aborted',
                                                 'preempted': 'preempted'})
-            smach.StateMachine.add('EXE_PATH', ExePath(controller,
-                                                       cfg.LOOSE_DIST_TOLERANCE,  # no precision required
-                                                       cfg.INF_ANGLE_TOLERANCE,   # ignore final yaw
-                                                       True),                     # track progress
+            smach.StateMachine.add('EXE_PATH', ExePath(controller,  # already using loose goal reached criteria
+                                                       track_progress=True),   # required to retake an interrupted path
                                    transitions={'succeeded': 'succeeded',
                                                 'aborted': 'FAILURE',
                                                 'preempted': 'preempted'})
@@ -400,8 +396,7 @@ class FollowWaypoints(DoOnExitContainer):
                                                 'aborted': 'FAILURE',
                                                 'preempted': 'preempted'},
                                    remapping={'behavior': 'recovery_behavior'})
-            smach.StateMachine.add('NEXT_WP', GoToPose(dist_tolerance=cfg.LOOSE_DIST_TOLERANCE,
-                                                       angle_tolerance=cfg.INF_ANGLE_TOLERANCE),
+            smach.StateMachine.add('NEXT_WP', GoToPose(),           # already using loose goal reached criteria
                                    transitions={'succeeded': 'EXE_PATH',
                                                 'aborted': 'SKIP_WP',  # also if failed; at least we have skip a wp
                                                 'preempted': 'preempted'},

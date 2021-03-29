@@ -11,10 +11,11 @@ from thorp_toolkit.geometry import TF2, to_transform, translate_pose, transform_
 from thorp_toolkit.transform import Transform
 from thorp_toolkit.visualization import Visualization
 
-from common import DismissNamedConfig
+from common import SetNamedConfig, DismissNamedConfig
 from perception import MonitorTables, ObjectDetection, ObjectsDetected
 from navigation import GetRobotPose, GoToPose, AlignToTable, DetachFromTable
 from pick_objects import PickReachableObjs
+from thorp_smach.containers.do_on_exit import DoOnExit as DoOnExitContainer
 
 from thorp_smach import config as cfg
 
@@ -333,13 +334,16 @@ def GatherObjects(target_types):
         smach.Iterator.set_contained_state('', pick_objects_sm, loop_outcomes=['succeeded'])
 
     # Full SM: approach the table, make a picking plan and execute it, double-checking that we left no object behind
-    sm = smach.StateMachine(outcomes=['succeeded',
-                                      'aborted',
-                                      'preempted',
-                                      'tray_full'],
-                            input_keys=['table', 'table_pose'])
+    sm = DoOnExitContainer(outcomes=['succeeded',
+                                     'aborted',
+                                     'preempted',
+                                     'tray_full'],
+                           input_keys=['table', 'table_pose'])
     sm.userdata.object_types = target_types
     with sm:
+        smach.StateMachine.add('PRECISE_CTRL', SetNamedConfig('precise_controlling'),
+                               transitions={'succeeded': 'APPROACH_TABLE',
+                                            'aborted': 'aborted'})
         smach.StateMachine.add('APPROACH_TABLE', approach_table_sm,
                                transitions={'succeeded': 'MAKE_PICK_PLAN',
                                             'aborted': 'aborted',
@@ -351,7 +355,7 @@ def GatherObjects(target_types):
                                             'no_reachable_objs': 'succeeded'})
         smach.StateMachine.add('PICK_OBJECTS', pick_objects_it,
                                transitions={'succeeded': 'DETECT_OBJECTS',  # double-check that we left no object behind
-                                            'aborted': 'STANDARD_CTRL',     # restore original configuration on error
+                                            'aborted': 'aborted',     # restore original configuration on error
                                             'preempted': 'preempted',
                                             'tray_full': 'tray_full'})
         smach.StateMachine.add('DETECT_OBJECTS', ObjectDetection(),
@@ -361,7 +365,5 @@ def GatherObjects(target_types):
         smach.StateMachine.add('OBJECTS_LEFT', ObjectsDetected(),
                                transitions={'true': 'APPROACH_TABLE',   # at least one object left; restart picking
                                             'false': 'succeeded'})      # otherwise we are done
-        smach.StateMachine.add('STANDARD_CTRL', DismissNamedConfig('precise_controlling'),
-                               transitions={'succeeded': 'aborted',
-                                            'aborted': 'aborted'})
+        DoOnExitContainer.add_finally('STANDARD_CTRL', DismissNamedConfig('precise_controlling'))
     return sm

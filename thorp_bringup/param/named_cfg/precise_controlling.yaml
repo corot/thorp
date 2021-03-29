@@ -6,6 +6,7 @@ move_base_flex/TEBPlanner:
   inflation_dist: 0.5
   costmap_obstacles_behind_robot_dist: 0.75
 
+  # strict goal reached criteria
   xy_goal_tolerance: 0.035
   yaw_goal_tolerance: 0.05
 
