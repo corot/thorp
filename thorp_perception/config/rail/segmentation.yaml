@@ -1,4 +1,4 @@
-debug: true
+debug: false
 point_cloud_topic: /xtion/depth_registered/points
 zones_config: $(find thorp_perception)/config/rail/zones.yaml
 min_surface_size: 10000

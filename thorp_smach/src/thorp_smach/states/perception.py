@@ -247,7 +247,7 @@ class MonitorTables(smach.State):
 
     def execute(self, ud):
         start_time = rospy.get_time()
-        rate = rospy.Rate(2.0)
+        rate = rospy.Rate(2.5)
         while not self.preempt_requested() and not rospy.is_shutdown():
             segmented_objs = self.segment_srv(only_surface=True).segmented_objects.objects
             if segmented_objs:

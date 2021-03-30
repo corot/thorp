@@ -1376,8 +1376,6 @@ Visualization Manager:
           Marker Topic: /rail_segmentation/table_marker
           Name: Table
           Namespaces:
-            orig_bbox: true
-            rotated_bbox: true
             segmentation_objects: true
           Queue Size: 100
           Value: true
@@ -1601,9 +1599,7 @@ Visualization Manager:
           Marker Topic: /object_gatherer_smach/visual_markers
           Name: Visual markers
           Namespaces:
-            gp_marker: true
-            point_list: true
-            text_marker: true
+            {}
           Queue Size: 100
           Value: true
       Enabled: true
@@ -1690,8 +1686,7 @@ Visualization Manager:
           Marker Topic: /exploration/room_sequence_planning_server/room_sequence_marker
           Name: Room Sequence Plan
           Namespaces:
-            room_sequence_checkpoints: true
-            room_sequence_rooms: true
+            {}
           Queue Size: 100
           Value: true
         - Class: rviz/Image
@@ -1978,9 +1973,7 @@ Visualization Manager:
                   Marker Topic: /move_base_flex/TEBPlanner/teb_markers
                   Name: Markers
                   Namespaces:
-                    PointObstacles: true
-                    TebContainer: true
-                    ViaPoints: true
+                    {}
                   Queue Size: 100
                   Value: true
               Enabled: true
@@ -2215,13 +2208,13 @@ Visualization Manager:
           Unreliable: false
           Value: false
         - Class: rviz/MarkerArray
-          Enabled: true
+          Enabled: false
           Marker Topic: /move_group/display_grasp_markers
           Name: Grasps
           Namespaces:
-            moveit_grasps:stage_4: true
+            {}
           Queue Size: 100
-          Value: true
+          Value: false
       Enabled: true
       Name: Manipulation
     - Class: rviz/Group
