@@ -12,7 +12,7 @@ controllers:
   - {name: TROPlanner,      type: base_local_planner/TrajectoryPlannerROS}
   - {name: PoseFollower,    type: pose_follower/PoseFollower}
 controller_frequency:  8.0      # Hz
-controller_patience:   2.0      # seconds; abort if the local planner does not return within that time
+controller_patience:   0.5      # seconds; abort if the local planner does not succeed within that time
 controller_max_retries:  0      # limit consecutive failed calls to local planner
 controller_lock_costmap: true   # lock costmap as in move_base, or let planner to do itself
 
@@ -21,8 +21,8 @@ planners:
   - {name: NavfnPlanner,    type: navfn/NavfnROS}
   - {name: GlobalPlanner,   type: global_planner/GlobalPlanner}
   - {name: CarrotPlanner,   type: carrot_planner/CarrotPlanner}
-planner_frequency:  1.0         # replan every second to addapt to changing conditions
-planner_patience:   5.0         # seconds; abort if the global planner does not return within that time
+planner_frequency:  1.0         # replan every second to adapt to changing conditions
+planner_patience:   2.0         # seconds; abort if the global planner does not return within that time
 planner_max_retries:  3         # limit consecutive failed calls to global planner
 planner_lock_costmap: true      # lock costmap as in move_base, or let planner to do itself
 
