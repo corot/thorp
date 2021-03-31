@@ -6,6 +6,8 @@ class ProgressTracker:
     """ Tracks robot progression along a sequence of waypoints """
 
     def __init__(self, waypoints, reached_threshold):
+        if type(waypoints) != list or not waypoints:
+            raise Exception("Waypoints must be a non-empty list of poses")
         self._waypoints = waypoints
         self._reached_threshold = reached_threshold
         self._next_wp = 0
