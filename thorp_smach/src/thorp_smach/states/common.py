@@ -53,3 +53,31 @@ class ExecuteUserCommand(smach.State):
             ud['ucmd_outcome'] = thorp_msgs.UserCommandResult('invalid_command')
             return 'invalid_command'
 
+
+class Sleep(smach.State):
+    """
+    Sleeps the given time. Returns
+    - 'succeeded' if we slept the specified time
+    - 'aborted' if no time is provided
+    """
+
+    def __init__(self, time=None):
+        super(Sleep, self).__init__(outcomes=['succeeded', 'aborted', 'preempted'],
+                                    input_keys=['time'])
+        self.time = time
+
+    def execute(self, ud):
+        if self.time is not None:
+            time = self.time
+        elif 'time' in ud:
+            time = ud['time']
+        else:
+            rospy.logerr("Sleep time not provided")
+            return 'aborted'
+        rospy.loginfo("Sleeping for %g seconds...", time)
+        t0 = rospy.get_time()
+        while rospy.get_time() - t0 < time:
+            if self.preempt_requested():
+                return 'preempted'
+            rospy.sleep(0.001)
+        return 'succeeded'

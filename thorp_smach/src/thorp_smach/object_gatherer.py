@@ -8,6 +8,7 @@ from states.perception import MonitorTables, TableMarkVisited, TableWasVisited, 
 from states.manipulation import FoldArm
 from states.exploration import ExploreHouse
 from states.gathering import GatherObjects
+from states.common import Sleep
 from containers.do_on_exit import DoOnExit as DoOnExitContainer
 
 from utils import run_sm
@@ -29,8 +30,11 @@ def object_gatherer_sm(target_types):
                                             'aborted': 'aborted',
                                             'preempted': 'preempted'})
         smach.StateMachine.add('VISITED_TABLE?', TableWasVisited(),
-                               transitions={'true': 'DETECT_TABLES',
+                               transitions={'true': 'PAUSE_DETECTION',
                                             'false': 'succeeded'})
+        smach.StateMachine.add('PAUSE_DETECTION', Sleep(2),  # improbable to see a new table for a while
+                               transitions={'succeeded': 'DETECT_TABLES',
+                                            'aborted': 'aborted'})
 
     # gets called when ANY child state terminates
     def child_term_cb(outcome_map):
