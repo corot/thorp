@@ -251,24 +251,23 @@ class ExePathFailed(smach.State):
                                             output_keys=['path', 'waypoints', 'next_wp', 'recovery_behavior'])
         self.recovery_behaviors = recovery_behaviors
         self.consecutive_failures = 0
-        self.next_waypoint = None
 
     def execute(self, ud):
         # Cut path up to current waypoint, so we don't redo it from the beginning after recovering
+
         # ExePath must provide this specific message at the end of the result message in case of failure
         cwp_index = ud['message'].find('current waypoint: ')
         if cwp_index >= 0:
             # TODO I must adapt this to integrate the progress tracker with the smoothed path logic (or remove entirely path follower support)   and remove 'path' key
-            self.next_waypoint = int(ud['message'][cwp_index + len('current waypoint: '):])
-            ud['path'].poses = ud['path'].poses[self.next_waypoint:]
+            next_waypoint = int(ud['message'][cwp_index + len('current waypoint: '):])
+            ud['path'].poses = ud['path'].poses[next_waypoint:]
         elif ud['reached_wp'] is not None:
             # TEB logic using progress tracker: very brittle, but seems to work!  hope I can do better w/ BTs
-            #  ignore None on 'reached_wp', as it's normally a failure after a recovery attempt
-            self.next_waypoint = ud['reached_wp'] + 1
-            ud['waypoints'] = ud['waypoints'][self.next_waypoint:]
+            next_waypoint = ud['reached_wp'] + 1
+            ud['waypoints'] = ud['waypoints'][next_waypoint:]
         else:
+            # None on 'reached_wp' normally means a failure after a recovery attempt
             rospy.logwarn("No current waypoint provided; assuming we didn't reach even the first waypoint")
-            self.next_waypoint = 1
 
         try:
             rb = self.recovery_behaviors[self.consecutive_failures]
@@ -280,9 +279,9 @@ class ExePathFailed(smach.State):
         except IndexError:
             rospy.loginfo("Recovery behaviors exhausted after %d consecutive failures", self.consecutive_failures)
             self.consecutive_failures = 0
-            if self.next_waypoint is not None and ud['waypoints']:
+            if ud['waypoints']:
                 next_wp_pose = ud['waypoints'][0]
-                rospy.loginfo("Navigate to the next waypoint: %d, %s", self.next_waypoint, pose2d2str(next_wp_pose))
+                rospy.loginfo("Navigate to the next waypoint at %s", pose2d2str(next_wp_pose))
                 ud['next_wp'] = next_wp_pose
                 return 'next_wp'
 
@@ -329,6 +328,7 @@ class DetachFromTable(smach.Sequence):
                                               input_keys=['table', 'pose'],
                                               output_keys=['outcome', 'message'])
         with self:
+            smach.Sequence.add('CLEAR_WAY', ClearTableWay())
             smach.Sequence.add('POSE_AS_PATH', PoseAsPath())
             smach.Sequence.add('AWAY_FROM_TABLE', ExePath())
 
