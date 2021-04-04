@@ -298,7 +298,8 @@ class ClearTableWay(smach.State):
                                             input_keys=['table', 'pose'])
 
     def execute(self, ud):
-        SemanticLayer().add_object(ud['table'].name, 'free_space', ud['pose'], [0.5, 0.4], 'local')
+        SemanticLayer().add_object(ud['table'].name, 'free_space', ud['pose'], [1.0, 0.5], 'local')
+        rospy.sleep(0.2)
         rospy.Timer(rospy.Duration(cfg.CLEAR_TABLE_WAY_TIMEOUT),
                     lambda te: SemanticLayer().remove_object(ud['table'].name, 'free_space', 'local'),
                     oneshot=True)
