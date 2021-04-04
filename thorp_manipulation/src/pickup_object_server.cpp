@@ -52,7 +52,7 @@ void PickupObjectServer::executeCB(const thorp_msgs::PickupObjectGoal::ConstPtr&
     return;
   }
 
-  ROS_INFO("[pickup object] Execute goal: pick object '%s' from support surface '%s' exerting up to %.2fN",
+  ROS_INFO("[pickup object] Execute goal: pick object '%s' from support surface '%s' exerting up to %.2f N",
            goal->object_name.c_str(), goal->support_surf.c_str(), goal->max_effort);
 
   result.error.code = pickup(goal->object_name, goal->support_surf, goal->max_effort);
@@ -91,10 +91,10 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
     return result;
   }
 
-  ROS_INFO("[pickup object] Picking object '%s' with size %.1fx%.1fx%.1f cm at %s...", obj_name.c_str(),
+  ROS_INFO("[pickup object] Picking object '%s' with size %.1f x %.1f x %.1f cm at %s...", obj_name.c_str(),
            obj_size.x * 100, obj_size.y * 100, obj_size.z * 100, ttk::point2cstr2D(obj_pose.pose.position));
 
-  // Prepare and send pick goal
+  // Prepare grasps
   std::vector<moveit_msgs::Grasp> grasps;
   result = makeGrasps(obj_pose, obj_size, obj_name, surface, max_effort, grasps);
   if (result < 0)
@@ -103,6 +103,10 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
     return result;
   }
 
+  // Don't wait to reach the pre-grasp pose to open the gripper
+  // setGripper(gripper_open, false); TODO this makes move_group crash (looks like can't perform two actions in parallel)
+
+  // Prepare and send pick goal
   moveit_msgs::PickupGoal goal = arm().constructPickupGoal(obj_name, grasps, false);
   goal.end_effector = gripper().getName();
   goal.support_surface_name = surface;
@@ -115,7 +119,7 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
   //  # as much as possible (this minimizing the distance to the object before the grasp)
   //  # along the approach direction; Note: this option changes the grasping poses
   //  # supplied in possible_grasps[] such that they are closer to the object when possible.
-  //  goal.minimize_object_distance  -->  TRY
+  //  goal.minimize_object_distance = true;   this sometimes makes the grippers crash with the table
 
   //  # an optional list of obstacles that we have semantic information about
   //  # and that can be touched/pushed/moved in the course of grasping;
@@ -127,6 +131,17 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
   //
   //  # Planning options
   //  PlanningOptions planning_options
+  //  # If the plan becomes invalidated during execution, it is possible to have
+  //  # that plan recomputed and execution restarted. This flag enables this
+  //  # functionality
+  //    bool replan
+  //
+  //  # The maximum number of replanning attempts
+  //    int32 replan_attempts
+  //
+  //  # The amount of time to wait in between replanning attempts (in seconds)
+  //    float64 replan_delay
+  // ROS_WARN_STREAM("[pickup object] planning options: " << goal.planning_options);
 
   // Allow some leeway in position (meters) and orientation (radians)
   arm().setGoalPositionTolerance(0.001);  // TODO: same values already set on parent class; add to the goal if needed
@@ -210,7 +225,7 @@ double PickupObjectServer::gripperClosing(const geometry_msgs::PoseStamped& gras
   double heading = ttk::heading(grasp_pose);  // obj direction from the arm (grasp pose must be in arm reference frame)
   double obj_yaw = ttk::yaw(obj_pose);        // obj orientation
   double abs_diff = std::abs(ttk::wrapAngle(obj_yaw - heading));
-  bool x_aligned = abs_diff < M_PI/4.0 || abs_diff > M_PI*3/4.0;
+  bool x_aligned = abs_diff < M_PI/4.0 || abs_diff > M_PI*3/4.0;  // x-aligned: angle to gripper paddles < 45 deg
   double closing = x_aligned ? obj_size.y : obj_size.x;
   closing -= gripper_tightening_closing;      // reduce slightly for tightening
   ROS_INFO("Gripper closing: %f (%f - %f -> using %s-dimension of: %f x %f)   tightening: %g",
