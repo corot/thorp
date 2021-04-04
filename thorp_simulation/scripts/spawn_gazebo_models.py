@@ -37,7 +37,6 @@ objects = ['wood_cube_2_5cm',
            'pentagon',
            'circle',
            'star',
-           'diamond',
            'cross',
            'clover']
 spawned = {o: 0 for o in objects}
