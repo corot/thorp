@@ -2,13 +2,19 @@ ARG ROS_DISTRO=melodic
 
 FROM ros:$ROS_DISTRO
 
+# nvidia-docker hooks
+# LABEL com.nvidia.volumes.needed="nvidia_driver"
+# ENV PATH /usr/local/nvidia/bin:${PATH}
+# ENV LD_LIBRARY_PATH /usr/local/nvidia/lib:/usr/local/nvidia/lib64:${LD_LIBRARY_PATH}
+
 SHELL ["/bin/bash", "-c"]
 
+# install ROS base and minimal build dependencies
 RUN apt-get update && apt-get install -y ros-$ROS_DISTRO-ros-base python-pip python-catkin-tools build-essential nano
 
-    #python-rosdep python-rosinstall-generator python-vcstool python-rosinstall
-
-# RUN pip install bidict    FAILS!!!
+# reduce log verbosity (RAIL segmentation is called continously for some apps)
+RUN echo 'log4j.logger.ros.rail_mesh_icp=WARN' >> /opt/ros/$ROS_DISTRO/share/ros/config/rosconsole.config && \
+    echo 'log4j.logger.ros.rail_segmentation=ERROR' >> /opt/ros/$ROS_DISTRO/share/ros/config/rosconsole.config
 
 # create catkin workspace
 RUN mkdir -p /catkin_ws/src
@@ -16,9 +22,11 @@ WORKDIR /catkin_ws/src
 COPY thorp.rosinstall .
 RUN wstool init -j10 . thorp.rosinstall
 
+# cleanup git history to reduce image size  (got from https://gist.github.com/facelordgists/80e868ff5e315878ecd6)
+RUN find . \( -name ".git" -o -name ".gitignore" -o -name ".gitmodules" -o -name ".gitattributes" \) -exec rm -rf -- {} +
+
 # delete non-relevant pkgs from cloned repositories
 RUN rm -rf navigation/amcl \
-           navigation/carrot_planner \
            navigation/fake_localization \
            navigation/map_server \
            navigation/move_slow_and_clear \
@@ -32,8 +40,23 @@ RUN rm -rf navigation/amcl \
            navigation/nav_core \
            navigation/navigation \
            navigation/rotate_recovery \
+           navigation_experimental/assisted_teleop \
+           navigation_experimental/goal_passer \
+           navigation_experimental/navigation_experimental \
+           navigation_experimental/pose_base_controller \
+           navigation_experimental/sbpl_recovery \
+           navigation_experimental/sbpl_lattice_planner \
+           navigation_experimental/twist_recovery \
+           navigation_layers/navigation_layers \
+           navigation_layers/social_navigation_layers \
            gazebo-pkgs/gazebo_state_plugins \
            gazebo-pkgs/gazebo_test_tools \
+           gazebo_ros_pkgs/docs \
+           gazebo_ros_pkgs/gazebo_dev \
+           gazebo_ros_pkgs/gazebo_msgs \
+           gazebo_ros_pkgs/gazebo_ros \
+           gazebo_ros_pkgs/gazebo_ros_control \
+           gazebo_ros_pkgs/gazebo_ros_pkgs \
            kobuki/kobuki \
            kobuki/kobuki_controller_tutorial \
            kobuki/kobuki_random_walker \
@@ -81,22 +104,32 @@ RUN rosdep update --rosdistro=$ROS_DISTRO && \
                    --skip-keys='create_node create_dashboard create_description \
                                 rocon_app_manager kobuki_rapps kobuki_capabilities turtlebot_capabilities \
                                 stdr_gui stdr_robot stdr_server astra_launch realsense_camera zeroconf_avahi'
+RUN apt clean
 
-# build catkin workspace
+RUN pip install --upgrade tensorflow-gpu==1.14 matplotlib
+#  bidict     FAILS!!!
+
+# build catkin workspace and remove build to reduce image size
 WORKDIR /catkin_ws
-RUN source /opt/ros/$ROS_DISTRO/setup.bash && catkin build
+RUN source /opt/ros/$ROS_DISTRO/setup.bash && catkin build --cmake-args -DCMAKE_BUILD_TYPE=Release
+RUN rm -r build
 
-RUN source devel/setup.bash
+# setup runtime environment
+RUN echo "source /catkin_ws/devel/setup.bash" >> ~/.bashrc
+ENV ROSCONSOLE_FORMAT='[${node} ${severity} ${time}]: ${message}'
+
+# fix Gazebo error in REST request (https://answers.gazebosim.org//question/22263/error-in-rest-request-for-accessing-apiignitionorg)
+COPY patch_ignition.yaml /root/.ignition/fuel/config.yaml
 
 # link gazebo models
-ENV GAZEBO_MODEL_PATH=/catkin_ws/thorp/src/thorp/thorp_simulation/worlds/gazebo/models
+ENV GAZEBO_MODEL_PATH=/catkin_ws/src/thorp/thorp_simulation/worlds/gazebo/models
 
-#  gazebo_ros_depth_camera   probably need my local change
+# ENV APP_NAME=$APP_NAME
+# ENV ARGUMENTS=$ARGUMENTS
+# RUN echo "RUNNING roslaunch thorp_simulation $APP_NAME.launch $ARGUMENTS"
 
-ENV APP_NAME=$APP_NAME
-ENV ARGUMENTS=$ARGUMENTS
-RUN echo "RUNNING roslaunch thorp_simulation $APP_NAME.launch $ARGUMENTS"
 
-CMD roslaunch thorp_simulation $APP_NAME.launch $ARGUMENTS
+# CMD source devel/setup.bas && gazebo
+#CMD source devel/setup.bas && roslaunch thorp_simulation $APP_NAME.launch $ARGUMENTS
 
 # run with -e APP_NAME=object_gatherer -e ARGUMENTS="viz_smach:=false object_types:='triangle'"

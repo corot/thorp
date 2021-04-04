@@ -11,6 +11,11 @@
     version: indigo-devel
 
 - git:
+    local-name: gazebo_ros_pkgs
+    uri: https://github.com/corot/gazebo_ros_pkgs.git
+    version: melodic-devel
+
+- git:
     local-name: gazebo-pkgs
     uri: https://github.com/corot/gazebo-pkgs.git
     version: thorp
@@ -25,7 +30,7 @@
 - git:
     local-name: kobuki
     uri: https://github.com/corot/kobuki.git
-    version: more_realistic_sim
+    version: thorp
 
 - git:
     local-name: kobuki_core
@@ -60,8 +65,8 @@
     version: melodic
 
 - git:
-    uri: https://github.com/turtlebot/turtlebot_msgs.git
     local-name: turtlebot_msgs
+    uri: https://github.com/turtlebot/turtlebot_msgs.git
     version: indigo
 
 - git:
@@ -77,7 +82,7 @@
 - git:
     local-name: turtlebot_arm
     uri: https://github.com/corot/turtlebot_arm.git
-    version: melodic-devel
+    version: thorp
 
 # Navigation stacks
 
@@ -87,26 +92,20 @@
     version: melodic-devel
 
 - git:
-    local-name: move_base_flex
-    uri: https://github.com/magazino/move_base_flex.git
-    version: master
+    local-name: navigation_experimental
+    uri: https://github.com/corot/navigation_experimental.git
+    version: melodic-devel
 
 - git:
     local-name: navigation_layers
     uri: https://github.com/corot/navigation_layers.git
     version: master
 
-#- git:
-#    local-name: navigation_experimental
-#    uri: https://github.com/corot/navigation_experimental.git
-#    version: melodic-devel
-# collada,,, need to link something,,,
-# commit all my RAIL and clone here
-# also ros_people_object_detection has local changes!!!
-#- git:
-#    local-name: rail_collada_models
-#    uri: https://github.com/GT-RAIL/rail_collada_models.git
-#    version: develop
+- git:
+    local-name: move_base_flex
+    uri: https://github.com/magazino/move_base_flex.git
+    version: master
+
 - git:
     local-name: teb_local_planner
     uri: https://github.com/rst-tu-dortmund/teb_local_planner.git
@@ -153,3 +152,8 @@
     local-name: cob_perception_common
     uri: https://github.com/cagbal/cob_perception_common.git
     version: indigo_dev
+
+- git:
+    local-name: rviz_textured_quads
+    uri: https://github.com/lucasw/rviz_textured_quads.git
+    version: image_topic
