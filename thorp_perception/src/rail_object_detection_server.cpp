@@ -4,6 +4,7 @@
 
 #include <omp.h>
 #include <ros/ros.h>
+#include <actionlib/client/simple_action_client.h>
 
 // PCL
 #include <pcl_ros/point_cloud.h>
@@ -12,7 +13,7 @@
 
 // input: RAIL segmentation and object recognition
 #include <rail_manipulation_msgs/SegmentObjects.h>
-#include <rail_mesh_icp/TemplateMatch.h>
+#include <rail_mesh_icp/MatchTemplateAction.h>
 
 // action server: make things easier for interactive manipulation
 #include <actionlib/server/simple_action_server.h>
@@ -34,9 +35,12 @@ namespace thorp_perception
 class ObjectDetectionServer
 {
 private:
+  typedef actionlib::SimpleActionClient<rail_mesh_icp::MatchTemplateAction> MatchTemplateActionClient;
+
   // Service clients for RAIL object segmentation and template matchers
   ros::ServiceClient segment_srv_;
-  std::map<std::string, ros::ServiceClient> match_srvs_;
+/////  std::map<std::string, ros::ServiceClient> match_srvs_;
+  std::map<std::string, std::unique_ptr<MatchTemplateActionClient>> match_acs_;
 
   // Action server to handle it conveniently for our object manipulation demo
   actionlib::SimpleActionServer<thorp_msgs::DetectObjectsAction> od_as_;
@@ -85,22 +89,22 @@ public:
       ROS_ERROR("[object detection] Shutting down node...");
       throw;
     }
-    ROS_INFO("[object detection] rail_segmentation/segment_objects service started; ready for sending goals.");
+    ROS_INFO("[object detection] rail_segmentation/segment_objects service started; ready for sending goals");
 
     // Connect to template_matcher_<obj type>/match_template service for each object type
     for (const auto& obj_type: obj_types_)
     {
       std::ostringstream ss; ss << "template_matcher_" << obj_type << "/match_template";
-      std::string service_name = ss.str();
-      match_srvs_[obj_type] = nh.serviceClient<rail_mesh_icp::TemplateMatch>(service_name);
-      ROS_INFO_STREAM("[object detection] Waiting for " << service_name << " service to start...");
-      if (!match_srvs_[obj_type].waitForExistence(ros::Duration(60.0)))
+      std::string action_name = ss.str();
+      match_acs_[obj_type] = std::make_unique<MatchTemplateActionClient>(nh, action_name, true);
+      ROS_INFO_STREAM("[object detection] Waiting for " << action_name << " action server to start...");
+      if (!match_acs_[obj_type]->waitForServer(ros::Duration(60.0)))
       {
-        ROS_ERROR_STREAM("[object detection] " << service_name << " service not available after 1 minute");
+        ROS_ERROR_STREAM("[object detection] " << action_name << " action server not available after 1 minute");
         ROS_ERROR_STREAM("[object detection] Shutting down node...");
         throw;
       }
-      ROS_INFO_STREAM("[object detection] " << service_name << " service started; ready for sending goals.");
+      ROS_INFO_STREAM("[object detection] " << action_name << " action server started; ready for sending goals");
     }
 
     // Wait for all RAIL services to connect before we provide our own action server
@@ -137,7 +141,6 @@ public:
       od_as_.setSucceeded(result, "No surface found");
       return;
     }
-    std::vector<moveit_msgs::ObjectColor> obj_colors;  // show collision objects with color
 
     // Process segmented support surface (normally a table) and add to the planning
     // scene as a MoveIt! collision object, so it gets filtered out from the octomap
@@ -158,27 +161,28 @@ public:
     if (publish_static_tf_)
       ttk::TF2::instance().sendTransform(result.surface.primitive_poses.front(),
                                          output_frame_, result.surface.id);
+    // show collision objects with color
     moveit_msgs::ObjectColor obj_color;
     obj_color.id = result.surface.id;
     obj_color.color.r = table.rgb[0];
     obj_color.color.g = table.rgb[1];
     obj_color.color.b = table.rgb[2];
     obj_color.color.a = 1.0;
-    obj_colors.push_back(obj_color);
+    std::vector<moveit_msgs::ObjectColor> obj_colors{ obj_color };
+
+    // good time for serving preempt requests, as we will process segmented objects in parallel
+    if (od_as_.isPreemptRequested())
+    {
+      od_as_.setPreempted(result, "Preempted before processing segmented objects");
+      return;
+    }
 
     std::map<std::string, unsigned int> detected;
 
     // Process segmented objects following the support surface, and add them to the planning scene
+    ///#pragma omp parallel for    // NOLINT
     for (int i = 1; i < srv.response.segmented_objects.objects.size(); ++i)
     {
-      if (od_as_.isPreemptRequested())
-      {
-        od_as_.setPreempted(result, "Preempted after processing " + std::to_string(i) + "/"
-                                  + std::to_string(srv.response.segmented_objects.objects.size())
-                                  + " segmented objects");
-        return;
-      }
-
       auto& rail_obj = srv.response.segmented_objects.objects[i];
       // reject objects of incongruent dimensions or with impossible poses, e.g. floating or embedded in the table
       if (!validateObject(rail_obj, table))
@@ -201,14 +205,12 @@ public:
       double width = std::min(rail_obj.depth, rail_obj.width);
       co.primitives.front().dimensions = { length, width, rail_obj.height };
       // we name objects with the best matching template's name and an index to avoid repetitions
-      detected[rail_obj.name] += 1;
-      co.id = rail_obj.name + " " + std::to_string(detected[rail_obj.name]);
+      co.id = rail_obj.name + " " + std::to_string(detected[rail_obj.name] + 1);
       if (publish_static_tf_)
         ttk::TF2::instance().sendTransform(co.primitive_poses.front(), output_frame_, co.id);
 
       // matched poses have z = 0; raise the co's primitive to entirely cover the pointcloud
       co.primitive_poses.front().position.z += rail_obj.height / 2.0;
-      result.objects.push_back(co);
 
       // use segmented pointcloud's color for the co
       obj_color.id = co.id;
@@ -216,10 +218,13 @@ public:
       obj_color.color.g = rail_obj.rgb[1];
       obj_color.color.b = rail_obj.rgb[2];
       obj_color.color.a = 1.0;
-      obj_colors.push_back(obj_color);
 
       ROS_INFO("[object detection] Object at %s classified as %s",
                ttk::pose2cstr2D(co.primitive_poses.front()), rail_obj.name.c_str());
+      //#pragma omp critical
+      detected[rail_obj.name] += 1;
+      result.objects.push_back(co);
+      obj_colors.push_back(obj_color);
     }
     if (!result.objects.empty())
     {
@@ -287,23 +292,24 @@ private:
 
       // provide center as initial estimate for position, but use 0, 0, 0 for orientation,
       // as it's a good guideline only for elongated objects where PCA is meaningful
-      rail_mesh_icp::TemplateMatch srv;
-      srv.request.initial_estimate.translation.x = obj.center.x;
-      srv.request.initial_estimate.translation.y = obj.center.y;
-      srv.request.initial_estimate.translation.z = obj.center.z - obj.height / 2.0; // templates' base is at z = 0
-      srv.request.initial_estimate.rotation.w = 1.0;
-      srv.request.target_cloud = obj.point_cloud;
-      if (match_srvs_[obj_type].call(srv))
+      rail_mesh_icp::MatchTemplateGoal goal;
+      goal.initial_estimate.translation.x = obj.center.x;
+      goal.initial_estimate.translation.y = obj.center.y;
+      goal.initial_estimate.translation.z = obj.center.z - obj.height / 2.0; // templates' base is at z = 0
+      goal.initial_estimate.rotation.w = 1.0;
+      goal.target_cloud = obj.point_cloud;
+      if (match_acs_[obj_type]->sendGoalAndWait(goal, ros::Duration(2)) == actionlib::SimpleClientGoalState::SUCCEEDED)
       {
-        ROS_DEBUG_STREAM("[object detection] " << obj_type << " template match service succeeded; error: "
-                                               << srv.response.match_error * 1e6);
+        rail_mesh_icp::MatchTemplateResult::ConstPtr result = match_acs_[obj_type]->getResult();
+        ROS_DEBUG_STREAM("[object detection] " << obj_type << " template match succeeded; error: "
+                                               << result->match_error * 1e6);
         #pragma omp critical
-        error[obj_type] = srv.response.match_error;
-        poses[obj_type] = srv.response.template_pose;
+        error[obj_type] = result->match_error;
+        poses[obj_type] = result->template_pose;
       }
       else
       {
-        ROS_ERROR_STREAM("[object detection] " << obj_type << " template match service failed");
+        ROS_ERROR_STREAM("[object detection] " << obj_type << " template match failed");
         #pragma omp critical
         error[obj_type] = 1.0;
       }
