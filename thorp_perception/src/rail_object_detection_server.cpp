@@ -80,7 +80,8 @@ public:
     ROS_INFO("[object detection] rail_segmentation/segment_objects service started; ready for sending goals");
 
     // Connect to template matcher action
-    spin_thread_ = new boost::thread(boost::bind(&ObjectDetectionServer::spinThread, this));
+    spin_thread_ = new boost::thread([&](){
+      while (ros::ok()) callback_queue_.callAvailable(ros::WallDuration(0.1f)); });
     ROS_INFO_STREAM("[object detection] Waiting for template matcher action server to start...");
     if (!tm_ac_.waitForActionServerToStart(ros::Duration(1.0)))
     {
@@ -342,19 +343,6 @@ private:
     ROS_DEBUG("Area updated:   %f -> %f", obj.width * obj.depth, new_width * new_depth);
     obj.width = new_width;
     obj.depth = new_depth;
-  }
-
-  void spinThread()
-  {
-    while (ros::ok()) {
-      {
-        //boost::mutex::scoped_lock terminate_lock(terminate_mutex_);
-//        if (need_to_terminate_) {
-//          break;
-//        }
-      }
-      callback_queue_.callAvailable(ros::WallDuration(0.1f));
-    }
   }
 };
 

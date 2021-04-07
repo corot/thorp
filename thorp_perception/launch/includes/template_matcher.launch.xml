@@ -1,29 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
- <!--   <arg name="object"/>-->
-
     <!-- Template Matching Params -->
     <arg name="match_frame"             default="base_footprint"/>
-<!--    <arg name="cloud_topic"             default="/xtion/depth_registered/points"/>-->
-    <arg name="template_files_path"      default="$(find thorp_perception)/meshes"/>
-<!--    <arg name="initial_estimate"        default="1.9 0.1 0.83 1.57 0 0"/>
-    <arg name="template_offset"         default="0 0 0 0 0 1.570796327"/> -->
+    <arg name="template_files_path"     default="$(find thorp_perception)/meshes"/>
     <arg name="output_frame"            default="template_match"/>
-    <arg name="visualize_output"        default="true"/>
-    <arg name="debug"                   default="true"/>
+    <arg name="visualize_output"        default="false"/>
+    <arg name="debug"                   default="false"/>
     <arg name="latch_initial_estimate"  default="false"/>
     <arg name="provide_processed_cloud" default="true"/>
 
-    <!-- launch template matching for demo world with schunk machine -->
+    <!-- Launch template matching node -->
     <node pkg="rail_mesh_icp" type="template_matcher_node" name="template_matcher" output="screen" respawn="true">
-        <!--<param name="pcl_topic"               value="$(arg cloud_topic)"/>-->
-<!--        <param name="initial_estimate_string" value="$(arg initial_estimate)"/>-->
-        <!--<param name="template_offset_string"  value="$(arg template_offset)"/>-->
       <param name="matching_frame"      value="$(arg match_frame)"/>
       <param name="template_files_path" value="$(arg template_files_path)"/>
       <param name="template_frame"      value="$(arg output_frame)"/>
       <param name="visualize"           value="$(arg visualize_output)"/>
-      <param name="debug"               value="$(arg debug)" />
+      <param name="debug"               value="$(arg debug)"/>
       <param name="latch_initial"       value="$(arg latch_initial_estimate)"/>
       <param name="pre_processed_cloud" value="$(arg provide_processed_cloud)"/>
 
@@ -32,17 +24,5 @@
       <param name="max_distance"        value="0.01"/>
       <param name="trans_epsilon"       value="1e-8"/>
       <param name="fit_epsilon"         value="1e-8"/>
-
-      <!--<remap from="icp_match_clouds" to="icp_match_$(arg object)"/>-->
     </node>
-
-    <!-- launch ICP matcher
-    <node pkg="rail_mesh_icp" type="icp_matcher_node" name="icp_matcher_$(arg object)" output="screen" respawn="true">
-      <param name="max_dist"            value="0.01"/>
-      <param name="num_iterations"      value="1000000"/>
-      <param name="translation_epsilon" value="0.0000000000001"/>
-      <param name="model_fit_epsilon"   value="0.0000000000001"/>
-
-      <remap from="icp_match_clouds" to="icp_match_$(arg object)"/>
-    </node> -->
 </launch>

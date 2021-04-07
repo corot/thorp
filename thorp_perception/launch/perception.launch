@@ -52,19 +52,6 @@
   <!--  ************ RAIL Object Detection ************  -->
   <group if="$(eval pipeline == 'RAIL')">
     <node pkg="thorp_perception" type="rail_object_detection_server" name="object_detection_server" output="screen" respawn="true">
-<!--      <rosparam param="object_types">
-        ["circle",
-         "clover",
-         "cross",
-         "cube",
-         "diamond",
-         "pentagon",
-         "rectangle",
-         "square",
-         "star",
-         "tower",
-         "triangle"]
-      </rosparam>-->
       <param name="publish_static_tf" value="false"/>
       <param name="max_matching_error" value="1e-4"/>
       <param name="output_frame" value="base_footprint"/>
@@ -77,39 +64,5 @@
     </node>
 
     <include file="$(find thorp_perception)/launch/includes/template_matcher.launch.xml"/>
-<!--
-    <include file="$(find thorp_perception)/launch/includes/template_matcher.launch.xml">
-      <arg name="object"  value="circle"/>
-    </include>
-    <include file="$(find thorp_perception)/launch/includes/template_matcher.launch.xml">
-      <arg name="object"  value="clover"/>
-    </include>
-    <include file="$(find thorp_perception)/launch/includes/template_matcher.launch.xml">
-      <arg name="object"  value="cross"/>
-    </include>
-    <include file="$(find thorp_perception)/launch/includes/template_matcher.launch.xml">
-      <arg name="object"  value="cube"/>
-    </include>
-    <include file="$(find thorp_perception)/launch/includes/template_matcher.launch.xml">
-      <arg name="object"  value="diamond"/>
-    </include>
-    <include file="$(find thorp_perception)/launch/includes/template_matcher.launch.xml">
-      <arg name="object"  value="pentagon"/>
-    </include>
-    <include file="$(find thorp_perception)/launch/includes/template_matcher.launch.xml">
-      <arg name="object"  value="rectangle"/>
-    </include>
-    <include file="$(find thorp_perception)/launch/includes/template_matcher.launch.xml">
-      <arg name="object"  value="square"/>
-    </include>
-    <include file="$(find thorp_perception)/launch/includes/template_matcher.launch.xml">
-      <arg name="object"  value="star"/>
-    </include>
-    <include file="$(find thorp_perception)/launch/includes/template_matcher.launch.xml">
-      <arg name="object"  value="tower"/>
-    </include>
-    <include file="$(find thorp_perception)/launch/includes/template_matcher.launch.xml">
-      <arg name="object"  value="triangle"/>
-    </include>-->
   </group>
 </launch>

@@ -1,0 +1,42 @@
+<!--
+  Thorp perception
+ -->
+
+<launch>
+  <arg name="external_camera" default="false"/>
+
+  <!--  ************ Thorp perception nodes ***********  -->
+
+  <node pkg="rail_segmentation" type="rail_segmentation" name="rail_segmentation" output="screen" respawn="true">
+    <param name="debug" value="true"/>
+    <param name="point_cloud_topic" value="/xtion/depth_registered/points"/>
+    <param name="zones_config" value="$(find thorp_perception)/config/rail/zones.yaml"/>
+    <param name="min_cluster_size" value="200"/>
+    <param name="max_cluster_size" value="10000"/>
+    <param name="cluster_tolerance" value="0.01"/>
+    <param name="use_color" value="true"/>
+    <param name="crop_first" value="false"/>
+    <param name="label_markers" value="true"/>
+  </node>
+
+<!--
+  <node pkg="object_recognition_ros" type="object_information_server" name="object_information_server" output="screen" respawn="true">
+  </node>
+-->
+
+  <!--  **************** ORK pipeline *****************
+
+  <include if="$(arg external_camera)" file="$(find thorp_perception)/launch/includes/obj_rec.launch.xml" ns="tabletop">
+    <arg name="as_server"    value="true"/>
+    <arg name="config_file"  value="$(find thorp_perception)/config/ork/external.tabletop.detection.ros.ork"/>
+    <arg name="robot_frame"  value="base_footprint"/>
+    <arg name="sensor_frame" value="external_camera_depth_optical_frame"/>
+  </include>
+
+  <include unless="$(arg external_camera)" file="$(find thorp_perception)/launch/includes/obj_rec.launch.xml" ns="tabletop">
+    <arg name="as_server"    value="true"/>
+    <arg name="config_file"  value="$(find thorp_perception)/config/ork/tabletop.detection.ros.ork"/>
+    <arg name="robot_frame"  value="base_footprint"/>
+    <arg name="sensor_frame" value="xtion_depth_optical_frame"/>
+  </include> -->
+</launch>
