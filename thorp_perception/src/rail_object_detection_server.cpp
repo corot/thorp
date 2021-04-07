@@ -3,6 +3,7 @@
  */
 
 #include <omp.h>
+
 #include <ros/ros.h>
 #include <actionlib/client/simple_action_client.h>
 
@@ -35,12 +36,13 @@ namespace thorp_perception
 class ObjectDetectionServer
 {
 private:
-  typedef actionlib::SimpleActionClient<rail_mesh_icp::MatchTemplateAction> MatchTemplateActionClient;
+  typedef actionlib::ActionClient<rail_mesh_icp::MatchTemplateAction> MatchTemplateActionClient;
 
   // Service clients for RAIL object segmentation and template matchers
   ros::ServiceClient segment_srv_;
-/////  std::map<std::string, ros::ServiceClient> match_srvs_;
-  std::map<std::string, std::unique_ptr<MatchTemplateActionClient>> match_acs_;
+  MatchTemplateActionClient tm_ac_;
+  ros::CallbackQueue callback_queue_;
+  boost::thread* spin_thread_;
 
   // Action server to handle it conveniently for our object manipulation demo
   actionlib::SimpleActionServer<thorp_msgs::DetectObjectsAction> od_as_;
@@ -51,13 +53,13 @@ private:
   bool publish_static_tf_;      ///< Publish static transforms for the segmented objects and surface
   double max_matching_error_;   ///< Object recognition template matching threshold
   std::string output_frame_;    ///< Recognized objects reference frame; we cannot use goal's field because
-                                ///< RAIL segmentation zone's frame cannot be reconfigured on runtime
-  std::vector<std::string> obj_types_;  ///< Recognized object types: list of templates we try to match to
+  ///< RAIL segmentation zone's frame cannot be reconfigured on runtime
 
 public:
 
   ObjectDetectionServer(const std::string& name) :
-    od_as_(name, boost::bind(&ObjectDetectionServer::executeCB, this, _1), false)
+      tm_ac_("template_matcher/match_template", &callback_queue_),
+      od_as_(name, boost::bind(&ObjectDetectionServer::executeCB, this, _1), false)
   {
     ros::NodeHandle nh;
     ros::NodeHandle pnh("~");
@@ -65,20 +67,6 @@ public:
     pnh.param("publish_static_tf", publish_static_tf_, false);  // good for debugging but pollutes a lot
     pnh.param("max_matching_error", max_matching_error_, 1e-4);
     pnh.param("output_frame", output_frame_, std::string("base_footprint"));
-
-    XmlRpc::XmlRpcValue otv;
-    pnh.param("object_types", otv, otv);
-    if (otv.size() == 0)
-    {
-      ROS_ERROR("[object detection] No recognized object types provided; aborting...");
-      return;
-    }
-    ROS_INFO("[object detection] Recognized object types: ");
-    for (int i = 0; i < otv.size(); i++)
-    {
-      obj_types_.push_back(otv[i]);
-      ROS_INFO_STREAM("                   - " << obj_types_[i]);
-    }
 
     // Connect to rail_segmentation/segment_objects service
     segment_srv_ = nh.serviceClient<rail_manipulation_msgs::SegmentObjects>("rail_segmentation/segment_objects");
@@ -91,21 +79,16 @@ public:
     }
     ROS_INFO("[object detection] rail_segmentation/segment_objects service started; ready for sending goals");
 
-    // Connect to template_matcher_<obj type>/match_template service for each object type
-    for (const auto& obj_type: obj_types_)
+    // Connect to template matcher action
+    spin_thread_ = new boost::thread(boost::bind(&ObjectDetectionServer::spinThread, this));
+    ROS_INFO_STREAM("[object detection] Waiting for template matcher action server to start...");
+    if (!tm_ac_.waitForActionServerToStart(ros::Duration(1.0)))
     {
-      std::ostringstream ss; ss << "template_matcher_" << obj_type << "/match_template";
-      std::string action_name = ss.str();
-      match_acs_[obj_type] = std::make_unique<MatchTemplateActionClient>(nh, action_name, true);
-      ROS_INFO_STREAM("[object detection] Waiting for " << action_name << " action server to start...");
-      if (!match_acs_[obj_type]->waitForServer(ros::Duration(60.0)))
-      {
-        ROS_ERROR_STREAM("[object detection] " << action_name << " action server not available after 1 minute");
-        ROS_ERROR_STREAM("[object detection] Shutting down node...");
-        throw;
-      }
-      ROS_INFO_STREAM("[object detection] " << action_name << " action server started; ready for sending goals");
+      ROS_ERROR_STREAM("[object detection] template matcher action server not available after 1 minute");
+      ROS_ERROR_STREAM("[object detection] Shutting down node...");
+      throw;
     }
+    ROS_INFO_STREAM("[object detection] template matcher action server started; ready for sending goals");
 
     // Wait for all RAIL services to connect before we provide our own action server
     od_as_.start();
@@ -170,6 +153,9 @@ public:
     obj_color.color.a = 1.0;
     std::vector<moveit_msgs::ObjectColor> obj_colors{ obj_color };
 
+    ROS_INFO("[object detection] %lu objects plus table segmented in %.2f seconds",
+             srv.response.segmented_objects.objects.size() - 1, (ros::Time::now() - time_start).toSec());
+
     // good time for serving preempt requests, as we will process segmented objects in parallel
     if (od_as_.isPreemptRequested())
     {
@@ -180,7 +166,7 @@ public:
     std::map<std::string, unsigned int> detected;
 
     // Process segmented objects following the support surface, and add them to the planning scene
-    ///#pragma omp parallel for    // NOLINT
+    #pragma omp parallel for    // NOLINT
     for (int i = 1; i < srv.response.segmented_objects.objects.size(); ++i)
     {
       auto& rail_obj = srv.response.segmented_objects.objects[i];
@@ -199,7 +185,10 @@ public:
       // identify and possibly update the pose with ICP template matching correction
       // we reject objects failing to match any template within our error threshold
       if (!identifyObject(rail_obj, co.primitive_poses.front()))
+      {
+        ROS_WARN("[object detection] Object %d at %s discarded", i, ttk::point2cstr3D(rail_obj.center));
         continue;
+      }
       // our convention is that x-dimension is the longest one
       double length = std::max(rail_obj.depth, rail_obj.width);
       double width = std::min(rail_obj.depth, rail_obj.width);
@@ -221,7 +210,7 @@ public:
 
       ROS_INFO("[object detection] Object at %s classified as %s",
                ttk::pose2cstr2D(co.primitive_poses.front()), rail_obj.name.c_str());
-      //#pragma omp critical
+      #pragma omp critical    // NOLINT
       detected[rail_obj.name] += 1;
       result.objects.push_back(co);
       obj_colors.push_back(obj_color);
@@ -230,7 +219,7 @@ public:
     {
       planning_scene_interface_.addCollisionObjects(result.objects, obj_colors);
 
-      ROS_INFO("[object detection] Succeeded! %lu objects detected (time: %.2f s)", result.objects.size(),
+      ROS_INFO("[object detection] Succeeded! %lu objects detected in %.2f seconds", result.objects.size(),
                (ros::Time::now() - time_start).toSec());
     }
     else
@@ -280,62 +269,54 @@ private:
 
   bool identifyObject(rail_manipulation_msgs::SegmentedObject& obj, geometry_msgs::Pose& pose)
   {
-    std::map<std::string, double> error;
-    std::map<std::string, geometry_msgs::TransformStamped> poses;
-
-    // Call template matching services in parallel with the object pointcloud, one call per template
+    // Call template matching action with the object pointcloud
     // Note that we log all errors multiplied by 1e6, as the values provided by the template matcher are very low
-    #pragma omp parallel for    // NOLINT
-    for (size_t i = 0; i < obj_types_.size(); ++i)
+    // provide center as initial estimate for position, but use 0, 0, 0 for orientation,
+    // as it's a good guideline only for elongated objects, where PCA is meaningful
+    rail_mesh_icp::MatchTemplateGoal goal;
+    goal.initial_estimate.translation.x = obj.center.x;
+    goal.initial_estimate.translation.y = obj.center.y;
+    goal.initial_estimate.translation.z = obj.center.z - obj.height / 2.0; // templates' base is at z = 0
+    goal.initial_estimate.rotation.w = 1.0;
+    goal.target_cloud = obj.point_cloud;
+    MatchTemplateActionClient::GoalHandle goal_handle = tm_ac_.sendGoal(goal);
+    const ros::Duration timeout(5);
+    ros::Time t0 = ros::Time::now();
+    while (goal_handle.getCommState() != actionlib::CommState::DONE && ros::Time::now() - t0 < timeout && ros::ok())
+      ros::Duration(0.001).sleep();
+    if (goal_handle.getCommState() != actionlib::CommState::DONE)
     {
-      const auto& obj_type = obj_types_[i];
-
-      // provide center as initial estimate for position, but use 0, 0, 0 for orientation,
-      // as it's a good guideline only for elongated objects where PCA is meaningful
-      rail_mesh_icp::MatchTemplateGoal goal;
-      goal.initial_estimate.translation.x = obj.center.x;
-      goal.initial_estimate.translation.y = obj.center.y;
-      goal.initial_estimate.translation.z = obj.center.z - obj.height / 2.0; // templates' base is at z = 0
-      goal.initial_estimate.rotation.w = 1.0;
-      goal.target_cloud = obj.point_cloud;
-      if (match_acs_[obj_type]->sendGoalAndWait(goal, ros::Duration(2)) == actionlib::SimpleClientGoalState::SUCCEEDED)
-      {
-        rail_mesh_icp::MatchTemplateResult::ConstPtr result = match_acs_[obj_type]->getResult();
-        ROS_DEBUG_STREAM("[object detection] " << obj_type << " template match succeeded; error: "
-                                               << result->match_error * 1e6);
-        #pragma omp critical
-        error[obj_type] = result->match_error;
-        poses[obj_type] = result->template_pose;
-      }
-      else
-      {
-        ROS_ERROR_STREAM("[object detection] " << obj_type << " template match failed");
-        #pragma omp critical
-        error[obj_type] = 1.0;
-      }
+      ROS_ERROR_STREAM("[object detection] template match action timeout; aborting...");
+      goal_handle.cancel();
+      return false;
     }
-
-    // choose the template with the lowest error (PCL ICP call it score, very bad name imho)
-    const auto& best_match = std::min_element(error.begin(), error.end(),
-                                              [](const auto& l, const auto& r) { return l.second < r.second; });
-    // check if best match is good enough
-    if (best_match->second > max_matching_error_)
+    if (goal_handle.getTerminalState() != actionlib::TerminalState::SUCCEEDED)
     {
-      ROS_INFO_STREAM("[object detection] Best match (" << best_match->first << ") error above tolerance ("
-                      << best_match->second * 1e6 << " > " << max_matching_error_ * 1e6 << ")");
+      ROS_ERROR_STREAM("[object detection] template match action failed: " << goal_handle.getTerminalState().getText());
       return false;
     }
 
-    ROS_INFO_STREAM("[object detection] Best match is " << best_match->first << ", with error "
-                    << best_match->second * 1e6);
+    rail_mesh_icp::MatchTemplateResult::ConstPtr result = goal_handle.getResult();
 
-    obj.name = best_match->first;
+    // check if best match is good enough
+    if (result->match_error > max_matching_error_)
+    {
+      ROS_INFO_STREAM("[object detection] Best match (" << result->template_name << ") error above tolerance ("
+                                                        << result->match_error * 1e6 << " > "
+                                                        << max_matching_error_ * 1e6 << ")");
+      return false;
+    }
+
+    ROS_INFO_STREAM("[object detection] Best match is " << result->template_name << ", with error "
+                                                        << result->match_error * 1e6);
+
+    obj.name = result->template_name;
     obj.recognized = true;
 
     // use the matched template orientation to recalculate pointcloud dimensions
-    recalcDimensions(obj, poses[best_match->first].transform);
+    recalcDimensions(obj, result->template_pose.transform);
 
-    ttk::tf2pose(poses[best_match->first].transform, pose);
+    ttk::tf2pose(result->template_pose.transform, pose);
     ROS_DEBUG("Yaw updated:    %f -> %f", tf::getYaw(obj.orientation), tf::getYaw(pose.orientation));
 
     return true;
@@ -361,6 +342,19 @@ private:
     ROS_DEBUG("Area updated:   %f -> %f", obj.width * obj.depth, new_width * new_depth);
     obj.width = new_width;
     obj.depth = new_depth;
+  }
+
+  void spinThread()
+  {
+    while (ros::ok()) {
+      {
+        //boost::mutex::scoped_lock terminate_lock(terminate_mutex_);
+//        if (need_to_terminate_) {
+//          break;
+//        }
+      }
+      callback_queue_.callAvailable(ros::WallDuration(0.1f));
+    }
   }
 };
 

@@ -52,7 +52,7 @@
   <!--  ************ RAIL Object Detection ************  -->
   <group if="$(eval pipeline == 'RAIL')">
     <node pkg="thorp_perception" type="rail_object_detection_server" name="object_detection_server" output="screen" respawn="true">
-      <rosparam param="object_types">
+<!--      <rosparam param="object_types">
         ["circle",
          "clover",
          "cross",
@@ -64,7 +64,7 @@
          "star",
          "tower",
          "triangle"]
-      </rosparam>
+      </rosparam>-->
       <param name="publish_static_tf" value="false"/>
       <param name="max_matching_error" value="1e-4"/>
       <param name="output_frame" value="base_footprint"/>
@@ -76,6 +76,8 @@
       </rosparam>
     </node>
 
+    <include file="$(find thorp_perception)/launch/includes/template_matcher.launch.xml"/>
+<!--
     <include file="$(find thorp_perception)/launch/includes/template_matcher.launch.xml">
       <arg name="object"  value="circle"/>
     </include>
@@ -108,6 +110,6 @@
     </include>
     <include file="$(find thorp_perception)/launch/includes/template_matcher.launch.xml">
       <arg name="object"  value="triangle"/>
-    </include>
+    </include>-->
   </group>
 </launch>
