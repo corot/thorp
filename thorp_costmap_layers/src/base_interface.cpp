@@ -40,6 +40,8 @@ BaseInterface::BaseInterface(ros::NodeHandle& nh, tf2_ros::Buffer& tf, const std
       object_types_[type].cost = static_cast<double>(object_types[i]["cost"]);
     if (object_types[i]["fill"].valid())
       object_types_[type].fill = static_cast<bool>(object_types[i]["fill"]);
+    if (object_types[i]["precedence"].valid())
+      object_types_[type].precedence = static_cast<int>(object_types[i]["precedence"]);
     if (object_types[i]["use_maximum"].valid())
       object_types_[type].use_maximum = static_cast<bool>(object_types[i]["use_maximum"]);
     if (object_types[i]["force_update"].valid())
@@ -116,6 +118,7 @@ void BaseInterface::contoursToHash(const std::vector<std::vector<geometry_msgs::
   object.confirmed = true;
   object.cost = type.cost;
   object.fill = type.fill;
+  object.precedence = type.precedence;
   object.use_maximum = type.use_maximum;
 
   for (size_t i = 0; i < contours.size(); ++i)
@@ -125,7 +128,7 @@ void BaseInterface::contoursToHash(const std::vector<std::vector<geometry_msgs::
     double max_x = std::numeric_limits<double>::lowest();
     double max_y = std::numeric_limits<double>::lowest();
     object.contour_points.clear();
-    for (auto contour_point : contours[i])
+    for (const auto& contour_point : contours[i])
     {
       // we need the bounding box to get the visible objects later during drawing
       object.contour_points.emplace_back(contour_point.pose.position.x, contour_point.pose.position.y);
@@ -155,7 +158,7 @@ void BaseInterface::updateObject(const Object& object)
   removed_mutex_.unlock();
 }
 
-void BaseInterface::removeContours(const std::string &id)
+void BaseInterface::removeContours(const std::string& id)
 {
   std::lock_guard<std::mutex> lock(removed_mutex_);
   for (int it_prim = 0; it_prim < primitives_count_[id]; ++it_prim)

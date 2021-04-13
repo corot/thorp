@@ -20,6 +20,7 @@ struct Object
   cv::Point2d contour_center;
   cv::Rect_<float> bounding_box;
   std::list<cv::Point2f> contour_points;
+  int precedence = 0;
   int update_score = 0;
   bool use_maximum = false;
   bool confirmed = false;

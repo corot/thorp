@@ -18,6 +18,7 @@ struct ObjectType
   float length_padding = 0.0;     ///< length adjustment (m)
   bool force_update = false;      ///< triggers map update
   bool use_maximum = false;       ///< overwrite current cost
+  int precedence = 0;             ///< order when writing cost
   bool fill = false;              ///< set also enclosed cells
   float cost = 1.0f;              ///< 0: clean, 1: lethal
 };

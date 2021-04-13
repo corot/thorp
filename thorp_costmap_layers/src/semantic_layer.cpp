@@ -109,22 +109,24 @@ void SemanticLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, i
   cv::Point2f upper_right(layered_costmap_->getCostmap()->getOriginX() + max_i * resolution_,
                           layered_costmap_->getCostmap()->getOriginY() + max_j * resolution_);
 
-  // Get all obstacles within the updated area and mark their boundaries with their associated cost; compose a polygon
-  // with obstacle's contour, enforcing map bounds but not the updated bounds to avoid creating fake obstacles at the
-  // borders of the updated area
-  std::vector<Object> hash_obstacles = scene_interface_->getObjectsInRegion(lower_left, upper_right);
+  // Get all objects within the updated area and mark their boundaries with their associated cost, sorted by precedence
+  // compose a polygon with the object's contour, enforcing map bounds but not the updated bounds to avoid creating fake
+  // obstacles at the borders of the updated area; order by precedence
+  std::vector<Object> hash_objects = scene_interface_->getObjectsInRegion(lower_left, upper_right);
+  std::sort(hash_objects.begin(), hash_objects.end(),
+            [](const Object& a, const Object& b) -> bool { return a.precedence < b.precedence; });
   int lines_count = 0;
-  for (const auto& obstacle : hash_obstacles)
+  for (const auto& object : hash_objects)
   {
     std::vector<costmap_2d::MapLocation> points_in_map;
     std::vector<costmap_2d::MapLocation> polygon_cells;
     costmap_2d::MapLocation p1_map, p2_map;
     geometry_msgs::Point p1_clip, p2_clip;
-    for (auto p1 = obstacle.contour_points.begin(),
-             p2 = std::next(obstacle.contour_points.begin()); p1 != obstacle.contour_points.end(); ++p1, ++p2)
+    for (auto p1 = object.contour_points.begin(), p2 = std::next(object.contour_points.begin());
+         p1 != object.contour_points.end(); ++p1, ++p2)
     {
-      if (p2 == obstacle.contour_points.end())
-        p2 = obstacle.contour_points.begin();
+      if (p2 == object.contour_points.end())
+        p2 = object.contour_points.begin();
 
       if (ttk::clipSegment(lower_left.x, upper_right.x, lower_left.y, upper_right.y, p1->x, p1->y, p2->x, p2->y,
                            p1_clip.x, p1_clip.y, p2_clip.x, p2_clip.y))
@@ -146,7 +148,7 @@ void SemanticLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, i
     {
       // do not use convexFillCells as we can have concave obstacles in some circumstances
       // also I do not close the polygons, but still get sometimes a closing line! no idea why
-      if (obstacle.fill)
+      if (object.fill)
         convexFillCells(points_in_map, polygon_cells);
       else
         polygonOutlineCells(points_in_map, polygon_cells, false);
@@ -155,8 +157,9 @@ void SemanticLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, i
         // enforce updated area bounds on cell coordinates because our spacial clipping can
         // let in invalid cells (on max_i and / or max_j) due to rounding (causing SW-12194)
         if ((cell.x >= min_i && cell.x < max_i && cell.y >= min_j && cell.y < max_j) &&
-            (!obstacle.use_maximum || master_grid.getCost(cell.x, cell.y) < obstacle.cost * LETHAL_OBSTACLE))
-          master_grid.setCost(cell.x, cell.y, obstacle.cost * LETHAL_OBSTACLE);
+            (!object.use_maximum || master_grid.getCost(cell.x, cell.y) <
+                                        object.cost * LETHAL_OBSTACLE))
+          master_grid.setCost(cell.x, cell.y, object.cost * LETHAL_OBSTACLE);
       }
     }
   }
