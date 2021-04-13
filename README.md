@@ -28,7 +28,7 @@ sudo pip install -U wstool
 ```
 mkdir ~/thorp
 cd ~/thorp
-wstool init src https://raw.githubusercontent.com/corot/thorp/master/thorp.rosinstall
+wstool init src https://raw.githubusercontent.com/corot/thorp/master/thorp_bringup/docker/thorp.rosinstall
 touch src/gazebo-pkgs/CATKIN_IGNORE
 ln -sr src/gazebo-pkgs/gazebo_grasp_plugin src
 ln -sr src/gazebo-pkgs/gazebo_version_helpers src
@@ -54,3 +54,27 @@ Arm, sonars and IR sensors require a bit of extra work. Check their
   - fix explained [here](https://answers.gazebosim.org//question/22263/error-in-rest-request-for-accessing-apiignitionorg)
 - Tensorflow not working:
   - [Install tensorflow and right cuda version](https://www.tensorflow.org/install/gpu)
+
+### Docker image
+
+Available in [dockerhub](https://hub.docker.com/repository/docker/corot/thorp)
+
+```
+docker pull corot/thorp
+```
+
+To build locally:
+
+```
+cd ~/thorp/thorp_bringup/docker
+docker build -t thorp .
+```
+
+Run with rocker:
+```
+rocker --pulse --nvidia --x11 thorp
+```
+or
+```
+rocker --pulse --nvidia --x11 corot/thorp
+```

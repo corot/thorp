@@ -1,4 +1,4 @@
-# Thorp and hardware stacks
+# Thorp stack and required hardware and simulation dependencies
 
 - git:
     local-name: thorp
@@ -11,6 +11,11 @@
     version: indigo-devel
 
 - git:
+    local-name: dynamixel_motor
+    uri: https://github.com/nphoang1102/dynamixel_motor.git
+    version: master
+
+- git:
     local-name: gazebo_ros_pkgs
     uri: https://github.com/corot/gazebo_ros_pkgs.git
     version: melodic-devel
@@ -19,11 +24,6 @@
     local-name: gazebo-pkgs
     uri: https://github.com/corot/gazebo-pkgs.git
     version: thorp
-
-- git:
-    local-name: dynamixel_motor
-    uri: https://github.com/nphoang1102/dynamixel_motor.git
-    version: master
 
 # Kobuki / Yujin stacks
 
@@ -136,12 +136,12 @@
 - git:
     local-name: rail_mesh_icp
     uri: https://github.com/corot/rail_mesh_icp.git
-    version: melodic-devel
+    version: thorp
 
 - git:
     local-name: rail_segmentation
     uri: https://github.com/corot/rail_segmentation.git
-    version: melodic-devel
+    version: thorp
 
 - git:
     local-name: people_object_detection
