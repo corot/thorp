@@ -37,4 +37,11 @@ class SemanticMap:
         """
         return self._hashmap.query(Rect.from_cwh(pose.pose.position, *size))
         # TODO: can check something else??? like name
-        ###return len(intersecting) > 0
+
+    def objects_count(self, type=None):
+        """
+        Count objects of a given type.
+        :param type: object type (table, wall, etc.)
+        """
+        # TODO how to filter by type???? objs = self._hashmap.content()
+        return self._hashmap.count()

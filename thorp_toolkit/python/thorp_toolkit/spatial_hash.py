@@ -116,3 +116,7 @@ class SpatialHash(object):
     def count(self):
         """Count objects stored in the map."""
         return len(set(sum(self.d.values(), [])))
+
+    def content(self):
+        """Return all objects stored in the map."""
+        return self.d.values()

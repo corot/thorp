@@ -195,14 +195,18 @@ class TableWasVisited(smach.State):
 
 class TableMarkVisited(smach.State):
     """
-    Check whether we have detected any object
+    Mark table as visited, adding it to the semantic map
+    Table detection doesn't provide a name, so we provide a sequential name here
     """
 
     def __init__(self):
         super(TableMarkVisited, self).__init__(outcomes=['succeeded'],
-                                               input_keys=['table', 'table_pose'])
+                                               input_keys=['table', 'table_pose'],
+                                               output_keys=['table'])
 
     def execute(self, ud):
+        obj_name = 'table ' + str(SemanticMap().objects_count('table') + 1)
+        ud['table'].name = obj_name
         SemanticMap().add_object(ud['table'], 'table', ud['table_pose'], (ud['table'].depth, ud['table'].width))
         return 'succeeded'
 
@@ -240,6 +244,7 @@ class MonitorTables(smach.State):
 
     def __init__(self, timeout=0.0):
         super(MonitorTables, self).__init__(outcomes=['succeeded', 'preempted', 'aborted'],
+                                            input_keys=['table'],
                                             output_keys=['table', 'table_pose'])
         self.timeout = timeout
         self.segment_srv = rospy.ServiceProxy('rail_segmentation/segment_objects', SegmentObjects)
@@ -258,14 +263,11 @@ class MonitorTables(smach.State):
                 width, length = table.width, table.depth
                 table_tf = to_transform(pose, 'table_frame')
                 TF2().publish_transform(table_tf)
+                if 'table' in ud:
+                    table.name = ud['table'].name
                 ud['table'] = table
                 ud['table_pose'] = pose
                 rospy.loginfo("Detected table of size %.1f x %.1f at %s", width, length, pose2d2str(pose))
-                # Add the table contour as an obstacle to global costmap, so we can plan around it
-                # We also add an shrinked version to the local costmap so no to impair approaching for picking
-                # TODO: detected_table.name is empty; tweak RAIL to provide it or add sequential names here
-                # SemanticLayer().add_obstacle(table.name, pose, [width, length, 0.0], 'global')
-                # SemanticLayer().add_obstacle(table.name, pose, [width - 0.2, length - 0.2, 0.0], 'local')    TDDO  a ver q pasa
                 return 'succeeded'
             elif self.timeout and rospy.get_time() - start_time > self.timeout:
                 rospy.logwarn("No table detected after %g seconds", rospy.get_time() - start_time)
