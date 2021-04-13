@@ -9,8 +9,6 @@
 #include <pluginlib/class_list_macros.h>
 #include <dynamic_reconfigure/server.h>
 
-#include <opencv2/core/core.hpp> // OpenCV Rect and Point2f structs
-
 #include <thorp_toolkit/geometry.hpp>
 namespace ttk = thorp_toolkit;
 
@@ -53,7 +51,7 @@ void SemanticLayer::onInitialize()
   // the interface to force updating the costmap without waiting for the update thread, when speed is critical
   namespace ph = std::placeholders;
   auto update_map_cb = std::bind(&costmap_2d::LayeredCostmap::updateMap, layered_costmap_, ph::_1, ph::_2, ph::_3);
-  scene_interface_ = std::make_unique<SceneInterface>(pnh, *tf_, layered_costmap_->getGlobalFrameID(), update_map_cb);
+  scene_interface_ = std::make_unique<ServiceInterface>(pnh, *tf_, layered_costmap_->getGlobalFrameID(), update_map_cb);
 
   current_ = true;
 }
@@ -104,9 +102,9 @@ void SemanticLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, i
 
   std::lock_guard<std::mutex> guard(mutex_);
 
-  cv::Point2f lower_left(layered_costmap_->getCostmap()->getOriginX() + min_i * resolution_,
+  Point2d lower_left(layered_costmap_->getCostmap()->getOriginX() + min_i * resolution_,
                          layered_costmap_->getCostmap()->getOriginY() + min_j * resolution_);
-  cv::Point2f upper_right(layered_costmap_->getCostmap()->getOriginX() + max_i * resolution_,
+  Point2d upper_right(layered_costmap_->getCostmap()->getOriginX() + max_i * resolution_,
                           layered_costmap_->getCostmap()->getOriginY() + max_j * resolution_);
 
   // Get all objects within the updated area and mark their boundaries with their associated cost, sorted by precedence
@@ -171,14 +169,14 @@ void SemanticLayer::processUpdated(const std::set<std::shared_ptr<Object>>& upda
   for (const auto& updated_obj : updated_objs)
   {
     // set bounds to include updated objects
-    touch(updated_obj->bounding_box.br().x, updated_obj->bounding_box.br().y, min_x, min_y, max_x, max_y);
-    touch(updated_obj->bounding_box.tl().x, updated_obj->bounding_box.tl().y, min_x, min_y, max_x, max_y);
+    touch(updated_obj->bounding_box.br.x, updated_obj->bounding_box.br.y, min_x, min_y, max_x, max_y);
+    touch(updated_obj->bounding_box.tl.x, updated_obj->bounding_box.tl.y, min_x, min_y, max_x, max_y);
 
     // if the obstacle has been updated, we also need to include previous location into the bounds to clear it
     if (old_bounds_.find(updated_obj->id) != old_bounds_.end())
     {
-      touch(old_bounds_[updated_obj->id].br().x, old_bounds_[updated_obj->id].br().y, min_x, min_y, max_x, max_y);
-      touch(old_bounds_[updated_obj->id].tl().x, old_bounds_[updated_obj->id].tl().y, min_x, min_y, max_x, max_y);
+      touch(old_bounds_[updated_obj->id].br.x, old_bounds_[updated_obj->id].br.y, min_x, min_y, max_x, max_y);
+      touch(old_bounds_[updated_obj->id].tl.x, old_bounds_[updated_obj->id].tl.y, min_x, min_y, max_x, max_y);
       old_bounds_.erase(updated_obj->id);
     }
   }
@@ -190,8 +188,8 @@ void SemanticLayer::processRemoved(const std::set<std::shared_ptr<Object>>& remo
   for (const auto& removed_obj : removed_objs)
   {
     // set bounds to include removed objects
-    touch(removed_obj->bounding_box.br().x, removed_obj->bounding_box.br().y, min_x, min_y, max_x, max_y);
-    touch(removed_obj->bounding_box.tl().x, removed_obj->bounding_box.tl().y, min_x, min_y, max_x, max_y);
+    touch(removed_obj->bounding_box.br.x, removed_obj->bounding_box.br.y, min_x, min_y, max_x, max_y);
+    touch(removed_obj->bounding_box.tl.x, removed_obj->bounding_box.tl.y, min_x, min_y, max_x, max_y);
   }
 }
 

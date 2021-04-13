@@ -1,5 +1,3 @@
-#include <opencv2/core/core.hpp>
-
 #include <thorp_toolkit/geometry.hpp>
 namespace ttk = thorp_toolkit;
 
@@ -95,8 +93,8 @@ std::set<std::shared_ptr<Object>> BaseInterface::getRemovedObjects()
   return removed_objs;
 }
 
-std::vector<Object> BaseInterface::getObjectsInRegion(const cv::Point2f& lower_left,
-                                                      const cv::Point2f& upper_right) const
+std::vector<Object> BaseInterface::getObjectsInRegion(const Point2d& lower_left,
+                                                      const Point2d& upper_right) const
 {
   return spatial_hash_.getObjectsInRegion(lower_left, upper_right);
 }
@@ -138,7 +136,7 @@ void BaseInterface::contoursToHash(const std::vector<std::vector<geometry_msgs::
       min_y = std::min(min_y, contour_point.pose.position.y);
       max_y = std::max(max_y, contour_point.pose.position.y);
     }
-    object.bounding_box = cv::Rect_<float>(cv::Point2f(min_x, min_y), cv::Point2f(max_x, max_y));
+    object.bounding_box = Rectangle(Point2d(min_x, min_y), Point2d(max_x, max_y));
     object.id = makeHash(id, i);
     updateObject(object);
     primitives_count_[id] = contours.size();
@@ -158,14 +156,14 @@ void BaseInterface::updateObject(const Object& object)
   removed_mutex_.unlock();
 }
 
-void BaseInterface::removeContours(const std::string& id)
+bool BaseInterface::removeContours(const std::string& id)
 {
   std::lock_guard<std::mutex> lock(removed_mutex_);
   for (int it_prim = 0; it_prim < primitives_count_[id]; ++it_prim)
   {
     ids_removed_.insert(makeHash(id, it_prim));
   }
-  primitives_count_.erase(id);
+  return primitives_count_.erase(id);
 }
 
 void BaseInterface::removeObject(int hash)

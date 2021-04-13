@@ -24,6 +24,7 @@ find_package(catkin REQUIRED COMPONENTS
   visualization_msgs
   dynamic_reconfigure
   thorp_toolkit
+  thorp_msgs
 )
 
 generate_dynamic_reconfigure_options(
@@ -31,7 +32,6 @@ generate_dynamic_reconfigure_options(
 )
 
 find_package(Boost 1.58 REQUIRED)
-find_package(OpenCV 3 REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(JSONCPP jsoncpp)
 
@@ -39,7 +39,6 @@ include_directories(
   include
   ${Boost_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
-  ${OpenCV_INCLUDE_DIRS}
   ${JSONCPP_INCLUDE_DIRS}
 )
 
@@ -55,18 +54,16 @@ catkin_package(
         visualization_msgs
         dynamic_reconfigure
         thorp_toolkit
-  DEPENDS OpenCV
+        thorp_msgs
 )
-
-set(OpenCV_LIBS opencv_core)
 
 #######################################################################################################################
 # semantic layer
 #######################################################################################################################
 add_library(semantic_layer
   src/semantic_layer.cpp
-  src/scene_interface.cpp
   src/base_interface.cpp
+  src/srv_interface.cpp
   src/visualization.cpp
   src/spatial_hash.cpp
 )

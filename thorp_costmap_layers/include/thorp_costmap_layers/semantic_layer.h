@@ -3,9 +3,9 @@
 #include <costmap_2d/costmap_layer.h>
 #include <costmap_2d/layered_costmap.h>
 
-#include "thorp_costmap_layers/visualization.h"
-#include "thorp_costmap_layers/scene_interface.h"
 #include "thorp_costmap_layers/SemanticLayerConfig.h"
+#include "thorp_costmap_layers/srv_interface.h"
+#include "thorp_costmap_layers/visualization.h"
 
 namespace thorp_costmap_layers
 {
@@ -36,11 +36,11 @@ private:
   void processRemoved(const std::set<std::shared_ptr<Object>>& removed_objs,
                       double* min_x, double* min_y, double* max_x, double* max_y);
 
-  std::unique_ptr<SceneInterface> scene_interface_;
+  std::unique_ptr<ServiceInterface> scene_interface_;
   std::unique_ptr<Visualization> visualization_;  ///< Show updated bounds and object contours for debugging
 
   // for updated obstacles: back up old bounds to set removal bounds accordingly
-  std::unordered_map<int, cv::Rect_<float>> old_bounds_;
+  std::unordered_map<int, Rectangle> old_bounds_;
 
   std::mutex mutex_;  ///< Mutex locked on topic callback
 

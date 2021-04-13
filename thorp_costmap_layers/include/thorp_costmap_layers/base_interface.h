@@ -93,7 +93,7 @@ public:
    * @param upper_right Upper-right corner of the region
    * @return Vector with the objects within the region
    */
-  std::vector<Object> getObjectsInRegion(const cv::Point2f& lower_left, const cv::Point2f& upper_right) const;
+  std::vector<Object> getObjectsInRegion(const Point2d& lower_left, const Point2d& upper_right) const;
 
 protected:
   BaseInterface(ros::NodeHandle& nh, tf2_ros::Buffer& tf, const std::string& map_frame);
@@ -102,7 +102,7 @@ protected:
   int makeHash(const std::string &id, int primitive) const;
   void contoursToHash(const std::vector<std::vector<geometry_msgs::PoseStamped>>& contours,
                       const std::string& id, const ObjectType& type = ObjectType());
-  void removeContours(const std::string& id);
+  bool removeContours(const std::string& id);
   void updateObject(const Object& object);
   void removeObject(int hash);
 

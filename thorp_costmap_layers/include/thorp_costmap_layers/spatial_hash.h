@@ -3,8 +3,6 @@
 #include <mutex>
 #include <unordered_map>
 
-#include <opencv2/core/core.hpp> // OpenCV Rect and Point2f structs
-
 #include <ros/ros.h>
 
 #include <nav_msgs/MapMetaData.h>
@@ -12,14 +10,30 @@
 namespace thorp_costmap_layers
 {
 
+struct Point2d
+{
+  Point2d() : x(0), y(0) {}
+  Point2d(double x, double y) : x(x), y(y) {}
+
+  double x, y; //< the point coordinates
+};
+
+struct Rectangle
+{
+  Rectangle() : tl(Point2d()), br(Point2d()) {}
+  Rectangle(Point2d tl, Point2d br) : tl(tl), br(br) {}
+
+  Point2d tl, br; //< the rectangle corners
+};
+
 // Object within the spatial hash
 struct Object
 {
   int id = -1;
   std::string type;
-  cv::Point2d contour_center;
-  cv::Rect_<float> bounding_box;
-  std::list<cv::Point2f> contour_points;
+  Point2d contour_center;
+  Rectangle bounding_box;
+  std::list<Point2d> contour_points;
   int precedence = 0;
   int update_score = 0;
   bool use_maximum = false;
@@ -63,15 +77,9 @@ public:
   std::shared_ptr<Object> getObject(int id);
   const std::shared_ptr<Object> getObject(int id) const;
 
-  void setRemovalThreshold(int removal_threshold);
-
-  void setConfirmationThreshold(int confirmation_threshold);
-
-  void setMaxConfirmationScore(int max_confirmation_score);
-
   // returns objects in rectangular region
-  std::vector<Object> getObjectsInRegion(const cv::Point2f& lower_left, const cv::Point2f& upper_right) const;
-  std::vector<Object> getObjectsInRegion(const cv::Point2f& lower_left, double size_x, double size_y) const;
+  std::vector<Object> getObjectsInRegion(const Point2d& lower_left, const Point2d& upper_right) const;
+  std::vector<Object> getObjectsInRegion(const Point2d& lower_left, double size_x, double size_y) const;
 
   // get ids of all objects in spatial hash
   std::set<int> getObjectIdsInSpatialHash() const;
@@ -82,18 +90,18 @@ public:
   void clearCell(int index);
   std::set<int> getObjectsInCell(int id) const;
   // returns spatial hash cells that correspond to a rectangular region
-  std::set<int> getCellsInRectangularRegion(const cv::Point2f bottom, double size_x, double size_y) const;
+  std::set<int> getCellsInRectangularRegion(const Point2d bottom, double size_x, double size_y) const;
   // get ids of spatial hash cells that contain the object (rectangular region containing the polygonal object)
   std::set<int> getAllCellsOccupiedByPolygon(const Object& object) const;
   // hashes a point to corresponding spatial hash cell
-  int getHashCell(const cv::Point2f& point) const;
+  int getHashCell(const Point2d& point) const;
 
   // callback for initially setting map boundaries to get collision-free
   void setMapBounds(const nav_msgs::MapMetaDataConstPtr& map_bounds);
   bool mapBoundsSet() {return map_bounds_set_;}
 
 #ifdef DEBUG_DRAW_INTERNALS
-  void getCellRect(const cv::Point2f& point_in_cell, cv::Rect& cell_rect, int cell_resolution);
+  void getCellRect(const Point2d& point_in_cell, Rectangle& cell_rect, int cell_resolution);
 #endif
 
 private:

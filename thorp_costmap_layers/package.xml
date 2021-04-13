@@ -20,8 +20,8 @@
   <depend>visualization_msgs</depend>
   <depend>dynamic_reconfigure</depend>
   <depend>libjsoncpp-dev</depend>
-  <!-- <depend>opencv3</depend>  no rosdep definition TODO: can remove opencv dep? -->
   <depend>thorp_toolkit</depend>
+  <depend>thorp_msgs</depend>
 
   <export>
     <costmap_2d plugin="${prefix}/semantic_layer.xml"/>

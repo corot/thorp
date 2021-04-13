@@ -4,7 +4,8 @@ namespace thorp_costmap_layers
 {
 
 SpatialHash::SpatialHash(double cell_size, bool use_old_hash_function)
-  : buckets_(100), objects_(100), map_bounds_set_(false), map_height_(0), map_width_(0), times_(0), use_old_hash_function_(use_old_hash_function)
+  : buckets_(100), objects_(100), map_bounds_set_(false), map_height_(0), map_width_(0), times_(0),
+      use_old_hash_function_(use_old_hash_function)
 {
   cell_size_ = cell_size;
 }
@@ -158,12 +159,12 @@ std::vector<Object> SpatialHash::getNearby(const Object& object) const
 }
 
 // returns objects in rectangular region
-std::vector<Object> SpatialHash::getObjectsInRegion(const cv::Point2f& lower_left, const cv::Point2f& upper_right) const
+std::vector<Object> SpatialHash::getObjectsInRegion(const Point2d& lower_left, const Point2d& upper_right) const
 {
   return getObjectsInRegion(lower_left, upper_right.x - lower_left.x, upper_right.y - lower_left.y);
 }
 
-std::vector<Object> SpatialHash::getObjectsInRegion(const cv::Point2f& lower_left, double size_x, double size_y) const
+std::vector<Object> SpatialHash::getObjectsInRegion(const Point2d& lower_left, double size_x, double size_y) const
 {
   std::lock_guard<std::mutex> guard(mutex_);
 
@@ -218,7 +219,7 @@ std::set<int> SpatialHash::getObjectsInCell(int id) const
 }
 
 // returns spatial hash cells that correspond to a rectangular region
-std::set<int> SpatialHash::getCellsInRectangularRegion(const cv::Point2f bottom, double size_x, double size_y) const
+std::set<int> SpatialHash::getCellsInRectangularRegion(const Point2d bottom, double size_x, double size_y) const
 {
   std::set<int> relevant_cells;
   for (float x = std::floor(bottom.x / cell_size_) * cell_size_;
@@ -227,14 +228,14 @@ std::set<int> SpatialHash::getCellsInRectangularRegion(const cv::Point2f bottom,
     for (float y = std::floor(bottom.y / cell_size_) * cell_size_;
                y < std::ceil((bottom.y + size_y) / cell_size_) * cell_size_; y += cell_size_)
     {
-      relevant_cells.insert(getHashCell(cv::Point2f(x, y)));
+      relevant_cells.insert(getHashCell(Point2d(x, y)));
     }
   }
   return relevant_cells;
 }
 
 // hashes a point to corresponding spatial hash bucket
-int SpatialHash::getHashCell(const cv::Point2f& point) const
+int SpatialHash::getHashCell(const Point2d& point) const
 {
   int ix = std::floor(point.x / cell_size_);
   int iy = std::floor(point.y / cell_size_);
@@ -248,7 +249,8 @@ int SpatialHash::getHashCell(const cv::Point2f& point) const
   return hash_id;
 }
 
-void SpatialHash::setMapBounds(const nav_msgs::MapMetaDataConstPtr& map_bounds) {
+void SpatialHash::setMapBounds(const nav_msgs::MapMetaDataConstPtr& map_bounds)
+{
   if (map_bounds_set_)
     return;
 
@@ -366,10 +368,10 @@ std::set<int> SpatialHash::getAllCellsOccupiedByPolygon(const Object& object) co
 
   std::set<int> relevant_buckets;
 
-  float min_x = object.bounding_box.tl().x;
-  float min_y = object.bounding_box.tl().y;
-  float max_x = object.bounding_box.br().x;
-  float max_y = object.bounding_box.br().y;
+  float min_x = object.bounding_box.tl.x;
+  float min_y = object.bounding_box.tl.y;
+  float max_x = object.bounding_box.br.x;
+  float max_y = object.bounding_box.br.y;
 
   // safety check: both directions have failed, in that case we have to clean the directions a bit
 //  if (std::floor(min_x/cell_size_) == std::ceil(max_x/cell_size_) && std::floor(min_y/cell_size_) == std::ceil(max_y/cell_size_)) {
@@ -402,7 +404,7 @@ std::set<int> SpatialHash::getAllCellsOccupiedByPolygon(const Object& object) co
 //      for (auto point: obstacle.contour_points) {
 //        ROS_INFO_STREAM("Point: "<<point);
 //      }
-//      relevant_buckets.insert(getHashBucket(cv::Point2f(min_x, y)));
+//      relevant_buckets.insert(getHashBucket(Point2d(min_x, y)));
 //    ROS_DEBUG_STREAM("Floored obstacle with id "<<object.id);
       min_x = min_x - cell_size_/2.0;
       max_x = max_x + cell_size_/2.0;
@@ -425,7 +427,7 @@ std::set<int> SpatialHash::getAllCellsOccupiedByPolygon(const Object& object) co
       min_y = min_y - cell_size_/2.0;
       max_y = max_y + cell_size_/2.0;
 //      ROS_INFO_STREAM("Loop bounds for y now are: "<<std::floor(min_y/cell_size_)*cell_size_<<" and "<<std::ceil(max_y/cell_size_)*cell_size_);
-//      relevant_buckets.insert(getHashBucket(cv::Point2f(x, min_y)));
+//      relevant_buckets.insert(getHashBucket(Point2d(x, min_y)));
 //    }
 //    return relevant_buckets;
   }
@@ -438,7 +440,7 @@ std::set<int> SpatialHash::getAllCellsOccupiedByPolygon(const Object& object) co
 //  float size_x = max_x - min_x;
 //  float size_y = max_y - min_y;
 //  ROS_INFO_STREAM("X size is: "<<size_x<<" Y size is: "<<size_y<<" - x should run: "<<std::ceil(size_x/cell_size_)<<" times, y should run: "<<std::ceil(size_y/cell_size_)<<" times");
-//  cv::Rect bucket_rect;
+//  Rectangle bucket_rect;
 
   // line objects can have no extent along one of the axis possibly (problem with line objects remaining stuck within the hash(
 
@@ -449,9 +451,9 @@ std::set<int> SpatialHash::getAllCellsOccupiedByPolygon(const Object& object) co
                y < std::ceil(max_y / cell_size_) * cell_size_; y += cell_size_)
     {
       // todo: check the values this returns
-//      ROS_INFO_STREAM("Testing point: "<< cv::Point2f(x,y));
-//      ROS_INFO_STREAM("Point polygon test returns value of: "<< cv::pointPolygonTest(std::vector<cv::Point2f>(obstacle.contour_points.begin(),obstacle.contour_points.end()),
-//                                                                                   cv::Point2f(x, y), true)
+//      ROS_INFO_STREAM("Testing point: "<< Point2d(x,y));
+//      ROS_INFO_STREAM("Point polygon test returns value of: "<< cv::pointPolygonTest(std::vector<Point2d>(obstacle.contour_points.begin(),obstacle.contour_points.end()),
+//                                                                                   Point2d(x, y), true)
 //                      << " and cell size is "<< cell_size_);
 //      ROS_INFO("/n");
 
@@ -479,16 +481,16 @@ std::set<int> SpatialHash::getAllCellsOccupiedByPolygon(const Object& object) co
         for(int i=0;i<img_height;i+=cell_resolution)
           cv::line(debug_image,cv::Point(0,i),cv::Point(img_width,i),cv::Scalar(255,255,255));
 
-        getBucketRect(cv::Point2f(x,y), bucket_rect, cell_resolution);
+        getBucketRect(Point2d(x,y), bucket_rect, cell_resolution);
       }
 #endif
 
 
       // value is a bit higher, its better if we overrepresent obstacles at border than create doubled obstacles
-//      if (std::abs(cv::pointPolygonTest(std::vector<cv::Point2f>(obstacle.contour_points.begin(),obstacle.contour_points.end()),
-//                                                                 cv::Point2f(x,y), true))
+//      if (std::abs(cv::pointPolygonTest(std::vector<Point2d>(obstacle.contour_points.begin(),obstacle.contour_points.end()),
+//                                                                 Point2d(x,y), true))
 //                   < cell_size_*2.0) {
-        relevant_buckets.insert(getHashCell(cv::Point2f(x, y)));
+        relevant_buckets.insert(getHashCell(Point2d(x, y)));
 #ifdef DEBUG_DRAW_HASH_INTERNALS
 //        ROS_INFO_STREAM("Confirmed bucket I got has br: "<<bucket_rect.br()<<" and tl: "<<bucket_rect.tl());
         if (do_visualization)
@@ -545,9 +547,9 @@ void SpatialHash::updateStoredObject(const Object& object)
 }
 
 #ifdef DEBUG_DRAW_INTERNALS
-void SpatialHash::getCellRect(const cv::Point2f& point_in_cell, cv::Rect& cell_rect, int cell_resolution)
+void SpatialHash::getCellRect(const Point2d& point_in_cell, cv::Rect& cell_rect, int cell_resolution)
 {
-   cell_rect = cv::Rect(cv::Point((int)std::floor(point_in_cell.x / cell_size_) * cell_resolution,
+   cell_rect = Rectangle(cv::Point((int)std::floor(point_in_cell.x / cell_size_) * cell_resolution,
                                    (int)std::floor(point_in_cell.y / cell_size_) * cell_resolution),
       cv::Point((int)std::ceil((point_in_cell.x + 0.00001f) / cell_size_) * cell_resolution,
                 (int)std::ceil((point_in_cell.y + 0.00001f) / cell_size_) * cell_resolution));

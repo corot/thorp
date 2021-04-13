@@ -5,47 +5,37 @@
 #include <thorp_toolkit/geometry.hpp>
 namespace ttk = thorp_toolkit;
 
-#include "thorp_costmap_layers/scene_interface.h"
-
+#include "thorp_costmap_layers/srv_interface.h"
 
 namespace thorp_costmap_layers
 {
 
-SceneInterface::SceneInterface(ros::NodeHandle& nh, tf2_ros::Buffer& tf, const std::string& map_frame,
+ServiceInterface::ServiceInterface(ros::NodeHandle& nh, tf2_ros::Buffer& tf, const std::string& map_frame,
                                std::function<void(double, double, double)> update_map_callback) :
   BaseInterface(nh, tf, map_frame),
   callback_processed_(false),
   update_map_callback_(update_map_callback)
 {
-  // Provide a topic to add semantic objects to the costmap
-  add_objs_sub_ = nh_.subscribe("add_objects", 10, &SceneInterface::sceneMessageCallback, this);
-
-  // List current objects for inspection in a latched topic  TODO not true now,,,  not really used
-  objects_pub_ = nh_.advertise<moveit_msgs::PlanningSceneWorld>("objects", 10, true);
+  // Service to add/modify/remove semantic objects to the costmap
+  update_srv_ = nh_.advertiseService("update_objects", &ServiceInterface::updateCollisionObjs, this);
 }
 
-SceneInterface::~SceneInterface()
+ServiceInterface::~ServiceInterface()
 {
 }
 
-void SceneInterface::sceneMessageCallback(const moveit_msgs::PlanningSceneWorldConstPtr& planning_scene)
-{
-  if (planning_scene->collision_objects.empty())
-    return;
-
-  std::vector<moveit_msgs::CollisionObject> collision_objects;
-  processCollisionObjs(planning_scene->collision_objects);
-}
-
-void SceneInterface::processCollisionObjs(const std::vector<moveit_msgs::CollisionObject>& collision_objects)
+bool ServiceInterface::updateCollisionObjs(thorp_msgs::UpdateCollisionObjs::Request& request,
+                                         thorp_msgs::UpdateCollisionObjs::Response& response)
 {
   try
   {
     Json::Reader reader;
     Json::Value db_info;
 
+    response.error.code = thorp_msgs::ThorpError::SUCCESS;
+    response.error.text = "Object successfully updated";
     bool trigger_map_update = false;
-    for (const auto& co : collision_objects)
+    for (const auto& co : request.collision_objects)
     {
       // Discard objects of unknown type
       reader.parse(co.type.db, db_info);
@@ -53,7 +43,9 @@ void SceneInterface::processCollisionObjs(const std::vector<moveit_msgs::Collisi
       if (object_types_.find(type) == object_types_.end())
       {
         ROS_WARN("[scene_interface] Discarded object %s of unknown type %s", co.id.c_str(), type.c_str());
-        continue;
+        response.error.code = thorp_msgs::ThorpError::INVALID_OBJECT_TYPE;
+        response.error.text = type;
+        break;
       }
 
       if (co.operation == moveit_msgs::CollisionObject::ADD    ||
@@ -73,8 +65,17 @@ void SceneInterface::processCollisionObjs(const std::vector<moveit_msgs::Collisi
       }
       else if (co.operation == moveit_msgs::CollisionObject::REMOVE)
       {
-        removeContours(co.id);
-        ROS_DEBUG("[scene_interface] Removed object %s of type %s", co.id.c_str(), type.c_str());
+        if (removeContours(co.id))
+        {
+          ROS_DEBUG("[scene_interface] Removed object %s of type %s", co.id.c_str(), type.c_str());
+        }
+        else
+        {
+          ROS_WARN("[scene_interface] Attempting to remove unknown object %s", co.id.c_str());
+          response.error.code = thorp_msgs::ThorpError::OBJECT_NOT_FOUND;
+          response.error.text = co.id;
+          break;
+        }
       }
     }
 
@@ -89,11 +90,15 @@ void SceneInterface::processCollisionObjs(const std::vector<moveit_msgs::Collisi
   catch (Json::LogicError &e)
   {
     ROS_ERROR("[scene_interface] Json LogicError: %s", e.what());
+    response.error.code = thorp_msgs::ThorpError::INVALID_OBJECT_TYPE;
+    response.error.text = e.what();
   }
+
+  return response.error.code == thorp_msgs::ThorpError::SUCCESS;
 }
 
 // transform primitive obstacle to current frame of db
-void SceneInterface::collisionObjToContours(const moveit_msgs::CollisionObject& collision_object,
+void ServiceInterface::collisionObjToContours(const moveit_msgs::CollisionObject& collision_object,
                                             std::vector<std::vector<geometry_msgs::PoseStamped>>& contours,
                                             double length_padding, double width_padding) const
 {
@@ -152,33 +157,6 @@ void SceneInterface::collisionObjToContours(const moveit_msgs::CollisionObject& 
     std::swap(contours[it_primitive][1], contours[it_primitive][2]);
     std::swap(contours[it_primitive][2], contours[it_primitive][3]);
   }
-}
-
-void SceneInterface::publishObject(const Object& object)
-{
-  moveit_msgs::PlanningSceneWorld new_message;
-  new_message.collision_objects[0].operation = moveit_msgs::CollisionObject::ADD;
-  new_message.collision_objects[0].id = std::to_string(object.id);
-  geometry_msgs::Point temp_point;
-  temp_point.z = 0.0f;
-  int i = 0;
-  for (const auto& pt : object.contour_points)
-  {
-    temp_point.x = pt.x;
-    temp_point.y = pt.y;
-    new_message.collision_objects[0].meshes[0].vertices[i] = temp_point;
-    ++i;
-  }
-  objects_pub_.publish(new_message);
-}
-
-// delete object based on id
-void SceneInterface::deleteObject(const Object& object)
-{
-  moveit_msgs::PlanningSceneWorld delete_message;
-  delete_message.collision_objects[0].operation = 1;
-  delete_message.collision_objects[0].id = std::to_string(object.id);
-  objects_pub_.publish(delete_message);
 }
 
 }

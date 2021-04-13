@@ -10,6 +10,7 @@ add_message_files(DIRECTORY msg
 add_service_files(DIRECTORY srv
                      FILES CannonCmd.srv
                            ConnectWaypoints.srv
+                           UpdateCollisionObjs.srv
                 )
 
 add_action_files(DIRECTORY action

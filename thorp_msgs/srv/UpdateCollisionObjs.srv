@@ -1,0 +1,8 @@
+# Add/remove/modify a collision objects (simple service version of planning scene interface)
+
+moveit_msgs/CollisionObject[] collision_objects
+
+---
+
+# response: first error found (processing stops)
+ThorpError error
