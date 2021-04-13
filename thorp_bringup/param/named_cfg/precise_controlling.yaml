@@ -2,8 +2,8 @@ move_base_flex/TEBPlanner:
   max_vel_x: 0.2
   max_vel_theta: 2.0
 
-  min_obstacle_dist: 0.177  # Set to physical robot radius
-  inflation_dist: 0.5
+  min_obstacle_dist: 0.187  # physical robot radius + 1 cm
+  inflation_dist: 0.6
   costmap_obstacles_behind_robot_dist: 0.75
 
   # strict goal reached criteria
@@ -16,4 +16,4 @@ move_base_flex/local_costmap:
   width: 2.0
   height: 2.0
   resolution: 0.005
-  robot_radius: 0.177
+  robot_radius: 0.177  # inflate costmap with physical robot radius + 1 cm of padding (unneeded for TEB)

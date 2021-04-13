@@ -269,8 +269,6 @@ Visualization Manager:
           Value: false
         sonars_mount_link:
           Value: false
-        table_frame:
-          Value: true
         tray_link:
           Value: false
         wheel_left_link:
@@ -492,8 +490,6 @@ Visualization Manager:
                   {}
                 wheel_right_link:
                   {}
-          table_frame:
-            {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -1376,7 +1372,7 @@ Visualization Manager:
           Marker Topic: /rail_segmentation/table_marker
           Name: Table
           Namespaces:
-            segmentation_objects: true
+            {}
           Queue Size: 100
           Value: true
         - Class: rviz/MarkerArray
@@ -1384,8 +1380,7 @@ Visualization Manager:
           Marker Topic: /rail_segmentation/markers
           Name: Segmented Objects
           Namespaces:
-            segmentation_labels: true
-            segmentation_objects: true
+            {}
           Queue Size: 100
           Value: true
         - Alpha: 1
@@ -1686,7 +1681,8 @@ Visualization Manager:
           Marker Topic: /exploration/room_sequence_planning_server/room_sequence_marker
           Name: Room Sequence Plan
           Namespaces:
-            {}
+            room_sequence_checkpoints: true
+            room_sequence_rooms: true
           Queue Size: 100
           Value: true
         - Class: rviz/Image
@@ -1973,7 +1969,9 @@ Visualization Manager:
                   Marker Topic: /move_base_flex/TEBPlanner/teb_markers
                   Name: Markers
                   Namespaces:
-                    {}
+                    PointObstacles: true
+                    TebContainer: true
+                    ViaPoints: true
                   Queue Size: 100
                   Value: true
               Enabled: true

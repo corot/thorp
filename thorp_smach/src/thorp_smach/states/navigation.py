@@ -288,9 +288,24 @@ class ExePathFailed(smach.State):
             return 'aborted'
 
 
+class TableAsObstacle(smach.State):
+    """
+    Mark table area as an obstacle on both local and global costmaps, so robot doesn't collide with the invisible eaves.
+    """
+
+    def __init__(self):
+        super(TableAsObstacle, self).__init__(outcomes=['succeeded'],
+                                              input_keys=['table', 'pose'])
+
+    def execute(self, ud):
+        name, width, length = ud['table'].name, ud['table'].width, ud['table'].depth
+        SemanticLayer().add_object(name, 'obstacle', ud['pose'], (width, length), 'both')
+        return 'succeeded'
+
+
 class ClearTableWay(smach.State):
     """
-    Clear an area on local costmap so the controller can approach the table, and restore it after a given time
+    Clear an area on local costmap so the controller can approach the table
     """
 
     def __init__(self):
@@ -298,40 +313,73 @@ class ClearTableWay(smach.State):
                                             input_keys=['table', 'pose'])
 
     def execute(self, ud):
-        SemanticLayer().add_object(ud['table'].name, 'free_space', ud['pose'], [1.0, 0.5], 'local')
-        rospy.sleep(0.2)
-        rospy.Timer(rospy.Duration(cfg.CLEAR_TABLE_WAY_TIMEOUT),
-                    lambda te: SemanticLayer().remove_object(ud['table'].name, 'free_space', 'local'),
-                    oneshot=True)
+        obj_name = ud['table'].name + ' approach'
+        SemanticLayer().add_object(obj_name, 'free_space', ud['pose'], [1.0, 0.5], 'local')
         return 'succeeded'
 
 
-class AlignToTable(smach.Sequence):
+class RestoreTableWay(smach.State):
+    """
+    restore the area cleared to approach the table, so we don't collide with it after detaching
+    """
+
+    def __init__(self):
+        super(RestoreTableWay, self).__init__(outcomes=['succeeded'],
+                                              input_keys=['table'])
+
+    def execute(self, ud):
+        obj_name = ud['table'].name + ' approach'
+        SemanticLayer().remove_object(obj_name, 'free_space', 'local')
+        return 'succeeded'
+
+
+class AlignToTable(DoOnExitContainer):
     def __init__(self):
         super(AlignToTable, self).__init__(outcomes=['succeeded',
                                                      'aborted',
                                                      'preempted'],
-                                           connector_outcome='succeeded',
                                            input_keys=['table', 'pose'],
                                            output_keys=['outcome', 'message'])
         with self:
-            smach.Sequence.add('CLEAR_WAY', ClearTableWay())
-            smach.Sequence.add('POSE_AS_PATH', PoseAsPath())
-            smach.Sequence.add('ALIGN_TO_TABLE', ExePath())
+            self.userdata['behavior'] = 'clear_local_cm'
+            self.userdata['behavior'] = 'out_to_free_space'  # TODO  a ver q pasa
+            DoOnExitContainer.add('CLEAR_WAY', ClearTableWay(),
+                                  transitions={'succeeded': 'POSE_AS_PATH'})
+            DoOnExitContainer.add('POSE_AS_PATH', PoseAsPath(),
+                                  transitions={'succeeded': 'ALIGN_TO_TABLE'})
+            DoOnExitContainer.add('ALIGN_TO_TABLE', ExePath(),
+                                  transitions={'succeeded': 'succeeded',
+                                               'aborted': 'CLEAR_COSTMAP',
+                                               'preempted': 'preempted'})
+            DoOnExitContainer.add('CLEAR_COSTMAP', Recovery(),
+                                  transitions={'succeeded': 'CLEAR_WAY',
+                                               'aborted': 'aborted',
+                                               'preempted': 'preempted'})
+            DoOnExitContainer.add_finally('RESTORE_WAY', RestoreTableWay())
 
 
-class DetachFromTable(smach.Sequence):
+class DetachFromTable(DoOnExitContainer):
     def __init__(self):
         super(DetachFromTable, self).__init__(outcomes=['succeeded',
                                                         'aborted',
                                                         'preempted'],
-                                              connector_outcome='succeeded',
                                               input_keys=['table', 'pose'],
                                               output_keys=['outcome', 'message'])
         with self:
-            smach.Sequence.add('CLEAR_WAY', ClearTableWay())
-            smach.Sequence.add('POSE_AS_PATH', PoseAsPath())
-            smach.Sequence.add('AWAY_FROM_TABLE', ExePath())
+            self.userdata['behavior'] = 'out_to_free_space'
+            DoOnExitContainer.add('CLEAR_WAY', ClearTableWay(),
+                                  transitions={'succeeded': 'POSE_AS_PATH'})
+            DoOnExitContainer.add('POSE_AS_PATH', PoseAsPath(),
+                                  transitions={'succeeded': 'AWAY_FROM_TABLE'})
+            DoOnExitContainer.add('AWAY_FROM_TABLE', ExePath(),
+                                  transitions={'succeeded': 'succeeded',
+                                               'aborted': 'TO_FREE_SPACE',
+                                               'preempted': 'preempted'})
+            DoOnExitContainer.add('TO_FREE_SPACE', Recovery(),
+                                  transitions={'succeeded': 'AWAY_FROM_TABLE',
+                                               'aborted': 'aborted',
+                                               'preempted': 'preempted'})
+            DoOnExitContainer.add_finally('RESTORE_WAY', RestoreTableWay())
 
 
 class ExeSparsePath(smach.StateMachine):

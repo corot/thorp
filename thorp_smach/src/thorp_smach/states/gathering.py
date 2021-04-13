@@ -13,7 +13,7 @@ from thorp_toolkit.visualization import Visualization
 
 from common import SetNamedConfig, DismissNamedConfig
 from perception import MonitorTables, ObjectDetection, ObjectsDetected
-from navigation import GetRobotPose, GoToPose, AlignToTable, DetachFromTable
+from navigation import GetRobotPose, GoToPose, TableAsObstacle, AlignToTable, DetachFromTable
 from pick_objects import PickReachableObjs
 from thorp_smach.containers.do_on_exit import DoOnExit as DoOnExitContainer
 
@@ -282,14 +282,17 @@ def GatherObjects(target_types):
 
     # detects objects over the table, and make a picking plan
     make_pick_plan_sm = smach.StateMachine(outcomes=['succeeded', 'aborted', 'preempted', 'no_reachable_objs'],
-                                           input_keys=['object_types'],
+                                           input_keys=['table', 'object_types'],
                                            output_keys=['picking_poses', 'closest_picking_pose', 'picking_plan'])
     with make_pick_plan_sm:
         smach.StateMachine.add('GET_ROBOT_POSE', GetRobotPose(),
                                transitions={'succeeded': 'DETECT_TABLES'})
         smach.StateMachine.add('DETECT_TABLES', MonitorTables(2.0),  # re-detect when nearby for more precision
-                               transitions={'succeeded': 'CALC_PICK_POSES',  # (or fail if cannot see again)
+                               transitions={'succeeded': 'TABLE_OBSTACLE',  # (or fail if cannot see again)
                                             'aborted': 'aborted'})
+        smach.StateMachine.add('TABLE_OBSTACLE', TableAsObstacle(),
+                               transitions={'succeeded': 'CALC_PICK_POSES'},
+                               remapping={'pose': 'table_pose'})
         smach.StateMachine.add('CALC_PICK_POSES', CalcPickPoses(cfg.PICKING_DIST_TO_TABLE),
                                transitions={'succeeded': 'DETECT_OBJECTS',
                                             'no_valid_table': 'aborted'})
