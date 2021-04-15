@@ -206,8 +206,9 @@ class TableMarkVisited(smach.State):
 
     def execute(self, ud):
         obj_name = 'table ' + str(SemanticMap().objects_count('table') + 1)
-        ud['table'].name = obj_name
-        SemanticMap().add_object(ud['table'], 'table', ud['table_pose'], (ud['table'].depth, ud['table'].width))
+        obj_size = ud['table'].width, ud['table'].depth, ud['table'].height
+        SemanticMap().add_object(obj_name, 'table', ud['table_pose'], obj_size)
+        ud['table'].name = obj_name  # give a name to the segmented object
         return 'succeeded'
 
 

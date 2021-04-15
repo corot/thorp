@@ -103,6 +103,12 @@ class SpatialHash(object):
         for c in cells:
             self._remove(c, obj)
 
+    def remove(self, obj):
+        """Remove entirely an object."""
+        for obj_list in self.d.values():
+            while obj in obj_list:
+                obj_list.remove(obj)
+
     def query(self, r):
         """Get a set of all objects that potentially intersect r."""
         cells = self._cells_for_rect(r)
@@ -119,4 +125,4 @@ class SpatialHash(object):
 
     def content(self):
         """Return all objects stored in the map."""
-        return self.d.values()
+        return set().union(*self.d.values())
