@@ -23,7 +23,8 @@ from thorp_smach import config as cfg
 class CalcPickPoses(smach.State):
     """
     Calculate all picking locations around a table at a given distance.
-    In current simple version, just the in front of each of the four sides.
+    In current simple version, just the pose in front of each of the four sides.
+    TODO: rename as TableSidesPoses
     """
 
     def __init__(self, distance):
@@ -77,7 +78,8 @@ class CalcPickPoses(smach.State):
 # TODO 1 make local if I don't export as output position
 # TODO 2 make smach viz fail; convert into ROS msgs?
 Object = namedtuple('Object', ['dist', 'name', 'pose'])
-PickLoc = namedtuple('PickLoc', ['size', 'name', 'pose', 'objs', 'dist', 'arm_pose', 'approach_pose'])
+PickLoc = namedtuple('PickLoc', ['size', 'name', 'objs', 'dist', 'arm_pose',
+                                 'picking_pose', 'approach_pose', 'detach_pose'])
 PickPlan = namedtuple('PickPlan', ['size', 'dist', 'plocs'])
 
 
@@ -88,11 +90,12 @@ class PickLocFields(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded'],
                              input_keys=['picking_loc'],
-                             output_keys=['picking_pose', 'approach_pose'])
+                             output_keys=['approach_pose', 'picking_pose', 'detach_pose'])
 
     def execute(self, ud):
-        ud['picking_pose'] = ud['picking_loc'].pose
         ud['approach_pose'] = ud['picking_loc'].approach_pose
+        ud['picking_pose'] = ud['picking_loc'].picking_pose
+        ud['detach_pose'] = ud['picking_loc'].detach_pose
         return 'succeeded'
 
 
@@ -137,10 +140,13 @@ class GroupObjects(smach.State):
             # sort objects by increasing distance from the arm; that should make picking easier,
             # as we won't hit closer objects when going over them (not 100% sure if this is true)
             objs = sorted(objs, key=lambda o: o.dist)
-            # provide also the approach pose, at APPROACH_DIST_TO_TABLE meters from the table
+            # set also the approach and detach poses, at APPROACH_DIST_TO_TABLE and DETACH_DIST_FROM_TABLE respectively
             approach_pose = deepcopy(pose)
             translate_pose(approach_pose, - (cfg.APPROACH_DIST_TO_TABLE - cfg.PICKING_DIST_TO_TABLE), 'x')
-            pick_locs.append(PickLoc(len(objs), name, pose, objs, dist_from_robot, arm_pose_mrf, approach_pose))
+            detach_pose = deepcopy(pose)
+            translate_pose(detach_pose, - (cfg.DETACH_DIST_FROM_TABLE - cfg.PICKING_DIST_TO_TABLE), 'x')
+            pick_locs.append(PickLoc(len(objs), name, objs, dist_from_robot, arm_pose_mrf,
+                                     pose, approach_pose, detach_pose))
         if not pick_locs:
             rospy.loginfo("No reachable objects")
             return 'no_reachable_objs'
@@ -275,6 +281,10 @@ def GatherObjects(target_types):
                            transitions={'no_valid_table': 'aborted'},
                            remapping={'picking_poses': 'approach_poses',
                                       'closest_picking_pose': 'closest_approach_pose'})
+        smach.Sequence.add('CALC_DETACH_POSES', CalcPickPoses(cfg.DETACH_DIST_FROM_TABLE),
+                           transitions={'no_valid_table': 'aborted'},
+                           remapping={'picking_poses': 'detach_poses',
+                                      'closest_picking_pose': 'closest_detach_pose'})
         smach.Sequence.add('APPROACH_TABLE', GoToPose(),  # use default tolerances; no precision needed here
                            transitions={'aborted': 'aborted',
                                         'preempted': 'preempted'},
@@ -324,7 +334,7 @@ def GatherObjects(target_types):
                            remapping={'pose': 'picking_pose'})
         smach.Sequence.add('PICK_OBJECTS', PickReachableObjs())
         smach.Sequence.add('DETACH_FROM_TABLE', DetachFromTable(),
-                           remapping={'pose': 'approach_pose'})
+                           remapping={'pose': 'detach_pose'})
 
     # iterate over all picking locations in the plan
     pick_objects_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted', 'tray_full'],

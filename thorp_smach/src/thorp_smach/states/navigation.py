@@ -341,8 +341,7 @@ class AlignToTable(DoOnExitContainer):
                                            input_keys=['table', 'pose'],
                                            output_keys=['outcome', 'message'])
         with self:
-            self.userdata['behavior'] = 'clear_local_cm'
-            self.userdata['behavior'] = 'out_to_free_space'  # TODO  a ver q pasa
+            self.userdata['behavior'] = 'out_to_free_space'
             DoOnExitContainer.add('CLEAR_WAY', ClearTableWay(),
                                   transitions={'succeeded': 'POSE_AS_PATH'})
             DoOnExitContainer.add('POSE_AS_PATH', PoseAsPath(),
