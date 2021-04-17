@@ -73,15 +73,6 @@ class TableSidesPoses(smach.State):
         return 'succeeded'
 
 
-# Object to pick and pick location named tuples; required for grouping objects
-# TODO 1 make local if I don't export as output position
-# TODO 2 make smach viz fail; convert into ROS msgs?
-Object = namedtuple('Object', ['dist', 'name', 'pose'])
-PickLoc = namedtuple('PickLoc', ['size', 'name', 'objs', 'dist', 'arm_pose',
-                                 'picking_pose', 'approach_pose', 'detach_pose'])
-PickPlan = namedtuple('PickPlan', ['size', 'dist', 'plocs'])
-
-
 class PickLocFields(smach.State):
     """
     Extract PickLoc fields on separated keys.  TODO really there's no way around this shit???
@@ -99,6 +90,13 @@ class PickLocFields(smach.State):
 
 
 class GroupObjects(smach.State):
+    # Object to pick and pick location named tuples; required for grouping objects
+    # TODO: make smach viz cannot display named tuples and spam log with errors; convert into ROS msgs?
+    Object = namedtuple('Object', ['dist', 'name', 'pose'])
+    PickLoc = namedtuple('PickLoc', ['size', 'name', 'objs', 'dist', 'arm_pose',
+                                     'picking_pose', 'approach_pose', 'detach_pose'])
+    PickPlan = namedtuple('PickPlan', ['size', 'dist', 'plocs'])
+
     """
     Group detected objects reachable from picking location (within arm's reach).
     We first eliminate the locations without objects only reachable from there.
@@ -113,27 +111,24 @@ class GroupObjects(smach.State):
 
     def execute(self, ud):
         bfp_to_arm_tf = Transform.create(TF2().lookup_transform('base_footprint', self.manip_frame))  # base to arm tf
-        map_to_arm_tf = Transform.create(TF2().lookup_transform('map', self.manip_frame))  # map to arm tf
-        map_to_fbp_tf = Transform.create(TF2().lookup_transform('map', 'base_footprint'))  # map to arm tf
+        map_to_fbp_tf = Transform.create(TF2().lookup_transform('map', 'base_footprint'))  # map to base
         pick_locs = []
         for name, pose in ud['picking_poses'].items():
-            # current distance from the robot; not used by now
+            # current distance from the robot (stored but not used by now)
             dist_from_robot = distance_2d(pose, ud['robot_pose'])
             # apply base to arm tf, so we get arm pose on map reference for each location
-            # map_to_bfp_tf = Transform.create(pose)
             arm_pose_mrf = (Transform.create(pose) * bfp_to_arm_tf).to_geometry_msg_pose_stamped()
             # detected objects poses are in arm reference, so their modulo is the distance to the arm
             objs = []
             for i, obj in enumerate(ud['objects']):
                 obj_pose = obj.primitive_poses[0]
-                # transform object pose from arm to map frame, so we can compare distances to picking locations
+                # transform object pose from base to map frame, so we can compare distances to picking locations
                 # we must limit max arm reach with our navigation tolerance when reaching the goal, as that will
                 # be our probable picking pose, instead of the ideal one received as input
-                ##arm_to_obj_tf = Transform.create(obj_pose)
                 obj_pose_mrf = (map_to_fbp_tf * Transform.create(obj_pose)).to_geometry_msg_pose_stamped()
                 dist = distance_2d(obj_pose_mrf, arm_pose_mrf)  # both on map rf
                 if dist <= cfg.MAX_ARM_REACH - cfg.TIGHT_DIST_TOLERANCE:
-                    objs.append(Object(dist, obj.id, obj_pose))
+                    objs.append(GroupObjects.Object(dist, obj.id, obj_pose))
             if not objs:
                 continue  # no objects reachable from here; keep going
             # sort objects by increasing distance from the arm; that should make picking easier,
@@ -144,8 +139,8 @@ class GroupObjects(smach.State):
             translate_pose(approach_pose, - (cfg.APPROACH_DIST_TO_TABLE - cfg.PICKING_DIST_TO_TABLE), 'x')
             detach_pose = deepcopy(pose)
             translate_pose(detach_pose, - (cfg.DETACH_DIST_FROM_TABLE - cfg.PICKING_DIST_TO_TABLE), 'x')
-            pick_locs.append(PickLoc(len(objs), name, objs, dist_from_robot, arm_pose_mrf,
-                                     pose, approach_pose, detach_pose))
+            pick_locs.append(GroupObjects.PickLoc(len(objs), name, objs, dist_from_robot, arm_pose_mrf,
+                                                  pose, approach_pose, detach_pose))
         if not pick_locs:
             rospy.loginfo("No reachable objects")
             return 'no_reachable_objs'
@@ -155,7 +150,7 @@ class GroupObjects(smach.State):
         for perm in permutations(pick_locs):
             perm = list(perm)  # convert to list, so we can remove elements
             self.filter_pick_locs(perm)
-            possible_plans.append(PickPlan(len(perm), self.traveled_dist(ud['robot_pose'], perm), perm))
+            possible_plans.append(GroupObjects.PickPlan(len(perm), self.traveled_dist(ud['robot_pose'], perm), perm))
         # sort by  1) less locations to visit  2) less travelled distance (in case of match)
         sorted_plans = sorted(possible_plans, key=lambda p: (p.size, p.dist))
         sorted_plocs = sorted_plans[0].plocs
@@ -195,7 +190,7 @@ class GroupObjects(smach.State):
             return 0.0
         total_dist = distance_2d(robot_pose, pick_locs[0].picking_pose)
         for ploc1, ploc2 in zip(pick_locs, pick_locs[1:]):
-            total_dist += distance_2d(ploc1.pose, ploc2.pose)
+            total_dist += distance_2d(ploc1.picking_pose, ploc2.picking_pose)
         return total_dist
 
     @staticmethod

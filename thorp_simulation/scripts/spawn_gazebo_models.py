@@ -72,9 +72,8 @@ def close_to_prev_pose(pose, added_poses, min_dist):
 
 
 def close_to_obstacle(x, y, clearance):
-    # check if the surface is far way from any obstacle in the global costmap
-    # we check the robot footprint in 9 poses, being the central one the surface pose;
-    # if the footprint is not entirely on fully free space (0 cost), we reject the pose
+    # check if the location is away from any non-zero cost in the global costmap by at least the given clearance
+    # (we need to subtract robot radius because check pose service assumes we want to check the footprint cost)
     resp = check_pose_srv(pose=create_2d_pose(x, y, 0.0, 'map'), safety_dist=clearance - robot_radius,
                           costmap=CheckPoseRequest.GLOBAL_COSTMAP)
     if resp.state > 0 or resp.cost > 0:
