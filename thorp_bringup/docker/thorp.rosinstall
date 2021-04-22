@@ -153,7 +153,14 @@
     uri: https://github.com/cagbal/cob_perception_common.git
     version: indigo_dev
 
+# Rviz plugins
+
 - git:
     local-name: rviz_textured_quads
     uri: https://github.com/lucasw/rviz_textured_quads.git
     version: image_topic
+
+- git:
+    local-name: rviz_view_publisher
+    uri: https://github.com/corot/rviz_view_publisher
+    version: thorp
