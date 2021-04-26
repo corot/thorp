@@ -4,6 +4,9 @@ find_package(catkin REQUIRED COMPONENTS std_msgs nav_msgs moveit_msgs geometry_m
 
 add_message_files(DIRECTORY msg
                       FILES KeyboardInput.msg
+                            ObjectToPick.msg
+                            PickingPlan.msg
+                            PickLocation.msg
                             ThorpError.msg
                  )
 

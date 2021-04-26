@@ -5,11 +5,11 @@ import geometry_msgs.msg as geometry_msgs
 
 from copy import deepcopy
 from itertools import permutations
-from collections import namedtuple
 
 from thorp_toolkit.geometry import TF2, to_transform, translate_pose, transform_pose, create_2d_pose, distance_2d
 from thorp_toolkit.transform import Transform
 from thorp_toolkit.visualization import Visualization
+from thorp_msgs.msg import ObjectToPick, PickingPlan, PickLocation
 
 from common import SetNamedConfig, DismissNamedConfig
 from costmaps import TableAsObstacle
@@ -90,13 +90,6 @@ class PickLocFields(smach.State):
 
 
 class GroupObjects(smach.State):
-    # Object to pick and pick location named tuples; required for grouping objects
-    # TODO: make smach viz cannot display named tuples and spam log with errors; convert into ROS msgs?
-    Object = namedtuple('Object', ['dist', 'name', 'pose'])
-    PickLoc = namedtuple('PickLoc', ['size', 'name', 'objs', 'dist', 'arm_pose',
-                                     'picking_pose', 'approach_pose', 'detach_pose'])
-    PickPlan = namedtuple('PickPlan', ['size', 'dist', 'plocs'])
-
     """
     Group detected objects reachable from picking location (within arm's reach).
     We first eliminate the locations without objects only reachable from there.
@@ -113,11 +106,11 @@ class GroupObjects(smach.State):
         bfp_to_arm_tf = Transform.create(TF2().lookup_transform('base_footprint', self.manip_frame))  # base to arm tf
         map_to_fbp_tf = Transform.create(TF2().lookup_transform('map', 'base_footprint'))  # map to base
         pick_locs = []
-        for name, pose in ud['picking_poses'].items():
+        for name, picking_pose in ud['picking_poses'].items():
             # current distance from the robot (stored but not used by now)
-            dist_from_robot = distance_2d(pose, ud['robot_pose'])
+            dist_from_robot = distance_2d(picking_pose, ud['robot_pose'])
             # apply base to arm tf, so we get arm pose on map reference for each location
-            arm_pose_mrf = (Transform.create(pose) * bfp_to_arm_tf).to_geometry_msg_pose_stamped()
+            arm_pose_mrf = (Transform.create(picking_pose) * bfp_to_arm_tf).to_geometry_msg_pose_stamped()
             # detected objects poses are in arm reference, so their modulo is the distance to the arm
             objs = []
             for i, obj in enumerate(ud['objects']):
@@ -128,19 +121,19 @@ class GroupObjects(smach.State):
                 obj_pose_mrf = (map_to_fbp_tf * Transform.create(obj_pose)).to_geometry_msg_pose_stamped()
                 dist = distance_2d(obj_pose_mrf, arm_pose_mrf)  # both on map rf
                 if dist <= cfg.MAX_ARM_REACH - cfg.TIGHT_DIST_TOLERANCE:
-                    objs.append(GroupObjects.Object(dist, obj.id, obj_pose))
+                    objs.append(ObjectToPick(obj.id, dist, obj_pose))
             if not objs:
                 continue  # no objects reachable from here; keep going
             # sort objects by increasing distance from the arm; that should make picking easier,
             # as we won't hit closer objects when going over them (not 100% sure if this is true)
-            objs = sorted(objs, key=lambda o: o.dist)
+            objs = sorted(objs, key=lambda o: o.distance)
             # set also the approach and detach poses, at APPROACH_DIST_TO_TABLE and DETACH_DIST_FROM_TABLE respectively
-            approach_pose = deepcopy(pose)
+            approach_pose = deepcopy(picking_pose)
             translate_pose(approach_pose, - (cfg.APPROACH_DIST_TO_TABLE - cfg.PICKING_DIST_TO_TABLE), 'x')
-            detach_pose = deepcopy(pose)
+            detach_pose = deepcopy(picking_pose)
             translate_pose(detach_pose, - (cfg.DETACH_DIST_FROM_TABLE - cfg.PICKING_DIST_TO_TABLE), 'x')
-            pick_locs.append(GroupObjects.PickLoc(len(objs), name, objs, dist_from_robot, arm_pose_mrf,
-                                                  pose, approach_pose, detach_pose))
+            pick_locs.append(PickLocation(name, dist_from_robot, objs, arm_pose_mrf,
+                                          approach_pose, picking_pose, detach_pose))
         if not pick_locs:
             rospy.loginfo("No reachable objects")
             return 'no_reachable_objs'
@@ -150,20 +143,20 @@ class GroupObjects(smach.State):
         for perm in permutations(pick_locs):
             perm = list(perm)  # convert to list, so we can remove elements
             self.filter_pick_locs(perm)
-            possible_plans.append(GroupObjects.PickPlan(len(perm), self.traveled_dist(ud['robot_pose'], perm), perm))
+            possible_plans.append(PickingPlan(self.traveled_dist(ud['robot_pose'], perm), perm))
         # sort by  1) less locations to visit  2) less travelled distance (in case of match)
-        sorted_plans = sorted(possible_plans, key=lambda p: (p.size, p.dist))
-        sorted_plocs = sorted_plans[0].plocs
+        sorted_plans = sorted(possible_plans, key=lambda p: (len(p.locations), p.travelled_dist))
+        sorted_plocs = sorted_plans[0].locations
 
         # remove duplicated objects from the location where they are at the longest distance to the arm
         objs_to_remove = []
         for ploc in sorted_plocs:
             dup_objs = 0
-            for obj in ploc.objs:
+            for obj in ploc.objects:
                 for other_pl in [pl for pl in sorted_plocs if pl != ploc]:
-                    for other_obj in other_pl.objs:
+                    for other_obj in other_pl.objects:
                         if obj.name == other_obj.name:
-                            if obj.dist >= other_obj.dist:
+                            if obj.distance >= other_obj.distance:
                                 obj_to_rm = (ploc, obj)
                             else:
                                 obj_to_rm = (other_pl, other_obj)
@@ -171,12 +164,8 @@ class GroupObjects(smach.State):
                                 objs_to_remove.append(obj_to_rm)
                             dup_objs += 1
         for ploc, obj in objs_to_remove:
-            ploc.objs.remove(obj)
-        # update pick locations objects count (a bit cumbersome with named tuples)
-        for i, ploc in enumerate(sorted_plocs):
-            if ploc.size != len(ploc.objs):
-                sorted_plocs[i] = ploc._replace(size=len(ploc.objs))
-        sorted_plocs = sorted(sorted_plocs, key=lambda pl: pl.size)  # sort again after removing duplicates
+            ploc.objects.remove(obj)  # TODO make a test for this and move the remove to within the loop (much simpler)
+        sorted_plocs = sorted(sorted_plocs, key=lambda pl: len(pl.objects))  # sort again after removing duplicates
         self.viz_pick_locs(sorted_plocs)
         ud['picking_locs'] = sorted_plocs
         return 'succeeded'
@@ -201,10 +190,10 @@ class GroupObjects(smach.State):
         """
         pls_to_remove = []
         for ploc in pick_locs:
-            objs_in_this = {o.name for o in ploc.objs}
+            objs_in_this = {o.name for o in ploc.objects}
             objs_in_others = set()
             for other_pl in [pl for pl in pick_locs if pl.name != ploc.name and pl not in pls_to_remove]:
-                objs_in_others.update(o.name for o in other_pl.objs)
+                objs_in_others.update(o.name for o in other_pl.objects)
             if objs_in_this.issubset(objs_in_others):
                 pls_to_remove.append(ploc)
         for ploc in pls_to_remove:
@@ -218,9 +207,9 @@ class GroupObjects(smach.State):
 
             text_pose = deepcopy(pl.arm_pose)
             text_pose.pose.position.z += 0.15
-            Visualization().add_text_marker(text_pose, pl.name + ' ' + str(pl.size), 0.2, color)
+            Visualization().add_text_marker(text_pose, pl.name + ' ' + str(len(pl.objects)), 0.2, color)
 
-            for obj in pl.objs:
+            for obj in pl.objects:
                 text_pose = geometry_msgs.PoseStamped()
                 text_pose.header.frame_id = self.manip_frame
                 text_pose.pose = deepcopy(obj.pose)
