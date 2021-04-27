@@ -36,7 +36,11 @@ int main(int argc, char **argv)
   // Gazebo camera interface
   gazebo::client::setup(argc, argv);
   gazebo::transport::NodePtr gz_node(new gazebo::transport::Node());
-  gz_node->Init();
+  if (!gz_node->TryInit(gazebo::common::Time(60)))
+  {
+    ROS_ERROR("Gazebo global namespace was not found after 1 minute");
+    return -1;
+  }
   gz_cam_pub = gz_node->Advertise<gazebo::msgs::Pose>("~/user_camera/joy_pose");
 
   // RViz camera interface
@@ -44,5 +48,6 @@ int main(int argc, char **argv)
   ros::Subscriber sub = nh.subscribe("rviz/camera_pose", 1, poseCallback);
 
   ros::spin();
+  gz_node->Fini();
   return 0;
 }
