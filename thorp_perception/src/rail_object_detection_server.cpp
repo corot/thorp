@@ -5,6 +5,7 @@
 #include <omp.h>
 
 #include <ros/ros.h>
+#include <visualization_msgs/MarkerArray.h>
 #include <actionlib/client/simple_action_client.h>
 
 // PCL
@@ -50,6 +51,9 @@ private:
   // We use the planning_scene_interface::PlanningSceneInterface to manipulate the world
   moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
 
+  // Planning scene doesn't show collision object names, so we add our own markers
+  ros::Publisher markers_pub_;
+
   bool publish_static_tf_;      ///< Publish static transforms for the segmented objects and surface
   double max_matching_error_;   ///< Object recognition template matching threshold
   std::string output_frame_;    ///< Recognized objects reference frame; we cannot use goal's field because
@@ -67,6 +71,8 @@ public:
     pnh.param("publish_static_tf", publish_static_tf_, false);  // good for debugging but pollutes a lot
     pnh.param("max_matching_error", max_matching_error_, 1e-4);
     pnh.param("output_frame", output_frame_, std::string("base_footprint"));
+
+    markers_pub_ = pnh.advertise<visualization_msgs::MarkerArray>("visual_markers", 1);
 
     // Connect to rail_segmentation/segment_objects service
     segment_srv_ = nh.serviceClient<rail_manipulation_msgs::SegmentObjects>("rail_segmentation/segment_objects");
@@ -165,6 +171,7 @@ public:
     }
 
     std::map<std::string, unsigned int> detected;
+    visualization_msgs::MarkerArray markers;
 
     // Process segmented objects following the support surface, and add them to the planning scene
     #pragma omp parallel for    // NOLINT
@@ -215,10 +222,13 @@ public:
       detected[rail_obj.name] += 1;
       result.objects.push_back(co);
       obj_colors.push_back(obj_color);
+
+      addLabelMarker(markers, co, obj_color.color);
     }
     if (!result.objects.empty())
     {
       planning_scene_interface_.addCollisionObjects(result.objects, obj_colors);
+      markers_pub_.publish(markers);
 
       ROS_INFO("[object detection] Succeeded! %lu objects detected in %.2f seconds", result.objects.size(),
                (ros::Time::now() - time_start).toSec());
@@ -343,6 +353,25 @@ private:
     ROS_DEBUG("Area updated:   %f -> %f", obj.width * obj.depth, new_width * new_depth);
     obj.width = new_width;
     obj.depth = new_depth;
+  }
+
+  // Make a label to show over the collision object
+  void addLabelMarker(visualization_msgs::MarkerArray& markers,
+                      const moveit_msgs::CollisionObject& co, const std_msgs::ColorRGBA& color)
+  {
+    visualization_msgs::Marker m;
+    m.action = visualization_msgs::Marker::ADD;
+    m.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+    m.header = co.header;
+    m.ns = "labels";
+    m.id = (int)markers.markers.size();
+    m.text = co.id;
+    m.scale.z = 0.035;
+    m.color = color;
+    m.pose = co.primitive_poses.front();
+    m.pose.position.z += co.primitives.front().dimensions[2]/2.0 + 0.025;
+    m.lifetime.fromSec(5.0);
+    markers.markers.emplace_back(m);
   }
 };
 
