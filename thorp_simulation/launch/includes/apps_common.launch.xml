@@ -1,0 +1,33 @@
+<!--
+  Nodes common to all apps:
+  - executive smach
+  - optional smach visualization
+  - optional video recording
+ -->
+
+<launch>
+  <arg name="app_name"/>
+  <arg name="viz_smach" default="false"/>
+  <arg name="start_delay" default="0.0"/>
+  <arg name="record_video" default="false"/>
+
+  <!--  ****** Executive smach and visualization ******  -->
+  <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="false">
+    <param name="app_name" value="$(arg app_name)"/>
+    <param name="start_delay" value="$(arg start_delay)"/>
+    <param name="run_introspection_server" value="$(eval arg('viz_smach') or arg('record_video'))"/>
+  </node>
+
+  <node if="$(arg viz_smach)"
+       pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
+
+  <!--  *************** Video recording ***************  -->
+  <group if="$(arg record_video)">
+    <node pkg="thorp_simulation" type="gz_camera_control" name="gz_camera_control"/>
+
+    <node pkg="thorp_simulation" type="movie_director.py" name="movie_director">
+      <param name="app_name" value="$(arg app_name)"/>
+      <param name="script_path" value="$(eval find('thorp_simulation')+'/apps/movie_scripts/' + arg('app_name') + '.yaml')"/>
+    </node>
+  </group>
+</launch>

@@ -617,5 +617,25 @@
       <name>rectangle</name>
       <pose>0.28 0.15 0.5 0.0 0.0 0.4</pose>
     </include>
+    <include>
+      <uri>model://cross</uri>
+      <name>cross</name>
+      <pose>0.37 0.15 0.5 0.0 0.0 0.75</pose>
+    </include>
+    <include>
+      <uri>model://tower</uri>
+      <name>tower</name>
+      <pose>0.38 -0.14 0.5 0.0 0.0 0.15</pose>
+    </include>
+    <include>
+      <uri>model://circle</uri>
+      <name>circle</name>
+      <pose>0.48 -0.12 0.5 0.0 0.0 1.15</pose>
+    </include>
+    <include>
+      <uri>model://cube</uri>
+      <name>cube</name>
+      <pose>0.46 0.1 0.5 0.0 0.0 0.85</pose>
+    </include>
   </world>
 </sdf>

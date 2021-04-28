@@ -5,13 +5,12 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /RAIL1/Table1/Namespaces1
-        - /RAIL1/Segmented Objects1
         - /RAIL1/Segmented Objects1/Namespaces1
         - /Gatherer1/Visual markers1
         - /Manipulation1/Pick/Place Pose1
         - /Manipulation1/Pick/Place Pose2
       Splitter Ratio: 0.5247058868408203
-    Tree Height: 804
+    Tree Height: 336
   - Class: rviz/Help
     Name: Help
   - Class: rviz/Views
@@ -50,453 +49,19 @@ Visualization Manager:
       Reference Frame: <Fixed Frame>
       Value: true
     - Class: rviz/TF
-      Enabled: true
+      Enabled: false
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        arm_base_link:
-          Value: false
-        arm_elbow_F10_0_link:
-          Value: false
-        arm_elbow_F10_1_link:
-          Value: false
-        arm_elbow_F10_2_link:
-          Value: false
-        arm_elbow_F3_0_link:
-          Value: false
-        arm_elbow_flex_link:
-          Value: false
-        arm_elbow_flex_servo_link:
-          Value: false
-        arm_mount_link:
-          Value: false
-        arm_shoulder_F10_0_link:
-          Value: false
-        arm_shoulder_F10_1_link:
-          Value: false
-        arm_shoulder_F10_2_link:
-          Value: false
-        arm_shoulder_F3_0_link:
-          Value: false
-        arm_shoulder_lift_link:
-          Value: false
-        arm_shoulder_lift_servo_link:
-          Value: false
-        arm_shoulder_pan_link:
-          Value: false
-        arm_shoulder_pan_servo_link:
-          Value: false
-        arm_wrist_F3_0_link:
-          Value: false
-        arm_wrist_flex_link:
-          Value: false
-        arm_wrist_flex_servo_link:
-          Value: false
-        base_footprint:
-          Value: false
-        base_link:
-          Value: false
-        cannon_link:
-          Value: false
-        cannon_servo_link:
-          Value: false
-        cannon_shaft_link:
-          Value: false
-        cannon_tube1_hollow_link:
-          Value: false
-        cannon_tube1_link:
-          Value: false
-        cannon_tube2_hollow_link:
-          Value: false
-        cannon_tube2_link:
-          Value: false
-        cannon_tube3_hollow_link:
-          Value: false
-        cannon_tube3_link:
-          Value: false
-        cannon_tube4_hollow_link:
-          Value: false
-        cannon_tube4_link:
-          Value: false
-        cannon_tube5_hollow_link:
-          Value: false
-        cannon_tube5_link:
-          Value: false
-        cannon_tube6_hollow_link:
-          Value: false
-        cannon_tube6_link:
-          Value: false
-        caster_back_link:
-          Value: false
-        caster_front_link:
-          Value: false
-        cliff_sensor_front_link:
-          Value: false
-        cliff_sensor_left_link:
-          Value: false
-        cliff_sensor_right_link:
-          Value: false
-        gripper_active_finger_link:
-          Value: false
-        gripper_active_link:
-          Value: false
-        gripper_link:
-          Value: false
-        gripper_servo_link:
-          Value: false
-        gripper_static_finger_link:
-          Value: false
-        gripper_static_link:
-          Value: false
-        gyro_link:
-          Value: false
-        ir_arm_link:
-          Value: false
-        ir_cannon_link:
-          Value: false
-        ir_l155_link:
-          Value: false
-        ir_l180_link:
-          Value: false
-        ir_r155_link:
-          Value: false
-        ir_r180_link:
-          Value: false
-        kinect_depth_frame:
-          Value: false
-        kinect_depth_optical_frame:
-          Value: false
-        kinect_link:
-          Value: false
-        kinect_rgb_frame:
-          Value: false
-        kinect_rgb_optical_frame:
-          Value: false
-        map:
-          Value: false
-        odom:
-          Value: false
-        opencm_link:
-          Value: false
-        plate_bottom_link:
-          Value: false
-        plate_middle_link:
-          Value: false
-        plate_top_link:
-          Value: false
-        pole_bottom_0_link:
-          Value: false
-        pole_bottom_10_link:
-          Value: false
-        pole_bottom_11_link:
-          Value: false
-        pole_bottom_12_link:
-          Value: false
-        pole_bottom_13_link:
-          Value: false
-        pole_bottom_14_link:
-          Value: false
-        pole_bottom_15_link:
-          Value: false
-        pole_bottom_1_link:
-          Value: false
-        pole_bottom_2_link:
-          Value: false
-        pole_bottom_3_link:
-          Value: false
-        pole_bottom_4_link:
-          Value: false
-        pole_bottom_5_link:
-          Value: false
-        pole_kinect_0_link:
-          Value: false
-        pole_kinect_1_link:
-          Value: false
-        pole_middle_0_link:
-          Value: false
-        pole_middle_11_link:
-          Value: false
-        pole_middle_16_link:
-          Value: false
-        pole_middle_17_link:
-          Value: false
-        pole_middle_1_link:
-          Value: false
-        pole_middle_21_link:
-          Value: false
-        pole_middle_2_link:
-          Value: false
-        pole_middle_3_link:
-          Value: false
-        pole_top_0_link:
-          Value: false
-        pole_top_10_link:
-          Value: false
-        pole_top_12_link:
-          Value: false
-        pole_top_1_link:
-          Value: false
-        pole_top_20_link:
-          Value: false
-        pole_top_22_link:
-          Value: false
-        pole_top_2_link:
-          Value: false
-        pole_top_3_link:
-          Value: false
-        s_0_link:
-          Value: false
-        s_m18_link:
-          Value: false
-        s_m36_link:
-          Value: false
-        s_m54_link:
-          Value: false
-        s_m72_link:
-          Value: false
-        s_m90_link:
-          Value: false
-        s_p18_link:
-          Value: false
-        s_p36_link:
-          Value: false
-        s_p54_link:
-          Value: false
-        s_p72_link:
-          Value: false
-        s_p90_link:
-          Value: false
-        senz3d_mount_link:
-          Value: false
-        sonars_mount_link:
-          Value: false
-        table_frame:
-          Value: true
-        tray_link:
-          Value: false
-        wheel_left_link:
-          Value: false
-        wheel_right_link:
-          Value: false
-        xtion_depth_frame:
-          Value: false
-        xtion_depth_optical_frame:
-          Value: false
-        xtion_link:
-          Value: false
-        xtion_mount_link:
-          Value: false
-        xtion_rgb_frame:
-          Value: false
-        xtion_rgb_optical_frame:
-          Value: false
       Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        map:
-          odom:
-            base_footprint:
-              base_link:
-                caster_back_link:
-                  {}
-                caster_front_link:
-                  {}
-                cliff_sensor_front_link:
-                  {}
-                cliff_sensor_left_link:
-                  {}
-                cliff_sensor_right_link:
-                  {}
-                gyro_link:
-                  {}
-                ir_l155_link:
-                  {}
-                ir_l180_link:
-                  {}
-                ir_r155_link:
-                  {}
-                ir_r180_link:
-                  {}
-                kinect_rgb_frame:
-                  kinect_depth_frame:
-                    kinect_depth_optical_frame:
-                      {}
-                  kinect_link:
-                    {}
-                  kinect_rgb_optical_frame:
-                    {}
-                plate_bottom_link:
-                  {}
-                plate_middle_link:
-                  {}
-                plate_top_link:
-                  arm_base_link:
-                    arm_shoulder_pan_servo_link:
-                      arm_shoulder_pan_link:
-                        arm_shoulder_lift_servo_link:
-                          arm_shoulder_lift_link:
-                            arm_shoulder_F10_0_link:
-                              arm_shoulder_F10_1_link:
-                                arm_shoulder_F10_2_link:
-                                  arm_shoulder_F3_0_link:
-                                    arm_elbow_flex_servo_link:
-                                      arm_elbow_flex_link:
-                                        arm_elbow_F10_0_link:
-                                          arm_elbow_F10_1_link:
-                                            arm_elbow_F10_2_link:
-                                              arm_elbow_F3_0_link:
-                                                arm_wrist_flex_servo_link:
-                                                  arm_wrist_flex_link:
-                                                    arm_wrist_F3_0_link:
-                                                      gripper_servo_link:
-                                                        gripper_active_link:
-                                                          gripper_active_finger_link:
-                                                            {}
-                                                        gripper_static_link:
-                                                          gripper_static_finger_link:
-                                                            {}
-                                                    gripper_link:
-                                                      {}
-                    ir_arm_link:
-                      {}
-                    pole_bottom_10_link:
-                      {}
-                    pole_bottom_11_link:
-                      {}
-                    pole_bottom_12_link:
-                      {}
-                    pole_bottom_13_link:
-                      {}
-                    pole_bottom_14_link:
-                      {}
-                    pole_bottom_15_link:
-                      {}
-                  arm_mount_link:
-                    cannon_servo_link:
-                      cannon_shaft_link:
-                        cannon_link:
-                          cannon_tube1_hollow_link:
-                            {}
-                          cannon_tube1_link:
-                            {}
-                          cannon_tube2_hollow_link:
-                            {}
-                          cannon_tube2_link:
-                            {}
-                          cannon_tube3_hollow_link:
-                            {}
-                          cannon_tube3_link:
-                            {}
-                          cannon_tube4_hollow_link:
-                            {}
-                          cannon_tube4_link:
-                            {}
-                          cannon_tube5_hollow_link:
-                            {}
-                          cannon_tube5_link:
-                            {}
-                          cannon_tube6_hollow_link:
-                            {}
-                          cannon_tube6_link:
-                            {}
-                          ir_cannon_link:
-                            {}
-                  opencm_link:
-                    {}
-                  pole_middle_16_link:
-                    {}
-                  pole_middle_17_link:
-                    {}
-                  pole_top_10_link:
-                    {}
-                  pole_top_20_link:
-                    {}
-                  senz3d_mount_link:
-                    pole_middle_11_link:
-                      {}
-                    pole_middle_21_link:
-                      {}
-                    pole_top_12_link:
-                      {}
-                    pole_top_22_link:
-                      {}
-                    xtion_mount_link:
-                      xtion_rgb_frame:
-                        xtion_depth_frame:
-                          xtion_depth_optical_frame:
-                            {}
-                        xtion_link:
-                          {}
-                        xtion_rgb_optical_frame:
-                          {}
-                  tray_link:
-                    {}
-                pole_bottom_0_link:
-                  {}
-                pole_bottom_1_link:
-                  {}
-                pole_bottom_2_link:
-                  {}
-                pole_bottom_3_link:
-                  {}
-                pole_bottom_4_link:
-                  {}
-                pole_bottom_5_link:
-                  {}
-                pole_kinect_0_link:
-                  {}
-                pole_kinect_1_link:
-                  {}
-                pole_middle_0_link:
-                  {}
-                pole_middle_1_link:
-                  {}
-                pole_middle_2_link:
-                  {}
-                pole_middle_3_link:
-                  {}
-                pole_top_0_link:
-                  {}
-                pole_top_1_link:
-                  {}
-                pole_top_2_link:
-                  {}
-                pole_top_3_link:
-                  {}
-                sonars_mount_link:
-                  s_0_link:
-                    {}
-                  s_m18_link:
-                    {}
-                  s_m36_link:
-                    {}
-                  s_m54_link:
-                    {}
-                  s_m72_link:
-                    {}
-                  s_m90_link:
-                    {}
-                  s_p18_link:
-                    {}
-                  s_p36_link:
-                    {}
-                  s_p54_link:
-                    {}
-                  s_p72_link:
-                    {}
-                  s_p90_link:
-                    {}
-                wheel_left_link:
-                  {}
-                wheel_right_link:
-                  {}
-          table_frame:
-            {}
+        {}
       Update Interval: 0
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
@@ -1387,8 +952,16 @@ Visualization Manager:
           Marker Topic: /rail_segmentation/markers
           Name: Segmented Objects
           Namespaces:
-            segmentation_labels: true
+            segmentation_labels: false
             segmentation_objects: true
+          Queue Size: 100
+          Value: true
+        - Class: rviz/MarkerArray
+          Enabled: true
+          Marker Topic: /object_detection_server/visual_markers
+          Name: Object Names
+          Namespaces:
+            labels: true
           Queue Size: 100
           Value: true
         - Alpha: 1
@@ -1602,8 +1175,7 @@ Visualization Manager:
           Marker Topic: /object_gatherer_smach/visual_markers
           Name: Visual markers
           Namespaces:
-            gp_marker: true
-            text_marker: true
+            {}
           Queue Size: 100
           Value: true
       Enabled: true
@@ -1977,9 +1549,7 @@ Visualization Manager:
                   Marker Topic: /move_base_flex/TEBPlanner/teb_markers
                   Name: Markers
                   Namespaces:
-                    PointObstacles: true
-                    TebContainer: true
-                    ViaPoints: true
+                    {}
                   Queue Size: 100
                   Value: true
               Enabled: true
@@ -2307,26 +1877,21 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Class: rviz/XYOrbit
-      Distance: 5.760768413543701
+      Angle: 0
+      Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
-      Focal Point:
-        X: 9.327861785888672
-        Y: 1.813406229019165
-        Z: -2.384185791015625e-6
-      Focal Shape Fixed Size: true
-      Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.1197959184646606
+      Scale: 96.46293640136719
       Target Frame: <Fixed Frame>
-      Value: XYOrbit (rviz)
-      Yaw: 4.753553867340088
+      Value: TopDownOrtho (rviz)
+      X: 7.170295715332031
+      Y: 5.834496021270752
     Saved: ~
 Window Geometry:
   Displays:
@@ -2337,7 +1902,7 @@ Window Geometry:
   Help:
     collapsed: false
   Hide Left Dock: false
-  Hide Right Dock: false
+  Hide Right Dock: true
   Image:
     collapsed: false
   MotionPlanning:
@@ -2346,7 +1911,7 @@ Window Geometry:
     collapsed: false
   Onboard Camera:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000200000000000001f3000003a7fc020000000bfb000000100044006900730070006c006100790073010000003d000003a7000000c900fffffffb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e006700000001cb000001880000017d00fffffffb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e00670100000175000001d70000000000000000fb0000000800480065006c00700000000342000000bb0000006e00fffffffb0000000a0049006d006100670065000000030a000000b70000001600fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730000000339000000ab0000005c00fffffffb0000000c00430061006d006500720061020000000000000170000003b1000002c8fb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000004100fffffffc000002f1000000f30000000000fffffffaffffffff0100000002fb0000000a0049006d0061006700650000000000ffffffff0000005e00fffffffb00000020005300650067006d0065006e00740065006400200049006d00610067006500730000000000000002ed000000b600fffffffb0000001a0052006f006f006d002000530065007100750065006e006300650000000292000000a70000001600fffffffb000000220052006f006f006d0020005300650067006d0065006e0074006100740069006f006e0000000319000000cb0000001600ffffff000000010000014d000003a7fc0200000003fb0000000a00560069006500770073000000003d000003a7000000a400fffffffb0000001c004f006e0062006f006100720064002000430061006d0065007200610000000033000003850000001600fffffffc00000028000003da0000000000fffffffa000000010100000002fb0000001e00450078007400650072006e0061006c002000430061006d0065007200610000000000ffffffff000000a500fffffffb0000000c00430061006d0065007200610000000596000001ea000000000000000000000544000003a700000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000200000000000001f3000003a7fc020000000cfb000000100044006900730070006c006100790073010000003d000001d3000000c900fffffffb0000000a005600690065007700730100000216000001ce000000a400fffffffb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e00670000000277000001880000017d00fffffffb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e00670100000175000001d70000000000000000fb0000000800480065006c00700000000342000000bb0000006e00fffffffb0000000a0049006d006100670065000000030a000000b70000001600fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730000000339000000ab0000005c00fffffffb0000000c00430061006d006500720061020000000000000170000003b1000002c8fb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000001600000016fc000002f1000000f30000000000fffffffaffffffff0100000002fb0000000a0049006d0061006700650000000000ffffffff0000005e00fffffffb00000020005300650067006d0065006e00740065006400200049006d00610067006500730000000000000002ed000000b600fffffffb0000001a0052006f006f006d002000530065007100750065006e006300650000000292000000a70000001600fffffffb000000220052006f006f006d0020005300650067006d0065006e0074006100740069006f006e0000000319000000cb0000001600ffffff000000010000014d000003a7fc0200000002fb0000001c004f006e0062006f006100720064002000430061006d0065007200610000000033000003850000001600fffffffc00000028000003da0000000000fffffffa000000010100000002fb0000001e00450078007400650072006e0061006c002000430061006d0065007200610000000000ffffffff000000a500fffffffb0000000c00430061006d0065007200610000000596000001ea000000000000000000000544000003a700000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Room Segmentation:
     collapsed: false
   Room Sequence:

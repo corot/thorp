@@ -11,11 +11,13 @@ def run_sm(sm, name):
     """
     TF2()  # start listener asap to avoid delays when running
 
+    rospy.sleep(rospy.get_param('~start_delay', 0.0))
+
     wait_for_sim_time()
 
-    # Create and start the introspection server
-    if rospy.get_param('~viz_smach', True):
-        sis = smach_ros.IntrospectionServer('server_name', sm, '/SM_ROOT')
+    # Create and start the introspection server, if required (for FSM visualization or for controlling the camera)
+    if rospy.get_param('~run_introspection_server', False):
+        sis = smach_ros.IntrospectionServer(name, sm, '/SM_ROOT')
         sis.start()
 
     # MBF is the last component to start, so wait for it before running the sm
@@ -31,4 +33,4 @@ def run_sm(sm, name):
     if 'sis' in locals():
         sis.stop()
 
-    rospy.signal_shutdown('All done.')
+    rospy.signal_shutdown(name + ' ended')
