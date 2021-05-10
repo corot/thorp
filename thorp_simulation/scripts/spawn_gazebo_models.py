@@ -49,6 +49,10 @@ SURFS_MIN_DIST = 1.5
 OBJS_MIN_DIST = 0.08
 CATS_MIN_DIST = 5.0
 
+PREFERRED_LOCATIONS = [(12.7, 6.8),
+                       (8.4, 9.6),
+                       (4.6, 9.8),
+                       (5.8, 6.5)]
 
 def load_models():
     global models
@@ -130,14 +134,17 @@ def spawn_objects(surf, surf_index):
         obj_index += 1
 
 
-def spawn_surfaces():
+def spawn_surfaces(use_preferred_locs=False):
     added_poses = []  # to check that tables are at least SURFS_MIN_DIST apart from each other
     for surf in surfaces:
         surf_index = 0
         clearance = sqrt((surf['size'][0] / 2.0) ** 2 + (surf['size'][1] / 2.0) ** 2) + 0.2
         while surf_index < surf['count'] and not rospy.is_shutdown():
-            x = uniform(min_x, max_x)
-            y = uniform(min_y, max_y)
+            if use_preferred_locs:
+                x, y = choice(PREFERRED_LOCATIONS)
+            else:
+                x = uniform(min_x, max_x)
+                y = uniform(min_y, max_y)
             z = 0.0
             pose = create_3d_pose(x, y, z, 0, 0, uniform(-pi, +pi))
             # we check that the distance to all previously added surfaces is below a threshold to space the surfaces
@@ -168,13 +175,16 @@ def spawn_surfaces():
             surf_index += 1
 
 
-def spawn_cats():
+def spawn_cats(use_preferred_locs=False):
     added_poses = []  # to check that cats are at least CATS_MIN_DIST apart from each other
     for cat in cats:
         cat_index = 0
         while cat_index < cat['count'] and not rospy.is_shutdown():
-            x = uniform(min_x, max_x)
-            y = uniform(min_y, max_y)
+            if use_preferred_locs:
+                x, y = choice(PREFERRED_LOCATIONS)
+            else:
+                x = uniform(min_x, max_x)
+                y = uniform(min_y, max_y)
             z = 0.0
             pose = create_3d_pose(x, y, z, 0, 0, uniform(-pi, +pi))
             # we check that the distance to all previously added surfaces is below a threshold to space the surfaces
@@ -248,7 +258,7 @@ if __name__ == "__main__":
     spawn_model_client = rospy.ServiceProxy('/gazebo/spawn_sdf_model', SpawnModel)
     spawn_model_client.wait_for_service(30)
 
-    if len(sys.argv) > 2 and sys.argv[2] == '-d':
+    if len(sys.argv) > 2 and '-d' in sys.argv:
         # optionally delete previously spawned objects  TODO:  broken,, could call instead whenever a model fails to spawn
         delete_model_client = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
         delete_model_client.wait_for_service(30)
@@ -270,11 +280,12 @@ if __name__ == "__main__":
     robot_pose = TF2().transform_pose(None, 'base_footprint', 'map')
     robot_radius = rospy.get_param('move_base_flex/local_costmap/robot_radius')
 
+    use_preferred_locs = len(sys.argv) > 2 and '-l' in sys.argv
     if sys.argv[1] == 'objects':
-        spawn_surfaces()
+        spawn_surfaces(use_preferred_locs)
         print("Spawned objects:\n  " + '\n  '.join('{}: {}'.format(k, v) for k, v in spawned.items()))
     elif sys.argv[1] == 'cats':
+        spawn_cats(use_preferred_locs)
         spawn_rockets()
-        spawn_cats()
 
     sys.exit(0)

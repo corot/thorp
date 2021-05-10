@@ -11,8 +11,8 @@ controllers:
   - {name: TEBPlanner,      type: teb_local_planner/TebLocalPlannerROS}
   - {name: TROPlanner,      type: base_local_planner/TrajectoryPlannerROS}
   - {name: PoseFollower,    type: pose_follower/PoseFollower}
-controller_frequency:  8.0      # Hz
-controller_patience:   0.5      # seconds; abort if the local planner does not succeed within that time
+controller_frequency: 10.0      # Hz
+controller_patience:   0.2      # seconds; abort if the local planner does not succeed within that time
 controller_max_retries:  0      # limit consecutive failed calls to local planner
 controller_lock_costmap: true   # lock costmap as in move_base, or let planner to do itself
 

@@ -18,7 +18,7 @@ Relay goals provided through RViz on 2D Nav Goal tool to move_base_flex's move_b
 
 def nav_goal_cb(msg):
     rospy.loginfo("Calling MBF's move_base action with target pose %s", pose2d2str(msg))
-    goal = MoveBaseGoal(target_pose=msg)
+    goal = MoveBaseGoal(target_pose=msg, controller='TEBPlanner')
     move_base_ac.send_goal(goal, done_cb=nav_done_cb)
 
 
@@ -30,7 +30,7 @@ def nav_done_cb(status, result):
 
 
 if __name__ == '__main__':
-    rospy.init_node("mbf_simple_goal_relay")
+    rospy.init_node("simple_goal_relay")
 
     move_base_ac = actionlib.SimpleActionClient("/move_base_flex/move_base", MoveBaseAction)
     move_base_ac.wait_for_server(rospy.Duration(30))

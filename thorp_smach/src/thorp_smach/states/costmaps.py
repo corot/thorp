@@ -1,4 +1,8 @@
+import rospy
 import smach
+import smach_ros
+
+import mbf_msgs.srv as mbf_srvs
 
 from thorp_toolkit.semantic_layer import SemanticLayer
 
@@ -70,3 +74,28 @@ class RestoreTableWay(smach.State):
         obj_name = ud['table'].name + ' approach'
         SemanticLayer().remove_object(obj_name, 'free_space', 'local')
         return 'succeeded'
+
+
+class CheckPoseCost(smach_ros.ServiceState):
+    """
+    Call move_base_flex's check_pose_cost service to check the occupation of a given pose in one or both costmaps
+    - 'succeeded' if the service succeeds and the pose is on free or inscribed space
+    - 'aborted' otherwise
+    """
+
+    def __init__(self):
+        super(CheckPoseCost, self).__init__('move_base_flex/check_pose_cost',
+                                            mbf_srvs.CheckPose,
+                                            request_slots=['pose', 'costmap'],
+                                            response_slots=['state', 'cost'],
+                                            response_cb=self.response_cb)
+        self.response = None
+
+    def response_cb(self, ud, response):
+        self.response = response
+
+    def execute(self, ud):
+        outcome = super(CheckPoseCost, self).execute(ud)
+        if outcome == 'succeeded':
+            return 'succeeded' if self.response.state < mbf_srvs.CheckPoseResponse.LETHAL else 'aborted'
+        return outcome

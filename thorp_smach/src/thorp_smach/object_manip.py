@@ -10,7 +10,7 @@ import arbotix_msgs.srv as arbotix_srvs
 
 from states.common import ExecuteUserCommand
 from states.perception import ObjectDetectionSM
-from states.manipulation import FoldArm, PickupObject, PlaceObject
+from states.manipulation import FoldArm, PickupObject, PlaceObject, ClearPlanningScene
 
 
 rospy.init_node('object_manip_smach')
@@ -91,9 +91,13 @@ with sm:
     smach.StateMachine.add('RELAX_ARM_AND_STOP',
                            smach_ros.ServiceState('servos/relax_all',
                                                   arbotix_srvs.Relax),
-                           transitions={'succeeded': 'stop',
+                           transitions={'succeeded': 'RELAX_ARM_AND_STOP',
                                         'preempted': 'stop',
                                         'aborted': 'error'})
+
+    smach.StateMachine.add('CLEAR_PLANNING_SCENE',
+                           ClearPlanningScene(),
+                           transitions={'succeeded': 'stop'})
 
     # Construct action server wrapper for top-level sm to control it with keyboard commands
     asw = smach_ros.ActionServerWrapper('user_commands_action_server',

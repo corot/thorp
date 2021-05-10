@@ -75,9 +75,12 @@ def object_gatherer_sm(target_types):
                                 output_keys=['table', 'table_pose'])
     with confirm_sm:
         smach.Sequence.add('GET_ROBOT_POSE', GetRobotPose())
-        smach.Sequence.add('TURN_TO_TABLE', LookToPose(),
+        smach.Sequence.add('TURN_TO_TABLE_1', LookToPose(),
                            remapping={'target_pose': 'table_pose'})
-        smach.Sequence.add('CONFIRM_TABLE', MonitorTables(2.0))  # 2s timeout
+        smach.Sequence.add('CONFIRM_TABLE_1', MonitorTables(2.0))  # 2s timeout
+        smach.Sequence.add('TURN_TO_TABLE_2', LookToPose(),
+                           remapping={'target_pose': 'table_pose'})
+        smach.Sequence.add('CONFIRM_TABLE_2', MonitorTables(2.0))  # 2s timeout
         smach.Sequence.add('MARK_VISITED', TableMarkVisited())
         smach.Sequence.add('VALIDATE_SIZE', CheckTableSize())
 

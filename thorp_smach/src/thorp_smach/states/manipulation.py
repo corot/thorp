@@ -241,6 +241,21 @@ class RemoveObject(smach.State):
         return 'succeeded'
 
 
+class ClearPlanningScene(smach.State):
+    """
+    Completely Clear the planning scene
+    """
+
+    def __init__(self):
+        smach.State.__init__(self,
+                             outcomes=['succeeded'])
+
+    def execute(self, ud):
+        rospy.loginfo("Clearing planning scene")
+        PlanningScene().remove_obj()
+        return 'succeeded'
+
+
 class DisplaceObject(smach.State):
     """
     Displace a collision object in the planning scene
