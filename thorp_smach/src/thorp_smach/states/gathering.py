@@ -14,7 +14,7 @@ from thorp_msgs.msg import ObjectToPick, PickingPlan, PickLocation
 from common import SetNamedConfig, DismissNamedConfig
 from costmaps import TableAsObstacle
 from perception import MonitorTables, ObjectDetection, ObjectsDetected
-from navigation import GetRobotPose, GoToPose, AlignToTable, DetachFromTable
+from navigation import GetRobotPose, AreSamePose, GoToPose, AlignToTable, DetachFromTable
 from manipulation import ClearPlanningScene
 from pick_objects import PickReachableObjs
 from thorp_smach.containers.do_on_exit import DoOnExit as DoOnExitContainer
@@ -166,6 +166,7 @@ class GroupObjects(smach.State):
                             dup_objs += 1
         for ploc, obj in objs_to_remove:
             ploc.objects.remove(obj)  # TODO make a test for this and move the remove to within the loop (much simpler)
+        # TODO: why I sort again? I may break the optimization done above!!!
         sorted_plocs = sorted(sorted_plocs, key=lambda pl: len(pl.objects))  # sort again after removing duplicates
         self.viz_pick_locs(sorted_plocs)
         ud['picking_locs'] = sorted_plocs
@@ -316,28 +317,32 @@ def GatherObjects(target_types):
                                transitions={'succeeded': 'MAKE_PICKING_PLAN'})
         smach.StateMachine.add('MAKE_PICKING_PLAN', MakePickingPlan())
         DoOnExitContainer.add_finally('CLEAR_P_SCENE', ClearPlanningScene())
-        DoOnExitContainer.add_finally('DETACH_FROM_TABLE', DetachFromTable(),
-                                      remapping={'pose': 'closest_approach_pose'})
 
     # go to a picking location and pick all objects reachable from there
-    pick_objects_sm = smach.Sequence(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'],
-                                     connector_outcome='succeeded',
-                                     input_keys=['table', 'picking_loc', 'object_types'])
+    pick_objects_sm = DoOnExitContainer(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'],
+                                        input_keys=['table', 'picking_loc', 'object_types'])
 
     with pick_objects_sm:
-        smach.Sequence.add('PICK_LOC_FIELDS', PickLocFields())
-        smach.Sequence.add('GOTO_APPROACH', GoToPose(),  # use default tolerances; no precision needed here
-                           transitions={'aborted': 'aborted',
-                                        'preempted': 'preempted'},
-                           remapping={'target_pose': 'approach_pose'})
-        smach.Sequence.add('ALIGN_TO_TABLE', AlignToTable(),
-                           transitions={'aborted': 'aborted',
-                                        'preempted': 'preempted'},
-                           remapping={'pose': 'picking_pose'})
-        smach.Sequence.add('PICK_OBJECTS', PickReachableObjs())
-        smach.Sequence.add('CLEAR_P_SCENE', ClearPlanningScene())
-        smach.Sequence.add('DETACH_FROM_TABLE', DetachFromTable(),
-                           remapping={'pose': 'detach_pose'})
+        smach.StateMachine.add('PICK_LOC_FIELDS', PickLocFields(),
+                               transitions={'succeeded': 'GET_ROBOT_POSE'})
+        smach.StateMachine.add('GET_ROBOT_POSE', GetRobotPose(),
+                               transitions={'succeeded': 'AT_PICKING_POSE?'})
+        smach.StateMachine.add('AT_PICKING_POSE?', AreSamePose(),
+                               transitions={'true': 'PICK_OBJECTS',
+                                            'false': 'GOTO_APPROACH'},
+                               remapping={'pose1': 'robot_pose',
+                                          'pose2': 'picking_pose'})
+        smach.StateMachine.add('GOTO_APPROACH', GoToPose(),  # use default tolerances; no precision needed here
+                               transitions={'succeeded': 'ALIGN_TO_TABLE'},
+                               remapping={'target_pose': 'approach_pose'})
+        smach.StateMachine.add('ALIGN_TO_TABLE', AlignToTable(),
+                               transitions={'succeeded': 'PICK_OBJECTS'},
+                               remapping={'pose': 'picking_pose'})
+        smach.StateMachine.add('PICK_OBJECTS', PickReachableObjs(),
+                               transitions={'succeeded': 'DETACH_FROM_TABLE'})
+        smach.StateMachine.add('DETACH_FROM_TABLE', DetachFromTable(),
+                               remapping={'pose': 'detach_pose'})
+        DoOnExitContainer.add_finally('CLEAR_P_SCENE', ClearPlanningScene())
 
     # iterate over all picking locations in the plan
     pick_objects_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted', 'tray_full'],

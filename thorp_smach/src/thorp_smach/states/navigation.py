@@ -8,7 +8,7 @@ import mbf_msgs.msg as mbf_msgs
 import thorp_msgs.msg as thorp_msgs
 import thorp_msgs.srv as thorp_srvs
 
-from thorp_toolkit.geometry import TF2, pose2d2str, heading, quaternion_msg_from_yaw
+from thorp_toolkit.geometry import TF2, pose2d2str, heading, quaternion_msg_from_yaw, same_pose
 from thorp_toolkit.reconfigure import Reconfigure
 from thorp_toolkit.progress_tracker import ProgressTracker
 
@@ -36,6 +36,19 @@ class GetRobotPose(smach.State):
         except rospy.ROSException as err:
             rospy.logerr("Get robot pose failed: %s", str(err))
             return 'aborted'
+
+
+class AreSamePose(smach.State):
+    """
+    Check whether two poses are the same (within tolerance thresholds)
+    """
+
+    def __init__(self):
+        super(AreSamePose, self).__init__(outcomes=['true', 'false'],
+                                          input_keys=['pose1', 'pose2'])
+
+    def execute(self, ud):
+        return 'true' if same_pose(ud['pose1'], ud['pose2'], xy_tolerance=0.1, yaw_tolerance=0.1) else 'false'
 
 
 class PrependCurrentPose(smach.Sequence):

@@ -356,6 +356,18 @@ def apply_transform(pose, tf):
     return p
 
 
+def same_pose(pose1, pose2, xy_tolerance=0.0001, yaw_tolerance=0.0001):
+    """
+    Compares two poses to be (nearly) the same within tolerance margins, ignoring their frame.
+    @param pose1 first pose
+    @param pose2 second pose
+    @param xy_tolerance linear distance tolerance
+    @param yaw_tolerance angular distance tolerance
+    @return true if both poses are the same within tolerance margins
+    """
+    return distance_3d(pose1, pose2) <= xy_tolerance and abs(angles_diff(yaw(pose1), yaw(pose2))) <= yaw_tolerance
+
+
 class TF2:
     __metaclass__ = Singleton
 
