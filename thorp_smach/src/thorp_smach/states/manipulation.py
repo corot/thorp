@@ -207,7 +207,7 @@ class GetPoseInTray(smach.State):
 
         # add a collision object for the tray surface, right above the mesh
         PlanningScene().add_tray(create_3d_pose(0, 0, 0.0015, 0, 0, 0, self.tray_link),
-                                 (cfg.TRAY_SIDE_X, cfg.TRAY_SIDE_Y, 0.002))
+                                 (cfg.TRAY_SIDE_X + 0.01, cfg.TRAY_SIDE_Y + 0.01, 0.002))
         ud['pose_in_tray'] = self._next_pose()
         return 'succeeded'
 

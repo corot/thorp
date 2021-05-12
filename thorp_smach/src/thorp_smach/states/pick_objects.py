@@ -6,7 +6,7 @@ import smach
 from thorp_toolkit.geometry import TF2, distance_2d
 
 from perception import ObjectDetection
-from manipulation import ClearGripper, FoldArm, PickupObject, PlaceInTray
+from manipulation import ClearGripper, ClearPlanningScene, FoldArm, PickupObject, PlaceInTray
 
 from thorp_smach import config as cfg
 
@@ -131,4 +131,5 @@ class PickReachableObjs(smach.StateMachine):
                                                 'preempted': 'preempted'})
             smach.StateMachine.add('SELECT_TARGET', TargetSelection(),  # just used to check if there are more objects
                                    transitions={'have_target': 'PICKUP_OBJECTS',
-                                                'no_targets': 'succeeded'})
+                                                'no_targets': 'CLEAR_P_SCENE'})
+            smach.StateMachine.add('CLEAR_P_SCENE', ClearPlanningScene())

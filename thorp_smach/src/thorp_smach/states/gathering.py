@@ -319,8 +319,8 @@ def GatherObjects(target_types):
         DoOnExitContainer.add_finally('CLEAR_P_SCENE', ClearPlanningScene())
 
     # go to a picking location and pick all objects reachable from there
-    pick_objects_sm = DoOnExitContainer(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'],
-                                        input_keys=['table', 'picking_loc', 'object_types'])
+    pick_objects_sm = smach.StateMachine(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'],
+                                         input_keys=['table', 'picking_loc', 'object_types'])
 
     with pick_objects_sm:
         smach.StateMachine.add('PICK_LOC_FIELDS', PickLocFields(),
@@ -342,7 +342,6 @@ def GatherObjects(target_types):
                                transitions={'succeeded': 'DETACH_FROM_TABLE'})
         smach.StateMachine.add('DETACH_FROM_TABLE', DetachFromTable(),
                                remapping={'pose': 'detach_pose'})
-        DoOnExitContainer.add_finally('CLEAR_P_SCENE', ClearPlanningScene())
 
     # iterate over all picking locations in the plan
     pick_objects_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted', 'tray_full'],
