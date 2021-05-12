@@ -49,7 +49,7 @@ SURFS_MIN_DIST = 1.5
 OBJS_MIN_DIST = 0.08
 CATS_MIN_DIST = 5.0
 
-PREFERRED_LOCATIONS = [(12.7, 6.8),
+PREFERRED_LOCATIONS = [(12.5, 7.5),
                        (8.4, 9.6),
                        (4.6, 9.8),
                        (5.8, 6.5)]

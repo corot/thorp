@@ -2,6 +2,8 @@
 
 # Generate meshes, pointclouds and gazebo models for all de objects in the list
 # WARN: run the script from its containing folder, so it can find gen_meshes.scad
+import sys
+import shutil
 
 import rospkg
 import subprocess
@@ -11,6 +13,8 @@ import os.path
 def template(template_file, variables):
     return open(template_file, 'r').read().format(**variables)
 
+
+overwrite_models = len(sys.argv) > 1 and '-om' in sys.argv[1]
 
 try:
     # use rospkg to get the absolute path of meshes on thorp_perception
@@ -69,6 +73,8 @@ try:
 
         # Create a gazebo model using template descriptors and linking the created meshes
         model_path = models_path + object[0]
+        if overwrite_models:
+            shutil.rmtree(model_path)
         if not os.path.exists(model_path):
             variables = {'mass': object[7],
                          'hz': object[6] / 2.0,  # half height
