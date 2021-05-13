@@ -36,7 +36,6 @@ public:
     pnh.param("vertical_backlash_delta", vertical_backlash_delta, 0.0);
     pnh.param("fall_short_distance_delta", fall_short_distance_delta, 0.0);
     pnh.param("gripper_asymmetry_yaw_delta", gripper_asymmetry_yaw_delta, 0.0);
-    pnh.param("gripper_tightening_closing", gripper_tightening_closing, 0.001);
 
     nh.param("gripper_controller/max_opening", gripper_open, 0.0454321);
 
@@ -80,7 +79,6 @@ protected:
   double      vertical_backlash_scale;
   double      vertical_backlash_delta;
   double      gripper_asymmetry_yaw_delta;
-  double      gripper_tightening_closing;
   double      fall_short_distance_delta;
 
   // Arm's physical reach limitations

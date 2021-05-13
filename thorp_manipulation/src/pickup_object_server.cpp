@@ -55,7 +55,7 @@ void PickupObjectServer::executeCB(const thorp_msgs::PickupObjectGoal::ConstPtr&
   ROS_INFO("[pickup object] Execute goal: pick object '%s' from support surface '%s' exerting up to %.2f N",
            goal->object_name.c_str(), goal->support_surf.c_str(), goal->max_effort);
 
-  result.error.code = pickup(goal->object_name, goal->support_surf, goal->max_effort);
+  result.error.code = pickup(goal->object_name, goal->support_surf, goal->max_effort, goal->tightening);
   result.error.text = mec2str(result.error.code);
   if (result.error.code == moveit_msgs::MoveItErrorCodes::SUCCESS)
   {
@@ -80,7 +80,8 @@ void PickupObjectServer::preemptCB()
   arm().stop();
 }
 
-int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::string& surface, float max_effort)
+int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::string& surface,
+                                   const float max_effort, const float tightening)
 {
   // Look for obj_name in the planning scene's list of collision objects
   geometry_msgs::PoseStamped obj_pose; geometry_msgs::Vector3 obj_size;
@@ -96,7 +97,7 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
 
   // Prepare grasps
   std::vector<moveit_msgs::Grasp> grasps;
-  result = makeGrasps(obj_pose, obj_size, obj_name, surface, max_effort, grasps);
+  result = makeGrasps(obj_pose, obj_size, obj_name, surface, max_effort, tightening, grasps);
   if (result < 0)
   {
     // Error occurred while making grasps...
@@ -172,7 +173,8 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
 
 int32_t PickupObjectServer::makeGrasps(const geometry_msgs::PoseStamped& obj_pose,
                                        const geometry_msgs::Vector3& obj_size,
-                                       const std::string& obj_name, const std::string& surface, float max_effort,
+                                       const std::string& obj_name, const std::string& surface,
+                                       const float max_effort, const float tightening,
                                        std::vector<moveit_msgs::Grasp>& grasps)
 {
   // Try up to PICK_ATTEMPTS grasps with slightly different poses
@@ -202,7 +204,7 @@ int32_t PickupObjectServer::makeGrasps(const geometry_msgs::PoseStamped& obj_pos
     // position and the dimension more aligned with the arm yaw, minus a "tightening" factor, as the closed position
     g.grasp_posture.joint_names.push_back("gripper_joint");
     g.grasp_posture.points.resize(1);
-    g.grasp_posture.points[0].positions.push_back(gripperClosing(g.grasp_pose, obj_pose, obj_size));
+    g.grasp_posture.points[0].positions.push_back(gripperClosing(g.grasp_pose, obj_pose, obj_size, tightening));
     g.grasp_posture.points[0].effort.push_back(max_effort);
 
     g.allowed_touch_objects.push_back(obj_name);
@@ -220,7 +222,8 @@ int32_t PickupObjectServer::makeGrasps(const geometry_msgs::PoseStamped& obj_pos
 
 double PickupObjectServer::gripperClosing(const geometry_msgs::PoseStamped& grasp_pose,
                                           const geometry_msgs::PoseStamped& obj_pose,
-                                          const geometry_msgs::Vector3& obj_size)
+                                          const geometry_msgs::Vector3& obj_size,
+                                          const float gripper_tightening_closing)
 {
   double heading = ttk::heading(grasp_pose);  // obj direction from the arm (grasp pose must be in arm reference frame)
   double obj_yaw = ttk::yaw(obj_pose);        // obj orientation

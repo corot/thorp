@@ -11,7 +11,7 @@
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "thorp_manipulation_server");
+  ros::init(argc, argv, "manipulation_server");
 
   // Create pickup, place and move_to_target action servers
   thorp_manipulation::HouseKeepingServer hk_server;

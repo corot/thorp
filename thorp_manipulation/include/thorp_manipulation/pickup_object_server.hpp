@@ -30,15 +30,18 @@ public:
   void preemptCB();
 
 private:
-  int32_t pickup(const std::string& obj_name, const std::string& surface, float max_effort = 0.0);
+  int32_t pickup(const std::string& obj_name, const std::string& surface,
+                 const float max_effort = 0.0, const float tightening = 0.001);
 
   int32_t makeGrasps(const geometry_msgs::PoseStamped& obj_pose, const geometry_msgs::Vector3& obj_size,
-                     const std::string& target_name, const std::string& surface, float max_effort,
+                     const std::string& target_name, const std::string& surface,
+                     const float max_effort, const float tightening,
                      std::vector<moveit_msgs::Grasp>& grasps);
 
   double gripperClosing(const geometry_msgs::PoseStamped& grasp_pose,
                         const geometry_msgs::PoseStamped& obj_pose,
-                        const geometry_msgs::Vector3& obj_size);
+                        const geometry_msgs::Vector3& obj_size,
+                        const float gripper_tightening_closing);
 };
 
 };

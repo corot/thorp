@@ -1,4 +1,5 @@
-from random import randrange
+from math import ceil
+from random import randrange, uniform
 
 import rospy
 import smach
@@ -20,9 +21,10 @@ class TargetSelection(smach.State):
         smach.State.__init__(self,
                              outcomes=['have_target', 'no_targets'],
                              input_keys=['objects', 'objs_to_skip'],
-                             output_keys=['target'])
+                             output_keys=['target', 'tightening'])
         manip_frame = rospy.get_param('~rec_objects_frame', 'arm_base_link')
         self.arm_on_bfp_rf = TF2().transform_pose(None, manip_frame, 'base_footprint')
+        self.retries = 0
 
     def execute(self, ud):
         targets = []
@@ -33,15 +35,23 @@ class TargetSelection(smach.State):
                 targets.append((obj.id, dist))
         targets = sorted(targets, key=lambda t: t[1])  # sort by increasing distance
         if len(targets) > ud['objs_to_skip']:
+            self.retries = 0
             target, dist = targets[ud['objs_to_skip']]
             rospy.loginfo("Next target will be '%s', located at %.2fm (%d skipped)", target, dist, ud['objs_to_skip'])
             ud['target'] = target
+            ud['tightening'] = cfg.GRIPPER_TIGHTENING
             return 'have_target'
         elif targets:
-            # retry failed objects at random order
+            # retry failed objects at random order; add a random extra tightening, the bigger the more we retry
+            self.retries += 1
             target, dist = targets[randrange(0, min(len(targets), ud['objs_to_skip']))]
             rospy.loginfo("Retrying target '%s', located at %.2fm (%d to retry)", target, dist, ud['objs_to_skip'])
             ud['target'] = target
+            # ud['tightening'] = cfg.GRIPPER_TIGHTENING + uniform(-cfg.GRIPPER_TIGHTENING, cfg.GRIPPER_TIGHTENING * self.retries)
+            # tightening_factor = ceil(self.retries / float(ud['objs_to_skip']))
+            extra_tightening = uniform(-cfg.GRIPPER_TIGHTENING, cfg.GRIPPER_TIGHTENING * self.retries)
+            print self.retries, len(targets), ud['objs_to_skip'], extra_tightening
+            ud['tightening'] = cfg.GRIPPER_TIGHTENING + extra_tightening
             return 'have_target'
         rospy.loginfo("No targets within the %.2fm arm reach (%d skipped)", cfg.MAX_ARM_REACH, ud['objs_to_skip'])
         return 'no_targets'
@@ -49,10 +59,11 @@ class TargetSelection(smach.State):
 
 class SkipOneObject(smach.State):
     """
-    Select the closest object within arm reach
+    Increase by one the number of objects to skip (normally after a failed picking)
+    Return 'succeeded' if we can keep trying, or 'max_failures' if we exhausted the allowed picking failures
     """
 
-    def __init__(self, max_failures=3):
+    def __init__(self, max_failures=cfg.PICKING_MAX_FAILURES):
         smach.State.__init__(self,
                              outcomes=['succeeded', 'max_failures'],
                              input_keys=['objs_to_skip'],

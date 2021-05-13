@@ -82,14 +82,14 @@ class PickupObject(smach.Iterator):
     """
     def __init__(self, attempts=2):
         super(PickupObject, self).__init__(outcomes=['succeeded', 'preempted', 'aborted'],
-                                           input_keys=['object_name', 'support_surf', 'max_effort'],
+                                           input_keys=['object_name', 'support_surf', 'max_effort', 'tightening'],
                                            output_keys=[],
                                            it=lambda: range(0, attempts),
                                            it_label='attempt',
                                            exhausted_outcome='aborted')
         with self:
             sm = smach.StateMachine(outcomes=['succeeded', 'preempted', 'aborted', 'continue'],
-                                    input_keys=['object_name', 'support_surf', 'max_effort'],
+                                    input_keys=['object_name', 'support_surf', 'max_effort', 'tightening'],
                                     output_keys=[])
             with sm:
                 smach.StateMachine.add('GRIPPER_BUSY?', GripperBusy(),
@@ -103,7 +103,8 @@ class PickupObject(smach.Iterator):
                                                                    thorp_msgs.PickupObjectAction,
                                                                    goal_slots=['object_name',
                                                                                'support_surf',
-                                                                               'max_effort'],
+                                                                               'max_effort',
+                                                                               'tightening'],
                                                                    result_slots=['error']),
                                        transitions={'succeeded': 'OBJECT_GRASPED?',
                                                     'preempted': 'preempted',
