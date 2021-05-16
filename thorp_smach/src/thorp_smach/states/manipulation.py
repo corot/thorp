@@ -10,6 +10,8 @@ from thorp_toolkit.planning_scene import PlanningScene
 from thorp_toolkit.geometry import create_2d_pose, create_3d_pose, pose2d2str
 from thorp_toolkit.visualization import Visualization
 
+from geometry import TranslatePose
+from userdata import UDExtractAttr
 from thorp_smach import config as cfg
 
 
@@ -82,16 +84,18 @@ class PickupObject(smach.Iterator):
     """
     def __init__(self, attempts=2):
         super(PickupObject, self).__init__(outcomes=['succeeded', 'preempted', 'aborted'],
-                                           input_keys=['object_name', 'support_surf', 'max_effort', 'tightening'],
+                                           input_keys=['object', 'support_surf', 'max_effort', 'tightening'],
                                            output_keys=[],
                                            it=lambda: range(0, attempts),
                                            it_label='attempt',
                                            exhausted_outcome='aborted')
         with self:
             sm = smach.StateMachine(outcomes=['succeeded', 'preempted', 'aborted', 'continue'],
-                                    input_keys=['object_name', 'support_surf', 'max_effort', 'tightening'],
+                                    input_keys=['object', 'support_surf', 'max_effort', 'tightening'],
                                     output_keys=[])
             with sm:
+                smach.StateMachine.add('GET_OBJ_NAME', UDExtractAttr('id', 'object', 'object_name'),
+                                       transitions={'succeeded': 'GRIPPER_BUSY?'})
                 smach.StateMachine.add('GRIPPER_BUSY?', GripperBusy(),
                                        transitions={'true': 'CLEAR_GRIPPER',
                                                     'false': 'PICKUP_OBJECT',
@@ -129,16 +133,18 @@ class PlaceObject(smach.Iterator):
     """  Place a given object, optionally retrying up to a given number of times  """
     def __init__(self, attempts=2):
         super(PlaceObject, self).__init__(outcomes=['succeeded', 'preempted', 'aborted'],
-                                          input_keys=['object_name', 'support_surf', 'place_pose'],
+                                          input_keys=['object', 'support_surf', 'place_pose'],
                                           output_keys=[],
                                           it=lambda: range(0, attempts),
                                           it_label='attempt',
                                           exhausted_outcome='aborted')
         with self:
             sm = smach.StateMachine(outcomes=['succeeded', 'preempted', 'aborted', 'continue'],
-                                    input_keys=['object_name', 'support_surf', 'place_pose'],
+                                    input_keys=['object', 'support_surf', 'place_pose'],
                                     output_keys=[])
             with sm:
+                smach.StateMachine.add('GET_OBJ_NAME', UDExtractAttr('id', 'object', 'object_name'),
+                                       transitions={'succeeded': 'PLACE_OBJECT'})
                 smach.StateMachine.add('PLACE_OBJECT',
                                        smach_ros.SimpleActionState('place_object',
                                                                    thorp_msgs.PlaceObjectAction,
@@ -165,12 +171,14 @@ class PlaceInTray(smach.Sequence):
     def __init__(self):
         super(PlaceInTray, self).__init__(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'],
                                           connector_outcome='succeeded',
-                                          input_keys=['object_name'])
+                                          input_keys=['object'])
         self.userdata.support_surf = 'tray'
         with self:
             smach.Sequence.add('POSE_IN_TRAY', GetPoseInTray())
             smach.Sequence.add('PLACE_ON_TRAY', PlaceObject(),
                                remapping={'place_pose': 'pose_in_tray'})
+            smach.Sequence.add('AT_TRAY_LEVEL', TranslatePose(-cfg.PLACING_HEIGHT_ON_TRAY, 'z'),
+                               remapping={'pose': 'pose_in_tray'})  # undo added clearance to replicate gravity
             smach.Sequence.add('READJUST_POSE', DisplaceObject(),
                                remapping={'new_pose': 'pose_in_tray'})
 
@@ -183,6 +191,7 @@ class GetPoseInTray(smach.State):
     def __init__(self):
         smach.State.__init__(self,
                              outcomes=['succeeded', 'tray_full'],
+                             input_keys=['object'],
                              output_keys=['pose_in_tray'])
         self.tray_link = rospy.get_param('tray_link', 'tray_link')
         self.tray_full = False
@@ -196,7 +205,7 @@ class GetPoseInTray(smach.State):
         # visualize place poses (for debugging)
         points = []
         for _ in range(self.slots_x * self.slots_y):
-            points.append(self._next_pose().pose.position)
+            points.append(self._next_pose(0.01).pose.position)
         Visualization().add_markers(Visualization().create_point_list(create_2d_pose(0, 0, 0, self.tray_link),
                                                                       points, [1, 0, 0, 1]))  # solid red points
         Visualization().publish_markers()
@@ -209,15 +218,15 @@ class GetPoseInTray(smach.State):
         # add a collision object for the tray surface, right above the mesh
         PlanningScene().add_tray(create_3d_pose(0, 0, 0.0015, 0, 0, 0, self.tray_link),
                                  (cfg.TRAY_SIDE_X + 0.01, cfg.TRAY_SIDE_Y + 0.01, 0.002))
-        ud['pose_in_tray'] = self._next_pose()
+        place_pose_z = ud['object'].primitives[0].dimensions[2] / 2.0
+        place_pose_z += cfg.PLACING_HEIGHT_ON_TRAY  # place objects 3cm above the tray, so they fall into position
+        ud['pose_in_tray'] = self._next_pose(place_pose_z)
         return 'succeeded'
 
-    def _next_pose(self):
+    def _next_pose(self, z):
         # Get next empty location coordinates
         x = (self.next_x - self.slots_x/2) * cfg.TRAY_SLOT + self.offset_x
         y = (self.next_y - self.slots_y/2) * cfg.TRAY_SLOT + self.offset_y
-        z = 0.0125  # TODO: should be obj.size.z/2; replace once I have proper object recognition
-        z += cfg.PLACING_HEIGHT_ON_TRAY  # place objects 3cm above the tray, so they fall into position
         self.next_x = (self.next_x + 1) % self.slots_x
         if self.next_x == 0:
             self.next_y = (self.next_y + 1) % self.slots_y
@@ -265,11 +274,10 @@ class DisplaceObject(smach.State):
     def __init__(self):
         smach.State.__init__(self,
                              outcomes=['succeeded'],
-                             input_keys=['object_name', 'new_pose'])
+                             input_keys=['object', 'new_pose'])
 
     def execute(self, ud):
         new_pose = ud['new_pose']
-        new_pose.pose.position.z -= cfg.PLACING_HEIGHT_ON_TRAY  # undo added clearance to replicate gravity
-        rospy.loginfo("Object '%s' pose in tray readjusted to %s", ud['object_name'], pose2d2str(new_pose))
-        PlanningScene().displace_obj(ud['object_name'], ud['new_pose'])
+        rospy.loginfo("Object '%s' pose in tray readjusted to %s", ud['object'].id, pose2d2str(new_pose))
+        PlanningScene().displace_obj(ud['object'].id, ud['new_pose'])
         return 'succeeded'

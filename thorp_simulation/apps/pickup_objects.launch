@@ -19,6 +19,9 @@ Pick all objects at hand in the table in front.
     <arg name="localization"   value="gazebo"/>
   </include>
 
+  <!-- Spawn a table with some tabletop objects -->
+  <node pkg="thorp_simulation" type="spawn_gazebo_models.py" name="objects_spawner" output="screen" args="playground_objs"/>
+
   <!--  ********* Perception and manipulation *********  -->
   <include file="$(find thorp_perception)/launch/perception.launch">
     <arg name="pipeline" value="RAIL"/>

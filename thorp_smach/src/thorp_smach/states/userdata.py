@@ -80,7 +80,7 @@ class UDInsertInList(smach.State):
 
 class UDApplyFn(smach.State):
     """
-    Set a ud key to None, if it exists. Returns
+    Apply a function to an ud key, if it exists. Returns
     - 'succeeded' if the key exists
     - 'aborted' otherwise
     """
@@ -100,25 +100,29 @@ class UDApplyFn(smach.State):
         return 'aborted'
 
 
-
-class UDApplyLambda____CHOOSE_ONE(smach.State):
-    """  TODO
-    Set a ud key to None, if it exists. Returns
-    - 'succeeded' if the key exists
+class UDExtractAttr(smach.State):
+    """
+    Extract an attribute from an input ud key into an output key, if the former exists. Returns
+    - 'succeeded' if the input key exists and contains the attribute
     - 'aborted' otherwise
     """
 
-    def __init__(self, fn):
-        super(UDApplyLambda____CHOOSE_ONE, self).__init__(outcomes=['succeeded', 'aborted'],
-                                            input_keys=['key'],
-                                            output_keys=['key'])
-        self.fn = fn
+    def __init__(self, attribute, in_key, out_key):
+        super(UDExtractAttr, self).__init__(outcomes=['succeeded', 'aborted'],
+                                            input_keys=[in_key],
+                                            output_keys=[out_key])
+        self.attribute = attribute
+        self.in_key = in_key
+        self.out_key = out_key
 
     def execute(self, ud):
-        if 'key' in ud:
-            ud['key'] = self.fn(ud['key'])
-            return 'succeeded'
-        rospy.logerr("Trying to run function on unavailable key '%s'", 'key')
+        if self.in_key in ud:
+            if hasattr(ud[self.in_key], self.attribute):
+                ud[self.out_key] = getattr(ud[self.in_key], self.attribute)
+                return 'succeeded'
+            rospy.logerr("Attribute '%s' not found on input key '%s'", self.attribute, self.in_key)
+        else:
+            rospy.logerr("Trying to get attribute '%s' from unavailable key '%s'", self.attribute, self.in_key)
         return 'aborted'
 
 

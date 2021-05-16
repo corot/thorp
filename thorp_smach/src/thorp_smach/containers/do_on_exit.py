@@ -43,7 +43,7 @@ class DoOnExit(smach.state_machine.StateMachine):
         @param run_on: List of outcomes that will trigger the execution of the
         added state (all by default).
 
-        @param remapping: A dictionary mapping local userdata keys to userdata
+        @param remapping: A dictionary mapping local ud keys to ud
         keys in the parent container.
         """
         # Get currently opened container

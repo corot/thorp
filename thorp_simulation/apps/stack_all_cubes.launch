@@ -1,5 +1,5 @@
 <!--
-  Simulated version of Thorp's object manipulation app:
+  Simulated version of Thorp's stack all cubes app:
   - Thorp Gazebo simulation
   - Perception and manipulation
   - Executive SMACH and visualization
@@ -7,7 +7,7 @@
  -->
 
 <launch>
-  <arg name="app_name" value="object_manip"/>
+  <arg name="app_name" value="stack_all_cubes"/>
   <arg name="viz_smach" default="false"/>
   <arg name="start_delay" default="0.0"/>
   <arg name="record_video" default="false"/>
@@ -22,7 +22,7 @@
   </include>
 
   <!-- Spawn a table with some tabletop objects -->
-  <node pkg="thorp_simulation" type="spawn_gazebo_models.py" name="objects_spawner" output="screen" args="playground_objs"/>
+  <node pkg="thorp_simulation" type="spawn_gazebo_models.py" name="objects_spawner" output="screen" args="playground_cubes"/>
 
   <!--  ********* Perception and manipulation *********  -->
   <include file="$(find thorp_perception)/launch/perception.launch">

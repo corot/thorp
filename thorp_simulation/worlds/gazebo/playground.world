@@ -587,55 +587,5 @@
       <pose>2.41131 -2 0 0 -0 0.9</pose>
       <static>1</static>
     </model>
-    <include>
-      <uri>model://lack_table</uri>
-      <name>doll_table_0</name>
-      <pose>0.45 0 0 0 -0 0</pose>
-    </include>
-    <include>
-      <uri>model://star</uri>
-      <name>star</name>
-      <pose>0.279395 0.017524 0.5  0.0 0.0 0.2</pose>
-    </include>
-    <include>
-      <uri>model://clover</uri>
-      <name>clover</name>
-      <pose>0.357627 -0.037121 0.5 0.0 0.0 1.4</pose>
-    </include>
-    <include>
-      <uri>model://square</uri>
-      <name>square</name>
-      <pose>0.302415 -0.160046 0.5 0.0 0.0 1.1</pose>
-    </include>
-    <include>
-      <uri>model://triangle</uri>
-      <name>triangle</name>
-      <pose>0.322415 0.100046 0.5 0.0 0.0 0.1</pose>
-    </include>
-    <include>
-      <uri>model://rectangle</uri>
-      <name>rectangle</name>
-      <pose>0.28 0.15 0.5 0.0 0.0 0.4</pose>
-    </include>
-    <include>
-      <uri>model://cross</uri>
-      <name>cross</name>
-      <pose>0.37 0.15 0.5 0.0 0.0 0.75</pose>
-    </include>
-    <include>
-      <uri>model://tower</uri>
-      <name>tower</name>
-      <pose>0.38 -0.14 0.5 0.0 0.0 0.15</pose>
-    </include>
-    <include>
-      <uri>model://circle</uri>
-      <name>circle</name>
-      <pose>0.48 -0.12 0.5 0.0 0.0 1.15</pose>
-    </include>
-    <include>
-      <uri>model://cube</uri>
-      <name>cube</name>
-      <pose>0.46 0.1 0.5 0.0 0.0 0.85</pose>
-    </include>
   </world>
 </sdf>

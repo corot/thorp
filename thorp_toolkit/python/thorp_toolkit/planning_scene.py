@@ -12,6 +12,7 @@ class PlanningScene:
 
     def __init__(self):
         self.__psi__ = PlanningSceneInterface(synchronous=True)
+        rospy.sleep(0.25)
 
     def add_tray(self, pose, size):
         self.__psi__.add_box('tray', pose, size)

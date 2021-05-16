@@ -14,8 +14,6 @@ from gazebo_msgs.srv import SpawnModel, DeleteModel
 
 from thorp_toolkit.geometry import TF2, distance_2d, create_2d_pose, create_3d_pose, pose2d2str
 
-# equivalent to command line:
-# rosrun gazebo_ros spawn_model -sdf -database wood_cube_2_5cm -model wood_cube_2_5cm_10 -reference_frame doll_table_0::link -x 0 -y 0 -z 0.45
 
 surfaces = [{'name': 'doll_table',
              'size': (0.35, 0.35),
@@ -45,6 +43,26 @@ cats = [{'name': 'cat_black', 'count': 2},
         {'name': 'cat_orange', 'count': 2}]
 models = {}
 
+PLAYGROUND_OBJS = [('star', 'star', (0.28, 0.017, 0.5, 0.0, 0.0, 0.2)),
+                   ('clover', 'clover', (0.36, -0.037, 0.5, 0.0, 0.0, 1.4)),
+                   ('square', 'square', (0.29, -0.16, 0.5, 0.0, 0.0, 1.1)),
+                   ('triangle', 'triangle', (0.32, 0.1, 0.5, 0.0, 0.0, 0.1)),
+                   ('rectangle', 'rectangle', (0.27, 0.15, 0.5, 0.0, 0.0, 0.4)),
+                   ('cross', 'cross', (0.37, 0.15, 0.5, 0.0, 0.0, 0.75)),
+                   ('tower', 'tower', (0.38, -0.14, 0.5, 0.0, 0.0, 0.15)),
+                   ('circle', 'circle', (0.48, 0.12, 0.5, 0.0, 0.0, 1.15)),
+                   ('cube', 'cube', (0.46, 0.1, 0.5, 0.0, 0.0, 0.85))]
+
+PLAYGROUND_CUBES = [('cube 1', 'cube', (-0.15, 0.017, 0.45, 0.0, 0.0, 0.2)),
+                    ('cube 2', 'cube', (-0.11, -0.10, 0.45, 0.0, 0.0, 0.15)),
+                    ('cube 3', 'cube', (-0.14, -0.16, 0.45, 0.0, 0.0, 1.1)),
+                    ('cube 4', 'cube', (-0.12, 0.15, 0.45, 0.0, 0.0, 0.4)),
+                    ('cube 5', 'cube', (-0.11, 0.10, 0.45, 0.0, 0.0, 0.85)),
+                    ('circle', 'circle', (0.03, 0.12, 0.45, 0.0, 0.0, 1.15)),
+                    ('clover', 'clover', (-0.02, -0.037, 0.45, 0.0, 0.0, 1.4)),
+                    ('cross', 'cross', (0.08, -0.15, 0.45, 0.0, 0.0, 0.75)),
+                    ('triangle', 'triangle', (0.13, 0.1, 0.45, 0.0, 0.0, 0.1))]
+
 SURFS_MIN_DIST = 1.5
 OBJS_MIN_DIST = 0.08
 CATS_MIN_DIST = 5.0
@@ -53,6 +71,23 @@ PREFERRED_LOCATIONS = [(12.5, 7.5),
                        (8.4, 9.6),
                        (4.6, 9.8),
                        (5.8, 6.5)]
+
+
+def spawn_model(name, model, pose, frame):
+    """
+    equivalent to command line:
+    rosrun gazebo_ros spawn_model -sdf -database wood_cube_2_5cm -model wood_cube_2_5cm_10 -reference_frame doll_table_0::link -x 0 -y 0 -z 0.45
+    """
+    resp = spawn_model_client(
+        model_name=name,
+        model_xml=models[model],
+        initial_pose=pose,
+        reference_frame=frame
+    )
+    if not resp.success:
+        rospy.logerr("Spawn model failed: %s", resp.status_message)
+    return resp.success
+
 
 def load_models():
     global models
@@ -121,16 +156,14 @@ def spawn_objects(surf, surf_index):
             continue
         added_poses.append(pose)
         model_name = '_'.join([surf['name'], str(surf_index), obj_name, str(obj_index)])
-        resp = spawn_model_client(
-            model_name=model_name,
-            model_xml=models[obj_name],
-            initial_pose=pose,
-            reference_frame=surf['name'] + '_' + str(surf_index) + '::link'
+        success = spawn_model(
+            name=model_name,
+            model=obj_name,
+            pose=pose,
+            frame=surf['name'] + '_' + str(surf_index) + '::link'
         )
-        if resp.success:
+        if success:
             spawned[obj_name] += 1
-        else:
-            rospy.logerr("Spawn object failed: %s", resp.status_message)
         obj_index += 1
 
 
@@ -145,8 +178,7 @@ def spawn_surfaces(use_preferred_locs=False):
             else:
                 x = uniform(min_x, max_x)
                 y = uniform(min_y, max_y)
-            z = 0.0
-            pose = create_3d_pose(x, y, z, 0, 0, uniform(-pi, +pi))
+            pose = create_2d_pose(x, y, uniform(-pi, +pi))
             # we check that the distance to all previously added surfaces is below a threshold to space the surfaces
             if close_to_prev_pose(pose, added_poses, SURFS_MIN_DIST):
                 continue
@@ -161,17 +193,15 @@ def spawn_surfaces(use_preferred_locs=False):
 
             added_poses.append(pose)
             model_name = surf['name'] + '_' + str(surf_index + 10)   # allow for some objects added by hand
-            resp = spawn_model_client(
-                model_name=model_name,
-                model_xml=models[surf['name']],
-                initial_pose=pose,
-                reference_frame='ground_plane::link'
+            success = spawn_model(
+                name=model_name,
+                model=surf['name'],
+                pose=pose,
+                frame='ground_plane::link'
             )
-            if resp.success:
+            if success:
                 # populate this surface with some objects
                 spawn_objects(surf, surf_index + 10)
-            else:
-                rospy.logerr("Spawn surface failed: %s", resp.status_message)
             surf_index += 1
 
 
@@ -185,8 +215,7 @@ def spawn_cats(use_preferred_locs=False):
             else:
                 x = uniform(min_x, max_x)
                 y = uniform(min_y, max_y)
-            z = 0.0
-            pose = create_3d_pose(x, y, z, 0, 0, uniform(-pi, +pi))
+            pose = create_2d_pose(x, y, uniform(-pi, +pi))
             # we check that the distance to all previously added surfaces is below a threshold to space the surfaces
             if close_to_prev_pose(pose, added_poses, CATS_MIN_DIST):
                 continue
@@ -201,16 +230,14 @@ def spawn_cats(use_preferred_locs=False):
 
             added_poses.append(pose)
             model_name = cat['name'] + '_' + str(cat_index)
-            resp = spawn_model_client(
-                model_name=model_name,
-                model_xml=models[cat['name']],
-                initial_pose=pose,
-                reference_frame='ground_plane::link'
+            success = spawn_model(
+                name=model_name,
+                model=cat['name'],
+                pose=pose,
+                frame='ground_plane::link'
             )
-            if resp.success:
+            if success:
                 rospy.loginfo("Spawn %s at %s", model_name, pose2d2str(pose))
-            else:
-                rospy.logerr("Spawn %s failed: %s", model_name, resp.status_message)
             cat_index += 1
 
 
@@ -218,14 +245,12 @@ def spawn_rockets():
     # spawn 5 x 10 rockets
     rocket_index = 1
     for i, j in product(range(-5, 0), range(10)):
-        resp = spawn_model_client(
-            model_name='rocket' + str(rocket_index),
-            model_xml=models['rocket'],
-            initial_pose=create_2d_pose(i, j, 0),
-            reference_frame='ground_plane::link'
+        spawn_model(
+            name='rocket' + str(rocket_index),
+            model='rocket',
+            pose=create_2d_pose(i, j, 0),
+            frame='ground_plane::link'
         )
-        if not resp.success:
-            rospy.logerr("Spawn rocket%d failed: %s", rocket_index, resp.status_message)
         rocket_index += 1
 
 
@@ -251,7 +276,7 @@ if __name__ == "__main__":
     rospy.init_node("spawn_gazebo_models")
 
     if len(sys.argv) == 1:
-        print("Usage spawn_gazebo_models.py objects | cats [-d]")
+        print("Usage spawn_gazebo_models.py objects | cats | playground_objs | playground_cubes [-d] [-l]")
         sys.exit(-1)
 
     ros_pack = rospkg.RosPack()
@@ -287,5 +312,13 @@ if __name__ == "__main__":
     elif sys.argv[1] == 'cats':
         spawn_cats(use_preferred_locs)
         spawn_rockets()
+    elif sys.argv[1] == 'playground_objs':
+        spawn_model('lack_table', 'lack_table', create_2d_pose(0.45, 0, 0.0), 'ground_plane::link')
+        for obj in PLAYGROUND_OBJS:
+            spawn_model(obj[0], obj[1], create_3d_pose(*obj[2]), 'ground_plane::link')
+    elif sys.argv[1] == 'playground_cubes':
+        spawn_model('doll_table', 'doll_table', create_2d_pose(0.38, 0, 0.0), 'ground_plane::link')
+        for obj in PLAYGROUND_CUBES:
+            spawn_model(obj[0], obj[1], create_3d_pose(*obj[2]), 'doll_table::link')
 
     sys.exit(0)

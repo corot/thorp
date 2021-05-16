@@ -4,14 +4,19 @@ import rospy
 import smach
 import smach_ros
 
-import thorp_toolkit as ttk
-from thorp_smach.states.common import ExecuteUserCommand
-from thorp_smach.states.perception import ObjectDetection
-from thorp_smach.states.manipulation import FoldArm, PickupObject, PlaceObject
-
+import std_srvs.srv as std_srvs
 import thorp_msgs.msg as thorp_msgs
 import control_msgs.msg as control_msgs
 import arbotix_msgs.srv as arbotix_srvs
+
+from states.common import ExecuteUserCommand
+from states.geometry import TranslatePose
+from states.perception import ObjectDetection
+from states.manipulation import FoldArm, PickupObject, PlaceObject, DisplaceObject
+
+from thorp_toolkit import TF2, get_pose_from_co, distance_2d, heading
+from utils import run_sm
+import config as cfg
 
 
 class GetDetectedCubes(smach.State):
@@ -19,46 +24,47 @@ class GetDetectedCubes(smach.State):
 
     def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded', 'retry'],
-                             input_keys=['objects', 'object_names', 'arm_ref_frame'],
-                             output_keys=['base_cube_pose', 'base_cube_name', 'other_cubes'])
+                             input_keys=['objects', 'arm_ref_frame'],
+                             output_keys=['place_pose', 'other_cubes'])
 
-    def execute(self, userdata):
+    def execute(self, ud):
         # Compose a list containing id, pose, distance and heading for all cubes within arm reach
         objects = []
-        for obj in userdata.objects:
+        for obj in ud.objects:
             if not obj.id.startswith('cube'):
                 continue
             # Object's timestamp is irrelevant, and can trigger a TransformException if very recent; zero it!
-            obj_pose = ttk.get_pose_from_co(obj, stamped=True)
-            obj_pose.header.stamp = rospy.Time(0.0)
-            obj_pose = ttk.TF2().transform_pose(userdata.arm_ref_frame, obj_pose)
-            distance = ttk.distance_2d(obj_pose.pose)
-            if distance > 0.3:
-                rospy.logdebug("'%s' is out of reach (%d > %d)", obj.id, distance, 0.3)
+            obj_pose = get_pose_from_co(obj, stamped=True)
+            obj_pose.header.stamp = rospy.Time(0)
+            obj_pose = TF2().transform_pose(obj_pose, obj_pose.header.frame_id, ud.arm_ref_frame)
+            distance = distance_2d(obj_pose.pose)
+            if distance > cfg.MAX_ARM_REACH:
+                rospy.logdebug("'%s' is out of reach (%d > %d)", obj.id, distance, cfg.MAX_ARM_REACH)
                 continue
-            heading = ttk.heading(obj_pose.pose)
-            objects.append((obj.id, obj_pose, distance, heading))
+            direction = heading(obj_pose.pose)
+            objects.append((obj, obj_pose, distance, direction))
         # Check if we have at least 2 cubes to stack 
         if len(objects) < 2:
             return 'retry'
         # Sort them by increasing heading; we stack over the one most in front of the arm, called base
         objects = sorted(objects, key=lambda x: abs(x[-1]))
-        userdata.base_cube_name = objects[0][0]
-        userdata.base_cube_pose = objects[0][1]
-        userdata.other_cubes = [str(obj[0]) for obj in objects[1:]]
+        place_pose = objects[0][1]
+        place_pose.pose.position.z += objects[0][0].primitives[0].dimensions[2] + cfg.PLACING_HEIGHT_ON_TABLE
+        ud.place_pose = place_pose
+        ud.other_cubes = [obj[0] for obj in objects[1:]]
         return 'succeeded'
 
 
 class IncreasePlaceHeight(smach.State):
-    """ Increase place pose height by ud.cube_height """
+    """ Increase place pose height by last stacked object's z-dimension """
 
     def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded'],
-                             input_keys=['base_cube_pose', 'cube_height'],
-                             output_keys=['base_cube_pose'])
+                             input_keys=['place_pose', 'object'],
+                             output_keys=['place_pose'])
 
     def execute(self, ud):
-        ud.base_cube_pose.pose.position.z += ud.cube_height
+        ud.place_pose.pose.position.z += ud.object.primitives[0].dimensions[2] + cfg.PLACING_HEIGHT_ON_TABLE
         return 'succeeded'
 
 
@@ -75,119 +81,98 @@ with sm:
     sm.userdata.od_attempt = 0
     sm.userdata.arm_ref_frame = rospy.get_param('~arm_ctrl_ref_frame', 'arm_base_link')
     sm.userdata.output_frame = rospy.get_param('~rec_objects_frame', 'map')
-    sm.userdata.cube_height = 0.025  # TODO get from Collision object!
-    #     sm.ud.named_pose_target_type = thorp_msgs.MoveToTargetGoal.NAMED_TARGET
-    #     sm.ud.arm_folded_named_pose = 'resting'
-    #     sm.ud.close_gripper  = control_msgs.GripperCommand()
-    #     sm.ud.close_gripper.position = 0.0
-    #     sm.ud.open_gripper   = control_msgs.GripperCommand()
-    #     sm.ud.open_gripper.position = 0.05
 
-    # Other fields created at runtime are objects, object_names, object_name, base_cube_name, base_cube_pose and other_cubes
-
-    smach.StateMachine.add('ExecuteUserCommand',
-                           ExecuteUserCommand(['start', 'stop', 'fold']),
-                           transitions={'start': 'ObjectDetection',
-                                        'fold': 'FoldArm',
-                                        'stop': 'FoldArmAndRelax',
+    smach.StateMachine.add('EXE_USER_CMD',
+                           ExecuteUserCommand(['start', 'stop', 'fold', 'clear']),
+                           transitions={'start': 'OBJECT_DETECTION',
+                                        'fold': 'FOLD_ARM',
+                                        'clear': 'CLEAR_GRIPPER',
+                                        'stop': 'FOLD_ARM_AND_RELAX',
                                         'invalid_command': 'error'})
-
-    smach.StateMachine.add('ObjectDetection',
+    smach.StateMachine.add('OBJECT_DETECTION',
                            ObjectDetection(),
-                           remapping={'output_frame': 'output_frame',
-                                      'object_names': 'object_names',
-                                      'support_surf': 'support_surf'},
-                           transitions={'succeeded': 'GetDetectedCubes',
+                           transitions={'succeeded': 'GET_DETECTED_CUBES',
                                         'preempted': 'preempted',
                                         'aborted': 'error'})
-
-    smach.StateMachine.add('GetDetectedCubes',
+    smach.StateMachine.add('GET_DETECTED_CUBES',
                            GetDetectedCubes(),
-                           remapping={'object_names': 'object_names'},
-                           transitions={'succeeded': 'StackCubes',
-                                        'retry': 'ObjectDetection'})
+                           transitions={'succeeded': 'STACK_CUBES',
+                                        'retry': 'OBJECT_DETECTION'})
 
     # Stack cubes sub state machine; iterates over the detected cubes and stack them over the one most in front of the arm
     sc_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted'],
-                           input_keys=['base_cube_pose', 'base_cube_name', 'other_cubes', 'cube_height',
-                                       'support_surf'],
+                           input_keys=['place_pose', 'other_cubes', 'support_surf'],
                            output_keys=[],
                            it=lambda: sm.userdata.other_cubes,  # must be a lambda because we destroy the list
-                           it_label='object_name',
+                           it_label='object',
                            exhausted_outcome='succeeded')
     with sc_it:
         sc_sm = smach.StateMachine(outcomes=['succeeded', 'preempted', 'aborted', 'continue'],
-                                   input_keys=['base_cube_pose', 'object_name', 'support_surf', 'cube_height'],
+                                   input_keys=['place_pose', 'object', 'support_surf'],
                                    output_keys=[])
+        sc_sm.userdata.max_effort = cfg.GRIPPER_MAX_EFFORT
+        sc_sm.userdata.tightening = cfg.GRIPPER_TIGHTENING / 2.0
         with sc_sm:
-            smach.StateMachine.add('PickupObject',
+            smach.StateMachine.add('PICKUP_OBJECT',
                                    PickupObject(),
-                                   remapping={'object_name': 'object_name',
-                                              'support_surf': 'support_surf'},
-                                   transitions={'succeeded': 'IncreasePlaceHeight',
+                                   transitions={'succeeded': 'PLACE_OBJECT',
                                                 'preempted': 'preempted',
-                                                'aborted': 'aborted'})
-
-            smach.StateMachine.add('IncreasePlaceHeight',
-                                   IncreasePlaceHeight(),
-                                   transitions={'succeeded': 'PlaceObject'})
-
-            smach.StateMachine.add('PlaceObject',
+                                                'aborted': 'continue'})
+            smach.StateMachine.add('PLACE_OBJECT',
                                    PlaceObject(),
-                                   remapping={'object_name': 'object_name',
-                                              'support_surf': 'support_surf',
-                                              'place_pose': 'base_cube_pose'},
-                                   transitions={'succeeded': 'continue',
+                                   transitions={'succeeded': 'AT_STACK_LEVEL',
                                                 'preempted': 'preempted',
                                                 'aborted': 'aborted'})
+            smach.StateMachine.add('AT_STACK_LEVEL', TranslatePose(-cfg.PLACING_HEIGHT_ON_TABLE, 'z'),
+                                   remapping={'pose': 'place_pose'},             # undo added clearance
+                                   transitions={'succeeded': 'READJUST_POSE'})   # to replicate gravity
+            smach.StateMachine.add('READJUST_POSE',
+                                   DisplaceObject(),
+                                   remapping={'new_pose': 'place_pose'},
+                                   transitions={'succeeded': 'INC_PLACE_HEIGHT'})
+            smach.StateMachine.add('INC_PLACE_HEIGHT',
+                                   IncreasePlaceHeight(),
+                                   transitions={'succeeded': 'continue'})
 
         smach.Iterator.set_contained_state('', sc_sm, loop_outcomes=['continue'])
 
-    smach.StateMachine.add('StackCubes', sc_it,
-                           {'succeeded': 'FoldArmAndRelax',
+    smach.StateMachine.add('STACK_CUBES', sc_it,
+                           {'succeeded': 'FOLD_ARM_AND_RELAX',
                             'aborted': 'error'})
-
-    smach.StateMachine.add('FoldArm',
-                           FoldArm(),
-                           transitions={'succeeded': 'ObjectDetection',
+    smach.StateMachine.add('CLEAR_GRIPPER',
+                           smach_ros.ServiceState('clear_gripper', std_srvs.Empty),
+                           transitions={'succeeded': 'OBJECT_DETECTION',
                                         'preempted': 'preempted',
-                                        'aborted': 'ObjectDetection'})
-
-    smach.StateMachine.add('FoldArmAndRelax',
+                                        'aborted': 'aborted'})
+    smach.StateMachine.add('FOLD_ARM',
                            FoldArm(),
-                           transitions={'succeeded': 'RelaxArmAndStop',
+                           transitions={'succeeded': 'OBJECT_DETECTION',
+                                        'preempted': 'preempted',
+                                        'aborted': 'OBJECT_DETECTION'})
+    smach.StateMachine.add('FOLD_ARM_AND_RELAX',
+                           FoldArm(),
+                           transitions={'succeeded': 'RELAX_ARM_AND_STOP',
                                         'preempted': 'preempted',
                                         'aborted': 'error'})
-
-    smach.StateMachine.add('RelaxArmAndStop',
+    smach.StateMachine.add('RELAX_ARM_AND_STOP',
                            smach_ros.ServiceState('servos/relax_all',
                                                   arbotix_srvs.Relax),
                            transitions={'succeeded': 'stop',
                                         'preempted': 'stop',
                                         'aborted': 'error'})
 
-    # Construct action server wrapper for top-level sm to control it with keyboard commands
-    asw = smach_ros.ActionServerWrapper('user_commands_action_server',
-                                        thorp_msgs.UserCommandAction,
-                                        wrapped_container=sm,
-                                        succeeded_outcomes=['stop'],
-                                        aborted_outcomes=['aborted'],
-                                        preempted_outcomes=['error'],
-                                        goal_key='user_command',
-                                        feedback_key='ucmd_progress',
-                                        result_key='ucmd_outcome')
-    
-    # Run the server in a background thread
-    asw.run_server()
+# Construct action server wrapper for top-level sm to control it with keyboard commands
+asw = smach_ros.ActionServerWrapper('user_commands_action_server',
+                                    thorp_msgs.UserCommandAction,
+                                    wrapped_container=sm,
+                                    succeeded_outcomes=['stop'],
+                                    aborted_outcomes=['aborted'],
+                                    preempted_outcomes=['error'],
+                                    goal_key='user_command',
+                                    feedback_key='ucmd_progress',
+                                    result_key='ucmd_outcome')
 
-    # Create and start the introspection server
-    sis = smach_ros.IntrospectionServer('object_manipulation', sm, '/SM_ROOT')
-    sis.start()
+# Run the server in a background thread
+asw.run_server()
 
-    # Wait for control-c
-    rospy.spin()
-
-    rospy.loginfo("Stopping '%s' node...", rospy.get_name())
-    sis.stop()
-
-    rospy.signal_shutdown('All done.')
+run_sm(sm, rospy.get_param('~app_name'))
