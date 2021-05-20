@@ -1,4 +1,3 @@
-from math import ceil
 from random import randrange, uniform
 
 import rospy
@@ -47,10 +46,7 @@ class TargetSelection(smach.State):
             target, dist = targets[randrange(0, min(len(targets), ud['objs_to_skip']))]
             rospy.loginfo("Retrying target '%s', located at %.2fm (%d to retry)", target.id, dist, ud['objs_to_skip'])
             ud['target'] = target
-            # ud['tightening'] = cfg.GRIPPER_TIGHTENING + uniform(-cfg.GRIPPER_TIGHTENING, cfg.GRIPPER_TIGHTENING * self.retries)
-            # tightening_factor = ceil(self.retries / float(ud['objs_to_skip']))
             extra_tightening = uniform(-cfg.GRIPPER_TIGHTENING, cfg.GRIPPER_TIGHTENING * self.retries)
-            print self.retries, len(targets), ud['objs_to_skip'], extra_tightening
             ud['tightening'] = cfg.GRIPPER_TIGHTENING + extra_tightening
             rospy.loginfo("%d retries so far; %.1f mm of extra tightening", self.retries, extra_tightening * 1000)
             return 'have_target'

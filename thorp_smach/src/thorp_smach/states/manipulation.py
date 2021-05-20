@@ -277,7 +277,6 @@ class DisplaceObject(smach.State):
                              input_keys=['object', 'new_pose'])
 
     def execute(self, ud):
-        new_pose = ud['new_pose']
-        rospy.loginfo("Object '%s' pose in tray readjusted to %s", ud['object'].id, pose2d2str(new_pose))
+        rospy.loginfo("Object '%s' pose in tray readjusted to %s", ud['object'].id, pose2d2str(ud['new_pose']))
         PlanningScene().displace_obj(ud['object'].id, ud['new_pose'])
         return 'succeeded'
