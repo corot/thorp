@@ -14,9 +14,12 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>roscpp</build_depend>
+  <build_depend>gazebo_msgs</build_depend>
   <build_depend>geometry_msgs</build_depend>
+  <build_depend>thorp_toolkit</build_depend>
 
   <run_depend>thorp_bringup</run_depend>
+  <run_depend>thorp_toolkit</run_depend>
 
   <run_depend>xacro</run_depend>
   <run_depend>stdr_server</run_depend>

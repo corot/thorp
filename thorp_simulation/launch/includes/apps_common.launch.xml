@@ -23,7 +23,7 @@
 
   <!--  *************** Video recording ***************  -->
   <group if="$(arg record_video)">
-    <node pkg="thorp_simulation" type="gz_camera_control" name="gz_camera_control"/>
+    <node pkg="thorp_simulation" type="gazebo_camera_control" name="gz_camera_control"/>
 
     <node pkg="thorp_simulation" type="movie_director.py" name="movie_director">
       <param name="app_name" value="$(arg app_name)"/>

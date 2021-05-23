@@ -31,7 +31,7 @@ void poseCallback(const geometry_msgs::PoseStamped& msg)
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "gz_camera_control");
+  ros::init(argc, argv, "gazebo_camera_control");
 
   // Gazebo camera interface
   gazebo::client::setup(argc, argv);

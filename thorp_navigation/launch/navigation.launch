@@ -3,7 +3,7 @@
   - move_base[_flex]
   - pose following
   - geometric map
-  - semantic map???
+  - semantic map (TODO)
   - localization
   - pose persistence
  -->
@@ -46,7 +46,7 @@
   <!-- Velocity smoother nodelet; needed on gazebo to prevent robot from falling due to jerky movements -->
   <node pkg="nodelet" type="nodelet" name="follow_smoother" output="screen" respawn="true"
         args="load yocs_velocity_smoother/VelocitySmootherNodelet mobile_base_nodelet_manager">
-    <!-- TODO: gazebo smoother params: much faster decceleration to avoid overturning -->
+    <!-- TODO: gazebo smoother params: much faster deceleration to avoid overturning -->
     <rosparam file="$(find thorp_bringup)/param/vel_smoother_gazebo.yaml" command="load"/>
     <remap from="follow_smoother/smooth_cmd_vel" to="/cmd_vel_mux/input/following"/>
     <remap from="follow_smoother/robot_cmd_vel" to="/mobile_base/commands/velocity"/>
@@ -67,6 +67,7 @@
   <node pkg="map_server" type="map_server" name="map_server" output="screen" respawn="true" args="$(arg map_file)">
     <param name="frame_id" value="map"/>
   </node>
+  <!-- TODO a persistent semantic map; by now we just use a class loaded by the executive -->
 
   <!--  ******************** Amcl *********************  -->
   <include if="$(eval localization == 'amcl')"
@@ -87,7 +88,7 @@
 
   <!--  ************* Gazebo ground truth *************  -->
   <node if="$(eval localization == 'gazebo')"
-        pkg="thorp_simulation" type="gazebo_ground_truth.py" name="gazebo_ground_truth" output="screen" respawn="true"/>
+        pkg="thorp_simulation" type="gazebo_ground_truth" name="gazebo_ground_truth" output="screen" respawn="true"/>
 
   <!--  **** Watchdog to keep the pose on rebooting ***  -->
   <node if="$(arg save_robot_pose)"
