@@ -21,6 +21,7 @@ HouseKeepingServer::HouseKeepingServer()
   arm_trajectory_pub_ = nh.advertise<trajectory_msgs::JointTrajectory>("arm_controller/command", 1);
   force_resting_srv_  = nh.advertiseService("force_resting", &HouseKeepingServer::forceRestingCB, this);
   clear_gripper_srv_  = nh.advertiseService("clear_gripper", &HouseKeepingServer::clearGripperCB, this);
+  obj_attached_srv_   = nh.advertiseService("obj_attached", &HouseKeepingServer::objAttachedCB, this);
   gripper_busy_srv_   = nh.advertiseService("gripper_busy", &HouseKeepingServer::gripperBusyCB, this);
   grasp_events_sub_   = nh.subscribe("gazebo/grasp_events", 1, &HouseKeepingServer::graspEventCB, this);
   // Get default planning scene so I can restore it after temporal changes
@@ -154,7 +155,7 @@ bool HouseKeepingServer::clearGripperCB(std_srvs::EmptyRequest &request, std_srv
   return gripper_result && detach_result;
 }
 
-bool HouseKeepingServer::gripperBusyCB(std_srvs::TriggerRequest &request, std_srvs::TriggerResponse &response)
+bool HouseKeepingServer::objAttachedCB(std_srvs::TriggerRequest &request, std_srvs::TriggerResponse &response)
 {
   // Logic check: ask planning scene if we have an object attached
   std::map<std::string, moveit_msgs::AttachedCollisionObject> attached_objects =
@@ -171,9 +172,12 @@ bool HouseKeepingServer::gripperBusyCB(std_srvs::TriggerRequest &request, std_sr
   else
     response.success = false;
 
-  // return true;     TODO: maybe I separated these 2 checks,,, either 2 srvs or add a flag to the current service
+  return true;
+}
 
-  // Physical check for simulation TODO: add physical check for the real robot and choose the appropriate one
+bool HouseKeepingServer::gripperBusyCB(std_srvs::TriggerRequest &request, std_srvs::TriggerResponse &response)
+{
+  // Physical check for simulation TODO: add physical check for the real robot
   if (last_grasp_event_.object.empty())
   {
     ROS_WARN("No gazebo grasp events received");
@@ -193,7 +197,7 @@ bool HouseKeepingServer::gripperBusyCB(std_srvs::TriggerRequest &request, std_sr
   return true;
 
 
-  // Check if we are holding an object by closing a bit the gripper and measuring if joint effort increases
+  // Check if we are holding an object by closing a bit the gripper and measuring if joint effort increases  TODO: enable
   double opening_before = joint_state_watchdog_.gripperOpening();
   double effort_before = joint_state_watchdog_.gripperEffort();
 

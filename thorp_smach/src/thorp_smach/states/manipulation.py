@@ -25,7 +25,33 @@ class ClearGripper(smach_ros.ServiceState):
         super(ClearGripper, self).__init__('clear_gripper', std_srvs.Empty)
 
 
+class ObjAttached(smach_ros.ServiceState):
+    """
+    Check if we have a collision object attached to the gripper, according to the planning scene
+    """
+    def __init__(self):
+        super(ObjAttached, self).__init__('obj_attached', std_srvs.Trigger,
+                                          response_cb=self.response_cb,
+                                          output_keys=['attached_object'],
+                                          outcomes=['true', 'false', 'error'])
+        self.obj_attached = False
+        self.attached_obj = None
+
+    def response_cb(self, ud, response):
+        self.obj_attached = response.success
+        ud['attached_object'] = response.message
+
+    def execute(self, ud):
+        outcome = super(ObjAttached, self).execute(ud)
+        if outcome == 'succeeded':
+            return str(self.obj_attached).lower()
+        return 'error'
+
+
 class GripperBusy(smach_ros.ServiceState):
+    """
+    Check if the gripper is physically holding an object, regardless of what the planning scene says
+    """
     def __init__(self):
         super(GripperBusy, self).__init__('gripper_busy', std_srvs.Trigger,
                                           response_cb=self.response_cb,
@@ -95,7 +121,11 @@ class PickupObject(smach.Iterator):
                                     output_keys=[])
             with sm:
                 smach.StateMachine.add('GET_OBJ_NAME', UDExtractAttr('id', 'object', 'object_name'),
-                                       transitions={'succeeded': 'GRIPPER_BUSY?'})
+                                       transitions={'succeeded': 'OBJ_ATTACHED?'})
+                smach.StateMachine.add('OBJ_ATTACHED?', ObjAttached(),
+                                       transitions={'true': 'CLEAR_GRIPPER',
+                                                    'false': 'GRIPPER_BUSY?',
+                                                    'error': 'aborted'})
                 smach.StateMachine.add('GRIPPER_BUSY?', GripperBusy(),
                                        transitions={'true': 'CLEAR_GRIPPER',
                                                     'false': 'PICKUP_OBJECT',

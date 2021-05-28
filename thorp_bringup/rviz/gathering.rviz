@@ -1175,7 +1175,9 @@ Visualization Manager:
           Marker Topic: /object_gatherer_smach/visual_markers
           Name: Visual markers
           Namespaces:
-            {}
+            gp_marker: true
+            point_list: true
+            text_marker: true
           Queue Size: 100
           Value: true
       Enabled: true
@@ -1262,7 +1264,8 @@ Visualization Manager:
           Marker Topic: /exploration/room_sequence_planning_server/room_sequence_marker
           Name: Room Sequence Plan
           Namespaces:
-            {}
+            room_sequence_checkpoints: true
+            room_sequence_rooms: true
           Queue Size: 100
           Value: true
         - Class: rviz/Image
@@ -1549,7 +1552,9 @@ Visualization Manager:
                   Marker Topic: /move_base_flex/TEBPlanner/teb_markers
                   Name: Markers
                   Namespaces:
-                    {}
+                    PointObstacles: true
+                    TebContainer: true
+                    ViaPoints: true
                   Queue Size: 100
                   Value: true
               Enabled: true
@@ -1848,7 +1853,8 @@ Visualization Manager:
       Marker Topic: /semantic_map/markers
       Name: Semantic Map
       Namespaces:
-        {}
+        table 1 label: true
+        table 1 shape: true
       Queue Size: 100
       Value: true
   Enabled: true
@@ -1877,21 +1883,26 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: 0
-      Class: rviz/TopDownOrtho
+      Class: rviz/XYOrbit
+      Distance: 10.416492462158203
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
+      Focal Point:
+        X: 7.501805782318115
+        Y: 2.1742682456970215
+        Z: 0
+      Focal Shape Fixed Size: false
+      Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 96.46293640136719
+      Pitch: 1.1353979110717773
       Target Frame: <Fixed Frame>
-      Value: TopDownOrtho (rviz)
-      X: 7.170295715332031
-      Y: 5.834496021270752
+      Value: XYOrbit (rviz)
+      Yaw: 4.708580493927002
     Saved: ~
 Window Geometry:
   Displays:
