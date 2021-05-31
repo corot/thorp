@@ -1,8 +1,8 @@
 <!--
   Simulated version of Thorp's cat hunter app:
   - Thorp Gazebo simulation
+  - Object recognition
   - IPA coverage planning
-  - Executive SMACH and visualization
 
 Explore the entire environment searching for cats, and attack them whenever found.
  -->
@@ -16,9 +16,10 @@ Explore the entire environment searching for cats, and attack them whenever foun
   <!--  ***** Simulated mobile manipulator Thorp ******  -->
   <include file="$(find thorp_simulation)/launch/thorp_gazebo.launch">
     <arg name="world_name"     value="fun_house"/>
-    <arg name="initial_pose_x" value="8.0"/>
-    <arg name="initial_pose_y" value="4.0"/>
-    <arg name="initial_pose_a" value="0.0"/>
+    <arg name="initial_pose_x" value="10.5"/>
+    <arg name="initial_pose_y" value="6.0"/>
+    <arg name="initial_pose_a" value="0.75"/>
+    <arg name="localization"   value="gazebo"/>
   </include>
 
   <!-- Spawn some cute cats randomly around the house -->
@@ -36,6 +37,9 @@ Explore the entire environment searching for cats, and attack them whenever foun
   <!--  ****************** Utilities ******************  -->
 
   <node name="model_markers" pkg="thorp_simulation" type="model_markers.py" output="screen" respawn="true"
+        args="'cat_orange_0 cat_orange_1 cat_black_0 cat_black_1'"/>
+
+  <node name="cats_controller" pkg="thorp_simulation" type="cats_controller.py" output="screen" respawn="true"
         args="'cat_orange_0 cat_orange_1 cat_black_0 cat_black_1'"/>
 
 

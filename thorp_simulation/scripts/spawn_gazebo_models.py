@@ -242,9 +242,9 @@ def spawn_cats(use_preferred_locs=False):
 
 
 def spawn_rockets():
-    # spawn 5 x 10 rockets
+    # spawn 10 x 10 rockets
     rocket_index = 1
-    for i, j in product(range(-5, 0), range(10)):
+    for i, j in product(range(-10, 0), range(10)):
         spawn_model(
             name='rocket' + str(rocket_index),
             model='rocket',
