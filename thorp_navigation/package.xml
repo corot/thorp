@@ -20,7 +20,6 @@
   <depend>actionlib</depend>
   <depend>actionlib_msgs</depend>
   <depend>geometry_msgs</depend>
-  <depend>turtlebot_msgs</depend>
   <depend>thorp_msgs</depend>
   <depend>thorp_toolkit</depend>
   <depend>visp_ros</depend>

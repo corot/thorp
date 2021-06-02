@@ -4,7 +4,6 @@
 
 # goal definition
 
-####string target_name
 float32 distance       # following desired distance; use the configured value if <= 0
 bool stop_at_distance  # stop action upon reaching the desired following distance
 duration time_limit    # stop action after this time; ignored if 0
@@ -16,10 +15,9 @@ duration time_limit    # stop action after this time; ignored if 0
 uint8 WITHIN_DISTANCE = 0
 uint8 RUN_OUT_OF_TIME = 1
 uint8 NO_POSE_TIMEOUT = 2
-uint8 FOLLOW_CANCELED = 2
+uint8 FOLLOW_CANCELED = 3
 
 uint8 outcome
-#####ThorpError error
 
 ---
 

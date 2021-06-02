@@ -1,0 +1,4 @@
+enabled: true
+v_scale: 0.6
+w_scale: 0.8
+no_pose_timeout: 1.0
