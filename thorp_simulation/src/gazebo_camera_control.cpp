@@ -3,9 +3,10 @@
  * to Gazebo topic user_camera/joy_pose, so we mimic the view on both applications.
  */
 
-#include <tf/tf.h>
 #include <ros/ros.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <thorp_toolkit/tf2.hpp>
+namespace ttk = thorp_toolkit;
 
 #include <gazebo/gazebo_client.hh>
 #include <gazebo/transport/transport.hh>
@@ -16,16 +17,19 @@ gazebo::transport::PublisherPtr gz_cam_pub;
 
 void poseCallback(const geometry_msgs::PoseStamped& msg)
 {
-  ignition::math::Pose3d pose;
+  geometry_msgs::PoseStamped pose_mrf = msg;
+  ttk::TF2::instance().transformPose("map", msg, pose_mrf);
+
+  ignition::math::Pose3d camera_pose;
   double roll, pitch, yaw;
   tf::Quaternion q;
-  quaternionMsgToTF(msg.pose.orientation, q);
+  quaternionMsgToTF(pose_mrf.pose.orientation, q);
   tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
-  pose.Set(msg.pose.position.x, msg.pose.position.y, msg.pose.position.z, roll, pitch, yaw);
+  camera_pose.Set(pose_mrf.pose.position.x, pose_mrf.pose.position.y, pose_mrf.pose.position.z, roll, pitch, yaw);
   gazebo::msgs::Pose gz_pose;
-  gazebo::msgs::Set(&gz_pose, pose);
+  gazebo::msgs::Set(&gz_pose, camera_pose);
   ROS_DEBUG("Camera pose: %.2f\t%.2f\t%.2f   \t%.2f\t%.2f\t%.2f",
-            msg.pose.position.x, msg.pose.position.y, msg.pose.position.z, roll, pitch, yaw);
+            pose_mrf.pose.position.x, pose_mrf.pose.position.y, pose_mrf.pose.position.z, roll, pitch, yaw);
   gz_cam_pub->Publish(gz_pose);
 }
 

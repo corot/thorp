@@ -1,6 +1,6 @@
 # Movie script for object gatherer app
 # We update camera location when starting the following states
-#  - frame: camera reference frame (better only use map by now, as Gazebo camera is always on map frame)
+#  - frame: camera reference frame
 #  - focus can be either a 3D point (provided as a list of three floats) or a userdata key containing a stamped pose (TODO more flexible)
 #  - eye must be a 3D point relative to focus location
 # WARN: we don't check the container SM, so better avoid duplicated state names!
@@ -12,7 +12,6 @@ PLAN_ROOM_EXPL:
 TRAVERSE_POSES:
   frame: map
   focus: start_pose
-#  focus: [6.8, 1.5, 0]
   eye: [0, -0.1, 8.5]
 GOTO_APPROACH:
   frame: map
@@ -20,6 +19,5 @@ GOTO_APPROACH:
   eye: [0, -0.1, 3.5]
 PICK_OBJECTS:
   frame: map
-#  focus: [0.4, 0.0, 0.4]  ### picking_pose
   focus: picking_pose
   eye: [1.0, -0.75, 1.5]
