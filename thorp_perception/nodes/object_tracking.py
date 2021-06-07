@@ -39,7 +39,7 @@ class ObjectTrackingNode(object):
         rospy.init_node('cob_object_tracking', anonymous=False)
 
         self._buffer_length = 4   # TODO param  should be discard_after * freq
-        self._discard_after = rospy.Duration(5)
+        self._discard_after = rospy.Duration(0.5)
         self._tracked_objs = {}
         self._target_objs = rospy.get_param('~target_objects', None)
         self._last_img_cv = None

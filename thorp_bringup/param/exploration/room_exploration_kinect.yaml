@@ -10,12 +10,3 @@ room_exploration_algorithm: 4  # Use the convex SPP exploration algorithm
 display_trajectory: false
 execute_path: false  # we do ourselves (this just sends goal by goal to move_base)
 return_path: true
-
-# I think all these is for nav
-#camera_frame: kinect_rgb_frame  ## used only if execute_path is true, I think
-#grid_line_length: 15
-#path_eps: 10
-#cell_size: 10
-#plan_for_footprint: true
-#goal_eps: 0.0
-#delta_theta: 0.005

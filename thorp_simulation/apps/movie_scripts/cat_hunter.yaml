@@ -1,0 +1,22 @@
+# Movie script for cat hunter app
+# We update camera location when starting the following states
+#  - frame: camera reference frame
+#  - focus can be either a 3D point (provided as a list of three floats) or a userdata key containing a stamped pose (TODO more flexible)
+#  - eye must be a 3D point relative to focus location
+
+PLAN_ROOM_EXPL:
+  frame: map
+  focus: [8, 5.5, 0]
+  eye: [0, -0.1, 18]
+INSERT_START_POSE:
+  frame: map
+  focus: start_pose
+  eye: [0, -0.1, 8.5]
+# use INSERT_START_POSE cause it happens only when we start exploring a new room
+# cannot use INSERT_START_POSE nor TRAVERSE_POSES cause ATTACK finish as soon as we fire and then we alternate back
+# and forth between ATTACK and TRAVERSE_POSES
+ATTACK:
+##  frame: ir_cannon_link
+  frame: kinect_rgb_frame
+  focus: [1, 0, 0]
+  eye: [-0.98, 0, 0]

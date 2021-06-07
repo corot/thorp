@@ -1,11 +1,10 @@
 #!/usr/bin/env python
-
+import random
 import sys
 import rospy
 import rospkg
 
 from math import pi, copysign, sqrt
-from random import uniform, choice
 from itertools import product
 
 from nav_msgs.msg import MapMetaData
@@ -124,11 +123,11 @@ def spawn_objects(surf, surf_index):
     added_poses = [create_3d_pose(0, 0, 0, 0, 0, 0)]  # fake pose to avoid the (non-reachable) surface's center
     obj_index = 0
     while obj_index < surf['objs'] and not rospy.is_shutdown():
-        obj_name = choice(objects)
+        obj_name = random.choice(objects)
 
         # even distribution
-        x = uniform(-surf['size'][0] / 2.0, +surf['size'][0] / 2.0)
-        y = uniform(-surf['size'][1] / 2.0, +surf['size'][1] / 2.0)
+        x = random.uniform(-surf['size'][0] / 2.0, +surf['size'][0] / 2.0)
+        y = random.uniform(-surf['size'][1] / 2.0, +surf['size'][1] / 2.0)
 
         if surf['dist'] == 'diagonal':
             # half surface by diagonal
@@ -150,7 +149,7 @@ def spawn_objects(surf, surf_index):
             sys.exit(-1)
 
         z = 0.5
-        pose = create_3d_pose(x, y, z, 0, 0, uniform(-pi, +pi))
+        pose = create_3d_pose(x, y, z, 0, 0, random.uniform(-pi, +pi))
         # we check that the distance to all previously added objects is below a threshold to space the objects
         if close_to_prev_pose(pose, added_poses, OBJS_MIN_DIST):
             continue
@@ -174,11 +173,11 @@ def spawn_surfaces(use_preferred_locs=False):
         clearance = sqrt((surf['size'][0] / 2.0) ** 2 + (surf['size'][1] / 2.0) ** 2) + 0.2
         while surf_index < surf['count'] and not rospy.is_shutdown():
             if use_preferred_locs:
-                x, y = choice(PREFERRED_LOCATIONS)
+                x, y = random.choice(PREFERRED_LOCATIONS)
             else:
-                x = uniform(min_x, max_x)
-                y = uniform(min_y, max_y)
-            pose = create_2d_pose(x, y, uniform(-pi, +pi))
+                x = random.uniform(min_x, max_x)
+                y = random.uniform(min_y, max_y)
+            pose = create_2d_pose(x, y, random.uniform(-pi, +pi))
             # we check that the distance to all previously added surfaces is below a threshold to space the surfaces
             if close_to_prev_pose(pose, added_poses, SURFS_MIN_DIST):
                 continue
@@ -211,11 +210,11 @@ def spawn_cats(use_preferred_locs=False):
         cat_index = 0
         while cat_index < cat['count'] and not rospy.is_shutdown():
             if use_preferred_locs:
-                x, y = choice(PREFERRED_LOCATIONS)
+                x, y = random.choice(PREFERRED_LOCATIONS)
             else:
-                x = uniform(min_x, max_x)
-                y = uniform(min_y, max_y)
-            pose = create_2d_pose(x, y, uniform(-pi, +pi))
+                x = random.uniform(min_x, max_x)
+                y = random.uniform(min_y, max_y)
+            pose = create_2d_pose(x, y, random.uniform(-pi, +pi))
             # we check that the distance to all previously added surfaces is below a threshold to space the surfaces
             if close_to_prev_pose(pose, added_poses, CATS_MIN_DIST):
                 continue
@@ -305,6 +304,7 @@ if __name__ == "__main__":
     robot_pose = TF2().transform_pose(None, 'base_footprint', 'map')
     robot_radius = rospy.get_param('move_base_flex/local_costmap/robot_radius')
 
+    random.seed()
     use_preferred_locs = len(sys.argv) > 2 and '-l' in sys.argv
     if sys.argv[1] == 'objects':
         spawn_surfaces(use_preferred_locs)

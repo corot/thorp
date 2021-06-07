@@ -16,9 +16,9 @@ Explore the entire environment searching for cats, and attack them whenever foun
   <!--  ***** Simulated mobile manipulator Thorp ******  -->
   <include file="$(find thorp_simulation)/launch/thorp_gazebo.launch">
     <arg name="world_name"     value="fun_house"/>
-    <arg name="initial_pose_x" value="10.5"/>
+    <arg name="initial_pose_x" value="8.5"/>
     <arg name="initial_pose_y" value="6.0"/>
-    <arg name="initial_pose_a" value="0.75"/>
+    <arg name="initial_pose_a" value="0.0"/>
     <arg name="localization"   value="gazebo"/>
   </include>
 
