@@ -1,21 +1,25 @@
+# The name of this file shouldn't be changed, or else the Setup Assistant won't detect it
 sensors:
-  - sensor_plugin: occupancy_map_monitor/PointCloudOctomapUpdater
-    point_cloud_topic: /xtion/depth_registered/points
-    filtered_cloud_topic: filtered_cloud
-    max_range: 1.0
-    point_subsample: 3  # needs x3 more CPU than depth image; subsample to mitigate this
-    padding_offset: 0.04
-    padding_scale: 1.0
+#  - sensor_plugin: occupancy_map_monitor/PointCloudOctomapUpdater
+#    point_cloud_topic: /xtion/depth_registered/points
+#    filtered_cloud_topic: filtered_cloud
+#    max_update_rate: 4.0
+#    max_range: 1.0
+#    point_subsample: 5  # needs x3 more CPU than depth image; subsample to mitigate this
+#    padding_offset: 0.04
+#    padding_scale: 1.0
 
 # much cheaper in terms of CPU, but doesn't filter the arm properly
-#  - sensor_plugin: occupancy_map_monitor/DepthImageOctomapUpdater
-#    image_topic: /xtion/depth_registered/image_raw
-#    queue_size: 5
-#    near_clipping_plane_distance: 0.4  # choose shorter than pointcloud cutoff
-#    far_clipping_plane_distance: 1.0
-#    skip_vertical_pixels: 0
-#    skip_horizontal_pixels: 0
-#    shadow_threshold: 0.2
-#    padding_scale: 4.0
-#    padding_offset: 0.03
-#    filtered_cloud_topic: occ_map_filtered_cloud
+  - sensor_plugin: occupancy_map_monitor/DepthImageOctomapUpdater
+    image_topic: /xtion/depth_registered/image_raw
+    queue_size: 1
+    max_update_rate: 5.0
+    near_clipping_plane_distance: 0.4  # choose shorter than pointcloud cutoff
+    far_clipping_plane_distance: 2.0
+    skip_vertical_pixels: 10
+    skip_horizontal_pixels: 10
+    # padding configuration nicely explained here: https://github.com/ros-planning/moveit_ros/issues/342#issuecomment-63454410
+    shadow_threshold: 0.2  # needs 0.2!!! no idea why
+    padding_scale: 4.0
+    padding_offset: 0.03
+    filtered_cloud_topic: occ_map_filtered_cloud

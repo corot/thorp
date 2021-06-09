@@ -1,11 +1,13 @@
 controller_list:
   - name: fake_arm_controller
+    type: $(arg execution_type)
     joints:
       - arm_shoulder_pan_joint
       - arm_shoulder_lift_joint
       - arm_elbow_flex_joint
       - arm_wrist_flex_joint
   - name: fake_gripper_controller
+    type: $(arg execution_type)
     joints:
       - gripper_joint
 initial:  # Define initial robot poses.

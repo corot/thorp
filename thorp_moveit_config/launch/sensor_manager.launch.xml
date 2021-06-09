@@ -5,6 +5,9 @@
   <!-- Params for 3D sensors config -->
   <rosparam command="load" file="$(find thorp_moveit_config)/config/sensors_3d.yaml" />
 
+  <!-- TODO: hack to keep gazebo publishing depth image; subscribe to the depth image itself is not enough! -->
+  <node pkg="rostopic" type="rostopic" name="awake_depth_points" args="bw /xtion/depth_registered/points"/>
+
   <!-- Params for the octomap monitor -->
   <!--  <param name="octomap_frame" type="string" value="some frame in which the robot moves" /> -->
   <param name="octomap_resolution" type="double" value="0.025" />
