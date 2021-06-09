@@ -201,7 +201,7 @@
       <axis_of_fire>x</axis_of_fire>
       <rocket_count>100</rocket_count>  <!-- 6 in the real robot -->
       <rate_of_fire>18.18</rate_of_fire>
-      <shoot_force>2500</shoot_force>
+      <shoot_force>2200</shoot_force>
     </plugin>
   </gazebo>
 
