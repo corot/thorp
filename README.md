@@ -3,8 +3,21 @@ THORP
 
 Software for a low-cost mobile manipulation: a TurtleBot2 with an arm, a second 3D camera, and some extra junk.
 
-Example demo
+Example apps
 ------------
+
+### Simulated on Gazebo
+
+Cat hunter: explore the entire environment searching for cats, and attack them whenever found.
+
+[![Cat hunter](https://user-images.githubusercontent.com/322610/121386461-fb111980-c984-11eb-92e3-0e59c733f789.png)](https://youtu.be/ieW3BQabwLo "Cat hunter")
+
+Object gatherer: explore the entire environment gathering all tabletop objects of the requested types.
+
+[![Object gatherer](https://user-images.githubusercontent.com/322610/121390421-51338c00-c988-11eb-9bbf-e89d588018cb.png)](https://youtu.be/tneMk6kRPHU "Object gatherer")
+
+
+### Real robot (much older)
 
 [Turtlebot arm object manipulation demo](https://github.com/corot/turtlebot_arm/tree/melodic-devel/turtlebot_arm_object_manipulation) ([video](https://drive.google.com/file/d/0BzYjlgbSZJSWaVRVQmVKTVczY00/view?usp=sharing)).
 
@@ -74,7 +87,7 @@ Run with rocker:
 ```
 rocker --pulse --nvidia --x11 thorp
 ```
-or
+or the pulled image:
 ```
 rocker --pulse --nvidia --x11 corot/thorp
 ```
