@@ -1,5 +1,5 @@
 <launch>
-  <arg name="execution_type"/>  <!--TODO: needed?-->
+  <arg name="execution_type"/>
 
   <!-- loads moveit_controller_manager on the parameter server which is taken as argument
     if no argument is passed, moveit_simple_controller_manager will be set -->
