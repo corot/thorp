@@ -9,6 +9,7 @@ Author:
 
 import sys
 import copy
+import math
 import rospy
 
 from interactive_markers.interactive_marker_server import InteractiveMarker, InteractiveMarkerServer, \
@@ -61,8 +62,13 @@ def make_model_marker(model):
     marker.scale.z = 0.01
     model_type = '_'.join(model.split('_')[:-1])  # remove instance index to get the model type
     marker.mesh_resource = "package://thorp_simulation/worlds/gazebo/models/" + model_type + "/meshes/Cat_v1_l3.obj"
-    # TODO: get mesh path from the model SDF file to make this generic
     marker.mesh_use_embedded_materials = True
+    # TODO: get mesh path and mesh pose from the model SDF file to make this generic and avoid the hack below
+    if model_type == 'cat_black':
+        marker.pose.position.x = -0.09
+        marker.pose.orientation = quaternion_msg_from_yaw(math.pi/2.0)
+    if model_type == 'cat_orange':
+        marker.pose.orientation = quaternion_msg_from_yaw(math.pi/2.0)
     return marker
 
 
@@ -107,24 +113,18 @@ def make_interactive_marker(pose, model):
 
     server.insert(int_marker, process_feedback)
     menu_handler.apply(server, int_marker.name)
+    return int_marker
 
 
 def model_states_cb(msg):
-    global target_models
-    if not target_models:
-        # interactive markers created for all targets; we can stop listening for model states
-        model_states_sub.unregister()
-        return
-    models_added = 0
     for index, model_name in enumerate(msg.name):
         if model_name in target_models:
-            target_models.remove(model_name)
-            models_added += 1
-            make_interactive_marker(msg.pose[index], model_name)
-            rospy.loginfo("Interactive marker added at %s for model %s", pose3d2str(msg.pose[index]), model_name)
-
-    if models_added:
-        server.applyChanges()
+            if server.get(model_name) is None:
+                make_interactive_marker(msg.pose[index], model_name)
+                rospy.loginfo("Interactive marker added at %s for model %s", pose3d2str(msg.pose[index]), model_name)
+            else:
+                server.setPose(model_name, msg.pose[index])
+    server.applyChanges()
 
 
 if __name__ == "__main__":
