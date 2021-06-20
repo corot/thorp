@@ -118,7 +118,7 @@ def make_interactive_marker(pose, model):
 
 def model_states_cb(msg):
     for index, model_name in enumerate(msg.name):
-        if model_name in target_models:
+        if model_name in target_models or '_'.join(model_name.split('_')[:-1]) in target_models:
             if server.get(model_name) is None:
                 make_interactive_marker(msg.pose[index], model_name)
                 rospy.loginfo("Interactive marker added at %s for model %s", pose3d2str(msg.pose[index]), model_name)
@@ -138,16 +138,10 @@ if __name__ == "__main__":
     menu_handler.insert("First Entry", parent=sub_menu_handle, callback=process_feedback)
     menu_handler.insert("Second Entry", parent=sub_menu_handle, callback=process_feedback)
 
+    target_models = rospy.get_param('~target_models', 'cat_orange cat_black').split()
+
     state_pub = rospy.Publisher("gazebo/set_model_state", ModelState, queue_size=1)
     pose_pub = rospy.Publisher("target_object_pose", PoseStamped, queue_size=1)
-
-    if len(sys.argv) < 2:
-        rospy.logwarn("No target models provided; nothing to do")
-        print("Usage: model_markers.py <string of space-separated model names>")
-        sys.exit(0)
-    target_models = sys.argv[1]
-    if type(target_models) != list:
-        target_models = target_models.split()
 
     # wait for clock to start before listening for models (we unpause simulation after spawning the robot)
     wait_for_sim_time()
