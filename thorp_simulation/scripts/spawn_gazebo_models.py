@@ -1,4 +1,15 @@
 #!/usr/bin/env python
+
+"""
+Populate gazebo world with randomly spawn models:
+ - cats for hunter
+ - tables and objects for gatherer
+ - cubes at known locations on playground world
+ - objects at known locations on playground world
+Author:
+    Jorge Santos
+"""
+
 import random
 import sys
 import rospy
@@ -72,6 +83,13 @@ PREFERRED_LOCATIONS = [(12.5, 7.5),
                        (5.8, 6.5)]
 
 
+def load_models():
+    global models
+    for obj in objects + [s['name'] for s in surfaces] + [c['name'] for c in cats] + ['rocket']:
+        model_path = ros_pack.get_path('thorp_simulation') + '/worlds/gazebo/models/' + obj + '/model.sdf'
+        models[obj] = open(model_path, 'r').read()
+
+
 def spawn_model(name, model, pose, frame):
     """
     equivalent to command line:
@@ -79,20 +97,13 @@ def spawn_model(name, model, pose, frame):
     """
     resp = spawn_model_client(
         model_name=name,
-        model_xml=models[model],
+        model_xml=model,
         initial_pose=pose,
         reference_frame=frame
     )
     if not resp.success:
         rospy.logerr("Spawn model failed: %s", resp.status_message)
     return resp.success
-
-
-def load_models():
-    global models
-    for obj in objects + [s['name'] for s in surfaces] + [c['name'] for c in cats] + ['rocket']:
-        model_path = ros_pack.get_path('thorp_simulation') + '/worlds/gazebo/models/' + obj + '/model.sdf'
-        models[obj] = open(model_path, 'r').read()
 
 
 def close_to_robot(pose, robot_pose, min_dist):
@@ -157,7 +168,7 @@ def spawn_objects(surf, surf_index):
         model_name = '_'.join([surf['name'], str(surf_index), obj_name, str(obj_index)])
         success = spawn_model(
             name=model_name,
-            model=obj_name,
+            model=models[obj_name],
             pose=pose,
             frame=surf['name'] + '_' + str(surf_index) + '::link'
         )
@@ -191,10 +202,11 @@ def spawn_surfaces(use_preferred_locs=False):
                 continue
 
             added_poses.append(pose)
-            model_name = surf['name'] + '_' + str(surf_index + 10)   # allow for some objects added by hand
+            model = surf['name']
+            model_name = model + '_' + str(surf_index + 10)   # allow for some objects added by hand
             success = spawn_model(
                 name=model_name,
-                model=surf['name'],
+                model=models[model],
                 pose=pose,
                 frame='ground_plane::link'
             )
@@ -228,10 +240,11 @@ def spawn_cats(use_preferred_locs=False):
                 continue
 
             added_poses.append(pose)
-            model_name = cat['name'] + '_' + str(cat_index)
+            model = cat['name']
+            model_name = model + '_' + str(cat_index)
             success = spawn_model(
                 name=model_name,
-                model=cat['name'],
+                model=models[model].format(name=model_name),
                 pose=pose,
                 frame='ground_plane::link'
             )
@@ -246,7 +259,7 @@ def spawn_rockets():
     for i, j in product(range(-10, 0), range(10)):
         spawn_model(
             name='rocket' + str(rocket_index),
-            model='rocket',
+            model=models['rocket'],
             pose=create_2d_pose(i, j, 0),
             frame='ground_plane::link'
         )
@@ -313,12 +326,12 @@ if __name__ == "__main__":
         spawn_cats(use_preferred_locs)
         spawn_rockets()
     elif sys.argv[1] == 'playground_objs':
-        spawn_model('lack_table', 'lack_table', create_2d_pose(0.45, 0, 0.0), 'ground_plane::link')
+        spawn_model('lack_table', models['lack_table'], create_2d_pose(0.45, 0, 0.0), 'ground_plane::link')
         for obj in PLAYGROUND_OBJS:
-            spawn_model(obj[0], obj[1], create_3d_pose(*obj[2]), 'ground_plane::link')
+            spawn_model(obj[0], models[obj[1]], create_3d_pose(*obj[2]), 'ground_plane::link')
     elif sys.argv[1] == 'playground_cubes':
-        spawn_model('doll_table', 'doll_table', create_2d_pose(0.38, 0, 0.0), 'ground_plane::link')
+        spawn_model('doll_table', models['doll_table'], create_2d_pose(0.38, 0, 0.0), 'ground_plane::link')
         for obj in PLAYGROUND_CUBES:
-            spawn_model(obj[0], obj[1], create_3d_pose(*obj[2]), 'doll_table::link')
+            spawn_model(obj[0], models[obj[1]], create_3d_pose(*obj[2]), 'doll_table::link')
 
     sys.exit(0)

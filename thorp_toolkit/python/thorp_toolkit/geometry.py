@@ -152,14 +152,27 @@ def normalize_quaternion(q):
     q.w *= s
 
 
+def create_3d_point(x, y, z, frame=None):
+    """ Create a geometry_msgs/Point or geometry_msgs/PointStamped
+        (if frame is provided) from 3D coordinates """
+    point = geometry_msgs.PointStamped()
+    point.point.x = x
+    point.point.y = y
+    point.point.z = z
+    if frame:
+        point.header.frame_id = frame
+        return point
+    else:
+        return point.point
+
+
 def create_2d_pose(x, y, theta, frame=None):
     """ Create a geometry_msgs/Pose or geometry_msgs/PoseStamped
         (if frame is provided) from 2D coordinates and heading """
     pose = geometry_msgs.PoseStamped()
     pose.pose.position.x = x
     pose.pose.position.y = y
-    pose.pose.orientation.x, pose.pose.orientation.y, pose.pose.orientation.z, pose.pose.orientation.w = \
-        quaternion_from_euler(0, 0, theta)
+    pose.pose.orientation = quaternion_msg_from_yaw(theta)
     if frame:
         pose.header.frame_id = frame
         return pose
@@ -174,8 +187,7 @@ def create_3d_pose(x, y, z, roll, pitch, yaw, frame=None):
     pose.pose.position.x = x
     pose.pose.position.y = y
     pose.pose.position.z = z
-    pose.pose.orientation.x, pose.pose.orientation.y, pose.pose.orientation.z, pose.pose.orientation.w = \
-        quaternion_from_euler(roll, pitch, yaw)
+    pose.pose.orientation = quaternion_msg_from_rpy(roll, pitch, yaw)
     if frame:
         pose.header.frame_id = frame
         return pose

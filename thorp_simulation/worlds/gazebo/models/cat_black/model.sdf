@@ -32,6 +32,15 @@
         <mass>4</mass>
         <pose>0 0 0.2 0 0 0</pose>
       </inertial>
+      <sensor name="body_contact_sensor" type='contact'>
+        <always_on>true</always_on>
+        <contact>
+          <collision>collision</collision>
+        </contact>
+        <plugin name='body_contact_sensor_plugin' filename='libgazebo_ros_bumper.so'>
+          <bumperTopicName>gazebo/contacts</bumperTopicName>
+        </plugin>
+      </sensor>
     </link>
     <joint name="head_joint" type="fixed">
       <parent>body</parent>
@@ -40,9 +49,9 @@
     <link name="head">
       <collision name="collision">
         <geometry>
-            <box>
-              <size>0.1 0.1 0.08</size>
-            </box>
+          <sphere>
+            <radius>0.055</radius>
+          </sphere>
         </geometry>
       </collision>
       <inertial>
@@ -57,6 +66,15 @@
         <mass>0.25</mass>
       </inertial>
       <pose>0.15 0 0.3 0 0 0</pose>
+      <sensor name="head_contact_sensor" type='contact'>
+        <always_on>true</always_on>
+        <contact>
+          <collision>collision</collision>
+        </contact>
+        <plugin name='head_contact_sensor_plugin' filename='libgazebo_ros_bumper.so'>
+          <bumperTopicName>gazebo/contacts</bumperTopicName>
+        </plugin>
+      </sensor>
     </link>
     <joint name="front_legs_joint" type="fixed">
       <parent>body</parent>
