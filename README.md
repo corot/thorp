@@ -85,10 +85,25 @@ docker build -t thorp .
 ```
 
 Run with rocker:
+
+I need to use @fevb's fork to make all work. Otherwise, I experience the issue described [here](https://answers.ros.org/question/301056/ros2-rviz-in-docker-container/).
+To install it, clone rocker and install it on your host system:
+
+```
+cd ~/
+git clone git@github.com:fevb/rocker.git
+cd rocker/
+pip install -e . --no-binary rocker
+```
+
+Ensure you run the fork (it will get installed in ~/.local/bin/rocker`)
+
 ```
 rocker --pulse --nvidia --x11 thorp
 ```
+
 or the pulled image:
+
 ```
 rocker --pulse --nvidia --x11 corot/thorp
 ```
