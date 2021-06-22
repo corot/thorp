@@ -2,6 +2,10 @@ ARG ROS_DISTRO=melodic
 
 FROM ros:$ROS_DISTRO
 
+# Update ROS keys (see https://discourse.ros.org/t/new-gpg-keys-deployed-for-packages-ros-org/9454)
+RUN apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
+RUN apt-key del 421C365BD9FF1F717815A3895523BAEEB01FA116 && apt update
+
 # nvidia-docker hooks
 # LABEL com.nvidia.volumes.needed="nvidia_driver"
 # ENV PATH /usr/local/nvidia/bin:${PATH}
@@ -10,7 +14,11 @@ FROM ros:$ROS_DISTRO
 SHELL ["/bin/bash", "-c"]
 
 # install ROS base and minimal build dependencies
-RUN apt-get update && apt-get install -y ros-$ROS_DISTRO-ros-base python-pip python-catkin-tools build-essential nano
+RUN apt-get update && apt-get install -y ros-$ROS_DISTRO-ros-base python-pip python-catkin-tools build-essential nano wget
+
+# add packages.osrfoundation.org APT to install the latest gazebo9
+RUN sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-stable.list' && \
+    wget https://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add - && apt update
 
 # reduce log verbosity (RAIL segmentation is called continously for some apps)
 RUN echo 'log4j.logger.ros.rail_mesh_icp=WARN' >> /opt/ros/$ROS_DISTRO/share/ros/config/rosconsole.config && \
@@ -106,8 +114,8 @@ RUN rosdep update --rosdistro=$ROS_DISTRO && \
                                 stdr_gui stdr_robot stdr_server astra_launch realsense_camera zeroconf_avahi'
 RUN apt clean
 
-RUN pip install --upgrade tensorflow-gpu==1.14 matplotlib
-#  bidict     FAILS!!!
+# bidict 0.18.3 is the last version compatible with Python 2.7
+RUN pip install --upgrade bidict==0.18.3 ratelimit matplotlib tensorflow-gpu==1.14
 
 # build catkin workspace and remove build to reduce image size
 WORKDIR /catkin_ws
@@ -121,7 +129,7 @@ ENV ROSCONSOLE_FORMAT='[${node} ${severity} ${time}]: ${message}'
 # fix Gazebo error in REST request (https://answers.gazebosim.org//question/22263/error-in-rest-request-for-accessing-apiignitionorg)
 COPY patch_ignition.yaml /root/.ignition/fuel/config.yaml
 
-# link gazebo models
+# path to gazebo models
 ENV GAZEBO_MODEL_PATH=/catkin_ws/src/thorp/thorp_simulation/worlds/gazebo/models
 
 # ENV APP_NAME=$APP_NAME
@@ -132,4 +140,4 @@ ENV GAZEBO_MODEL_PATH=/catkin_ws/src/thorp/thorp_simulation/worlds/gazebo/models
 # CMD source devel/setup.bas && gazebo
 #CMD source devel/setup.bas && roslaunch thorp_simulation $APP_NAME.launch $ARGUMENTS
 
-# run with -e APP_NAME=object_gatherer -e ARGUMENTS="viz_smach:=false object_types:='triangle'"
+# run with -e APP_NAME=object_gatherer -e ARGUMENTS="viz_smach:=false object_types:='pentagon' start_delay:=20"

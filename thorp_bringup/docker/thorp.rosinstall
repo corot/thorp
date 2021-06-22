@@ -18,12 +18,12 @@
 - git:
     local-name: gazebo_ros_pkgs
     uri: https://github.com/corot/gazebo_ros_pkgs.git
-    version: melodic-devel
+    version: thorp
 
 - git:
     local-name: gazebo-pkgs
     uri: https://github.com/corot/gazebo-pkgs.git
-    version: thorp
+    version: 18354bedb13b572cb6799726cf41f66b4b8a5c9a
 
 # Kobuki / Yujin stacks
 
@@ -145,13 +145,30 @@
 
 - git:
     local-name: people_object_detection
-    uri: https://github.com/cagbal/ros_people_object_detection_tensorflow
-    version: master
+    uri: https://github.com/corot/ros_people_object_detection_tensorflow
+    version: thorp
 
 - git:
     local-name: cob_perception_common
     uri: https://github.com/cagbal/cob_perception_common.git
     version: indigo_dev
+
+# Manipulation stacks
+
+- git:
+    local-name: geometric_shapes
+    uri: https://github.com/ros-planning/geometric_shapes.git
+    version: noetic-devel
+
+- git:
+    local-name: moveit
+    uri: https://github.com/ros-planning/moveit.git
+    version: master
+
+- git:
+    local-name: moveit_msgs
+    uri: https://github.com/ros-planning/moveit_msgs.git
+    version: master
 
 # Rviz plugins
 

@@ -49,6 +49,7 @@ source /opt/ros/melodic/setup.bash
 rosdep update
 rosdep install --from-paths src /opt/ros/melodic --ignore-src --rosdistro melodic -y
 catkin build
+pip install --upgrade bidict ratelimit
 ```
 
 #### Prepare hardware ####
