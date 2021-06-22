@@ -65,5 +65,6 @@ Explore the entire environment searching for cats, and attack them whenever foun
     <arg name="record_video" value="$(arg record_video)"/>
   </include>
 
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/hunting.rviz" output="screen" respawn="true"/>
+  <node name="rviz" pkg="rviz" type="rviz" output="screen" respawn="true"
+        args="-d $(find thorp_bringup)/rviz/hunting.rviz"/>
 </launch>

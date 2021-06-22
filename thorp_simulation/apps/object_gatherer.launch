@@ -61,5 +61,6 @@ Explore the entire environment gathering all tabletop objects of the requested t
     <arg name="record_video" value="$(arg record_video)"/>
   </include>
 
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/gathering.rviz" output="screen" respawn="true"/>
+  <node name="rviz" pkg="rviz" type="rviz" output="screen" respawn="true"
+        args="-d $(find thorp_bringup)/rviz/gathering.rviz"/>
 </launch>

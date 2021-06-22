@@ -1,8 +1,7 @@
 <!--
-Explore house app:
+Simulated version of Thorp's explore house app:
   - Thorp Stage simulation
   - IPA coverage planning
-  - Executive SMACH and visualization
 
 First segment map into rooms and plan visit sequence; then we iterate
 over all rooms and explore them following the planned sequence.
@@ -11,6 +10,8 @@ over all rooms and explore them following the planned sequence.
 <launch>
   <arg name="app_name" value="explore_house"/>
   <arg name="viz_smach" default="false"/>
+  <arg name="start_delay" default="0.0"/>
+  <arg name="record_video" default="false"/>
 
   <!--  ***** Simulated mobile manipulator Thorp ******  -->
   <include file="$(find thorp_simulation)/launch/thorp_stage.launch">
@@ -23,17 +24,19 @@ over all rooms and explore them following the planned sequence.
 
   <!--  ****** IPA coverage planning using kinect *****  -->
   <include file="$(find thorp_bringup)/launch/includes/exploration.launch.xml">
-    <arg name="camera" value="xtion"/>
+    <arg name="camera" value="kinect"/>
   </include>
 
-  <!--  ****** Executive smach and visualization ******  -->
-  <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="false">
-    <param name="app_name" value="$(arg app_name)"/>
-    <param name="viz_smach" value="$(arg viz_smach)"/>
-  </node>
 
-  <node if="$(arg viz_smach)"
-       pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
+  <!--  ******* Components common for all apps ********  -->
 
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/exploration.rviz"/>
+  <include file="$(find thorp_simulation)/launch/includes/apps_common.launch.xml">
+    <arg name="app_name" value="$(arg app_name)"/>
+    <arg name="viz_smach" value="$(arg viz_smach)"/>
+    <arg name="start_delay" value="$(arg start_delay)"/>
+    <arg name="record_video" value="$(arg record_video)"/>
+  </include>
+
+  <node name="rviz" pkg="rviz" type="rviz" output="screen" respawn="true"
+        args="-d $(find thorp_bringup)/rviz/exploration.rviz"/>
 </launch>

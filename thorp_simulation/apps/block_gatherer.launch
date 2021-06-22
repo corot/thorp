@@ -1,10 +1,11 @@
 <!--
-Object gatherer app:
+  Simulated version of Thorp's block gatherer app:
   - Thorp Gazebo simulation
   - IPA coverage planning
-  - Executive SMACH and visualization
+  - Block manipulation stuff
 
-Explore the entire environment searching for cats, and attack them whenever found.
+  Explore the entire environment searching for cats, and attack them whenever found.
+  DEPRECATED: object version is more interesting, as we gather objects of different shapes
  -->
 
 <launch>
@@ -58,5 +59,6 @@ Explore the entire environment searching for cats, and attack them whenever foun
   <node pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
 
 
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/gathering.rviz" output="screen" respawn="true"/>
+  <node name="rviz" pkg="rviz" type="rviz" output="screen" respawn="true"
+        args="-d $(find thorp_bringup)/rviz/gathering.rviz"/>
 </launch>

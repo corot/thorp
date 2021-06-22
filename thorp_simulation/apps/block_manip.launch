@@ -2,7 +2,8 @@
   Simulated version of Thorp's blocks manipulation demo using SMACH instead of C++ block_manipulation_demo node:
   - Thorp Gazebo simulation
   - Block manipulation stuff
-  - Executive SMACH and visualization
+
+  DEPRECATED: object version is more interesting, as we manipulate objects of different shapes
  -->
 
 <launch>
@@ -65,5 +66,6 @@
   <node if="$(arg viz_smach)"
        pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
 
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/manipulation.rviz" output="screen" respawn="true"/>
+  <node name="rviz" pkg="rviz" type="rviz" output="screen" respawn="true"
+        args="-d $(find thorp_bringup)/rviz/manipulation.rviz"/>
 </launch>

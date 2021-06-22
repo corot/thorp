@@ -2,8 +2,9 @@
   Simulated version of Thorp's stack all cubes app:
   - Thorp Gazebo simulation
   - Perception and manipulation
-  - Executive SMACH and visualization
   - Keyboard user interaction
+
+  Stack all tabletop cubes at hand in the table in front.
  -->
 
 <launch>
@@ -55,5 +56,6 @@
     <arg name="record_video" value="$(arg record_video)"/>
   </include>
 
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/manipulation.rviz" output="screen" respawn="true"/>
+  <node name="rviz" pkg="rviz" type="rviz" output="screen" respawn="true"
+        args="-d $(find thorp_bringup)/rviz/manipulation.rviz"/>
 </launch>
