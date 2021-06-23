@@ -23,4 +23,7 @@
 
   <!-- Fake gripper link joint state publisher -->
   <node pkg="turtlebot_arm_bringup" type="fake_joint_pub.py" name="fake_gripper_joint_pub" output="screen" respawn="true"/>
+
+  <!-- Fake arbotix servos services meaningless on simulation, like power on/off -->
+  <node if="$(arg simulation)" pkg="thorp_bringup" type="fake_servos_srv.py" name="fake_servos_srv" output="screen" respawn="true"/>
 </launch>

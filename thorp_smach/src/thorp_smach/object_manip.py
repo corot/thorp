@@ -99,7 +99,7 @@ with sm:
     smach.StateMachine.add('RELAX_ARM_AND_STOP',
                            smach_ros.ServiceState('servos/relax_all',
                                                   arbotix_srvs.Relax),
-                           transitions={'succeeded': 'RELAX_ARM_AND_STOP',
+                           transitions={'succeeded': 'stop',
                                         'preempted': 'stop',
                                         'aborted': 'error'})
     smach.StateMachine.add('CLEAR_PLANNING_SCENE',
