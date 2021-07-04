@@ -26,15 +26,20 @@ from thorp_toolkit.geometry import TF2, distance_2d, create_2d_pose, create_3d_p
 
 
 surfaces = [{'name': 'doll_table',
-             'size': (0.35, 0.35),
+             'size': (0.45, 0.45),
              'objs': 4,
              'dist': 'uniform',  # different distributions: 'uniform', 'diagonal', 'xor', '+/+'
              'count': 2},
             {'name': 'lack_table',
-             'size': (0.45, 0.45),
+             'size': (0.55, 0.55),
              'objs': 6,
              'dist': 'uniform',  # different distributions: 'uniform', 'diagonal', 'xor', '+/+'
-             'count': 2}
+             'count': 2},
+            {'name': 'lack_table_x15',
+             'size': (0.825, 0.55),
+             'objs': 10q,
+             'dist': 'uniform',  # different distributions: 'uniform', 'diagonal', 'xor', '+/+'
+             'count': 1}
             ]
 objects = ['wood_cube_2_5cm',
            'tower',
@@ -120,10 +125,10 @@ def close_to_prev_pose(pose, added_poses, min_dist):
     return False
 
 
-def close_to_obstacle(x, y, clearance):
+def close_to_obstacle(x, y, theta, clearance):
     # check if the location is away from any non-zero cost in the global costmap by at least the given clearance
     # (we need to subtract robot radius because check pose service assumes we want to check the footprint cost)
-    resp = check_pose_srv(pose=create_2d_pose(x, y, 0.0, 'map'), safety_dist=clearance - robot_radius,
+    resp = check_pose_srv(pose=create_2d_pose(x, y, theta, 'map'), safety_dist=clearance - robot_radius,
                           costmap=CheckPoseRequest.GLOBAL_COSTMAP)
     if resp.state > 0 or resp.cost > 0:
         return True
@@ -156,7 +161,7 @@ def spawn_objects(surf, surf_index):
         elif surf['dist'] == 'uniform':
             pass
         else:
-            print("ERROR: unknown distribution " + surf['dist'])
+            rospy.logerr("ERROR: unknown distribution " + surf['dist'])
             sys.exit(-1)
 
         z = 0.5
@@ -181,14 +186,15 @@ def spawn_surfaces(use_preferred_locs=False):
     added_poses = []  # to check that tables are at least SURFS_MIN_DIST apart from each other
     for surf in surfaces:
         surf_index = 0
-        clearance = sqrt((surf['size'][0] / 2.0) ** 2 + (surf['size'][1] / 2.0) ** 2) + 0.2
+        clearance = sqrt((surf['size'][0] / 2.0) ** 2 + (surf['size'][1] / 2.0) ** 2)
         while surf_index < surf['count'] and not rospy.is_shutdown():
             if use_preferred_locs:
                 x, y = random.choice(PREFERRED_LOCATIONS)
             else:
                 x = random.uniform(min_x, max_x)
                 y = random.uniform(min_y, max_y)
-            pose = create_2d_pose(x, y, random.uniform(-pi, +pi))
+            theta = random.uniform(-pi, +pi)
+            pose = create_2d_pose(x, y, theta)
             # we check that the distance to all previously added surfaces is below a threshold to space the surfaces
             if close_to_prev_pose(pose, added_poses, SURFS_MIN_DIST):
                 continue
@@ -198,7 +204,7 @@ def spawn_surfaces(use_preferred_locs=False):
                 continue
 
             # and in open space
-            if close_to_obstacle(x, y, clearance):
+            if close_to_obstacle(x, y, theta, clearance):
                 continue
 
             added_poses.append(pose)
@@ -226,7 +232,8 @@ def spawn_cats(use_preferred_locs=False):
             else:
                 x = random.uniform(min_x, max_x)
                 y = random.uniform(min_y, max_y)
-            pose = create_2d_pose(x, y, random.uniform(-pi, +pi))
+            theta = random.uniform(-pi, +pi)
+            pose = create_2d_pose(x, y, theta)
             # we check that the distance to all previously added surfaces is below a threshold to space the surfaces
             if close_to_prev_pose(pose, added_poses, CATS_MIN_DIST):
                 continue
@@ -236,7 +243,7 @@ def spawn_cats(use_preferred_locs=False):
                 continue
 
             # and not within an obstacle
-            if close_to_obstacle(x, y, 0.0):
+            if close_to_obstacle(x, y, theta, 0.0):
                 continue
 
             added_poses.append(pose)
@@ -288,10 +295,11 @@ if __name__ == "__main__":
     rospy.init_node("spawn_gazebo_models")
 
     if len(sys.argv) == 1:
-        print("Usage spawn_gazebo_models.py objects | cats | playground_objs | playground_cubes [-d] [-l]")
+        rospy.logerr("Usage spawn_gazebo_models.py objects | cats | playground_objs | playground_cubes [-d] [-l]")
         sys.exit(-1)
 
     ros_pack = rospkg.RosPack()
+
     spawn_model_client = rospy.ServiceProxy('/gazebo/spawn_sdf_model', SpawnModel)
     spawn_model_client.wait_for_service(30)
 
@@ -319,9 +327,10 @@ if __name__ == "__main__":
 
     random.seed()
     use_preferred_locs = len(sys.argv) > 2 and '-l' in sys.argv
+    rospy.loginfo("Spawning %s in %s locations", sys.argv[1], 'preferred' if use_preferred_locs else 'random')
     if sys.argv[1] == 'objects':
         spawn_surfaces(use_preferred_locs)
-        print("Spawned objects:\n  " + '\n  '.join('{}: {}'.format(k, v) for k, v in spawned.items()))
+        rospy.loginfo("Spawned objects:\n  " + '\n  '.join('{}: {}'.format(k, v) for k, v in spawned.items()))
     elif sys.argv[1] == 'cats':
         spawn_cats(use_preferred_locs)
         spawn_rockets()

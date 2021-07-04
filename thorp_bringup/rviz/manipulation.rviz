@@ -2084,7 +2084,7 @@ Visualization Manager:
           Marker Topic: /object_detection_server/visual_markers
           Name: Detected objects
           Namespaces:
-            {}
+            labels: true
           Queue Size: 100
           Value: true
       Enabled: true

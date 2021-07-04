@@ -205,7 +205,7 @@ class TableMarkVisited(smach.State):
 
     def execute(self, ud):
         obj_name = 'table ' + str(SemanticMap().objects_count('table') + 1)
-        obj_size = ud['table'].width, ud['table'].depth, ud['table'].height
+        obj_size = ud['table'].depth, ud['table'].width, ud['table'].height
         SemanticMap().add_object(obj_name, 'table', ud['table_pose'], obj_size)
         ud['table'].name = obj_name  # give a name to the segmented object
         return 'succeeded'
@@ -227,15 +227,7 @@ class CheckTableSize(smach.State):
     def execute(self, ud):
         center, width, length = ud['table'].center, ud['table'].width, ud['table'].depth
         if min(width, length) < cfg.TABLE_MIN_SIDE or max(width, length) > cfg.TABLE_MAX_SIDE:
-            rospy.loginfo("Table at %s rejected due to incongruent size: %.2f x %.2f", point3d2str(center), width, length)
-            return 'aborted'
-
-        # TODO remove these hacks
-        if abs(width - length) > 0.15:
-            rospy.loginfo("Table at %s rejected as non-square: %.2f x %.2f", point3d2str(center), width, length)
-            return 'aborted'
-        if center.x > 14 or center.y > 10:
-            rospy.loginfo("Table at %s rejected as within-the-wall", point3d2str(center))
+            rospy.loginfo("Table at %s rejected due to invalid size: %.2f x %.2f", point3d2str(center), width, length)
             return 'aborted'
         return 'succeeded'
 

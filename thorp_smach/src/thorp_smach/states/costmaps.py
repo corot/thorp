@@ -42,7 +42,7 @@ class TableAsObstacle(smach.State):
 
     def execute(self, ud):
         name, width, length = ud['table'].name, ud['table'].width, ud['table'].depth
-        SemanticLayer().add_object(name, 'obstacle', ud['pose'], (width, length), 'both')
+        SemanticLayer().add_object(name, 'obstacle', ud['pose'], (length, width), 'both')
         return 'succeeded'
 
 

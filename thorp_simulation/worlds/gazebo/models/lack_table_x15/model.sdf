@@ -1,0 +1,59 @@
+<?xml version="1.0" ?>
+<sdf version='1.4'>
+    <model name='lack_table_x15'>
+      <static>1</static>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://lack_table_x15/model.stl</uri>
+              <scale>0.001 0.001 0.001</scale>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/FlatBlack</name>
+            </script>
+          </material>
+        </visual>
+        <collision name='collision'>
+          <geometry>
+            <mesh>
+              <uri>model://lack_table_x15/model.stl</uri>
+              <scale>0.001 0.001 0.001</scale>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <bounce/>
+            <friction>
+              <ode/>
+            </friction>
+            <contact>
+              <ode/>
+            </contact>
+          </surface>
+        </collision>
+        <velocity_decay>
+          <linear>0</linear>
+          <angular>0</angular>
+        </velocity_decay>
+        <inertial>
+          <inertia>
+            <ixx>0.136725</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.09115</iyy>
+            <iyz>0</iyz>
+            <izz>0.17646</izz>
+          </inertia>
+          <pose frame=''>0 0 0.4 0 0 0</pose>
+          <mass>4.5</mass>
+        </inertial>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+        <gravity>1</gravity>
+      </link>
+    </model>
+</sdf>
