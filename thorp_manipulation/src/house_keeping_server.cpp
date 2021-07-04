@@ -16,14 +16,13 @@ namespace thorp_manipulation
 
 HouseKeepingServer::HouseKeepingServer()
 {
-  ros::NodeHandle nh;
+  ros::NodeHandle nh, pnh("~");
 
   arm_trajectory_pub_ = nh.advertise<trajectory_msgs::JointTrajectory>("arm_controller/command", 1);
   force_resting_srv_  = nh.advertiseService("force_resting", &HouseKeepingServer::forceRestingCB, this);
   clear_gripper_srv_  = nh.advertiseService("clear_gripper", &HouseKeepingServer::clearGripperCB, this);
   obj_attached_srv_   = nh.advertiseService("obj_attached", &HouseKeepingServer::objAttachedCB, this);
   gripper_busy_srv_   = nh.advertiseService("gripper_busy", &HouseKeepingServer::gripperBusyCB, this);
-  grasp_events_sub_   = nh.subscribe("gazebo/grasp_events", 1, &HouseKeepingServer::graspEventCB, this);
   // Get default planning scene so I can restore it after temporal changes
   planning_scene_srv_ = nh.serviceClient<moveit_msgs::GetPlanningScene>("get_planning_scene");
   if (planning_scene_srv_.waitForExistence(ros::Duration(30.0)))
@@ -42,6 +41,11 @@ HouseKeepingServer::HouseKeepingServer()
   else
   {
     ROS_ERROR("[house keeping] Service get_planning_scene not available after 30s");
+  }
+
+  if (pnh.param("use_gazebo_grasp_events", false))
+  {
+    grasp_events_sub_ = nh.subscribe("gazebo/grasp_events", 1, &HouseKeepingServer::graspEventCB, this);
   }
 }
 
@@ -190,7 +194,7 @@ bool HouseKeepingServer::gripperBusyCB(std_srvs::TriggerRequest &request, std_sr
   }
   else
   {
-    ROS_INFO("Object %s attached to %s", last_grasp_event_.object.c_str(), last_grasp_event_.arm.c_str());
+    ROS_INFO("Object %s attached to %s", last_grasp_event_.object.c_str(), last_grasp_event_.group.c_str());
     response.success = true;
     response.message = last_grasp_event_.object;
   }
@@ -227,7 +231,7 @@ bool HouseKeepingServer::gripperBusyCB(std_srvs::TriggerRequest &request, std_sr
   return gripper_result;
 }
 
-void HouseKeepingServer::graspEventCB(const gazebo_grasp_plugin::GazeboGraspEvent& event)
+void HouseKeepingServer::graspEventCB(const thorp_msgs::GraspEvent& event)
 {
   last_grasp_event_ = event;
 }

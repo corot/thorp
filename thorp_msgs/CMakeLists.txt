@@ -3,7 +3,8 @@ project(thorp_msgs)
 find_package(catkin REQUIRED COMPONENTS std_msgs nav_msgs moveit_msgs geometry_msgs actionlib_msgs message_generation)
 
 add_message_files(DIRECTORY msg
-                      FILES KeyboardInput.msg
+                      FILES GraspEvent.msg
+                            KeyboardInput.msg
                             ObjectToPick.msg
                             PickingPlan.msg
                             PickLocation.msg
