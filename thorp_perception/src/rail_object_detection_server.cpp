@@ -39,11 +39,12 @@ class ObjectDetectionServer
 private:
   typedef actionlib::ActionClient<rail_mesh_icp::MatchTemplateAction> MatchTemplateActionClient;
 
-  // Service clients for RAIL object segmentation and template matchers
+  // Service and action clients for RAIL object segmentation and template matching
+  // We make parallel calls for template matching, so cannot use a simple action client
   ros::ServiceClient segment_srv_;
   MatchTemplateActionClient tm_ac_;
   ros::CallbackQueue callback_queue_;
-  boost::thread* spin_thread_;
+  std::unique_ptr<boost::thread> spin_thread_;
 
   // Action server to handle it conveniently for our object manipulation demo
   actionlib::SimpleActionServer<thorp_msgs::DetectObjectsAction> od_as_;
@@ -77,7 +78,7 @@ public:
     // Connect to rail_segmentation/segment_objects service
     segment_srv_ = nh.serviceClient<rail_manipulation_msgs::SegmentObjects>("rail_segmentation/segment_objects");
     ROS_INFO("[object detection] Waiting for rail_segmentation/segment_objects service to start...");
-    if (! segment_srv_.waitForExistence(ros::Duration(60.0)))
+    if (!segment_srv_.waitForExistence(ros::Duration(60.0)))
     {
       ROS_ERROR("[object detection] rail_segmentation/segment_objects service not available after 1 minute");
       ROS_ERROR("[object detection] Shutting down node...");
@@ -86,16 +87,16 @@ public:
     ROS_INFO("[object detection] rail_segmentation/segment_objects service started; ready for sending goals");
 
     // Connect to template matcher action
-    spin_thread_ = new boost::thread([&](){
+    spin_thread_ = std::make_unique<boost::thread>([&](){
       while (ros::ok()) callback_queue_.callAvailable(ros::WallDuration(0.1f)); });
     ROS_INFO_STREAM("[object detection] Waiting for template matcher action server to start...");
     if (!tm_ac_.waitForActionServerToStart(ros::Duration(1.0)))
     {
-      ROS_ERROR_STREAM("[object detection] template matcher action server not available after 1 minute");
+      ROS_ERROR_STREAM("[object detection] Template matcher action server not available after 1 minute");
       ROS_ERROR_STREAM("[object detection] Shutting down node...");
       throw;
     }
-    ROS_INFO_STREAM("[object detection] template matcher action server started; ready for sending goals");
+    ROS_INFO_STREAM("[object detection] Template matcher action server started; ready for sending goals");
 
     // Wait for all RAIL services to connect before we provide our own action server
     od_as_.start();
@@ -282,8 +283,8 @@ private:
   {
     // Call template matching action with the object pointcloud
     // Note that we log all errors multiplied by 1e6, as the values provided by the template matcher are very low
-    // provide center as initial estimate for position, but use 0, 0, 0 for orientation,
-    // as it's a good guideline only for elongated objects, where PCA is meaningful
+    // We provide the pointcloud center as the initial estimate for position, but use 0, 0, 0 for orientation, as
+    // it's a good guideline only for elongated objects, where PCA is meaningful
     rail_mesh_icp::MatchTemplateGoal goal;
     goal.initial_estimate.translation.x = obj.center.x;
     goal.initial_estimate.translation.y = obj.center.y;
@@ -297,13 +298,13 @@ private:
       ros::Duration(0.001).sleep();
     if (goal_handle.getCommState() != actionlib::CommState::DONE)
     {
-      ROS_ERROR_STREAM("[object detection] template match action timeout; aborting...");
+      ROS_ERROR_STREAM("[object detection] Template match action timeout; aborting...");
       goal_handle.cancel();
       return false;
     }
     if (goal_handle.getTerminalState() != actionlib::TerminalState::SUCCEEDED)
     {
-      ROS_ERROR_STREAM("[object detection] template match action failed: " << goal_handle.getTerminalState().getText());
+      ROS_ERROR_STREAM("[object detection] Template match action failed: " << goal_handle.getTerminalState().getText());
       return false;
     }
 

@@ -37,7 +37,7 @@ surfaces = [{'name': 'doll_table',
              'count': 2},
             {'name': 'lack_table_x15',
              'size': (0.825, 0.55),
-             'objs': 10q,
+             'objs': 10,
              'dist': 'uniform',  # different distributions: 'uniform', 'diagonal', 'xor', '+/+'
              'count': 1}
             ]
