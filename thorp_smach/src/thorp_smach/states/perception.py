@@ -214,8 +214,6 @@ class TableMarkVisited(smach.State):
 class CheckTableSize(smach.State):
     """
     Check whether the given table dimensions are within the expected limits. Returns:
-    TODO: I'm not calculating properly the dimensions of non-square tables, so this check is flawed for those tables
-    TODO: remove the temporal hacks of rejecting non-square and in-the-wall tables!
     - 'succeeded' if table dimensions are valid
     - 'aborted' otherwise
     """
