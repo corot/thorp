@@ -138,12 +138,13 @@ def close_to_obstacle(x, y, theta, clearance):
 def spawn_objects(surf, surf_index):
     added_poses = [create_3d_pose(0, 0, 0, 0, 0, 0)]  # fake pose to avoid the (non-reachable) surface's center
     obj_index = 0
+    margin = rospy.get_param('table_margins_clearance', 0.1)  # no obstacles at table margins
     while obj_index < surf['objs'] and not rospy.is_shutdown():
         obj_name = random.choice(objects)
 
         # even distribution
-        x = random.uniform(-surf['size'][0] / 2.0, +surf['size'][0] / 2.0)
-        y = random.uniform(-surf['size'][1] / 2.0, +surf['size'][1] / 2.0)
+        x = random.uniform((-surf['size'][0] + margin) / 2.0, (+surf['size'][0] - margin) / 2.0)
+        y = random.uniform((-surf['size'][1] + margin) / 2.0, (+surf['size'][1] - margin) / 2.0)
 
         if surf['dist'] == 'diagonal':
             # half surface by diagonal
