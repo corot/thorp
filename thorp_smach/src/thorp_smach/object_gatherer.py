@@ -4,7 +4,8 @@ import rospy
 import smach
 
 from states.navigation import GetRobotPose, LookToPose
-from states.perception import MonitorTables, TableMarkVisited, TableWasVisited, CheckTableSize
+from states.perception import MonitorTables, CheckTableSize
+from states.semantics import TableMarkVisited, TableWasVisited
 from states.manipulation import FoldArm
 from states.exploration import ExploreHouse
 from states.gathering import GatherObjects
@@ -81,7 +82,6 @@ def object_gatherer_sm(target_types):
         smach.Sequence.add('TURN_TO_TABLE_2', LookToPose(),
                            remapping={'target_pose': 'table_pose'})
         smach.Sequence.add('CONFIRM_TABLE_2', MonitorTables(2.0))  # 2s timeout
-        smach.Sequence.add('MARK_VISITED', TableMarkVisited())
         smach.Sequence.add('VALIDATE_SIZE', CheckTableSize())
 
     # Full SM: explore the house and gather objects from all detected tables
@@ -98,8 +98,10 @@ def object_gatherer_sm(target_types):
                                             'preempted': 'preempted'})
         smach.StateMachine.add('CONFIRM', confirm_sm,
                                transitions={'succeeded': 'GATHER',
-                                            'aborted': 'SEARCH',
+                                            'aborted': 'DISCARD',
                                             'preempted': 'preempted'})
+        smach.StateMachine.add('DISCARD', TableMarkVisited(valid=False),  # mark as invalid
+                               transitions={'succeeded': 'SEARCH'})
         smach.StateMachine.add('GATHER', GatherObjects(target_types),
                                transitions={'succeeded': 'SEARCH',
                                             'aborted': 'aborted',

@@ -21,7 +21,8 @@ class SemanticMap:
 
     def __init__(self):
         self._hashmap = SpatialHash(0.5)
-        self._colors = {'table': [0.6, 0.3, 0.0, 0.4],  # wood brown
+        self._colors = {'junk': [0.1, 0.1, 0.1, 0.4],   # dark gray
+                        'table': [0.6, 0.3, 0.0, 0.4],  # wood brown
                         'wall': [0.8, 0.25, 0.3, 0.4]}  # red brick
         self._content = {}
         self._viz_pub = rospy.Publisher('semantic_map/markers', MarkerArray, queue_size=1)

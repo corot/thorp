@@ -2,6 +2,7 @@ import rospy
 import smach
 import smach_ros
 
+import std_srvs.srv as std_srvs
 import thorp_msgs.msg as thorp_msgs
 import geometry_msgs.msg as geo_msgs
 
@@ -9,7 +10,6 @@ from turtlebot_arm_block_manipulation.msg import BlockDetectionAction
 import cob_perception_msgs.msg as cob_msgs
 from rail_manipulation_msgs.srv import SegmentObjects
 
-from thorp_toolkit.semantic_map import SemanticMap
 from thorp_toolkit.geometry import point3d2str, pose2d2str, TF2, to_transform
 from manipulation import FoldArm, ClearOctomap
 
@@ -177,40 +177,6 @@ class MonitorObjects(smach_ros.MonitorState):
         return outcome
 
 
-class TableWasVisited(smach.State):
-    """
-    Check whether a table has been visited before
-    """
-
-    def __init__(self):
-        super(TableWasVisited, self).__init__(outcomes=['true', 'false'],
-                                              input_keys=['table', 'table_pose'])
-
-    def execute(self, ud):
-        intersecting_objs = SemanticMap().objects_at(ud['table_pose'], (ud['table'].depth, ud['table'].width))
-        outcome = 'true' if len(intersecting_objs) > 0 else 'false'
-        return outcome
-
-
-class TableMarkVisited(smach.State):
-    """
-    Mark table as visited, adding it to the semantic map
-    Table detection doesn't provide a name, so we provide a sequential name here
-    """
-
-    def __init__(self):
-        super(TableMarkVisited, self).__init__(outcomes=['succeeded'],
-                                               input_keys=['table', 'table_pose'],
-                                               output_keys=['table'])
-
-    def execute(self, ud):
-        obj_name = 'table ' + str(SemanticMap().objects_count('table') + 1)
-        obj_size = ud['table'].depth, ud['table'].width, ud['table'].height
-        SemanticMap().add_object(obj_name, 'table', ud['table_pose'], obj_size)
-        ud['table'].name = obj_name  # give a name to the segmented object
-        return 'succeeded'
-
-
 class CheckTableSize(smach.State):
     """
     Check whether the given table dimensions are within the expected limits. Returns:
@@ -274,3 +240,8 @@ class MonitorTables(smach.State):
         rospy.logwarn("Detect table has been preempted after %g seconds (timeout %g)",
                       rospy.get_time() - start_time, self.timeout)
         return 'preempted'
+
+
+class ClearMarkers(smach_ros.ServiceState):
+    def __init__(self):
+        super(ClearMarkers, self).__init__('rail_segmentation/clear_markers', std_srvs.Empty)

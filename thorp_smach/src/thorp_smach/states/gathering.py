@@ -13,7 +13,8 @@ from thorp_msgs.msg import ObjectToPick, PickingPlan, PickLocation
 
 from common import SetNamedConfig, DismissNamedConfig
 from costmaps import TableAsObstacle
-from perception import MonitorTables, ObjectDetection, ObjectsDetected
+from semantics import TableMarkVisited
+from perception import MonitorTables, ObjectDetection, ObjectsDetected, ClearMarkers
 from navigation import GetRobotPose, AreSamePose, GoToPose, AlignToTable, DetachFromTable
 from manipulation import ClearPlanningScene
 from pick_objects import PickReachableObjs
@@ -279,11 +280,8 @@ def GatherObjects(target_types):
         smach.StateMachine.add('GET_ROBOT_POSE', GetRobotPose(),
                                transitions={'succeeded': 'RE_DETECT_TABLE'})
         smach.StateMachine.add('RE_DETECT_TABLE', MonitorTables(2.0),  # re-detect when nearby for more precision
-                               transitions={'succeeded': 'TABLE_OBSTACLE',  # (or fail if cannot see again)
+                               transitions={'succeeded': 'CALC_PICK_POSES',  # (or fail if cannot see again)
                                             'aborted': 'aborted'})
-        smach.StateMachine.add('TABLE_OBSTACLE', TableAsObstacle(),
-                               transitions={'succeeded': 'CALC_PICK_POSES'},
-                               remapping={'pose': 'table_pose'})
         smach.StateMachine.add('CALC_PICK_POSES', TableSidesPoses(cfg.PICKING_DIST_TO_TABLE),
                                transitions={'succeeded': 'CALC_APPROACHES',
                                             'no_valid_table': 'aborted'},
@@ -307,9 +305,14 @@ def GatherObjects(target_types):
                                             'preempted': 'preempted'},
                                remapping={'pose': 'closest_picking_pose'})
         smach.StateMachine.add('DETECT_OBJECTS', ObjectDetection(),
-                               transitions={'succeeded': 'OBJECTS_FOUND?',
+                               transitions={'succeeded': 'TABLE_VISITED',
                                             'aborted': 'aborted',
                                             'preempted': 'preempted'})
+        smach.StateMachine.add('TABLE_VISITED', TableMarkVisited(),
+                               transitions={'succeeded': 'TABLE_OBSTACLE'})
+        smach.StateMachine.add('TABLE_OBSTACLE', TableAsObstacle(),
+                               transitions={'succeeded': 'OBJECTS_FOUND?'},
+                               remapping={'pose': 'table_pose'})
         smach.StateMachine.add('OBJECTS_FOUND?', ObjectsDetected(),
                                transitions={'true': 'GROUP_OBJECTS',
                                             'false': 'no_reachable_objs'})
@@ -339,7 +342,10 @@ def GatherObjects(target_types):
                                transitions={'succeeded': 'PICK_OBJECTS'},
                                remapping={'pose': 'picking_pose'})
         smach.StateMachine.add('PICK_OBJECTS', PickReachableObjs(),
-                               transitions={'succeeded': 'DETACH_FROM_TABLE'})
+                               transitions={'succeeded': 'CLEAR_MARKERS'})
+        smach.StateMachine.add('CLEAR_MARKERS', ClearMarkers(),
+                               transitions={'succeeded': 'DETACH_FROM_TABLE',
+                                            'aborted': 'DETACH_FROM_TABLE'})
         smach.StateMachine.add('DETACH_FROM_TABLE', DetachFromTable(),
                                remapping={'pose': 'detach_pose'})
 
