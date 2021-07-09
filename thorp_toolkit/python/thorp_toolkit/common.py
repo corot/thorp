@@ -3,7 +3,22 @@ import actionlib
 
 import rosgraph_msgs.msg as rosgraph_msgs
 
+import std_srvs.srv as std_srvs
 import mbf_msgs.msg as mbf_msgs
+
+
+def pause_gazebo():
+    if not hasattr(pause_gazebo, 'srv'):
+        pause_gazebo.srv = rospy.ServiceProxy('gazebo/pause_physics', std_srvs.Empty)
+        pause_gazebo.srv.wait_for_service(0.1)
+    pause_gazebo.srv()
+
+
+def resume_gazebo():
+    if not hasattr(resume_gazebo, 'srv'):
+        resume_gazebo.srv = rospy.ServiceProxy('gazebo/unpause_physics', std_srvs.Empty)
+        resume_gazebo.srv.wait_for_service(0.1)
+    resume_gazebo.srv()
 
 
 def wait_for_sim_time():
