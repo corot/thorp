@@ -7,7 +7,7 @@
 #include <std_srvs/Empty.h>
 #include <std_srvs/Trigger.h>
 #include <trajectory_msgs/JointTrajectory.h>
-#include <gazebo_grasp_plugin/GazeboGraspEvent.h>
+#include <gazebo_grasp_plugin_ros/GazeboGraspEvent.h>
 
 #include "thorp_manipulation/thorp_arm_controller.hpp"
 #include "thorp_manipulation/joint_state_watchdog.hpp"
@@ -32,7 +32,7 @@ private:
   ros::ServiceServer obj_attached_srv_;
   ros::ServiceServer gripper_busy_srv_;
   ros::Subscriber    grasp_events_sub_;
-  gazebo_grasp_plugin::GazeboGraspEvent last_grasp_event_;
+  gazebo_grasp_plugin_ros::GazeboGraspEvent last_grasp_event_;
 
   moveit_msgs::PlanningScene planning_scene_;
 
@@ -68,7 +68,7 @@ private:
    */
   bool gripperBusyCB(std_srvs::TriggerRequest &request, std_srvs::TriggerResponse &response);
 
-  void graspEventCB(const gazebo_grasp_plugin::GazeboGraspEvent& event);
+  void graspEventCB(const gazebo_grasp_plugin_ros::GazeboGraspEvent& event);
 };
 
 };

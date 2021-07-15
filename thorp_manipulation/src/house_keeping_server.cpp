@@ -227,7 +227,7 @@ bool HouseKeepingServer::gripperBusyCB(std_srvs::TriggerRequest &request, std_sr
   return gripper_result;
 }
 
-void HouseKeepingServer::graspEventCB(const gazebo_grasp_plugin::GazeboGraspEvent& event)
+void HouseKeepingServer::graspEventCB(const gazebo_grasp_plugin_ros::GazeboGraspEvent& event)
 {
   last_grasp_event_ = event;
 }

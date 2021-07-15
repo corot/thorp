@@ -23,7 +23,7 @@
 - git:
     local-name: gazebo-pkgs
     uri: https://github.com/corot/gazebo-pkgs.git
-    version: 18354bedb13b572cb6799726cf41f66b4b8a5c9a
+    version: thorp
 
 # Kobuki / Yujin stacks
 

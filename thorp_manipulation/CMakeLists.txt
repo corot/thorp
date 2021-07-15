@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(thorp_manipulation)
 
 find_package(catkin REQUIRED roscpp actionlib geometry_msgs moveit_msgs moveit_core visualization_msgs
-                             interactive_markers gazebo_grasp_plugin thorp_msgs thorp_toolkit)
+                             interactive_markers gazebo_grasp_plugin_ros thorp_msgs thorp_toolkit)
 
 link_directories(${catkin_LIBRARY_DIRS})
 include_directories(include
@@ -10,7 +10,7 @@ include_directories(include
                     ${catkin_INCLUDE_DIRS})
 
 catkin_package(DEPENDS roscpp actionlib geometry_msgs moveit_msgs moveit_core visualization_msgs
-                       interactive_markers gazebo_grasp_plugin thorp_msgs thorp_toolkit)
+                       interactive_markers gazebo_grasp_plugin_ros thorp_msgs thorp_toolkit)
 
 
 # nodes

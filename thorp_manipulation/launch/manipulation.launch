@@ -13,7 +13,11 @@
     <rosparam unless="$(arg simulation)" file="$(find thorp_manipulation)/param/pick_and_place.yaml" command="load"/>
   </node>
 
-  <node pkg="thorp_manipulation" type="scene_interaction_server" name="scene_interaction_server" output="screen" respawn="true">
+  <node pkg="thorp_manipulation" type="scene_interaction_server" name="scene_interaction_server" output="screen" respawn="true"/>
+
+  <node if="$(arg simulation)"
+        pkg="gazebo_grasp_plugin_ros" type="grasp_event_republisher" name="grasp_event_republisher" output="screen" respawn="true">
+    <remap from="~grasp_events" to="/gazebo/grasp_events"/>
   </node>
 
   <!--  ************** Moveit move groups *************  -->
