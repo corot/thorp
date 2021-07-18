@@ -135,16 +135,19 @@ public:
 
     // Process segmented support surface (normally a table) and add to the planning
     // scene as a MoveIt! collision object, so it gets filtered out from the octomap
+    // note that we use centroid-z as z-position and 1 mm as height, to ensure we don't
+    // subsume low-laying objects segmented together with the surface
     auto& table = srv.response.segmented_objects.objects.front();
     result.surface.header = srv.response.segmented_objects.header;
     result.surface.id = "table";
     result.surface.operation = moveit_msgs::CollisionObject::ADD;
     result.surface.primitive_poses.resize(1);
     result.surface.primitive_poses.front().position = table.center;
+    result.surface.primitive_poses.front().position.z = table.centroid.z;
     result.surface.primitive_poses.front().orientation = table.orientation;
     result.surface.primitives.resize(1);
     result.surface.primitives.front().type = shape_msgs::SolidPrimitive::BOX;
-    result.surface.primitives.front().dimensions = {table.depth, table.width, table.height};
+    result.surface.primitives.front().dimensions = {table.depth, table.width, 0.001};
     ROS_INFO("[object detection] Adding table at %s as a collision object",
              ttk::point2cstr3D(result.surface.primitive_poses[0].position));
     planning_scene_interface_.addCollisionObjects(std::vector<moveit_msgs::CollisionObject>(1, result.surface));
@@ -260,19 +263,17 @@ private:
       return false;
     }
     // reject objects embedded in the table (possibly table parts not properly removed)...
-    if ((obj.center.z - obj.height / 2.0) < ((table.center.z + table.height / 2.0) - TOLERANCE))
+    if ((obj.center.z - obj.height / 2.0) < (table.centroid.z - TOLERANCE))
     {
       ROS_WARN("[object detection] Object at %s discarded as embedded in the table (%g < %g - %g)",
-               ttk::point2cstr3D(obj.center), obj.center.z - obj.height / 2.0, table.center.z + table.height / 2.0,
-               TOLERANCE);
+               ttk::point2cstr3D(obj.center), obj.center.z - obj.height / 2.0, table.centroid.z, TOLERANCE);
       return false;
     }
     // ...or floating above the table (possibly the gripper after a pick/place operation)
-    if ((obj.center.z - obj.height / 2.0) > ((table.center.z + table.height / 2.0) + TOLERANCE))
+    if ((obj.center.z - obj.height / 2.0) > (table.centroid.z + TOLERANCE))
     {
       ROS_WARN("[object detection] Object at %s discarded as floating over the table (%g > %g + %g)",
-               ttk::point2cstr3D(obj.center), obj.center.z - obj.height / 2.0, table.center.z + table.height / 2.0,
-               TOLERANCE);
+               ttk::point2cstr3D(obj.center), obj.center.z - obj.height / 2.0, table.centroid.z, TOLERANCE);
       return false;
     }
 
