@@ -187,7 +187,8 @@ def spawn_surfaces(use_preferred_locs=False):
     added_poses = []  # to check that tables are at least SURFS_MIN_DIST apart from each other
     for surf in surfaces:
         surf_index = 0
-        clearance = sqrt((surf['size'][0] / 2.0) ** 2 + (surf['size'][1] / 2.0) ** 2)
+        # clearance = surface diagonal / 2 + some extra margin
+        clearance = sqrt((surf['size'][0] / 2.0) ** 2 + (surf['size'][1] / 2.0) ** 2) + 0.1
         while surf_index < surf['count'] and not rospy.is_shutdown():
             if use_preferred_locs:
                 x, y = random.choice(PREFERRED_LOCATIONS)
