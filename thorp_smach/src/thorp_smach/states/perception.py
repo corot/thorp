@@ -44,7 +44,7 @@ def ObjectDetectionSM():
             return 'retry'
 
     sm = smach.StateMachine(outcomes=['succeeded', 'preempted', 'aborted'],
-                            input_keys=['od_attempt', 'output_frame'],
+                            input_keys=['od_attempt', 'output_frame', 'clear_scene'],
                             output_keys=['objects', 'support_surf'])
 
     with sm:
@@ -53,7 +53,7 @@ def ObjectDetectionSM():
                                             'preempted': 'preempted',
                                             'aborted': 'OBJECT_DETECTION'})
 
-        smach.StateMachine.add('OBJECT_DETECTION', ObjectDetection(),
+        smach.StateMachine.add('OBJECT_DETECTION', ObjectDetection(clear_scene=True),
                                transitions={'succeeded': 'OBJ_DETECTED_COND',
                                             'preempted': 'preempted',
                                             'aborted': 'aborted'})
@@ -104,18 +104,25 @@ class BlockDetection(smach_ros.SimpleActionState):
 class ObjectDetection(smach_ros.SimpleActionState):
     """
     Object detection state:
-    Tries to segmentate a support surface and classify the tabletop objects found on it. Returns only
-    the objects of types listed on 'object_types' input key (or all if it's not provided).
-    As output returns a list of moveit_msgs/CollisionObject msgs, plus the object names and the name of
-    the support surface.
+    Tries to segment a support surface and classify the tabletop objects found on it. Returns only the
+    objects of types listed on 'object_types' input key (or all if it's not provided).
+    As output, it returns a list of moveit_msgs/CollisionObject msgs, plus the object names and the name
+    of the support surface.
+    All detected objects and the table will be added to the planning scene as collision objects.
+    If clear_scene is true, the planning scene will be previously emptied.
     """
 
-    def __init__(self):
+    def __init__(self, clear_scene=False):
         super(ObjectDetection, self).__init__('object_detection',
                                               thorp_msgs.DetectObjectsAction,
+                                              goal_cb=self.goal_cb,
                                               result_cb=self.result_cb,
                                               input_keys=['object_types'],
                                               output_keys=['objects', 'support_surf'])
+        self.clear_scene = clear_scene
+
+    def goal_cb(self, ud, goal):
+        goal.clear_scene = self.clear_scene
 
     def result_cb(self, ud, status, result):
         objects = result.objects

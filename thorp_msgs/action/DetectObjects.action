@@ -1,6 +1,7 @@
 # goal definition
 
-string output_frame
+string output_frame    # detected objects reference frame (ignored by RAIL)
+bool clear_scene       # clear previous planning scene objects
 
 ---
 

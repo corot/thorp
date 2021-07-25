@@ -14,7 +14,7 @@ from states.geometry import TranslatePose
 from states.perception import ObjectDetection
 from states.manipulation import FoldArm, PickupObject, PlaceObject, DisplaceObject
 
-from thorp_toolkit import TF2, get_pose_from_co, distance_2d, heading
+from thorp_toolkit import TF2, get_pose_from_co, get_size_from_co, distance_2d, heading
 from utils import run_sm
 import config as cfg
 
@@ -49,7 +49,7 @@ class GetDetectedCubes(smach.State):
         # Sort them by increasing heading; we stack over the one most in front of the arm, called base
         objects = sorted(objects, key=lambda x: abs(x[-1]))
         place_pose = objects[0][1]
-        place_pose.pose.position.z += objects[0][0].primitives[0].dimensions[2] + cfg.PLACING_HEIGHT_ON_TABLE
+        place_pose.pose.position.z += get_size_from_co(objects[0][0])[2] + cfg.PLACING_HEIGHT_ON_TABLE
         ud.place_pose = place_pose
         ud.other_cubes = [obj[0] for obj in objects[1:]]
         return 'succeeded'
@@ -64,7 +64,7 @@ class IncreasePlaceHeight(smach.State):
                              output_keys=['place_pose'])
 
     def execute(self, ud):
-        ud.place_pose.pose.position.z += ud.object.primitives[0].dimensions[2] + cfg.PLACING_HEIGHT_ON_TABLE
+        ud.place_pose.pose.position.z += get_size_from_co(ud.object)[2] + cfg.PLACING_HEIGHT_ON_TABLE
         return 'succeeded'
 
 

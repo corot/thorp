@@ -204,16 +204,15 @@ class PlaceInTray(smach.Sequence):
                                           input_keys=['object'])
         self.userdata.support_surf = 'tray'
         with self:
-            smach.Sequence.add('POSE_IN_TRAY', GetPoseInTray())
+            smach.Sequence.add('POSE_ON_TRAY', GetPoseOnTray())
             smach.Sequence.add('PLACE_ON_TRAY', PlaceObject(),
-                               remapping={'place_pose': 'pose_in_tray'})
+                               remapping={'place_pose': 'pose_on_tray'})
             smach.Sequence.add('AT_TRAY_LEVEL', TranslatePose(-cfg.PLACING_HEIGHT_ON_TRAY, 'z'),
-                               remapping={'pose': 'pose_in_tray'})  # undo added clearance to replicate gravity
-            smach.Sequence.add('READJUST_POSE', DisplaceObject(),
-                               remapping={'new_pose': 'pose_in_tray'})
+                               remapping={'pose': 'pose_on_tray'})  # undo added clearance to replicate gravity
+            smach.Sequence.add('MOVE_TO_TRAY', MoveObjToTray())
 
 
-class GetPoseInTray(smach.State):
+class GetPoseOnTray(smach.State):
     """
     Calculate the next pose within the tray to use.
     """
@@ -222,7 +221,7 @@ class GetPoseInTray(smach.State):
         smach.State.__init__(self,
                              outcomes=['succeeded', 'tray_full'],
                              input_keys=['object'],
-                             output_keys=['pose_in_tray'])
+                             output_keys=['pose_on_tray'])
         self.tray_link = rospy.get_param('tray_link', 'tray_link')
         self.tray_full = False
         self.slots_x = int(cfg.TRAY_SIDE_X / cfg.TRAY_SLOT + 0.1)  # avoid float division pitfall
@@ -231,6 +230,10 @@ class GetPoseInTray(smach.State):
         self.offset_y = 0.0 if self.slots_y % 2 else cfg.TRAY_SLOT / 2.0
         self.next_x = 0
         self.next_y = 0
+
+        # add a collision object for the tray surface, right above the mesh
+        PlanningScene().add_tray(create_3d_pose(0, 0, 0.0015, 0, 0, 0, self.tray_link),
+                                 (cfg.TRAY_SIDE_X + 0.01, cfg.TRAY_SIDE_Y + 0.01, 0.002))
 
         # visualize place poses (for debugging)
         points = []
@@ -245,12 +248,8 @@ class GetPoseInTray(smach.State):
         if self.tray_full:
             return 'tray_full'
 
-        # add a collision object for the tray surface, right above the mesh
-        PlanningScene().add_tray(create_3d_pose(0, 0, 0.0015, 0, 0, 0, self.tray_link),
-                                 (cfg.TRAY_SIDE_X + 0.01, cfg.TRAY_SIDE_Y + 0.01, 0.002))
-        place_pose_z = ud['object'].primitives[0].dimensions[2] / 2.0
-        place_pose_z += cfg.PLACING_HEIGHT_ON_TRAY  # place objects 3cm above the tray, so they fall into position
-        ud['pose_in_tray'] = self._next_pose(place_pose_z)
+        place_pose_z = cfg.PLACING_HEIGHT_ON_TRAY  # place objects 3cm above the tray, so they fall into position
+        ud['pose_on_tray'] = self._next_pose(place_pose_z)
         return 'succeeded'
 
     def _next_pose(self, z):
@@ -276,23 +275,24 @@ class RemoveObject(smach.State):
                              input_keys=['object_name'])
 
     def execute(self, ud):
-        rospy.loginfo("Removing from scene object '%s' placed on tray", ud['object_name'])
+        rospy.loginfo("Removing object '%s' from planning scene", ud['object_name'])
         PlanningScene().remove_obj(ud['object_name'])
         return 'succeeded'
 
 
 class ClearPlanningScene(smach.State):
     """
-    Completely Clear the planning scene
+    Clear the planning scene, optionally sparing the tray and its content
     """
 
-    def __init__(self):
+    def __init__(self, keep_tray=True):
         smach.State.__init__(self,
                              outcomes=['succeeded'])
+        self.keep_tray = keep_tray
 
     def execute(self, ud):
         rospy.loginfo("Clearing planning scene")
-        PlanningScene().remove_obj()
+        PlanningScene().remove_all(self.keep_tray)
         return 'succeeded'
 
 
@@ -307,6 +307,22 @@ class DisplaceObject(smach.State):
                              input_keys=['object', 'new_pose'])
 
     def execute(self, ud):
-        rospy.loginfo("Object '%s' pose in tray readjusted to %s", ud['object'].id, pose2d2str(ud['new_pose']))
+        rospy.loginfo("Object '%s' pose readjusted to %s", ud['object'].id, pose2d2str(ud['new_pose']))
         PlanningScene().displace_obj(ud['object'].id, ud['new_pose'])
+        return 'succeeded'
+
+
+class MoveObjToTray(smach.State):
+    """
+    Move a collision object to the tray
+    """
+
+    def __init__(self):
+        smach.State.__init__(self,
+                             outcomes=['succeeded'],
+                             input_keys=['object', 'pose_on_tray'])
+
+    def execute(self, ud):
+        rospy.loginfo("Object '%s' moved to tray at %s", ud['object'].id, pose2d2str(ud['pose_on_tray']))
+        PlanningScene().move_obj_to_tray(ud['object'].id, ud['pose_on_tray'])
         return 'succeeded'

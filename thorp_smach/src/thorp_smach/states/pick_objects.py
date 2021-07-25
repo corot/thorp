@@ -3,7 +3,7 @@ from random import randrange, uniform
 import rospy
 import smach
 
-from thorp_toolkit.geometry import TF2, distance_2d
+from thorp_toolkit.geometry import TF2, distance_2d, get_pose_from_co
 
 from perception import ObjectDetection
 from manipulation import ClearGripper, ClearPlanningScene, FoldArm, PickupObject, PlaceInTray
@@ -28,7 +28,7 @@ class TargetSelection(smach.State):
     def execute(self, ud):
         targets = []
         for i, obj in enumerate(ud['objects']):
-            obj_pose = obj.primitive_poses[0]
+            obj_pose = get_pose_from_co(obj)
             dist = distance_2d(obj_pose, self.arm_on_bfp_rf)  # assumed in arm base reference frame
             if dist <= (cfg.MAX_ARM_REACH - 3e-3):  # 3 mm safety margin to account for perception noise
                 targets.append((obj, dist))
@@ -89,6 +89,8 @@ class PickReachableObjs(smach.StateMachine):
 
         pick_1_obj_sm.userdata.max_effort = cfg.GRIPPER_MAX_EFFORT
         with pick_1_obj_sm:
+            smach.StateMachine.add('CLEAR_P_SCENE', ClearPlanningScene(),
+                                   transitions={'succeeded': 'DETECT_OBJECTS'})
             smach.StateMachine.add('DETECT_OBJECTS', ObjectDetection(),
                                    transitions={'succeeded': 'SELECT_TARGET',
                                                 'aborted': 'aborted',
@@ -111,7 +113,7 @@ class PickReachableObjs(smach.StateMachine):
                                                 'preempted': 'aborted',
                                                 'aborted': 'aborted'})
             smach.StateMachine.add('SKIP_OBJECT', SkipOneObject(),
-                                   transitions={'succeeded': 'DETECT_OBJECTS',
+                                   transitions={'succeeded': 'CLEAR_P_SCENE',
                                                 'max_failures': 'aborted'})
 
         pick_reach_objs_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted', 'tray_full'],

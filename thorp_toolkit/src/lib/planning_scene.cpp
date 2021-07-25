@@ -30,10 +30,10 @@ int32_t extractObjectData(const moveit_msgs::CollisionObject& obj,
   obj_pose.header = obj.header;
 
   // We get object's pose from the mesh/primitive poses; try first with the meshes
-  if (obj.mesh_poses.size() > 0)
+  if (!obj.mesh_poses.empty())
   {
     obj_pose.pose = obj.mesh_poses[0];
-    if (obj.meshes.size() > 0)
+    if (!obj.meshes.empty())
     {
       tf::vectorEigenToMsg(shapes::computeShapeExtents(obj.meshes[0]), obj_size);
 
@@ -47,10 +47,10 @@ int32_t extractObjectData(const moveit_msgs::CollisionObject& obj,
       return thorp_msgs::ThorpError::OBJECT_SIZE_NOT_FOUND;
     }
   }
-  else if (obj.primitive_poses.size() > 0)
+  else if (!obj.primitive_poses.empty())
   {
     obj_pose.pose = obj.primitive_poses[0];
-    if (obj.primitives.size() > 0)
+    if (!obj.primitives.empty())
     {
       tf::vectorEigenToMsg(shapes::computeShapeExtents(obj.primitives[0]), obj_size);
     }
@@ -76,7 +76,7 @@ int32_t getObjectData(const std::string& obj_name,
   std::map<std::string, moveit_msgs::CollisionObject> objects =
       planningScene().getObjects(std::vector<std::string>(1, obj_name));
 
-  if (objects.size() == 0)
+  if (objects.empty())
   {
     ROS_ERROR("[planning scene] Collision object '%s' not found", obj_name.c_str());
     return thorp_msgs::ThorpError::OBJECT_NOT_FOUND;
@@ -100,7 +100,7 @@ int32_t getAttachedObjectData(const std::string& obj_name,
   std::map<std::string, moveit_msgs::AttachedCollisionObject> objects =
       planningScene().getAttachedObjects(std::vector<std::string>(1, obj_name));
 
-  if (objects.size() == 0)
+  if (objects.empty())
   {
     // Maybe pick failed; we will not continue because place will surely fail without knowing the attaching pose
     ROS_ERROR("[planning scene] Attached collision object '%s' not found", obj_name.c_str());

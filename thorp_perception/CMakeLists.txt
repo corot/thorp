@@ -8,6 +8,7 @@ find_package(catkin REQUIRED tf roscpp pcl_ros actionlib
                              rail_manipulation_msgs rail_mesh_icp
                              geometry_msgs moveit_msgs shape_msgs
                              image_geometry image_transport cv_bridge)
+find_package(nlohmann_json REQUIRED)
 find_package(OpenMP REQUIRED)
 if(OPENMP_FOUND)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")

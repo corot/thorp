@@ -196,9 +196,7 @@ def create_3d_pose(x, y, z, roll, pitch, yaw, frame=None):
 
 
 def get_pose_from_co(co, stamped=False):
-    """ Get the pose for a moveit_msgs/CollisionObject. We try first meshes, then primitives and finally planes.
-        TODO: make another function to calculate the centroid OF ALL THREE ELEMENTS and provide it!
-        More TODO: put this in thorp_toolkit, and also a C++ version and aco """
+    """ Get the pose for a moveit_msgs/CollisionObject. We try first meshes, then primitives and finally planes """
     if len(co.mesh_poses):
         pose = co.mesh_poses[0]
     elif len(co.primitive_poses):
@@ -214,6 +212,31 @@ def get_pose_from_co(co, stamped=False):
     pose_stamped.header = co.header
     pose_stamped.pose = pose
     return pose_stamped
+
+
+def get_pose_from_aco(aco, stamped=False):
+    """ Get the pose for a moveit_msgs/AttachedCollisionObject """
+    return get_pose_from_co(aco.object, stamped)
+
+
+def get_size_from_co(co):
+    """ Get the size for a moveit_msgs/CollisionObject. We try first meshes, then primitives """
+    if len(co.meshes):
+        mesh = co.meshes[0]
+        if mesh.vertices < 2:
+            return [0, 0, 0]
+        vmin = [float('+Inf')] * 3
+        vmax = [float('-Inf')] * 3
+        for pt in mesh.vertices:
+            vpt = [pt.x, pt.y, pt.z]
+            for i in range(3):
+                vmin[i] = min(vmin[i], vpt[i])
+                vmax[i] = max(vmax[i], vpt[i])
+        return [vmax[0] - vmin[0], vmax[1] - vmin[1], vmax[2] - vmin[2]]
+    if len(co.primitives):
+        return co.primitives[0].dimensions
+
+    raise Exception("Collision object contain no meshes nor primitives")
 
 
 def to_pose2d(pose):
