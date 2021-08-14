@@ -36,6 +36,7 @@
 using json = nlohmann::json;
 
 #include <thorp_toolkit/tf2.hpp>
+#include <thorp_toolkit/common.hpp>
 #include <thorp_toolkit/geometry.hpp>
 namespace ttk = thorp_toolkit;
 
@@ -66,8 +67,10 @@ private:
 
   bool publish_static_tf_;      ///< Publish static transforms for the segmented objects and surface
   double max_matching_error_;   ///< Object recognition template matching threshold
+  double redetect_tolerance_;   ///< ROI padding for matching an object to an existing one on planning scene
+  double tabletop_vol_height_;  ///< Tabletop segmented volume maximum height
   std::string output_frame_;    ///< Recognized objects reference frame; we cannot use goal's field because
-  ///< RAIL segmentation zone's frame cannot be reconfigured on runtime
+                                ///< RAIL segmentation zone's frame cannot be reconfigured on runtime
 
 public:
 
@@ -80,6 +83,8 @@ public:
 
     pnh.param("publish_static_tf", publish_static_tf_, false);  // good for debugging but pollutes a lot
     pnh.param("max_matching_error", max_matching_error_, 1e-5);
+    pnh.param("redetect_tolerance", redetect_tolerance_, 1e-2);
+    pnh.param("tabletop_vol_height", tabletop_vol_height_, 0.2);
     pnh.param("output_frame", output_frame_, std::string("base_footprint"));
 
     markers_pub_ = pnh.advertise<visualization_msgs::MarkerArray>("visual_markers", 1);
@@ -160,7 +165,7 @@ public:
     result.surface.primitives.front().dimensions = {table.depth, table.width, 0.001};
     ROS_INFO("[object detection] Adding table at %s as a collision object",
              ttk::point2cstr3D(result.surface.primitive_poses[0].position));
-    planning_scene_interface_.addCollisionObjects(std::vector<moveit_msgs::CollisionObject>(1, result.surface));
+    std::vector<moveit_msgs::CollisionObject> new_scene_objs(1, result.surface);
 
     if (publish_static_tf_)
       ttk::TF2::instance().sendTransform(result.surface.primitive_poses.front(),
@@ -168,23 +173,22 @@ public:
     // show collision objects with color
     moveit_msgs::ObjectColor obj_color;
     obj_color.id = result.surface.id;
-    obj_color.color.r = table.rgb[0];
-    obj_color.color.g = table.rgb[1];
-    obj_color.color.b = table.rgb[2];
-    obj_color.color.a = 1.0;
+    obj_color.color = ttk::makeColor(table.rgb[0], table.rgb[1], table.rgb[2]);
     std::vector<moveit_msgs::ObjectColor> obj_colors{ obj_color };
 
     ROS_INFO("[object detection] %lu objects plus table segmented in %.2f seconds",
              srv.response.segmented_objects.objects.size() - 1, (ros::Time::now() - time_start).toSec());
 
-    // good time for serving preempt requests, as we will process segmented objects in parallel
+    // Good time for serving preempt requests, as we will process segmented objects in parallel
     if (od_as_.isPreemptRequested())
     {
       od_as_.setPreempted(result, "Preempted before processing segmented objects");
       return;
     }
 
+    // Required to avoid repeating existing object names on planning scene
     std::vector<std::string> extant_objs = std::move(planning_scene_interface_.getKnownObjectNames());
+
     visualization_msgs::MarkerArray markers;
 
     // Process segmented objects following the support surface, and add them to the planning scene
@@ -202,12 +206,8 @@ public:
       co.mesh_poses.resize(1);
       co.mesh_poses.front().position = rail_obj.center;
       co.mesh_poses.front().orientation = rail_obj.orientation;
-//      co.primitive_poses.resize(1);
-//      co.primitive_poses.front().position = rail_obj.center;
-//      co.primitive_poses.front().orientation = rail_obj.orientation;
-//      co.primitives.resize(1);
-//      co.primitives.front().type = shape_msgs::SolidPrimitive::BOX;
-      // identify and possibly update the pose with ICP template matching correction
+
+      // Identify object type and possibly update the pose with ICP template matching correction
       // we reject objects failing to match any template within our error threshold
       if (!identifyObject(rail_obj, co.mesh_poses.front()))
       {
@@ -215,13 +215,11 @@ public:
         continue;
       }
 
-      // our convention is that x-dimension is the longest one
-      json metadata = {"size", {rail_obj.depth, rail_obj.width, rail_obj.height}, "color", rail_obj.rgb};
+      // Our convention is that x-dimension is the longest one
+      double length = std::max(rail_obj.depth, rail_obj.width);
+      double width = std::min(rail_obj.depth, rail_obj.width);
+      json metadata = {"size", {length, width, rail_obj.height}, "color", rail_obj.rgb};
       co.type.db = std::move(metadata.dump());
-      ROS_WARN_STREAM("METADATA " << co.type.db);    //TODO  this will probably fail on Docker,,, didn't add any dep!
-//      double length = std::max(rail_obj.depth, rail_obj.width);
-//      double width = std::min(rail_obj.depth, rail_obj.width);
-//      co.primitives.front().dimensions = { length, width, rail_obj.height };
 
       // Load mesh from the identified object type and convert to mesh msg
       shapes::Mesh* mesh = shapes::createMeshFromResource("package://thorp_perception/meshes/" + rail_obj.name + ".stl");
@@ -236,39 +234,47 @@ public:
 
       #pragma omp critical    // NOLINT
 
-      // make an ID for the new object; cannot be done in parallel, as we add an incremental index to avoid repetitions
-      co.id = newObjId(rail_obj.name, extant_objs);
+      // Make a name for the new object; note that we must do under omp critical to keep extant_objs list meaningful
+      co.id = getObjName(rail_obj, extant_objs);
       extant_objs.push_back(co.id);
 
       if (publish_static_tf_)
         ttk::TF2::instance().sendTransform(co.mesh_poses.front(), output_frame_, co.id);
 
-//      co.primitive_poses.push_back(co.mesh_poses.front());
-//      // matched poses have z = 0; raise the co's primitive to entirely cover the pointcloud
-//      co.primitive_poses.front().position.z += rail_obj.height / 2.0;
-//      co.primitives.resize(1);
-//      co.primitives.front().type = shape_msgs::SolidPrimitive::BOX;
-//      co.primitives.front().dimensions = { length, width, rail_obj.height };
-
-      // use segmented pointcloud's color for the co
+      // Use segmented pointcloud's color for the co
       obj_color.id = co.id;
-      obj_color.color.r = rail_obj.rgb[0];
-      obj_color.color.g = rail_obj.rgb[1];
-      obj_color.color.b = rail_obj.rgb[2];
-      obj_color.color.a = 1.0;
+      obj_color.color = ttk::makeColor(rail_obj.rgb[0], rail_obj.rgb[1], rail_obj.rgb[2]);
 
       ROS_INFO("[object detection] Object at %s classified as %s",
                ttk::pose2cstr2D(co.mesh_poses.front()), rail_obj.name.c_str());
-      result.objects.push_back(co);
+      result.objects.push_back(co);  // TODO   try emplace
+      markers.markers.emplace_back(makeLabelMarker(obj_colors.size(), rail_obj.height, co, obj_color.color));
+      markers.markers.emplace_back(makeVolumeMarker(obj_colors.size(), rail_obj.bounding_volume));
       obj_colors.push_back(obj_color);
-
-      addLabelMarker(markers, rail_obj.height, co, obj_color.color);
     }
+
+    // Remove all collision objects previously detected within the tabletop bounding volume
+    rail_manipulation_msgs::BoundingVolume segmented_volume = table.bounding_volume;
+    segmented_volume.dimensions.z += tabletop_vol_height_;
+    segmented_volume.pose.pose.position.z += tabletop_vol_height_ / 2.0;
+    markers.markers.emplace_back(makeVolumeMarker(0, segmented_volume));
+    std::vector<std::string> objs_to_remove = std::move(getObjsInVolume(segmented_volume));
+
+    // Exclude the table itself and all the objects that have been re-detected, as they will be replaced by the new ones
+    // this avoids possible flickering between deletion and addition
+    objs_to_remove.erase(std::remove(objs_to_remove.begin(), objs_to_remove.end(), result.surface.id),
+                         objs_to_remove.end());
+
+    auto obj_detected_fn =
+        [&](const std::string& obj) { return std::any_of(result.objects.begin(), result.objects.end(),
+                                                         [&](const moveit_msgs::CollisionObject& co) {
+                                                           return co.id == obj; }); };
+    objs_to_remove.erase(std::remove_if(objs_to_remove.begin(), objs_to_remove.end(), obj_detected_fn), objs_to_remove.end());
+    planning_scene_interface_.removeCollisionObjects(objs_to_remove);
+
     if (!result.objects.empty())
     {
-      planning_scene_interface_.addCollisionObjects(result.objects, obj_colors);
-      markers_pub_.publish(markers);
-
+      std::copy(result.objects.begin(), result.objects.end(), std::back_inserter(new_scene_objs));
       ROS_INFO("[object detection] Succeeded! %lu objects detected in %.2f seconds", result.objects.size(),
                (ros::Time::now() - time_start).toSec());
     }
@@ -277,6 +283,9 @@ public:
       ROS_INFO("[object detection] Succeeded, but couldn't find any tabletop object (time: %.2f s)",
                (ros::Time::now() - time_start).toSec());
     }
+
+    planning_scene_interface_.addCollisionObjects(new_scene_objs, obj_colors);
+    markers_pub_.publish(markers);
 
     od_as_.setSucceeded(result);
   }
@@ -346,7 +355,7 @@ private:
 
     rail_mesh_icp::MatchTemplateResult::ConstPtr result = goal_handle.getResult();
 
-    // check if best match is good enough
+    // Check if best match is good enough
     if (result->match_error > max_matching_error_)
     {
       ROS_INFO_STREAM("[object detection] Best match (" << result->template_name << ") error above tolerance ("
@@ -361,7 +370,7 @@ private:
     obj.name = result->template_name;
     obj.recognized = true;
 
-    // use the matched template orientation to recalculate pointcloud dimensions
+    // Use the matched template orientation to recalculate pointcloud dimensions
     recalcDimensions(obj, result->template_pose.transform);
 
     ttk::tf2pose(result->template_pose.transform, pose);
@@ -372,14 +381,14 @@ private:
 
   void recalcDimensions(rail_manipulation_msgs::SegmentedObject& obj, const geometry_msgs::Transform& tf)
   {
-    // recenter object pointcloud in its estimated location (apply the inverse of its pose)
+    // Recenter object pointcloud in its estimated location (apply the inverse of its pose)
     pcl::PointCloud<pcl::PointXYZRGB> tmp_pc;
     pcl::fromROSMsg(obj.point_cloud, tmp_pc);
     tf::Transform transform;
     tf::transformMsgToTF(tf, transform);
     pcl_ros::transformPointCloud(tmp_pc, tmp_pc, transform.inverse());
 
-    // now max - min points provide the real size for each dimension, unlike the original values that provided the
+    // Now max - min points provide the real size for each dimension, unlike the original values that provided the
     // size along the reference frame axis
     Eigen::Vector4f min_pt, max_pt;
     pcl::getMinMax3D(tmp_pc, min_pt, max_pt);
@@ -392,35 +401,110 @@ private:
     obj.depth = new_depth;
   }
 
+  std::string getObjName(rail_manipulation_msgs::SegmentedObject& obj, const std::vector<std::string>& extant_objs)
+  {
+    // obj.name contains the best matching template; to complete an object name, we append an index to avoid repetitions
+    // if there's already an object of the same type in approximately the same location, we just copy the name (with the
+    // expectation that both are the same, detected on successive calls to segmentation), or...
+    std::vector<std::string> overlapping_objs = std::move(getObjsInVolume(obj.bounding_volume));
+    const std::string& template_name = obj.name;
+    for (const auto& obj_name : overlapping_objs)
+    {
+      if (obj_name.find(template_name) == 0)
+      {
+        ROS_DEBUG_STREAM("" << obj_name << " found on planning scene");
+        return obj_name;
+      }
+    }
+
+    // ...we just find an unused index in the extant objects list
+    for (int index = 1; index < INT_MAX; ++index)
+    {
+      std::string obj_name = template_name + " " + std::to_string(index);
+      if (std::find(extant_objs.begin(), extant_objs.end(), obj_name) == extant_objs.end())
+      {
+        ROS_DEBUG_STREAM("" << template_name << " not found on planning scene; renaming as " << obj_name);
+        return obj_name;
+      }
+    }
+  }
+
+  std::vector<std::string> getObjsInVolume(const rail_manipulation_msgs::BoundingVolume& volume)
+  {
+    // Retrieve objects on planning scene within the given volume padded by redetect_tolerance_
+    tf::Transform tf;
+    ttk::pose2tf(volume.pose.pose, tf);
+    double half_dim_x = (volume.dimensions.x / 2.0) + redetect_tolerance_;
+    double half_dim_y = (volume.dimensions.y / 2.0) + redetect_tolerance_;
+    double half_dim_z = (volume.dimensions.z / 2.0) + redetect_tolerance_;
+    tf::Vector3 corner1 = tf * tf::Vector3(+half_dim_x, +half_dim_y, +half_dim_z);
+    tf::Vector3 corner2 = tf * tf::Vector3(-half_dim_x, -half_dim_y, -half_dim_z);
+    return planning_scene_interface_.getKnownObjectNamesInROI(std::min(corner2.x(), corner1.x()),
+                                                              std::min(corner2.y(), corner1.y()),
+                                                              std::min(corner2.z(), corner1.z()),
+                                                              std::max(corner2.x(), corner1.x()),
+                                                              std::max(corner2.y(), corner1.y()),
+                                                              std::max(corner2.z(), corner1.z()));
+  }
+
+  // visualization methods
+
   // Make a label to show over the collision object
-  void addLabelMarker(visualization_msgs::MarkerArray& markers, double obj_height,
-                      const moveit_msgs::CollisionObject& co, const std_msgs::ColorRGBA& color)
+  visualization_msgs::Marker makeLabelMarker(const size_t id, const double obj_height,
+                                             const moveit_msgs::CollisionObject& co, const std_msgs::ColorRGBA& color)
   {
     visualization_msgs::Marker m;
     m.action = visualization_msgs::Marker::ADD;
     m.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
     m.header = co.header;
     m.ns = "labels";
-    m.id = (int)markers.markers.size();
+    m.id = (int)id;
     m.text = co.id;
     m.scale.z = 0.035;
     m.color = color;
     m.pose = co.mesh_poses.front();
-    m.pose.position.z += obj_height   + 0.02;//////////2.0 + 0.025;
-    m.lifetime.fromSec(5.0);
-    markers.markers.emplace_back(m);
+    m.pose.position.z += obj_height + 0.02;
+    m.lifetime.fromSec(15.0);
+    return m;
   }
 
-  static std::string newObjId(const std::string& template_name, const std::vector<std::string>& extant_objs)
+  // Make a bounding volume marker for the segmented object
+  visualization_msgs::Marker makeVolumeMarker(const size_t id, const rail_manipulation_msgs::SegmentedObject& obj)
   {
-    // we name objects with the best matching template's name and an index to avoid repetitions
-    for (int index = 1; index < INT_MAX; ++index)
-    {
-      std::string obj_id = template_name + " " + std::to_string(index);
-      if (std::find(extant_objs.begin(), extant_objs.end(), obj_id) == extant_objs.end())
-        return obj_id;
-    }
+    visualization_msgs::Marker m;
+    m.action = visualization_msgs::Marker::ADD;
+    m.type = visualization_msgs::Marker::CUBE;
+    m.header = obj.bounding_volume.pose.header;
+    m.ns = "b_volumes";
+    m.id = (int)id;
+    m.scale.x = obj.depth;
+    m.scale.y = obj.width;
+    m.scale.z = obj.height;
+    m.color = ttk::makeColor(0.8f, 0.8f, 0.8f, 0.2f);
+    m.pose.position = obj.center;
+    m.pose.orientation = obj.orientation;
+    m.lifetime.fromSec(5.0);
+    return m;
   }
+
+  // Make a bounding volume marker
+  visualization_msgs::Marker makeVolumeMarker(const size_t id, const rail_manipulation_msgs::BoundingVolume& bv)
+  {
+    visualization_msgs::Marker m;
+    m.action = visualization_msgs::Marker::ADD;
+    m.type = visualization_msgs::Marker::CUBE;
+    m.header = bv.pose.header;
+    m.ns = "b_volumes";
+    m.id = (int)id;
+    m.scale.x = bv.dimensions.x + redetect_tolerance_;
+    m.scale.y = bv.dimensions.y + redetect_tolerance_;
+    m.scale.z = bv.dimensions.z + redetect_tolerance_;
+    m.color = ttk::makeColor(0.8f, 0.8f, 0.8f, 0.2f);
+    m.pose = bv.pose.pose;
+    m.lifetime.fromSec(5.0);
+    return m;
+  }
+
 };
 
 };  // namespace thorp_perception
