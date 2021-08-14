@@ -11,7 +11,7 @@ import thorp_msgs.msg as thorp_msgs
 import arbotix_msgs.srv as arbotix_srvs
 
 from states.common import ExecuteUserCommand
-from states.perception import ObjectDetectionSM
+from states.perception import ObjectDetection
 from states.manipulation import FoldArm, PickupObject, PlaceObject, ClearPlanningScene
 
 from utils import run_sm
@@ -54,11 +54,10 @@ with sm:
                                         'fold': 'FOLD_ARM',
                                         'stop': 'FOLD_ARM_AND_RELAX',
                                         'invalid_command': 'error'})
-    smach.StateMachine.add('OBJECT_DETECTION',
-                           ObjectDetectionSM(),
+    smach.StateMachine.add('OBJECT_DETECTION', ObjectDetection(),
                            transitions={'succeeded': 'DRAG_AND_DROP',
                                         'preempted': 'preempted',
-                                        'aborted': 'error'})
+                                        'aborted': 'aborted'})
     smach.StateMachine.add('DRAG_AND_DROP',
                            smach_ros.SimpleActionState('drag_and_drop',
                                                        thorp_msgs.DragAndDropAction,

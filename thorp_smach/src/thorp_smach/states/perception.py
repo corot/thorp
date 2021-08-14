@@ -11,67 +11,8 @@ import cob_perception_msgs.msg as cob_msgs
 from rail_manipulation_msgs.srv import SegmentObjects
 
 from thorp_toolkit.geometry import point3d2str, pose2d2str, TF2, to_transform
-from manipulation import FoldArm, ClearOctomap
 
 from thorp_smach import config as cfg
-
-
-def ObjectDetectionSM():
-    """
-    Object detection sub state machine; iterates over object_detection action state and recovery
-    mechanism until an object is detected, it's preempted or there's an error (aborted outcome)
-    TODO: deprecated; doesn't make much sense, I think...
-    """
-
-    class ObjDetectedCondition(smach.State):
-        """ Check for the object detection result to retry if no objects where detected """
-
-        def __init__(self):
-            smach.State.__init__(self, outcomes=['preempted', 'satisfied', 'fold_arm', 'retry'],
-                                 input_keys=['od_attempt', 'objects'],
-                                 output_keys=['od_attempt'])
-
-        def execute(self, ud):
-            if self.preempt_requested():
-                self.service_preempt()
-                return 'preempted'
-            if len(ud['objects']) > 0:
-                ud.od_attempt = 0
-                return 'satisfied'
-            ud.od_attempt += 1
-            if ud.od_attempt == 1:
-                return 'fold_arm'
-            return 'retry'
-
-    sm = smach.StateMachine(outcomes=['succeeded', 'preempted', 'aborted'],
-                            input_keys=['od_attempt', 'output_frame', 'clear_scene'],
-                            output_keys=['objects', 'support_surf'])
-
-    with sm:
-        smach.StateMachine.add('CLEAR_OCTOMAP', ClearOctomap(),
-                               transitions={'succeeded': 'OBJECT_DETECTION',
-                                            'preempted': 'preempted',
-                                            'aborted': 'OBJECT_DETECTION'})
-
-        smach.StateMachine.add('OBJECT_DETECTION', ObjectDetection(clear_scene=True),
-                               transitions={'succeeded': 'OBJ_DETECTED_COND',
-                                            'preempted': 'preempted',
-                                            'aborted': 'aborted'})
-
-        smach.StateMachine.add('OBJ_DETECTED_COND',
-                               ObjDetectedCondition(),
-                               transitions={'satisfied': 'succeeded',
-                                            'preempted': 'preempted',
-                                            'fold_arm': 'FOLD_ARM',
-                                            'retry': 'CLEAR_OCTOMAP'})
-
-        smach.StateMachine.add('FOLD_ARM',
-                               FoldArm(),
-                               transitions={'succeeded': 'CLEAR_OCTOMAP',
-                                            'preempted': 'preempted',
-                                            'aborted': 'CLEAR_OCTOMAP'})
-
-    return sm
 
 
 class BlockDetection(smach_ros.SimpleActionState):
