@@ -1,7 +1,7 @@
 - name: "Robot front"
   remove_surface: true
   require_surface: true
-  parent_frame_id: "map"
+  parent_frame_id: "base_footprint"
   child_frame_id: "xtion_depth_frame"
   bounding_frame_id: "base_footprint"
   segmentation_frame_id: "base_footprint"
