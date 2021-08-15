@@ -8,6 +8,7 @@ from thorp_toolkit.geometry import TF2, distance_2d, get_pose_from_co
 from perception import ObjectDetection
 from manipulation import ClearGripper, ClearPlanningScene, FoldArm, PickupObject, PlaceInTray
 
+from thorp_smach.containers.do_on_exit import DoOnExit as DoOnExitContainer
 from thorp_smach import config as cfg
 
 
@@ -108,7 +109,7 @@ class ClearFailures(smach.State):
         return 'succeeded'
 
 
-class PickReachableObjs(smach.StateMachine):
+class PickReachableObjs(DoOnExitContainer):
     """  Pick all the objects within reach and place in the tray  """
 
     def __init__(self):
@@ -171,7 +172,8 @@ class PickReachableObjs(smach.StateMachine):
                                    transitions={'succeeded': 'SELECT_TARGET',
                                                 'aborted': 'aborted',
                                                 'preempted': 'preempted'})
-            smach.StateMachine.add('SELECT_TARGET', TargetSelection(),  # just used to check if there are more objects
-                                   transitions={'have_target': 'PICKUP_OBJECTS',
-                                                'no_targets': 'CLEAR_P_SCENE'})
-            smach.StateMachine.add('CLEAR_P_SCENE', ClearPlanningScene())
+            smach.StateMachine.add('SELECT_TARGET', TargetSelection(),  # just used to check if there are objects left
+                                   transitions={'have_target': 'PICKUP_OBJECTS',  # restart picking if so
+                                                'no_targets': 'succeeded'})
+            DoOnExitContainer.add_finally('CLEAR_P_SCENE', ClearPlanningScene())
+            DoOnExitContainer.add_finally('FINAL_FOLD_ARM', FoldArm())
