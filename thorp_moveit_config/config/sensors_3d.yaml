@@ -20,6 +20,6 @@ sensors:
     skip_horizontal_pixels: 10
     # padding configuration nicely explained here: https://github.com/ros-planning/moveit_ros/issues/342#issuecomment-63454410
     shadow_threshold: 0.2  # needs 0.2!!! no idea why
-    padding_scale: 4.0
-    padding_offset: 0.03
+    padding_scale: 1.0
+    padding_offset: 0.01
     filtered_cloud_topic: occ_map_filtered_cloud
