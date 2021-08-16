@@ -258,19 +258,13 @@ public:
     segmented_volume.dimensions.z += tabletop_vol_height_;
     segmented_volume.pose.pose.position.z += tabletop_vol_height_ / 2.0;
     markers.markers.emplace_back(makeVolumeMarker(0, segmented_volume));
-    std::vector<std::string> objs_to_remove = std::move(getObjsInVolume(segmented_volume));
+    std::set<std::string> to_remove = std::move(getObjsInVolume(segmented_volume));
 
     // Exclude the table itself and all the objects that have been re-detected, as they will be replaced by the new ones
-    // this avoids possible flickering between deletion and addition
-    objs_to_remove.erase(std::remove(objs_to_remove.begin(), objs_to_remove.end(), result.surface.id),
-                         objs_to_remove.end());
-
-    auto obj_detected_fn =
-        [&](const std::string& obj) { return std::any_of(result.objects.begin(), result.objects.end(),
-                                                         [&](const moveit_msgs::CollisionObject& co) {
-                                                           return co.id == obj; }); };
-    objs_to_remove.erase(std::remove_if(objs_to_remove.begin(), objs_to_remove.end(), obj_detected_fn), objs_to_remove.end());
-    planning_scene_interface_.removeCollisionObjects(objs_to_remove);
+    // This avoids possible flickering between deletion and addition
+    to_remove.erase(result.surface.id);
+    std::for_each(result.objects.begin(), result.objects.end(), [&](const auto& co) { to_remove.erase(co.id); });
+    planning_scene_interface_.removeCollisionObjects(std::vector<std::string>{to_remove.begin(), to_remove.end()});
 
     if (!result.objects.empty())
     {
@@ -406,7 +400,7 @@ private:
     // obj.name contains the best matching template; to complete an object name, we append an index to avoid repetitions
     // if there's already an object of the same type in approximately the same location, we just copy the name (with the
     // expectation that both are the same, detected on successive calls to segmentation), or...
-    std::vector<std::string> overlapping_objs = std::move(getObjsInVolume(obj.bounding_volume));
+    std::set<std::string> overlapping_objs = std::move(getObjsInVolume(obj.bounding_volume));
     const std::string& template_name = obj.name;
     for (const auto& obj_name : overlapping_objs)
     {
@@ -429,7 +423,7 @@ private:
     }
   }
 
-  std::vector<std::string> getObjsInVolume(const rail_manipulation_msgs::BoundingVolume& volume)
+  std::set<std::string> getObjsInVolume(const rail_manipulation_msgs::BoundingVolume& volume)
   {
     // Retrieve objects on planning scene within the given volume padded by redetect_tolerance_
     tf::Transform tf;
@@ -439,12 +433,14 @@ private:
     double half_dim_z = (volume.dimensions.z / 2.0) + redetect_tolerance_;
     tf::Vector3 corner1 = tf * tf::Vector3(+half_dim_x, +half_dim_y, +half_dim_z);
     tf::Vector3 corner2 = tf * tf::Vector3(-half_dim_x, -half_dim_y, -half_dim_z);
-    return planning_scene_interface_.getKnownObjectNamesInROI(std::min(corner2.x(), corner1.x()),
-                                                              std::min(corner2.y(), corner1.y()),
-                                                              std::min(corner2.z(), corner1.z()),
-                                                              std::max(corner2.x(), corner1.x()),
-                                                              std::max(corner2.y(), corner1.y()),
-                                                              std::max(corner2.z(), corner1.z()));
+    std::vector<std::string> objs =
+        std::move(planning_scene_interface_.getKnownObjectNamesInROI(std::min(corner2.x(), corner1.x()),
+                                                                     std::min(corner2.y(), corner1.y()),
+                                                                     std::min(corner2.z(), corner1.z()),
+                                                                     std::max(corner2.x(), corner1.x()),
+                                                                     std::max(corner2.y(), corner1.y()),
+                                                                     std::max(corner2.z(), corner1.z())));
+    return {objs.begin(), objs.end()};
   }
 
   // visualization methods
