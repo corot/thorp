@@ -99,7 +99,7 @@ std::vector<Object> BaseInterface::getObjectsInRegion(const Point2d& lower_left,
   return spatial_hash_.getObjectsInRegion(lower_left, upper_right);
 }
 
-const std::shared_ptr<Object> BaseInterface::getObject(const int id) const
+std::shared_ptr<Object> BaseInterface::getObject(const int id) const
 {
   return spatial_hash_.getObject(id);
 }

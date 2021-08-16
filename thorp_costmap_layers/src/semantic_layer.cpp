@@ -155,8 +155,7 @@ void SemanticLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, i
         // enforce updated area bounds on cell coordinates because our spacial clipping can
         // let in invalid cells (on max_i and / or max_j) due to rounding (causing SW-12194)
         if ((cell.x >= min_i && cell.x < max_i && cell.y >= min_j && cell.y < max_j) &&
-            (!object.use_maximum || master_grid.getCost(cell.x, cell.y) <
-                                        object.cost * LETHAL_OBSTACLE))
+            (!object.use_maximum || master_grid.getCost(cell.x, cell.y) < object.cost * LETHAL_OBSTACLE))
           master_grid.setCost(cell.x, cell.y, object.cost * LETHAL_OBSTACLE);
       }
     }

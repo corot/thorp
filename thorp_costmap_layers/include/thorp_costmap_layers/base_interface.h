@@ -82,9 +82,9 @@ public:
   }
 
   /**
-   * Returns an object by its id
+   * Returns a pointer to an object by its id
    */
-  const std::shared_ptr<Object> getObject(int id) const;
+  std::shared_ptr<Object> getObject(int id) const;
 
   /**
    * Returns all objects in a rectangular region. Unlike getUpdatedObjects, we actually copy the objects and lock

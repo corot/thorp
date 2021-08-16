@@ -14,7 +14,7 @@ class ServiceInterface : public BaseInterface
 {
 public:
   ServiceInterface(ros::NodeHandle& nh, tf2_ros::Buffer& tf, const std::string& map_frame,
-                 std::function<void(double, double, double)> update_map_callback);
+                   std::function<void(double, double, double)> update_map_callback);
   ~ServiceInterface();
 
   bool updateCollisionObjs(thorp_msgs::UpdateCollisionObjs::Request& request,

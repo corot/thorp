@@ -1,3 +1,6 @@
+#include <thorp_toolkit/common.hpp>
+namespace ttk = thorp_toolkit;
+
 #include "thorp_costmap_layers/visualization.h"
 
 namespace thorp_costmap_layers
@@ -39,17 +42,6 @@ void Visualization::showLineStrip(const std::vector<geometry_msgs::Point>& point
   if (!debug_markers_pub_.getNumSubscribers())
     return;
 
-  static std::map<std::string, std_msgs::ColorRGBA> color_map;
-  if (color_map.empty())
-  {
-    color_map["red"].r = 1.0f;
-    color_map["blue"].b = 1.0f;
-    color_map["green"].g = 1.0f;
-    color_map["yellow"].r = color_map["yellow"].g = 1.0f;
-    color_map["white"].r = color_map["white"].g = color_map["white"].b = 1.0f;
-    color_map["gray"].r = color_map["gray"].g = color_map["gray"].b = 0.5f;
-  }
-
   // optionally, publish updated and previous bounds as a markers, for debugging purposes
   visualization_msgs::Marker marker;
   marker.header.frame_id = frame_id;
@@ -59,8 +51,7 @@ void Visualization::showLineStrip(const std::vector<geometry_msgs::Point>& point
   marker.action = visualization_msgs::Marker::ADD;
   marker.type = visualization_msgs::Marker::LINE_STRIP;
   marker.pose.orientation.w = 1.0;
-  marker.color = color_map[color];
-  marker.color.a = alpha;
+  marker.color = ttk::namedColor(color, alpha);
   marker.scale.x = 0.05;
   marker.points = points;
 

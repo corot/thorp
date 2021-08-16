@@ -11,7 +11,7 @@ namespace thorp_costmap_layers
 {
 
 ServiceInterface::ServiceInterface(ros::NodeHandle& nh, tf2_ros::Buffer& tf, const std::string& map_frame,
-                               std::function<void(double, double, double)> update_map_callback) :
+                                   std::function<void(double, double, double)> update_map_callback) :
   BaseInterface(nh, tf, map_frame),
   callback_processed_(false),
   update_map_callback_(update_map_callback)
@@ -25,7 +25,7 @@ ServiceInterface::~ServiceInterface()
 }
 
 bool ServiceInterface::updateCollisionObjs(thorp_msgs::UpdateCollisionObjs::Request& request,
-                                         thorp_msgs::UpdateCollisionObjs::Response& response)
+                                           thorp_msgs::UpdateCollisionObjs::Response& response)
 {
   try
   {
@@ -49,7 +49,7 @@ bool ServiceInterface::updateCollisionObjs(thorp_msgs::UpdateCollisionObjs::Requ
       }
 
       if (co.operation == moveit_msgs::CollisionObject::ADD    ||
-          co.operation == moveit_msgs::CollisionObject::APPEND || // TODO what's the difference?
+          co.operation == moveit_msgs::CollisionObject::APPEND ||
           co.operation == moveit_msgs::CollisionObject::MOVE)
       {
         // transform obstacle to correct frame
@@ -99,8 +99,8 @@ bool ServiceInterface::updateCollisionObjs(thorp_msgs::UpdateCollisionObjs::Requ
 
 // transform primitive obstacle to current frame of db
 void ServiceInterface::collisionObjToContours(const moveit_msgs::CollisionObject& collision_object,
-                                            std::vector<std::vector<geometry_msgs::PoseStamped>>& contours,
-                                            double length_padding, double width_padding) const
+                                              std::vector<std::vector<geometry_msgs::PoseStamped>>& contours,
+                                              double length_padding, double width_padding) const
 {
   contours.resize(collision_object.primitives.size());
 
