@@ -36,7 +36,7 @@ private:
   void processRemoved(const std::set<std::shared_ptr<Object>>& removed_objs,
                       double* min_x, double* min_y, double* max_x, double* max_y);
 
-  std::unique_ptr<ServiceInterface> scene_interface_;
+  std::unique_ptr<ServiceInterface> srv_interface_;
   std::unique_ptr<Visualization> visualization_;  ///< Show updated bounds and object contours for debugging
 
   // for updated obstacles: back up old bounds to set removal bounds accordingly

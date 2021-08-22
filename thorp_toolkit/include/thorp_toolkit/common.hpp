@@ -67,6 +67,8 @@ inline std_msgs::ColorRGBA namedColor(const std::string& color_name, float alpha
     color_map["orange"].g = 0.65f;
     color_map["white"].r = color_map["white"].g = color_map["white"].b = 1.0f;
     color_map["gray"].r = color_map["gray"].g = color_map["gray"].b = 0.5f;
+    color_map["beige"].r = color_map["beige"].g = 0.96f;
+    color_map["beige"].b = 0.86f;
   }
   std_msgs::ColorRGBA& color = color_map.at(color_name);
   color.a = alpha;

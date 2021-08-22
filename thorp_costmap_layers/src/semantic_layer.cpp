@@ -25,7 +25,7 @@ namespace thorp_costmap_layers
 SemanticLayer::SemanticLayer() :
     dsrv_(),
     old_bounds_(),
-    scene_interface_()
+    srv_interface_()
 {
 }
 
@@ -51,7 +51,7 @@ void SemanticLayer::onInitialize()
   // the interface to force updating the costmap without waiting for the update thread, when speed is critical
   namespace ph = std::placeholders;
   auto update_map_cb = std::bind(&costmap_2d::LayeredCostmap::updateMap, layered_costmap_, ph::_1, ph::_2, ph::_3);
-  scene_interface_ = std::make_unique<ServiceInterface>(pnh, *tf_, layered_costmap_->getGlobalFrameID(), update_map_cb);
+  srv_interface_ = std::make_unique<ServiceInterface>(pnh, *tf_, layered_costmap_->getGlobalFrameID(), update_map_cb);
 
   current_ = true;
 }
@@ -83,12 +83,12 @@ void SemanticLayer::updateBounds(double robot_x, double robot_y, double robot_ya
   current_ = true;
 
   // process updated topic obstacles
-  processUpdated(scene_interface_->getUpdatedObjects(), min_x, min_y, max_x, max_y);
-  scene_interface_->clearUpdatedIds();
+  processUpdated(srv_interface_->getUpdatedObjects(), min_x, min_y, max_x, max_y);
+  srv_interface_->clearUpdatedIds();
 
   // process removed topic obstacles
-  processRemoved(scene_interface_->getRemovedObjects(), min_x, min_y, max_x, max_y);
-  scene_interface_->clearRemovedIds();
+  processRemoved(srv_interface_->getRemovedObjects(), min_x, min_y, max_x, max_y);
+  srv_interface_->clearRemovedIds();
 
   visualization_->showUpdatedBounds(prev_min_x, prev_min_y, prev_max_x, prev_max_y,
                                     *min_x, *min_y, *max_x, *max_y, layered_costmap_->getGlobalFrameID());
@@ -103,14 +103,14 @@ void SemanticLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, i
   std::lock_guard<std::mutex> guard(mutex_);
 
   Point2d lower_left(layered_costmap_->getCostmap()->getOriginX() + min_i * resolution_,
-                         layered_costmap_->getCostmap()->getOriginY() + min_j * resolution_);
+                     layered_costmap_->getCostmap()->getOriginY() + min_j * resolution_);
   Point2d upper_right(layered_costmap_->getCostmap()->getOriginX() + max_i * resolution_,
-                          layered_costmap_->getCostmap()->getOriginY() + max_j * resolution_);
+                      layered_costmap_->getCostmap()->getOriginY() + max_j * resolution_);
 
   // Get all objects within the updated area and mark their boundaries with their associated cost, sorted by precedence
   // compose a polygon with the object's contour, enforcing map bounds but not the updated bounds to avoid creating fake
   // obstacles at the borders of the updated area; order by precedence
-  std::vector<Object> hash_objects = scene_interface_->getObjectsInRegion(lower_left, upper_right);
+  std::vector<Object> hash_objects = srv_interface_->getObjectsInRegion(lower_left, upper_right);
   std::sort(hash_objects.begin(), hash_objects.end(),
             [](const Object& a, const Object& b) -> bool { return a.precedence < b.precedence; });
   int lines_count = 0;
@@ -135,9 +135,6 @@ void SemanticLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, i
         points_in_map.push_back(p2_map);
         // TODO: in theory I could use worldToMapNoBounds, but it creates ghosts... no idea why
         // TODO: also the hash reports tons of obstacles within the bounds
-
-        visualization_->showLineStrip({p1_clip, p2_clip}, 100 + ++lines_count,
-                                      layered_costmap_->getGlobalFrameID(), "yellow");
       }
     }
 
@@ -150,13 +147,14 @@ void SemanticLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, i
         convexFillCells(points_in_map, polygon_cells);
       else
         polygonOutlineCells(points_in_map, polygon_cells, false);
+      auto new_cost = static_cast<unsigned char>(std::round(object.cost * LETHAL_OBSTACLE));
       for (const auto& cell : polygon_cells)
       {
         // enforce updated area bounds on cell coordinates because our spacial clipping can
         // let in invalid cells (on max_i and / or max_j) due to rounding (causing SW-12194)
         if ((cell.x >= min_i && cell.x < max_i && cell.y >= min_j && cell.y < max_j) &&
-            (!object.use_maximum || master_grid.getCost(cell.x, cell.y) < object.cost * LETHAL_OBSTACLE))
-          master_grid.setCost(cell.x, cell.y, object.cost * LETHAL_OBSTACLE);
+            (!object.use_maximum || master_grid.getCost(cell.x, cell.y) < new_cost))
+          master_grid.setCost(cell.x, cell.y, new_cost);
       }
     }
   }
@@ -178,6 +176,8 @@ void SemanticLayer::processUpdated(const std::set<std::shared_ptr<Object>>& upda
       touch(old_bounds_[updated_obj->id].tl.x, old_bounds_[updated_obj->id].tl.y, min_x, min_y, max_x, max_y);
       old_bounds_.erase(updated_obj->id);
     }
+
+    visualization_->showObjectContour(*updated_obj, layered_costmap_->getGlobalFrameID());
   }
 }
 
@@ -189,6 +189,8 @@ void SemanticLayer::processRemoved(const std::set<std::shared_ptr<Object>>& remo
     // set bounds to include removed objects
     touch(removed_obj->bounding_box.br.x, removed_obj->bounding_box.br.y, min_x, min_y, max_x, max_y);
     touch(removed_obj->bounding_box.tl.x, removed_obj->bounding_box.tl.y, min_x, min_y, max_x, max_y);
+
+    visualization_->hideObjectContour(*removed_obj);
   }
 }
 

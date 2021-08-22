@@ -158,12 +158,19 @@ void BaseInterface::updateObject(const Object& object)
 
 bool BaseInterface::removeContours(const std::string& id)
 {
-  std::lock_guard<std::mutex> lock(removed_mutex_);
-  for (int it_prim = 0; it_prim < primitives_count_[id]; ++it_prim)
+  try
   {
-    ids_removed_.insert(makeHash(id, it_prim));
+    std::lock_guard<std::mutex> lock(removed_mutex_);
+    for (int it_prim = 0; it_prim < primitives_count_.at(id); ++it_prim)
+    {
+      ids_removed_.insert(makeHash(id, it_prim));
+    }
+    return primitives_count_.erase(id);
   }
-  return primitives_count_.erase(id);
+  catch (const std::out_of_range& e)
+  {
+    return false;
+  }
 }
 
 void BaseInterface::removeObject(int hash)

@@ -5,6 +5,8 @@
 #include <geometry_msgs/Point.h>
 #include <visualization_msgs/Marker.h>
 
+#include "thorp_costmap_layers/spatial_hash.h"
+
 namespace thorp_costmap_layers
 {
 
@@ -19,13 +21,15 @@ public:
                          double new_min_x, double new_min_y, double new_max_x, double new_max_y,
                          const std::string& frame_id);
 
-  void showLineStrip(const std::vector<geometry_msgs::Point>& points, int id, const std::string& frame_id,
-                     const std::string& color, float alpha = 1.0f);
+  void showObjectContour(const Object& obj, const std::string& frame_id);
+
+  void hideObjectContour(const Object& obj);
 
 private:
   ros::Publisher debug_markers_pub_;   ///< publish updated bounds and other line strips for debugging
 
-  geometry_msgs::Point makePointMsg(double x, double y);
+  void showLineStrip(const std::list<Point2d>& points, const std::string& frame_id,
+                     int id, const std::string& ns, const std::string& color, float alpha = 1.0f);
 };
 
 }

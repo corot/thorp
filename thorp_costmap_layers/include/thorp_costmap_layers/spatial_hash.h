@@ -16,6 +16,14 @@ struct Point2d
   Point2d(double x, double y) : x(x), y(y) {}
 
   double x, y; //< the point coordinates
+
+  geometry_msgs::Point toPointMsg() const
+  {
+    geometry_msgs::Point point;
+    point.x = x;
+    point.y = y;
+    return point;
+  }
 };
 
 struct Rectangle
