@@ -67,7 +67,7 @@ TEBPlanner:
   weight_max_vel_theta: 1
   weight_acc_lim_x: 1
   weight_acc_lim_theta: 1
-  weight_kinematics_nh: 1000
+  weight_kinematics_nh: 10000
   weight_kinematics_forward_drive: 100
   weight_kinematics_turning_radius: 1
   weight_optimaltime: 4 # must be > 0
