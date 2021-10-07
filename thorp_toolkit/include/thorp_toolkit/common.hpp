@@ -55,7 +55,6 @@ inline std_msgs::ColorRGBA randomColor(unsigned int seed = 0, float alpha = 1.0f
  */
 inline std_msgs::ColorRGBA namedColor(const std::string& color_name, float alpha = 1.0f)
 {
-
   static std::map<std::string, std_msgs::ColorRGBA> color_map;
   if (color_map.empty())
   {
