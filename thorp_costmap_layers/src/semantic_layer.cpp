@@ -126,16 +126,12 @@ void SemanticLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, i
       if (p2 == object.contour_points.end())
         p2 = object.contour_points.begin();
 
-      if (ttk::clipSegment(lower_left.x, upper_right.x, lower_left.y, upper_right.y, p1->x, p1->y, p2->x, p2->y,
-                           p1_clip.x, p1_clip.y, p2_clip.x, p2_clip.y))
-      {
-        master_grid.worldToMapEnforceBounds(p1_clip.x, p1_clip.y, (int&)p1_map.x, (int&)p1_map.y);
-        master_grid.worldToMapEnforceBounds(p2_clip.x, p2_clip.y, (int&)p2_map.x, (int&)p2_map.y);
-        points_in_map.push_back(p1_map);
-        points_in_map.push_back(p2_map);
-        // TODO: in theory I could use worldToMapNoBounds, but it creates ghosts... no idea why
-        // TODO: also the hash reports tons of obstacles within the bounds
-      }
+      master_grid.worldToMapNoBounds(p1->x, p1->y, (int&)p1_map.x, (int&)p1_map.y);
+      master_grid.worldToMapNoBounds(p2->x, p2->y, (int&)p2_map.x, (int&)p2_map.y);
+      points_in_map.push_back(p1_map);
+      points_in_map.push_back(p2_map);
+      // TODO: in theory I could use worldToMapNoBounds, but it creates ghosts... no idea why   apart, will crash
+      // TODO: also the hash reports tons of obstacles within the bounds
     }
 
     // ensure at least one of the obstacle points lies within the current window, do not draw if fully outside
@@ -150,8 +146,7 @@ void SemanticLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, i
       auto new_cost = static_cast<unsigned char>(std::round(object.cost * LETHAL_OBSTACLE));
       for (const auto& cell : polygon_cells)
       {
-        // enforce updated area bounds on cell coordinates because our spacial clipping can
-        // let in invalid cells (on max_i and / or max_j) due to rounding (causing SW-12194)
+        // update only cell within the updated area bounds
         if ((cell.x >= min_i && cell.x < max_i && cell.y >= min_j && cell.y < max_j) &&
             (!object.use_maximum || master_grid.getCost(cell.x, cell.y) < new_cost))
           master_grid.setCost(cell.x, cell.y, new_cost);
