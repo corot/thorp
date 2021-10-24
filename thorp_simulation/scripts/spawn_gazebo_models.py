@@ -58,6 +58,7 @@ cats = [{'name': 'cat_black', 'count': 2},
         {'name': 'cat_orange', 'count': 2}]
 models = {}
 
+# a sample of objects mostly at reachable locations
 PLAYGROUND_OBJS = [('star', 'star', (0.28, 0.017, 0.5, 0.0, 0.0, 0.2)),
                    ('clover', 'clover', (0.36, -0.037, 0.5, 0.0, 0.0, 1.4)),
                    ('square', 'square', (0.29, -0.16, 0.5, 0.0, 0.0, 1.1)),
@@ -68,15 +69,12 @@ PLAYGROUND_OBJS = [('star', 'star', (0.28, 0.017, 0.5, 0.0, 0.0, 0.2)),
                    ('circle', 'circle', (0.48, 0.12, 0.5, 0.0, 0.0, 1.15)),
                    ('cube', 'cube', (0.46, 0.1, 0.5, 0.0, 0.0, 0.85))]
 
+# cubes at reachable locations, ready to stack
 PLAYGROUND_CUBES = [('cube 1', 'cube', (-0.15, 0.017, 0.45, 0.0, 0.0, 0.2)),
                     ('cube 2', 'cube', (-0.11, -0.10, 0.45, 0.0, 0.0, 0.15)),
                     ('cube 3', 'cube', (-0.14, -0.16, 0.45, 0.0, 0.0, 1.1)),
                     ('cube 4', 'cube', (-0.12, 0.15, 0.45, 0.0, 0.0, 0.4)),
-                    ('cube 5', 'cube', (-0.11, 0.10, 0.45, 0.0, 0.0, 0.85)),
-                    ('circle', 'circle', (0.03, 0.12, 0.45, 0.0, 0.0, 1.15)),
-                    ('clover', 'clover', (-0.02, -0.037, 0.45, 0.0, 0.0, 1.4)),
-                    ('cross', 'cross', (0.08, -0.15, 0.45, 0.0, 0.0, 0.75)),
-                    ('triangle', 'triangle', (0.13, 0.1, 0.45, 0.0, 0.0, 0.1))]
+                    ('cube 5', 'cube', (-0.11, 0.10, 0.45, 0.0, 0.0, 0.85))]
 
 SURFS_MIN_DIST = 1.5
 OBJS_MIN_DIST = 0.08
@@ -135,12 +133,12 @@ def close_to_obstacle(x, y, theta, clearance):
     return False
 
 
-def spawn_objects(surf, surf_index):
+def spawn_objects(surf, surf_index, preferred_obj=None):
     added_poses = [create_3d_pose(0, 0, 0, 0, 0, 0)]  # fake pose to avoid the (non-reachable) surface's center
     obj_index = 0
     margin = rospy.get_param('table_margins_clearance', 0.1)  # no obstacles at table margins
     while obj_index < surf['objs'] and not rospy.is_shutdown():
-        obj_name = random.choice(objects)
+        obj_name = preferred_obj or random.choice(objects)
 
         # even distribution
         x = random.uniform((-surf['size'][0] + margin) / 2.0, (+surf['size'][0] - margin) / 2.0)
@@ -336,11 +334,16 @@ if __name__ == "__main__":
     elif sys.argv[1] == 'cats':
         spawn_cats(use_preferred_locs)
         spawn_rockets()
-    elif sys.argv[1] == 'playground_objs':
+    elif sys.argv[1] == 'playground_random':  # random objects over a random table
+        surface = random.choice(surfaces)
+        spawn_model(surface['name'] + '_0', models[surface['name']], create_2d_pose(0.44, 0, pi / 2.0),
+                    'ground_plane::link')
+        spawn_objects(surface, 0, sys.argv[2] if len(sys.argv) > 2 and not use_preferred_locs else None)
+    elif sys.argv[1] == 'playground_objs':  # a sample of objects mostly at reachable locations
         spawn_model('lack_table', models['lack_table'], create_2d_pose(0.45, 0, 0.0), 'ground_plane::link')
         for obj in PLAYGROUND_OBJS:
             spawn_model(obj[0], models[obj[1]], create_3d_pose(*obj[2]), 'ground_plane::link')
-    elif sys.argv[1] == 'playground_cubes':
+    elif sys.argv[1] == 'playground_cubes':  # cubes at reachable locations, ready to stack
         spawn_model('doll_table', models['doll_table'], create_2d_pose(0.38, 0, 0.0), 'ground_plane::link')
         for obj in PLAYGROUND_CUBES:
             spawn_model(obj[0], models[obj[1]], create_3d_pose(*obj[2]), 'doll_table::link')
