@@ -15,6 +15,7 @@ find_package(catkin
         tf2_ros
         tf2_geometry_msgs
         roscpp
+        angles
         geometry_msgs
         geometric_shapes
         moveit_msgs
@@ -40,6 +41,7 @@ catkin_package(
         tf2_ros
         tf2_geometry_msgs
         roscpp
+        angles
         geometry_msgs
         geometric_shapes
         moveit_msgs
@@ -58,14 +60,6 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 
 
 ##############################################################################
-# Sources
-##############################################################################
-
-add_subdirectory(include)
-add_subdirectory(src)
-
-
-##############################################################################
 # Build
 ##############################################################################
 
@@ -73,13 +67,25 @@ add_subdirectory(src)
 add_executable(save_pose_node nodes/save_pose_node.cpp)
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(save_pose_node
-  ${catkin_LIBRARIES}
-)
+target_link_libraries(save_pose_node ${catkin_LIBRARIES})
+
+## Libraries
+add_library(${PROJECT_NAME}
+        src/tf2.cpp
+        src/geometry.cpp
+        src/planning_scene.cpp
+        )
+add_dependencies(${PROJECT_NAME} thorp_msgs_generate_messages_cpp)
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} )
 
 
 ##############################################################################
-# Install
+# Installs
 ##############################################################################
 
-## TODO ##
+install(TARGETS ${PROJECT_NAME}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+        )

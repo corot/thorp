@@ -4,9 +4,10 @@
 
 #pragma once
 
+#include <numeric>
 
 #include <tf/tf.h>
-#include <numeric>
+#include <angles/angles.h>
 
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseStamped.h>
@@ -145,7 +146,27 @@ inline double yaw(const tf::Transform& tf)
 }
 
 /**
- * Shortcut to take the yaw of a pose
+ * Shortcut to take the yaw of a quaternion
+ * @param q quaternion q
+ * @return quaternion's yaw
+ */
+inline double yaw(const tf::Quaternion& q)
+{
+  return tf::getYaw(q);
+}
+
+/**
+ * Alias of tf::getYaw(quaternion)
+ * @param q quaternion q
+ * @return quaternion's yaw
+ */
+inline double yaw(const geometry_msgs::Quaternion& q)
+{
+  return tf::getYaw(q);
+}
+
+/**
+ * Alias of tf::getYaw(quaternion)
  * @param pose the pose
  * @return pose's yaw
  */
@@ -539,7 +560,7 @@ inline double heading(const tf::Transform& a, const tf::Transform& b)
  */
 inline double minAngle(const tf::Quaternion& a, const tf::Quaternion& b)
 {
-  return tf::angleShortestPath(a, b);
+  return angles::shortest_angular_distance(yaw(a), yaw(b));
 }
 
 /**
@@ -550,9 +571,7 @@ inline double minAngle(const tf::Quaternion& a, const tf::Quaternion& b)
  */
 inline double minAngle(const geometry_msgs::Quaternion& a, const geometry_msgs::Quaternion& b)
 {
-  tf::Quaternion qa(a.x, a.y, a.z, a.w);
-  tf::Quaternion qb(b.x, b.y, b.z, b.w);
-  return tf::angleShortestPath(qa, qb);
+  return angles::shortest_angular_distance(yaw(a), yaw(b));
 }
 
 /**
@@ -563,9 +582,7 @@ inline double minAngle(const geometry_msgs::Quaternion& a, const geometry_msgs::
  */
 inline double minAngle(const geometry_msgs::Pose& a, const geometry_msgs::Pose& b)
 {
-  tf::Quaternion qa(a.orientation.x, a.orientation.y, a.orientation.z, a.orientation.w);
-  tf::Quaternion qb(b.orientation.x, b.orientation.y, b.orientation.z, b.orientation.w);
-  return tf::angleShortestPath(qa, qb);
+  return angles::shortest_angular_distance(yaw(a), yaw(b));
 }
 
 /**
@@ -576,9 +593,7 @@ inline double minAngle(const geometry_msgs::Pose& a, const geometry_msgs::Pose& 
  */
 inline double minAngle(const geometry_msgs::PoseStamped& a, const geometry_msgs::PoseStamped& b)
 {
-  tf::Quaternion qa(a.pose.orientation.x, a.pose.orientation.y, a.pose.orientation.z, a.pose.orientation.w);
-  tf::Quaternion qb(b.pose.orientation.x, b.pose.orientation.y, b.pose.orientation.z, b.pose.orientation.w);
-  return tf::angleShortestPath(qa, qb);
+  return angles::shortest_angular_distance(yaw(a), yaw(b));
 }
 
 /**
@@ -589,9 +604,7 @@ inline double minAngle(const geometry_msgs::PoseStamped& a, const geometry_msgs:
  */
 inline double minAngle(const tf::Transform& a, const tf::Transform& b)
 {
-  tf::Quaternion qa(a.getRotation().x(), a.getRotation().y(), a.getRotation().z(), a.getRotation().w());
-  tf::Quaternion qb(b.getRotation().x(), b.getRotation().y(), b.getRotation().z(), b.getRotation().w());
-  return tf::angleShortestPath(qa, qb);
+  return angles::shortest_angular_distance(yaw(a), yaw(b));
 }
 
 
