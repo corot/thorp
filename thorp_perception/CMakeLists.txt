@@ -34,7 +34,7 @@ add_dependencies(ork_object_detection_server thorp_msgs_generate_messages_cpp)
 
 add_executable(rail_object_detection_server src/rail_object_detection_server.cpp)
 target_link_libraries(rail_object_detection_server ${catkin_LIBRARIES})
-add_dependencies(rail_object_detection_server thorp_msgs_generate_messages_cpp)
+add_dependencies(rail_object_detection_server thorp_msgs_generate_messages_cpp rail_mesh_icp_generate_messages_cpp)
 
 
 # install

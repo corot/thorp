@@ -176,9 +176,9 @@ public:
     }
   }
 
-  int getDetectedObjects(unsigned int min_detections, const std::string& output_frame,
-                         std::vector<moveit_msgs::CollisionObject>& objects,
-                         std::vector<moveit_msgs::ObjectColor>& obj_colors)
+  size_t getDetectedObjects(unsigned int min_detections, const std::string& output_frame,
+                            std::vector<moveit_msgs::CollisionObject>& objects,
+                            std::vector<moveit_msgs::ObjectColor>& obj_colors)
   {
     std::map<std::string, unsigned int> obj_name_occurences;
 
@@ -231,6 +231,7 @@ public:
       oc.color = color;
       obj_colors.push_back(oc);
     }
+    return objects.size();
   }
 
   void clear()

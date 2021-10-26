@@ -2,6 +2,8 @@
  * Author: Jorge Santos
  */
 
+#include <stdexcept>
+
 #include <omp.h>
 
 #include <ros/ros.h>
@@ -421,6 +423,7 @@ private:
         return obj_name;
       }
     }
+    throw std::logic_error("There are INT_MAX objects of the given type???");
   }
 
   std::set<std::string> getObjsInVolume(const rail_manipulation_msgs::BoundingVolume& volume)
