@@ -14,13 +14,13 @@ RUN apt-key del 421C365BD9FF1F717815A3895523BAEEB01FA116 && apt update
 SHELL ["/bin/bash", "-c"]
 
 # install ROS base and minimal build dependencies
-RUN apt-get update && apt-get install -y ros-$ROS_DISTRO-ros-base python-pip python-catkin-tools build-essential nano wget
+RUN apt-get update && apt-get install -y ros-$ROS_DISTRO-ros-base python-pip python-catkin-tools build-essential wget nano git
 
 # add packages.osrfoundation.org APT to install the latest gazebo9
 RUN sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-stable.list' && \
     wget https://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add - && apt update
 
-# reduce log verbosity (RAIL segmentation is called continously for some apps)
+# reduce log verbosity (RAIL segmentation is called continuously for some apps)
 RUN echo 'log4j.logger.ros.rail_mesh_icp=WARN' >> /opt/ros/$ROS_DISTRO/share/ros/config/rosconsole.config && \
     echo 'log4j.logger.ros.rail_segmentation=ERROR' >> /opt/ros/$ROS_DISTRO/share/ros/config/rosconsole.config
 

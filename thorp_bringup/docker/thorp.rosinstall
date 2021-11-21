@@ -89,7 +89,7 @@
 - git:
     local-name: navigation
     uri: https://github.com/corot/navigation.git
-    version: melodic-devel
+    version: thorp
 
 - git:
     local-name: navigation_experimental

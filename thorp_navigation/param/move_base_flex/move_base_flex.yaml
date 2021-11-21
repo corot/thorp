@@ -18,9 +18,9 @@ controller_lock_costmap: true   # lock costmap as in move_base, or let planner t
 
 # Global planner parameters
 planners:
-  - {name: NavfnPlanner,    type: navfn/NavfnROS}
   - {name: GlobalPlanner,   type: global_planner/GlobalPlanner}
   - {name: CarrotPlanner,   type: carrot_planner/CarrotPlanner}
+  - {name: NavfnPlanner,    type: navfn/NavfnROS}
 planner_frequency:  1.0         # replan every second to adapt to changing conditions
 planner_patience:   2.0         # seconds; abort if the global planner does not return within that time
 planner_max_retries:  3         # limit consecutive failed calls to global planner
