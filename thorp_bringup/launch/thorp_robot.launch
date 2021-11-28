@@ -32,9 +32,6 @@
   <include file="$(find thorp_bringup)/launch/includes/xtion.launch.xml"/>
   <include file="$(find thorp_manipulation)/launch/includes/arm.launch.xml"/>
 
-  <!--  *************** Virtual sensors ***************  -->
-  <include file="$(find thorp_bringup)/launch/includes/virt_sensor.launch.xml"/>
-
   <!-- Reconfigure command velocity multiplexer to fit Thorp's' needs -->
   <node pkg="rosservice" type="rosservice" name="reconfig_vel_mux" args="call --wait /cmd_vel_mux/set_parameters
             '{config:{strs:[[yaml_cfg_file,$(find thorp_bringup)/param/vel_multiplexer.yaml]]}}'"/>

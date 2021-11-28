@@ -27,7 +27,6 @@
   <run_depend>turtlebot_bringup</run_depend>
   <run_depend>turtlebot_dashboard</run_depend>
   <run_depend>yocs_cmd_vel_mux</run_depend>
-  <run_depend>yocs_virtual_sensor</run_depend>
   <run_depend>yocs_velocity_smoother</run_depend>
 
   <run_depend>thorp_msgs</run_depend>
