@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-from states.exploration import *
-from utils import run_sm
+from thorp_smach.states.exploration import *
+from thorp_smach.utils import run_sm
 
 
 def traverse_house_sm():

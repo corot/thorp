@@ -4,7 +4,7 @@ import rospy
 
 from thorp_smach.states.gathering import PickReachableObjs
 
-from utils import run_sm
+from thorp_smach.utils import run_sm
 
 
 if __name__ == '__main__':

@@ -1,7 +1,6 @@
 from math import *
 from copy import deepcopy
 from numbers import Number
-from singleton import Singleton
 
 import rospy
 import tf2_ros
@@ -10,6 +9,8 @@ from tf.transformations import quaternion_from_euler, euler_from_quaternion
 
 import std_msgs.msg as std_msgs
 import geometry_msgs.msg as geometry_msgs
+
+from .singleton import Singleton
 
 
 def __get_naked_pose(pose):
@@ -403,9 +404,7 @@ def same_pose(pose1, pose2, xy_tolerance=0.0001, yaw_tolerance=0.0001):
     return distance_3d(pose1, pose2) <= xy_tolerance and abs(angles_diff(yaw(pose1), yaw(pose2))) <= yaw_tolerance
 
 
-class TF2:
-    __metaclass__ = Singleton
-
+class TF2(metaclass=Singleton):
     def __init__(self):
         """ Singleton encapsulating a tf2 listener and a broadcaster """
         try:

@@ -38,15 +38,15 @@ try:
     meshes_path = rospack.get_path('thorp_perception') + "/meshes/"
     for object in objects:
         if os.path.exists(meshes_path + object[2]):
-            print subprocess.check_output(['cp', meshes_path + object[2], 'tmp.ascii.stl'])
+            print(subprocess.check_output(['cp', meshes_path + object[2], 'tmp.ascii.stl']))
         else:
-            print subprocess.check_output(['openscad', '-DOBJ="' + object[2][:-4] + '"', '-o', 'tmp.ascii.stl', 'generate_meshes.scad'])
-        print subprocess.check_output(['admesh', '-b', 'tmp.bin.stl', 'tmp.ascii.stl'])
+            print(subprocess.check_output(['openscad', '-DOBJ="' + object[2][:-4] + '"', '-o', 'tmp.ascii.stl', 'generate_meshes.scad']))
+        print(subprocess.check_output(['admesh', '-b', 'tmp.bin.stl', 'tmp.ascii.stl']))
         out = subprocess.check_output(['rosrun', 'object_recognition_core', 'object_add.py', '-n', object[0], '-d', object[1], '--commit'])
         id = re.split(' ', out)[-1][:-1]
-        print out
-        print subprocess.check_output(['rosrun', 'object_recognition_core', 'mesh_add.py', id, 'tmp.bin.stl', '--commit'])
-        print subprocess.check_output(['rm', 'tmp.ascii.stl', 'tmp.bin.stl'])
+        print(out)
+        print(subprocess.check_output(['rosrun', 'object_recognition_core', 'mesh_add.py', id, 'tmp.bin.stl', '--commit']))
+        print(subprocess.check_output(['rm', 'tmp.ascii.stl', 'tmp.bin.stl']))
 except rospkg.common.ResourceNotFound as err:
     print("get package path failed: " + str(err))
 except subprocess.CalledProcessError as err:

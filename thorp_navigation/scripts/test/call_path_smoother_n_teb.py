@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import math
 
 import rospy
@@ -21,7 +22,7 @@ def move_goal_cb(_):
     try:
         resp = smooth_srv(waypoints, 5, 0.5, 0.15, True, True)
         path_pub.publish(resp.path)
-        print resp.path
+        print(resp.path)
         exe_path_goal = ExePathGoal(path=resp.path, controller="TEBPlanner")
         exe_path_ac.send_goal(exe_path_goal)
     except rospy.ServiceException as err:

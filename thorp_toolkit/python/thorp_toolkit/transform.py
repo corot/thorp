@@ -2,12 +2,11 @@
 
 import copy
 import numpy.linalg
-from numpy.linalg import norm
-import geometry_msgs.msg
-import std_msgs.msg
-import tf.transformations
 
 import rospy
+import std_msgs.msg
+import geometry_msgs.msg
+import tf.transformations
 
 
 class Transform(object):
@@ -221,7 +220,7 @@ class Transform(object):
         return quaternion
 
     def _is_q_normalized(self):
-        return abs(1 - norm(self.q)) < 1e-5
+        return abs(1 - numpy.linalg.norm(self.q)) < 1e-5
 
     def get_euler(self):
         """
@@ -351,11 +350,11 @@ class Transform(object):
         return new_trafo
 
     def length(self):
-        return float(norm(self.translation))
+        return float(numpy.linalg.norm(self.translation))
 
     def distance(self, other):
         delta = [x - y for x, y in zip(self.translation, other.translation)]
-        return float(norm(delta))
+        return float(numpy.linalg.norm(delta))
 
     def __mul__(self, other):
         if not isinstance(other, Transform):

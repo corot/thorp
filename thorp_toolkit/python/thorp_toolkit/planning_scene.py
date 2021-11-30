@@ -3,13 +3,11 @@ import rospy
 from moveit_msgs.msg import CollisionObject, AttachedCollisionObject
 from moveit_commander.planning_scene_interface import PlanningSceneInterface
 
-from singleton import Singleton
+from .singleton import Singleton
 
 
-class PlanningScene:
+class PlanningScene(metaclass=Singleton):
     """ Singleton providing a simplified interface to the planning scene """
-    __metaclass__ = Singleton
-
     def __init__(self):
         self._objs_on_tray = set()
         self.__psi__ = PlanningSceneInterface(synchronous=True)
@@ -48,9 +46,6 @@ class PlanningScene:
             co.planes = []
             co.plane_poses[0] = new_pose.pose
         co.operation = CollisionObject.MOVE
-        print co.type
-        print co.type
-        print co.type
         self.__psi__._pub_co.publish(co)
 
     def move_obj_to_tray(self, obj_name, pose_on_tray):

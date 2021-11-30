@@ -4,10 +4,10 @@ import sys
 import rospy
 from bidict import bidict
 
-import Tkinter as tk
+import tkinter as tk
 import thorp_msgs.msg as thorp_msgs
 
-from actionlib import *
+from actionlib import SimpleActionClient
 
 
 USER_COMMANDS = bidict({

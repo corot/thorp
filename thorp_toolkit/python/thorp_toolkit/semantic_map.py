@@ -4,20 +4,19 @@ from collections import namedtuple
 
 from visualization_msgs.msg import Marker, MarkerArray
 
-from singleton import Singleton
-from spatial_hash import SpatialHash, Rect
-from visualization import Visualization
+from .singleton import Singleton
+from .spatial_hash import SpatialHash, Rect
+from .visualization import Visualization
 
 
 SemanticObj = namedtuple('SemanticObj', ['obj', 'name', 'type', 'pose', 'size', 'markers'])
 
 
-class SemanticMap:
+class SemanticMap(metaclass=Singleton):
     """
     Singleton providing an ultra-simple semantic map.
     By now just used to recognize visited tables.
     """
-    __metaclass__ = Singleton
 
     def __init__(self):
         self._hashmap = SpatialHash(0.5)

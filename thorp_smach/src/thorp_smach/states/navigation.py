@@ -12,12 +12,12 @@ from thorp_toolkit.geometry import TF2, pose2d2str, heading, quaternion_msg_from
 from thorp_toolkit.reconfigure import Reconfigure
 from thorp_toolkit.progress_tracker import ProgressTracker
 
-from common import SetNamedConfig, DismissNamedConfig
-from userdata import UDInsertInList, UDListSlicing, UDApplyFn
-from thorp_smach.states.costmaps import ClearTableWay, RestoreTableWay
-from thorp_smach.containers.do_on_exit import DoOnExit as DoOnExitContainer
+from .common import SetNamedConfig, DismissNamedConfig
+from .userdata import UDInsertInList, UDListSlicing, UDApplyFn
+from ..states.costmaps import ClearTableWay, RestoreTableWay
+from ..containers.do_on_exit import DoOnExit as DoOnExitContainer
 
-from thorp_smach import config as cfg
+from .. import config as cfg
 
 Reconfigure().load_named_configs()  # load named configurations from the default location
 

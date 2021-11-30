@@ -12,7 +12,7 @@ from rail_manipulation_msgs.srv import SegmentObjects
 
 from thorp_toolkit.geometry import point3d2str, pose2d2str, TF2, to_transform
 
-from thorp_smach import config as cfg
+from .. import config as cfg
 
 
 class BlockDetection(smach_ros.SimpleActionState):

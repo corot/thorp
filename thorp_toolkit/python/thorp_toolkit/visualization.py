@@ -5,12 +5,11 @@ from std_msgs.msg import ColorRGBA
 from geometry_msgs.msg import PoseStamped
 from visualization_msgs.msg import Marker, MarkerArray
 
-from singleton import Singleton
+from .singleton import Singleton
 
 
-class Visualization:
+class Visualization(metaclass=Singleton):
     """ Singleton providing assistance to create and publish visual markers """
-    __metaclass__ = Singleton
 
     def __init__(self, topic='~visual_markers', lifetime=60):
         self._marker_pub = rospy.Publisher(topic, MarkerArray, queue_size=1)

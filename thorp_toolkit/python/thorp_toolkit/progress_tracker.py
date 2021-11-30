@@ -1,5 +1,5 @@
-from visualization import Visualization
-from geometry import distance_2d
+from .geometry import distance_2d
+from .visualization import Visualization
 
 
 class ProgressTracker:

@@ -7,13 +7,12 @@ from shape_msgs.msg import SolidPrimitive
 from thorp_msgs.msg import ThorpError
 from thorp_msgs.srv import UpdateCollisionObjs
 
-from geometry import pose2d2str, TF2
-from singleton import Singleton
+from .geometry import pose2d2str, TF2
+from .singleton import Singleton
 
 
-class SemanticLayer:
+class SemanticLayer(metaclass=Singleton):
     """ Singleton providing a simplified interface for adding/removing objects to the costmaps semantic layer """
-    __metaclass__ = Singleton
 
     def __init__(self):
         self._lcm_sl_srv = rospy.ServiceProxy('move_base_flex/local_costmap/semantic_layer/update_objects',

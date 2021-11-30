@@ -1,6 +1,5 @@
 #! /usr/bin/env python
 
-import math
 import rospy
 
 import actionlib
@@ -36,4 +35,4 @@ if __name__ == '__main__':
         rospy.init_node('test_pickup_object')
         result = pickup('tower 5.0cm [1]')
     except rospy.ROSInterruptException:
-        print "program interrupted before completion"
+        print("program interrupted before completion")

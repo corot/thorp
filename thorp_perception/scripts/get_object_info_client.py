@@ -2,7 +2,7 @@
 """
 This file is a ROS service client for retrieving information about an object
 """
-import actionlib
+
 import argparse
 import rospy
 import sys
@@ -11,7 +11,7 @@ import object_recognition_msgs.srv as object_recognition_srvs
 
 
 def on_result(status, result):
-    print result
+    print(result)
 
 def main():
     parser = argparse.ArgumentParser(description='This file is a ROS service client for retrieving information about an object')
@@ -27,10 +27,9 @@ def main():
         object_type.db = '{"host":"localhost","module":"object_recognition_tabletop","name":"household_objects-0.6","password":"yujin","port":"5432","type":"ObjectDbSqlHousehold","user":"yujin"'
         req = object_recognition_srvs.GetObjectInformationRequest(object_type)
         resp = get_object_info_srv(req)
-    except rospy.ServiceException, e:
-      print "Service did not process request: %s"%str(e)
-      
-    print resp
+        print(resp)
+    except rospy.ServiceException as e:
+        print("Service did not process request: %s" % str(e))
 
 
 if __name__ == '__main__':

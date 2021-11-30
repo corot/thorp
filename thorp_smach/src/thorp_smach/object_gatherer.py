@@ -3,16 +3,16 @@
 import rospy
 import smach
 
-from states.navigation import GetRobotPose, LookToPose
-from states.perception import MonitorTables, CheckTableSize
-from states.semantics import TableMarkVisited, TableWasVisited
-from states.manipulation import FoldArm
-from states.exploration import ExploreHouse
-from states.gathering import GatherObjects
-from states.common import Sleep
-from containers.do_on_exit import DoOnExit as DoOnExitContainer
+from thorp_smach.states.navigation import GetRobotPose, LookToPose
+from thorp_smach.states.perception import MonitorTables, CheckTableSize
+from thorp_smach.states.semantics import TableMarkVisited, TableWasVisited
+from thorp_smach.states.manipulation import FoldArm
+from thorp_smach.states.exploration import ExploreHouse
+from thorp_smach.states.gathering import GatherObjects
+from thorp_smach.states.common import Sleep
+from thorp_smach.containers.do_on_exit import DoOnExit as DoOnExitContainer
 
-from utils import run_sm
+from thorp_smach.utils import run_sm
 
 
 def object_gatherer_sm(target_types):

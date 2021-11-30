@@ -2,9 +2,9 @@
 
 import rospy
 
-from states.exploration import ExploreHouse
+from thorp_smach.states.exploration import ExploreHouse
 
-from utils import run_sm
+from thorp_smach.utils import run_sm
 
 
 if __name__ == '__main__':

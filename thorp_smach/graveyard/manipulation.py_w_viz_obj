@@ -1,4 +1,7 @@
+import os
+
 import rospy
+import rospkg
 import smach
 import smach_ros
 
@@ -7,12 +10,12 @@ import thorp_msgs.msg as thorp_msgs
 import control_msgs.msg as control_msgs
 
 from thorp_toolkit.planning_scene import PlanningScene
-from thorp_toolkit.geometry import create_2d_pose, create_3d_pose, pose2d2str
+from thorp_toolkit.geometry import create_2d_pose, create_3d_pose, pose2d2str, get_size_from_co
 from thorp_toolkit.visualization import Visualization
 
-from .geometry import TranslatePose
-from .userdata import UDExtractAttr
-from .. import config as cfg
+from geometry import TranslatePose
+from userdata import UDExtractAttr
+from thorp_smach import config as cfg
 
 
 class ClearOctomap(smach_ros.ServiceState):
@@ -248,6 +251,7 @@ class GetPoseOnTray(smach.State):
         if self.tray_full:
             return 'tray_full'
 
+####        place_pose_z = get_size_from_co(ud['object'])[2] / 2.0
         place_pose_z = cfg.PLACING_HEIGHT_ON_TRAY  # place objects 3cm above the tray, so they fall into position
         ud['pose_on_tray'] = self._next_pose(place_pose_z)
         return 'succeeded'
@@ -262,6 +266,42 @@ class GetPoseOnTray(smach.State):
             if self.next_x == self.next_y == 0:
                 self.tray_full = True
         return create_3d_pose(x, y, z, 0, 0, 0, self.tray_link)
+
+
+# class VisualizeObject(smach.State):
+#     """
+#     Visualize a collision object on RViz
+#     """
+#
+#     def __init__(self):
+#         smach.State.__init__(self,
+#                              outcomes=['succeeded'],
+#                              input_keys=['object', 'pose'])
+#
+#     def execute(self, ud):
+#         kk   = ud['object']
+#         obj_type = ud['object'].id.split(' ')[0]  # remove occurrence index
+#         # need to find path to mesh    or add to CO,,,  y que moveit lo mustre guai???
+#         #                                  mmm... tricky,,,  need to load and covert to Mesh msg
+#         #         pero esto es lo mejor!!!    solo tengo que desplazarlos,,,  y no debe ser dificil convertir STL a mesh msg!!!!
+#         #     ESTO
+#         # mmm....  bien,,,,  pero,,, limpio la planning scene con cada pick!     modif ClearPlanningScene to keep objs in tray (need to rename)
+#         #         or better, can make "attached" to the tray???
+#         # y uso la dimension en algun sitio!  pasarla como parte del type
+#
+#         mesh_file = os.path.join(rospkg.RosPack().get_path('thorp_perception'), 'meshes', obj_type, '.stl')
+#         rospy.loginfo("Show marker for object '%s' in tray", ud['object'].id, pose2d2str(ud['pose']))
+#         Visualization().add_markers(Visualization().create_mesh_marker(ud['pose'], mesh_file,
+#                                                                       color=[1, 0, 0, 1]))  # solid red points
+#
+#
+#        ### won't have color....  idea:  pub meshes on perception/visual_markers and displace here to the tray?
+#         ### visualization_msgs::MarkerArray > ("visual_markers", 1);
+# ##        or alternatives,,, return objs colors on recognition
+#   ##      or create my own msg type!
+#         Visualization().publish_markers()
+#
+#         return 'succeeded'
 
 
 class RemoveObject(smach.State):

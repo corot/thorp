@@ -40,6 +40,6 @@ if __name__ == '__main__':
         rospy.init_node('gripper_cmd_client_py')
         position = rospy.get_param('~position', 0.0)
         result = gripper_cmd_client(position)
-        print "Result: ",  result
+        print("Result: ", result)
     except rospy.ROSInterruptException:
-        print "program interrupted before completion"
+        print("program interrupted before completion")

@@ -1,5 +1,3 @@
-import rospy
-import smach
 import smach_ros
 
 import thorp_msgs.msg as thorp_msgs

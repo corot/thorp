@@ -10,12 +10,12 @@ import std_srvs.srv as std_srvs
 import thorp_msgs.msg as thorp_msgs
 import arbotix_msgs.srv as arbotix_srvs
 
-from states.common import ExecuteUserCommand
-from states.perception import ObjectDetection
-from states.manipulation import FoldArm, PickupObject, PlaceObject, ClearPlanningScene
+from thorp_smach.states.common import ExecuteUserCommand
+from thorp_smach.states.perception import ObjectDetection
+from thorp_smach.states.manipulation import FoldArm, PickupObject, PlaceObject, ClearPlanningScene
 
-from utils import run_sm
-import config as cfg
+from thorp_smach.utils import run_sm
+from thorp_smach import config as cfg
 
 rospy.init_node('object_manip_smach')
 

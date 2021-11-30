@@ -12,16 +12,16 @@ from thorp_toolkit.transform import Transform
 from thorp_toolkit.visualization import Visualization
 from thorp_msgs.msg import ObjectToPick, PickingPlan, PickLocation
 
-from common import SetNamedConfig, DismissNamedConfig
-from costmaps import TableAsObstacle
-from semantics import TableMarkVisited
-from perception import MonitorTables, ObjectDetection, ObjectsDetected, ClearMarkers
-from navigation import GetRobotPose, AreSamePose, GoToPose, AlignToTable, DetachFromTable
-from manipulation import ClearPlanningScene
-from pick_objects import PickReachableObjs
-from thorp_smach.containers.do_on_exit import DoOnExit as DoOnExitContainer
+from .common import SetNamedConfig, DismissNamedConfig
+from .costmaps import TableAsObstacle
+from .semantics import TableMarkVisited
+from .perception import MonitorTables, ObjectDetection, ObjectsDetected, ClearMarkers
+from .navigation import GetRobotPose, AreSamePose, GoToPose, AlignToTable, DetachFromTable
+from .manipulation import ClearPlanningScene
+from .pick_objects import PickReachableObjs
+from ..containers.do_on_exit import DoOnExit as DoOnExitContainer
 
-from thorp_smach import config as cfg
+from .. import config as cfg
 
 
 class TableSidesPoses(smach.State):

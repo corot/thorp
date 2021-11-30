@@ -6,17 +6,17 @@ import smach_ros
 
 import std_srvs.srv as std_srvs
 import thorp_msgs.msg as thorp_msgs
-import control_msgs.msg as control_msgs
 import arbotix_msgs.srv as arbotix_srvs
 
-from states.common import ExecuteUserCommand
-from states.geometry import TranslatePose
-from states.perception import ObjectDetection
-from states.manipulation import FoldArm, PickupObject, PlaceObject, DisplaceObject
-
 from thorp_toolkit import TF2, get_pose_from_co, get_size_from_co, distance_2d, heading
-from utils import run_sm
-import config as cfg
+
+from thorp_smach.states.common import ExecuteUserCommand
+from thorp_smach.states.geometry import TranslatePose
+from thorp_smach.states.perception import ObjectDetection
+from thorp_smach.states.manipulation import FoldArm, PickupObject, PlaceObject, DisplaceObject
+
+from thorp_smach.utils import run_sm
+from thorp_smach import config as cfg
 
 
 class GetDetectedCubes(smach.State):

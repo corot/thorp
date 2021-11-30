@@ -5,11 +5,11 @@ import smach
 
 from thorp_toolkit.geometry import TF2, distance_2d, get_pose_from_co
 
-from perception import ObjectDetection
-from manipulation import ClearGripper, ClearPlanningScene, FoldArm, PickupObject, PlaceInTray
+from .perception import ObjectDetection
+from .manipulation import ClearGripper, ClearPlanningScene, FoldArm, PickupObject, PlaceInTray
 
-from thorp_smach.containers.do_on_exit import DoOnExit as DoOnExitContainer
-from thorp_smach import config as cfg
+from ..containers.do_on_exit import DoOnExit as DoOnExitContainer
+from .. import config as cfg
 
 
 class TargetSelection(smach.State):

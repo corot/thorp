@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import math
 
 import rospy
@@ -18,7 +19,7 @@ def move_goal_cb(_):
     try:
         resp = srv(waypoints, 5, 0.5, 0.15, True)
         path_pub.publish(resp.path)
-        print resp.path
+        print(resp.path)
     except rospy.ServiceException as err:
         rospy.logerr("Call connect_waypoints failed: %s", str(err))
     waypoints = []

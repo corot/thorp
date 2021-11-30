@@ -34,7 +34,7 @@ def move_to_target_client(value):
         target.header.frame_id = 'arm_shoulder_lift_servo_link'
         goal = thorp_msgs.MoveToTargetGoal(target_type=thorp_msgs.MoveToTargetGoal.POSE_TARGET, pose_target=target)
     else:
-        print "Invalid target value: ", value
+        print("Invalid target value: ", value)
         return None
 
     # Sends the goal to the action server.
@@ -52,20 +52,20 @@ if __name__ == '__main__':
         # publish and subscribe over ROS.
         rospy.init_node('test_arm_ctrl_servers')
         result = move_to_target_client([0.0, math.pi/2, 0.0, 0.0])
-        print "Result: ",  result
+        print("Result: ", result)
         result = move_to_target_client('resting')
-        print "Result: ",  result
+        print("Result: ", result)
         result = move_to_target_client((0.08, 0.0, 0.101))
-        print "Result: ",  result
+        print("Result: ", result)
         result = move_to_target_client((0.10, 0.0, 0.101))
-        print "Result: ",  result
+        print("Result: ", result)
         result = move_to_target_client((0.15, 0.0, 0.101))
-        print "Result: ",  result
+        print("Result: ", result)
         result = move_to_target_client((0.20, 0.0, 0.101))
-        print "Result: ",  result
+        print("Result: ", result)
         result = move_to_target_client((0.25, 0.0, 0.101))
-        print "Result: ",  result
+        print("Result: ", result)
         result = move_to_target_client((0.29, 0.0, 0.101))
-        print "Result: ",  result
+        print("Result: ", result)
     except rospy.ROSInterruptException:
-        print "program interrupted before completion"
+        print("program interrupted before completion")

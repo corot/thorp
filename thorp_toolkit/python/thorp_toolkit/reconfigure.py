@@ -5,12 +5,11 @@ import rospy
 
 import dynamic_reconfigure.client
 
-from singleton import Singleton
+from .singleton import Singleton
 
 
-class Reconfigure:
+class Reconfigure(metaclass=Singleton):
     """ Singleton that simplifies calling dynamic reconfigure services """
-    __metaclass__ = Singleton
 
     def __init__(self):
         self.srv_clients = {}
