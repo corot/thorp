@@ -148,27 +148,7 @@
     uri: https://github.com/corot/ros_people_object_detection_tensorflow
     version: thorp
 
-- git:
-    local-name: cob_perception_common
-    uri: https://github.com/cagbal/cob_perception_common.git
-    version: indigo_dev
-
-# Manipulation stacks
-
-- git:
-    local-name: geometric_shapes
-    uri: https://github.com/ros-planning/geometric_shapes.git
-    version: noetic-devel
-
-- git:
-    local-name: moveit
-    uri: https://github.com/ros-planning/moveit.git
-    version: master
-
-- git:
-    local-name: moveit_msgs
-    uri: https://github.com/ros-planning/moveit_msgs.git
-    version: master
+# Manipulation stacks: all from debs (geometric_shapes, moveit and moveit_msgs)
 
 # Rviz plugins
 
