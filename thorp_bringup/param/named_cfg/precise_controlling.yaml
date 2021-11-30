@@ -2,18 +2,21 @@ move_base_flex/GlobalPlanner:
   orientation_mode: 7  # bidirectional, as we can also move backward
 
 move_base_flex/TEBPlanner:
-  # reduce velocity and allow slowly drive backward
+  # reduce velocity, increase precision, and allow slowly drive backward
   max_vel_x: 0.2
   max_vel_theta: 2.0
   max_vel_x_backwards: 0.1
+  control_look_ahead_poses: 1
   weight_kinematics_forward_drive: 50
 
-  # make the robot less scared about obstacles and less obsessed with time
+  # make the robot less scared about obstacles and less obsessed with speed
   min_obstacle_dist: 0.187  # physical robot radius + 1 cm
   inflation_dist: 0.6
   costmap_obstacles_behind_robot_dist: 0.75
+  weight_max_vel_x: 1
   weight_obstacle: 10
-  weight_optimaltime: 5
+  weight_inflation: 0.1
+  weight_optimaltime: 10
 
   # strict goal reached criteria
   xy_goal_tolerance: 0.035
