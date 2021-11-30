@@ -115,7 +115,7 @@ RUN rosdep update --rosdistro=$ROS_DISTRO && \
 RUN apt clean
 
 # bidict 0.18.3 is the last version compatible with Python 2.7
-RUN pip install --upgrade bidict==0.18.3 ratelimit matplotlib tensorflow-gpu==1.14
+RUN pip install --upgrade bidict==0.18.3 ratelimit matplotlib tensorflow
 
 # build catkin workspace and remove build to reduce image size
 WORKDIR /catkin_ws
