@@ -22,8 +22,6 @@
   <depend>geometry_msgs</depend>
   <depend>thorp_msgs</depend>
   <depend>thorp_toolkit</depend>
-  <depend>visp_ros</depend>
-  <depend>visp_bridge</depend>
   <depend>dynamic_reconfigure</depend>
   <depend>visualization_msgs</depend>
   <depend>mbf_msgs</depend>

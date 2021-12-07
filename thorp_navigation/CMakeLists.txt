@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(thorp_navigation)
 
 find_package(catkin REQUIRED roscpp actionlib geometry_msgs mbf_msgs thorp_msgs thorp_toolkit
-                             dynamic_reconfigure visualization_msgs visp_ros visp_bridge)
+                             dynamic_reconfigure visualization_msgs)
 
 link_directories(${catkin_LIBRARY_DIRS})
 include_directories(include
@@ -13,12 +13,13 @@ generate_dynamic_reconfigure_options(cfg/Follower.cfg)
 catkin_package(
     INCLUDE_DIRS include
     DEPENDS roscpp actionlib geometry_msgs mbf_msgs thorp_msgs thorp_toolkit
-            dynamic_reconfigure visualization_msgs visp_ros visp_bridge)
+            dynamic_reconfigure visualization_msgs)
 
 # nodes
-add_executable(pose_servoing src/pose_servoing.cpp)
-target_link_libraries(pose_servoing ${catkin_LIBRARIES})
-add_dependencies(pose_servoing thorp_msgs_generate_messages_cpp)
+
+# add_executable(pose_servoing src/pose_servoing.cpp)  requires  visp_ros visp_bridge, so not that interesting
+# target_link_libraries(pose_servoing ${catkin_LIBRARIES})
+# add_dependencies(pose_servoing thorp_msgs_generate_messages_cpp)
 
 add_executable(pose_follower src/pose_follower.cpp)
 target_link_libraries(pose_follower ${catkin_LIBRARIES})
