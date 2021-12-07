@@ -204,6 +204,7 @@ public:
 
       moveit_msgs::CollisionObject co;
       co.header = srv.response.segmented_objects.header;
+      co.pose.orientation.w = 1.0;
       co.operation = moveit_msgs::CollisionObject::ADD;
       co.mesh_poses.resize(1);
       co.mesh_poses.front().position = rail_obj.center;
