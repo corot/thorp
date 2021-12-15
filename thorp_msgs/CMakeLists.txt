@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.10)
 project(thorp_msgs)
 find_package(catkin REQUIRED COMPONENTS std_msgs nav_msgs moveit_msgs geometry_msgs actionlib_msgs message_generation)
 

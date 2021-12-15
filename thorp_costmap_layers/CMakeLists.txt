@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.10)
 project(thorp_costmap_layers)
 
 # uncomment to enable OpenCV display of internally processed data (does not work on robot)

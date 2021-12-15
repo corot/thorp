@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.10)
 project(thorp_manipulation)
 
 find_package(catkin REQUIRED roscpp actionlib geometry_msgs moveit_msgs moveit_core visualization_msgs
