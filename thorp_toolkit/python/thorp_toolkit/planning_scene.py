@@ -36,15 +36,7 @@ class PlanningScene(metaclass=Singleton):
     def displace_obj(self, obj_name, new_pose):
         co = self.get_obj(obj_name)
         co.header = new_pose.header
-        if co.primitive_poses:
-            co.primitives = []
-            co.primitive_poses[0] = new_pose.pose
-        if co.mesh_poses:
-            co.meshes = []
-            co.mesh_poses[0] = new_pose.pose
-        if co.plane_poses:
-            co.planes = []
-            co.plane_poses[0] = new_pose.pose
+        co.pose = new_pose.pose
         co.operation = CollisionObject.MOVE
         self.__psi__._pub_co.publish(co)
 

@@ -3,7 +3,7 @@ from random import uniform
 import rospy
 import smach
 
-from thorp_toolkit.geometry import TF2, distance_2d, get_pose_from_co
+from thorp_toolkit.geometry import TF2, distance_2d
 
 from .perception import ObjectDetection
 from .manipulation import ClearGripper, ClearPlanningScene, FoldArm, PickupObject, PlaceInTray
@@ -31,8 +31,7 @@ class TargetSelection(smach.State):
     def execute(self, ud):
         targets = []
         for obj in ud['objects']:
-            obj_pose = get_pose_from_co(obj)
-            dist = distance_2d(obj_pose, self.arm_on_bfp_rf)  # assumed in arm base reference frame
+            dist = distance_2d(obj.pose, self.arm_on_bfp_rf)  # assumed in arm base reference frame
             if dist <= (cfg.MAX_ARM_REACH - 3e-3):  # 3 mm safety margin to account for perception noise
                 targets.append((obj, dist))
         targets = sorted(targets, key=lambda t: t[1])  # sort by increasing distance

@@ -6,8 +6,7 @@ import geometry_msgs.msg as geometry_msgs
 from copy import deepcopy
 from itertools import permutations
 
-from thorp_toolkit.geometry import TF2, to_transform, translate_pose, transform_pose, create_2d_pose, distance_2d, \
-                                   get_pose_from_co
+from thorp_toolkit.geometry import TF2, to_transform, translate_pose, transform_pose, create_2d_pose, distance_2d
 from thorp_toolkit.transform import Transform
 from thorp_toolkit.visualization import Visualization
 from thorp_msgs.msg import ObjectToPick, PickingPlan, PickLocation
@@ -117,14 +116,13 @@ class GroupObjects(smach.State):
             # detected objects poses are in arm reference, so their modulo is the distance to the arm
             objs = []
             for i, obj in enumerate(ud['objects']):
-                obj_pose = get_pose_from_co(obj)
                 # transform object pose from base to map frame, so we can compare distances to picking locations
                 # we must limit max arm reach with our navigation tolerance when reaching the goal, as that will
                 # be our probable picking pose, instead of the ideal one received as input
-                obj_pose_mrf = (map_to_fbp_tf * Transform.create(obj_pose)).to_geometry_msg_pose_stamped()
+                obj_pose_mrf = (map_to_fbp_tf * Transform.create(obj.pose)).to_geometry_msg_pose_stamped()
                 dist = distance_2d(obj_pose_mrf, arm_pose_mrf)  # both on map rf
                 if dist <= cfg.MAX_ARM_REACH - cfg.TIGHT_DIST_TOLERANCE:
-                    objs.append(ObjectToPick(obj.id, dist, obj_pose))
+                    objs.append(ObjectToPick(obj.id, dist, obj.pose))
             if not objs:
                 continue  # no objects reachable from here; keep going
             # sort objects by increasing distance from the arm; that should make picking easier,

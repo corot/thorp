@@ -195,7 +195,7 @@ public:
     m.color.b = b;
     m.color.a = 0.8;
 
-    m.pose.position.z = msg.scale/2.0 + 0.025;
+    m.pose.position.z = msg.scale / 2.0 + 0.025;
 
     return m;
   }

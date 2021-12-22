@@ -155,23 +155,22 @@ public:
     // note that we use centroid-z as z-position and 1 mm as height, to ensure we don't
     // subsume low-laying objects segmented together with the surface
     auto& table = srv.response.segmented_objects.objects.front();
-    result.surface.header = srv.response.segmented_objects.header;
     result.surface.id = "table";
     result.surface.operation = moveit_msgs::CollisionObject::ADD;
-    result.surface.primitive_poses.resize(1);
-    result.surface.primitive_poses.front().position = table.center;
-    result.surface.primitive_poses.front().position.z = table.centroid.z;
-    result.surface.primitive_poses.front().orientation = table.orientation;
+    result.surface.header = srv.response.segmented_objects.header;
+    result.surface.pose.position = table.center;
+    result.surface.pose.position.z = table.centroid.z;
+    result.surface.pose.orientation = table.orientation;
     result.surface.primitives.resize(1);
     result.surface.primitives.front().type = shape_msgs::SolidPrimitive::BOX;
     result.surface.primitives.front().dimensions = {table.depth, table.width, 0.001};
     ROS_INFO("[object detection] Adding table at %s as a collision object",
-             ttk::point2cstr3D(result.surface.primitive_poses[0].position));
+             ttk::point2cstr3D(result.surface.pose.position));
     std::vector<moveit_msgs::CollisionObject> new_scene_objs(1, result.surface);
 
     if (publish_static_tf_)
-      ttk::TF2::instance().sendTransform(result.surface.primitive_poses.front(),
-                                         output_frame_, result.surface.id);
+      ttk::TF2::instance().sendTransform(result.surface.pose, output_frame_, result.surface.id);
+
     // show collision objects with color
     moveit_msgs::ObjectColor obj_color;
     obj_color.id = result.surface.id;
@@ -204,15 +203,16 @@ public:
 
       moveit_msgs::CollisionObject co;
       co.header = srv.response.segmented_objects.header;
-      co.pose.orientation.w = 1.0;
+      co.pose.position = rail_obj.center;
+      co.pose.orientation = rail_obj.orientation;
       co.operation = moveit_msgs::CollisionObject::ADD;
       co.mesh_poses.resize(1);
-      co.mesh_poses.front().position = rail_obj.center;
-      co.mesh_poses.front().orientation = rail_obj.orientation;
+      co.mesh_poses.front().position.z = - rail_obj.height / 2.0;  // meshes' origin is at z = 0)
+      co.mesh_poses.front().orientation.w = 1;
 
       // Identify object type and possibly update the pose with ICP template matching correction
       // we reject objects failing to match any template within our error threshold
-      if (!identifyObject(rail_obj, co.mesh_poses.front()))
+      if (!identifyObject(rail_obj, co.pose))
       {
         ROS_WARN("[object detection] Object %d at %s discarded", i, ttk::point2cstr3D(rail_obj.center));
         continue;
@@ -242,14 +242,13 @@ public:
       extant_objs.push_back(co.id);
 
       if (publish_static_tf_)
-        ttk::TF2::instance().sendTransform(co.mesh_poses.front(), output_frame_, co.id);
+        ttk::TF2::instance().sendTransform(co.pose, output_frame_, co.id);
 
       // Use segmented pointcloud's color for the co
       obj_color.id = co.id;
       obj_color.color = ttk::makeColor(rail_obj.rgb[0], rail_obj.rgb[1], rail_obj.rgb[2]);
 
-      ROS_INFO("[object detection] Object at %s classified as %s",
-               ttk::pose2cstr2D(co.mesh_poses.front()), rail_obj.name.c_str());
+      ROS_INFO("[object detection] Object at %s classified as %s", ttk::pose2cstr2D(co.pose), rail_obj.name.c_str());
       result.objects.push_back(co);  // TODO   try emplace
       markers.markers.emplace_back(makeLabelMarker(obj_colors.size(), rail_obj.height, co, obj_color.color));
       markers.markers.emplace_back(makeVolumeMarker(obj_colors.size(), rail_obj.bounding_volume));
@@ -371,6 +370,7 @@ private:
     recalcDimensions(obj, result->template_pose.transform);
 
     ttk::tf2pose(result->template_pose.transform, pose);
+    pose.position.z += obj.height / 2.0;  // restore to object center (remember that templates' base is at z = 0)
     ROS_DEBUG("Yaw updated:    %f -> %f", tf::getYaw(obj.orientation), tf::getYaw(pose.orientation));
 
     return true;
@@ -462,9 +462,8 @@ private:
     m.text = co.id;
     m.scale.z = 0.035;
     m.color = color;
-    m.pose = co.mesh_poses.front();
-    m.pose.position.z += obj_height + 0.02;
-    m.lifetime.fromSec(15.0);
+    m.pose = co.pose;
+    m.pose.position.z += obj_height / 2.0 + 0.025;
     return m;
   }
 
@@ -483,7 +482,7 @@ private:
     m.color = ttk::makeColor(0.8f, 0.8f, 0.8f, 0.2f);
     m.pose.position = obj.center;
     m.pose.orientation = obj.orientation;
-    m.lifetime.fromSec(5.0);
+    m.lifetime.fromSec(2.0);
     return m;
   }
 
@@ -501,7 +500,7 @@ private:
     m.scale.z = bv.dimensions.z + redetect_tolerance_;
     m.color = ttk::makeColor(0.8f, 0.8f, 0.8f, 0.2f);
     m.pose = bv.pose.pose;
-    m.lifetime.fromSec(5.0);
+    m.lifetime.fromSec(2.0);
     return m;
   }
 

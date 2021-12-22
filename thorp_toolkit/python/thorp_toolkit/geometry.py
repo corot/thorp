@@ -196,30 +196,6 @@ def create_3d_pose(x, y, z, roll, pitch, yaw, frame=None):
         return pose.pose
 
 
-def get_pose_from_co(co, stamped=False):
-    """ Get the pose for a moveit_msgs/CollisionObject. We try first meshes, then primitives and finally planes """
-    if len(co.mesh_poses):
-        pose = co.mesh_poses[0]
-    elif len(co.primitive_poses):
-        pose = co.primitive_poses[0]
-    elif len(co.plane_poses):
-        pose = co.plane_poses[0]
-    else:  
-        raise Exception("Collision object contain no poses")
-
-    if not stamped:
-        return pose
-    pose_stamped = geometry_msgs.PoseStamped()
-    pose_stamped.header = co.header
-    pose_stamped.pose = pose
-    return pose_stamped
-
-
-def get_pose_from_aco(aco, stamped=False):
-    """ Get the pose for a moveit_msgs/AttachedCollisionObject """
-    return get_pose_from_co(aco.object, stamped)
-
-
 def get_size_from_co(co):
     """ Get the size for a moveit_msgs/CollisionObject. We try first meshes, then primitives """
     if len(co.meshes):

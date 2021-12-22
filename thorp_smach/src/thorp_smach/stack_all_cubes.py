@@ -5,10 +5,11 @@ import smach
 import smach_ros
 
 import std_srvs.srv as std_srvs
-import thorp_msgs.msg as thorp_msgs
 import arbotix_msgs.srv as arbotix_srvs
+import geometry_msgs.msg as geometry_msgs
+import thorp_msgs.msg as thorp_msgs
 
-from thorp_toolkit import TF2, get_pose_from_co, get_size_from_co, distance_2d, heading
+from thorp_toolkit import TF2, get_size_from_co, distance_2d, heading
 
 from thorp_smach.states.common import ExecuteUserCommand
 from thorp_smach.states.geometry import TranslatePose
@@ -34,7 +35,7 @@ class GetDetectedCubes(smach.State):
             if not obj.id.startswith('cube'):
                 continue
             # Object's timestamp is irrelevant, and can trigger a TransformException if very recent; zero it!
-            obj_pose = get_pose_from_co(obj, stamped=True)
+            obj_pose = geometry_msgs.PoseStamped(obj.header, obj.pose)
             obj_pose.header.stamp = rospy.Time(0)
             obj_pose = TF2().transform_pose(obj_pose, obj_pose.header.frame_id, ud.arm_ref_frame)
             distance = distance_2d(obj_pose.pose)

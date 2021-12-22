@@ -28,41 +28,25 @@ int32_t extractObjectData(const moveit_msgs::CollisionObject& obj,
                           geometry_msgs::PoseStamped& obj_pose, geometry_msgs::Vector3& obj_size)
 {
   obj_pose.header = obj.header;
+  obj_pose.pose = obj.pose;
 
-  // We get object's pose from the mesh/primitive poses; try first with the meshes
-  if (!obj.mesh_poses.empty())
+  // We get object's size from either the first mesh or first primitive (we assume there aren't composed objects)
+  // try first with the meshes
+  if (!obj.meshes.empty())
   {
-    obj_pose.pose = obj.mesh_poses[0];
-    if (!obj.meshes.empty())
-    {
-      tf::vectorEigenToMsg(shapes::computeShapeExtents(obj.meshes[0]), obj_size);
+    tf::vectorEigenToMsg(shapes::computeShapeExtents(obj.meshes[0]), obj_size);
 
-      // We assume meshes laying in the floor, so we bump its pose by half z-dimension to grasp the object at mid-height
-      // TODO: maybe should add instead z-dimension - half gripper finger length, as I grasp objects normally from above
-      obj_pose.pose.position.z += obj_size.z/2.0;
-    }
-    else
-    {
-      ROS_ERROR("[planning scene] Collision object '%s' has no meshes", obj.id.c_str());
-      return thorp_msgs::ThorpError::OBJECT_SIZE_NOT_FOUND;
-    }
+    // We assume meshes laying in the floor, so we bump its pose by half z-dimension to grasp the object at mid-height
+    // TODO: maybe should add instead z-dimension - half gripper finger length, as I grasp objects normally from above
+ //   obj_pose.pose.position.z += obj_size.z/2.0;
   }
-  else if (!obj.primitive_poses.empty())
+  else if (!obj.primitives.empty())
   {
-    obj_pose.pose = obj.primitive_poses[0];
-    if (!obj.primitives.empty())
-    {
-      tf::vectorEigenToMsg(shapes::computeShapeExtents(obj.primitives[0]), obj_size);
-    }
-    else
-    {
-      ROS_ERROR("[planning scene] Collision object '%s' has no primitives", obj.id.c_str());
-      return thorp_msgs::ThorpError::OBJECT_SIZE_NOT_FOUND;
-    }
+    tf::vectorEigenToMsg(shapes::computeShapeExtents(obj.primitives[0]), obj_size);
   }
   else
   {
-    ROS_ERROR("[planning scene] Collision object '%s' has no mesh/primitive poses", obj.id.c_str());
+    ROS_ERROR("[planning scene] Collision object '%s' has neither meshes or primitives", obj.id.c_str());
     return thorp_msgs::ThorpError::OBJECT_POSE_NOT_FOUND;
   }
 
