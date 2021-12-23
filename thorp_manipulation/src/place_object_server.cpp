@@ -11,6 +11,7 @@
 // auxiliary libraries
 #include <thorp_toolkit/planning_scene.hpp>
 #include <thorp_toolkit/geometry.hpp>
+#include <thorp_toolkit/tf2.hpp>
 namespace ttk = thorp_toolkit;
 
 // other Thorp stuff
@@ -138,27 +139,31 @@ int32_t PlaceObjectServer::makePlaceLocations(const geometry_msgs::PoseStamped& 
                                               const std::string& obj_name, const std::string& surface,
                                               std::vector<moveit_msgs::PlaceLocation>& place_locations)
 {
+  // MoveGroup::place will transform the provided place pose with the attached body pose, so the object retains
+  // the orientation it had when picked. However, with our 4-dofs arm this is infeasible (nor we care about the
+  // placed object's orientation!), so we cancel this transformation. It is applied here:
+  // https://github.com/ros-planning/moveit/blob/master/moveit_ros/manipulation/pick_place/src/place.cpp#L77
+  // More details on this issue: https://github.com/ros-planning/moveit_ros/issues/577
+  geometry_msgs::PoseStamped obj_pose_eef;
+  if (bool success = ttk::TF2::instance().transformPose(arm().getEndEffectorLink(), obj_pose, obj_pose_eef); !success)
+    return moveit::planning_interface::MoveItErrorCode::INVALID_LINK_NAME;
+
+  tf::Transform place_tf, aco_tf;
+  tf::poseMsgToTF(obj_pose_eef.pose, aco_tf);
+
   // Try up to PLACE_ATTEMPTS place locations with slightly different poses
   // target pose is expected to be the center of the object once placed in the support surface
   for (int attempt = 0; attempt < PLACE_ATTEMPTS; ++attempt)
   {
     moveit_msgs::PlaceLocation l;
     l.place_pose = target_pose;
-    l.place_pose.pose.position.z += obj_size.z / 2.0;  // gripper pose is at the top of the object, so we must add z/2
     if (!validateTargetPose(l.place_pose, true, true, true, attempt))
       return thorp_msgs::ThorpError::INVALID_TARGET_POSE;
 
-    // MoveGroup::place will transform the provided place pose with the attached body pose, so the object retains
-    // the orientation it had when picked. However, with our 4-dofs arm this is infeasible (nor we care about the
-    // objects orientation!), so we cancel this transformation. It is applied here:
-    // https://github.com/ros-planning/moveit_ros/blob/jade-devel/manipulation/pick_place/src/place.cpp#L64
-    // More details on this issue: https://github.com/ros-planning/moveit_ros/issues/577
-    tf::Transform place_tf, aco_tf;
     tf::poseMsgToTF(l.place_pose.pose, place_tf);
-    tf::poseMsgToTF(obj_pose.pose, aco_tf);
     tf::poseTFToMsg(place_tf * aco_tf, l.place_pose.pose);
     ROS_DEBUG("[place object] Compensate place pose with the attached object pose %s. Results: %s",
-              ttk::pose2cstr3D(obj_pose.pose), ttk::pose2cstr3D(l.place_pose.pose));
+              ttk::pose2cstr3D(obj_pose_eef.pose), ttk::pose2cstr3D(l.place_pose.pose));
 
     l.pre_place_approach.direction.vector.x = +1;
     l.pre_place_approach.direction.header.frame_id = arm().getEndEffectorLink();
@@ -187,4 +192,4 @@ int32_t PlaceObjectServer::makePlaceLocations(const geometry_msgs::PoseStamped& 
   return place_locations.size();
 }
 
-};
+}  // namespace thorp_manipulation;
