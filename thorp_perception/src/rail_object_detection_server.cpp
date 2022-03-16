@@ -207,7 +207,7 @@ public:
       co.pose.orientation = rail_obj.orientation;
       co.operation = moveit_msgs::CollisionObject::ADD;
       co.mesh_poses.resize(1);
-      co.mesh_poses.front().position.z = - rail_obj.height / 2.0;  // meshes' origin is at z = 0)
+      co.mesh_poses.front().position.z = - rail_obj.height / 2.0;  // meshes' origin is at z = 0
       co.mesh_poses.front().orientation.w = 1;
 
       // Identify object type and possibly update the pose with ICP template matching correction

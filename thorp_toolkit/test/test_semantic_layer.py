@@ -18,11 +18,11 @@ def node():
 
 def test_semantic_layer(node):
     p00 = create_2d_pose(0, 0, 1, 'map')
-    p11 = create_2d_pose(2, 2, 1, 'map')
+    p11 = create_2d_pose(1, 2, 1, 'map')
     p22 = create_2d_pose(2, 2, 1, 'map')
     p33 = create_2d_pose(3, 3, 1, 'map')
     p16 = create_2d_pose(1.6, 1.6, 0, 'map')
-    sz1 = (3.0, 3.0)
+    sz1 = (2.0, 2.0)
     sz2 = (1.2, 0.8)
     sz3 = (0.5, 0.5)
     sz4 = (0.75, 0.75)
@@ -30,13 +30,15 @@ def test_semantic_layer(node):
     sl = SemanticLayer()
 
     # add some obstacles
+    assert sl.add_object('obs0', 'blocked_area', p11, sz1, costmap='global')
+    assert sl.remove_object('obs0', 'blocked_area', costmap='global')
     assert sl.add_object('obs1', 'obstacle', p11, sz1, costmap='local')
     assert sl.add_object('obs2', 'obstacle', p11, sz2, costmap='local')
     assert sl.add_object('obs3', 'obstacle', p11, sz3, costmap='local')
     assert sl.add_object('obs4', 'obstacle', p11, sz4, costmap='local')
 
     # add some free space
-    assert sl.add_object('fs1', 'free_space', p11, sz1, costmap='local')
+    assert sl.add_object('fs1', 'free_space', p11, (2.5, 2.9), costmap='local')
     assert sl.add_object('fs2', 'free_space', p11, sz2, costmap='local')
 
     # move the first one

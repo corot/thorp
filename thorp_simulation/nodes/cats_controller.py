@@ -8,7 +8,6 @@ Author:
     Jorge Santos
 """
 
-import sys
 import copy
 import math
 import rospy
