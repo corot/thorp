@@ -24,6 +24,6 @@
   <depend>thorp_msgs</depend>
 
   <export>
-    <costmap_2d plugin="${prefix}/semantic_layer.xml"/>
+    <costmap_2d plugin="${prefix}/plugins/semantic_layer.xml"/>
   </export>
 </package>
