@@ -12,7 +12,8 @@ import sys
 import yaml
 import copy
 import rospy
-import cPickle
+import pickle
+import base64
 
 from smach_ros import introspection
 from smach_msgs.msg import SmachContainerStatus
@@ -85,11 +86,11 @@ def smach_status_cb(msg):
         current_state = match.group(1)
         camera_instructions = script[current_state]
         t0 = rospy.get_time()
-        # userdata comes pickle-serialized;   WARN: deserialization can take a lot for heavy userdata!
-        userdata = cPickle.loads(msg.local_data)
+        # userdata comes base64-compressed and pickle-serialized; deserialization can take long for heavy userdata
+        userdata = pickle.loads(base64.b64decode(msg.local_data))
         rospy.loginfo("Placing camera for state %s (deserialization took %.3f s)", current_state, rospy.get_time() - t0)
         place_camera(*parse_state(current_state, camera_instructions, userdata))
-    except (ImportError, cPickle.PicklingError) as ude:
+    except (ImportError, pickle.PicklingError) as ude:
         rospy.logerr("Parse userdata error: %s", str(ude))
         # TODO: probably I don't need it, but smach viz does the following:
         #   This will only happen once for each package
