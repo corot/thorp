@@ -273,14 +273,11 @@ def GatherObjects(target_types):
 
     # detects objects over the table, and make a picking plan
     make_pick_plan_sm = DoOnExitContainer(outcomes=['succeeded', 'aborted', 'preempted', 'no_reachable_objs'],
-                                          input_keys=['table', 'object_types'],
+                                          input_keys=['table', 'table_pose', 'object_types'],
                                           output_keys=['picking_poses', 'closest_picking_pose', 'picking_plan'])
     with make_pick_plan_sm:
         smach.StateMachine.add('GET_ROBOT_POSE', GetRobotPose(),
-                               transitions={'succeeded': 'RE_DETECT_TABLE'})
-        smach.StateMachine.add('RE_DETECT_TABLE', MonitorTables(2.0),  # re-detect when nearby for more precision
-                               transitions={'succeeded': 'CALC_PICK_POSES',  # (or fail if cannot see again)
-                                            'aborted': 'aborted'})
+                               transitions={'succeeded': 'CALC_PICK_POSES'})
         smach.StateMachine.add('CALC_PICK_POSES', TableSidesPoses(cfg.PICKING_DIST_TO_TABLE),
                                transitions={'succeeded': 'CALC_APPROACHES',
                                             'no_valid_table': 'aborted'},
@@ -370,9 +367,12 @@ def GatherObjects(target_types):
                                transitions={'succeeded': 'APPROACH_TABLE',
                                             'aborted': 'aborted'})
         smach.StateMachine.add('APPROACH_TABLE', approach_table_sm,
-                               transitions={'succeeded': 'MAKE_PICK_PLAN',
+                               transitions={'succeeded': 'RE_DETECT_TABLE',
                                             'aborted': 'aborted',
                                             'preempted': 'preempted'})
+        smach.StateMachine.add('RE_DETECT_TABLE', MonitorTables(2.0),
+                               transitions={'succeeded': 'MAKE_PICK_PLAN',  # re-detect when nearby for more precision,
+                                            'aborted': 'succeeded'})  # or just succeed to give up if not seen again
         smach.StateMachine.add('MAKE_PICK_PLAN', make_pick_plan_sm,
                                transitions={'succeeded': 'EXEC_PICK_PLAN',
                                             'aborted': 'aborted',
@@ -389,6 +389,6 @@ def GatherObjects(target_types):
                                             'preempted': 'preempted'})
         smach.StateMachine.add('OBJECTS_LEFT', ObjectsDetected(),
                                transitions={'true': 'APPROACH_TABLE',   # at least one object left; restart picking
-                                            'false': 'succeeded'})      # otherwise we are done
+                                            'false': 'succeeded'})      # otherwise, we are done
         DoOnExitContainer.add_finally('STANDARD_CTRL', DismissNamedConfig('precise_controlling'))
     return sm
