@@ -64,7 +64,7 @@ TEBPlanner:
   optimization_verbose: False
   penalty_epsilon: 0.05
   obstacle_cost_exponent: 4
-  weight_max_vel_x: 4
+  weight_max_vel_x: 1
   weight_max_vel_y: 0
   weight_max_vel_theta: 1
   weight_acc_lim_x: 1
