@@ -14,7 +14,7 @@ Explore the entire environment searching for cats, and attack them whenever foun
   <arg name="record_video" default="false"/>
 
   <!-- App-specific parameters -->
-  <arg name="cat_models" value="cat_orange cat_black"/>
+  <arg name="cat_models" default="cat_orange cat_black"/>
 
   <!--  ***** Simulated mobile manipulator Thorp ******  -->
   <include file="$(find thorp_simulation)/launch/thorp_gazebo.launch">

@@ -9,11 +9,16 @@ Example apps
 ### Simulated on Gazebo
 
 Cat hunter: explore the entire environment searching for cats, and attack them whenever found.
+```
+roslaunch thorp_simulation cat_hunter.launch cat_models:='cat_orange cat_black'
+```
 
 [![Cat hunter](https://user-images.githubusercontent.com/322610/121386461-fb111980-c984-11eb-92e3-0e59c733f789.png)](https://youtu.be/ieW3BQabwLo "Cat hunter")
 
 Object gatherer: explore the entire environment gathering all tabletop objects of the requested types.
-
+```
+roslaunch thorp_simulation object_gatherer.launch object_types:='cube circle pentagon'
+```
 [![Object gatherer](https://user-images.githubusercontent.com/322610/121390421-51338c00-c988-11eb-9bbf-e89d588018cb.png)](https://youtu.be/tneMk6kRPHU "Object gatherer")
 
 
