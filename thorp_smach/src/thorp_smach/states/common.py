@@ -81,3 +81,27 @@ class Sleep(smach.State):
                 return 'preempted'
             rospy.sleep(0.001)
         return 'succeeded'
+
+
+class Succeed(smach.State):
+    """
+    Simply succeed
+    """
+
+    def __init__(self):
+        super(Succeed, self).__init__(outcomes=['succeeded'])
+
+    def execute(self, _):
+        return 'succeeded'
+
+
+class Fail(smach.State):
+    """
+    Simply fail
+    """
+
+    def __init__(self):
+        super(Fail, self).__init__(outcomes=['aborted'])
+
+    def execute(self, _):
+        return 'aborted'
