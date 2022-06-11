@@ -53,9 +53,7 @@ def traverse_house_sm():
         smach.Iterator.set_contained_state('EXPLORE_1_ROOM', explore_1_room_sm, loop_outcomes=['succeeded', 'aborted'])
 
     # Full SM: plan rooms visit sequence and explore each room in turn
-    sm = smach.StateMachine(outcomes=['succeeded',
-                                      'aborted',
-                                      'preempted'])
+    sm = smach.StateMachine(outcomes=['succeeded', 'aborted', 'preempted'])
     with sm:
         smach.StateMachine.add('PLAN_ROOM_SEQ', plan_room_seq_sm,
                                transitions={'succeeded': 'EXPLORE_HOUSE',

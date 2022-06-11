@@ -13,7 +13,7 @@ controllers:
   - {name: PoseFollower,    type: pose_follower/PoseFollower}
 controller_frequency: 10.0      # Hz
 controller_patience:   0.2      # seconds; abort if the local planner does not succeed within that time
-controller_max_retries:  0      # limit consecutive failed calls to local planner
+controller_max_retries:  3      # limit consecutive failed calls to local planner
 controller_lock_costmap: true   # lock costmap as in move_base, or let planner to do itself
 
 # Global planner parameters

@@ -5,6 +5,7 @@ import smach_ros
 import geometry_msgs.msg as geo_msgs
 import nav_msgs.msg as nav_msgs
 import mbf_msgs.msg as mbf_msgs
+import mbf_msgs.srv as mbf_srvs
 import thorp_msgs.msg as thorp_msgs
 import thorp_msgs.srv as thorp_srvs
 
@@ -279,15 +280,16 @@ class ExePathFailed(smach.State):
 
 class AlignToTable(DoOnExitContainer):
     def __init__(self):
-        super(AlignToTable, self).__init__(outcomes=['succeeded',
-                                                     'aborted',
-                                                     'preempted'],
+        super(AlignToTable, self).__init__(outcomes=['succeeded', 'aborted', 'preempted'],
                                            input_keys=['table', 'pose'],
                                            output_keys=['outcome', 'message'])
         with self:
             self.userdata['behavior'] = 'out_to_free_space'
             DoOnExitContainer.add('CLEAR_WAY', ClearTableWay(),
-                                  transitions={'succeeded': 'POSE_AS_PATH'})
+                                  transitions={'succeeded': 'PRECISE_CTRL'})
+            DoOnExitContainer.add('PRECISE_CTRL', SetNamedConfig('precise_controlling'),
+                                  transitions={'succeeded': 'POSE_AS_PATH',
+                                               'aborted': 'aborted'})
             DoOnExitContainer.add('POSE_AS_PATH', PoseAsPath(),
                                   transitions={'succeeded': 'ALIGN_TO_TABLE'})
             DoOnExitContainer.add('ALIGN_TO_TABLE', ExePath(),
@@ -295,17 +297,16 @@ class AlignToTable(DoOnExitContainer):
                                                'aborted': 'TO_FREE_SPACE',
                                                'preempted': 'preempted'})
             DoOnExitContainer.add('TO_FREE_SPACE', Recovery(),
-                                  transitions={'succeeded': 'CLEAR_WAY',  # retry
+                                  transitions={'succeeded': 'CLEAR_WAY',  # retry  TODO: potential inf loop!
                                                'aborted': 'aborted',
                                                'preempted': 'preempted'})
             DoOnExitContainer.add_finally('RESTORE_WAY', RestoreTableWay())
+            DoOnExitContainer.add_finally('STANDARD_CTRL', DismissNamedConfig('precise_controlling'))
 
 
 class DetachFromTable(DoOnExitContainer):
     def __init__(self):
-        super(DetachFromTable, self).__init__(outcomes=['succeeded',
-                                                        'aborted',
-                                                        'preempted'],
+        super(DetachFromTable, self).__init__(outcomes=['succeeded', 'aborted', 'preempted'],
                                               input_keys=['table', 'pose'],
                                               output_keys=['outcome', 'message'])
         with self:
@@ -327,9 +328,7 @@ class DetachFromTable(DoOnExitContainer):
 
 class ExeSparsePath(smach.StateMachine):
     def __init__(self):
-        super(ExeSparsePath, self).__init__(outcomes=['succeeded',
-                                                      'aborted',
-                                                      'preempted'],
+        super(ExeSparsePath, self).__init__(outcomes=['succeeded', 'aborted', 'preempted'],
                                             input_keys=['path'],
                                             output_keys=['outcome', 'message'])
         with self:
@@ -361,9 +360,7 @@ class FollowWaypoints(DoOnExitContainer):
     Follow a list of waypoints after converting them into a smooth path executable by MBF controllers
     """
     def __init__(self, controller=cfg.DEFAULT_CONTROLLER):
-        super(FollowWaypoints, self).__init__(outcomes=['succeeded',
-                                                        'aborted',
-                                                        'preempted'],
+        super(FollowWaypoints, self).__init__(outcomes=['succeeded', 'aborted', 'preempted'],
                                               input_keys=['waypoints'],
                                               output_keys=['waypoints', 'reached_wp', 'outcome', 'message'])
         with self:

@@ -103,10 +103,7 @@ def cat_hunter_sm():
         smach.Concurrence.add('LOOK_FOR_CATS', MonitorObjects(['cat', 'dog', 'horse']))
 
     # Full SM: plan rooms visit sequence and explore each room in turn
-    sm = smach.StateMachine(outcomes=['detected',
-                                      'not_detected',
-                                      'aborted',
-                                      'preempted'])
+    sm = smach.StateMachine(outcomes=['detected', 'not_detected', 'aborted', 'preempted'])
     with sm:
         smach.StateMachine.add('SEARCH', search_sm,
                                transitions={'detected': 'ATTACK',

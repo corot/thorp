@@ -17,9 +17,7 @@ def monitor_cb(ud, msg):
 def main():
     rospy.init_node('example_actionlib_smach')
 
-    sm = smach.StateMachine(outcomes=['success',
-                                      'aborted',
-                                      'preempted'])
+    sm = smach.StateMachine(outcomes=['success', 'aborted', 'preempted'])
     with sm:
         ''' general '''
         sm.userdata.true = True

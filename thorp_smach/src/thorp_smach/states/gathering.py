@@ -356,16 +356,10 @@ def GatherObjects(target_types):
         smach.Iterator.set_contained_state('', pick_objects_sm, loop_outcomes=['succeeded'])
 
     # Full SM: approach the table, make a picking plan and execute it, double-checking that we left no object behind
-    sm = DoOnExitContainer(outcomes=['succeeded',
-                                     'aborted',
-                                     'preempted',
-                                     'tray_full'],
-                           input_keys=['table', 'table_pose'])
+    sm = smach.StateMachine(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'],
+                            input_keys=['table', 'table_pose'])
     sm.userdata.object_types = target_types
     with sm:
-        smach.StateMachine.add('PRECISE_CTRL', SetNamedConfig('precise_controlling'),
-                               transitions={'succeeded': 'APPROACH_TABLE',
-                                            'aborted': 'aborted'})
         smach.StateMachine.add('APPROACH_TABLE', approach_table_sm,
                                transitions={'succeeded': 'RE_DETECT_TABLE',
                                             'aborted': 'aborted',
@@ -390,5 +384,4 @@ def GatherObjects(target_types):
         smach.StateMachine.add('OBJECTS_LEFT', ObjectsDetected(),
                                transitions={'true': 'APPROACH_TABLE',   # at least one object left; restart picking
                                             'false': 'succeeded'})      # otherwise, we are done
-        DoOnExitContainer.add_finally('STANDARD_CTRL', DismissNamedConfig('precise_controlling'))
     return sm

@@ -85,11 +85,7 @@ def object_gatherer_sm(target_types):
         smach.Sequence.add('VALIDATE_SIZE', CheckTableSize())
 
     # Full SM: explore the house and gather objects from all detected tables
-    sm = DoOnExitContainer(outcomes=['detected',
-                                     'not_detected',
-                                     'tray_full',
-                                     'aborted',
-                                     'preempted'])
+    sm = DoOnExitContainer(outcomes=['detected', 'not_detected', 'tray_full', 'aborted', 'preempted'])
     with sm:
         smach.StateMachine.add('SEARCH', search_sm,
                                transitions={'detected': 'CONFIRM',
