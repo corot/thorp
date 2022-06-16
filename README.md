@@ -24,7 +24,7 @@ roslaunch thorp_simulation object_gatherer.launch object_types:='cube circle pen
 
 ### Real robot (much older)
 
-[Turtlebot arm object manipulation demo](https://github.com/corot/turtlebot_arm/tree/melodic-devel/turtlebot_arm_object_manipulation) ([video](https://drive.google.com/file/d/0BzYjlgbSZJSWaVRVQmVKTVczY00/view?usp=sharing)).
+[Turtlebot arm object manipulation demo](https://github.com/corot/turtlebot_arm/tree/melodic-devel/turtlebot_arm_object_manipulation) ([video](https://youtu.be/GA-PLYbH06o)).
 
 Bringup
 -------
