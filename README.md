@@ -50,9 +50,9 @@ wstool init src https://raw.githubusercontent.com/corot/thorp/master/thorp_bring
 touch src/gazebo-pkgs/CATKIN_IGNORE
 ln -sr src/gazebo-pkgs/gazebo_grasp_plugin src
 ln -sr src/gazebo-pkgs/gazebo_version_helpers src
-source /opt/ros/melodic/setup.bash
+source /opt/ros/noetic/setup.bash
 rosdep update
-rosdep install --from-paths src /opt/ros/melodic --ignore-src --rosdistro melodic -y
+rosdep install --from-paths src --ignore-src --rosdistro noetic -y
 catkin build
 pip install --upgrade bidict ratelimit tk
 ```
@@ -78,8 +78,10 @@ Arm, sonars and IR sensors require a bit of extra work. Check their
 
 Available in [dockerhub](https://hub.docker.com/repository/docker/corot/thorp)
 
+Sadly noetic image doesn't work because of [this MoveIt! issue](https://github.com/ros-planning/moveit/issues/3007)
+
 ```
-docker pull corot/thorp
+docker pull corot/thorp:melodic
 ```
 
 To build locally:
@@ -110,5 +112,5 @@ rocker --pulse --nvidia --x11 thorp
 or the pulled image:
 
 ```
-rocker --pulse --nvidia --x11 corot/thorp
+rocker --pulse --nvidia --x11 corot/thorp:melodic
 ```
