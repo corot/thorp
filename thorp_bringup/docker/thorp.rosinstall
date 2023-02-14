@@ -3,7 +3,7 @@
 - git:
     local-name: thorp
     uri: https://github.com/corot/thorp.git
-    version: master
+    version: noetic
 
 - git:
     local-name: arbotix_ros
