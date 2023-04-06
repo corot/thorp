@@ -34,11 +34,14 @@ class PlanningScene(metaclass=Singleton):
         self.__psi__.remove_world_object(obj_name)
 
     def displace_obj(self, obj_name, new_pose):
+        """
+        Displace an object within the planning scene
+        """
         co = self.get_obj(obj_name)
         co.header = new_pose.header
         co.pose = new_pose.pose
         co.operation = CollisionObject.MOVE
-        self.__psi__._pub_co.publish(co)
+        self.__psi__.add_object(co)
 
     def move_obj_to_tray(self, obj_name, pose_on_tray):
         self.displace_obj(obj_name, pose_on_tray)
