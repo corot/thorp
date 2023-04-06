@@ -5,11 +5,10 @@
 #include <geometry_msgs/Point.h>
 #include <visualization_msgs/Marker.h>
 
-#include "thorp_costmap_layers/spatial_hash.h"
+#include "thorp_costmap_layers/spatial_hash.hpp"
 
 namespace thorp_costmap_layers
 {
-
 class Visualization
 {
 public:
@@ -26,10 +25,10 @@ public:
   void hideObjectContour(const Object& obj);
 
 private:
-  ros::Publisher debug_markers_pub_;   ///< publish updated bounds and other line strips for debugging
+  ros::Publisher debug_markers_pub_;  ///< publish updated bounds and other line strips for debugging
 
-  void showLineStrip(const std::list<Point2d>& points, const std::string& frame_id,
-                     int id, const std::string& ns, const std::string& color, float alpha = 1.0f);
+  void showLineStrip(const std::list<Point2d>& points, const std::string& frame_id, int id, const std::string& ns,
+                     const std::string& color, float alpha = 1.0f);
 };
 
-}
+}  // namespace thorp_costmap_layers

@@ -12,8 +12,6 @@ if (NOT CMAKE_BUILD_TYPE MATCHES Debug)
     add_definitions(-DNDEBUG)
 endif()
 
-add_definitions("-std=c++14")
-
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   tf2_ros

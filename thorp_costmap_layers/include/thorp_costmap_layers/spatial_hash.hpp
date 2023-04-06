@@ -9,13 +9,16 @@
 
 namespace thorp_costmap_layers
 {
-
 struct Point2d
 {
-  Point2d() : x(0), y(0) {}
-  Point2d(double x, double y) : x(x), y(y) {}
+  Point2d() : x(0), y(0)
+  {
+  }
+  Point2d(double x, double y) : x(x), y(y)
+  {
+  }
 
-  double x, y; //< the point coordinates
+  double x, y;  //< the point coordinates
 
   geometry_msgs::Point toPointMsg() const
   {
@@ -28,10 +31,23 @@ struct Point2d
 
 struct Rectangle
 {
-  Rectangle() : tl(Point2d()), br(Point2d()) {}
-  Rectangle(Point2d tl, Point2d br) : tl(tl), br(br) {}
+  Rectangle() : tl(Point2d()), br(Point2d())
+  {
+  }
+  Rectangle(Point2d tl, Point2d br) : tl(tl), br(br)
+  {
+  }
 
-  Point2d tl, br; //< the rectangle corners
+  /**
+   * Return rectangle's four corners: tl, tr, br, bl
+   * @return Array containing the four corners
+   */
+  std::array<Point2d, 4> corners() const
+  {
+    return { tl, Point2d(br.x, tl.y), br, Point2d(tl.x, br.y) };
+  }
+
+  Point2d tl, br;  //< the rectangle corners
 };
 
 // Object within the spatial hash
@@ -39,7 +55,6 @@ struct Object
 {
   int id = -1;
   std::string type;
-  Point2d contour_center;
   Rectangle bounding_box;
   std::list<Point2d> contour_points;
   int precedence = 0;
@@ -49,7 +64,6 @@ struct Object
   bool fill = false;
   float cost = 1.0f;
 };
-
 
 class SpatialHash
 {
@@ -106,7 +120,10 @@ public:
 
   // callback for initially setting map boundaries to get collision-free
   void setMapBounds(const nav_msgs::MapMetaDataConstPtr& map_bounds);
-  bool mapBoundsSet() {return map_bounds_set_;}
+  bool mapBoundsSet()
+  {
+    return map_bounds_set_;
+  }
 
 #ifdef DEBUG_DRAW_INTERNALS
   void getCellRect(const Point2d& point_in_cell, Rectangle& cell_rect, int cell_resolution);
@@ -130,4 +147,4 @@ private:
   int times_;
 };
 
-} // namespace thorp_costmap_layers
+}  // namespace thorp_costmap_layers

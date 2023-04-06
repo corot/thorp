@@ -4,7 +4,7 @@
 
 #include <thorp_msgs/UpdateCollisionObjs.h>
 
-#include "thorp_costmap_layers/base_interface.h"
+#include "thorp_costmap_layers/base_interface.hpp"
 
 
 namespace thorp_costmap_layers
@@ -13,14 +13,13 @@ namespace thorp_costmap_layers
 class ServiceInterface : public BaseInterface
 {
 public:
-  ServiceInterface(ros::NodeHandle& nh, tf2_ros::Buffer& tf, const std::string& map_frame,
-                   std::function<void(double, double, double)> update_map_callback);
+  ServiceInterface(ros::NodeHandle& nh, tf2_ros::Buffer& tf, costmap_2d::LayeredCostmap* layered_costmap);
   ~ServiceInterface();
+
+  void reconfigure(const thorp_costmap_layers::SemanticLayerConfig& config);
 
   bool updateCollisionObjs(thorp_msgs::UpdateCollisionObjs::Request& request,
                            thorp_msgs::UpdateCollisionObjs::Response& response);
-
-  bool getCallbackProcessed() { return callback_processed_; }
 
 private:
   void collisionObjToContours(const moveit_msgs::CollisionObject& collision_object,
@@ -29,8 +28,8 @@ private:
 
   ros::ServiceServer update_srv_;
 
-  bool callback_processed_;
-  std::function<void(double, double, double)> update_map_callback_;
+  /// Module name for logging
+  static constexpr char LOGNAME[] = "srv_interface";
 };
 
-}
+}  // namespace thorp_costmap_layers
