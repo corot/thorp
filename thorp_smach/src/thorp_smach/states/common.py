@@ -105,3 +105,22 @@ class Fail(smach.State):
 
     def execute(self, _):
         return 'aborted'
+
+
+class ExecuteFn(smach.State):
+    """
+    Execute a callable object. Returns
+    - 'succeeded' if the passed object is callable
+    - 'aborted' otherwise
+    """
+
+    def __init__(self, fn):
+        super(ExecuteFn, self).__init__(outcomes=['succeeded', 'aborted'])
+        self.fn = fn
+
+    def execute(self, ud):
+        if callable(self.fn):
+            self.fn()
+            return 'succeeded'
+        rospy.logerr("Trying to run non callable object '%s'", str(self.fn))
+        return 'aborted'
