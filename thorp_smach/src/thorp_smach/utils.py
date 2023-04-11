@@ -1,11 +1,12 @@
 import rospy
+import smach
 import smach_ros
 
 from thorp_toolkit.common import wait_for_mbf, wait_for_sim_time
 from thorp_toolkit.geometry import TF2
 
 
-def run_sm(sm, name):
+def run_sm(sm, name, parent_ud=smach.UserData()):
     """
     Run the given state machine
     """
@@ -25,7 +26,7 @@ def run_sm(sm, name):
 
     # Execute the state machine
     t0 = rospy.get_time()
-    outcome = sm.execute()
+    outcome = sm.execute(parent_ud)
     rospy.loginfo("%s completed in %.2fs with outcome '%s'", name, rospy.get_time() - t0, outcome)
 
     # Wait for ctrl-c to stop the application
