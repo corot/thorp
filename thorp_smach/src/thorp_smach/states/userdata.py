@@ -36,7 +36,7 @@ class UDIfKey(smach.State):
 
 class UDSetToNone(smach.State):
     """
-    Set a ud key to None, if it exists. Returns
+    Set an ud key to None, if it exists. Returns
     - 'succeeded' if the key exists
     - 'aborted' otherwise
     """
@@ -80,8 +80,8 @@ class UDInsertInList(smach.State):
 
 class UDApplyFn(smach.State):
     """
-    Apply a function to an ud key, if it exists. Returns
-    - 'succeeded' if the key exists
+    Apply a function to an ud key. Returns
+    - 'succeeded' if the key exists and the passed function is callable
     - 'aborted' otherwise
     """
 
@@ -93,11 +93,14 @@ class UDApplyFn(smach.State):
         self.fn = fn
 
     def execute(self, ud):
-        if self.key in ud:
-            ud[self.key] = self.fn(ud[self.key])
-            return 'succeeded'
-        rospy.logerr("Trying to run function on unavailable key '%s'", self.key)
-        return 'aborted'
+        if not callable(self.fn):
+            rospy.logerr("Trying to run non callable object '%s'", str(self.fn))
+            return 'aborted'
+        if self.key not in ud:
+            rospy.logerr("Trying to run function on unavailable key '%s'", self.key)
+            return 'aborted'
+        ud[self.key] = self.fn(ud[self.key])
+        return 'succeeded'
 
 
 class UDExtractAttr(smach.State):
