@@ -300,3 +300,7 @@ class ExploreHouse(smach.StateMachine):
             self.userdata.room_sequence = \
                 [r for r in self.userdata.room_sequence if r not in self.userdata.completed_rooms]
         return self.userdata.room_sequence
+
+    def reset_completed_rooms(self):
+        if 'completed_rooms' in self.userdata:
+            self.userdata.completed_rooms = []

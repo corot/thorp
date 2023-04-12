@@ -1,6 +1,6 @@
 <!--
 Simulated version of Thorp's explore house app:
-  - Thorp Stage simulation
+  - Thorp Stage or Gazebo simulation
   - IPA coverage planning
 
 First segment map into rooms and plan visit sequence; then we iterate
@@ -9,17 +9,33 @@ over all rooms and explore them following the planned sequence.
 
 <launch>
   <arg name="app_name" value="explore_house"/>
+  <arg name="simulator" default="stage"/>  <!-- stage or gazebo -->
   <arg name="viz_smach" default="false"/>
   <arg name="start_delay" default="0.0"/>
   <arg name="record_video" default="false"/>
 
+  <!-- App-specific parameters -->
+  <arg name="laps" default="1"/>
+
+  <param name="$(arg app_name)_smach/laps" value="$(arg laps)"/>
+
   <!--  ***** Simulated mobile manipulator Thorp ******  -->
-  <include file="$(find thorp_simulation)/launch/thorp_stage.launch">
-    <arg name="visualization"  value="false"/>
+  <include if="$(eval simulator == 'stage')"
+           file="$(find thorp_simulation)/launch/thorp_stage.launch">
     <arg name="world_name"     value="fun_house"/>
     <arg name="initial_pose_x" value="8.5"/>
     <arg name="initial_pose_y" value="6.0"/>
     <arg name="initial_pose_a" value="0.0"/>
+    <arg name="visualization"  value="false"/>
+  </include>
+
+  <include if="$(eval simulator == 'gazebo')"
+           file="$(find thorp_simulation)/launch/thorp_gazebo.launch">
+    <arg name="world_name"     value="fun_house"/>
+    <arg name="initial_pose_x" value="8.5"/>
+    <arg name="initial_pose_y" value="6.0"/>
+    <arg name="initial_pose_a" value="0.0"/>
+    <arg name="localization"   value="gazebo"/>
   </include>
 
   <!--  ****** IPA coverage planning using kinect *****  -->
