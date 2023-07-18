@@ -403,7 +403,7 @@ class FollowPose(smach_ros.SimpleActionState):
 
 class SmoothPath(smach_ros.ServiceState):
     """
-    Call path smoother with a list of waypoints to obtain a collision-free, smooth path connecting them
+    Call path smoother with a list of waypoints to obtain a smooth path connecting them
     """
     def __init__(self):
         super(SmoothPath, self).__init__('waypoints_path/connect_waypoints', thorp_srvs.ConnectWaypoints,

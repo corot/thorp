@@ -122,18 +122,16 @@ class PlanRoomExploration(smach_ros.SimpleActionState):
                                                   ipa_building_msgs.RoomExplorationAction,
                                                   goal_cb=self.make_goal,
                                                   goal_slots=['map_resolution', 'map_origin', 'robot_radius'],
-                                                  result_slots=['coverage_path', 'coverage_path_pose_stamped'],
+                                                  result_cb=self.result_cb,
                                                   input_keys=['map_image', 'map_resolution',
                                                               'segmented_map', 'robot_pose',
                                                               'room_number', 'room_information_in_meter'],
-                                                  output_keys=['start_pose'])
+                                                  output_keys=['start_pose', 'coverage_path'])
         self.start_pub = rospy.Publisher('/exploration/starting_point', geometry_msgs.PointStamped, queue_size=1)
         self.fov_pub = rospy.Publisher('/exploration/camera_fov', geometry_msgs.PolygonStamped, queue_size=1)
         self.fov_pub_timer = None
 
     def make_goal(self, ud, goal):
-        """ Create a goal for the action
-        """
         room_number = ud['room_number']
         segmented_map = ud['segmented_map']
 
@@ -179,6 +177,10 @@ class PlanRoomExploration(smach_ros.SimpleActionState):
         rospy.Publisher('/exploration/img', sensor_msgs.Image, queue_size=1, latch=True).publish(goal.input_map)
         if not self.fov_pub_timer:
             self.fov_pub_timer = rospy.Timer(rospy.Duration(0.1), lambda e: self.fov_pub.publish(fov))
+
+    def result_cb(self, ud, status, result):
+        # Use the coverage path provided as a list of stamped poses
+        ud['coverage_path'] = result.coverage_path_pose_stamped
 
 
 class RoomCompleted(smach.State):
@@ -236,19 +238,19 @@ class ExploreHouse(smach.StateMachine):
                                    transitions={'succeeded': 'TRAVERSE_POSES',
                                                 'aborted': 'aborted'},
                                    remapping={'element': 'start_pose',
-                                              'list': 'coverage_path_pose_stamped'})
+                                              'list': 'coverage_path'})
             smach.StateMachine.add('INSERT_CURRENT_POSE', PrependCurrentPose(),  # otherwise we can retake the remaining
                                    transitions={'succeeded': 'TRAVERSE_POSES',   # plan wherever it is closer to us,
                                                 'aborted': 'aborted'},           # instead of from the beginning
-                                   remapping={'path': 'coverage_path_pose_stamped'})
+                                   remapping={'path': 'coverage_path'})
             smach.StateMachine.add('TRAVERSE_POSES', FollowWaypoints(),
                                    transitions={'succeeded': 'ROOM_COMPLETED',
                                                 'preempted': 'DEL_TRAVERSED_WPS',
                                                 'aborted': 'aborted'},
-                                   remapping={'waypoints': 'coverage_path_pose_stamped'})
+                                   remapping={'waypoints': 'coverage_path'})
             smach.StateMachine.add('DEL_TRAVERSED_WPS', DelTraversedWPs(),  # deleted the traversed waypoints so we can
                                    transitions={'succeeded': 'preempted'},  # resume exploration from where we left it
-                                   remapping={'waypoints': 'coverage_path_pose_stamped'})
+                                   remapping={'waypoints': 'coverage_path'})
             smach.StateMachine.add('ROOM_COMPLETED', RoomCompleted(),
                                    transitions={'succeeded': 'succeeded'})
             DoOnExitContainer.add_finally('CLEAR_EXPLORE_PLAN', UDSetToNone('coverage_path'),  # we only keep current
