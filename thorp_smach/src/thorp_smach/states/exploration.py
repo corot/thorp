@@ -263,6 +263,7 @@ class ExploreHouse(smach.StateMachine):
                                           it=self.get_room_sequence,
                                           it_label='room_number',
                                           exhausted_outcome='succeeded')
+        explore_house_it.userdata.completed_rooms = []
         with explore_house_it:
             smach.Iterator.set_contained_state('EXPLORE_1_ROOM', explore_1_room_sm,
                                                loop_outcomes=['succeeded', 'aborted'])
