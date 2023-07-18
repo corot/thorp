@@ -386,7 +386,7 @@ class FollowWaypoints(DoOnExitContainer):
                                                 'preempted': 'preempted'},
                                    remapping={'behavior': 'recovery_behavior'})
             smach.StateMachine.add('NEXT_WP', GoToPose(),           # already using loose goal reached criteria
-                                   transitions={'succeeded': 'EXE_PATH',
+                                   transitions={'succeeded': 'SMOOTH_PATH',
                                                 'aborted': 'SKIP_WP',  # also if failed; at least we have skip a wp
                                                 'preempted': 'preempted'},
                                    remapping={'target_pose': 'next_wp'})
