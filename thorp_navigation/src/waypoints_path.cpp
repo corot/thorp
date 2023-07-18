@@ -210,12 +210,7 @@ bool WaypointsPath::interpolate(const geometry_msgs::PoseStamped& start, const g
   }
   result.pose.position.x = (1 - weight) * start.pose.position.x + weight * end.pose.position.x;
   result.pose.position.y = (1 - weight) * start.pose.position.y + weight * end.pose.position.y;
-
-  // orientation: heading from start to end poses (or end to start if we are moving backwards)
-  double pose_to_pose_yaw = ttk::heading(start, end);
-  bool forward = std::abs(ttk::normAngle(pose_to_pose_yaw - ttk::yaw(start))) < M_PI_2;
-  result.pose.orientation = forward ? tf::createQuaternionMsgFromYaw(ttk::heading(start, end))
-                                    : tf::createQuaternionMsgFromYaw(ttk::heading(end, start));
+  result.pose.orientation = tf::createQuaternionMsgFromYaw(ttk::heading(start, end));
   result.header = start.header;
   return true;
 }

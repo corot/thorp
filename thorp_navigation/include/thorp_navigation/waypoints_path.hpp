@@ -43,7 +43,7 @@ public:
 
   /**
    * \brief Weighted linear interpolation between two points. The interpolated pose's orientation will be the heading
-   * from start to end poses (or end to start if we are moving backwards).
+   * from start to end poses.
    * \param start      Initial point
    * \param end        Final point
    * \param weight     Ratio of interpolation weight (range [0 1]) with 0 meaning end and 1 meaning start
