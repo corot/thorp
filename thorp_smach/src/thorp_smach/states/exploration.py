@@ -238,7 +238,7 @@ class ExploreHouse(smach.StateMachine):
                                    remapping={'element': 'start_pose',
                                               'list': 'coverage_path_pose_stamped'})
             smach.StateMachine.add('INSERT_CURRENT_POSE', PrependCurrentPose(),  # otherwise we can retake the remaining
-                                   transitions={'succeeded': 'TRAVERSE_POSES',   # plan wherever it is closer from us,
+                                   transitions={'succeeded': 'TRAVERSE_POSES',   # plan wherever it is closer to us,
                                                 'aborted': 'aborted'},           # instead of from the beginning
                                    remapping={'path': 'coverage_path_pose_stamped'})
             smach.StateMachine.add('TRAVERSE_POSES', FollowWaypoints(),

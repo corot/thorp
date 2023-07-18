@@ -326,35 +326,6 @@ class DetachFromTable(DoOnExitContainer):
             DoOnExitContainer.add_finally('RESTORE_WAY', RestoreTableWay())
 
 
-class ExeSparsePath(smach.StateMachine):
-    def __init__(self):
-        super(ExeSparsePath, self).__init__(outcomes=['succeeded', 'aborted', 'preempted'],
-                                            input_keys=['path'],
-                                            output_keys=['outcome', 'message'])
-        with self:
-            smach.StateMachine.add('EXE_PATH', ExePath(cfg.FOLLOW_CONTROLLER,
-                                                       cfg.LOOSE_DIST_TOLERANCE,
-                                                       cfg.INF_ANGLE_TOLERANCE),
-                                   transitions={'succeeded': 'succeeded',
-                                                'aborted': 'FAILURE',
-                                                'preempted': 'preempted'})
-            smach.StateMachine.add('FAILURE', ExePathFailed(),
-                                   transitions={'recover': 'RECOVER',
-                                                'next_wp': 'NEXT_WP',
-                                                'aborted': 'aborted'})
-            smach.StateMachine.add('RECOVER', Recovery(),
-                                   transitions={'succeeded': 'EXE_PATH',
-                                                'aborted': 'FAILURE',
-                                                'preempted': 'preempted'},
-                                   remapping={'behavior': 'recovery_behavior'})
-            smach.StateMachine.add('NEXT_WP', GoToPose(dist_tolerance=cfg.LOOSE_DIST_TOLERANCE,
-                                                       angle_tolerance=cfg.INF_ANGLE_TOLERANCE),
-                                   transitions={'succeeded': 'EXE_PATH',
-                                                'aborted': 'EXE_PATH',  # also if failed; at least we have skip a wp
-                                                'preempted': 'preempted'},
-                                   remapping={'target_pose': 'next_wp'})
-
-
 class FollowWaypoints(DoOnExitContainer):
     """
     Follow a list of waypoints after converting them into a smooth path executable by MBF controllers
