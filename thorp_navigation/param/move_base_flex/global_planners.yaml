@@ -1,5 +1,17 @@
 GlobalPlanner:
-  orientation_mode: 1           # Forward
+  allow_unknown: false                # default: true
+  default_tolerance: 0.0              # default: 0.0
+  visualize_potential: false          # default: false
+  use_dijkstra: true                  # default: true
+  use_quadratic: true                 # default: true
+  use_grid_path: false                # default: false
+  old_navfn_behavior: false           # default: false
+  lethal_cost: 253                    # default: 253
+  neutral_cost: 100                   # default: 50
+  cost_factor: 0.55                   # default: 3
+  publish_potential: true             # default: true
+  orientation_mode: 1                 # Forward
+  orientation_window_size: 1          # default: 1
 
 NavfnPlanner:
   visualize_potential: false    # Publish potential for rviz as pointcloud2, not really helpful, default false

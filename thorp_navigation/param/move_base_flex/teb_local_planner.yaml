@@ -5,10 +5,10 @@ TEBPlanner:
 # Trajectory
 
   teb_autosize: True
-  dt_ref: 0.3
-  dt_hysteresis: 0.1
+  dt_ref: 0.2
+  dt_hysteresis: 0.02
   max_samples: 500
-  global_plan_overwrite_orientation: True
+  global_plan_overwrite_orientation: False
   allow_init_with_backwards_motion: False
   max_global_plan_lookahead_dist: 3.0
   global_plan_viapoint_sep: 0.4
@@ -20,7 +20,7 @@ TEBPlanner:
 # Robot
 
   max_vel_x: 0.5
-  max_vel_x_backwards: 0.1 # conservative, as we only have four IR sensors pointing backward
+  max_vel_x_backwards: 0.1  # conservative, as we only have four IR sensors pointing backward
   max_vel_y: 0.0
   max_vel_theta: 5.0
   acc_lim_x: 0.5
@@ -47,14 +47,20 @@ TEBPlanner:
   obstacle_association_force_inclusion_factor: 3  # to my understanding, inflation_dist / min_obstacle_dist makes sense
   obstacle_association_cutoff_factor: 5  # default value; not sure about the utility of this
   costmap_obstacles_behind_robot_dist: 1.0
-  obstacle_poses_affected: 15
+  obstacle_poses_affected: 20
 
   dynamic_obstacle_inflation_dist: 0.6
   include_dynamic_obstacles: True
 
-  costmap_converter_plugin: ""  # treat each occupied costmap cell as a single point-obstacle
   costmap_converter_spin_thread: True
   costmap_converter_rate: 5
+  costmap_converter_plugin: costmap_converter::CostmapToPolygonsDBSMCCH
+  costmap_converter:
+    CostmapToPolygonsDBSMCCH:
+      cluster_max_distance: 0.3
+      cluster_min_pts: 2
+      cluster_max_pts: 20
+      convex_hull_min_pt_separation: 0.025
 
 # Optimization
 
@@ -63,16 +69,15 @@ TEBPlanner:
   optimization_activate: True
   optimization_verbose: False
   penalty_epsilon: 0.05
-  obstacle_cost_exponent: 4
   weight_max_vel_x: 1
   weight_max_vel_y: 0
   weight_max_vel_theta: 1
   weight_acc_lim_x: 1
   weight_acc_lim_theta: 1
   weight_kinematics_nh: 10000
-  weight_kinematics_forward_drive: 100
+  weight_kinematics_forward_drive: 1000
   weight_kinematics_turning_radius: 1
-  weight_optimaltime: 10 # must be > 0
+  weight_optimaltime: 5
   weight_shortest_path: 2
   weight_obstacle: 100
   weight_inflation: 1.0
@@ -113,3 +118,5 @@ TEBPlanner:
   oscillation_omega_eps: 0.1
   oscillation_recovery_min_duration: 10
   oscillation_filter_duration: 10
+  divergence_detection_enable: False  # causes issues with backward trajectories
+  divergence_detection_max_chi_squared: 20  # with default 10 we have false positives
