@@ -94,15 +94,19 @@ class CannonCtrlNode:
             return self.fire(request.shots)
 
     def spin(self):
-        rate = rospy.Rate(20)
-        while not rospy.is_shutdown():
-            self._js_msg.position[0] = self._cannon_tilt_angle
-            self._js_msg.header.stamp = rospy.Time.now()
-            self._joint_states_pub.publish(self._js_msg)
-            try:
-                rate.sleep()
-            except rospy.exceptions.ROSInterruptException:
-                pass
+        if self._simulation:
+            # the simulator already provides cannon joint state
+            rospy.spin()
+        else:
+            rate = rospy.Rate(20)
+            while not rospy.is_shutdown():
+                self._js_msg.position[0] = self._cannon_tilt_angle
+                self._js_msg.header.stamp = rospy.Time.now()
+                self._joint_states_pub.publish(self._js_msg)
+                try:
+                    rate.sleep()
+                except rospy.exceptions.ROSInterruptException:
+                    pass
 
 
 if __name__ == '__main__':
