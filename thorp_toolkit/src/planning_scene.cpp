@@ -31,14 +31,9 @@ int32_t extractObjectData(const moveit_msgs::CollisionObject& obj,
   obj_pose.pose = obj.pose;
 
   // We get object's size from either the first mesh or first primitive (we assume there aren't composed objects)
-  // try first with the meshes
   if (!obj.meshes.empty())
   {
     tf::vectorEigenToMsg(shapes::computeShapeExtents(obj.meshes[0]), obj_size);
-
-    // We assume meshes laying in the floor, so we bump its pose by half z-dimension to grasp the object at mid-height
-    // TODO: maybe should add instead z-dimension - half gripper finger length, as I grasp objects normally from above
- //   obj_pose.pose.position.z += obj_size.z/2.0;
   }
   else if (!obj.primitives.empty())
   {
