@@ -200,7 +200,7 @@ def get_size_from_co(co):
     """ Get the size for a moveit_msgs/CollisionObject. We try first meshes, then primitives """
     if len(co.meshes):
         mesh = co.meshes[0]
-        if mesh.vertices < 2:
+        if len(mesh.vertices) < 2:
             return [0, 0, 0]
         vmin = [float('+Inf')] * 3
         vmax = [float('-Inf')] * 3

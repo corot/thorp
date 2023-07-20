@@ -7,7 +7,7 @@ import thorp_msgs.msg as thorp_msgs
 import control_msgs.msg as control_msgs
 
 from thorp_toolkit.planning_scene import PlanningScene
-from thorp_toolkit.geometry import create_2d_pose, create_3d_pose, pose2d2str
+from thorp_toolkit.geometry import create_2d_pose, create_3d_pose, pose2d2str, get_size_from_co
 from thorp_toolkit.visualization import Visualization
 
 from .geometry import TranslatePose
@@ -314,7 +314,8 @@ class DisplaceObject(smach.State):
 
 class MoveObjToTray(smach.State):
     """
-    Move a collision object to the tray
+    Move a collision object to the tray. The input pose z-coordinate is at tray's bottom;
+    we need to add half the object size, so it appears at the right height on planning scene.
     """
 
     def __init__(self):
@@ -323,6 +324,8 @@ class MoveObjToTray(smach.State):
                              input_keys=['object', 'pose_on_tray'])
 
     def execute(self, ud):
-        rospy.loginfo("Object '%s' moved to tray at %s", ud['object'].id, pose2d2str(ud['pose_on_tray']))
-        PlanningScene().move_obj_to_tray(ud['object'].id, ud['pose_on_tray'])
+        pose_on_tray = ud['pose_on_tray']
+        pose_on_tray.pose.position.z += get_size_from_co(ud['object'])[2] / 2.0
+        PlanningScene().move_obj_to_tray(ud['object'].id, pose_on_tray)
+        rospy.loginfo("Object '%s' moved to tray at %s", ud['object'].id, pose2d2str(pose_on_tray))
         return 'succeeded'
