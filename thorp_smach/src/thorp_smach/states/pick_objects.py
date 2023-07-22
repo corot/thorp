@@ -16,7 +16,7 @@ class TargetSelection(smach.State):
     """
     Select the closest object within arm reach
     'failures' dictionary lists all previous pick failures for each object. If there aren't non-attempted
-    targets at hand, we will retry the object with less failures. If all have exhausted the max number of
+    targets at hand, we will retry the object with fewer failures. If all have exhausted the max number of
     retries, we return 'no_targets'.
     """
 
@@ -62,15 +62,16 @@ class TargetSelection(smach.State):
 
 class RecordFailure(smach.State):
     """
-    Increase by one the number of picking failures for a given object
-    Return 'succeeded' if we can keep trying, or 'max_failures' if we exhausted the allowed picking failures
+    Increase by one the number of picking failures for a given object, and the given up count if we exhausted
+    the allowed picking failures for it
+    Return always 'succeeded'
     """
 
     def __init__(self):
         smach.State.__init__(self,
-                             outcomes=['succeeded', 'max_failures'],
-                             input_keys=['object', 'failures'],
-                             output_keys=['failures'])
+                             outcomes=['succeeded'],
+                             input_keys=['given_up_count', 'failures', 'object'],
+                             output_keys=['given_up_count', 'failures'])
 
     def execute(self, ud):
         if ud['object'].id not in ud['failures'].keys():
@@ -78,13 +79,13 @@ class RecordFailure(smach.State):
         else:
             ud['failures'][ud['object'].id] += 1
         failures = ud['failures'][ud['object'].id]
-        if failures <= cfg.PICKING_MAX_FAILURES:
-            rospy.loginfo("Pick object '%s' %d failure(s)", ud['object'].id, failures)
-            return 'succeeded'
-        rospy.logwarn("Object '%s' failed too many times: %d (max %d)",
-                      ud['object'].id, failures, cfg.PICKING_MAX_FAILURES)
-        # this should not happen; there must be a bug on target selection, as we don't retry more than max failures
-        return 'max_failures'
+        assert failures <= cfg.PICKING_MAX_FAILURES, "We are retrying more than max failures"
+        if failures < cfg.PICKING_MAX_FAILURES:
+            rospy.loginfo("Pick object '%s' failed %d time(s)", ud['object'].id, failures)
+        else:
+            rospy.logwarn("Pick object '%s' failed %d times; giving up", ud['object'].id, failures)
+            ud['given_up_count'] += 1
+        return 'succeeded'
 
 
 class ClearFailures(smach.State):
@@ -113,11 +114,13 @@ class PickReachableObjs(DoOnExitContainer):
 
     def __init__(self):
         super(PickReachableObjs, self).__init__(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'],
-                                                input_keys=['object_types'])
+                                                input_keys=['given_up_count', 'object_types'],
+                                                output_keys=['given_up_count'])
 
         # pick a single object sm
         pick_1_obj_sm = smach.StateMachine(outcomes=['continue', 'succeeded', 'aborted', 'preempted', 'tray_full'],
-                                           input_keys=['object_types', 'failures'])
+                                           input_keys=['given_up_count', 'object_types', 'failures'],
+                                           output_keys=['given_up_count'])
 
         pick_1_obj_sm.userdata.max_effort = cfg.GRIPPER_MAX_EFFORT
         with pick_1_obj_sm:
@@ -143,14 +146,13 @@ class PickReachableObjs(DoOnExitContainer):
                                                 'preempted': 'aborted',
                                                 'aborted': 'aborted'})
             smach.StateMachine.add('RECORD_FAILURE', RecordFailure(),
-                                   transitions={'succeeded': 'continue',
-                                                'max_failures': 'aborted'})
+                                   transitions={'succeeded': 'continue'})
             smach.StateMachine.add('CLEAR_FAILURES', ClearFailures(),
                                    transitions={'succeeded': 'continue'})
 
         pick_reach_objs_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted', 'tray_full'],
-                                            input_keys=['object_types', 'failures'],
-                                            output_keys=[],
+                                            input_keys=['given_up_count', 'object_types', 'failures'],
+                                            output_keys=['given_up_count'],
                                             it=range(25),  # kind of while true
                                             it_label='iteration',
                                             exhausted_outcome='succeeded')

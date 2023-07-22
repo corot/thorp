@@ -12,7 +12,7 @@ import ipa_building_msgs.msg as ipa_building_msgs
 
 from thorp_toolkit.geometry import TF2, to_pose2d, create_2d_pose
 
-from .userdata import UDIfKey, UDHasKey, UDSetToNone, UDInsertInList
+from .userdata import UDIfKey, UDHasKey, UDSetTo, UDInsertInList
 from .navigation import GetRobotPose, GoToPose, FollowWaypoints, DelTraversedWPs, PrependCurrentPose
 from ..containers.do_on_exit import DoOnExit as DoOnExitContainer
 
@@ -253,8 +253,8 @@ class ExploreHouse(smach.StateMachine):
                                    remapping={'waypoints': 'coverage_path'})
             smach.StateMachine.add('ROOM_COMPLETED', RoomCompleted(),
                                    transitions={'succeeded': 'succeeded'})
-            DoOnExitContainer.add_finally('CLEAR_EXPLORE_PLAN', UDSetToNone('coverage_path'),  # we only keep current
-                                          run_on=['succeeded', 'aborted'])   # plan when preempted (so we can resume)
+            DoOnExitContainer.add_finally('CLEAR_EXPLORE_PLAN', UDSetTo('coverage_path', None),  # we only keep current
+                                          run_on=['succeeded', 'aborted'])      # plan when preempted (so we can resume)
 
         # iterate over all rooms and explore following the planned sequence
         explore_house_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted'],

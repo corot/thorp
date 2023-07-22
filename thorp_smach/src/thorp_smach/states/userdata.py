@@ -34,24 +34,25 @@ class UDIfKey(smach.State):
         return 'true' if self.key in ud and ud[self.key] else 'false'
 
 
-class UDSetToNone(smach.State):
+class UDSetTo(smach.State):
     """
-    Set an ud key to None, if it exists. Returns
+    Set an ud key to a given value, if it exists. Returns
     - 'succeeded' if the key exists
     - 'aborted' otherwise
     """
 
-    def __init__(self, key):
-        super(UDSetToNone, self).__init__(outcomes=['succeeded', 'aborted'],
-                                          input_keys=[key],
-                                          output_keys=[key])
+    def __init__(self, key, value):
+        super(UDSetTo, self).__init__(outcomes=['succeeded', 'aborted'],
+                                      input_keys=[key],
+                                      output_keys=[key])
         self.key = key
+        self.value = value
 
     def execute(self, ud):
         if self.key in ud:
-            ud[self.key] = None
+            ud[self.key] = self.value
             return 'succeeded'
-        rospy.logerr("Trying to set o None unavailable key '%s'", self.key)
+        rospy.logerr("Trying to set unavailable key '%s'", self.key)
         return 'aborted'
 
 
