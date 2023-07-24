@@ -14,7 +14,8 @@ RUN apt-key del 421C365BD9FF1F717815A3895523BAEEB01FA116 && apt update
 SHELL ["/bin/bash", "-c"]
 
 # install ROS base and minimal build dependencies
-RUN apt-get update && apt-get install -y ros-$ROS_DISTRO-ros-base python-pip python-catkin-tools build-essential wget nano git
+RUN apt-get update && apt-get install -y ros-$ROS_DISTRO-ros-base \
+    python-pip python-catkin-tools build-essential wget nano git
 
 # add packages.osrfoundation.org APT to install the latest gazebo9
 RUN sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-stable.list' && \
@@ -115,7 +116,7 @@ RUN rosdep update --rosdistro=$ROS_DISTRO && \
 RUN apt clean
 
 # bidict 0.18.3 is the last version compatible with Python 2.7
-RUN pip install --upgrade bidict==0.18.3 ratelimit matplotlib tensorflow
+RUN pip install --upgrade bidict==0.18.3 ratelimit matplotlib tensorflow-gpu==1.14
 
 # build catkin workspace and remove build to reduce image size
 WORKDIR /catkin_ws
