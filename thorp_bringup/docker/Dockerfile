@@ -1,10 +1,6 @@
-ARG ROS_DISTRO=melodic
+ARG ROS_DISTRO=noetic
 
 FROM ros:$ROS_DISTRO
-
-# Update ROS keys (see https://discourse.ros.org/t/new-gpg-keys-deployed-for-packages-ros-org/9454)
-RUN apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
-RUN apt-key del 421C365BD9FF1F717815A3895523BAEEB01FA116 && apt update
 
 # nvidia-docker hooks
 # LABEL com.nvidia.volumes.needed="nvidia_driver"
@@ -14,10 +10,12 @@ RUN apt-key del 421C365BD9FF1F717815A3895523BAEEB01FA116 && apt update
 SHELL ["/bin/bash", "-c"]
 
 # install ROS base and minimal build dependencies
-RUN apt-get update && apt-get install -y ros-$ROS_DISTRO-ros-base python-pip python-catkin-tools build-essential wget nano git
+RUN apt-get update && apt-get install -y ros-$ROS_DISTRO-ros-base \
+    python-is-python3 python3-pip python3-catkin-tools build-essential wget nano git
 
-# add packages.osrfoundation.org APT to install the latest gazebo9
-RUN sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-stable.list' && \
+# add packages.osrfoundation.org APT to install the latest gazebo version
+RUN sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable `lsb_release -cs` main" \
+    > /etc/apt/sources.list.d/gazebo-stable.list' && \
     wget https://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add - && apt update
 
 # reduce log verbosity (RAIL segmentation is called continuously for some apps)
@@ -107,19 +105,20 @@ RUN rm -rf navigation/amcl \
            yujin_ocs/yocs_waypoint_provider
 
 # install all dependencies; skip all keys that rosdep cannot find (and are not required)
-RUN rosdep update --rosdistro=$ROS_DISTRO && \
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    rosdep update --rosdistro=$ROS_DISTRO && \
     rosdep install -y -r --rosdistro=$ROS_DISTRO --from-paths . --ignore-src \
                    --skip-keys='create_node create_dashboard create_description \
                                 rocon_app_manager kobuki_rapps kobuki_capabilities turtlebot_capabilities \
                                 stdr_gui stdr_robot stdr_server astra_launch realsense_camera zeroconf_avahi'
+
 RUN apt clean
 
-# bidict 0.18.3 is the last version compatible with Python 2.7
-RUN pip install --upgrade bidict==0.18.3 ratelimit matplotlib tensorflow
+RUN pip install --upgrade pip bidict ratelimit matplotlib tensorflow
 
 # build catkin workspace and remove build to reduce image size
 WORKDIR /catkin_ws
-RUN source /opt/ros/$ROS_DISTRO/setup.bash && catkin build --cmake-args -DCMAKE_BUILD_TYPE=Release
+RUN source /opt/ros/$ROS_DISTRO/setup.bash && catkin build --cmake-args -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=17
 RUN rm -r build
 
 # setup runtime environment
@@ -127,7 +126,7 @@ RUN echo "source /catkin_ws/devel/setup.bash" >> ~/.bashrc
 ENV ROSCONSOLE_FORMAT='[${node} ${severity} ${time}]: ${message}'
 
 # fix Gazebo error in REST request (https://answers.gazebosim.org//question/22263/error-in-rest-request-for-accessing-apiignitionorg)
-COPY patch_ignition.yaml /root/.ignition/fuel/config.yaml
+###COPY patch_ignition.yaml /root/.ignition/fuel/config.yaml
 
 # path to gazebo models
 ENV GAZEBO_MODEL_PATH=/catkin_ws/src/thorp/thorp_simulation/worlds/gazebo/models

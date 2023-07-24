@@ -6,9 +6,13 @@
     version: noetic
 
 - git:
+    local-name: serial
+    uri: https://github.com/wjwwood/serial.git  # not released on noetic; TODO: replace with rosserial
+
+- git:
     local-name: arbotix_ros
     uri: https://github.com/corot/arbotix_ros.git
-    version: indigo-devel
+    version: thorp
 
 - git:
     local-name: dynamixel_motor
@@ -109,22 +113,12 @@
 - git:
     local-name: teb_local_planner
     uri: https://github.com/rst-tu-dortmund/teb_local_planner.git
-    version: melodic-devel
+    version: noetic-devel
 
 - git:
     local-name: ipa_coverage_planning
     uri: https://github.com/corot/ipa_coverage_planning
     version: thorp
-
-- git:
-    local-name: visp
-    uri: https://github.com/lagadic/visp.git
-    version: master
-
-- git:
-    local-name: visp_ros
-    uri: https://github.com/lagadic/visp_ros.git
-    version: master
 
 # Perception stacks
 
@@ -148,7 +142,24 @@
     uri: https://github.com/corot/ros_people_object_detection_tensorflow
     version: thorp
 
+# Install cob_perception_common from debs
+
 # Manipulation stacks: all from debs (geometric_shapes, moveit and moveit_msgs)
+# TODO: use my MoveIt! fork with the fix for issue https://github.com/ros-planning/moveit/issues/3007
+#- git:
+#    local-name: geometric_shapes
+#    uri: https://github.com/ros-planning/geometric_shapes.git
+#    version: noetic-devel
+#
+#- git:
+#    local-name: moveit
+#    uri: https://github.com/ros-planning/moveit.git
+#    version: master
+#
+#- git:
+#    local-name: moveit_msgs
+#    uri: https://github.com/ros-planning/moveit_msgs.git
+#    version: master
 
 # Rviz plugins
 
