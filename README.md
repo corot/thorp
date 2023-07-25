@@ -78,7 +78,8 @@ Arm, sonars and IR sensors require a bit of extra work. Check their
 
 Available in [dockerhub](https://hub.docker.com/repository/docker/corot/thorp)
 
-Sadly noetic image doesn't work because of [this MoveIt! issue](https://github.com/ros-planning/moveit/issues/3007)
+:warning: Manipulation in noetic image doesn't work properly because of [this MoveIt! issue](https://github.com/ros-planning/moveit/issues/3007).
+Re-detected objects will be considered as new ones, and so collide with the previously added to planning scene.
 
 ```
 docker pull corot/thorp:melodic
@@ -93,24 +94,19 @@ docker build -t thorp .
 
 Run with rocker:
 
-I need to use @fevb's fork to make all work. Otherwise, I experience the issue described [here](https://answers.ros.org/question/301056/ros2-rviz-in-docker-container/).
-To install it, clone rocker and install it on your host system:
-
 ```
-cd ~/
-git clone git@github.com:fevb/rocker.git
-cd rocker/
-pip install -e . --no-binary rocker
-```
-
-Ensure you run the fork (it will get installed in ~/.local/bin/rocker`)
-
-```
-rocker --pulse --nvidia --x11 thorp
+pip install rocker
+rocker --privileged --pulse --nvidia --x11 thorp
 ```
 
 or the pulled image:
 
 ```
-rocker --pulse --nvidia --x11 corot/thorp:melodic
+rocker --privileged --pulse --nvidia --x11 corot/thorp:melodic
+```
+
+Once inside the docker, you can run any of the simulation apps, e.g.:
+
+```
+roslaunch thorp_simulation thorp_stage.launch
 ```
