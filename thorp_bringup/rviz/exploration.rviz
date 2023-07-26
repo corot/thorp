@@ -1,6 +1,6 @@
 Panels:
   - Class: rviz/Displays
-    Help Height: 78
+    Help Height: 0
     Name: Displays
     Property Tree Widget:
       Expanded:
@@ -10,7 +10,7 @@ Panels:
         - /Local Planners1/TEB1/Local Path1
         - /Exploration1/Room Sequence Plan1/Status1
       Splitter Ratio: 0.5265780687332153
-    Tree Height: 470
+    Tree Height: 363
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -26,10 +26,9 @@ Panels:
     Name: Views
     Splitter Ratio: 0.5
   - Class: rviz/Time
-    Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: LaserScan (kinect)
+    SyncSource: Room Sequence
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -630,11 +629,14 @@ Visualization Manager:
       Color: 25; 255; 0
       Enabled: true
       Name: Footprint
+      Queue Size: 10
       Topic: /move_base_flex/local_costmap/footprint
       Unreliable: false
       Value: true
     - Class: rviz/TF
       Enabled: true
+      Filter (blacklist): ""
+      Filter (whitelist): ""
       Frame Timeout: 15
       Frames:
         All Enabled: false
@@ -678,8 +680,6 @@ Visualization Manager:
           Value: false
         base_footprint:
           Value: false
-        base_laser_link:
-          Value: true
         base_link:
           Value: false
         cannon_link:
@@ -856,6 +856,10 @@ Visualization Manager:
           Value: false
         sonars_mount_link:
           Value: false
+        surface_frame:
+          Value: true
+        table_frame:
+          Value: true
         tray_link:
           Value: true
         wheel_left_link:
@@ -874,6 +878,7 @@ Visualization Manager:
           Value: false
         xtion_rgb_optical_frame:
           Value: false
+      Marker Alpha: 1
       Marker Scale: 1
       Name: TF
       Show Arrows: true
@@ -884,8 +889,6 @@ Visualization Manager:
           odom:
             base_footprint:
               base_link:
-                base_laser_link:
-                  {}
                 caster_back_link:
                   {}
                 caster_front_link:
@@ -1079,6 +1082,10 @@ Visualization Manager:
                   {}
                 wheel_right_link:
                   {}
+          surface_frame:
+            {}
+          table_frame:
+            {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -1096,9 +1103,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 1
       Min Color: 0; 0; 0
-      Min Intensity: 1
       Name: LaserScan (kinect)
       Position Transformer: XYZ
       Queue Size: 10
@@ -1126,9 +1131,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 4096
       Min Color: 0; 0; 0
-      Min Intensity: 0
       Name: LaserScan (virtual sensor)
       Position Transformer: XYZ
       Queue Size: 10
@@ -1156,9 +1159,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 4096
       Min Color: 0; 0; 0
-      Min Intensity: 0
       Name: PointCloud (bumpers)
       Position Transformer: XYZ
       Queue Size: 10
@@ -1360,6 +1361,7 @@ Visualization Manager:
       Keep: 100
       Name: Odometry
       Position Tolerance: 0.10000000149011612
+      Queue Size: 10
       Shape:
         Alpha: 1
         Axes Length: 1
@@ -1382,6 +1384,7 @@ Visualization Manager:
       Head Length: 0.30000001192092896
       Head Radius: 0.10000000149011612
       Name: ScanMatcherPose
+      Queue Size: 10
       Shaft Length: 1
       Shaft Radius: 0.05000000074505806
       Shape: Arrow
@@ -1398,6 +1401,7 @@ Visualization Manager:
       Head Length: 0.07000000029802322
       Head Radius: 0.029999999329447746
       Name: AMCL Particles
+      Queue Size: 10
       Shaft Length: 0.23000000417232513
       Shaft Radius: 0.009999999776482582
       Shape: Arrow (Flat)
@@ -1413,6 +1417,7 @@ Visualization Manager:
       Head Length: 0.20000000298023224
       Head Radius: 0.10000000149011612
       Name: Current Goal
+      Queue Size: 10
       Shaft Length: 1
       Shaft Radius: 0.05000000074505806
       Shape: Arrow
@@ -1468,6 +1473,7 @@ Visualization Manager:
                 Z: 0
               Pose Color: 255; 85; 255
               Pose Style: None
+              Queue Size: 10
               Radius: 0.029999999329447746
               Shaft Diameter: 0.10000000149011612
               Shaft Length: 0.10000000149011612
@@ -1495,6 +1501,7 @@ Visualization Manager:
                 Z: 0
               Pose Color: 255; 85; 255
               Pose Style: None
+              Queue Size: 10
               Radius: 0.029999999329447746
               Shaft Diameter: 0.10000000149011612
               Shaft Length: 0.10000000149011612
@@ -1516,9 +1523,7 @@ Visualization Manager:
               Enabled: false
               Invert Rainbow: false
               Max Color: 255; 255; 255
-              Max Intensity: 363
               Min Color: 0; 0; 0
-              Min Intensity: 0
               Name: Costs Cloud
               Position Transformer: XYZ
               Queue Size: 10
@@ -1550,9 +1555,7 @@ Visualization Manager:
               Enabled: true
               Invert Rainbow: false
               Max Color: 255; 255; 255
-              Max Intensity: 8.606754302978516
               Min Color: 0; 0; 0
-              Min Intensity: 8.140351295471191
               Name: Trajectories
               Position Transformer: XYZ
               Queue Size: 10
@@ -1580,9 +1583,7 @@ Visualization Manager:
               Enabled: true
               Invert Rainbow: false
               Max Color: 255; 255; 255
-              Max Intensity: 325.20001220703125
               Min Color: 0; 0; 0
-              Min Intensity: 0
               Name: Costs Cloud
               Position Transformer: XYZ
               Queue Size: 10
@@ -1612,6 +1613,7 @@ Visualization Manager:
                 Z: 0
               Pose Color: 255; 85; 255
               Pose Style: None
+              Queue Size: 10
               Radius: 0.029999999329447746
               Shaft Diameter: 0.10000000149011612
               Shaft Length: 0.10000000149011612
@@ -1639,6 +1641,7 @@ Visualization Manager:
                 Z: 0
               Pose Color: 255; 85; 255
               Pose Style: None
+              Queue Size: 10
               Radius: 0.029999999329447746
               Shaft Diameter: 0.10000000149011612
               Shaft Length: 0.10000000149011612
@@ -1662,6 +1665,7 @@ Visualization Manager:
                 Z: 0
               Pose Color: 255; 85; 255
               Pose Style: None
+              Queue Size: 10
               Radius: 0.029999999329447746
               Shaft Diameter: 0.10000000149011612
               Shaft Length: 0.10000000149011612
@@ -1678,6 +1682,7 @@ Visualization Manager:
               Head Length: 0.07000000029802322
               Head Radius: 0.029999999329447746
               Name: Poses
+              Queue Size: 10
               Shaft Length: 0.23000000417232513
               Shaft Radius: 0.009999999776482582
               Shape: Arrow (Flat)
@@ -1689,7 +1694,13 @@ Visualization Manager:
               Marker Topic: /move_base_flex/TEBPlanner/teb_markers
               Name: Markers
               Namespaces:
-                {}
+                InfeasibleRobotPose/footprint: true
+                InfeasibleRobotPose/model: true
+                LineObstacles: true
+                PointObstacles: true
+                PolyObstacles: true
+                RobotFootprintModel: true
+                ViaPoints: true
               Queue Size: 100
               Value: true
           Enabled: true
@@ -1725,6 +1736,7 @@ Visualization Manager:
             Z: 0
           Pose Color: 255; 85; 255
           Pose Style: None
+          Queue Size: 10
           Radius: 0.029999999329447746
           Shaft Diameter: 0.10000000149011612
           Shaft Length: 0.10000000149011612
@@ -1748,6 +1760,7 @@ Visualization Manager:
             Z: 0
           Pose Color: 255; 85; 255
           Pose Style: None
+          Queue Size: 10
           Radius: 0.029999999329447746
           Shaft Diameter: 0.10000000149011612
           Shaft Length: 0.10000000149011612
@@ -1775,6 +1788,7 @@ Visualization Manager:
             Z: 0
           Pose Color: 255; 85; 255
           Pose Style: None
+          Queue Size: 10
           Radius: 0.029999999329447746
           Shaft Diameter: 0.10000000149011612
           Shaft Length: 0.10000000149011612
@@ -1787,6 +1801,7 @@ Visualization Manager:
           Enabled: true
           History Length: 1
           Name: Starting Point
+          Queue Size: 10
           Radius: 0.20000000298023224
           Topic: /exploration/starting_point
           Unreliable: false
@@ -1796,6 +1811,7 @@ Visualization Manager:
           Color: 25; 255; 0
           Enabled: true
           Name: Camera FOV
+          Queue Size: 10
           Topic: /exploration/camera_fov
           Unreliable: false
           Value: true
@@ -1938,7 +1954,6 @@ Visualization Manager:
       Near Clip Distance: 0.009999999776482582
       Scale: 77.17523193359375
       Target Frame: <Fixed Frame>
-      Value: TopDownOrtho (rviz)
       X: 7.746724605560303
       Y: 4.899011611938477
     Saved: ~
@@ -1947,10 +1962,10 @@ Window Geometry:
     collapsed: false
   Displays:
     collapsed: false
-  Height: 1025
+  Height: 1016
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd00000003000000000000025c00000261fc0200000006fb0000001200530065006c0065006300740069006f006e000000003d0000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000005fb0000023c00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d00000261000000c900fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000008600000023c00000185000000a3000000010000010f00000261fc0200000002fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000030000073d00000140fc0100000008fb0000000a0056006900650077007301000000000000024e0000010000fffffffb0000000a005600690065007700730100000000000002620000000000000000fb000000220052006f006f006d0020005300650067006d0065006e0074006100740069006f006e010000025400000192000000c000fffffffb0000001a0052006f006f006d002000530065007100750065006e0063006501000003ec00000189000000a200fffffffb0000001800430075007200720065006e007400200052006f006f006d010000057b000001c20000009400fffffffb0000000a0049006d00610067006501000005a5000001980000000000000000fb0000000800540069006d00650000000000000004a0000004f300fffffffb0000000800540069006d00650100000000000004500000000000000000000004db0000026100000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000003000000000000025c00000258fc0200000007fb0000001200530065006c0065006300740069006f006e000000003d0000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000005fb0000023c00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000008600000023c00000185000000a3fb000000100044006900730070006c006100790073010000003d000001a8000000c900fffffffb0000000a0056006900650077007301000001eb000000aa000000a400ffffff000000010000010f00000261fc0200000002fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000030000073800000140fc010000000afb000000220052006f006f006d0020005300650067006d0065006e0074006100740069006f006e0100000000000002a8000000c000fffffffb0000001a0052006f006f006d002000530065007100750065006e0063006501000002ae000002b9000000a200fffffffb0000001800430075007200720065006e007400200052006f006f006d010000056d000001cb0000009400fffffffb0000000a005600690065007700730100000000000002620000000000000000fb000000220052006f006f006d0020005300650067006d0065006e0074006100740069006f006e0000000254000001920000000000000000fb0000001a0052006f006f006d002000530065007100750065006e0063006500000003ec000001890000000000000000fb0000001800430075007200720065006e007400200052006f006f006d000000057b000001c20000000000000000fb0000000a0049006d00610067006501000005a5000001980000000000000000fb0000000800540069006d00650000000000000004a0000003bc00fffffffb0000000800540069006d00650100000000000004500000000000000000000004d60000025800000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Room Segmentation:
     collapsed: false
   Room Sequence:
@@ -1963,6 +1978,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1853
-  X: 67
+  Width: 1848
+  X: 72
   Y: 27
