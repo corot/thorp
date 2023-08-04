@@ -163,12 +163,16 @@ class ObjectTrackingNode(object):
         return marker
 
     def pub_transform(self, detection):
+        ObjectTrackingNode.prev = None  # hack to avoid the hated TF_REPEATED_DATA;  maybe makes more sense to not use buffer and pub each observation once
         tfs = TransformStamped()
         tfs.header = detection.header
         tfs.child_frame_id = detection.label + '_' + str(detection.id)
         tfs.transform.translation = detection.pose.pose.position
         tfs.transform.rotation = detection.pose.pose.orientation
-        self._tf2_bcaster.sendTransform(tfs)
+        if not ObjectTrackingNode.prev:
+            ObjectTrackingNode.prev = tfs
+        elif ObjectTrackingNode.prev.header.stamp != tfs.header.stamp or ObjectTrackingNode.prev.child_frame_id != tfs.child_frame_id:
+            self._tf2_bcaster.sendTransform(tfs)
 
     def pub_img_quad(self, detection):
         img_quad = self._last_img_cv[detection.mask.roi.y:detection.mask.roi.y + detection.mask.roi.height,
