@@ -41,20 +41,18 @@ class MakePickingPlan(smach_ros.SimpleActionState):
         ud['picking_plan'] = result.picking_plan.locations
 
 
-class TableSidesPoses(smach.State):
+class ClosestSidePose(smach.State):
     """
-    Calculate the four locations around a squared table at a given distance.
+    Calculate the four locations around a segmented surface at a given distance and return the closest to the robot.
     """
 
     def __init__(self, distance):
         smach.State.__init__(self, outcomes=['succeeded', 'no_valid_table'],
                              input_keys=['table', 'table_pose', 'robot_pose'],
-                             output_keys=['poses', 'closest_pose'])
+                             output_keys=['pose'])
         self.distance = distance
-        self.poses_viz = rospy.Publisher('manipulation/picking_poses', geometry_msgs.PoseArray, queue_size=1)
 
     def execute(self, ud):
-        # TODO make a toolkit fn and use also on picking planner  (but here I have a RAIL object and there a Collision one!
         table = ud['table']
         table_pose = ud['table_pose']  # expected on map frame, as robot_pose
         if not table or not table_pose:
@@ -70,27 +68,17 @@ class TableSidesPoses(smach.State):
         closest_pose = None
         closest_dist = float('inf')
         from math import pi
-        poses = [('p_x', create_2d_pose(p_x, 0.0, -pi, 'table_frame')),
-                 ('n_x', create_2d_pose(n_x, 0.0, 0.0, 'table_frame')),
-                 ('p_y', create_2d_pose(0.0, p_y, -pi/2.0, 'table_frame')),
-                 ('n_y', create_2d_pose(0.0, n_y, +pi/2.0, 'table_frame'))]
-        pose_array = geometry_msgs.PoseArray()  # for visualization
-        sides_poses = {}
-        for name, pose in poses:
+        poses = [create_2d_pose(p_x, 0.0, -pi, 'table_frame'),
+                 create_2d_pose(n_x, 0.0, 0.0, 'table_frame'),
+                 create_2d_pose(0.0, p_y, -pi/2.0, 'table_frame'),
+                 create_2d_pose(0.0, n_y, +pi/2.0, 'table_frame')]
+        for pose in poses:
             pose = transform_pose(pose, table_tf)
-            pose_array.poses.append(deepcopy(pose.pose))
-            pose_array.poses[-1].position.z += 0.025  # raise over costmap to make it visible
-            sides_poses[name] = pose
             dist = distance_2d(pose, ud['robot_pose'])
             if dist < closest_dist:
                 closest_pose = pose
                 closest_dist = dist
-        ud['poses'] = sides_poses
-        ud['closest_pose'] = closest_pose
-        pose_array.header = deepcopy(closest_pose.header)
-        pose_array.poses.append(deepcopy(closest_pose.pose))
-        pose_array.poses[-1].position.z += 0.05  # remark the closest pose with a double arrow
-        self.poses_viz.publish(pose_array)
+        ud['pose'] = closest_pose
         return 'succeeded'
 
 
@@ -135,10 +123,9 @@ def GatherObjects(target_types):
                                        input_keys=['table', 'table_pose'])
     with approach_table_sm:
         smach.Sequence.add('GET_ROBOT_POSE', GetRobotPose())
-        smach.Sequence.add('CALC_APPROACHES', TableSidesPoses(cfg.APPROACH_DIST_TO_TABLE),
+        smach.Sequence.add('CALC_APPROACH', ClosestSidePose(cfg.APPROACH_DIST_TO_TABLE),
                            transitions={'no_valid_table': 'aborted'},
-                           remapping={'poses': 'approach_poses',
-                                      'closest_pose': 'closest_approach_pose'})
+                           remapping={'pose': 'closest_approach_pose'})
         smach.Sequence.add('APPROACH_TABLE', GoToPose(),  # use default tolerances; no precision needed here
                            transitions={'aborted': 'aborted',
                                         'preempted': 'preempted'},
@@ -147,15 +134,14 @@ def GatherObjects(target_types):
     # detects objects over the table, and make a picking plan
     make_pick_plan_sm = DoOnExitContainer(outcomes=['succeeded', 'aborted', 'preempted', 'no_reachable_objs'],
                                           input_keys=['table', 'table_pose', 'object_types'],
-                                          output_keys=['picking_poses', 'closest_picking_pose', 'picking_plan'])
+                                          output_keys=['closest_picking_pose', 'picking_plan'])
     with make_pick_plan_sm:
         smach.StateMachine.add('GET_ROBOT_POSE', GetRobotPose(),
-                               transitions={'succeeded': 'CALC_PICK_POSES'})
-        smach.StateMachine.add('CALC_PICK_POSES', TableSidesPoses(cfg.PICKING_DIST_TO_TABLE),
+                               transitions={'succeeded': 'PICKING_POSE'})
+        smach.StateMachine.add('PICKING_POSE', ClosestSidePose(cfg.PICKING_DIST_TO_TABLE),
                                transitions={'succeeded': 'ALIGN_TO_TABLE',
                                             'no_valid_table': 'aborted'},
-                               remapping={'poses': 'picking_poses',
-                                          'closest_pose': 'closest_picking_pose'})
+                               remapping={'pose': 'closest_picking_pose'})
         smach.StateMachine.add('ALIGN_TO_TABLE', AlignToTable(),
                                transitions={'succeeded': 'DETECT_OBJECTS',
                                             'aborted': 'aborted',
