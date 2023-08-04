@@ -21,6 +21,7 @@ add_action_files(DIRECTORY action
                            MoveToTarget.action
                            PickupObject.action
                            PlaceObject.action
+                           PlanPicking.action
                            DragAndDrop.action
                            UserCommand.action
                            FollowPose.action

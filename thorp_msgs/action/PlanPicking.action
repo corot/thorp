@@ -1,0 +1,22 @@
+# goal definition
+
+geometry_msgs/PoseStamped robot_pose
+moveit_msgs/CollisionObject[] objects
+moveit_msgs/CollisionObject surface
+
+string planning_frame
+float32 approach_dist   # close enough to properly detect tabletop objects but not for picking
+float32 picking_dist    # ideal picking distance to the table, as close as possible without risk
+float32 detach_dist     # far enough to safely navigate around the table to other picking poses
+float32 max_arm_reach   # maximum distance reachable by the arm from a picking location;
+                        # should include some tolerance to cope with navigation imprecision
+
+---
+
+# result definition
+
+thorp_msgs/PickingPlan picking_plan
+
+---
+
+# feedback

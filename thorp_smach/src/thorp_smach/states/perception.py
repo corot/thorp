@@ -47,9 +47,9 @@ class ObjectDetection(smach_ros.SimpleActionState):
     Object detection state:
     Tries to segment a support surface and classify the tabletop objects found on it. Returns only the
     objects of types listed on 'object_types' input key (or all if it's not provided).
-    As output, it returns a list of moveit_msgs/CollisionObject msgs, plus the object names and the name
-    of the support surface.
-    All detected objects and the table will be added to the planning scene as collision objects.
+    As output, it returns the objects as a list of moveit_msgs/CollisionObject msgs and a single msg for
+    the support surface.
+    All detected objects and the support surface will be added to the planning scene as collision objects.
     If clear_scene is true, the planning scene will be previously emptied.
     """
 
@@ -59,7 +59,7 @@ class ObjectDetection(smach_ros.SimpleActionState):
                                               goal_cb=self.goal_cb,
                                               result_cb=self.result_cb,
                                               input_keys=['object_types'],
-                                              output_keys=['objects', 'support_surf'])
+                                              output_keys=['objects', 'surface'])
         self.clear_scene = clear_scene
 
     def goal_cb(self, ud, goal):
@@ -70,7 +70,7 @@ class ObjectDetection(smach_ros.SimpleActionState):
         if 'object_types' in ud and ud['object_types']:
             objects = [co for co in objects if co.id.split()[0] in ud['object_types']]
         ud['objects'] = objects
-        ud['support_surf'] = result.surface.id  # only interested in the co name (TODO cannot access subfields on ud?)
+        ud['surface'] = result.surface
 
 
 class ObjectsDetected(smach.State):
@@ -146,7 +146,7 @@ class CheckTableSize(smach.State):
 
 class MonitorTables(smach.State):
     """
-    Look for tables until one is found or we run out of time. Returns:
+    Look for tables until one is found, or we run out of time. Returns:
     - 'succeeded' if a table is seen before timeout (unlimited by default)
     - 'aborted' otherwise
     """
