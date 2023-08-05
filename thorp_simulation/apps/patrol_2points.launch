@@ -16,9 +16,7 @@
   </include>
 
   <!--  ****** Executive smach and visualization ******  -->
-  <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="true">
-    <param name="rec_objects_frame" value="map"/>
-  </node>
+  <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="true"/>
 
   <node pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
 </launch>

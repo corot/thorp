@@ -200,10 +200,10 @@ class PlaceObject(smach.Iterator):
             smach.Iterator.set_contained_state('', sm, loop_outcomes=['continue'])
 
 
-class PlaceInTray(smach.Sequence):
+class PlaceOnTray(smach.Sequence):
     """  Place a given object on the tray  """
     def __init__(self):
-        super(PlaceInTray, self).__init__(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'],
+        super(PlaceOnTray, self).__init__(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'],
                                           connector_outcome='succeeded',
                                           input_keys=['object'])
         # add a collision object for the tray surface, right above the mesh

@@ -6,7 +6,7 @@ import smach
 from thorp_toolkit.geometry import TF2, distance_2d
 
 from .perception import ObjectDetection
-from .manipulation import ClearGripper, ClearPlanningScene, FoldArm, PickupObject, PlaceInTray
+from .manipulation import ClearGripper, ClearPlanningScene, FoldArm, PickupObject, PlaceOnTray
 
 from ..containers.do_on_exit import DoOnExit as DoOnExitContainer
 from .. import config as cfg
@@ -25,7 +25,7 @@ class TargetSelection(smach.State):
                              outcomes=['have_target', 'no_targets'],
                              input_keys=['objects', 'failures'],
                              output_keys=['target', 'tightening'])
-        manip_frame = rospy.get_param('~rec_objects_frame', 'arm_base_link')
+        manip_frame = rospy.get_param('~planning_frame', 'arm_base_link')
         self.arm_on_bfp_rf = TF2().transform_pose(None, manip_frame, 'base_footprint')
 
     def execute(self, ud):
@@ -136,7 +136,7 @@ class PickReachableObjs(DoOnExitContainer):
                                    transitions={'succeeded': 'PLACE_ON_TRAY',
                                                 'preempted': 'preempted',
                                                 'aborted': 'RECORD_FAILURE'})
-            smach.StateMachine.add('PLACE_ON_TRAY', PlaceInTray(),
+            smach.StateMachine.add('PLACE_ON_TRAY', PlaceOnTray(),
                                    transitions={'succeeded': 'CLEAR_FAILURES',
                                                 'preempted': 'preempted',
                                                 'aborted': 'CLEAR_GRIPPER',

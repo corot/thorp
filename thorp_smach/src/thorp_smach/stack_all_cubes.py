@@ -81,7 +81,6 @@ with sm:
     sm.userdata.ucmd_outcome = thorp_msgs.UserCommandResult()
     sm.userdata.od_attempt = 0
     sm.userdata.arm_ref_frame = rospy.get_param('~arm_ctrl_ref_frame', 'arm_base_link')
-    sm.userdata.output_frame = rospy.get_param('~rec_objects_frame', 'map')
 
     smach.StateMachine.add('EXE_USER_CMD',
                            ExecuteUserCommand(['start', 'stop', 'fold', 'clear']),

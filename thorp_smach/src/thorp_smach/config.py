@@ -16,6 +16,7 @@ TABLE_MAX_SIDE = 1.0  # TODO I cannot handle such a large table, as I only go to
 APPROACH_DIST_TO_TABLE = 0.35  # close enough to properly detect tabletop objects but not for picking
 DETACH_DIST_FROM_TABLE = 0.45  # far enough to safely navigate around the table to other picking poses
 CLEAR_TABLE_WAY_TIMEOUT = 15.0  # seconds; restore costmap after this time
+PICKING_PLANNING_FRAME = 'arm_base_link'
 PICKING_MAX_FAILURES = 3  # picking failures allowed for each object on current picking location (resets upon moving)
 PICKING_DIST_TO_TABLE = 0.15  # ideal picking distance to the table, as close as possible without risk
 PLACING_HEIGHT_ON_TABLE = 0.005  # slightly above the table to avoid crashing the object against it

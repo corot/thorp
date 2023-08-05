@@ -31,7 +31,7 @@ class MakePickingPlan(smach_ros.SimpleActionState):
                                               output_keys=['picking_plan'])
 
     def make_goal(self, ud, goal):
-        goal.planning_frame = rospy.get_param('~rec_objects_frame', 'arm_base_link')  # TODO param has a very bad name
+        goal.planning_frame = cfg.PICKING_PLANNING_FRAME
         goal.approach_dist = cfg.APPROACH_DIST_TO_TABLE
         goal.picking_dist = cfg.PICKING_DIST_TO_TABLE
         goal.detach_dist = cfg.DETACH_DIST_FROM_TABLE
