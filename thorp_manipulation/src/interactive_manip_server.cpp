@@ -36,7 +36,7 @@ private:
 
 public:
 
-  InteractiveManipulationServer(const std::string name) :
+  InteractiveManipulationServer(const std::string& name) :
     im_("move_objects"),
     as_(name, false)
   {
@@ -51,7 +51,7 @@ public:
     thorp_msgs::DragAndDropGoal::ConstPtr goal = as_.acceptNewGoal();
 
     ROS_INFO("[interactive manip] Received goal! Adding markers for objects in the word other than the table");
-    addObjects(goal->object_names, goal->support_surf, goal->output_frame);
+    addObjects(goal->object_names, goal->output_frame);
   }
 
   void preemptCB()
@@ -104,8 +104,7 @@ public:
   }
 
   // Add an interactive marker for any object in the word other than the table
-  void addObjects(const std::vector<std::string> &object_names,
-                  const std::string &support_surf, const std::string &output_frame)
+  void addObjects(const std::vector<std::string> &object_names, const std::string &output_frame)
   {
     im_.clear();
     im_.applyChanges();
@@ -140,10 +139,8 @@ public:
     marker.scale = ttk::maxValue(obj_size);
 
     InteractiveMarkerControl control;
-    control.orientation.w = 1;
-    control.orientation.x = 0;
-    control.orientation.y = 1;
-    control.orientation.z = 0;
+    control.orientation.w = control.orientation.y = std::sqrt(2.0) / 2.0;
+    control.orientation.x = control.orientation.z = 0;
     control.interaction_mode = InteractiveMarkerControl::MOVE_PLANE;
 
     if (active)
