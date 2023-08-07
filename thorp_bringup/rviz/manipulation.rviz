@@ -9,7 +9,7 @@ Panels:
         - /RAIL1/Segmented Objects1/Namespaces1
         - /COB1/Image1
       Splitter Ratio: 0.6091369986534119
-    Tree Height: 377
+    Tree Height: 368
   - Class: rviz/Help
     Name: Help
   - Class: rviz/Views
@@ -76,8 +76,6 @@ Visualization Manager:
       MoveIt_Planning_Time: 5
       MoveIt_Use_Cartesian_Path: false
       MoveIt_Use_Constraint_Aware_IK: true
-      MoveIt_Warehouse_Host: 127.0.0.1
-      MoveIt_Warehouse_Port: 33829
       MoveIt_Workspace:
         Center:
           X: 0
@@ -660,6 +658,7 @@ Visualization Manager:
         State Display Time: 0.05 s
         Trail Step Size: 1
         Trajectory Topic: /move_group/display_planned_path
+        Use Sim Time: false
       Planning Metrics:
         Payload: 1
         Show Joint Torques: false
@@ -1270,9 +1269,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 4096
       Min Color: 0; 0; 0
-      Min Intensity: 0
       Name: Filtered Cloud
       Position Transformer: XYZ
       Queue Size: 10
@@ -1307,9 +1304,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 4096
       Min Color: 0; 0; 0
-      Min Intensity: 0
       Name: Filtered Cloud
       Occlusion Compensation:
         Occlusion Time-Out: 30
@@ -1345,9 +1340,7 @@ Visualization Manager:
       Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 4096
       Min Color: 0; 0; 0
-      Min Intensity: 0
       Name: Xtion
       Occlusion Compensation:
         Occlusion Time-Out: 30
@@ -1383,9 +1376,7 @@ Visualization Manager:
       Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 4096
       Min Color: 0; 0; 0
-      Min Intensity: 0
       Name: Kinect
       Occlusion Compensation:
         Occlusion Time-Out: 30
@@ -1421,9 +1412,7 @@ Visualization Manager:
       Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 4096
       Min Color: 0; 0; 0
-      Min Intensity: 0
       Name: External Camera
       Occlusion Compensation:
         Occlusion Time-Out: 30
@@ -1464,6 +1453,7 @@ Visualization Manager:
       Head Length: 0.30000001192092896
       Head Radius: 0.10000000149011612
       Name: Pick/Place Pose
+      Queue Size: 10
       Shaft Length: 1
       Shaft Radius: 0.05000000074505806
       Shape: Axes
@@ -1472,6 +1462,8 @@ Visualization Manager:
       Value: true
     - Class: rviz/TF
       Enabled: true
+      Filter (blacklist): ""
+      Filter (whitelist): ""
       Frame Timeout: 15
       Frames:
         All Enabled: false
@@ -1709,6 +1701,7 @@ Visualization Manager:
           Value: false
         xtion_rgb_optical_frame:
           Value: false
+      Marker Alpha: 1
       Marker Scale: 0.5
       Name: TF
       Show Arrows: true
@@ -1933,6 +1926,7 @@ Visualization Manager:
           Head Length: 0.30000001192092896
           Head Radius: 0.10000000149011612
           Name: Table Pose
+          Queue Size: 10
           Shaft Length: 1
           Shaft Radius: 0.05000000074505806
           Shape: Axes
@@ -1962,9 +1956,7 @@ Visualization Manager:
           Enabled: false
           Invert Rainbow: false
           Max Color: 255; 255; 255
-          Max Intensity: 4096
           Min Color: 0; 0; 0
-          Min Intensity: 0
           Name: Segmented Clouds
           Position Transformer: XYZ
           Queue Size: 10
@@ -2004,9 +1996,7 @@ Visualization Manager:
           Enabled: false
           Invert Rainbow: false
           Max Color: 255; 255; 255
-          Max Intensity: 4096
           Min Color: 0; 0; 0
-          Min Intensity: 0
           Name: Target points
           Position Transformer: XYZ
           Queue Size: 10
@@ -2034,9 +2024,7 @@ Visualization Manager:
           Enabled: false
           Invert Rainbow: false
           Max Color: 255; 255; 255
-          Max Intensity: 4096
           Min Color: 0; 0; 0
-          Min Intensity: 0
           Name: Template points
           Position Transformer: XYZ
           Queue Size: 10
@@ -2064,9 +2052,7 @@ Visualization Manager:
           Enabled: false
           Invert Rainbow: false
           Max Color: 255; 255; 255
-          Max Intensity: 4096
           Min Color: 0; 0; 0
-          Min Intensity: 0
           Name: Matched points
           Position Transformer: XYZ
           Queue Size: 10
@@ -2084,7 +2070,7 @@ Visualization Manager:
           Marker Topic: /object_detection_server/visual_markers
           Name: Detected objects
           Namespaces:
-            labels: true
+            {}
           Queue Size: 100
           Value: true
       Enabled: true
@@ -2125,9 +2111,7 @@ Visualization Manager:
           Enabled: false
           Invert Rainbow: false
           Max Color: 255; 255; 255
-          Max Intensity: 4096
           Min Color: 0; 0; 0
-          Min Intensity: 0
           Name: DepthCloud
           Occlusion Compensation:
             Occlusion Time-Out: 30
@@ -2155,6 +2139,7 @@ Visualization Manager:
           Head Length: 0.07000000029802322
           Head Radius: 0.029999999329447746
           Name: Pick & Place Poses
+          Queue Size: 10
           Shaft Length: 0.23000000417232513
           Shaft Radius: 0.009999999776482582
           Shape: Arrow (Flat)
@@ -2171,6 +2156,7 @@ Visualization Manager:
           Head Length: 0.07000000029802322
           Head Radius: 0.029999999329447746
           Name: Blocks Poses
+          Queue Size: 10
           Shaft Length: 0.23000000417232513
           Shaft Radius: 0.009999999776482582
           Shape: Arrow (Flat)
@@ -2192,9 +2178,7 @@ Visualization Manager:
           Enabled: true
           Invert Rainbow: false
           Max Color: 255; 255; 255
-          Max Intensity: 4096
           Min Color: 0; 0; 0
-          Min Intensity: 0
           Name: Blocks PointCloud
           Position Transformer: XYZ
           Queue Size: 10
@@ -2216,6 +2200,7 @@ Visualization Manager:
           Head Length: 0.019999999552965164
           Head Radius: 0.019999999552965164
           Name: Pick/Place Pose
+          Queue Size: 10
           Shaft Length: 0.07999999821186066
           Shaft Radius: 0.009999999776482582
           Shape: Arrow
@@ -2236,11 +2221,12 @@ Visualization Manager:
       Hide Inactive Objects: true
     - Class: rviz/MoveCamera
     - Class: rviz/Select
+    - Class: rviz/Measure
     - Class: rviz/SetGoal
-      Topic: /move_base_simple/goal
+      Topic: goal
     - Class: rviz/SetInitialPose
       Theta std deviation: 0.2617993950843811
-      Topic: /initialpose
+      Topic: initialpose
       X std deviation: 0.5
       Y std deviation: 0.5
   Value: true
@@ -2253,6 +2239,7 @@ Visualization Manager:
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
+      Field of View: 0.7853981852531433
       Focal Point:
         X: 0.1788593977689743
         Y: 0.046968042850494385
@@ -2264,13 +2251,12 @@ Visualization Manager:
       Near Clip Distance: 0.009999999776482582
       Pitch: 0.8334682583808899
       Target Frame: base_link
-      Value: XYOrbit (rviz)
       Yaw: 4.753904342651367
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 1025
+  Height: 1016
   Help:
     collapsed: false
   Hide Left Dock: false
@@ -2281,13 +2267,13 @@ Window Geometry:
     collapsed: false
   MotionPlanning - Trajectory Slider:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd000000020000000000000275000003a7fc0200000009fb000000100044006900730070006c006100790073010000003d000001fc000000c900fffffffc0000023f000001a50000019a0100001cfa000000000100000002fb0000000a005600690065007700730100000000ffffffff0000010000fffffffb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e0067010000000000000275000001f300fffffffb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e00670100000175000001d70000000000000000fb0000000800480065006c00700000000342000000bb0000006e00fffffffb0000000a0049006d006100670065000000030a000000b70000001600fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000002f1000000ab0000005c00fffffffb0000000c00430061006d006500720061020000000000000170000003b1000002c8fb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000001600000016fc000002f0000000f20000000000fffffffa000000000100000002fb0000000a0049006d0061006700650100000000ffffffff0000000000000000fb00000020005300650067006d0065006e00740065006400200049006d00610067006500730000000000000002ed000000b600ffffff000000010000014d000003c2fc0200000002fb0000001c004f006e0062006f006100720064002000430061006d006500720061010000003d000003a70000000000000000fc00000028000003da0000000000fffffffa000000000100000002fb0000001e00450078007400650072006e0061006c002000430061006d0065007200610000000000ffffffff0000000000000000fb0000000c00430061006d0065007200610000000596000001ea0000000000000000000004c2000003a700000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000200000000000002750000039efc0200000009fb000000100044006900730070006c006100790073010000003d000001f3000000c900fffffffc00000236000001a50000019a0100001cfa000000000100000002fb0000000a005600690065007700730100000000ffffffff0000010000fffffffb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e0067010000000000000275000001f300fffffffb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e00670100000175000001d70000000000000000fb0000000800480065006c00700000000342000000bb0000006e00fffffffb0000000a0049006d006100670065000000030a000000b70000001600fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000002f1000000ab0000005c00fffffffb0000000c00430061006d006500720061020000000000000170000003b1000002c8fb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000001600000016fc000002f0000000f20000000000fffffffa000000000100000002fb0000000a0049006d0061006700650100000000ffffffff0000000000000000fb00000020005300650067006d0065006e00740065006400200049006d00610067006500730000000000000002ed000000b600ffffff000000010000014d000003c2fc0200000002fb0000001c004f006e0062006f006100720064002000430061006d006500720061010000003d000003a70000000000000000fc00000028000003da0000000000fffffffa000000000100000002fb0000001e00450078007400650072006e0061006c002000430061006d0065007200610000000000ffffffff0000000000000000fb0000000c00430061006d0065007200610000000596000001ea0000000000000000000004bd0000039e00000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Segmented Images:
     collapsed: false
   Tool Properties:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1853
-  X: 67
+  Width: 1848
+  X: 72
   Y: 27

@@ -28,6 +28,7 @@ with sm:
     sm.userdata.ucmd_progress = thorp_msgs.UserCommandFeedback()
     sm.userdata.ucmd_outcome = thorp_msgs.UserCommandResult()
     sm.userdata.od_attempt = 0
+    sm.userdata.output_frame = cfg.PICKING_PLANNING_FRAME
     sm.userdata.max_effort = cfg.GRIPPER_MAX_EFFORT
     sm.userdata.tightening = cfg.GRIPPER_TIGHTENING
 
@@ -63,6 +64,7 @@ with sm:
                                                        input_keys=['objects'],
                                                        output_keys=['object'],
                                                        goal_cb=list_obj_names,
+                                                       goal_slots=['output_frame'],
                                                        result_cb=get_selected_obj,
                                                        result_slots=['pick_pose', 'place_pose']),
                            transitions={'succeeded': 'PICKUP_OBJECT',

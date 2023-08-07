@@ -9,7 +9,7 @@ import arbotix_msgs.srv as arbotix_srvs
 import geometry_msgs.msg as geometry_msgs
 import thorp_msgs.msg as thorp_msgs
 
-from thorp_toolkit import TF2, get_size_from_co, distance_2d, heading
+from thorp_toolkit.geometry import TF2, get_size_from_co, distance_2d, heading
 
 from thorp_smach.states.common import ExecuteUserCommand
 from thorp_smach.states.geometry import TranslatePose
@@ -101,14 +101,14 @@ with sm:
 
     # Stack cubes sub state machine; iterates over the detected cubes and stack them over the one most in front of the arm
     sc_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted'],
-                           input_keys=['place_pose', 'other_cubes', 'support_surf'],
+                           input_keys=['place_pose', 'other_cubes', 'surface'],
                            output_keys=[],
                            it=lambda: sm.userdata.other_cubes,  # must be a lambda because we destroy the list
                            it_label='object',
                            exhausted_outcome='succeeded')
     with sc_it:
         sc_sm = smach.StateMachine(outcomes=['succeeded', 'preempted', 'aborted', 'continue'],
-                                   input_keys=['place_pose', 'object', 'support_surf'],
+                                   input_keys=['place_pose', 'object', 'surface'],
                                    output_keys=[])
         sc_sm.userdata.max_effort = cfg.GRIPPER_MAX_EFFORT
         sc_sm.userdata.tightening = cfg.GRIPPER_TIGHTENING / 2.0
