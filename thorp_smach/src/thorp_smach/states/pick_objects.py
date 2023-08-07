@@ -62,16 +62,15 @@ class TargetSelection(smach.State):
 
 class RecordFailure(smach.State):
     """
-    Increase by one the number of picking failures for a given object, and the given up count if we exhausted
-    the allowed picking failures for it
+    Increase by one the number of picking failures for a given object
     Return always 'succeeded'
     """
 
     def __init__(self):
         smach.State.__init__(self,
                              outcomes=['succeeded'],
-                             input_keys=['given_up_count', 'failures', 'object'],
-                             output_keys=['given_up_count', 'failures'])
+                             input_keys=['failures', 'object'],
+                             output_keys=['failures'])
 
     def execute(self, ud):
         if ud['object'].id not in ud['failures'].keys():
@@ -84,7 +83,6 @@ class RecordFailure(smach.State):
             rospy.loginfo("Pick object '%s' failed %d time(s)", ud['object'].id, failures)
         else:
             rospy.logwarn("Pick object '%s' failed %d times; giving up", ud['object'].id, failures)
-            ud['given_up_count'] += 1
         return 'succeeded'
 
 
@@ -114,13 +112,13 @@ class PickReachableObjs(DoOnExitContainer):
 
     def __init__(self):
         super(PickReachableObjs, self).__init__(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'],
-                                                input_keys=['given_up_count', 'object_types'],
-                                                output_keys=['given_up_count'])
+                                                input_keys=['object_types'],
+                                                output_keys=['failures'])
 
         # pick a single object sm
         pick_1_obj_sm = smach.StateMachine(outcomes=['continue', 'succeeded', 'aborted', 'preempted', 'tray_full'],
-                                           input_keys=['given_up_count', 'object_types', 'failures'],
-                                           output_keys=['given_up_count'])
+                                           input_keys=['object_types', 'failures'],
+                                           output_keys=['failures'])
 
         pick_1_obj_sm.userdata.max_effort = cfg.GRIPPER_MAX_EFFORT
         with pick_1_obj_sm:
@@ -151,15 +149,14 @@ class PickReachableObjs(DoOnExitContainer):
                                    transitions={'succeeded': 'continue'})
 
         pick_reach_objs_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted', 'tray_full'],
-                                            input_keys=['given_up_count', 'object_types', 'failures'],
-                                            output_keys=['given_up_count'],
+                                            input_keys=['object_types', 'failures'],
+                                            output_keys=['failures'],
                                             it=range(25),  # kind of while true
                                             it_label='iteration',
                                             exhausted_outcome='succeeded')
         with pick_reach_objs_it:
             smach.Iterator.set_contained_state('', pick_1_obj_sm, loop_outcomes=['continue'])
 
-        self.userdata.failures = {}  # keep track of pick failures for each object
         with self:
             smach.StateMachine.add('PICKUP_OBJECTS', pick_reach_objs_it,
                                    transitions={'succeeded': 'FOLD_ARM',
@@ -178,3 +175,7 @@ class PickReachableObjs(DoOnExitContainer):
                                                 'no_targets': 'succeeded'})
             DoOnExitContainer.add_finally('CLEAR_P_SCENE', ClearPlanningScene())
             DoOnExitContainer.add_finally('FINAL_FOLD_ARM', FoldArm())
+
+    def execute(self, parent_ud=smach.UserData()):
+        self.userdata.failures = {}  # keep track of pick failures for each object
+        return super(PickReachableObjs, self).execute(parent_ud)

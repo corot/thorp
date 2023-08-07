@@ -2,14 +2,9 @@ import rospy
 import smach
 import smach_ros
 
-import geometry_msgs.msg as geometry_msgs
-
-from copy import deepcopy
-
 from thorp_toolkit.geometry import TF2, to_transform, transform_pose, create_2d_pose, distance_2d
 from thorp_msgs.msg import PlanPickingAction
 
-from .userdata import UDSetTo
 from .costmaps import TableAsObstacle
 from .semantics import TableMarkVisited
 from .perception import MonitorTables, ObjectDetection, ObjectsDetected, ClearMarkers
@@ -99,6 +94,21 @@ class PickLocFields(smach.State):
         return 'succeeded'
 
 
+class CountGivenUpObjects(smach.State):
+    """
+    Increase given up objects count with the failures from last picking spot
+    """
+
+    def __init__(self):
+        super(CountGivenUpObjects, self).__init__(outcomes=['succeeded'],
+                                                  input_keys=['given_up_count', 'failures'],
+                                                  output_keys=['given_up_count'])
+
+    def execute(self, ud):
+        ud['given_up_count'] += sum(1 for fc in ud['failures'].values() if fc == cfg.PICKING_MAX_FAILURES)
+        return 'succeeded'
+
+
 class ThereAreObjectsLeft(smach.State):
     """
     Check whether we have more objects left than those given up
@@ -113,18 +123,7 @@ class ThereAreObjectsLeft(smach.State):
         return 'true' if objects_count > 0 else 'false'
 
 
-class ExploreHouse(smach.StateMachine):
-    """
-    Explore house SM:
-     - segment map into rooms and plan visit sequence
-     - iterate over all rooms and explore following the planned sequence
-    """
-
-    def __init__(self):
-        super(ExploreHouse, self).__init__(outcomes=['succeeded', 'aborted', 'preempted'])
-
-
-class GatherObjects(DoOnExitContainer):
+class GatherObjects(smach.StateMachine):
     """
     Object gatherer SM: approach the requested table and pick all the objects of the requested type
     """
@@ -134,7 +133,6 @@ class GatherObjects(DoOnExitContainer):
                                             input_keys=['table', 'table_pose'])
 
         self.userdata.object_types = target_types
-        self.userdata.given_up_count = 0
 
         # approach to the table
         approach_table_sm = smach.Sequence(outcomes=['succeeded', 'aborted', 'preempted'],
@@ -203,6 +201,8 @@ class GatherObjects(DoOnExitContainer):
                                    transitions={'succeeded': 'PICK_OBJECTS'},
                                    remapping={'pose': 'picking_pose'})
             smach.StateMachine.add('PICK_OBJECTS', PickReachableObjs(),
+                                   transitions={'succeeded': 'COUNT_GIVEN_UP'})
+            smach.StateMachine.add('COUNT_GIVEN_UP', CountGivenUpObjects(),
                                    transitions={'succeeded': 'CLEAR_MARKERS'})
             smach.StateMachine.add('CLEAR_MARKERS', ClearMarkers(),
                                    transitions={'succeeded': 'DETACH_FROM_TABLE',
@@ -248,4 +248,7 @@ class GatherObjects(DoOnExitContainer):
             smach.StateMachine.add('OBJECTS_LEFT?', ThereAreObjectsLeft(),
                                    transitions={'true': 'APPROACH_TABLE',  # at least one object left; restart picking
                                                 'false': 'succeeded'})  # otherwise, we are done
-            DoOnExitContainer.add_finally('CLEAR_GIVEN_UP_', UDSetTo('given_up_count', 0))
+
+    def execute(self, parent_ud=smach.UserData()):
+        self.userdata.given_up_count = 0  # keep track of given up objects on current table
+        return super(GatherObjects, self).execute(parent_ud)
