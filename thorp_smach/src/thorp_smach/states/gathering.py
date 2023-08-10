@@ -10,7 +10,7 @@ from .semantics import TableMarkVisited
 from .perception import MonitorTables, ObjectDetection, ObjectsDetected, ClearMarkers
 from .navigation import GetRobotPose, AreSamePose, GoToPose, AlignToTable, DetachFromTable
 from .manipulation import ClearPlanningScene
-from .pick_objects import PickReachableObjs
+from .pickup_objs import PickupReachableObjs
 from ..containers.do_on_exit import DoOnExit as DoOnExitContainer
 
 from .. import config as cfg
@@ -149,10 +149,10 @@ class GatherObjects(smach.StateMachine):
                                remapping={'target_pose': 'closest_approach_pose'})
 
         # detects objects over the table, and make a picking plan
-        make_pick_plan_sm = DoOnExitContainer(outcomes=['succeeded', 'aborted', 'preempted', 'no_reachable_objs'],
-                                              input_keys=['table', 'table_pose', 'object_types'],
-                                              output_keys=['closest_picking_pose', 'picking_plan'])
-        with make_pick_plan_sm:
+        make_picking_plan_sm = DoOnExitContainer(outcomes=['succeeded', 'aborted', 'preempted', 'no_reachable_objs'],
+                                                 input_keys=['table', 'table_pose', 'object_types'],
+                                                 output_keys=['closest_picking_pose', 'picking_plan'])
+        with make_picking_plan_sm:
             smach.StateMachine.add('GET_ROBOT_POSE', GetRobotPose(),
                                    transitions={'succeeded': 'PICKING_POSE'})
             smach.StateMachine.add('PICKING_POSE', ClosestSidePose(cfg.PICKING_DIST_TO_TABLE),
@@ -180,11 +180,11 @@ class GatherObjects(smach.StateMachine):
             DoOnExitContainer.add_finally('CLEAR_P_SCENE', ClearPlanningScene())
 
         # go to a picking location and pick all objects reachable from there
-        pick_objects_sm = smach.StateMachine(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'],
-                                             input_keys=['given_up_count', 'table', 'picking_loc', 'object_types'],
-                                             output_keys=['given_up_count'])
+        pickup_objects_sm = smach.StateMachine(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'],
+                                               input_keys=['given_up_count', 'table', 'picking_loc', 'object_types'],
+                                               output_keys=['given_up_count'])
 
-        with pick_objects_sm:
+        with pickup_objects_sm:
             smach.StateMachine.add('PICK_LOC_FIELDS', PickLocFields(),
                                    transitions={'succeeded': 'GET_ROBOT_POSE'})
             smach.StateMachine.add('GET_ROBOT_POSE', GetRobotPose(),
@@ -200,7 +200,7 @@ class GatherObjects(smach.StateMachine):
             smach.StateMachine.add('ALIGN_TO_TABLE', AlignToTable(),
                                    transitions={'succeeded': 'PICK_OBJECTS'},
                                    remapping={'pose': 'picking_pose'})
-            smach.StateMachine.add('PICK_OBJECTS', PickReachableObjs(),
+            smach.StateMachine.add('PICK_OBJECTS', PickupReachableObjs(),
                                    transitions={'succeeded': 'COUNT_GIVEN_UP'})
             smach.StateMachine.add('COUNT_GIVEN_UP', CountGivenUpObjects(),
                                    transitions={'succeeded': 'CLEAR_MARKERS'})
@@ -211,14 +211,14 @@ class GatherObjects(smach.StateMachine):
                                    remapping={'pose': 'detach_pose'})
 
         # iterate over all picking locations in the plan
-        pick_objects_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted', 'tray_full'],
-                                         input_keys=['given_up_count', 'table', 'picking_plan', 'object_types'],
-                                         output_keys=['given_up_count'],
-                                         it=lambda: pick_objects_it.userdata.picking_plan,
-                                         it_label='picking_loc',
-                                         exhausted_outcome='succeeded')
-        with pick_objects_it:
-            smach.Iterator.set_contained_state('', pick_objects_sm, loop_outcomes=['succeeded'])
+        pickup_objects_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted', 'tray_full'],
+                                           input_keys=['given_up_count', 'table', 'picking_plan', 'object_types'],
+                                           output_keys=['given_up_count'],
+                                           it=lambda: pickup_objects_it.userdata.picking_plan,
+                                           it_label='picking_loc',
+                                           exhausted_outcome='succeeded')
+        with pickup_objects_it:
+            smach.Iterator.set_contained_state('', pickup_objects_sm, loop_outcomes=['succeeded'])
 
         # Full SM: approach the table, make a picking plan and execute it, double-checking that we left no object behind
         with self:
@@ -230,12 +230,12 @@ class GatherObjects(smach.StateMachine):
                                    transitions={'succeeded': 'MAKE_PICK_PLAN',
                                                 # re-detect when nearby for more precision,
                                                 'aborted': 'succeeded'})  # or just succeed to give up if not seen again
-            smach.StateMachine.add('MAKE_PICK_PLAN', make_pick_plan_sm,
+            smach.StateMachine.add('MAKE_PICK_PLAN', make_picking_plan_sm,
                                    transitions={'succeeded': 'EXEC_PICK_PLAN',
                                                 'aborted': 'aborted',
                                                 'preempted': 'preempted',
                                                 'no_reachable_objs': 'succeeded'})
-            smach.StateMachine.add('EXEC_PICK_PLAN', pick_objects_it,
+            smach.StateMachine.add('EXEC_PICK_PLAN', pickup_objects_it,
                                    transitions={'succeeded': 'DETECT_OBJECTS',
                                                 # double-check that we left no object behind
                                                 'aborted': 'aborted',  # restore original configuration on error
