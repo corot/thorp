@@ -34,7 +34,7 @@ Bringup
 Install wstool:
 
 ```
-sudo apt-get install python-wstool
+sudo apt-get install python3-wstool
 ```
 or when that is not possible, fall back to pip:
 ```

@@ -236,4 +236,4 @@ double PickupObjectServer::gripperClosing(const geometry_msgs::PoseStamped& gras
   return closing;
 }
 
-};
+}  // namespace thorp_manipulation
