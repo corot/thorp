@@ -2,7 +2,7 @@
 
 import rospy
 
-from thorp_smach.states.gathering import PickReachableObjs
+from thorp_smach.states.pick_objects import PickReachableObjs
 
 from thorp_smach.utils import run_sm
 
