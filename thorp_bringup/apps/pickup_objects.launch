@@ -1,6 +1,6 @@
 <!--
-  Simulated version of Thorp's pickup reachable objects app:
-  - Thorp Gazebo simulation
+  Thorp's pickup reachable objects app:
+  - Thorp (real robot or Gazebo simulation)
   - Perception and manipulation
   - Executive SMACH and visualization
 
@@ -12,18 +12,30 @@
   <arg name="viz_smach" default="false"/>
   <arg name="start_delay" default="0.0"/>
   <arg name="record_video" default="false"/>
+  <arg name="simulation" default="false"/>
 
-  <!--  ***** Simulated mobile manipulator Thorp ******  -->
-  <include file="$(find thorp_simulation)/launch/thorp_gazebo.launch">
-    <arg name="world_name"     default="playground"/>
-    <arg name="initial_pose_x" default="0.0"/>
-    <arg name="initial_pose_y" default="0.0"/>
-    <arg name="initial_pose_a" default="0.0"/>
-    <arg name="localization"   value="gazebo"/>
-  </include>
+  <group unless="$(arg simulation)">
+    <!--  ********** Thorp robot standalone ***********  -->
+    <include file="$(find thorp_bringup)/launch/thorp_robot.launch"/>
 
-  <!-- Spawn a table with some tabletop objects -->
-  <node pkg="thorp_simulation" type="spawn_gazebo_models.py" name="objects_spawner" output="screen" args="playground_objs"/>
+    <!--  As we are not (yet) running navigation and localization, fake global reference to make Moveit octomap happy  -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="fake_global_reference" output="screen" respawn="true"
+          args="0.0 0.0 0.0 0.0 0.0 0.0 map odom"/>
+  </group>
+
+  <group if="$(arg simulation)">
+    <!--  ***** Simulated mobile manipulator Thorp ******  -->
+    <include file="$(find thorp_simulation)/launch/thorp_gazebo.launch">
+      <arg name="world_name"     default="playground"/>
+      <arg name="initial_pose_x" default="0.0"/>
+      <arg name="initial_pose_y" default="0.0"/>
+      <arg name="initial_pose_a" default="0.0"/>
+      <arg name="localization"   value="gazebo"/>
+    </include>
+
+    <!-- Spawn a table with some tabletop objects -->
+    <node pkg="thorp_simulation" type="spawn_gazebo_models.py" name="objects_spawner" output="screen" args="playground_objs"/>
+  </group>
 
   <!--  ********* Perception and manipulation *********  -->
   <include file="$(find thorp_perception)/launch/perception.launch">
@@ -31,7 +43,7 @@
   </include>
 
   <include file="$(find thorp_manipulation)/launch/manipulation.launch">
-    <arg name="simulation" value="true"/>
+    <arg name="simulation" value="$(arg simulation)"/>
     <arg name="debug" value="false"/>
   </include>
 
@@ -45,6 +57,7 @@
     <arg name="record_video" value="$(arg record_video)"/>
   </include>
 
-  <node name="rviz" pkg="rviz" type="rviz" output="screen" respawn="true"
+  <!-- Run RViz and load the default config to see the state of the move_group node and the scene interaction markers -->
+  <node pkg="rviz" type="rviz" name="rviz" output="screen" respawn="true"
         args="-d $(find thorp_bringup)/rviz/manipulation.rviz"/>
 </launch>
