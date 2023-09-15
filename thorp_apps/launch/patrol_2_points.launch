@@ -20,7 +20,7 @@
 
   <!--  ******* Components common for all apps ********  -->
 
-  <include file="$(find thorp_simulation)/launch/includes/apps_common.launch.xml">
+  <include file="$(find thorp_apps)/launch/includes/apps_common.launch.xml">
     <arg name="app_name" value="$(arg app_name)"/>
     <arg name="viz_smach" value="$(arg viz_smach)"/>
     <arg name="start_delay" value="$(arg start_delay)"/>

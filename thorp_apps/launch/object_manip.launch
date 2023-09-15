@@ -1,14 +1,13 @@
 <!--
-  Thorp's pickup reachable objects app:
+  Thorp's object manipulation app:
   - Thorp (real robot or Gazebo simulation)
   - Perception and manipulation
   - Executive SMACH and visualization
-
-  Pick all tabletop objects at hand in the table in front.
+  - Keyboard user interaction
  -->
 
 <launch>
-  <arg name="app_name" value="pickup_objects"/>
+  <arg name="app_name" value="object_manip"/>
   <arg name="viz_smach" default="false"/>
   <arg name="start_delay" default="0.0"/>
   <arg name="record_video" default="false"/>
@@ -47,10 +46,21 @@
     <arg name="debug" value="false"/>
   </include>
 
+  <!--  ********** Keyboard user interaction **********  -->
+  <!-- We do it required, so it will shut down the whole demo on exit -->
+  <node pkg="thorp_bringup" type="keyboard_ctrl.py" name="$(arg app_name)_key_ctrl" output="screen" required="true"
+        args="$(arg app_name)">
+    <param name="window_geometry" value="360x240"/>
+    <param name="window_caption" value="Object manipulation user commands"/>
+    <param name="text_font" value="Comic Sans MS"/>
+    <param name="font_size" value="12"/>
+    <rosparam param="valid_commands">['start', 'stop', 'reset', 'clear', 'fold']</rosparam>
+  </node>
+
 
   <!--  ******* Components common for all apps ********  -->
 
-  <include file="$(find thorp_simulation)/launch/includes/apps_common.launch.xml">
+  <include file="$(find thorp_apps)/launch/includes/apps_common.launch.xml">
     <arg name="app_name" value="$(arg app_name)"/>
     <arg name="viz_smach" value="$(arg viz_smach)"/>
     <arg name="start_delay" value="$(arg start_delay)"/>
