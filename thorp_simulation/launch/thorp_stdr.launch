@@ -79,12 +79,9 @@ TODO: I can recover this if I can rename the robot and once I start using a thor
   <!-- Connect STDR's thorp and base_footprint tf trees -->
   <node pkg="tf2_ros" type="static_transform_publisher" name="fake_global_reference"
         args="0.0 0.0 0.0 0.0 0.0 0.0 robot0 base_footprint"/>
-  
-  <!--  ***************** Robot Model *****************  -->
-  <include file="$(find thorp_bringup)/launch/includes/model.launch.xml"/>
 
   <!--  ************* Common functionality ************  -->
-  <include file="$(find thorp_simulation)/launch/includes/thorp_common.launch.xml">
+  <include file="$(find thorp_simulation)/launch/includes/sim_common.launch.xml">
     <arg name="move_base_flex"  value="$(arg move_base_flex)"/>
     <arg name="map_file"        value="$(arg map_file)"/>
     <arg name="initial_pose_x"  value="$(arg initial_pose_x)"/>
@@ -104,8 +101,4 @@ TODO: I can recover this if I can rename the robot and once I start using a thor
   <param name="move_base_flex/local_costmap/obstacle_layer/scan/max_obstacle_height" value="$(arg max_obstacle_height)"/>
   <param name="move_base_flex/global_costmap/obstacle_layer/scan/min_obstacle_height" value="$(arg min_obstacle_height)"/>
   <param name="move_base_flex/global_costmap/obstacle_layer/scan/max_obstacle_height" value="$(arg max_obstacle_height)"/>
-
-  <!--  **************** Visualization ****************  -->
-  <node if="$(arg visualization)"
-        name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/navigation.rviz" output="screen" respawn="true"/>
 </launch>

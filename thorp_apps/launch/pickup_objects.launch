@@ -1,38 +1,34 @@
 <!--
   Thorp's pickup reachable objects app:
-  - Thorp (real robot or Gazebo simulation)
-  - Perception and manipulation
-  - Executive SMACH and visualization
+  Pickup all tabletop objects at hand from the table in front.
 
-  Pick all tabletop objects at hand in the table in front.
+  Requirements:
+  - Perception and manipulation
  -->
 
 <launch>
-  <arg name="app_name" value="pickup_objects"/>
-  <arg name="viz_smach" default="false"/>
-  <arg name="start_delay" default="0.0"/>
+  <arg name="app_name"     value="pickup_objects"/>
+  <arg name="simulator"    default="none"/>  <!-- none | gazebo -->
+  <arg name="viz_smach"    default="false"/>
+  <arg name="start_delay"  default="0.0"/>
   <arg name="record_video" default="false"/>
-  <arg name="simulation" default="false"/>
 
-  <group unless="$(arg simulation)">
-    <!--  ********** Thorp robot standalone ***********  -->
-    <include file="$(find thorp_bringup)/launch/thorp_robot.launch"/>
+  <!--  ******* Components common for all apps ********  -->
+  <include file="$(find thorp_apps)/launch/includes/apps_common.launch.xml">
+    <arg name="app_name"     value="$(arg app_name)"/>
+    <arg name="simulator"    value="$(arg simulator)"/>
+    <arg name="viz_smach"    value="$(arg viz_smach)"/>
+    <arg name="start_delay"  value="$(arg start_delay)"/>
+    <arg name="record_video" value="$(arg record_video)"/>
+  </include>
 
+  <group if="$(eval simulator == 'none')">
     <!--  As we are not (yet) running navigation and localization, fake global reference to make Moveit octomap happy  -->
     <node pkg="tf2_ros" type="static_transform_publisher" name="fake_global_reference" output="screen" respawn="true"
           args="0.0 0.0 0.0 0.0 0.0 0.0 map odom"/>
   </group>
 
-  <group if="$(arg simulation)">
-    <!--  ***** Simulated mobile manipulator Thorp ******  -->
-    <include file="$(find thorp_simulation)/launch/thorp_gazebo.launch">
-      <arg name="world_name"     default="playground"/>
-      <arg name="initial_pose_x" default="0.0"/>
-      <arg name="initial_pose_y" default="0.0"/>
-      <arg name="initial_pose_a" default="0.0"/>
-      <arg name="localization"   value="gazebo"/>
-    </include>
-
+  <group if="$(eval simulator != 'none')">
     <!-- Spawn a table with some tabletop objects -->
     <node pkg="thorp_simulation" type="spawn_gazebo_models.py" name="objects_spawner" output="screen" args="playground_objs"/>
   </group>
@@ -43,18 +39,8 @@
   </include>
 
   <include file="$(find thorp_manipulation)/launch/manipulation.launch">
-    <arg name="simulation" value="$(arg simulation)"/>
+    <arg name="simulation" value="$(eval simulator != 'none')"/>
     <arg name="debug" value="false"/>
-  </include>
-
-
-  <!--  ******* Components common for all apps ********  -->
-
-  <include file="$(find thorp_apps)/launch/includes/apps_common.launch.xml">
-    <arg name="app_name" value="$(arg app_name)"/>
-    <arg name="viz_smach" value="$(arg viz_smach)"/>
-    <arg name="start_delay" value="$(arg start_delay)"/>
-    <arg name="record_video" value="$(arg record_video)"/>
   </include>
 
   <!-- Run RViz and load the default config to see the state of the move_group node and the scene interaction markers -->

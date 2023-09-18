@@ -1,36 +1,56 @@
 <!--
-  Simulated version of Thorp's object gatherer app:
-  - Thorp Gazebo simulation
-  - Perception and manipulation
-  - IPA coverage planning
+  Thorp's object gatherer app:
+  Explore the entire environment gathering all tabletop objects of the requested types.
 
-Explore the entire environment gathering all tabletop objects of the requested types.
+  Requirements:
+  - Navigation, perception and manipulation
+  - IPA coverage planning
  -->
 
 <launch>
-  <arg name="app_name" value="object_gatherer"/>
-  <arg name="viz_smach" default="false"/>
-  <arg name="start_delay" default="0.0"/>
-  <arg name="record_video" default="false"/>
+  <arg name="app_name"       value="object_gatherer"/>
+  <arg name="simulator"      default="none"/>  <!-- none | gazebo -->
+  <arg name="viz_smach"      default="false"/>
+  <arg name="start_delay"    default="0.0"/>
+  <arg name="record_video"   default="false"/>
+  <arg name="world_name"     default="fun_house"/>
+  <arg name="initial_pose_x" default="8.5"/>
+  <arg name="initial_pose_y" default="6.0"/>
+  <arg name="initial_pose_a" default="0.0"/>
 
   <!-- App-specific parameters -->
-  <arg name="object_types" default=""/>  <!-- all objects by default -->
+  <arg name="object_types"   default=""/>  <!-- all objects by default -->
 
   <param name="$(arg app_name)_smach/object_types" value="$(arg object_types)"/>
 
-
-  <!--  ***** Simulated mobile manipulator Thorp ******  -->
-  <include file="$(find thorp_simulation)/launch/thorp_gazebo.launch">
-    <arg name="world_name"     value="fun_house"/>
-    <arg name="initial_pose_x" value="8.5"/>
-    <arg name="initial_pose_y" value="6.0"/>
-    <arg name="initial_pose_a" value="0.0"/>
-    <arg name="localization"   value="gazebo"/>
+  <!--  ******* Components common for all apps ********  -->
+  <include file="$(find thorp_apps)/launch/includes/apps_common.launch.xml">
+    <arg name="app_name"       value="$(arg app_name)"/>
+    <arg name="simulator"      value="$(arg simulator)"/>
+    <arg name="world_name"     value="$(arg world_name)"/>
+    <arg name="initial_pose_x" value="$(arg initial_pose_x)"/>
+    <arg name="initial_pose_y" value="$(arg initial_pose_y)"/>
+    <arg name="initial_pose_a" value="$(arg initial_pose_a)"/>
+    <arg name="viz_smach"      value="$(arg viz_smach)"/>
+    <arg name="start_delay"    value="$(arg start_delay)"/>
+    <arg name="record_video"   value="$(arg record_video)"/>
   </include>
 
-  <!-- Spawn objects randomly around the house -->
-  <node pkg="thorp_simulation" type="spawn_gazebo_models.py" name="objects_spawner" output="screen" args="objects"/>
+  <group if="$(eval simulator != 'none')">
+    <!-- Spawn objects randomly around the house -->
+    <node pkg="thorp_simulation" type="spawn_gazebo_models.py" name="objects_spawner" output="screen" args="objects"/>
+  </group>
 
+  <!--  ***************** Navigation ******************  -->
+  <include file="$(find thorp_navigation)/launch/navigation.launch">
+    <arg name="smooth_velocity" value="$(eval simulator == 'none')"/>
+    <arg name="save_robot_pose" value="$(eval simulator == 'none')"/>
+    <arg name="localization"    value="gazebo" if="$(eval simulator == 'gazebo')"/>
+    <arg name="map_name"        value="$(arg world_name)"/>
+    <arg name="initial_pose_x"  value="$(arg initial_pose_x)"/>
+    <arg name="initial_pose_y"  value="$(arg initial_pose_y)"/>
+    <arg name="initial_pose_a"  value="$(arg initial_pose_a)"/>
+  </include>
 
   <!--  ********* Perception and manipulation *********  -->
   <include file="$(find thorp_perception)/launch/perception.launch">
@@ -38,29 +58,16 @@ Explore the entire environment gathering all tabletop objects of the requested t
   </include>
 
   <include file="$(find thorp_manipulation)/launch/manipulation.launch">
-    <arg name="simulation" value="true"/>
+    <arg name="simulation" value="$(eval simulator != 'none')"/>
     <arg name="debug" value="false"/>
   </include>
-
-
-  <!--  ****************** Utilities ******************  -->
-
 
   <!--  ****** IPA coverage planning using xtion ******  -->
   <include file="$(find thorp_bringup)/launch/includes/exploration.launch.xml">
     <arg name="camera" value="xtion"/>
   </include>
 
-
-  <!--  ******* Components common for all apps ********  -->
-
-  <include file="$(find thorp_apps)/launch/includes/apps_common.launch.xml">
-    <arg name="app_name" value="$(arg app_name)"/>
-    <arg name="viz_smach" value="$(arg viz_smach)"/>
-    <arg name="start_delay" value="$(arg start_delay)"/>
-    <arg name="record_video" value="$(arg record_video)"/>
-  </include>
-
-  <node name="rviz" pkg="rviz" type="rviz" output="screen" respawn="true"
+  <!-- Run RViz showing both exploration and manipulation displays -->
+  <node pkg="rviz" type="rviz" name="rviz" output="screen" respawn="true"
         args="-d $(find thorp_bringup)/rviz/gathering.rviz"/>
 </launch>

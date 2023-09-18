@@ -1,5 +1,6 @@
 <!--
   Nodes common to all apps:
+  - Thorp robot (real or simulated)
   - executive smach
   - optional smach visualization
   - optional video recording
@@ -7,9 +8,33 @@
 
 <launch>
   <arg name="app_name"/>
-  <arg name="viz_smach" default="false"/>
-  <arg name="start_delay" default="0.0"/>
-  <arg name="record_video" default="false"/>
+  <arg name="simulator"      default="none"/>  <!-- none | stage | gazebo | stdr -->
+  <arg name="world_name"     default="playground"/>
+  <arg name="initial_pose_x" default="0.0"/>
+  <arg name="initial_pose_y" default="0.0"/>
+  <arg name="initial_pose_a" default="0.0"/>
+  <arg name="viz_smach"      default="false"/>
+  <arg name="start_delay"    default="0.0"/>
+  <arg name="record_video"   default="false"/>
+
+  <group if="$(eval simulator == 'none')">
+    <!--  ********** Thorp robot standalone ***********  -->
+    <include file="$(find thorp_bringup)/launch/thorp_robot.launch"/>
+  </group>
+
+  <group if="$(eval simulator != 'none')">
+    <!--  ***** Simulated mobile manipulator Thorp ******  -->
+    <include file="$(find thorp_simulation)/launch/thorp_$(arg simulator).launch">
+      <arg name="world_name"     value="$(arg world_name)"/>
+      <arg name="initial_pose_x" value="$(arg initial_pose_x)"/>
+      <arg name="initial_pose_y" value="$(arg initial_pose_y)"/>
+      <arg name="initial_pose_a" value="$(arg initial_pose_a)"/>
+    </include>
+
+    <include file="$(find thorp_bringup)/launch/includes/state_publisher.launch.xml">
+      <arg name="simulation" value="true"/>
+    </include>
+  </group>
 
   <!--  ****** Executive smach and visualization ******  -->
   <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="false">

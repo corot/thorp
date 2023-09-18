@@ -19,7 +19,7 @@
 
   <!-- Name of the map to use (without path nor extension) and initial position -->
   <arg name="map_name"        default="home"/>
-  <arg name="map_file"        default="$(find thorp_navigation)/resources/maps/$(arg map_name).yaml"/>
+  <arg name="map_file"        default="$(find thorp_navigation)/maps/$(arg map_name).yaml"/>
   <arg name="initial_pose_x"  default="0.0"/>
   <arg name="initial_pose_y"  default="0.0"/>
   <arg name="initial_pose_a"  default="0.0"/>
@@ -49,7 +49,7 @@
   <node pkg="nodelet" type="nodelet" name="follow_smoother" output="screen" respawn="true"
         args="load yocs_velocity_smoother/VelocitySmootherNodelet mobile_base_nodelet_manager">
     <!-- TODO: gazebo smoother params: much faster deceleration to avoid overturning -->
-    <rosparam file="$(find thorp_bringup)/param/vel_smoother_gazebo.yaml" command="load"/>
+    <rosparam file="$(find thorp_navigation)/param/vel_smoother_gazebo.yaml" command="load"/>
     <remap from="follow_smoother/smooth_cmd_vel" to="/cmd_vel_mux/input/following"/>
     <remap from="follow_smoother/robot_cmd_vel" to="/mobile_base/commands/velocity"/>
     <remap from="follow_smoother/odometry" to="/odom"/>

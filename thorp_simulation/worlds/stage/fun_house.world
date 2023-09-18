@@ -30,7 +30,7 @@ window
 floorplan
 (
   name "fun_house"
-  bitmap "../maps/fun_house.png"
+  bitmap "../../../thorp_navigation/maps/fun_house.png"
   size [ 15.0 10.95 0.35 ]    # Z must be < 0.4, so we can select the robot to move it around
   pose [ 7.5 5.47 0.0 0.0 ]
 )
