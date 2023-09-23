@@ -24,7 +24,7 @@
 
   <!-- Start the arm trajectory controller -->
   <node ns="$(arg dynamixel_namespace)"
-        pkg="dynamixel_controllers" type="controller_spawner.py" name="arm_controller_spawner" output="screen" 
+        pkg="dynamixel_controllers" type="controller_spawner.py" name="arm_controller_spawner" output="screen"
         args="--manager=dynamixel_manager
               --type=meta
               arm_controller
@@ -35,7 +35,7 @@
 
   <!-- Start all AX12 joint controllers -->
   <node ns="$(arg dynamixel_namespace)"
-        pkg="dynamixel_controllers" type="controller_spawner.py" name="ax12_controllers_spawner" output="screen" 
+        pkg="dynamixel_controllers" type="controller_spawner.py" name="ax12_controllers_spawner" output="screen"
         args="--manager=dynamixel_manager
               --port=dynamixel_usb2ax
               --type=simple

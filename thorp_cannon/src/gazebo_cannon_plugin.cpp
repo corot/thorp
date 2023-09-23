@@ -1,15 +1,10 @@
-#include <unistd.h>
-#include <boost/bind.hpp>
-
 #include <ros/ros.h>
 
 #include <gazebo/physics/World.hh>
 #include <gazebo/physics/Model.hh>
 #include <gazebo/physics/Link.hh>
-#include <gazebo/physics/physics.hh>
 
 #include <gazebo/gazebo.hh>
-#include <gazebo/common/common.hh>
 
 #include <ignition/math/Pose3.hh>
 #include <ignition/math/Vector3.hh>

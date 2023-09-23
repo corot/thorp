@@ -20,8 +20,4 @@
   <depend>arbotix_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>thorp_msgs</depend>
-
-  <export>
-    <gazebo_ros plugin_path="${prefix}/lib" gazebo_media_path="${prefix}"/>
-  </export>
 </package>

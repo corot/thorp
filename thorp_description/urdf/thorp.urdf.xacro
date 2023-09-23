@@ -227,14 +227,14 @@
     <!-- Ideal extrinsic parameters obtained from robot model -->
     <xacro:if value="$(arg simulation)">
       <origin xyz="0.022 0.003 0.002" rpy="0.0 0.694626 0.0"/>
-      <origin xyz="-0.015 -0.018 0.004" rpy="0.0 0.0 0.0"/>    <!-- Visual origin -->
+      <origin xyz="-0.011 -0.022 0.0" rpy="${M_PI/2} 0.0 ${M_PI/2}"/>    <!-- make the camera 3D model match -->
     </xacro:if>
     <!-- Extrinsic parameters obtained by fitting the visible pc to robot model -->
     <xacro:unless value="$(arg simulation)">
       <origin xyz="-0.012 0.0065 -0.012" rpy="0.0 0.697357 0.0"/>
 
-      <!-- Visual origin corrections: undo the rotations for better aesthetics  -->
-      <origin xyz="0.0005 0.0 0.0365" rpy="0.0 0.0 0.0"/>
+      <!-- Visual origin corrections to make the camera 3D model match -->
+      <origin xyz="0.008 -0.025 0.033" rpy="${M_PI/2} 0.0 ${M_PI/2}"/>
     </xacro:unless>
   </xacro:xtion_camera>
 

@@ -37,8 +37,9 @@ def wait_for_mbf():
     """
     Wait for Move Base Flex's move_base action (the last to be started) getting available
     """
-    mb_ac = actionlib.SimpleActionClient("/move_base_flex/move_base", mbf_msgs.MoveBaseAction)
-    available = mb_ac.wait_for_server(rospy.Duration(30))
-    if not available:
-        rospy.logwarn("Move Base Flex not available after 30 seconds")
-    return available
+    if rospy.get_param('/move_base_flex', False):
+        mb_ac = actionlib.SimpleActionClient("/move_base_flex/move_base", mbf_msgs.MoveBaseAction)
+        if not mb_ac.wait_for_server(rospy.Duration(30)):
+            rospy.logwarn("Move Base Flex not available after 30 seconds")
+            return False
+    return True

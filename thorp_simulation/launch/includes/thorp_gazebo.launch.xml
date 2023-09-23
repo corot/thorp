@@ -4,10 +4,6 @@
   <arg name="initial_pose_a" default="0.0"/>
   <arg name="spawn_delay"    default="5.0"/>  <!-- delay model spawning to give gazebo time to start -->
 
-  <include file="$(find thorp_bringup)/launch/includes/state_publisher.launch.xml">
-    <arg name="simulation" value="true"/>
-  </include>
-
   <!-- Spawn thorp gazebo model with the arm on resting state -->
   <node name="spawn_thorp_model" pkg="gazebo_ros" type="spawn_model" output="screen"
         args="-urdf -param robot_description -model thorp

@@ -20,8 +20,7 @@ catkin_package(
         arbotix_msgs
 )
 
-link_directories(${GAZEBO_LIBRARY_DIRS})
-include_directories(${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS} ${GAZEBO_INCLUDE_DIRS})
+include_directories(${catkin_INCLUDE_DIRS} ${GAZEBO_INCLUDE_DIRS})
 
 # For particle_shooter_plugin plugin
 add_library(gazebo_cannon_plugin src/gazebo_cannon_plugin.cpp)

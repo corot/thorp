@@ -1,0 +1,61 @@
+<!--
+  Thorp's explore house app:
+  First segment map into rooms and plan visit sequence; then we iterate
+  over all rooms and explore them following the planned sequence.
+
+  Requirements:
+  - Navigation
+  - IPA coverage planning
+ -->
+
+<launch>
+  <arg name="app_name"       value="explore_house"/>
+  <arg name="simulator"      default="none"/>  <!-- none | stage | gazebo -->
+  <arg name="viz_smach"      default="false"/>
+  <arg name="start_delay"    default="0.0"/>
+  <arg name="record_video"   default="false"/>
+  <arg name="world_name"     default="fun_house"/>
+  <arg name="localization"   default="amcl"/>    <!-- amcl, static, gazebo -->
+  <arg name="initial_pose_x" default="8.5"/>
+  <arg name="initial_pose_y" default="6.0"/>
+  <arg name="initial_pose_a" default="0.0"/>
+
+  <!-- App-specific parameters -->
+  <arg name="camera"         default="kinect"/>  <!-- kinect | xtion -->
+  <arg name="laps"           default="1"/>
+
+  <param name="$(arg app_name)_smach/laps" value="$(arg laps)"/>
+
+  <!--  ******* Components common for all apps ********  -->
+  <include file="$(find thorp_apps)/launch/includes/apps_common.launch.xml">
+    <arg name="app_name"       value="$(arg app_name)"/>
+    <arg name="simulator"      value="$(arg simulator)"/>
+    <arg name="world_name"     value="$(arg world_name)"/>
+    <arg name="initial_pose_x" value="$(arg initial_pose_x)"/>
+    <arg name="initial_pose_y" value="$(arg initial_pose_y)"/>
+    <arg name="initial_pose_a" value="$(arg initial_pose_a)"/>
+    <arg name="viz_smach"      value="$(arg viz_smach)"/>
+    <arg name="start_delay"    value="$(arg start_delay)"/>
+    <arg name="record_video"   value="$(arg record_video)"/>
+  </include>
+
+  <!--  ***************** Navigation ******************  -->
+  <include file="$(find thorp_navigation)/launch/navigation.launch">
+    <arg name="smooth_velocity" value="$(eval simulator == 'none')"/>
+    <arg name="save_robot_pose" value="$(eval simulator == 'none')"/>
+    <arg name="map_name"        value="$(arg world_name)"/>
+    <arg name="localization"    value="$(arg localization)"/>
+    <arg name="initial_pose_x"  value="$(arg initial_pose_x)"/>
+    <arg name="initial_pose_y"  value="$(arg initial_pose_y)"/>
+    <arg name="initial_pose_a"  value="$(arg initial_pose_a)"/>
+  </include>
+
+  <!--  ************ IPA coverage planning ************  -->
+  <include file="$(find thorp_bringup)/launch/includes/exploration.launch.xml">
+    <arg name="camera" value="$(arg camera)"/>
+  </include>
+
+  <!-- Run RViz showing exploration and navigation displays -->
+  <node pkg="rviz" type="rviz" name="rviz" output="screen" respawn="true"
+        args="-d $(find thorp_bringup)/rviz/exploration.rviz"/>
+</launch>

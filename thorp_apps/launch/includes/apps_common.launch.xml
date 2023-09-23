@@ -1,0 +1,58 @@
+<!--
+  Nodes common to all apps:
+  - Thorp robot (real or simulated)
+  - executive smach
+  - optional smach visualization
+  - optional video recording
+ -->
+
+<launch>
+  <arg name="app_name"/>
+  <arg name="simulator"      default="none"/>  <!-- none | stage | gazebo | stdr -->
+  <arg name="world_name"     default="playground"/>
+  <arg name="initial_pose_x" default="0.0"/>
+  <arg name="initial_pose_y" default="0.0"/>
+  <arg name="initial_pose_a" default="0.0"/>
+  <arg name="viz_smach"      default="false"/>
+  <arg name="start_delay"    default="0.0"/>
+  <arg name="record_video"   default="false"/>
+
+  <group if="$(eval simulator == 'none')">
+    <!--  ********** Thorp robot standalone ***********  -->
+    <include file="$(find thorp_bringup)/launch/thorp_robot.launch"/>
+  </group>
+
+  <group if="$(eval simulator != 'none')">
+    <!--  ***** Simulated mobile manipulator Thorp ******  -->
+    <include file="$(find thorp_simulation)/launch/thorp_$(arg simulator).launch">
+      <arg name="world_name"     value="$(arg world_name)"/>
+      <arg name="initial_pose_x" value="$(arg initial_pose_x)"/>
+      <arg name="initial_pose_y" value="$(arg initial_pose_y)"/>
+      <arg name="initial_pose_a" value="$(arg initial_pose_a)"/>
+    </include>
+
+    <include file="$(find thorp_bringup)/launch/includes/state_publisher.launch.xml">
+      <arg name="simulation" value="true"/>
+    </include>
+  </group>
+
+  <!--  ****** Executive smach and visualization ******  -->
+  <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="false">
+    <param name="app_name" value="$(arg app_name)"/>
+    <param name="start_delay" value="$(arg start_delay)"/>
+    <param name="run_introspection_server" value="$(eval arg('viz_smach') or arg('record_video'))"/>
+  </node>
+
+  <node if="$(arg viz_smach)"
+       pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
+
+  <!--  *************** Video recording ***************  -->
+  <group if="$(arg record_video)">
+    <node pkg="thorp_simulation" type="gazebo_camera_control" name="gz_camera_control"/>
+
+    <node pkg="thorp_apps" type="movie_director.py" name="movie_director">
+      <param name="app_name" value="$(arg app_name)"/>
+      <param name="script_path" value="$(eval find('thorp_apps')+'/resources/movie_scripts/' + arg('app_name') + '.yaml')"/>
+    </node>
+  </group>
+</launch>

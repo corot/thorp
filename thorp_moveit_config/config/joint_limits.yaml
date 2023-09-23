@@ -2,6 +2,8 @@
 
 default_velocity_scaling_factor: 1.0
 default_acceleration_scaling_factor: 1.0
+shape_transform_cache_lookup_wait_time: 0.2
+
 
 # Specific joint properties can be changed with the keys [max_position, min_position, max_velocity, max_acceleration]
 # Joint limits can be turned off with [has_velocity_limits, has_acceleration_limits]

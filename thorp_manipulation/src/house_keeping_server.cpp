@@ -24,7 +24,7 @@ HouseKeepingServer::HouseKeepingServer()
   obj_attached_srv_   = nh.advertiseService("obj_attached", &HouseKeepingServer::objAttachedCB, this);
   gripper_busy_srv_   = nh.advertiseService("gripper_busy", &HouseKeepingServer::gripperBusyCB, this);
   grasp_events_sub_   = nh.subscribe("gazebo/grasp_events", 1, &HouseKeepingServer::graspEventCB, this);
-  // Get default planning scene so I can restore it after temporal changes
+  // Get default planning scene, so I can restore it after temporal changes
   planning_scene_srv_ = nh.serviceClient<moveit_msgs::GetPlanningScene>("get_planning_scene");
   if (planning_scene_srv_.waitForExistence(ros::Duration(30.0)))
   {
@@ -177,26 +177,30 @@ bool HouseKeepingServer::objAttachedCB(std_srvs::TriggerRequest &request, std_sr
 
 bool HouseKeepingServer::gripperBusyCB(std_srvs::TriggerRequest &request, std_srvs::TriggerResponse &response)
 {
-  // Physical check for simulation TODO: add physical check for the real robot
-  if (last_grasp_event_.object.empty())
+  if (grasp_events_sub_.getNumPublishers() > 0)
   {
-    ROS_WARN("No gazebo grasp events received");
-    response.success = false;
+    // Virtual check based on events for simulation
+    if (last_grasp_event_.object.empty())
+    {
+      ROS_WARN("No gazebo grasp events received");
+      response.success = false;
+    }
+    else if (!last_grasp_event_.attached)
+    {
+      ROS_INFO("Last gazebo grasp event was detached");
+      response.success = false;
+    }
+    else
+    {
+      ROS_INFO("Object %s attached to %s", last_grasp_event_.object.c_str(), last_grasp_event_.arm.c_str());
+      response.success = true;
+      response.message = last_grasp_event_.object;
+    }
+    return true;
   }
-  else if (!last_grasp_event_.attached)
-  {
-    ROS_INFO("Last gazebo grasp event was detached");
-    response.success = false;
-  }
-  else
-  {
-    ROS_INFO("Object %s attached to %s", last_grasp_event_.object.c_str(), last_grasp_event_.arm.c_str());
-    response.success = true;
-    response.message = last_grasp_event_.object;
-  }
-  return true;
 
-
+/*
+  TODO: add physical check for the real robot
   // Check if we are holding an object by closing a bit the gripper and measuring if joint effort increases  TODO: enable
   double opening_before = joint_state_watchdog_.gripperOpening();
   double effort_before = joint_state_watchdog_.gripperEffort();
@@ -205,6 +209,8 @@ bool HouseKeepingServer::gripperBusyCB(std_srvs::TriggerRequest &request, std_sr
   double effort_after = joint_state_watchdog_.gripperEffort();
 
   bool gripper_busy = (effort_before - effort_after) > 0.01;
+  */
+  bool gripper_busy = !attached_object.empty();
   response.success = gripper_busy;
   response.message = attached_object;
 
@@ -222,9 +228,11 @@ bool HouseKeepingServer::gripperBusyCB(std_srvs::TriggerRequest &request, std_sr
              !attached_object.empty() ? ("but we have an object attached: " + attached_object).c_str() : "");
 
   // restore gripper original opening
-  setGripper(opening_before, false);
-
-  return gripper_result;
+  /*
+   setGripper(opening_before, false);
+   return gripper_result;
+   */
+  return true;
 }
 
 void HouseKeepingServer::graspEventCB(const gazebo_grasp_plugin_ros::GazeboGraspEvent& event)

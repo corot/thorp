@@ -1,0 +1,61 @@
+<!--
+  Thorp's object manipulation app:
+  Pickup and place tabletop objects.
+
+  Requirements:
+  - Perception and manipulation
+  - Keyboard user interaction
+ -->
+
+<launch>
+  <arg name="app_name"     value="object_manip"/>
+  <arg name="simulator"    default="none"/>  <!-- none | gazebo -->
+  <arg name="viz_smach"    default="false"/>
+  <arg name="start_delay"  default="0.0"/>
+  <arg name="record_video" default="false"/>
+
+  <!--  ******* Components common for all apps ********  -->
+  <include file="$(find thorp_apps)/launch/includes/apps_common.launch.xml">
+    <arg name="app_name"     value="$(arg app_name)"/>
+    <arg name="simulator"    value="$(arg simulator)"/>
+    <arg name="viz_smach"    value="$(arg viz_smach)"/>
+    <arg name="start_delay"  value="$(arg start_delay)"/>
+    <arg name="record_video" value="$(arg record_video)"/>
+  </include>
+
+  <group if="$(eval simulator == 'none')">
+    <!--  As we are not (yet) running navigation and localization, fake global reference to make Moveit octomap happy  -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="fake_global_reference" output="screen" respawn="true"
+          args="0.0 0.0 0.0 0.0 0.0 0.0 map odom"/>
+  </group>
+
+  <group if="$(eval simulator != 'none')">
+    <!-- Spawn a table with some tabletop objects -->
+    <node pkg="thorp_simulation" type="spawn_gazebo_models.py" name="objects_spawner" output="screen" args="playground_objs"/>
+  </group>
+
+  <!--  ********* Perception and manipulation *********  -->
+  <include file="$(find thorp_perception)/launch/perception.launch">
+    <arg name="pipeline" value="RAIL"/>
+  </include>
+
+  <include file="$(find thorp_manipulation)/launch/manipulation.launch">
+    <arg name="simulation" value="$(eval simulator != 'none')"/>
+    <arg name="debug" value="false"/>
+  </include>
+
+  <!--  ********** Keyboard user interaction **********  -->
+  <!-- We do it required, so it will shut down the whole demo on exit -->
+  <node pkg="thorp_bringup" type="keyboard_ctrl.py" name="$(arg app_name)_key_ctrl" output="screen" required="true"
+        args="$(arg app_name)">
+    <param name="window_geometry" value="360x240"/>
+    <param name="window_caption" value="Object manipulation user commands"/>
+    <param name="text_font" value="Comic Sans MS"/>
+    <param name="font_size" value="12"/>
+    <rosparam param="valid_commands">['start', 'stop', 'reset', 'clear', 'fold']</rosparam>
+  </node>
+
+  <!-- Run RViz and load the default config to see the state of the move_group node and the scene interaction markers -->
+  <node pkg="rviz" type="rviz" name="rviz" output="screen" respawn="true"
+        args="-d $(find thorp_bringup)/rviz/manipulation.rviz"/>
+</launch>
