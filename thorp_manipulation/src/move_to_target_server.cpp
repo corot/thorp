@@ -83,7 +83,7 @@ int32_t MoveToTargetServer::moveArmTo(const std::string& target)
     return thorp_msgs::ThorpError::INVALID_NAMED_TARGET;
   }
 
-  moveit::planning_interface::MoveItErrorCode result = arm().move();
+  moveit::core::MoveItErrorCode result = arm().move();
   if (result)
   {
     ROS_INFO("[move to target] Move to target '%s' completed", target.c_str());
@@ -91,7 +91,7 @@ int32_t MoveToTargetServer::moveArmTo(const std::string& target)
   else if (preempted_)
   {
     ROS_WARN("[move to target] Move to target '%s' preempted", target.c_str());
-    result.val = moveit::planning_interface::MoveItErrorCode::PREEMPTED;
+    result.val = moveit::core::MoveItErrorCode::PREEMPTED;
   }
   else
   {
@@ -110,7 +110,7 @@ int32_t MoveToTargetServer::moveArmTo(const sensor_msgs::JointState& target)
     return thorp_msgs::ThorpError::INVALID_JOINT_STATE;
   }
 
-  moveit::planning_interface::MoveItErrorCode result = arm().move();
+  moveit::core::MoveItErrorCode result = arm().move();
   if (result)
   {
     ROS_INFO("[move to target] Move to joint value target completed");
@@ -118,7 +118,7 @@ int32_t MoveToTargetServer::moveArmTo(const sensor_msgs::JointState& target)
   else if (preempted_)
   {
     ROS_WARN("[move to target] Move to joint value target preempted");
-    result.val = moveit::planning_interface::MoveItErrorCode::PREEMPTED;
+    result.val = moveit::core::MoveItErrorCode::PREEMPTED;
   }
   else
   {
@@ -145,7 +145,7 @@ int32_t MoveToTargetServer::moveArmTo(const geometry_msgs::PoseStamped& target)
     return thorp_msgs::ThorpError::INVALID_TARGET_POSE;
   }
 
-  moveit::planning_interface::MoveItErrorCode result = arm().move();
+  moveit::core::MoveItErrorCode result = arm().move();
   if (result)
   {
     ROS_INFO("[move to target] Move to target [%s] completed", ttk::pose2cstr3D(modiff_target.pose));
@@ -153,7 +153,7 @@ int32_t MoveToTargetServer::moveArmTo(const geometry_msgs::PoseStamped& target)
   else if (preempted_)
   {
     ROS_WARN("[move to target] Move to target [%s] preempted", ttk::pose2cstr3D(modiff_target.pose));
-    result.val = moveit::planning_interface::MoveItErrorCode::PREEMPTED;
+    result.val = moveit::core::MoveItErrorCode::PREEMPTED;
   }
   else
   {

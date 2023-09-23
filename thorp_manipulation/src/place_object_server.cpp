@@ -114,12 +114,12 @@ int32_t PlaceObjectServer::place(const std::string& obj_name, const std::string&
   // Allow replanning to increase the odds of a solution
   arm().allowReplanning(true);
 
-  moveit::planning_interface::MoveItErrorCode place_result = arm().place(goal);
+  moveit::core::MoveItErrorCode place_result = arm().place(goal);
 
   if (preempted_)
   {
     ROS_WARN("[place object] Place action preempted");
-    return moveit::planning_interface::MoveItErrorCode::PREEMPTED;
+    return moveit::core::MoveItErrorCode::PREEMPTED;
   }
 
   if (place_result)
@@ -146,7 +146,7 @@ int32_t PlaceObjectServer::makePlaceLocations(const geometry_msgs::PoseStamped& 
   // More details on this issue: https://github.com/ros-planning/moveit_ros/issues/577
   geometry_msgs::PoseStamped obj_pose_eef;
   if (bool success = ttk::TF2::instance().transformPose(arm().getEndEffectorLink(), obj_pose, obj_pose_eef); !success)
-    return moveit::planning_interface::MoveItErrorCode::INVALID_LINK_NAME;
+    return moveit::core::MoveItErrorCode::INVALID_LINK_NAME;
 
   tf::Transform place_tf, aco_tf;
   tf::poseMsgToTF(obj_pose_eef.pose, aco_tf);

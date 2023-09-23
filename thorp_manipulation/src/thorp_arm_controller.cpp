@@ -24,7 +24,7 @@ bool ThorpArmController::setGripper(double opening, bool wait_for_complete)
     return false;
   }
 
-  moveit::planning_interface::MoveItErrorCode result = wait_for_complete ? gripper().move() : gripper().asyncMove();
+  moveit::core::MoveItErrorCode result = wait_for_complete ? gripper().move() : gripper().asyncMove();
   if (result)
   {
     return true;

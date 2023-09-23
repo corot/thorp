@@ -71,7 +71,7 @@ bool HouseKeepingServer::forceRestingCB(std_srvs::EmptyRequest &request, std_srv
   {
     if (arm().setNamedTarget("resting"))
     {
-      moveit::planning_interface::MoveItErrorCode result = arm().move();
+      moveit::core::MoveItErrorCode result = arm().move();
       if (result)
       {
         ROS_INFO("[house keeping] Move to target 'resting' completed");

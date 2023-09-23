@@ -151,12 +151,12 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
   // Allow replanning to increase the odds of a solution
   arm().allowReplanning(true);
 
-  moveit::planning_interface::MoveItErrorCode pick_result = arm().pick(goal);
+  moveit::core::MoveItErrorCode pick_result = arm().pick(goal);
 
   if (preempted_)
   {
     ROS_WARN("[pickup object] Pick action preempted");
-    return moveit::planning_interface::MoveItErrorCode::PREEMPTED;
+    return moveit::core::MoveItErrorCode::PREEMPTED;
   }
 
   if (pick_result)

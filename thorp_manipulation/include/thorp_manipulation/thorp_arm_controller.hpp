@@ -116,7 +116,7 @@ protected:
    * @param mec MoveIt error code
    * @return meaningful text
    */
-  inline const char* mec2str(const moveit::planning_interface::MoveItErrorCode& mec)
+  inline const char* mec2str(const moveit::core::MoveItErrorCode& mec)
   {
     return mec2str(mec.val);
   }
@@ -140,53 +140,53 @@ protected:
   {
     switch (error_code)
     {
-      case moveit::planning_interface::MoveItErrorCode::SUCCESS:
+      case moveit::core::MoveItErrorCode::SUCCESS:
         return "success";
-      case moveit::planning_interface::MoveItErrorCode::FAILURE:
+      case moveit::core::MoveItErrorCode::FAILURE:
         return "failure";
-      case moveit::planning_interface::MoveItErrorCode::PLANNING_FAILED:
+      case moveit::core::MoveItErrorCode::PLANNING_FAILED:
         return "planning failed";
-      case moveit::planning_interface::MoveItErrorCode::INVALID_MOTION_PLAN:
+      case moveit::core::MoveItErrorCode::INVALID_MOTION_PLAN:
         return "invalid motion plan";
-      case moveit::planning_interface::MoveItErrorCode::MOTION_PLAN_INVALIDATED_BY_ENVIRONMENT_CHANGE:
+      case moveit::core::MoveItErrorCode::MOTION_PLAN_INVALIDATED_BY_ENVIRONMENT_CHANGE:
         return "motion plan invalidated by environment change";
-      case moveit::planning_interface::MoveItErrorCode::CONTROL_FAILED:
+      case moveit::core::MoveItErrorCode::CONTROL_FAILED:
         return "control failed";
-      case moveit::planning_interface::MoveItErrorCode::UNABLE_TO_AQUIRE_SENSOR_DATA:
+      case moveit::core::MoveItErrorCode::UNABLE_TO_AQUIRE_SENSOR_DATA:
         return "unable to acquire sensor data";
-      case moveit::planning_interface::MoveItErrorCode::TIMED_OUT:
+      case moveit::core::MoveItErrorCode::TIMED_OUT:
         return "timed out";
-      case moveit::planning_interface::MoveItErrorCode::PREEMPTED:
+      case moveit::core::MoveItErrorCode::PREEMPTED:
         return "preempted";
-      case moveit::planning_interface::MoveItErrorCode::START_STATE_IN_COLLISION:
+      case moveit::core::MoveItErrorCode::START_STATE_IN_COLLISION:
         return "start state in collision";
-      case moveit::planning_interface::MoveItErrorCode::START_STATE_VIOLATES_PATH_CONSTRAINTS:
+      case moveit::core::MoveItErrorCode::START_STATE_VIOLATES_PATH_CONSTRAINTS:
         return "start state violates path constraints";
-      case moveit::planning_interface::MoveItErrorCode::GOAL_IN_COLLISION:
+      case moveit::core::MoveItErrorCode::GOAL_IN_COLLISION:
         return "goal in collision";
-      case moveit::planning_interface::MoveItErrorCode::GOAL_VIOLATES_PATH_CONSTRAINTS:
+      case moveit::core::MoveItErrorCode::GOAL_VIOLATES_PATH_CONSTRAINTS:
         return "goal violates path constraints";
-      case moveit::planning_interface::MoveItErrorCode::GOAL_CONSTRAINTS_VIOLATED:
+      case moveit::core::MoveItErrorCode::GOAL_CONSTRAINTS_VIOLATED:
         return "goal constraints violated";
-      case moveit::planning_interface::MoveItErrorCode::INVALID_GROUP_NAME:
+      case moveit::core::MoveItErrorCode::INVALID_GROUP_NAME:
         return "invalid group name";
-      case moveit::planning_interface::MoveItErrorCode::INVALID_GOAL_CONSTRAINTS:
+      case moveit::core::MoveItErrorCode::INVALID_GOAL_CONSTRAINTS:
         return "invalid goal constraints";
-      case moveit::planning_interface::MoveItErrorCode::INVALID_ROBOT_STATE:
+      case moveit::core::MoveItErrorCode::INVALID_ROBOT_STATE:
         return "invalid robot state";
-      case moveit::planning_interface::MoveItErrorCode::INVALID_LINK_NAME:
+      case moveit::core::MoveItErrorCode::INVALID_LINK_NAME:
         return "invalid link name";
-      case moveit::planning_interface::MoveItErrorCode::INVALID_OBJECT_NAME:
+      case moveit::core::MoveItErrorCode::INVALID_OBJECT_NAME:
         return "invalid object name";
-      case moveit::planning_interface::MoveItErrorCode::FRAME_TRANSFORM_FAILURE:
+      case moveit::core::MoveItErrorCode::FRAME_TRANSFORM_FAILURE:
         return "frame transform failure";
-      case moveit::planning_interface::MoveItErrorCode::COLLISION_CHECKING_UNAVAILABLE:
+      case moveit::core::MoveItErrorCode::COLLISION_CHECKING_UNAVAILABLE:
         return "collision checking unavailable";
-      case moveit::planning_interface::MoveItErrorCode::ROBOT_STATE_STALE:
+      case moveit::core::MoveItErrorCode::ROBOT_STATE_STALE:
         return "robot state stale";
-      case moveit::planning_interface::MoveItErrorCode::SENSOR_INFO_STALE:
+      case moveit::core::MoveItErrorCode::SENSOR_INFO_STALE:
         return "sensor info stale";
-      case moveit::planning_interface::MoveItErrorCode::NO_IK_SOLUTION:
+      case moveit::core::MoveItErrorCode::NO_IK_SOLUTION:
         return "no ik solution";
 
       case thorp_msgs::ThorpError::OBJECT_NOT_FOUND:
