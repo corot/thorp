@@ -124,10 +124,17 @@ def close_to_prev_pose(pose, added_poses, min_dist):
 
 
 def close_to_obstacle(x, y, theta, clearance):
+    if not hasattr(close_to_obstacle, 'check_srv'):
+        # we need MBF's check pose service to ensure that the spawned objects are in open spaces
+        close_to_obstacle.check_srv = rospy.ServiceProxy('move_base_flex/check_pose_cost', CheckPose, persistent=True)
+        close_to_obstacle.check_srv.wait_for_service(10)
+        close_to_obstacle.robot_radius = rospy.get_param('move_base_flex/global_costmap/robot_radius')
+
     # check if the location is away from any non-zero cost in the global costmap by at least the given clearance
     # (we need to subtract robot radius because check pose service assumes we want to check the footprint cost)
-    resp = check_pose_srv(pose=create_2d_pose(x, y, theta, 'map'), safety_dist=clearance - robot_radius,
-                          costmap=CheckPoseRequest.GLOBAL_COSTMAP)
+    resp = close_to_obstacle.check_srv(pose=create_2d_pose(x, y, theta, 'map'),
+                                       safety_dist=clearance - close_to_obstacle.robot_radius,
+                                       costmap=CheckPoseRequest.GLOBAL_COSTMAP)
     if resp.state > 0 or resp.cost > 0:
         return True
     return False
@@ -316,14 +323,9 @@ if __name__ == "__main__":
     max_x = map_metadata.origin.position.x + map_metadata.width * map_metadata.resolution
     max_y = map_metadata.origin.position.y + map_metadata.height * map_metadata.resolution
 
-    # we will use MBF's check pose service to ensure that the spawned surfaces are in open spaces
-    check_pose_srv = rospy.ServiceProxy('move_base_flex/check_pose_cost', CheckPose, persistent=True)
-    check_pose_srv.wait_for_service(10)
-
     load_models()
 
     robot_pose = TF2().transform_pose(None, 'base_footprint', 'map')
-    robot_radius = rospy.get_param('move_base_flex/local_costmap/robot_radius')
 
     random.seed()
     use_preferred_locs = len(sys.argv) > 2 and '-l' in sys.argv
