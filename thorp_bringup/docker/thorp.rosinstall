@@ -144,22 +144,12 @@
 
 # Install cob_perception_common from debs
 
-# Manipulation stacks: all from debs (geometric_shapes, moveit and moveit_msgs)
-# TODO: use my MoveIt! fork with the fix for issue https://github.com/ros-planning/moveit/issues/3007
-#- git:
-#    local-name: geometric_shapes
-#    uri: https://github.com/ros-planning/geometric_shapes.git
-#    version: noetic-devel
-#
-#- git:
-#    local-name: moveit
-#    uri: https://github.com/ros-planning/moveit.git
-#    version: master
-#
-#- git:
-#    local-name: moveit_msgs
-#    uri: https://github.com/ros-planning/moveit_msgs.git
-#    version: master
+# Manipulation stacks:
+# TODO: we need moveit core until the fix for issue https://github.com/ros-planning/moveit/issues/3007 gets released
+- git:
+    local-name: moveit
+    uri: https://github.com/ros-planning/moveit.git
+    version: noetic-devel
 
 # Rviz plugins
 

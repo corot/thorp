@@ -10,14 +10,14 @@ Example apps
 
 Cat hunter: explore the entire environment searching for cats, and attack them whenever found.
 ```
-roslaunch thorp_simulation cat_hunter.launch cat_models:='cat_orange cat_black'
+roslaunch thorp_apps cat_hunter.launch simulator:=gazebo cat_models:='cat_orange cat_black'
 ```
 
 [![Cat hunter](https://user-images.githubusercontent.com/322610/121386461-fb111980-c984-11eb-92e3-0e59c733f789.png)](https://youtu.be/ieW3BQabwLo "Cat hunter")
 
 Object gatherer: explore the entire environment gathering all tabletop objects of the requested types.
 ```
-roslaunch thorp_simulation object_gatherer.launch object_types:='cube circle pentagon'
+roslaunch thorp_apps object_gatherer.launch simulator:=gazebo object_types:='cube circle pentagon'
 ```
 [![Object gatherer](https://user-images.githubusercontent.com/322610/121390421-51338c00-c988-11eb-9bbf-e89d588018cb.png)](https://youtu.be/tneMk6kRPHU "Object gatherer")
 
@@ -78,35 +78,35 @@ Arm, sonars and IR sensors require a bit of extra work. Check their
 
 Available in [dockerhub](https://hub.docker.com/repository/docker/corot/thorp)
 
-:warning: Manipulation in noetic image doesn't work properly because of [this MoveIt! issue](https://github.com/ros-planning/moveit/issues/3007).
-Re-detected objects will be considered as new ones, and so collide with the previously added to planning scene.
-
 ```
-docker pull corot/thorp:melodic
+docker pull corot/thorp:noetic
 ```
 
 To build locally:
 
 ```
 cd ~/thorp/thorp_bringup/docker
-docker build -t thorp .
+docker build -t thorp:noetic .
 ```
 
 Run with rocker:
 
 ```
 pip install rocker
-rocker --privileged --pulse --nvidia --x11 thorp
+rocker --privileged --pulse --nvidia --x11 thorp:noetic
 ```
 
 or the pulled image:
 
 ```
-rocker --privileged --pulse --nvidia --x11 corot/thorp:melodic
+rocker --privileged --pulse --nvidia --x11 corot/thorp:noetic
 ```
 
-Once inside the docker, you can run any of the simulation apps, e.g.:
+Once inside the docker, you can run any of the apps in simulation, e.g.:
 
 ```
-roslaunch thorp_simulation thorp_stage.launch
+roslaunch thorp_apps cat_hunter.launch simulator:=gazebo
+roslaunch thorp_apps object_manip.launch simulator:=gazebo
+roslaunch thorp_apps object_gatherer.launch simulator:=gazebo
+roslaunch thorp_apps explore_house.launch simulator:=stage
 ```
