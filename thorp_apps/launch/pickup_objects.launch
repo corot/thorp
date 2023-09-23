@@ -22,11 +22,11 @@
     <arg name="record_video" value="$(arg record_video)"/>
   </include>
 
-  <group if="$(eval simulator == 'none')">
-    <!--  As we are not (yet) running navigation and localization, fake global reference to make Moveit octomap happy  -->
-    <node pkg="tf2_ros" type="static_transform_publisher" name="fake_global_reference" output="screen" respawn="true"
-          args="0.0 0.0 0.0 0.0 0.0 0.0 map odom"/>
-  </group>
+  <!--  As we are not running navigation, provide an empty map and a static global reference frame  -->
+  <node pkg="map_server" type="map_server" name="map_server" output="screen" respawn="true" args="$(find thorp_navigation)/maps/empty.yaml"/>
+
+  <node pkg="tf2_ros" type="static_transform_publisher" name="fake_global_reference" output="screen" respawn="true"
+        args="0.0 0.0 0.0 0.0 0.0 0.0 map odom"/>
 
   <group if="$(eval simulator != 'none')">
     <!-- Spawn a table with some tabletop objects -->
