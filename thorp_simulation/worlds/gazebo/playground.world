@@ -5,6 +5,7 @@
       <real_time_factor>1</real_time_factor>
       <real_time_update_rate>1000</real_time_update_rate>
       <max_contacts>10</max_contacts>
+      <gravity>0 0 -9.8</gravity>
       <ode>
         <solver>
           <type>quick</type>

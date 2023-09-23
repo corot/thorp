@@ -9,7 +9,7 @@
 <launch>
   <arg name="app_name"/>
   <arg name="simulator"      default="none"/>  <!-- none | stage | gazebo | stdr -->
-  <arg name="world_name"     default="playground"/>
+  <arg name="world_name"     default="empty"/>
   <arg name="initial_pose_x" default="0.0"/>
   <arg name="initial_pose_y" default="0.0"/>
   <arg name="initial_pose_a" default="0.0"/>
