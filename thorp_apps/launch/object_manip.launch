@@ -50,8 +50,8 @@
         args="$(arg app_name)">
     <param name="window_geometry" value="360x240"/>
     <param name="window_caption" value="Object manipulation user commands"/>
-    <param name="text_font" value="Comic Sans MS"/>
-    <param name="font_size" value="12"/>
+    <param name="text_font" value="Courier New"/>
+    <param name="font_size" value="14"/>
     <rosparam param="valid_commands">['start', 'stop', 'reset', 'clear', 'fold']</rosparam>
   </node>
 
