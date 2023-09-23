@@ -1,9 +1,14 @@
 <!--
   Nodes common to all simulators:
+  - robot state publisher
   - cmd_vel multiplexer
  -->
 
 <launch>
+  <include file="$(find thorp_bringup)/launch/includes/state_publisher.launch.xml">
+    <arg name="simulation" value="true"/>
+  </include>
+
   <!--  ******** Velocity commands multiplexer ********  -->
   <node pkg="nodelet" type="nodelet" name="mobile_base_nodelet_manager" args="manager"/>
   <node pkg="nodelet" type="nodelet" name="cmd_vel_mux" args="load yocs_cmd_vel_mux/CmdVelMuxNodelet mobile_base_nodelet_manager">
