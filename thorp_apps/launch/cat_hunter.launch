@@ -15,7 +15,7 @@
   <arg name="start_delay"    default="0.0"/>
   <arg name="record_video"   default="false"/>
   <arg name="world_name"     default="fun_house"/>
-  <arg name="localization"   default="amcl"/>    <!-- amcl, static, gazebo -->
+  <arg name="localization"   default="gazebo" if="$(eval simulator == 'gazebo')"/>
   <arg name="initial_pose_x" default="8.5"/>
   <arg name="initial_pose_y" default="6.0"/>
   <arg name="initial_pose_a" default="0.0"/>
@@ -50,6 +50,17 @@
       <param name="target_models" value="$(arg cat_models)"/>
     </node>
   </group>
+
+  <!--  ***************** Navigation ******************  -->
+  <include file="$(find thorp_navigation)/launch/navigation.launch">
+    <arg name="smooth_velocity" value="$(eval simulator == 'none')"/>
+    <arg name="save_robot_pose" value="$(eval simulator == 'none')"/>
+    <arg name="map_name"        value="$(arg world_name)"/>
+    <arg name="localization"    value="$(arg localization)"/>
+    <arg name="initial_pose_x"  value="$(arg initial_pose_x)"/>
+    <arg name="initial_pose_y"  value="$(arg initial_pose_y)"/>
+    <arg name="initial_pose_a"  value="$(arg initial_pose_a)"/>
+  </include>
 
   <!--  ***** Object recognition using the Kinect *****  -->
   <include file="$(find thorp_perception)/launch/perception.launch">
