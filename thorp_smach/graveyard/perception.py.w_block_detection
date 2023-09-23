@@ -6,12 +6,40 @@ import std_srvs.srv as std_srvs
 import thorp_msgs.msg as thorp_msgs
 import geometry_msgs.msg as geo_msgs
 
+from turtlebot_arm_block_manipulation.msg import BlockDetectionAction
 import cob_perception_msgs.msg as cob_msgs
 from rail_manipulation_msgs.srv import SegmentObjects
 
 from thorp_toolkit.geometry import point3d2str, pose2d2str, TF2, to_transform
 
 from .. import config as cfg
+
+
+class BlockDetection(smach_ros.SimpleActionState):
+    """
+    Block detection state:
+    use turtlebot_arm_block_manipulation demo's simple block detector
+    Deprecated: we prefer the more advance object detection
+    """
+
+    def __init__(self):
+        super(BlockDetection, self).__init__('block_detection',
+                                             BlockDetectionAction,
+                                             goal_cb=self.make_goal,
+                                             result_cb=self.result_cb,
+                                             output_keys=['blocks', 'objects', 'support_surf'])
+
+    def make_goal(self, ud, goal):
+        goal.frame = rospy.get_param('~arm_link', 'arm_base_link')
+        goal.table_height = rospy.get_param('~table_height', -0.03)
+        goal.block_size = rospy.get_param('~block_size', 0.025)
+
+    def result_cb(self, ud, status, result):
+        ud['blocks'] = result.blocks
+        ud['objects'] = result.blocks
+        # blocks only contains poses, so we need to invent values for 'object_names' and 'support_surf' fields
+        # the real ObjectDetection state will provide more detailed information
+        ud['support_surf'] = 'table'
 
 
 class ObjectDetection(smach_ros.SimpleActionState):

@@ -84,7 +84,7 @@ RUN rm -rf navigation/amcl \
            turtlebot_interactions/turtlebot_interactive_markers \
            turtlebot_interactions/turtlebot_rviz_launchers \
            turtlebot_arm/turtlebot_arm \
-          # turtlebot_arm/turtlebot_arm_block_manipulation   TODO: remove once I stop using on thorp_smach \
+           turtlebot_arm/turtlebot_arm_block_manipulation \
            turtlebot_arm/turtlebot_arm_kinect_calibration \
            turtlebot_arm/turtlebot_arm_moveit_demos \
            turtlebot_arm/turtlebot_arm_object_manipulation \
@@ -118,15 +118,13 @@ RUN pip install --upgrade pip bidict ratelimit matplotlib tensorflow
 
 # build catkin workspace and remove build to reduce image size
 WORKDIR /catkin_ws
-RUN source /opt/ros/$ROS_DISTRO/setup.bash && catkin build --cmake-args -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=17
+RUN source /opt/ros/$ROS_DISTRO/setup.bash && \
+    catkin build thorp_apps --cmake-args -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=17
 RUN rm -r build
 
 # setup runtime environment
 RUN echo "source /catkin_ws/devel/setup.bash" >> ~/.bashrc
 ENV ROSCONSOLE_FORMAT='[${node} ${severity} ${time}]: ${message}'
-
-# fix Gazebo error in REST request (https://answers.gazebosim.org//question/22263/error-in-rest-request-for-accessing-apiignitionorg)
-###COPY patch_ignition.yaml /root/.ignition/fuel/config.yaml
 
 # path to gazebo models
 ENV GAZEBO_MODEL_PATH=/catkin_ws/src/thorp/thorp_simulation/worlds/gazebo/models
