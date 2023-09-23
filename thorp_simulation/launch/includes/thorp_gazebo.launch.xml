@@ -36,6 +36,11 @@
     <arg name="simulation" value="true"/>
   </include>
 
+  <!-- Republish gazebo grasping events as ROS messages that manipulation can act upon -->
+  <node pkg="gazebo_grasp_plugin_ros" type="grasp_event_republisher" name="grasp_event_republisher" output="screen" respawn="true">
+    <remap from="~grasp_events" to="/gazebo/grasp_events"/>
+  </node>
+
   <!-- Fake laser from Kinect (2D slice) and Xtion (3D projection) -->
   <node pkg="depthimage_to_laserscan" type="depthimage_to_laserscan" name="depthimage_to_laserscan" output="screen" respawn="true">
     <rosparam file="$(find thorp_bringup)/param/kinect/depthimage_to_laserscan.yaml" command="load"/>
