@@ -24,7 +24,6 @@ from gazebo_msgs.srv import SpawnModel, DeleteModel
 
 from thorp_toolkit.geometry import TF2, distance_2d, create_2d_pose, create_3d_pose, pose2d2str
 
-
 surfaces = [{'name': 'doll_table',
              'size': (0.45, 0.45),
              'objs': 4,
@@ -216,7 +215,7 @@ def spawn_surfaces(use_preferred_locs=False):
 
             added_poses.append(pose)
             model = surf['name']
-            model_name = model + '_' + str(surf_index + 10)   # allow for some objects added by hand
+            model_name = model + '_' + str(surf_index + 10)  # allow for some objects added by hand
             success = spawn_model(
                 name=model_name,
                 model=models[model],
@@ -302,7 +301,7 @@ if __name__ == "__main__":
     rospy.init_node("spawn_gazebo_models")
 
     if len(sys.argv) == 1:
-        rospy.logerr("Usage spawn_gazebo_models.py objects | cats | playground_objs | playground_cubes [-d] [-l]")
+        rospy.logerr("Usage: spawn_gazebo_models.py objects | cats | playground_ + fixed | cubes | random [-d] [-l]")
         sys.exit(-1)
 
     ros_pack = rospkg.RosPack()
@@ -340,8 +339,8 @@ if __name__ == "__main__":
         surface = random.choice(surfaces)
         spawn_model(surface['name'] + '_0', models[surface['name']], create_2d_pose(0.44, 0, pi / 2.0),
                     'ground_plane::link')
-        spawn_objects(surface, 0, sys.argv[2] if len(sys.argv) > 2 and not use_preferred_locs else None)
-    elif sys.argv[1] == 'playground_objs':  # a sample of objects mostly at reachable locations
+        spawn_objects(surface, 0)
+    elif sys.argv[1] == 'playground_fixed':  # a sample of objects mostly at reachable locations
         spawn_model('lack_table', models['lack_table'], create_2d_pose(0.45, 0, 0.0), 'ground_plane::link')
         for obj in PLAYGROUND_OBJS:
             spawn_model(obj[0], models[obj[1]], create_3d_pose(*obj[2]), 'ground_plane::link')

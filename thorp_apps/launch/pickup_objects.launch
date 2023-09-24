@@ -13,6 +13,9 @@
   <arg name="start_delay"  default="0.0"/>
   <arg name="record_video" default="false"/>
 
+  <!-- App-specific parameters -->
+  <arg name="object_type"  default="fixed"/>  <!-- fixed | cubes | random -->
+
   <!--  ******* Components common for all apps ********  -->
   <include file="$(find thorp_apps)/launch/includes/apps_common.launch.xml">
     <arg name="app_name"     value="$(arg app_name)"/>
@@ -30,7 +33,8 @@
 
   <group if="$(eval simulator != 'none')">
     <!-- Spawn a table with some tabletop objects -->
-    <node pkg="thorp_simulation" type="spawn_gazebo_models.py" name="objects_spawner" output="screen" args="playground_objs"/>
+    <node pkg="thorp_simulation" type="spawn_gazebo_models.py" name="objects_spawner" output="screen"
+          args="playground_$(arg object_type)"/>
   </group>
 
   <!--  ********* Perception and manipulation *********  -->
