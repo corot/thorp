@@ -16,8 +16,8 @@
 
 - git:
     local-name: dynamixel_motor
-    uri: https://github.com/nphoang1102/dynamixel_motor.git
-    version: master
+    uri: https://github.com/corot/dynamixel_motor.git
+    version: thorp
 
 - git:
     local-name: gazebo_ros_pkgs
