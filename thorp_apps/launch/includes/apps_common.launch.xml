@@ -39,8 +39,13 @@
     <param name="run_introspection_server" value="$(eval arg('viz_smach') or arg('record_video'))"/>
   </node>
 
-  <node if="$(arg viz_smach)"
-       pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
+  <group if="$(arg viz_smach)">
+    <node pkg="thorp_smach" type="show_state_on_rviz.py" name="$(arg app_name)_show_state" output="screen" respawn="true">
+      <param name="app_name" value="$(arg app_name)"/>
+    </node>
+
+    <node pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
+  </group>
 
   <!--  *************** Video recording ***************  -->
   <group if="$(arg record_video)">

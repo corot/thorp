@@ -12,7 +12,7 @@ Panels:
         - /Global Costmap1/Semantic Layer1/Namespaces1
         - /Semantic map1/MarkerArray (tables)1
       Splitter Ratio: 0.6358839273452759
-    Tree Height: 470
+    Tree Height: 464
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -28,7 +28,6 @@ Panels:
     Name: Views
     Splitter Ratio: 0.5
   - Class: rviz/Time
-    Experimental: false
     Name: Time
     SyncMode: 0
     SyncSource: LaserScan (kinect)
@@ -632,11 +631,14 @@ Visualization Manager:
       Color: 25; 255; 0
       Enabled: true
       Name: Footprint
+      Queue Size: 10
       Topic: /move_base_flex/local_costmap/footprint
       Unreliable: false
       Value: true
     - Class: rviz/TF
       Enabled: true
+      Filter (blacklist): ""
+      Filter (whitelist): ""
       Frame Timeout: 15
       Frames:
         All Enabled: false
@@ -727,8 +729,6 @@ Visualization Manager:
         gripper_active_finger_link:
           Value: false
         gripper_active_link:
-          Value: false
-        gripper_link:
           Value: false
         gripper_servo_link:
           Value: false
@@ -860,10 +860,6 @@ Visualization Manager:
           Value: false
         tray_link:
           Value: true
-        wheel_left_link:
-          Value: false
-        wheel_right_link:
-          Value: false
         xtion_depth_frame:
           Value: false
         xtion_depth_optical_frame:
@@ -876,12 +872,67 @@ Visualization Manager:
           Value: false
         xtion_rgb_optical_frame:
           Value: false
+      Marker Alpha: 1
       Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
+        arm_elbow_flex_link:
+          arm_elbow_F10_0_link:
+            arm_elbow_F10_1_link:
+              arm_elbow_F10_2_link:
+                arm_elbow_F3_0_link:
+                  arm_wrist_flex_servo_link:
+                    {}
+        arm_shoulder_lift_link:
+          arm_shoulder_F10_0_link:
+            arm_shoulder_F10_1_link:
+              arm_shoulder_F10_2_link:
+                arm_shoulder_F3_0_link:
+                  arm_elbow_flex_servo_link:
+                    {}
+        arm_shoulder_pan_link:
+          arm_shoulder_lift_servo_link:
+            {}
+        arm_wrist_flex_link:
+          arm_wrist_F3_0_link:
+            gripper_servo_link:
+              {}
+        cannon_link:
+          cannon_tube1_hollow_link:
+            {}
+          cannon_tube1_link:
+            {}
+          cannon_tube2_hollow_link:
+            {}
+          cannon_tube2_link:
+            {}
+          cannon_tube3_hollow_link:
+            {}
+          cannon_tube3_link:
+            {}
+          cannon_tube4_hollow_link:
+            {}
+          cannon_tube4_link:
+            {}
+          cannon_tube5_hollow_link:
+            {}
+          cannon_tube5_link:
+            {}
+          cannon_tube6_hollow_link:
+            {}
+          cannon_tube6_link:
+            {}
+          ir_cannon_link:
+            {}
+        gripper_active_link:
+          gripper_active_finger_link:
+            {}
+        gripper_static_link:
+          gripper_static_finger_link:
+            {}
         map:
           odom:
             base_footprint:
@@ -923,31 +974,7 @@ Visualization Manager:
                 plate_top_link:
                   arm_base_link:
                     arm_shoulder_pan_servo_link:
-                      arm_shoulder_pan_link:
-                        arm_shoulder_lift_servo_link:
-                          arm_shoulder_lift_link:
-                            arm_shoulder_F10_0_link:
-                              arm_shoulder_F10_1_link:
-                                arm_shoulder_F10_2_link:
-                                  arm_shoulder_F3_0_link:
-                                    arm_elbow_flex_servo_link:
-                                      arm_elbow_flex_link:
-                                        arm_elbow_F10_0_link:
-                                          arm_elbow_F10_1_link:
-                                            arm_elbow_F10_2_link:
-                                              arm_elbow_F3_0_link:
-                                                arm_wrist_flex_servo_link:
-                                                  arm_wrist_flex_link:
-                                                    arm_wrist_F3_0_link:
-                                                      gripper_servo_link:
-                                                        gripper_active_link:
-                                                          gripper_active_finger_link:
-                                                            {}
-                                                        gripper_static_link:
-                                                          gripper_static_finger_link:
-                                                            {}
-                                                    gripper_link:
-                                                      {}
+                      {}
                     ir_arm_link:
                       {}
                     pole_bottom_10_link:
@@ -965,33 +992,7 @@ Visualization Manager:
                   arm_mount_link:
                     cannon_servo_link:
                       cannon_shaft_link:
-                        cannon_link:
-                          cannon_tube1_hollow_link:
-                            {}
-                          cannon_tube1_link:
-                            {}
-                          cannon_tube2_hollow_link:
-                            {}
-                          cannon_tube2_link:
-                            {}
-                          cannon_tube3_hollow_link:
-                            {}
-                          cannon_tube3_link:
-                            {}
-                          cannon_tube4_hollow_link:
-                            {}
-                          cannon_tube4_link:
-                            {}
-                          cannon_tube5_hollow_link:
-                            {}
-                          cannon_tube5_link:
-                            {}
-                          cannon_tube6_hollow_link:
-                            {}
-                          cannon_tube6_link:
-                            {}
-                          ir_cannon_link:
-                            {}
+                        {}
                   opencm_link:
                     {}
                   pole_middle_16_link:
@@ -1077,10 +1078,6 @@ Visualization Manager:
                     {}
                   s_p90_link:
                     {}
-                wheel_left_link:
-                  {}
-                wheel_right_link:
-                  {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -1098,9 +1095,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 1
       Min Color: 0; 0; 0
-      Min Intensity: 1
       Name: LaserScan (kinect)
       Position Transformer: XYZ
       Queue Size: 10
@@ -1128,9 +1123,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 4096
       Min Color: 0; 0; 0
-      Min Intensity: 0
       Name: LaserScan (virtual sensor)
       Position Transformer: XYZ
       Queue Size: 10
@@ -1158,9 +1151,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 4096
       Min Color: 0; 0; 0
-      Min Intensity: 0
       Name: PointCloud (bumpers)
       Position Transformer: XYZ
       Queue Size: 10
@@ -1362,6 +1353,7 @@ Visualization Manager:
       Keep: 100
       Name: Odometry
       Position Tolerance: 0.10000000149011612
+      Queue Size: 10
       Shape:
         Alpha: 1
         Axes Length: 1
@@ -1384,6 +1376,7 @@ Visualization Manager:
       Head Length: 0.30000001192092896
       Head Radius: 0.10000000149011612
       Name: ScanMatcherPose
+      Queue Size: 10
       Shaft Length: 1
       Shaft Radius: 0.05000000074505806
       Shape: Arrow
@@ -1400,6 +1393,7 @@ Visualization Manager:
       Head Length: 0.07000000029802322
       Head Radius: 0.029999999329447746
       Name: AMCL Particles
+      Queue Size: 10
       Shaft Length: 0.23000000417232513
       Shaft Radius: 0.009999999776482582
       Shape: Arrow (Flat)
@@ -1415,6 +1409,7 @@ Visualization Manager:
       Head Length: 0.20000000298023224
       Head Radius: 0.10000000149011612
       Name: Current Goal
+      Queue Size: 10
       Shaft Length: 1
       Shaft Radius: 0.05000000074505806
       Shape: Arrow
@@ -1448,7 +1443,8 @@ Visualization Manager:
           Marker Topic: /move_base_flex/local_costmap/semantic_layer/visual_markers
           Name: Semantic Layer
           Namespaces:
-            {}
+            previous bounds: true
+            updated bounds: true
           Queue Size: 100
           Value: true
       Enabled: true
@@ -1482,6 +1478,7 @@ Visualization Manager:
                 Z: 0
               Pose Color: 255; 85; 255
               Pose Style: None
+              Queue Size: 10
               Radius: 0.029999999329447746
               Shaft Diameter: 0.10000000149011612
               Shaft Length: 0.10000000149011612
@@ -1509,6 +1506,7 @@ Visualization Manager:
                 Z: 0
               Pose Color: 255; 85; 255
               Pose Style: None
+              Queue Size: 10
               Radius: 0.029999999329447746
               Shaft Diameter: 0.10000000149011612
               Shaft Length: 0.10000000149011612
@@ -1530,9 +1528,7 @@ Visualization Manager:
               Enabled: false
               Invert Rainbow: false
               Max Color: 255; 255; 255
-              Max Intensity: 363
               Min Color: 0; 0; 0
-              Min Intensity: 0
               Name: Costs Cloud
               Position Transformer: XYZ
               Queue Size: 10
@@ -1564,9 +1560,7 @@ Visualization Manager:
               Enabled: true
               Invert Rainbow: false
               Max Color: 255; 255; 255
-              Max Intensity: 8.606754302978516
               Min Color: 0; 0; 0
-              Min Intensity: 8.140351295471191
               Name: Trajectories
               Position Transformer: XYZ
               Queue Size: 10
@@ -1594,9 +1588,7 @@ Visualization Manager:
               Enabled: true
               Invert Rainbow: false
               Max Color: 255; 255; 255
-              Max Intensity: 325.20001220703125
               Min Color: 0; 0; 0
-              Min Intensity: 0
               Name: Costs Cloud
               Position Transformer: XYZ
               Queue Size: 10
@@ -1626,6 +1618,7 @@ Visualization Manager:
                 Z: 0
               Pose Color: 255; 85; 255
               Pose Style: None
+              Queue Size: 10
               Radius: 0.029999999329447746
               Shaft Diameter: 0.10000000149011612
               Shaft Length: 0.10000000149011612
@@ -1653,6 +1646,7 @@ Visualization Manager:
                 Z: 0
               Pose Color: 255; 85; 255
               Pose Style: None
+              Queue Size: 10
               Radius: 0.029999999329447746
               Shaft Diameter: 0.10000000149011612
               Shaft Length: 0.10000000149011612
@@ -1676,6 +1670,7 @@ Visualization Manager:
                 Z: 0
               Pose Color: 255; 85; 255
               Pose Style: None
+              Queue Size: 10
               Radius: 0.029999999329447746
               Shaft Diameter: 0.10000000149011612
               Shaft Length: 0.10000000149011612
@@ -1692,6 +1687,7 @@ Visualization Manager:
               Head Length: 0.07000000029802322
               Head Radius: 0.029999999329447746
               Name: Poses
+              Queue Size: 10
               Shaft Length: 0.23000000417232513
               Shaft Radius: 0.009999999776482582
               Shape: Arrow (Flat)
@@ -1703,7 +1699,11 @@ Visualization Manager:
               Marker Topic: /move_base_flex/TEBPlanner/teb_markers
               Name: Markers
               Namespaces:
-                {}
+                LineObstacles: true
+                PointObstacles: true
+                PolyObstacles: true
+                RobotFootprintModel: true
+                ViaPoints: true
               Queue Size: 100
               Value: true
           Enabled: true
@@ -1727,7 +1727,8 @@ Visualization Manager:
           Marker Topic: /move_base_flex/global_costmap/semantic_layer/visual_markers
           Name: Semantic Layer
           Namespaces:
-            {}
+            previous bounds: true
+            updated bounds: true
           Queue Size: 100
           Value: true
       Enabled: true
@@ -1751,6 +1752,7 @@ Visualization Manager:
             Z: 0
           Pose Color: 255; 85; 255
           Pose Style: None
+          Queue Size: 10
           Radius: 0.029999999329447746
           Shaft Diameter: 0.10000000149011612
           Shaft Length: 0.10000000149011612
@@ -1774,6 +1776,7 @@ Visualization Manager:
             Z: 0
           Pose Color: 255; 85; 255
           Pose Style: None
+          Queue Size: 10
           Radius: 0.029999999329447746
           Shaft Diameter: 0.10000000149011612
           Shaft Length: 0.10000000149011612
@@ -1801,6 +1804,7 @@ Visualization Manager:
             Z: 0
           Pose Color: 255; 85; 255
           Pose Style: None
+          Queue Size: 10
           Radius: 0.029999999329447746
           Shaft Diameter: 0.10000000149011612
           Shaft Length: 0.10000000149011612
@@ -1813,6 +1817,7 @@ Visualization Manager:
           Enabled: true
           History Length: 1
           Name: Starting Point
+          Queue Size: 10
           Radius: 0.20000000298023224
           Topic: /exploration/starting_point
           Unreliable: false
@@ -1822,6 +1827,7 @@ Visualization Manager:
           Color: 25; 255; 0
           Enabled: true
           Name: Camera FOV
+          Queue Size: 10
           Topic: /exploration/camera_fov
           Unreliable: false
           Value: true
@@ -1918,6 +1924,27 @@ Visualization Manager:
           Value: true
       Enabled: true
       Name: Semantic map
+    - Align Bottom: false
+      Background Alpha: 0.800000011920929
+      Background Color: 0; 0; 0
+      Class: jsk_rviz_plugin/OverlayText
+      Enabled: true
+      Foreground Alpha: 0.800000011920929
+      Foreground Color: 25; 255; 240
+      Invert Shadow: false
+      Name: SMACH State
+      Overtake BG Color Properties: false
+      Overtake FG Color Properties: false
+      Overtake Position Properties: false
+      Topic: /rviz/smach_state_overlay
+      Value: true
+      font: DejaVu Sans Mono
+      height: 128
+      left: 0
+      line width: 2
+      text size: 12
+      top: 0
+      width: 128
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -1956,19 +1983,18 @@ Visualization Manager:
       Near Clip Distance: 0.009999999776482582
       Scale: 115.85070037841797
       Target Frame: <Fixed Frame>
-      Value: TopDownOrtho (rviz)
       X: 5.891995906829834
       Y: 4.3430256843566895
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 1025
+  Height: 1016
   Hide Left Dock: false
   Hide Right Dock: false
   Image:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd00000003000000000000017d000003a7fc0200000009fb0000001200530065006c0065006300740069006f006e000000003d0000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000005fb0000023c00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d00000261000000c900fffffffb0000000a0056006900650077007301000002a400000140000000a400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000008600000023c00000185000000a3fb000000220052006f006f006d0020005300650067006d0065006e0074006100740069006f006e00000001840000008a0000001600fffffffb0000001a0052006f006f006d002000530065007100750065006e0063006500000001e9000000b50000001600ffffff000000010000010f00000261fc0200000002fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000030000073d00000140fc0100000007fb0000000a0049006d00610067006500000000000000073d0000005e00fffffffb0000000a005600690065007700730100000000000002620000000000000000fb000000220052006f006f006d0020005300650067006d0065006e0074006100740069006f006e010000027e000001910000000000000000fb0000001a0052006f006f006d002000530065007100750065006e0063006501000004150000018a0000000000000000fb0000000a0049006d0061006700650000000361000003dc0000000000000000fb0000000800540069006d00650000000000000004a0000004f300fffffffb0000000800540069006d00650100000000000004500000000000000000000005ba000003a700000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000003000000000000017d0000039efc0200000009fb0000001200530065006c0065006300740069006f006e000000003d0000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000005fb0000023c00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d0000025b000000c900fffffffb0000000a00560069006500770073010000029e0000013d000000a400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000008600000023c00000185000000a3fb000000220052006f006f006d0020005300650067006d0065006e0074006100740069006f006e00000001840000008a0000001600fffffffb0000001a0052006f006f006d002000530065007100750065006e0063006500000001e9000000b50000001600ffffff000000010000010f00000261fc0200000002fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000030000073d00000140fc0100000007fb0000000a0049006d00610067006500000000000000073d0000005e00fffffffb0000000a005600690065007700730100000000000002620000000000000000fb000000220052006f006f006d0020005300650067006d0065006e0074006100740069006f006e010000027e000001910000000000000000fb0000001a0052006f006f006d002000530065007100750065006e0063006501000004150000018a0000000000000000fb0000000a0049006d0061006700650000000361000003dc0000000000000000fb0000000800540069006d00650000000000000004a00000041800fffffffb0000000800540069006d00650100000000000004500000000000000000000005b50000039e00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Room Segmentation:
     collapsed: false
   Room Sequence:
@@ -1981,6 +2007,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1853
-  X: 67
+  Width: 1848
+  X: 72
   Y: 27

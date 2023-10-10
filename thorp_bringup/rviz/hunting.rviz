@@ -8,7 +8,7 @@ Panels:
         - /TF1/Tree1
         - /Local Planners1/DWA1/Trajectories1
       Splitter Ratio: 0.8345499038696289
-    Tree Height: 470
+    Tree Height: 464
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -24,7 +24,6 @@ Panels:
     Name: Views
     Splitter Ratio: 0.5
   - Class: rviz/Time
-    Experimental: false
     Name: Time
     SyncMode: 0
     SyncSource: Camera
@@ -628,14 +627,18 @@ Visualization Manager:
       Color: 25; 255; 0
       Enabled: true
       Name: Footprint
+      Queue Size: 10
       Topic: /move_base_flex/local_costmap/footprint
       Unreliable: false
       Value: true
     - Class: rviz/TF
       Enabled: false
+      Filter (blacklist): ""
+      Filter (whitelist): ""
       Frame Timeout: 15
       Frames:
         All Enabled: false
+      Marker Alpha: 1
       Marker Scale: 1
       Name: TF
       Show Arrows: true
@@ -660,9 +663,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 1
       Min Color: 0; 0; 0
-      Min Intensity: 1
       Name: LaserScan (kinect)
       Position Transformer: XYZ
       Queue Size: 10
@@ -690,9 +691,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 4096
       Min Color: 0; 0; 0
-      Min Intensity: 0
       Name: LaserScan (virtual sensor)
       Position Transformer: XYZ
       Queue Size: 10
@@ -720,9 +719,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 4096
       Min Color: 0; 0; 0
-      Min Intensity: 0
       Name: PointCloud (bumpers)
       Position Transformer: XYZ
       Queue Size: 10
@@ -924,6 +921,7 @@ Visualization Manager:
       Keep: 100
       Name: Odometry
       Position Tolerance: 0.10000000149011612
+      Queue Size: 10
       Shape:
         Alpha: 1
         Axes Length: 1
@@ -946,6 +944,7 @@ Visualization Manager:
       Head Length: 0.30000001192092896
       Head Radius: 0.10000000149011612
       Name: ScanMatcherPose
+      Queue Size: 10
       Shaft Length: 1
       Shaft Radius: 0.05000000074505806
       Shape: Arrow
@@ -962,6 +961,7 @@ Visualization Manager:
       Head Length: 0.07000000029802322
       Head Radius: 0.029999999329447746
       Name: AMCL Particles
+      Queue Size: 10
       Shaft Length: 0.23000000417232513
       Shaft Radius: 0.009999999776482582
       Shape: Arrow (Flat)
@@ -977,6 +977,7 @@ Visualization Manager:
       Head Length: 0.20000000298023224
       Head Radius: 0.10000000149011612
       Name: Current Goal
+      Queue Size: 10
       Shaft Length: 1
       Shaft Radius: 0.05000000074505806
       Shape: Arrow
@@ -1032,6 +1033,7 @@ Visualization Manager:
                 Z: 0
               Pose Color: 255; 85; 255
               Pose Style: None
+              Queue Size: 10
               Radius: 0.029999999329447746
               Shaft Diameter: 0.10000000149011612
               Shaft Length: 0.10000000149011612
@@ -1059,6 +1061,7 @@ Visualization Manager:
                 Z: 0
               Pose Color: 255; 85; 255
               Pose Style: None
+              Queue Size: 10
               Radius: 0.029999999329447746
               Shaft Diameter: 0.10000000149011612
               Shaft Length: 0.10000000149011612
@@ -1080,9 +1083,7 @@ Visualization Manager:
               Enabled: false
               Invert Rainbow: false
               Max Color: 255; 255; 255
-              Max Intensity: 363
               Min Color: 0; 0; 0
-              Min Intensity: 0
               Name: Costs Cloud
               Position Transformer: XYZ
               Queue Size: 10
@@ -1114,9 +1115,7 @@ Visualization Manager:
               Enabled: true
               Invert Rainbow: false
               Max Color: 255; 255; 255
-              Max Intensity: 8.606754302978516
               Min Color: 0; 0; 0
-              Min Intensity: 8.140351295471191
               Name: Trajectories
               Position Transformer: XYZ
               Queue Size: 10
@@ -1144,9 +1143,7 @@ Visualization Manager:
               Enabled: true
               Invert Rainbow: false
               Max Color: 255; 255; 255
-              Max Intensity: 325.20001220703125
               Min Color: 0; 0; 0
-              Min Intensity: 0
               Name: Costs Cloud
               Position Transformer: XYZ
               Queue Size: 10
@@ -1176,6 +1173,7 @@ Visualization Manager:
                 Z: 0
               Pose Color: 255; 85; 255
               Pose Style: None
+              Queue Size: 10
               Radius: 0.029999999329447746
               Shaft Diameter: 0.10000000149011612
               Shaft Length: 0.10000000149011612
@@ -1203,6 +1201,7 @@ Visualization Manager:
                 Z: 0
               Pose Color: 255; 85; 255
               Pose Style: None
+              Queue Size: 10
               Radius: 0.029999999329447746
               Shaft Diameter: 0.10000000149011612
               Shaft Length: 0.10000000149011612
@@ -1226,6 +1225,7 @@ Visualization Manager:
                 Z: 0
               Pose Color: 255; 85; 255
               Pose Style: None
+              Queue Size: 10
               Radius: 0.029999999329447746
               Shaft Diameter: 0.10000000149011612
               Shaft Length: 0.10000000149011612
@@ -1242,6 +1242,7 @@ Visualization Manager:
               Head Length: 0.07000000029802322
               Head Radius: 0.029999999329447746
               Name: Poses
+              Queue Size: 10
               Shaft Length: 0.23000000417232513
               Shaft Radius: 0.009999999776482582
               Shape: Arrow (Flat)
@@ -1289,6 +1290,7 @@ Visualization Manager:
             Z: 0
           Pose Color: 255; 85; 255
           Pose Style: None
+          Queue Size: 10
           Radius: 0.029999999329447746
           Shaft Diameter: 0.10000000149011612
           Shaft Length: 0.10000000149011612
@@ -1312,6 +1314,7 @@ Visualization Manager:
             Z: 0
           Pose Color: 255; 85; 255
           Pose Style: None
+          Queue Size: 10
           Radius: 0.029999999329447746
           Shaft Diameter: 0.10000000149011612
           Shaft Length: 0.10000000149011612
@@ -1367,6 +1370,7 @@ Visualization Manager:
             Z: 0
           Pose Color: 255; 85; 255
           Pose Style: None
+          Queue Size: 10
           Radius: 0.029999999329447746
           Shaft Diameter: 0.10000000149011612
           Shaft Length: 0.10000000149011612
@@ -1379,6 +1383,7 @@ Visualization Manager:
           Enabled: true
           History Length: 1
           Name: Starting Point
+          Queue Size: 10
           Radius: 0.20000000298023224
           Topic: /exploration/starting_point
           Unreliable: false
@@ -1388,6 +1393,7 @@ Visualization Manager:
           Color: 25; 255; 0
           Enabled: true
           Name: Camera FOV
+          Queue Size: 10
           Topic: /exploration/camera_fov
           Unreliable: false
           Value: true
@@ -1450,13 +1456,7 @@ Visualization Manager:
           Marker Topic: /tracked_objects_markers
           Name: Tracked Objects
           Namespaces:
-            15: true
-            17: true
-            18: true
-            33: true
-            65: true
-            67: true
-            target: true
+            {}
           Queue Size: 100
           Value: true
       Enabled: true
@@ -1472,6 +1472,7 @@ Visualization Manager:
           Head Length: 0.30000001192092896
           Head Radius: 0.10000000149011612
           Name: Target Object
+          Queue Size: 10
           Shaft Length: 1
           Shaft Radius: 0.05000000074505806
           Shape: Axes
@@ -1497,6 +1498,27 @@ Visualization Manager:
           Value: true
       Enabled: true
       Name: Hunting
+    - Align Bottom: false
+      Background Alpha: 0.800000011920929
+      Background Color: 0; 0; 0
+      Class: jsk_rviz_plugin/OverlayText
+      Enabled: true
+      Foreground Alpha: 0.800000011920929
+      Foreground Color: 25; 255; 240
+      Invert Shadow: false
+      Name: SMACH State
+      Overtake BG Color Properties: false
+      Overtake FG Color Properties: false
+      Overtake Position Properties: false
+      Topic: /rviz/smach_state_overlay
+      Value: true
+      font: DejaVu Sans Mono
+      height: 128
+      left: 0
+      line width: 2
+      text size: 12
+      top: 0
+      width: 128
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -1535,7 +1557,6 @@ Visualization Manager:
       Near Clip Distance: 0.009999999776482582
       Scale: 80.10248565673828
       Target Frame: <Fixed Frame>
-      Value: TopDownOrtho (rviz)
       X: 7.446207046508789
       Y: 5.1679534912109375
     Saved: ~
@@ -1544,10 +1565,10 @@ Window Geometry:
     collapsed: false
   Displays:
     collapsed: false
-  Height: 1025
+  Height: 1016
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd000000030000000000000156000003a7fc020000000dfb0000001200530065006c0065006300740069006f006e000000003d0000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000005fb0000023c00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d00000261000000c900fffffffb0000000a0056006900650077007301000002a400000140000000a400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000008600000023c00000185000000a3fb000000160049006d00610067006500200043006f006c006f00720000000000ffffffff0000000000000000fb000000160049006d0061006700650020004400650070007400680000000000ffffffff0000000000000000fb00000010004400650074006500630074006500640000000000ffffffff0000000000000000fb0000001000440065007400650063007400650064010000026c000000160000000000000000fb0000000e0054007200610063006b006500640100000288000000160000000000000000fb0000000a0049006d0061006700650000000000ffffffff0000000000000000000000010000011e000003a7fc0200000005fb0000001e0054007200610063006b006500640020004f0062006a0065006300740073010000003d000001e00000001600fffffffb0000000c00430061006d0065007200610100000223000001c10000001600fffffffb0000000c00430061006d0065007200610100000219000001cb0000000000000000fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000030000073d00000140fc0100000005fb0000000a005600690065007700730100000000000002620000000000000000fb00000016004b0069006e00650063007400200056006900650077010000054a000001f30000000000000000fb0000000a0049006d00610067006501000005a5000001980000000000000000fb0000000800540069006d00650000000000000004a0000004f300fffffffb0000000800540069006d00650100000000000004500000000000000000000004bd000003a700000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000300000000000001560000039efc020000000dfb0000001200530065006c0065006300740069006f006e000000003d0000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000005fb0000023c00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d0000025b000000c900fffffffb0000000a00560069006500770073010000029e0000013d000000a400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000008600000023c00000185000000a3fb000000160049006d00610067006500200043006f006c006f00720000000000ffffffff0000000000000000fb000000160049006d0061006700650020004400650070007400680000000000ffffffff0000000000000000fb00000010004400650074006500630074006500640000000000ffffffff0000000000000000fb0000001000440065007400650063007400650064010000026c000000160000000000000000fb0000000e0054007200610063006b006500640100000288000000160000000000000000fb0000000a0049006d0061006700650000000000ffffffff0000000000000000000000010000011e0000039efc0200000005fb0000001e0054007200610063006b006500640020004f0062006a0065006300740073010000003d000001db0000001600fffffffb0000000c00430061006d006500720061010000021e000001bd0000001600fffffffb0000000c00430061006d0065007200610100000219000001cb0000000000000000fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000030000073d00000140fc0100000005fb0000000a005600690065007700730100000000000002620000000000000000fb00000016004b0069006e00650063007400200056006900650077010000054a000001f30000000000000000fb0000000a0049006d00610067006501000005a5000001980000000000000000fb0000000800540069006d00650000000000000004a00000041800fffffffb0000000800540069006d00650100000000000004500000000000000000000004b80000039e00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -1558,6 +1579,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1853
-  X: 67
+  Width: 1848
+  X: 72
   Y: 27
