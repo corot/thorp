@@ -8,7 +8,7 @@
 
   <!--  ****** Manipulation and interaction nodes *****  -->
 
-  <node pkg="thorp_manipulation" type="manipulation_server" name="manipulation_server" output="screen" respawn="true">
+  <node pkg="thorp_manipulation" type="manipulation_server" name="manipulation" output="screen" respawn="true">
     <rosparam if="$(arg simulation)" file="$(find thorp_manipulation)/param/pick_and_place_gazebo.yaml" command="load"/>
     <rosparam unless="$(arg simulation)" file="$(find thorp_manipulation)/param/pick_and_place.yaml" command="load"/>
   </node>

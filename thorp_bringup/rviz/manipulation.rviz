@@ -2067,7 +2067,7 @@ Visualization Manager:
           Value: false
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /object_detection_server/visual_markers
+          Marker Topic: /object_detection/visual_markers
           Name: Detected objects
           Namespaces:
             {}

@@ -510,7 +510,7 @@ private:
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "object_detection_server");
+  ros::init(argc, argv, "object_detection");
 
   thorp_perception::ObjectDetectionServer server("object_detection");
   ros::spin();

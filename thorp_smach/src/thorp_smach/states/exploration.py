@@ -21,7 +21,7 @@ from .. import config as cfg
 
 class SegmentRooms(smach_ros.SimpleActionState):
     def __init__(self):
-        super(SegmentRooms, self).__init__('exploration/room_segmentation_server',
+        super(SegmentRooms, self).__init__('exploration/room_segmentation',
                                            ipa_building_msgs.MapSegmentationAction,
                                            goal_cb=self.make_goal,
                                            result_cb=self.result_cb,
@@ -96,7 +96,7 @@ class SegmentRooms(smach_ros.SimpleActionState):
 class PlanRoomSequence(smach_ros.SimpleActionState):
     """ Plan rooms visit sequence """
     def __init__(self):
-        super(PlanRoomSequence, self).__init__('exploration/room_sequence_planning_server',
+        super(PlanRoomSequence, self).__init__('exploration/room_sequence_planning',
                                                ipa_building_msgs.FindRoomSequenceWithCheckpointsAction,
                                                goal_cb=self.make_goal,
                                                goal_slots=['input_map', 'map_origin', 'map_resolution',
@@ -107,7 +107,7 @@ class PlanRoomSequence(smach_ros.SimpleActionState):
         self.img_pub = rospy.Publisher('exploration/room_sequence_img', sensor_msgs.Image, queue_size=1, latch=True)
 
     def make_goal(self, ud, goal):
-        # cannot pass as goal slot cause room_sequence_planning_server wants a Pose, not a PoseStamped
+        # cannot pass as goal slot cause room_sequence_planning wants a Pose, not a PoseStamped
         goal.robot_start_coordinate = ud['robot_pose'].pose
 
     def result_cb(self, ud, status, result):
@@ -118,7 +118,7 @@ class PlanRoomSequence(smach_ros.SimpleActionState):
 
 class PlanRoomExploration(smach_ros.SimpleActionState):
     def __init__(self):
-        super(PlanRoomExploration, self).__init__('exploration/room_exploration_server',
+        super(PlanRoomExploration, self).__init__('exploration/room_exploration',
                                                   ipa_building_msgs.RoomExplorationAction,
                                                   goal_cb=self.make_goal,
                                                   goal_slots=['map_resolution', 'map_origin', 'robot_radius'],
@@ -151,7 +151,7 @@ class PlanRoomExploration(smach_ros.SimpleActionState):
                 else:
                     goal.input_map.data += b'\x00'
 
-        fov_points = rospy.get_param('/exploration/room_exploration_server/field_of_view_points')
+        fov_points = rospy.get_param('/exploration/room_exploration/field_of_view_points')
         goal.field_of_view_origin = TF2().transform_pose(None, 'kinect_rgb_frame', 'base_footprint').pose.position
         goal.field_of_view = [geometry_msgs.Point32(*pt) for pt in fov_points]
         goal.planning_mode = 2  # plan a path for coverage with the robot's field of view
