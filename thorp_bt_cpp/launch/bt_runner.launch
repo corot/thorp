@@ -1,0 +1,19 @@
+<launch>
+  <arg name="output" default="screen"/>
+  <arg name="respawn" default="false"/>
+
+  <arg name="app_name"/>
+
+  <node name="bt_runner" pkg="thorp_bt_cpp" type="bt_runner_node" output="$(arg output)" respawn="$(arg respawn)">
+    <param name="bt_filepath" value="$(find thorp_bt_cpp)/bt/$(arg app_name).xml"/>
+    <param name="nodes_filepath" value="$(find thorp_bt_cpp)/bt/node_models.xml"/>
+    <!--    <rosparam file="$(arg nas_config)" subst_value="true"/>
+    <rosparam file="$(arg processor_config)" subst_value="true"/>
+    <rosparam file="$(arg gb_config)" subst_value="true" ns="graph_bounded"/>
+    <rosparam file="$(arg gg_config)" subst_value="true" ns="graph_guided"/>
+
+
+    <remap from="navigate/cancel" to="move_base_flex/navigate/cancel"/>
+    <remap from="navigate" to="move_base_flex/navigate"/>-->
+  </node>
+</launch>

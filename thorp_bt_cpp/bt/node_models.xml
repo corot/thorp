@@ -1,0 +1,35 @@
+<root>
+    <TreeNodesModel>
+        <Action ID="ClearCostmaps"/>
+        <Action ID="ExePathAction">
+            <input_port name="action_name" type="std::string">name of the ROS action client</input_port>
+            <input_port name="goal" type="mbf_msgs::ExePathGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
+            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
+            <output_port name="error" type="unsigned int"/>
+            <output_port name="feedback" type="std::optional&lt;mbf_msgs::ExePathFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
+        </Action>
+        <Action ID="GetPathAction">
+            <input_port name="action_name" type="std::string">name of the ROS action client</input_port>
+            <input_port name="goal" type="mbf_msgs::GetPathGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
+            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
+            <output_port name="error" type="unsigned int"/>
+            <output_port name="feedback" type="std::optional&lt;mbf_msgs::GetPathFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
+        </Action>
+        <Action ID="MoveBaseAction">
+            <input_port name="action_name" type="std::string">name of the ROS action client</input_port>
+            <input_port name="goal" type="mbf_msgs::MoveBaseGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
+            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
+            <output_port name="error" type="unsigned int"/>
+            <output_port name="feedback" type="std::optional&lt;mbf_msgs::MoveBaseFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
+        </Action>
+        <Action ID="RecoveryAction">
+            <input_port name="action_name" type="std::string">name of the ROS action client</input_port>
+            <input_port name="goal" type="mbf_msgs::RecoveryGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
+            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
+            <output_port name="error" type="unsigned int"/>
+            <output_port name="feedback" type="std::optional&lt;mbf_msgs::RecoveryFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
+        </Action>
+        <Control ID="SuperReactiveSequence"/>
+    </TreeNodesModel>
+</root>
+

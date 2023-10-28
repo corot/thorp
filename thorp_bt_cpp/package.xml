@@ -1,0 +1,34 @@
+<package format="2">
+    <name>thorp_bt_cpp</name>
+    <version>0.1.0</version>
+    <description>Behavior Trees for Thorp robot using behaviortree cpp v3 framework</description>
+    <maintainer email="jsantossimon@gmail.com">Jorge Santos Simón</maintainer>
+    <author email="jsantossimon@gmail.com">Jorge Santos Simón</author>
+
+    <license>BSD</license>
+
+    <url type="bugtracker">https://github.com/corot/thorp/issues</url>
+    <url type="repository">https://github.com/corot/thorp</url>
+
+    <buildtool_depend>catkin</buildtool_depend>
+
+    <depend>dynamic_reconfigure</depend>
+    <depend>costmap_2d</depend>
+    <depend>angles</depend>
+    <depend>tf</depend>
+    <depend>tf2</depend>
+    <depend>tf2_eigen</depend>
+    <depend>tf2_ros</depend>
+    <depend>roscpp</depend>
+    <depend>mbf_utility</depend>
+    <depend>actionlib</depend>
+    <depend>actionlib_msgs</depend>
+    <depend>std_msgs</depend>
+    <depend>std_srvs</depend>
+    <depend>nav_msgs</depend>
+    <depend>mbf_msgs</depend>
+    <depend>geometry_msgs</depend>
+    <depend>behaviortree_cpp_v3</depend>
+
+    <depend>thorp_toolkit</depend>
+</package>

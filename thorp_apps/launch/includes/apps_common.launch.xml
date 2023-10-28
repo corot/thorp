@@ -1,8 +1,8 @@
 <!--
   Nodes common to all apps:
   - Thorp robot (real or simulated)
-  - executive smach
-  - optional smach visualization
+  - executive (smach or bt)
+  - optional executive visualization
   - optional video recording
  -->
 
@@ -13,7 +13,8 @@
   <arg name="initial_pose_x" default="0.0"/>
   <arg name="initial_pose_y" default="0.0"/>
   <arg name="initial_pose_a" default="0.0"/>
-  <arg name="viz_smach"      default="false"/>
+  <arg name="executive"      default="smach"/>  <!-- smach | bt -->
+  <arg name="viz_executive"  default="false"/>
   <arg name="start_delay"    default="0.0"/>
   <arg name="record_video"   default="false"/>
 
@@ -23,7 +24,7 @@
   </group>
 
   <group if="$(eval simulator != 'none')">
-    <!--  ***** Simulated mobile manipulator Thorp ******  -->
+    <!--  ***** Simulated mobile manipulator Thorp ****  -->
     <include file="$(find thorp_simulation)/launch/thorp_$(arg simulator).launch">
       <arg name="world_name"     value="$(arg world_name)"/>
       <arg name="initial_pose_x" value="$(arg initial_pose_x)"/>
@@ -32,20 +33,33 @@
     </include>
   </group>
 
-  <!--  ****** Executive smach and visualization ******  -->
-  <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="false">
-    <param name="app_name" value="$(arg app_name)"/>
-    <param name="start_delay" value="$(arg start_delay)"/>
-    <param name="run_introspection_server" value="$(eval arg('viz_smach') or arg('record_video'))"/>
-  </node>
-
-  <group if="$(arg viz_smach)">
-    <node pkg="thorp_smach" type="show_state_on_rviz.py" name="$(arg app_name)_show_state" output="screen" respawn="true">
+  <!--  ********* Executive and visualization *********  -->
+  <group if="$(eval executive == 'smach')">
+    <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="false">
       <param name="app_name" value="$(arg app_name)"/>
+      <param name="start_delay" value="$(arg start_delay)"/>
+      <param name="run_introspection_server" value="$(eval arg('viz_smach') or arg('record_video'))"/>
     </node>
 
-    <node pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
+    <group if="$(arg viz_executive)">
+      <node pkg="thorp_smach" type="show_state_on_rviz.py" name="$(arg app_name)_show_state" output="screen" respawn="true">
+        <param name="app_name" value="$(arg app_name)"/>
+      </node>
+
+      <node pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
+    </group>
   </group>
+
+  <group if="$(eval executive == 'bt')">
+    <include file="$(find thorp_bt_cpp)/launch/bt_runner.launch">
+      <arg name="app_name" value="$(arg app_name)"/>
+    </include>
+
+    <group if="$(arg viz_executive)">
+      <!--TODO-->
+    </group>
+  </group>
+
 
   <!--  *************** Video recording ***************  -->
   <group if="$(arg record_video)">

@@ -1,0 +1,41 @@
+#pragma once
+
+#include <ros/ros.h>
+#include <behaviortree_cpp_v3/action_node.h>
+#include "thorp_bt_cpp/bt/utils.hpp"
+#include "thorp_bt_cpp/bt/actions/action_client_node.hpp"
+
+#include <mbf_msgs/GetPathAction.h>
+
+#include <rr_geometry/geometry_2d.hpp>
+
+namespace thorp::bt::actions
+{
+class GetPathAction : public BT::SimpleActionClientNode<mbf_msgs::GetPathAction>
+{
+public:
+  GetPathAction(const std::string& name, const BT::NodeConfiguration& config) : SimpleActionClientNode(name, config)
+  {
+  }
+
+  static BT::PortsList providedPorts()
+  {
+    return { BT::OutputPort<unsigned int>("error"),
+             BT::OutputPort<std::optional<mbf_msgs::GetPathFeedback>>("feedback") };
+  }
+
+  virtual void onFeedback(const mbf_msgs::GetPathFeedbackConstPtr& feedback) override
+  {
+    setOutput("feedback", std::make_optional<mbf_msgs::GetPathFeedback>(*feedback));
+  }
+
+  virtual BT::NodeStatus onAborted(const mbf_msgs::GetPathResultConstPtr& res) override
+  {
+    ROS_WARN_NAMED(name(), "Error %d: %s", res->outcome, res->message.c_str());
+
+    utils::setError(*this, res->outcome);
+
+    return BT::NodeStatus::FAILURE;
+  }
+};
+}  // namespace thorp::bt::actions

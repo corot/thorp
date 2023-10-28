@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="3">
+  <BehaviorTree ID="patrol_2_points">
+    <Repeat num_cycles="10">
+      <Sequence>
+        <MoveBaseAction action_name="move_base_flex/move_base"
+                        goal="{goal_a}"
+                        server_timeout="5.000000"
+                        error=""
+                        feedback=""/>
+        <MoveBaseAction action_name="move_base_flex/move_base"
+                        goal="{goal_b}"
+                        server_timeout="5.000000"
+                        error=""
+                        feedback=""/>
+      </Sequence>
+    </Repeat>
+  </BehaviorTree>
+
+  <!-- Description of Node Models (used by Groot) -->
+  <TreeNodesModel>
+    <Action ID="MoveBaseAction">
+      <input_port name="action_name"
+                  type="std::string">name of the ROS action client</input_port>
+      <input_port name="goal"
+                  type="mbf_msgs::MoveBaseGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
+      <input_port name="server_timeout"
+                  default="5.000000"
+                  type="double">timeout to connect to server (seconds)</input_port>
+      <output_port name="error"
+                   type="unsigned int"/>
+      <output_port name="feedback"
+                   type="std::optional&lt;mbf_msgs::MoveBaseFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
+    </Action>
+  </TreeNodesModel>
+
+</root>
