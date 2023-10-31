@@ -8,6 +8,7 @@ Panels:
         - /TF1/Tree1
         - /Local Planners1/DWA1/Trajectories1
         - /Local Planners1/TEB1/Local Path1
+        - /Exploration1/Coverage Path1
       Splitter Ratio: 0.5265780687332153
     Tree Height: 363
   - Class: rviz/Selection
@@ -27,7 +28,7 @@ Panels:
   - Class: rviz/Time
     Name: Time
     SyncMode: 0
-    SyncSource: Room Sequence
+    SyncSource: LaserScan (kinect)
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -1683,11 +1684,7 @@ Visualization Manager:
               Marker Topic: /move_base_flex/TEBPlanner/teb_markers
               Name: Markers
               Namespaces:
-                LineObstacles: true
-                PointObstacles: true
-                PolyObstacles: true
-                RobotFootprintModel: true
-                ViaPoints: true
+                {}
               Queue Size: 100
               Value: true
           Enabled: true
@@ -1814,7 +1811,7 @@ Visualization Manager:
           Value: true
         - Class: rviz/Image
           Enabled: true
-          Image Topic: /exploration/room_segmentation_img
+          Image Topic: /exploration/room_segmentation/segmented_img
           Max Value: 1
           Median window: 5
           Min Value: 0
@@ -1841,13 +1838,12 @@ Visualization Manager:
           Marker Topic: /exploration/room_sequence_planning/room_sequence_marker
           Name: Room Sequence Plan
           Namespaces:
-            room_sequence_checkpoints: true
-            room_sequence_rooms: true
+            {}
           Queue Size: 100
           Value: true
         - Class: rviz/Image
           Enabled: true
-          Image Topic: /exploration/img
+          Image Topic: /exploration/room_exploration/room_img
           Max Value: 1
           Median window: 5
           Min Value: 0
@@ -1862,7 +1858,7 @@ Visualization Manager:
           Marker Topic: /explore_house_smach/visual_markers
           Name: Reached Waypoints
           Namespaces:
-            gp_marker: true
+            {}
           Queue Size: 100
           Value: true
       Enabled: true

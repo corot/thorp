@@ -2,7 +2,7 @@
 <package>
   <name>thorp_apps</name>
   <version>0.1.0</version>
-  <description>Launch files for Thorp apps</description>
+  <description>Launch files and resources for Thorp apps</description>
   <maintainer email="jsantossimon@gmail.com">Jorge Santos Simón</maintainer>
   <author email="jsantossimon@gmail.com">Jorge Santos Simón</author>
 
@@ -15,11 +15,9 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <run_depend>thorp_bringup</run_depend>
+  <run_depend>thorp_bt_cpp</run_depend>
   <run_depend>thorp_smach</run_depend>
   <run_depend>thorp_simulation</run_depend>
-  <run_depend>thorp_toolkit</run_depend>
-  <run_depend>thorp_description</run_depend>
-  <run_depend>thorp_moveit_config</run_depend>
   <run_depend>thorp_navigation</run_depend>
   <run_depend>thorp_perception</run_depend>
   <run_depend>thorp_manipulation</run_depend>

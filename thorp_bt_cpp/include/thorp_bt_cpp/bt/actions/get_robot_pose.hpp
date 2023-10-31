@@ -4,17 +4,16 @@
 #include <behaviortree_cpp_v3/action_node.h>
 #include "thorp_bt_cpp/bt/utils.hpp"
 
-#include <mbf_msgs/ExePathResult.h>
-#include <mbf_utility/robot_information.h>
+#include <thorp_toolkit/tf2.hpp>
+namespace ttk = thorp_toolkit;
 
 namespace thorp::bt::actions
 {
 class GetRobotPose : public BT::StatefulActionNode
 {
 public:
-  GetRobotPose(const std::string& name, const BT::NodeConfiguration& config, const ros::NodeHandle& pnh,
-               const mbf_utility::RobotInformation& robot_info)
-    : StatefulActionNode(name, config), robot_info_(robot_info), start_time_(), timeout_(), pnh_(pnh)
+  GetRobotPose(const std::string& name, const BT::NodeConfiguration& config, const ros::NodeHandle& pnh)
+    : StatefulActionNode(name, config), timeout_(), pnh_(pnh)
   {
   }
 
@@ -26,30 +25,24 @@ public:
 
   BT::NodeStatus onStart() override
   {
-    timeout_ = utils::getInput<double>(*this, pnh_, "timeout");
-    start_time_ = ros::Time::now();
+    timeout_.fromSec(utils::getInput<double>(*this, pnh_, "timeout"));
     return onRunning();
   }
 
   BT::NodeStatus onRunning() override
   {
     geometry_msgs::PoseStamped robot_pose;
-    if (robot_info_.getRobotPose(robot_pose))
+    robot_pose.header.frame_id = "base_footprint";
+    robot_pose.pose.orientation.w = 1.0;
+    if (ttk::TF2::instance().transformPose("map", robot_pose, robot_pose, timeout_))
     {
       setOutput("robot_pose", robot_pose);
       return BT::NodeStatus::SUCCESS;
     }
 
-    const auto dt = (ros::Time::now() - start_time_).toSec();
-    if (dt > timeout_)
-    {
-      ROS_ERROR_NAMED(name(), "Could not get the current robot pose after %.1f seconds", dt);
-      utils::setError(*this, mbf_msgs::ExePathResult::TF_ERROR);
-      return BT::NodeStatus::FAILURE;
-    }
-
-    ROS_WARN_THROTTLE_NAMED(1.0, name(), "Waiting for TF for %.1f seconds... (transform_tolerance %f)", dt, timeout_);
-    return BT::NodeStatus::RUNNING;
+    ROS_ERROR_NAMED(name(), "Could not get the current robot pose");
+    utils::setError(*this, mbf_msgs::ExePathResult::TF_ERROR);
+    return BT::NodeStatus::FAILURE;
   }
 
   void onHalted() override
@@ -57,9 +50,7 @@ public:
   }
 
 private:
-  const mbf_utility::RobotInformation& robot_info_;
-  ros::Time start_time_;
-  double timeout_;
+  ros::Duration timeout_;
   ros::NodeHandle pnh_;
 };
 }  // namespace thorp::bt::actions

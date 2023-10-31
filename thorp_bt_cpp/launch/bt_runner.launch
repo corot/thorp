@@ -4,7 +4,8 @@
 
   <arg name="app_name"/>
 
-  <node name="bt_runner" pkg="thorp_bt_cpp" type="bt_runner_node" output="$(arg output)" respawn="$(arg respawn)">
+  <node name="bt_runner" pkg="thorp_bt_cpp" type="bt_runner_node" output="$(arg output)" respawn="$(arg respawn)" launch-prefix="gdb -ex run --args">
+    <param name="app_name" value="$(arg app_name)"/>
     <param name="bt_filepath" value="$(find thorp_bt_cpp)/bt/$(arg app_name).xml"/>
     <param name="nodes_filepath" value="$(find thorp_bt_cpp)/bt/node_models.xml"/>
     <!--    <rosparam file="$(arg nas_config)" subst_value="true"/>

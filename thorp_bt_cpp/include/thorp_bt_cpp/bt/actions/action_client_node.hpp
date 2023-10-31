@@ -164,6 +164,13 @@ protected:
   FeedbackConstPtr feedback_;
 
   /**
+   * @brief To implement by the child class to create a goal locally
+   * @param goal Reference to the goal object to fill
+   * @return True by overriding methods
+   */
+  virtual bool createGoal(GoalType& goal) { return false; };
+
+  /**
    * @brief The main override required by a BT action
    * @return BT::NodeStatus Status of tick execution
    */
@@ -187,7 +194,7 @@ protected:
 
     if (status() == BT::NodeStatus::IDLE)
     {
-      if (!getInput("goal", goal_))
+      if (!getInput("goal", goal_) && (!createGoal(goal_)))
       {
         ROS_WARN_NAMED(LOGNAME, "goal is not defined. Exiting with success.");
         return BT::NodeStatus::SUCCESS;

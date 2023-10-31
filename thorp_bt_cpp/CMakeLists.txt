@@ -17,6 +17,7 @@ set(PKG_DEPS
       nav_msgs
       std_msgs
       std_srvs
+      ipa_building_msgs
       costmap_2d
       behaviortree_cpp_v3
       thorp_toolkit

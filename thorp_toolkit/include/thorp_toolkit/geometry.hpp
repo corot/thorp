@@ -10,6 +10,7 @@
 #include <angles/angles.h>
 
 #include <geometry_msgs/Pose.h>
+#include <geometry_msgs/Pose2D.h>
 #include <geometry_msgs/PoseStamped.h>
 
 
@@ -635,6 +636,17 @@ inline bool samePose(const geometry_msgs::PoseStamped& a, const geometry_msgs::P
 {
   return sameFrame(a, b) && samePose(a.pose, b.pose, xy_tolerance, yaw_tolerance);
 }
+
+geometry_msgs::Pose createPose(double x, double y, double yaw);
+
+geometry_msgs::PoseStamped createPoseStamped(double x, double y, double yaw, const std::string& frame);
+
+/**
+ * Extract a 2D pose from a geometry_msgs/Pose msg.
+ * @param pose 3D pose msg.
+ * @return 2D pose msg.
+ */
+geometry_msgs::Pose2D toPose2D(const geometry_msgs::Pose& pose);
 
 std::string vector2str3D(const geometry_msgs::Vector3& vector);
 std::string vector2str3D(const geometry_msgs::Vector3Stamped& vector);

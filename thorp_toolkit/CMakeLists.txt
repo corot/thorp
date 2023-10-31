@@ -74,7 +74,7 @@ add_library(${PROJECT_NAME}
         src/tf2.cpp
         src/geometry.cpp
         src/planning_scene.cpp
-        )
+        include/thorp_toolkit/common.hpp)
 add_dependencies(${PROJECT_NAME} thorp_msgs_generate_messages_cpp)
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} )
 

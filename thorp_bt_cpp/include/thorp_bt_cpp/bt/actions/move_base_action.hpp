@@ -21,8 +21,20 @@ public:
 
   static BT::PortsList providedPorts()
   {
-    return { BT::OutputPort<unsigned int>("error"),
+    return { BT::InputPort<double>("x"),
+             BT::InputPort<double>("y"),
+             BT::InputPort<double>("yaw"),
+             BT::OutputPort<unsigned int>("error"),
              BT::OutputPort<std::optional<mbf_msgs::MoveBaseFeedback>>("feedback") };
+  }
+
+  virtual bool createGoal(GoalType& goal)
+  {
+    goal.target_pose = ttk::createPoseStamped(*getInput<double>("x"),
+                                              *getInput<double>("y"),
+                                              *getInput<double>("yaw"),
+                                              "map");
+    return true;
   }
 
   virtual void onFeedback(const mbf_msgs::MoveBaseFeedbackConstPtr& feedback) override

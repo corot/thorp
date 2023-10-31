@@ -4,14 +4,37 @@
 
 #include "thorp_toolkit/geometry.hpp"
 
-
 namespace thorp_toolkit
 {
-
 
 char ___buffers___[10][256];
 int ___next_buffer___ = -1;
 
+geometry_msgs::Pose createPose(double x, double y, double yaw)
+{
+  geometry_msgs::Pose pose;
+  pose.position.x = x;
+  pose.position.y = y;
+  pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
+  return pose;
+}
+
+geometry_msgs::PoseStamped createPoseStamped(double x, double y, double yaw, const std::string& frame)
+{
+  geometry_msgs::PoseStamped pose;
+  pose.header.frame_id = frame;
+  pose.pose = createPose(x, y, yaw);
+  return pose;
+}
+
+geometry_msgs::Pose2D toPose2D(const geometry_msgs::Pose& pose)
+{
+  geometry_msgs::Pose2D pose_2d;
+  pose_2d.x = pose.position.x;
+  pose_2d.y = pose.position.y;
+  pose_2d.theta = yaw(pose);
+  return pose_2d;
+}
 
 std::string vector2str3D(const geometry_msgs::Vector3& vector)
 {

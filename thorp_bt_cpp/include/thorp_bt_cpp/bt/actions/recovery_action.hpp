@@ -7,8 +7,6 @@
 
 #include <mbf_msgs/RecoveryAction.h>
 
-#include <rr_geometry/geometry_2d.hpp>
-
 namespace thorp::bt::actions
 {
 class RecoveryAction : public BT::SimpleActionClientNode<mbf_msgs::RecoveryAction>

@@ -166,7 +166,7 @@ class PlanRoomExploration(smach_ros.SimpleActionState):
         goal.starting_position.y = room_info.room_center.y
         goal.starting_position.theta = 0.0  # it's ignored
         self.start_pub.publish(start_point)
-        # provide the starting pose so we can move there before starting exploring
+        # provide the starting pose, so we can move there before starting exploring
         ud['start_pose'] = create_2d_pose(room_info.room_center.x, room_info.room_center.y, 0.0, 'map')
         # IDEA: can use room_info.room_min_max to avoid points colliding with the walls
 

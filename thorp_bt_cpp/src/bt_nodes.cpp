@@ -9,6 +9,9 @@
 #include "thorp_bt_cpp/bt/actions/get_robot_pose.hpp"
 #include "thorp_bt_cpp/bt/actions/select_controller.hpp"
 #include "thorp_bt_cpp/bt/actions/set_blackboard.hpp"
+#include "thorp_bt_cpp/bt/actions/segment_rooms.hpp"
+#include "thorp_bt_cpp/bt/actions/plan_room_sequence.hpp"
+#include "thorp_bt_cpp/bt/actions/plan_room_exploration.hpp"
 
 // bt conditions
 #include "thorp_bt_cpp/bt/conditions/is_bool_true.hpp"
@@ -36,7 +39,7 @@ void registerNodes(BT::BehaviorTreeFactory& factory, ros::NodeHandle& nh, const 
 {
   // actions
   registerNode<bt::actions::ClearCostmaps>(factory, nh, "ClearCostmaps");
-  //    registerNode<bt::actions::GetRobotPose>("GetRobotPose", robot_info_);
+  registerNode<bt::actions::GetRobotPose>(factory, nh, "GetRobotPose");
   //    registerNode<bt::actions::SelectController>("SelectController");
   //    registerNode<bt::actions::SetBlackboard<bool>>("SetBool");
   //    registerNode<bt::actions::SetBlackboard<double>>("SetDouble");
@@ -45,6 +48,9 @@ void registerNodes(BT::BehaviorTreeFactory& factory, ros::NodeHandle& nh, const 
   BT::RegisterSimpleActionClient<bt::actions::ExePathAction>(factory, "ExePathAction");
   BT::RegisterSimpleActionClient<bt::actions::RecoveryAction>(factory, "RecoveryAction");
   BT::RegisterSimpleActionClient<bt::actions::MoveBaseAction>(factory, "MoveBaseAction");
+  BT::RegisterSimpleActionClient<bt::actions::SegmentRooms>(factory, "SegmentRooms");
+  BT::RegisterSimpleActionClient<bt::actions::PlanRoomSequence>(factory, "PlanRoomSequence");
+  BT::RegisterSimpleActionClient<bt::actions::PlanRoomExploration>(factory, "PlanRoomExploration");
 
   // conditions
   //    registerNode<bt::conditions::IsBoolTrue>("IsBoolTrue");
@@ -55,9 +61,8 @@ void registerNodes(BT::BehaviorTreeFactory& factory, ros::NodeHandle& nh, const 
   // dump to an XML file to load on Groot
   std::ofstream ofs;
   ofs.open(nodes_file_path,
-           std::ios::out |      // output file stream
-               std::ios::app |  // can append to a existing file
-               std::ios::ate);  // set file cursor at the end
+           std::ios::out |    // output file stream
+           std::ios::trunc);  // truncate content
   if (ofs)
   {
     ofs << BT::writeTreeNodesModelXML(factory) << std::endl;

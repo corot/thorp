@@ -8,6 +8,7 @@ namespace thorp::bt
 {
 Runner::Runner() : pnh_("~")
 {
+  const std::string app_name = pnh_.param<std::string>("app_name", "");
   const std::string bt_filepath = pnh_.param<std::string>("bt_filepath", "bt.xml");
   const std::string nodes_filepath = pnh_.param<std::string>("nodes_filepath", "nodes.xml");
 
@@ -17,7 +18,7 @@ Runner::Runner() : pnh_("~")
   try
   {
     bt_factory_.registerBehaviorTreeFromFile(bt_filepath);
-    bt_ = bt_factory_.createTree("patrol_2_points");
+    bt_ = bt_factory_.createTree(app_name);
   }
   catch (const std::exception& e)
   {
@@ -53,25 +54,6 @@ void Runner::run()
     return;
   }
 */
-  // init blackboard
-  mbf_msgs::MoveBaseGoal goal_a, goal_b;
-  goal_a.target_pose.header.frame_id = "map";
-  goal_a.target_pose.pose.position.x = 2.0;
-  goal_a.target_pose.pose.position.y = 5.0;
-  goal_a.target_pose.pose.orientation.x = 0.0;
-  goal_a.target_pose.pose.orientation.y = 0.0;
-  goal_a.target_pose.pose.orientation.z = 0.851;
-  goal_a.target_pose.pose.orientation.w = 0.526;
-  goal_b.target_pose.header.frame_id = "map";
-  goal_b.target_pose.pose.position.x = 2.0;
-  goal_b.target_pose.pose.position.y = 1.0;
-  goal_b.target_pose.pose.orientation.x = 0.0;
-  goal_b.target_pose.pose.orientation.y = 0.0;
-  goal_b.target_pose.pose.orientation.z = -0.509;
-  goal_b.target_pose.pose.orientation.w = 0.861;
-  bt_->rootBlackboard()->set("goal_a", goal_a);
-  bt_->rootBlackboard()->set("goal_b", goal_b);
-
   ros::Rate rate(tick_rate_);
   auto status = BT::NodeStatus::RUNNING;
   while (ros::ok() && status == BT::NodeStatus::RUNNING)

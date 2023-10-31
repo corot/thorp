@@ -7,8 +7,6 @@
 
 #include <mbf_msgs/GetPathAction.h>
 
-#include <rr_geometry/geometry_2d.hpp>
-
 namespace thorp::bt::actions
 {
 class GetPathAction : public BT::SimpleActionClientNode<mbf_msgs::GetPathAction>
