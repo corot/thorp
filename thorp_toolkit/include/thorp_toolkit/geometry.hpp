@@ -648,31 +648,31 @@ geometry_msgs::PoseStamped createPoseStamped(double x, double y, double yaw, con
  */
 geometry_msgs::Pose2D toPose2D(const geometry_msgs::Pose& pose);
 
-std::string vector2str3D(const geometry_msgs::Vector3& vector);
-std::string vector2str3D(const geometry_msgs::Vector3Stamped& vector);
-std::string point2str2D(const geometry_msgs::Point& point);
-std::string point2str2D(const geometry_msgs::PointStamped& point);
-std::string point2str3D(const geometry_msgs::Point& point);
-std::string point2str3D(const geometry_msgs::PointStamped& point);
-std::string pose2str2D(const geometry_msgs::Pose& pose);
-std::string pose2str2D(const geometry_msgs::PoseStamped& pose);
-std::string pose2str2D(const tf::Stamped<tf::Pose>& pose);
-std::string pose2str3D(const geometry_msgs::Pose& pose);
-std::string pose2str3D(const geometry_msgs::PoseStamped& pose);
-std::string pose2str3D(const tf::Stamped<tf::Pose>& pose);
+std::string toStr3D(const geometry_msgs::Vector3& vector);
+std::string toStr3D(const geometry_msgs::Vector3Stamped& vector);
+std::string toStr2D(const geometry_msgs::Point& point);
+std::string toStr2D(const geometry_msgs::PointStamped& point);
+std::string toStr3D(const geometry_msgs::Point& point);
+std::string toStr3D(const geometry_msgs::PointStamped& point);
+std::string toStr2D(const geometry_msgs::Pose& pose);
+std::string toStr2D(const geometry_msgs::PoseStamped& pose);
+std::string toStr2D(const tf::Stamped<tf::Pose>& pose);
+std::string toStr3D(const geometry_msgs::Pose& pose);
+std::string toStr3D(const geometry_msgs::PoseStamped& pose);
+std::string toStr3D(const tf::Stamped<tf::Pose>& pose);
 
-const char* vector2cstr3D(const geometry_msgs::Vector3& vector);
-const char* vector2cstr3D(const geometry_msgs::Vector3Stamped& vector);
-const char* point2cstr2D(const geometry_msgs::Point& point);
-const char* point2cstr2D(const geometry_msgs::PointStamped& point);
-const char* point2cstr3D(const geometry_msgs::Point& point);
-const char* point2cstr3D(const geometry_msgs::PointStamped& point);
-const char* pose2cstr2D(const geometry_msgs::Pose& pose);
-const char* pose2cstr2D(const geometry_msgs::PoseStamped& pose);
-const char* pose2cstr2D(const tf::Stamped<tf::Pose>& pose);
-const char* pose2cstr3D(const geometry_msgs::Pose& pose);
-const char* pose2cstr3D(const geometry_msgs::PoseStamped& pose);
-const char* pose2cstr3D(const tf::Stamped<tf::Pose>& pose);
+const char* toCStr3D(const geometry_msgs::Vector3& vector);
+const char* toCStr3D(const geometry_msgs::Vector3Stamped& vector);
+const char* toCStr2D(const geometry_msgs::Point& point);
+const char* toCStr2D(const geometry_msgs::PointStamped& point);
+const char* toCStr3D(const geometry_msgs::Point& point);
+const char* toCStr3D(const geometry_msgs::PointStamped& point);
+const char* toCStr2D(const geometry_msgs::Pose& pose);
+const char* toCStr2D(const geometry_msgs::PoseStamped& pose);
+const char* toCStr2D(const tf::Stamped<tf::Pose>& pose);
+const char* toCStr3D(const geometry_msgs::Pose& pose);
+const char* toCStr3D(const geometry_msgs::PoseStamped& pose);
+const char* toCStr3D(const tf::Stamped<tf::Pose>& pose);
 
 /**
  * Clip line segment to fit within a bounding box using Liang-Barsky function by Daniel White

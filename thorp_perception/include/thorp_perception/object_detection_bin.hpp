@@ -147,7 +147,7 @@ public:
         if (ttk::distance3D(bin.getCentroid().pose, obj.pose.pose.pose) <= clustering_threshold_)
         {
           ROS_DEBUG("Object with pose [%s] added to bin %d with centroid [%s] with distance [%f]",
-                    ttk::pose2cstr3D(obj.pose.pose.pose), bin.id, ttk::pose2cstr3D(bin.getCentroid()),
+                    ttk::toCStr3D(obj.pose.pose.pose), bin.id, ttk::toCStr3D(bin.getCentroid()),
                     ttk::distance3D(bin.getCentroid().pose, obj.pose.pose.pose));
           ROS_ASSERT(obj.point_clouds.size() == 1);
           bin.addObject(obj, color_detection_->getColors(obj.point_clouds[0]));
@@ -163,7 +163,7 @@ public:
       if (! assigned)
       {
         // No matching bin; create a new one for this object
-        ROS_DEBUG("Object with pose [%s] added to a new bin", ttk::pose2cstr3D(obj.pose.pose.pose));
+        ROS_DEBUG("Object with pose [%s] added to a new bin", ttk::toCStr3D(obj.pose.pose.pose));
         ObjectDetectionBin new_bin;
         new_bin.id = detection_bins_.size();
         new_bin.addObject(obj, color_detection_->getColors(obj.point_clouds[0]));
@@ -189,7 +189,7 @@ public:
       if (bin.countObjects() < min_detections)
       {
         ROS_DEBUG("Bin %d with centroid [%s] discarded as it received %d objects (at least %d required)",
-                   bin.id, ttk::pose2cstr3D(bin.getCentroid()), bin.countObjects(), min_detections);
+                   bin.id, ttk::toCStr3D(bin.getCentroid()), bin.countObjects(), min_detections);
         continue;
       }
 
@@ -204,7 +204,7 @@ public:
       std::string obj_name = sstream.str();
 
       ROS_DEBUG("Bin %d with centroid [%s] and %d objects added as object '%s'",
-                 bin.id, ttk::pose2cstr3D(bin.getCentroid()), bin.countObjects(), obj_name.c_str());
+                 bin.id, ttk::toCStr3D(bin.getCentroid()), bin.countObjects(), obj_name.c_str());
 
       geometry_msgs::Pose out_pose;
       tf::Quaternion q;
@@ -215,7 +215,7 @@ public:
 
       tf::quaternionMsgToTF(out_pose.orientation, q);
 
-      ROS_INFO("[object detection] Adding '%s' object at %s      %f", obj_name.c_str(), ttk::point2cstr3D(out_pose.position)      ,q.length2());
+      ROS_INFO("[object detection] Adding '%s' object at %s      %f", obj_name.c_str(), ttk::toCStr3D(out_pose.position)      ,q.length2());
 
       moveit_msgs::CollisionObject co;
       co.id = obj_name;

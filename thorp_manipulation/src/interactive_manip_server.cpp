@@ -155,7 +155,7 @@ public:
     im_.setCallback(marker.name, boost::bind(&InteractiveManipulationServer::feedbackCb, this, _1));
 
     ROS_INFO("[interactive manip] Added interactive marker for object '%s' at [%s] and scale [%f]",
-             marker.name.c_str(), ttk::pose2cstr3D(marker.pose), marker.scale);
+             marker.name.c_str(), ttk::toCStr3D(marker.pose), marker.scale);
 
     return true;
   }

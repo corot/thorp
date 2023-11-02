@@ -174,7 +174,7 @@ bool WaypointsPath::isStateValid(const geometry_msgs::PoseStamped& pose, bool hi
     {
       // Highlight the problematic pose to allow easy debugging
       ROS_WARN("[waypoints path] Invalid state at %s: %c; cost: %ud",
-               ttk::pose2cstr2D(pose), srv.response.state, srv.response.cost);
+               ttk::toCStr2D(pose), srv.response.state, srv.response.cost);
       highlightPose(pose);
     }
     return false;

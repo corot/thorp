@@ -36,123 +36,123 @@ geometry_msgs::Pose2D toPose2D(const geometry_msgs::Pose& pose)
   return pose_2d;
 }
 
-std::string vector2str3D(const geometry_msgs::Vector3& vector)
+std::string toStr3D(const geometry_msgs::Vector3& vector)
 {
-  return vector2cstr3D(vector);
+  return toCStr3D(vector);
 }
 
-std::string vector2str3D(const geometry_msgs::Vector3Stamped& vector)
+std::string toStr3D(const geometry_msgs::Vector3Stamped& vector)
 {
-  return vector2cstr3D(vector.vector);
+  return toCStr3D(vector.vector);
 }
 
-std::string point2str2D(const geometry_msgs::Point& point)
+std::string toStr2D(const geometry_msgs::Point& point)
 {
-  return point2cstr2D(point);
+  return toCStr2D(point);
 }
 
-std::string point2str2D(const geometry_msgs::PointStamped& point)
+std::string toStr2D(const geometry_msgs::PointStamped& point)
 {
-  return point2cstr2D(point.point);
+  return toCStr2D(point.point);
 }
 
-std::string point2str3D(const geometry_msgs::Point& point)
+std::string toStr3D(const geometry_msgs::Point& point)
 {
-  return point2cstr3D(point);
+  return toCStr3D(point);
 }
 
-std::string point2str3D(const geometry_msgs::PointStamped& point)
+std::string toStr3D(const geometry_msgs::PointStamped& point)
 {
-  return point2cstr3D(point.point);
+  return toCStr3D(point.point);
 }
 
-std::string pose2str2D(const geometry_msgs::Pose& pose)
+std::string toStr2D(const geometry_msgs::Pose& pose)
 {
-  return pose2cstr2D(pose);
+  return toCStr2D(pose);
 }
 
-std::string pose2str2D(const geometry_msgs::PoseStamped& pose)
+std::string toStr2D(const geometry_msgs::PoseStamped& pose)
 {
-  return pose2cstr2D(pose.pose);
+  return toCStr2D(pose.pose);
 }
 
-std::string pose2str2D(const tf::Stamped<tf::Pose>& pose)
+std::string toStr2D(const tf::Stamped<tf::Pose>& pose)
 {
-  return pose2cstr2D(pose);
+  return toCStr2D(pose);
 }
 
-std::string pose2str3D(const geometry_msgs::Pose& pose)
+std::string toStr3D(const geometry_msgs::Pose& pose)
 {
-  return pose2cstr3D(pose);
+  return toCStr3D(pose);
 }
 
-std::string pose2str3D(const geometry_msgs::PoseStamped& pose)
+std::string toStr3D(const geometry_msgs::PoseStamped& pose)
 {
-  return pose2cstr3D(pose.pose);
+  return toCStr3D(pose.pose);
 }
 
-std::string pose2str3D(const tf::Stamped<tf::Pose>& pose)
+std::string toStr3D(const tf::Stamped<tf::Pose>& pose)
 {
-  return pose2cstr3D(pose);
+  return toCStr3D(pose);
 }
 
 
-const char* vector2cstr3D(const geometry_msgs::Vector3& vector)
+const char* toCStr3D(const geometry_msgs::Vector3& vector)
 {
   ++___next_buffer___; ___next_buffer___ %= 10;
   sprintf(___buffers___[___next_buffer___], "%.2f, %.2f, %.2f", vector.x, vector.y, vector.z);
   return ___buffers___[___next_buffer___];
 }
 
-const char* vector2cstr3D(const geometry_msgs::Vector3Stamped& vector)
+const char* toCStr3D(const geometry_msgs::Vector3Stamped& vector)
 {
-  return vector2cstr3D(vector.vector);
+  return toCStr3D(vector.vector);
 }
 
-const char* point2cstr2D(const geometry_msgs::Point& point)
+const char* toCStr2D(const geometry_msgs::Point& point)
 {
   ++___next_buffer___; ___next_buffer___ %= 10;
   sprintf(___buffers___[___next_buffer___], "%.2f, %.2f", point.x, point.y);
   return ___buffers___[___next_buffer___];
 }
 
-const char* point2cstr2D(const geometry_msgs::PointStamped& point)
+const char* toCStr2D(const geometry_msgs::PointStamped& point)
 {
-  return point2cstr2D(point.point);
+  return toCStr2D(point.point);
 }
 
-const char* point2cstr3D(const geometry_msgs::Point& point)
+const char* toCStr3D(const geometry_msgs::Point& point)
 {
   ++___next_buffer___; ___next_buffer___ %= 10;
   sprintf(___buffers___[___next_buffer___], "%.2f, %.2f, %.2f", point.x, point.y, point.z);
   return ___buffers___[___next_buffer___];
 }
 
-const char* point2cstr3D(const geometry_msgs::PointStamped& point)
+const char* toCStr3D(const geometry_msgs::PointStamped& point)
 {
-  return point2cstr3D(point.point);
+  return toCStr3D(point.point);
 }
 
-const char* pose2cstr2D(const geometry_msgs::Pose& pose)
+const char* toCStr2D(const geometry_msgs::Pose& pose)
 {
   ++___next_buffer___; ___next_buffer___ %= 10;
   sprintf(___buffers___[___next_buffer___], "%.2f, %.2f, %.2f", pose.position.x, pose.position.y, yaw(pose));
   return ___buffers___[___next_buffer___];
 }
 
-const char* pose2cstr2D(const geometry_msgs::PoseStamped& pose)
+const char* toCStr2D(const geometry_msgs::PoseStamped& pose)
 {
-  return pose2cstr2D(pose.pose);
+  return toCStr2D(pose.pose);
 }
 
-const char* pose2cstr2D(const tf::Stamped<tf::Pose>& pose)
+const char* toCStr2D(const tf::Stamped<tf::Pose>& pose)
 {
   ++___next_buffer___; ___next_buffer___ %= 10;
   sprintf(___buffers___[___next_buffer___], "%.2f, %.2f, %.2f", pose.getOrigin().x(), pose.getOrigin().y(), yaw(pose));
   return ___buffers___[___next_buffer___];
 }
 
-const char* pose2cstr3D(const geometry_msgs::Pose& pose)
+const char* toCStr3D(const geometry_msgs::Pose& pose)
 {
   ++___next_buffer___; ___next_buffer___ %= 10;
   sprintf(___buffers___[___next_buffer___], "%.2f, %.2f, %.2f,  %.2f, %.2f, %.2f",
@@ -160,12 +160,12 @@ const char* pose2cstr3D(const geometry_msgs::Pose& pose)
   return ___buffers___[___next_buffer___];
 }
 
-const char* pose2cstr3D(const geometry_msgs::PoseStamped& pose)
+const char* toCStr3D(const geometry_msgs::PoseStamped& pose)
 {
-  return pose2cstr3D(pose.pose);
+  return toCStr3D(pose.pose);
 }
 
-const char* pose2cstr3D(const tf::Stamped<tf::Pose>& pose)
+const char* toCStr3D(const tf::Stamped<tf::Pose>& pose)
 {
   ++___next_buffer___; ___next_buffer___ %= 10;
   sprintf(___buffers___[___next_buffer___], "%.2f, %.2f, %.2f,  %.2f, %.2f, %.2f",

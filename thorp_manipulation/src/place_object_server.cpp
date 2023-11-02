@@ -54,7 +54,7 @@ void PlaceObjectServer::executeCB(const thorp_msgs::PlaceObjectGoal::ConstPtr& g
   }
 
   ROS_INFO("[place object] Execute goal: place object '%s' on support surface '%s' at pose %s...",
-           goal->object_name.c_str(), goal->support_surf.c_str(), ttk::pose2cstr3D(goal->place_pose));
+           goal->object_name.c_str(), goal->support_surf.c_str(), ttk::toCStr3D(goal->place_pose));
 
   result.error.code = place(goal->object_name, goal->support_surf, goal->place_pose);
   result.error.text = mec2str(result.error.code);
@@ -93,7 +93,7 @@ int32_t PlaceObjectServer::place(const std::string& obj_name, const std::string&
     return result;
   }
 
-  ROS_INFO("[place object] Placing object '%s' at pose %s...", obj_name.c_str(), ttk::pose2cstr3D(pose));
+  ROS_INFO("[place object] Placing object '%s' at pose %s...", obj_name.c_str(), ttk::toCStr3D(pose));
 
   std::vector<moveit_msgs::PlaceLocation> locations;
   result = makePlaceLocations(pose, attached_pose, obj_size, obj_name, surface, locations);
@@ -163,7 +163,7 @@ int32_t PlaceObjectServer::makePlaceLocations(const geometry_msgs::PoseStamped& 
     tf::poseMsgToTF(l.place_pose.pose, place_tf);
     tf::poseTFToMsg(place_tf * aco_tf, l.place_pose.pose);
     ROS_DEBUG("[place object] Compensate place pose with the attached object pose %s. Results: %s",
-              ttk::pose2cstr3D(obj_pose_eef.pose), ttk::pose2cstr3D(l.place_pose.pose));
+              ttk::toCStr3D(obj_pose_eef.pose), ttk::toCStr3D(l.place_pose.pose));
 
     l.pre_place_approach.direction.vector.x = +1;
     l.pre_place_approach.direction.header.frame_id = arm().getEndEffectorLink();
@@ -186,7 +186,7 @@ int32_t PlaceObjectServer::makePlaceLocations(const geometry_msgs::PoseStamped& 
 
     place_locations.push_back(l);
 
-    ROS_DEBUG("[place object] Place attempt %d at pose %s...", attempt, ttk::pose2cstr3D(l.place_pose));
+    ROS_DEBUG("[place object] Place attempt %d at pose %s...", attempt, ttk::toCStr3D(l.place_pose));
   }
 
   return place_locations.size();

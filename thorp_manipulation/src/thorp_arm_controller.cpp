@@ -129,7 +129,7 @@ bool ThorpArmController::validateTargetPose(geometry_msgs::PoseStamped& target, 
     ROS_DEBUG("[arm controller] Compensate distance fall short increasing distance by %fm", fall_short_distance_delta);
   }
 
-  ROS_DEBUG("[arm controller] Target pose [%s] [d: %.2f]", ttk::pose2cstr3D(target.pose), d);
+  ROS_DEBUG("[arm controller] Target pose [%s] [d: %.2f]", ttk::toCStr3D(target.pose), d);
   target_pose_pub.publish(target);
 
   return true;

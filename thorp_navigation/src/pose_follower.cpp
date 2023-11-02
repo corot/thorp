@@ -184,14 +184,14 @@ private:
         {
           feedback_.cmd.angular.z = heading * w_scale_;
           ROS_INFO_THROTTLE(1, "Rotating at %.2f rad/s toward target %s, distance: %.2f m, heading: %.2f rad",
-                            feedback_.cmd.angular.z, ttk::point2cstr3D(target_loc), distance, heading);
+                            feedback_.cmd.angular.z, ttk::toCStr3D(target_loc), distance, heading);
         }
         else
         {
           feedback_.cmd.linear.x = v_scale_ * (distance - follow_distance);
           feedback_.cmd.angular.z = w_scale_ * heading;
           ROS_INFO_THROTTLE(1, "Following at %.2f m/s, %.2f rad/s target %s, distance: %.2f m, heading: %.2f rad",
-                            feedback_.cmd.linear.x, feedback_.cmd.angular.z, ttk::point2cstr3D(target_loc),
+                            feedback_.cmd.linear.x, feedback_.cmd.angular.z, ttk::toCStr3D(target_loc),
                             distance, heading);
         }
         feedback_.dist_to_target = (float)distance;

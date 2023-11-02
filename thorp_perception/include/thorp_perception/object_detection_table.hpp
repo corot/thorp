@@ -69,13 +69,13 @@ public:
     if (! ttk::TF2::instance().transformPose(output_frame_, msg.header.frame_id, table.pose, table_pose))
     {
       ROS_WARN("[object detection] Table with pose [%s] discarded: unable to transform to output frame [%s]",
-               ttk::pose2cstr3D(table_pose), output_frame_.c_str());
+               ttk::toCStr3D(table_pose), output_frame_.c_str());
     }
     else if ((std::abs(ttk::roll(table_pose)) >= M_PI/10.0) || (std::abs(ttk::pitch(table_pose)) >= M_PI/10.0))
     {
       // Only consider tables within +/-18 degrees away from the horizontal plane
       ROS_WARN("[object detection] Table with pose [%s] discarded: %.2f radians away from the horizontal",
-               ttk::pose2cstr3D(table_pose),
+               ttk::toCStr3D(table_pose),
                std::max(std::abs(ttk::roll(table_pose)), std::abs(ttk::pitch(table_pose))));
     }
     else
@@ -152,7 +152,7 @@ public:
     table_co.primitive_poses[0].position.z -= table_co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Z]/2.0;
 
     ROS_INFO("[object detection] Table estimated at %s, size %.2fx%.2fm, based on %lu observations",
-             ttk::pose2cstr3D(table_co.primitive_poses[0]),
+             ttk::toCStr3D(table_co.primitive_poses[0]),
              table_co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_X],
              table_co.primitives[0].dimensions[shape_msgs::SolidPrimitive::BOX_Y], table_obs_.size());
 

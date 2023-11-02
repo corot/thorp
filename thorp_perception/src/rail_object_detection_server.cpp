@@ -165,7 +165,7 @@ public:
     result.surface.primitives.front().type = shape_msgs::SolidPrimitive::BOX;
     result.surface.primitives.front().dimensions = {table.depth, table.width, 0.001};
     ROS_INFO("[object detection] Adding table at %s as a collision object",
-             ttk::point2cstr3D(result.surface.pose.position));
+             ttk::toCStr3D(result.surface.pose.position));
     std::vector<moveit_msgs::CollisionObject> new_scene_objs(1, result.surface);
 
     if (publish_static_tf_)
@@ -214,7 +214,7 @@ public:
       // we reject objects failing to match any template within our error threshold
       if (!identifyObject(rail_obj, co.pose))
       {
-        ROS_WARN("[object detection] Object %d at %s discarded", i, ttk::point2cstr3D(rail_obj.center));
+        ROS_WARN("[object detection] Object %d at %s discarded", i, ttk::toCStr3D(rail_obj.center));
         continue;
       }
 
@@ -248,7 +248,7 @@ public:
       obj_color.id = co.id;
       obj_color.color = ttk::makeColor(rail_obj.rgb[0], rail_obj.rgb[1], rail_obj.rgb[2]);
 
-      ROS_INFO("[object detection] Object at %s classified as %s", ttk::pose2cstr2D(co.pose), rail_obj.name.c_str());
+      ROS_INFO("[object detection] Object at %s classified as %s", ttk::toCStr2D(co.pose), rail_obj.name.c_str());
       result.objects.push_back(co);  // TODO   try emplace
       markers.markers.emplace_back(makeLabelMarker(obj_colors.size(), rail_obj.height, co, obj_color.color));
       markers.markers.emplace_back(makeVolumeMarker(obj_colors.size(), rail_obj.bounding_volume));
@@ -299,21 +299,21 @@ private:
         std::max({obj.depth, obj.width, obj.height}) > MAX_SIZE)
     {
       ROS_WARN("[object detection] Object at %s discarded due to incongruent dimensions (%g x %g x %g; limits %g, %g)",
-               ttk::point2cstr3D(obj.center), obj.depth, obj.width, obj.height, MIN_SIZE, MAX_SIZE);
+               ttk::toCStr3D(obj.center), obj.depth, obj.width, obj.height, MIN_SIZE, MAX_SIZE);
       return false;
     }
     // reject objects embedded in the table (possibly table parts not properly removed)...
     if ((obj.center.z - obj.height / 2.0) < (table.centroid.z - TOLERANCE))
     {
       ROS_WARN("[object detection] Object at %s discarded as embedded in the table (%g < %g - %g)",
-               ttk::point2cstr3D(obj.center), obj.center.z - obj.height / 2.0, table.centroid.z, TOLERANCE);
+               ttk::toCStr3D(obj.center), obj.center.z - obj.height / 2.0, table.centroid.z, TOLERANCE);
       return false;
     }
     // ...or floating above the table (possibly the gripper after a pick/place operation)
     if ((obj.center.z - obj.height / 2.0) > (table.centroid.z + TOLERANCE))
     {
       ROS_WARN("[object detection] Object at %s discarded as floating over the table (%g > %g + %g)",
-               ttk::point2cstr3D(obj.center), obj.center.z - obj.height / 2.0, table.centroid.z, TOLERANCE);
+               ttk::toCStr3D(obj.center), obj.center.z - obj.height / 2.0, table.centroid.z, TOLERANCE);
       return false;
     }
 
