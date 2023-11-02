@@ -38,7 +38,7 @@
     <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="false">
       <param name="app_name" value="$(arg app_name)"/>
       <param name="start_delay" value="$(arg start_delay)"/>
-      <param name="run_introspection_server" value="$(eval arg('viz_smach') or arg('record_video'))"/>
+      <param name="run_introspection_server" value="$(eval arg('viz_executive') or arg('record_video'))"/>
     </node>
 
     <group if="$(arg viz_executive)">
@@ -53,10 +53,11 @@
   <group if="$(eval executive == 'bt')">
     <include file="$(find thorp_bt_cpp)/launch/bt_runner.launch">
       <arg name="app_name" value="$(arg app_name)"/>
+      <arg name="publish_bt" value="$(arg viz_executive)"/>
     </include>
 
     <group if="$(arg viz_executive)">
-      <!--TODO-->
+      <node pkg="groot" type="Groot" name="groot" args="--mode monitor --autoconnect" output="screen" respawn="true"/>
     </group>
   </group>
 
