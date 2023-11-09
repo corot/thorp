@@ -33,6 +33,9 @@
     </include>
   </group>
 
+  <!--  ***************** Visual aids *****************  -->
+  <node pkg="thorp_bringup" type="show_velocity.py" name="show_velocity" output="screen" respawn="true"/>
+
   <!--  ********* Executive and visualization *********  -->
   <group if="$(eval executive == 'smach')">
     <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="false">
@@ -64,7 +67,8 @@
 
   <!--  *************** Video recording ***************  -->
   <group if="$(arg record_video)">
-    <node pkg="thorp_simulation" type="gazebo_camera_control" name="gz_camera_control"/>
+    <node if="$(eval simulator == 'gazebo')"
+          pkg="thorp_simulation" type="gazebo_camera_control" name="gz_camera_control"/>
 
     <node pkg="thorp_apps" type="movie_director.py" name="movie_director">
       <param name="app_name" value="$(arg app_name)"/>

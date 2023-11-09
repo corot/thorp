@@ -1116,34 +1116,6 @@ Visualization Manager:
         Value: true
       Axis: Z
       Channel Name: intensity
-      Class: rviz/LaserScan
-      Color: 255; 255; 255
-      Color Transformer: Intensity
-      Decay Time: 0
-      Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Min Color: 0; 0; 0
-      Name: LaserScan (virtual sensor)
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.019999999552965164
-      Style: Flat Squares
-      Topic: /virtual
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: true
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
       Class: rviz/PointCloud2
       Color: 255; 255; 255
       Color Transformer: Intensity
@@ -1332,6 +1304,86 @@ Visualization Manager:
           Value: true
       Enabled: false
       Name: IR sensors
+    - Class: rviz/Group
+      Displays:
+        - Align Bottom: false
+          Background Alpha: 0.800000011920929
+          Background Color: 0; 0; 0
+          Class: jsk_rviz_plugin/OverlayText
+          Enabled: true
+          Foreground Alpha: 0.800000011920929
+          Foreground Color: 25; 255; 240
+          Invert Shadow: false
+          Name: Millage
+          Overtake BG Color Properties: false
+          Overtake FG Color Properties: false
+          Overtake Position Properties: false
+          Topic: /rviz/millage_overlay
+          Value: true
+          font: DejaVu Sans Mono
+          height: 128
+          left: 0
+          line width: 2
+          text size: 12
+          top: 0
+          width: 128
+        - Align Bottom: false
+          Background Alpha: 0.800000011920929
+          Background Color: 0; 0; 0
+          Class: jsk_rviz_plugin/OverlayText
+          Enabled: true
+          Foreground Alpha: 0.800000011920929
+          Foreground Color: 25; 255; 240
+          Invert Shadow: false
+          Name: SMACH State
+          Overtake BG Color Properties: false
+          Overtake FG Color Properties: false
+          Overtake Position Properties: false
+          Topic: /rviz/smach_state_overlay
+          Value: true
+          font: DejaVu Sans Mono
+          height: 128
+          left: 0
+          line width: 2
+          text size: 12
+          top: 0
+          width: 128
+        - Class: jsk_rviz_plugin/TwistStamped
+          Enabled: true
+          Name: Velocity
+          Queue Size: 10
+          Topic: /rviz/twist_stamped
+          Unreliable: false
+          Value: true
+          angular color: 255; 0; 0
+          angular scale: 1
+          linear color: 0; 255; 0
+          linear scale: 1
+        - Class: jsk_rviz_plugin/PieChart
+          Enabled: true
+          Name: Speed
+          Topic: /rviz/linear_speed
+          Value: true
+          auto color change: false
+          background color: 0; 0; 0
+          backround alpha: 0
+          clockwise rotate direction: true
+          foreground alpha: 0.699999988079071
+          foreground alpha 2: 0.4000000059604645
+          foreground color: 25; 255; 240
+          left: 128
+          max color: 255; 0; 0
+          max color change threthold: 0
+          max value: 0.5
+          med color: 255; 0; 0
+          med color change threthold: 0
+          min value: 0
+          show caption: false
+          size: 128
+          text size: 14
+          top: 128
+      Enabled: true
+      Name: Dashboard
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
       Covariance:
@@ -1349,7 +1401,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 100
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -1364,25 +1416,9 @@ Visualization Manager:
         Shaft Length: 1
         Shaft Radius: 0.05000000074505806
         Value: Arrow
-      Topic: /icp_odom
+      Topic: /odom
       Unreliable: false
-      Value: true
-    - Alpha: 1
-      Axes Length: 1
-      Axes Radius: 0.10000000149011612
-      Class: rviz/Pose
-      Color: 255; 255; 0
-      Enabled: true
-      Head Length: 0.30000001192092896
-      Head Radius: 0.10000000149011612
-      Name: ScanMatcherPose
-      Queue Size: 10
-      Shaft Length: 1
-      Shaft Radius: 0.05000000074505806
-      Shape: Arrow
-      Topic: /scan_matcher_pose
-      Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Arrow Length: 0.20000000298023224
       Axes Length: 0.30000001192092896

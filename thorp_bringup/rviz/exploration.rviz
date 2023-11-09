@@ -8,7 +8,6 @@ Panels:
         - /TF1/Tree1
         - /Local Planners1/DWA1/Trajectories1
         - /Local Planners1/TEB1/Local Path1
-        - /Exploration1/Coverage Path1
       Splitter Ratio: 0.5265780687332153
     Tree Height: 363
   - Class: rviz/Selection
@@ -1114,34 +1113,6 @@ Visualization Manager:
         Value: true
       Axis: Z
       Channel Name: intensity
-      Class: rviz/LaserScan
-      Color: 255; 255; 255
-      Color Transformer: Intensity
-      Decay Time: 0
-      Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Min Color: 0; 0; 0
-      Name: LaserScan (virtual sensor)
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.019999999552965164
-      Style: Flat Squares
-      Topic: /virtual
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: true
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
       Class: rviz/PointCloud2
       Color: 255; 255; 255
       Color Transformer: Intensity
@@ -1330,6 +1301,86 @@ Visualization Manager:
           Value: true
       Enabled: false
       Name: IR sensors
+    - Class: rviz/Group
+      Displays:
+        - Align Bottom: false
+          Background Alpha: 0.800000011920929
+          Background Color: 0; 0; 0
+          Class: jsk_rviz_plugin/OverlayText
+          Enabled: true
+          Foreground Alpha: 0.800000011920929
+          Foreground Color: 25; 255; 240
+          Invert Shadow: false
+          Name: Millage
+          Overtake BG Color Properties: false
+          Overtake FG Color Properties: false
+          Overtake Position Properties: false
+          Topic: /rviz/millage_overlay
+          Value: true
+          font: DejaVu Sans Mono
+          height: 128
+          left: 0
+          line width: 2
+          text size: 12
+          top: 0
+          width: 128
+        - Align Bottom: false
+          Background Alpha: 0.800000011920929
+          Background Color: 0; 0; 0
+          Class: jsk_rviz_plugin/OverlayText
+          Enabled: true
+          Foreground Alpha: 0.800000011920929
+          Foreground Color: 25; 255; 240
+          Invert Shadow: false
+          Name: SMACH State
+          Overtake BG Color Properties: false
+          Overtake FG Color Properties: false
+          Overtake Position Properties: false
+          Topic: /rviz/smach_state_overlay
+          Value: true
+          font: DejaVu Sans Mono
+          height: 128
+          left: 0
+          line width: 2
+          text size: 12
+          top: 0
+          width: 128
+        - Class: jsk_rviz_plugin/TwistStamped
+          Enabled: true
+          Name: Velocity
+          Queue Size: 10
+          Topic: /rviz/twist_stamped
+          Unreliable: false
+          Value: true
+          angular color: 255; 0; 0
+          angular scale: 1
+          linear color: 0; 255; 0
+          linear scale: 1
+        - Class: jsk_rviz_plugin/PieChart
+          Enabled: true
+          Name: Speed
+          Topic: /rviz/linear_speed
+          Value: true
+          auto color change: false
+          background color: 0; 0; 0
+          backround alpha: 0
+          clockwise rotate direction: true
+          foreground alpha: 0.699999988079071
+          foreground alpha 2: 0.4000000059604645
+          foreground color: 25; 255; 240
+          left: 128
+          max color: 255; 0; 0
+          max color change threthold: 0
+          max value: 0.5
+          med color: 255; 0; 0
+          med color change threthold: 0
+          min value: 0
+          show caption: false
+          size: 128
+          text size: 14
+          top: 128
+      Enabled: true
+      Name: Dashboard
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
       Covariance:
@@ -1347,7 +1398,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 100
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -1362,25 +1413,9 @@ Visualization Manager:
         Shaft Length: 1
         Shaft Radius: 0.05000000074505806
         Value: Arrow
-      Topic: /icp_odom
+      Topic: /odom
       Unreliable: false
-      Value: true
-    - Alpha: 1
-      Axes Length: 1
-      Axes Radius: 0.10000000149011612
-      Class: rviz/Pose
-      Color: 255; 255; 0
-      Enabled: true
-      Head Length: 0.30000001192092896
-      Head Radius: 0.10000000149011612
-      Name: ScanMatcherPose
-      Queue Size: 10
-      Shaft Length: 1
-      Shaft Radius: 0.05000000074505806
-      Shape: Arrow
-      Topic: /scan_matcher_pose
-      Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Arrow Length: 0.20000000298023224
       Axes Length: 0.30000001192092896
@@ -1684,7 +1719,13 @@ Visualization Manager:
               Marker Topic: /move_base_flex/TEBPlanner/teb_markers
               Name: Markers
               Namespaces:
-                {}
+                InfeasibleRobotPose/footprint: true
+                InfeasibleRobotPose/model: true
+                LineObstacles: true
+                PointObstacles: true
+                PolyObstacles: true
+                RobotFootprintModel: true
+                ViaPoints: true
               Queue Size: 100
               Value: true
           Enabled: true
@@ -1823,7 +1864,7 @@ Visualization Manager:
           Value: true
         - Class: rviz/Image
           Enabled: true
-          Image Topic: /exploration/room_sequence_img
+          Image Topic: /exploration/room_sequence_planning/room_sequence_img
           Max Value: 1
           Median window: 5
           Min Value: 0
@@ -1838,7 +1879,8 @@ Visualization Manager:
           Marker Topic: /exploration/room_sequence_planning/room_sequence_marker
           Name: Room Sequence Plan
           Namespaces:
-            {}
+            room_sequence_checkpoints: true
+            room_sequence_rooms: true
           Queue Size: 100
           Value: true
         - Class: rviz/Image
@@ -1858,7 +1900,7 @@ Visualization Manager:
           Marker Topic: /explore_house_smach/visual_markers
           Name: Reached Waypoints
           Namespaces:
-            {}
+            gp_marker: true
           Queue Size: 100
           Value: true
       Enabled: true
@@ -1900,27 +1942,6 @@ Visualization Manager:
           Value: true
       Enabled: true
       Name: Semantic map
-    - Align Bottom: false
-      Background Alpha: 0.800000011920929
-      Background Color: 0; 0; 0
-      Class: jsk_rviz_plugin/OverlayText
-      Enabled: true
-      Foreground Alpha: 0.800000011920929
-      Foreground Color: 25; 255; 240
-      Invert Shadow: false
-      Name: SMACH State
-      Overtake BG Color Properties: false
-      Overtake FG Color Properties: false
-      Overtake Position Properties: false
-      Topic: /rviz/smach_state_overlay
-      Value: true
-      font: DejaVu Sans Mono
-      height: 128
-      left: 0
-      line width: 2
-      text size: 12
-      top: 0
-      width: 128
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -1970,7 +1991,7 @@ Window Geometry:
   Height: 1016
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd00000003000000000000025c00000258fc0200000007fb0000001200530065006c0065006300740069006f006e000000003d0000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000005fb0000023c00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000008600000023c00000185000000a3fb000000100044006900730070006c006100790073010000003d000001a8000000c900fffffffb0000000a0056006900650077007301000001eb000000aa000000a400ffffff000000010000010f00000261fc0200000002fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000030000073800000140fc010000000afb000000220052006f006f006d0020005300650067006d0065006e0074006100740069006f006e0100000000000002a8000000c000fffffffb0000001a0052006f006f006d002000530065007100750065006e0063006501000002ae000002b9000000a200fffffffb0000001800430075007200720065006e007400200052006f006f006d010000056d000001cb0000009400fffffffb0000000a005600690065007700730100000000000002620000000000000000fb000000220052006f006f006d0020005300650067006d0065006e0074006100740069006f006e0000000254000001920000000000000000fb0000001a0052006f006f006d002000530065007100750065006e0063006500000003ec000001890000000000000000fb0000001800430075007200720065006e007400200052006f006f006d000000057b000001c20000000000000000fb0000000a0049006d00610067006501000005a5000001980000000000000000fb0000000800540069006d00650000000000000004a00000041800fffffffb0000000800540069006d00650100000000000004500000000000000000000004d60000025800000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000003000000000000025c00000258fc0200000007fb0000001200530065006c0065006300740069006f006e000000003d0000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000005fb0000023c00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000008600000023c00000185000000a3fb000000100044006900730070006c006100790073010000003d000001a8000000c900fffffffb0000000a0056006900650077007301000001eb000000aa000000a400ffffff000000010000010f00000261fc0200000002fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000030000073800000140fc010000000afb000000220052006f006f006d0020005300650067006d0065006e0074006100740069006f006e010000000000000272000000c000fffffffb0000001a0052006f006f006d002000530065007100750065006e0063006501000002780000026a000000a200fffffffb0000001800430075007200720065006e007400200052006f006f006d01000004e8000002500000009400fffffffb0000000a005600690065007700730100000000000002620000000000000000fb000000220052006f006f006d0020005300650067006d0065006e0074006100740069006f006e0000000254000001920000000000000000fb0000001a0052006f006f006d002000530065007100750065006e0063006500000003ec000001890000000000000000fb0000001800430075007200720065006e007400200052006f006f006d000000057b000001c20000000000000000fb0000000a0049006d00610067006501000005a5000001980000000000000000fb0000000800540069006d00650000000000000004a00000041800fffffffb0000000800540069006d00650100000000000004500000000000000000000004d60000025800000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Room Segmentation:
     collapsed: false
   Room Sequence:

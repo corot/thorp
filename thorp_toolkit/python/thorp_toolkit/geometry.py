@@ -62,6 +62,11 @@ def angles_diff(angle1, angle2):
     return norm_angle(angle2 - angle1)
 
 
+def yaw_diff(pose_or_quat_1, pose_or_quat_2):
+    """ Normalized difference between the yaw of two poses or quaternions. """
+    return angles_diff(yaw(pose_or_quat_1), yaw(pose_or_quat_2))
+
+
 def heading(pose1, pose2=None):
     """ Heading angle from one pose to another.
         Poses are assumed to have the same reference frame. """
