@@ -1,0 +1,25 @@
+robot_command_buttons:
+  - name: "start"
+    icon: "package://thorp_bringup/rviz/icons/start.png"
+    type: euscommand
+    command: "start"
+  - name: "stop"
+    icon: "package://thorp_bringup/rviz/icons/stop.png"
+    type: euscommand
+    command: "stop"
+  - name: "reset"
+    icon: "package://thorp_bringup/rviz/icons/reset.png"
+    type: euscommand
+    command: "reset"
+  - name: "exit"
+    icon: "package://thorp_bringup/rviz/icons/exit.png"
+    type: euscommand
+    command: "exit"
+  - name: "clear gripper"
+    icon: "package://thorp_bringup/rviz/icons/clear.png"
+    type: euscommand
+    command: "clear"
+  - name: "fold arm"
+    icon: "package://thorp_bringup/rviz/icons/fold.png"
+    type: euscommand
+    command: "fold"

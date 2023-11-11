@@ -15,23 +15,11 @@ from jsk_rviz_plugins.msg import OverlayText
 
 from thorp_toolkit.geometry import TF2
 from thorp_toolkit.tachometer import Tachometer
+from thorp_toolkit.visualization import Visualization
 
 
 def get_robot_pose(target_frame):
     return TF2().transform_pose(None, 'base_footprint', target_frame)
-
-
-def create_overlay_text_msg(offset_from_top, text_color, text, text_size):
-    msg = OverlayText()
-    msg.action = OverlayText.ADD
-    msg.width = 1000
-    msg.height = 25
-    msg.left = 5
-    msg.top = offset_from_top
-    msg.fg_color = text_color
-    msg.text = text
-    msg.text_size = text_size
-    return msg
 
 
 if __name__ == "__main__":
@@ -61,5 +49,5 @@ if __name__ == "__main__":
             millage = f"v: {round(twist.twist.linear.x, 2)} m/s\t \
                         w: {round(twist.twist.angular.z, 2)} rad/s\t \
                         d: {round(tachometer.distance, 1)} m"
-            millage_pub.publish(create_overlay_text_msg(40, ColorRGBA(0.1, 1.0, 0.9, 1.0), millage, 12))
+            millage_pub.publish(Visualization.create_overlay_text(40, ColorRGBA(0.1, 1.0, 0.9, 1.0), millage, 12))
         rate.sleep()

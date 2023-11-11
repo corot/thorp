@@ -47,7 +47,7 @@ with sm:
             ud['object'] = selected_obj
 
     smach.StateMachine.add('EXE_USER_CMD',
-                           ExecuteUserCommand(rospy.get_param('object_manip_key_ctrl/valid_commands')),
+                           ExecuteUserCommand(rospy.get_param('object_manip_user_commands/valid_commands')),
                            transitions={'start': 'OBJECT_DETECTION',
                                         'reset': 'OBJECT_DETECTION',
                                         'clear': 'CLEAR_GRIPPER',

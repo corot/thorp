@@ -3,6 +3,7 @@ import rospy
 from random import random
 from std_msgs.msg import ColorRGBA
 from geometry_msgs.msg import PoseStamped
+from jsk_rviz_plugins.msg import OverlayText
 from visualization_msgs.msg import Marker, MarkerArray
 
 from .singleton import Singleton
@@ -98,7 +99,7 @@ class Visualization(metaclass=Singleton):
             color_list.append(1.0)
         if len(color_list) != 4:
             raise ValueError("Color list has to be of len 3 or 4!")
-        return ColorRGBA(*color_list)  # TODO[0], color_list[1], color_list[2], color_list[3])
+        return ColorRGBA(*color_list)
 
     @classmethod
     def create_mesh_marker(cls, pose, mesh_file, scale=None, color=None, namespace='mesh_marker'):
@@ -279,3 +280,16 @@ class Visualization(metaclass=Singleton):
             marker.color = cls.rgba_from_list(colors)
         marker.points = points
         return marker
+
+    @classmethod
+    def create_overlay_text(cls, offset_from_top, text_color, text, text_size):
+        msg = OverlayText()
+        msg.action = OverlayText.ADD
+        msg.width = 1000
+        msg.height = 25
+        msg.left = 5
+        msg.top = offset_from_top
+        msg.fg_color = text_color
+        msg.text = text
+        msg.text_size = text_size
+        return msg

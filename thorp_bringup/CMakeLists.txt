@@ -14,6 +14,7 @@ install(PROGRAMS scripts/fake_joint_pub.py
                  scripts/fake_servos_srv.py
                  scripts/gripper_cmd.py
                  scripts/keyboard_ctrl.py
+                 scripts/user_commands.py
         DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
