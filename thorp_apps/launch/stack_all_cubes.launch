@@ -46,18 +46,15 @@
     <arg name="debug" value="false"/>
   </include>
 
-  <!--  ********** Keyboard user interaction **********  -->
-  <!-- We do it required, so it will shut down the whole demo on exit -->
-  <node pkg="thorp_bringup" type="keyboard_ctrl.py" name="$(arg app_name)_key_ctrl" output="screen" required="true"
-        args="$(arg app_name)">
-    <param name="window_geometry" value="360x240"/>
-    <param name="window_caption" value="Object manipulation user commands"/>
-    <param name="text_font" value="Courier New"/>
-    <param name="font_size" value="14"/>
+  <!--  ******* Robot commands issued from RViz ******** -->
+  <!-- We do it required, so it will shut down the whole app on exit -->
+  <node pkg="thorp_bringup" type="user_commands.py" name="$(arg app_name)_user_commands" output="screen" required="true">
     <rosparam param="valid_commands">['start', 'stop', 'reset', 'clear', 'fold']</rosparam>
   </node>
 
   <!-- Run RViz and load the default config to see the state of the move_group node and the scene interaction markers -->
   <node pkg="rviz" type="rviz" name="rviz" output="screen" respawn="true"
-        args="-d $(find thorp_bringup)/rviz/manipulation.rviz"/>
+        args="-d $(find thorp_bringup)/rviz/manipulation.rviz">
+    <rosparam file="$(find thorp_bringup)/rviz/user_commands.yaml" command="load" />
+  </node>
 </launch>

@@ -114,7 +114,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
 
 RUN apt clean
 
-RUN pip install --upgrade pip bidict ratelimit matplotlib tensorflow
+RUN pip install --upgrade pip ratelimit matplotlib tensorflow
 
 # build catkin workspace and remove build to reduce image size
 WORKDIR /catkin_ws
