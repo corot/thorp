@@ -14,8 +14,6 @@ def run_sm(sm, name, asw=None, parent_ud=smach.UserData()):
     :param asw: Action server wrapper; used to interact with the target sm instead of just calling execute
     :param parent_ud: Parent state machine userdata
     """
-    TF2()  # start listener asap to avoid delays when running
-
     rospy.sleep(rospy.get_param('~start_delay', 0.0))
 
     wait_for_sim_time()

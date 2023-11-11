@@ -25,9 +25,6 @@ def get_robot_pose(target_frame):
 if __name__ == "__main__":
     rospy.init_node("show_velocity")
 
-    TF2()  # start listener asap and wait till buffer fill  TODO inside TF2
-    rospy.sleep(1)
-
     tachometer = Tachometer(get_robot_pose, 'map')
     tachometer.start()
     start_time = rospy.get_time()

@@ -111,6 +111,5 @@ class CannonCtrlNode:
 
 if __name__ == '__main__':
     rospy.init_node("cannon_ctrl")
-    TF2()  # start listener asap
     node = CannonCtrlNode()
     node.spin()

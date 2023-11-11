@@ -392,6 +392,9 @@ class TF2(metaclass=Singleton):
             self.__buff__ = tf2_ros.Buffer()
             self.__list__ = tf2_ros.TransformListener(self.__buff__)
             self.__stbc__ = tf2_ros.StaticTransformBroadcaster()
+            # wait until we get the first tf msg
+            while not rospy.is_shutdown() and not self.__buff__.all_frames_as_string():
+                rospy.sleep(0.001)
         except rospy.ROSException as err:
             rospy.logerr("Could not start tf buffer client: " + str(err))
             raise err
@@ -406,20 +409,18 @@ class TF2(metaclass=Singleton):
             pose_in.pose.orientation.w = 1.0
         try:
             return self.__buff__.transform(pose_in, frame_to, timeout)
-        except (tf2_ros.LookupException,
-                tf2_ros.ConnectivityException,
-                tf2_ros.ExtrapolationException,
-                rospy.exceptions.ROSInterruptException) as err:
+        except tf2_ros.TransformException as err:
             raise rospy.ROSException("Could not transform pose from %s to %s: %s" % (frame_from, frame_to, str(err)))
+        except rospy.exceptions.ROSInterruptException:
+            pass
 
     def lookup_transform(self, frame_from, frame_to, timestamp=rospy.Time(0.0), timeout=rospy.Duration(1.0)):
         try:
             return self.__buff__.lookup_transform(frame_from, frame_to, timestamp, timeout)
-        except (tf2_ros.LookupException,
-                tf2_ros.ConnectivityException,
-                tf2_ros.ExtrapolationException,
-                rospy.exceptions.ROSInterruptException) as err:
+        except tf2_ros.TransformException as err:
             raise rospy.ROSException("Could not lookup transform from %s to %s: %s" % (frame_from, frame_to, str(err)))
+        except rospy.exceptions.ROSInterruptException:
+            pass
 
     def publish_transform(self, transform):
         self.__stbc__.sendTransform(transform)
