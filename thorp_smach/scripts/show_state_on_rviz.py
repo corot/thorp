@@ -13,7 +13,6 @@ import rospy
 from smach_ros import introspection
 from smach_msgs.msg import SmachContainerStatus
 
-from std_msgs.msg import ColorRGBA
 from jsk_rviz_plugins.msg import OverlayText
 
 from thorp_toolkit.visualization import Visualization
@@ -26,7 +25,7 @@ def smach_status_cb(msg):
     if match is None:
         return
     current_state = match.group(1)
-    overlay_text = Visualization.create_overlay_text(60, ColorRGBA(1.0, 1.0, 1.0, 1.0), current_state, 12)
+    overlay_text = Visualization.create_overlay_text(60, (1.0, 1.0, 1.0), current_state, 12)
 
     state_pub.publish(overlay_text)
 

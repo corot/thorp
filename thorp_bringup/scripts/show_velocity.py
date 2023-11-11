@@ -9,7 +9,7 @@ Author:
 
 import rospy
 
-from std_msgs.msg import ColorRGBA, Float32
+from std_msgs.msg import Float32
 from geometry_msgs.msg import TwistStamped
 from jsk_rviz_plugins.msg import OverlayText
 
@@ -49,5 +49,5 @@ if __name__ == "__main__":
             millage = f"v: {round(twist.twist.linear.x, 2)} m/s\t \
                         w: {round(twist.twist.angular.z, 2)} rad/s\t \
                         d: {round(tachometer.distance, 1)} m"
-            millage_pub.publish(Visualization.create_overlay_text(40, ColorRGBA(0.1, 1.0, 0.9, 1.0), millage, 12))
+            millage_pub.publish(Visualization.create_overlay_text(40, (0.1, 1.0, 0.9), millage, 12))
         rate.sleep()

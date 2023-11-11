@@ -10,7 +10,6 @@ import rospy
 
 import thorp_msgs.msg as thorp_msgs
 
-from std_msgs.msg import ColorRGBA
 from actionlib import SimpleActionClient, GoalStatus
 
 from jsk_rviz_plugins.msg import OverlayText
@@ -29,7 +28,7 @@ def handle_user_command(request):
         exit_requested = True
         exit_msg = "Shutting down app"
         rospy.logwarn(exit_msg)
-        cmd_pub.publish(Visualization.create_overlay_text(20, ColorRGBA(1.0, 0.65, 0.0, 1.0), exit_msg, 12))
+        cmd_pub.publish(Visualization.create_overlay_text(20, (1.0, 0.65, 0.0), exit_msg, 12))
     else:
         # Send user command goal and wait for server response; all commands will require executing several
         # actions, so if the server answers very fast, probably the app doesn't support the selected command
@@ -38,9 +37,9 @@ def handle_user_command(request):
             assert client.get_result().outcome == 'invalid_command'
             err_msg = f"{request.command} command not supported"
             rospy.logerr(err_msg)
-            cmd_pub.publish(Visualization.create_overlay_text(20, ColorRGBA(1.0, 0.0, 0.0, 1.0), err_msg, 12))
+            cmd_pub.publish(Visualization.create_overlay_text(20, (1.0, 0.0, 0.0), err_msg, 12))
             return None  # RViz will show an error
-        cmd_pub.publish(Visualization.create_overlay_text(20, ColorRGBA(1.0, 1.0, 1.0, 1.0), cmd_msg, 12))
+        cmd_pub.publish(Visualization.create_overlay_text(20, (1.0, 1.0, 1.0), cmd_msg, 12))
     return EusCommandResponse()
 
 

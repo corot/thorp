@@ -86,20 +86,39 @@ class Visualization(metaclass=Singleton):
 
     @classmethod
     def rand_color(cls, alpha=1.0):
+        """ Create color msg from random RGB values. Alpha defaults to 1.0 """
         return ColorRGBA(random(), random(), random(), alpha)
 
     @classmethod
-    def rgba_from_list(cls, color_list):
-        """ Create color from a list of colors, if alpha is not set, it will be set to 1.0 """
-        if color_list is None:  # just non invasive blue if you don't care
+    def make_color(cls, rgba: tuple):
+        """ Create color msg from a tuple containing RGB[A] values. Alpha defaults to 1.0 """
+        if not rgba:  # default to non invasive blue
             return ColorRGBA(0, 0, 1, 0.9)
-        if isinstance(color_list, ColorRGBA):
-            return color_list
-        if len(color_list) == 3:
-            color_list.append(1.0)
-        if len(color_list) != 4:
-            raise ValueError("Color list has to be of len 3 or 4!")
-        return ColorRGBA(*color_list)
+        if isinstance(rgba, ColorRGBA):
+            return rgba
+        if len(rgba) == 3:
+            return ColorRGBA(*rgba, 1.0)
+        if len(rgba) == 4:
+            return ColorRGBA(*rgba)
+        raise ValueError("Color tuple has to be of len 3 or 4!")
+
+    @classmethod
+    def named_color(cls, color_name, alpha=1.0):
+        """ Create color msg for some basic color names. Alpha defaults to 1.0 """
+        if not hasattr(cls, 'color_map'):
+            cls.color_map = {
+                "red": ColorRGBA(r=1.0, g=0.0, b=0.0, a=alpha),
+                "blue": ColorRGBA(r=0.0, g=0.0, b=1.0, a=alpha),
+                "green": ColorRGBA(r=0.0, g=1.0, b=0.0, a=alpha),
+                "yellow": ColorRGBA(r=1.0, g=1.0, b=0.0, a=alpha),
+                "orange": ColorRGBA(r=1.0, g=0.65, b=0.0, a=alpha),
+                "white": ColorRGBA(r=1.0, g=1.0, b=1.0, a=alpha),
+                "gray": ColorRGBA(r=0.5, g=0.5, b=0.5, a=alpha),
+                "beige": ColorRGBA(r=0.96, g=0.96, b=0.86, a=alpha),
+                "cyan": ColorRGBA(r=0.0, g=1.0, b=1.0, a=alpha),
+            }
+
+        return cls.color_map[color_name]
 
     @classmethod
     def create_mesh_marker(cls, pose, mesh_file, scale=None, color=None, namespace='mesh_marker'):
@@ -111,7 +130,7 @@ class Visualization(metaclass=Singleton):
         marker.scale.x = scale[0] if scale else 1.0
         marker.scale.y = scale[1] if scale else 1.0
         marker.scale.z = scale[2] if scale else 1.0
-        marker.color = cls.rgba_from_list(color)
+        marker.color = cls.make_color(color)
         marker.action = Marker.ADD
         marker.header = pose.header
         marker.pose = pose.pose
@@ -128,7 +147,7 @@ class Visualization(metaclass=Singleton):
         marker.scale.x = max(dimensions[0], 0.001)
         marker.scale.y = max(dimensions[1], 0.001)
         marker.scale.z = max(dimensions[2], 0.001)
-        marker.color = cls.rgba_from_list(color)
+        marker.color = cls.make_color(color)
         marker.action = Marker.ADD
         marker.header = pose.header
         marker.pose = pose.pose
@@ -142,7 +161,7 @@ class Visualization(metaclass=Singleton):
         marker.ns = namespace
         marker.pose.orientation.w = 1.0
         marker.scale.x = size
-        marker.color = cls.rgba_from_list(color)
+        marker.color = cls.make_color(color)
         marker.points = points
         marker.action = Marker.ADD
         marker.header = header
@@ -159,7 +178,7 @@ class Visualization(metaclass=Singleton):
         marker.scale.x = size
         marker.scale.y = size
         marker.scale.z = size
-        marker.color = cls.rgba_from_list(color)
+        marker.color = cls.make_color(color)
         marker.action = Marker.ADD
         return marker
 
@@ -180,7 +199,7 @@ class Visualization(metaclass=Singleton):
         marker.action = Marker.ADD
         marker.ns = namespace
         marker.text = text
-        marker.color = cls.rgba_from_list(color)
+        marker.color = cls.make_color(color)
         marker.scale.z = size
         return marker
 
@@ -212,7 +231,7 @@ class Visualization(metaclass=Singleton):
         Returns:
             [Marker]
         """
-        color = cls.rgba_from_list(color)
+        color = cls.make_color(color)
         markers = list()
         for pose in poses:
             marker = Marker()
@@ -250,9 +269,9 @@ class Visualization(metaclass=Singleton):
         marker.scale.z = size
         if isinstance(colors[0], list):
             # colors defined for every element
-            marker.colors = [cls.rgba_from_list(color) for color in colors]
+            marker.colors = [cls.make_color(color) for color in colors]
         else:
-            marker.color = cls.rgba_from_list(colors)
+            marker.color = cls.make_color(colors)
         return marker
 
     @classmethod
@@ -275,21 +294,21 @@ class Visualization(metaclass=Singleton):
         marker.scale.y = size
         if isinstance(colors[0], list):
             # colors defined for every element
-            marker.colors = [cls.rgba_from_list(color) for color in colors]
+            marker.colors = [cls.make_color(color) for color in colors]
         else:
-            marker.color = cls.rgba_from_list(colors)
+            marker.color = cls.make_color(colors)
         marker.points = points
         return marker
 
     @classmethod
-    def create_overlay_text(cls, offset_from_top, text_color, text, text_size):
+    def create_overlay_text(cls, offset_from_top, color, text, text_size):
         msg = OverlayText()
         msg.action = OverlayText.ADD
         msg.width = 1000
         msg.height = 25
         msg.left = 5
         msg.top = offset_from_top
-        msg.fg_color = text_color
+        msg.fg_color = cls.make_color(color)
         msg.text = text
         msg.text_size = text_size
         return msg
