@@ -116,7 +116,4 @@ asw = smach_ros.ActionServerWrapper('user_commands_action_server',
                                     feedback_key='ucmd_progress',
                                     result_key='ucmd_outcome')
 
-# Run the server in a background thread
-asw.run_server()
-
-run_sm(sm, rospy.get_param('~app_name'))
+run_sm(sm, rospy.get_param('~app_name'), asw)

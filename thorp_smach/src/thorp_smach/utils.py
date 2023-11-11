@@ -6,9 +6,13 @@ from thorp_toolkit.common import wait_for_mbf, wait_for_sim_time
 from thorp_toolkit.geometry import TF2
 
 
-def run_sm(sm, name, parent_ud=smach.UserData()):
+def run_sm(sm, name, asw=None, parent_ud=smach.UserData()):
     """
     Run the given state machine
+    :param sm: Target state machine
+    :param name: State machine name
+    :param asw: Action server wrapper; used to interact with the target sm instead of just calling execute
+    :param parent_ud: Parent state machine userdata
     """
     TF2()  # start listener asap to avoid delays when running
 
@@ -24,10 +28,14 @@ def run_sm(sm, name, parent_ud=smach.UserData()):
     # MBF is the last component to start, so wait for it before running the sm
     wait_for_mbf()
 
-    # Execute the state machine
-    t0 = rospy.get_time()
-    outcome = sm.execute(parent_ud)
-    rospy.loginfo("%s completed in %.2fs with outcome '%s'", name, rospy.get_time() - t0, outcome)
+    if asw is not None:
+        # If provided, run the action server wrapper in a background thread
+        asw.run_server()
+    else:
+        # Otherwise execute the state machine
+        t0 = rospy.get_time()
+        outcome = sm.execute(parent_ud)
+        rospy.loginfo("%s completed in %.2fs with outcome '%s'", name, rospy.get_time() - t0, outcome)
 
     # Wait for ctrl-c to stop the application
     rospy.spin()
