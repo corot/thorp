@@ -64,6 +64,7 @@ class Tachometer(object):
         self._lock.release()
 
     def update(self):
+        rate = rospy.Rate(1000)
         while self._running and not rospy.is_shutdown():
             pose = self._get_pose(self._global_frame)
             self._lock.acquire()
@@ -72,7 +73,10 @@ class Tachometer(object):
                 self.turning += abs(yaw_diff(self._prev_pose, pose))
             self._prev_pose = pose
             self._lock.release()
-            rospy.sleep(0.001)
+            try:
+                rate.sleep()
+            except rospy.exceptions.ROSInterruptException:
+                pass
 
     @property
     def max_speed(self):

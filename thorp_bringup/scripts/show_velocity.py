@@ -50,4 +50,7 @@ if __name__ == "__main__":
                         w: {round(twist.twist.angular.z, 2)} rad/s\t \
                         d: {round(tachometer.distance, 1)} m"
             millage_pub.publish(Visualization.create_overlay_text(40, (0.1, 1.0, 0.9), millage, 12))
-        rate.sleep()
+        try:
+            rate.sleep()
+        except rospy.exceptions.ROSInterruptException:
+            pass
