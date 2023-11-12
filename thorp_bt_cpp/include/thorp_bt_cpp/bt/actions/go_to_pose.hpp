@@ -12,28 +12,23 @@ namespace ttk = thorp_toolkit;
 
 namespace thorp::bt::actions
 {
-class MoveBaseAction : public BT::SimpleActionClientNode<mbf_msgs::MoveBaseAction>
+class GoToPose : public BT::SimpleActionClientNode<mbf_msgs::MoveBaseAction>
 {
 public:
-  MoveBaseAction(const std::string& name, const BT::NodeConfiguration& config) : SimpleActionClientNode(name, config)
+  GoToPose(const std::string& name, const BT::NodeConfiguration& config) : SimpleActionClientNode(name, config)
   {
   }
 
   static BT::PortsList providedPorts()
   {
-    return { BT::InputPort<double>("x"),
-             BT::InputPort<double>("y"),
-             BT::InputPort<double>("yaw"),
+    return { BT::InputPort<geometry_msgs::PoseStamped>("pose"),
              BT::OutputPort<unsigned int>("error"),
              BT::OutputPort<std::optional<mbf_msgs::MoveBaseFeedback>>("feedback") };
   }
 
   bool createGoal(GoalType& goal) override
   {
-    goal.target_pose = ttk::createPoseStamped(*getInput<double>("x"),
-                                              *getInput<double>("y"),
-                                              *getInput<double>("yaw"),
-                                              "map");
+    goal.target_pose = *getInput<geometry_msgs::PoseStamped>("pose");
     return true;
   }
 

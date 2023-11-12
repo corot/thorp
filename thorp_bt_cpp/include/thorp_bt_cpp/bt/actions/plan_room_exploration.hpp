@@ -33,7 +33,7 @@ public:
              BT::InputPort<std::vector<ipa_building_msgs::RoomInformation>>("room_information_in_meter"),
              BT::InputPort<uint32_t>("room_number"),
              BT::OutputPort<geometry_msgs::PoseStamped>("start_pose"),
-             BT::OutputPort<std::vector<geometry_msgs::PoseStamped>>("coverage_path") };
+             BT::OutputPort<std::vector<geometry_msgs::PoseStamped>>("coverage_waypoints") };
   }
 
   bool createGoal(GoalType& goal)
@@ -68,12 +68,30 @@ public:
     goal.map_resolution = *getInput<float>("map_resolution");
     goal.input_map = one_room_map;
     goal.planning_mode = 2;  // plan a path for coverage with the robot's field of view
-    goal.starting_position = ttk::toPose2D(robot_pose);
+  /////  goal.starting_position = ttk::toPose2D(robot_pose);
     goal.field_of_view = loadFOVParam();
     goal.field_of_view_origin.x = bfp_cam_tf.transform.translation.x;
     goal.field_of_view_origin.y = bfp_cam_tf.transform.translation.y;
     goal.field_of_view_origin.z = bfp_cam_tf.transform.translation.z;
-/*
+
+
+    // use room center as starting point; theta is ignored by room exploration
+    ipa_building_msgs::RoomInformation room_info =
+        getInput<std::vector<ipa_building_msgs::RoomInformation>>("room_information_in_meter")->at(room_number - 1);
+    geometry_msgs::PointStamped start_point;
+    start_point.header.frame_id = "map";
+    //start_point.point = room_info.room_center;
+    //self.start_pub.publish(start_point);
+    goal.starting_position.x = room_info.room_center.x;
+    goal.starting_position.y = room_info.room_center.y;
+    goal.starting_position.theta = 0.0; // it's ignored
+
+    // provide the starting pose, so we can move there before starting exploring
+    setOutput("start_pose", ttk::createPoseStamped(room_info.room_center.x, room_info.room_center.y, 0.0, "map"));
+
+    // IDEA: can use room_info.room_min_max to avoid points colliding with the walls
+
+                /*
  * TODO return fov as a PolygonStamped to publish while exploring
     sensor_msgs::Image img_msg;
     // Populate img_msg with the input map data
@@ -94,7 +112,7 @@ public:
   BT::NodeStatus onSuccess(const ResultConstPtr& res)
   {
     // Use the coverage path provided as a list of stamped poses
-    setOutput("coverage_path", res->coverage_path_pose_stamped);
+    setOutput("coverage_waypoints", res->coverage_path_pose_stamped);
 
     return BT::NodeStatus::SUCCESS;
   }

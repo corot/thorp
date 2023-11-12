@@ -22,16 +22,25 @@ public:
 
   static BT::PortsList providedPorts()
   {
-    return { BT::OutputPort<unsigned int>("error"),
+    return { BT::InputPort<std::string>("controller"),
+             BT::InputPort<nav_msgs::Path>("path"),
+             BT::OutputPort<unsigned int>("error"),
              BT::OutputPort<std::optional<mbf_msgs::ExePathFeedback>>("feedback") };
   }
 
-  virtual void onFeedback(const mbf_msgs::ExePathFeedbackConstPtr& feedback) override
+  bool createGoal(GoalType& goal) override
+  {
+    goal.controller = *getInput<std::string>("controller");
+    goal.path = *getInput<nav_msgs::Path>("path");
+    return true;
+  }
+
+  void onFeedback(const mbf_msgs::ExePathFeedbackConstPtr& feedback) override
   {
     setOutput("feedback", std::make_optional<mbf_msgs::ExePathFeedback>(*feedback));
   }
 
-  virtual BT::NodeStatus onAborted(const mbf_msgs::ExePathResultConstPtr& res) override
+  BT::NodeStatus onAborted(const mbf_msgs::ExePathResultConstPtr& res) override
   {
     ROS_WARN_NAMED(name(), "ExePath failed at %.2f, %.2f, %.2f; distance to goal: %.2f, angle to goal: %.2f",
                    res->final_pose.pose.position.x, res->final_pose.pose.position.y,

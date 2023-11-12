@@ -2,9 +2,6 @@
 <root BTCPP_format="3">
   <BehaviorTree ID="explore_house">
     <Sequence>
-      <GetRobotPose timeout="10.0"
-                    error=""
-                    robot_pose="{robot_pose}"/>
       <SegmentRooms action_name="exploration/room_segmentation"
                     goal=""
                     server_timeout="5.000000"
@@ -15,6 +12,9 @@
                     room_information_in_meter="{room_information_in_meter}"
                     room_information_in_pixel="{room_information_in_pixel}"
                     segmented_map="{segmented_map}"/>
+      <GetRobotPose timeout="10.0"
+                    error=""
+                    robot_pose="{robot_pose}"/>
       <PlanRoomSequence action_name="exploration/room_sequence_planning"
                         goal=""
                         map_image="{map_image}"
@@ -24,27 +24,68 @@
                         robot_radius="{robot_radius}"
                         room_information_in_pixel="{room_information_in_pixel}"
                         server_timeout="5.000000"
-                        room_sequence=""/>
-      <SetBlackboard value="3"
-                     output_key="room_number"/>
-      <PlanRoomExploration action_name="exploration/room_exploration"
-                           goal=""
-                           map_image="{map_image}"
-                           map_origin="{map_origin}"
-                           map_resolution="{map_resolution}"
-                           robot_pose="{robot_pose}"
-                           robot_radius="{robot_radius}"
-                           room_information_in_meter="{room_information_in_meter}"
-                           room_number="{room_number}"
-                           segmented_map="{segmented_map}"
-                           server_timeout="5.000000"
-                           coverage_path=""
-                           start_pose=""/>
+                        room_sequence="{room_sequence}"/>
+      <RetryUntilSuccessful num_attempts="999999">
+        <Sequence>
+          <PopUInt32FromList element="{room_number}"
+                             list="{room_sequence}"/>
+          <PlanRoomExploration action_name="exploration/room_exploration"
+                               goal=""
+                               map_image="{map_image}"
+                               map_origin="{map_origin}"
+                               map_resolution="{map_resolution}"
+                               robot_pose="{robot_pose}"
+                               robot_radius="{robot_radius}"
+                               room_information_in_meter="{room_information_in_meter}"
+                               room_number="{room_number}"
+                               segmented_map="{segmented_map}"
+                               server_timeout="5.000000"
+                               coverage_waypoints="{coverage_waypoints}"
+                               start_pose="{start_pose}"/>
+          <GoToPose action_name="move_base_flex/move_base"
+                    goal=""
+                    pose="{start_pose}"
+                    server_timeout="5.000000"
+                    error=""
+                    feedback="{goto_pose_feedback}"/>
+          <PushPoseToList element="{start_pose}"
+                          list="{coverage_waypoints}"/>
+          <SmoothPath service_name="/waypoints_path/connect_waypoints"
+                      timeout="100"
+                      waypoints="{coverage_waypoints}"
+                      path="{coverage_path}"/>
+          <ExePathAction action_name="move_base_flex/exe_path"
+                         controller="TEBPlanner"
+                         goal=""
+                         path="{coverage_path}"
+                         server_timeout="5.000000"
+                         error=""
+                         feedback="{exe_path_feedback}"/>
+          <AlwaysFailure/>
+        </Sequence>
+      </RetryUntilSuccessful>
     </Sequence>
   </BehaviorTree>
 
   <!-- Description of Node Models (used by Groot) -->
   <TreeNodesModel>
+    <Action ID="ExePathAction">
+      <input_port name="action_name"
+                  type="std::string">name of the ROS action client</input_port>
+      <input_port name="controller"
+                  type="std::string"/>
+      <input_port name="goal"
+                  type="mbf_msgs::ExePathGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
+      <input_port name="path"
+                  type="nav_msgs::Path_&lt;std::allocator&lt;void&gt; &gt;"/>
+      <input_port name="server_timeout"
+                  default="5.000000"
+                  type="double">timeout to connect to server (seconds)</input_port>
+      <output_port name="error"
+                   type="unsigned int"/>
+      <output_port name="feedback"
+                   type="std::optional&lt;mbf_msgs::ExePathFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
+    </Action>
     <Action ID="GetRobotPose">
       <input_port name="timeout"
                   type="double"/>
@@ -52,6 +93,21 @@
                    type="unsigned int"/>
       <output_port name="robot_pose"
                    type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+    </Action>
+    <Action ID="GoToPose">
+      <input_port name="action_name"
+                  type="std::string">name of the ROS action client</input_port>
+      <input_port name="goal"
+                  type="mbf_msgs::MoveBaseGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
+      <input_port name="pose"
+                  type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+      <input_port name="server_timeout"
+                  default="5.000000"
+                  type="double">timeout to connect to server (seconds)</input_port>
+      <output_port name="error"
+                   type="unsigned int"/>
+      <output_port name="feedback"
+                   type="std::optional&lt;mbf_msgs::MoveBaseFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
     </Action>
     <Action ID="PlanRoomExploration">
       <input_port name="action_name"
@@ -77,7 +133,7 @@
       <input_port name="server_timeout"
                   default="5.000000"
                   type="double">timeout to connect to server (seconds)</input_port>
-      <output_port name="coverage_path"
+      <output_port name="coverage_waypoints"
                    type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
       <output_port name="start_pose"
                    type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
@@ -105,6 +161,18 @@
       <output_port name="room_sequence"
                    type="std::vector&lt;unsigned int, std::allocator&lt;unsigned int&gt; &gt;"/>
     </Action>
+    <Action ID="PopUInt32FromList">
+      <output_port name="element"
+                   type="unsigned int"/>
+      <inout_port name="list"
+                  type="std::vector&lt;unsigned int, std::allocator&lt;unsigned int&gt; &gt;"/>
+    </Action>
+    <Action ID="PushPoseToList">
+      <input_port name="element"
+                  type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+      <inout_port name="list"
+                  type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+    </Action>
     <Action ID="SegmentRooms">
       <input_port name="action_name"
                   type="std::string">name of the ROS action client</input_port>
@@ -127,6 +195,17 @@
                    type="std::vector&lt;ipa_building_msgs::RoomInformation_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;ipa_building_msgs::RoomInformation_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
       <output_port name="segmented_map"
                    type="sensor_msgs::Image_&lt;std::allocator&lt;void&gt; &gt;"/>
+    </Action>
+    <Action ID="SmoothPath">
+      <input_port name="service_name"
+                  type="std::string">name of the ROS service</input_port>
+      <input_port name="timeout"
+                  default="100"
+                  type="unsigned int">timeout to connect to server (milliseconds)</input_port>
+      <input_port name="waypoints"
+                  type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+      <output_port name="path"
+                   type="nav_msgs::Path_&lt;std::allocator&lt;void&gt; &gt;"/>
     </Action>
   </TreeNodesModel>
 
