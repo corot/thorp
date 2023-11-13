@@ -24,7 +24,11 @@
         </Action>
         <Action ID="GoToPose">
             <input_port name="action_name" type="std::string">name of the ROS action client</input_port>
+            <input_port name="angle_tolerance" type="double"/>
+            <input_port name="controller" type="std::string"/>
+            <input_port name="dist_tolerance" type="double"/>
             <input_port name="goal" type="mbf_msgs::MoveBaseGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
+            <input_port name="planner" type="std::string"/>
             <input_port name="pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
             <output_port name="error" type="unsigned int"/>

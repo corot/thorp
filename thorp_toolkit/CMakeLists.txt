@@ -47,6 +47,7 @@ catkin_package(
         moveit_msgs
         moveit_ros_planning_interface
         eigen_conversions
+        dynamic_reconfigure
         thorp_msgs
 )
 
@@ -73,6 +74,7 @@ target_link_libraries(save_pose_node ${catkin_LIBRARIES})
 add_library(${PROJECT_NAME}
         src/tf2.cpp
         src/geometry.cpp
+        src/reconfigure.cpp
         src/planning_scene.cpp
         include/thorp_toolkit/common.hpp)
 add_dependencies(${PROJECT_NAME} thorp_msgs_generate_messages_cpp)
