@@ -10,14 +10,16 @@ namespace thorp_toolkit
 Reconfigure::Reconfigure(const std::string& ns) : nh_(ns)
 {
   // Create a dynamic reconfigure client per subsystem
-  srv_client_ = nh_.serviceClient<dynamic_reconfigure::Reconfigure>("set_parameters", true);
+  srv_client_ = nh_.serviceClient<dynamic_reconfigure::Reconfigure>("set_parameters");
   if (!srv_client_.waitForExistence(ros::Duration(10.0)))
     throw ros::Exception("'" + ns + "' dynamic reconfigure service not available after 10s");
 }
 
 bool Reconfigure::apply()
 {
-  bool succeeded = srv_client_.call(curr_config_);
+  dynamic_reconfigure::Reconfigure srv;
+  srv.request.config = curr_config_;
+  bool succeeded = srv_client_.call(srv);
   if (succeeded)
   {
     ROS_INFO_STREAM("Updated '" << nh_.getNamespace() << "' configuration");
@@ -32,7 +34,9 @@ bool Reconfigure::apply()
 
 bool Reconfigure::revert()
 {
-  bool succeeded = srv_client_.call(prev_config_);
+  dynamic_reconfigure::Reconfigure srv;
+  srv.request.config = prev_config_;
+  bool succeeded = srv_client_.call(srv);
   if (succeeded)
   {
     ROS_INFO_STREAM("Reverted '" << nh_.getNamespace() << "' configuration");
@@ -41,7 +45,7 @@ bool Reconfigure::revert()
   {
     ROS_ERROR_STREAM("Reverting '" << nh_.getNamespace() << " configuration failed");
   }
-  clear(curr_config_);
+  clear(prev_config_);
   return succeeded;
 }
 
@@ -54,9 +58,9 @@ bool Reconfigure::addParam(const std::string& name, bool value)
     ROS_ERROR_STREAM("Cannot read current value for parameter '" << name << "'; ignoring");
     return false;
   }
-  prev_config_.request.config.bools.push_back(param);
+  prev_config_.bools.push_back(param);
   param.value = value;
-  curr_config_.request.config.bools.push_back(param);
+  curr_config_.bools.push_back(param);
   return true;
 }
 
@@ -69,9 +73,9 @@ bool Reconfigure::addParam(const std::string& name, int value)
     ROS_ERROR_STREAM("Cannot read current value for parameter '" << name << "'; ignoring");
     return false;
   }
-  prev_config_.request.config.ints.push_back(param);
+  prev_config_.ints.push_back(param);
   param.value = value;
-  curr_config_.request.config.ints.push_back(param);
+  curr_config_.ints.push_back(param);
   return true;
 }
 
@@ -84,9 +88,9 @@ bool Reconfigure::addParam(const std::string& name, double value)
     ROS_ERROR_STREAM("Cannot read current value for parameter '" << name << "'; ignoring");
     return false;
   }
-  prev_config_.request.config.doubles.push_back(param);
+  prev_config_.doubles.push_back(param);
   param.value = value;
-  curr_config_.request.config.doubles.push_back(param);
+  curr_config_.doubles.push_back(param);
   return true;
 }
 
@@ -99,18 +103,18 @@ bool Reconfigure::addParam(const std::string& name, const std::string& value)
     ROS_ERROR_STREAM("Cannot read current value for parameter '" << name << "'; ignoring");
     return false;
   }
-  prev_config_.request.config.strs.push_back(param);
+  prev_config_.strs.push_back(param);
   param.value = value;
-  curr_config_.request.config.strs.push_back(param);
+  curr_config_.strs.push_back(param);
   return true;
 }
 
-void Reconfigure::clear(dynamic_reconfigure::Reconfigure& config)
+void Reconfigure::clear(dynamic_reconfigure::Config& config)
 {
-  config.request.config.bools.clear();
-  config.request.config.ints.clear();
-  config.request.config.doubles.clear();
-  config.request.config.strs.clear();
+  config.bools.clear();
+  config.ints.clear();
+  config.doubles.clear();
+  config.strs.clear();
 }
 
 };  // namespace thorp_toolkit

@@ -55,10 +55,6 @@ public:
         one_room_map.data[j] = 0;
       ++j;
     }
-    std::for_each(r.begin(), r.end(), [](int ri) { printf("%d  ", ri); });
-    printf("\n\n");
-
-    ROS_ERROR_STREAM(room_number);
     geometry_msgs::Pose robot_pose = getInput<geometry_msgs::PoseStamped>("robot_pose")->pose;
     geometry_msgs::TransformStamped bfp_cam_tf;
     ttk::TF2::instance().lookupTransform("kinect_rgb_frame", "base_footprint", bfp_cam_tf);

@@ -65,7 +65,7 @@
                          server_timeout="5.000000"
                          error=""
                          feedback="{exe_path_feedback}"/>
-          <AlwaysFailure/>
+          <IsListEmpty list="{room_sequence}"/>
         </Sequence>
       </RetryUntilSuccessful>
     </Sequence>
@@ -121,6 +121,10 @@
       <output_port name="feedback"
                    type="std::optional&lt;mbf_msgs::MoveBaseFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
     </Action>
+    <Condition ID="IsListEmpty">
+      <input_port name="list"
+                  type="std::vector&lt;unsigned int, std::allocator&lt;unsigned int&gt; &gt;"/>
+    </Condition>
     <Action ID="PlanRoomExploration">
       <input_port name="action_name"
                   type="std::string">name of the ROS action client</input_port>

@@ -34,6 +34,12 @@
             <output_port name="error" type="unsigned int"/>
             <output_port name="feedback" type="std::optional&lt;mbf_msgs::MoveBaseFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
         </Action>
+        <Condition ID="IsBoolTrue">
+            <input_port name="input" type="bool"/>
+        </Condition>
+        <Condition ID="IsListEmpty">
+            <input_port name="list" type="std::vector&lt;unsigned int, std::allocator&lt;unsigned int&gt; &gt;"/>
+        </Condition>
         <Action ID="MoveBaseAction">
             <input_port name="action_name" type="std::string">name of the ROS action client</input_port>
             <input_port name="goal" type="mbf_msgs::MoveBaseGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>

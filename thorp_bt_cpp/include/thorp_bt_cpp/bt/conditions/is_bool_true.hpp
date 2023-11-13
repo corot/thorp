@@ -5,6 +5,14 @@
 
 namespace thorp::bt::conditions
 {
+/**
+ * Checks if the given boolean is true.
+ *
+ * @param[in] input Value to evaluate
+ *
+ * @return  SUCCESS if given input is true
+ *          FAILURE if given input is false
+ */
 class IsBoolTrue : public BT::ConditionNode
 {
 public:

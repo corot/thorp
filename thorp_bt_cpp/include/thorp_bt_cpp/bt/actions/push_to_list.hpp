@@ -26,7 +26,6 @@ private:
   {
     std::vector<T> list;
     utils::getInput<std::vector<T>>(*this, pnh_, "list", list);
-    ROS_ERROR_STREAM(utils::getInput<T>(*this, pnh_, "element"));
     list.insert(list.begin(), utils::getInput<T>(*this, pnh_, "element"));
     setOutput("list", list);
     return BT::NodeStatus::SUCCESS;

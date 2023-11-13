@@ -25,6 +25,7 @@
 
 // bt conditions
 #include "thorp_bt_cpp/bt/conditions/is_bool_true.hpp"
+#include "thorp_bt_cpp/bt/conditions/is_list_empty.hpp"
 
 // bt controls
 #include "thorp_bt_cpp/bt/controls/super_reactive_sequence.hpp"
@@ -67,7 +68,8 @@ void registerNodes(BT::BehaviorTreeFactory& factory, ros::NodeHandle& nh, const 
     //    registerNode<bt::actions::SetBlackboard<double>>("SetDouble");
     //    registerNode<bt::actions::SetBlackboard<unsigned int>>("SetUnsignedInt");
   // conditions
-  //    registerNode<bt::conditions::IsBoolTrue>("IsBoolTrue");
+  registerNode<bt::conditions::IsBoolTrue>(factory, nh, "IsBoolTrue");
+  registerNode<bt::conditions::IsListEmpty<uint32_t>>(factory, nh, "IsListEmpty");
 
   // controls
   registerNode<bt::controls::SuperReactiveSequence>(factory, nh, "SuperReactiveSequence");
