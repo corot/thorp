@@ -28,7 +28,7 @@ public:
              BT::OutputPort<std::optional<mbf_msgs::ExePathFeedback>>("feedback") };
   }
 
-  bool createGoal(GoalType& goal) override
+  bool setGoal(GoalType& goal) override
   {
     goal.controller = *getInput<std::string>("controller");
     goal.path = *getInput<nav_msgs::Path>("path");

@@ -168,7 +168,7 @@ protected:
    * @param goal Reference to the goal object to fill
    * @return True by overriding methods
    */
-  virtual bool createGoal(GoalType& goal) { return false; };
+  virtual bool setGoal(GoalType& goal) { return false; };
 
   /**
    * @brief The main override required by a BT action
@@ -194,7 +194,7 @@ protected:
 
     if (status() == BT::NodeStatus::IDLE)
     {
-      if (!getInput("goal", goal_) && (!createGoal(goal_)))
+      if (/*!getInput("goal", goal_) &&*/ !setGoal(goal_))
       {
         ROS_WARN_NAMED(LOGNAME, "goal is not defined. Exiting with success.");
         return BT::NodeStatus::SUCCESS;
@@ -213,12 +213,11 @@ protected:
       feedback_.reset();  // TODO this is a fix needed
       action_client_->sendGoal(goal_, {}, {}, boost::bind(&SimpleActionClientNode::feedbackCb, this, _1));
     }
-
     else
     {
       onTick();
       GoalType new_goal;
-      if (getInput("goal", new_goal))
+      if (/*getInput("goal", new_goal) || setGoal(new_goal)*  TODO  by now we don't allow preemption */  false)
       {
         if (new_goal != goal_)
         {

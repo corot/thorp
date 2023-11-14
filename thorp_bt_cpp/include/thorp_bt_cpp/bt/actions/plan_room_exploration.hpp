@@ -36,7 +36,7 @@ public:
              BT::OutputPort<std::vector<geometry_msgs::PoseStamped>>("coverage_waypoints") };
   }
 
-  bool createGoal(GoalType& goal)
+  bool setGoal(GoalType& goal) override
   {
     // We need an image containing only the room to explore, so we copy the original map and
     // set to black all pixels not belonging to the given room number in the segmented map

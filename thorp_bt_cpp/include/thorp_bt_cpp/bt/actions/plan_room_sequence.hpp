@@ -31,7 +31,7 @@ public:
              BT::OutputPort<std::vector<uint32_t>>("room_sequence") };
   }
 
-  bool createGoal(GoalType& goal)
+  bool setGoal(GoalType& goal) override
   {
     goal.robot_start_coordinate = getInput<geometry_msgs::PoseStamped>("robot_pose")->pose;
     goal.robot_radius = *getInput<float>("robot_radius");

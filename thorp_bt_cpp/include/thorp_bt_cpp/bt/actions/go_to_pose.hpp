@@ -34,7 +34,7 @@ public:
              BT::OutputPort<std::optional<mbf_msgs::MoveBaseFeedback>>("feedback") };
   }
 
-  bool createGoal(GoalType& goal) override
+  bool setGoal(GoalType& goal) override
   {
     if (reconf_)
     {

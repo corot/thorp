@@ -28,7 +28,7 @@ public:
              BT::OutputPort<std::optional<mbf_msgs::MoveBaseFeedback>>("feedback") };
   }
 
-  bool createGoal(GoalType& goal) override
+  bool setGoal(GoalType& goal) override
   {
     goal.target_pose = ttk::createPoseStamped(*getInput<double>("x"),
                                               *getInput<double>("y"),

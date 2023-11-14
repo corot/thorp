@@ -31,7 +31,7 @@ public:
              BT::OutputPort<std::vector<ipa_building_msgs::RoomInformation>>("room_information_in_pixel") };
   }
 
-  bool createGoal(GoalType& goal)
+  bool setGoal(GoalType& goal) override
   {
     auto map = ttk::waitForMessage<nav_msgs::OccupancyGrid>("map");
     if (!map)
