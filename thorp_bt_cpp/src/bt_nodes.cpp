@@ -5,13 +5,13 @@
 // navigation
 #include "thorp_bt_cpp/bt/actions/go_to_pose.hpp"
 #include "thorp_bt_cpp/bt/actions/smooth_path.hpp"
+#include "thorp_bt_cpp/bt/actions/get_robot_pose.hpp"
+#include "thorp_bt_cpp/bt/actions/track_progress.hpp"
 #include "thorp_bt_cpp/bt/actions/clear_costmaps.hpp"
 #include "thorp_bt_cpp/bt/actions/get_path_action.hpp"
 #include "thorp_bt_cpp/bt/actions/exe_path_action.hpp"
 #include "thorp_bt_cpp/bt/actions/recovery_action.hpp"
 #include "thorp_bt_cpp/bt/actions/move_base_action.hpp"
-#include "thorp_bt_cpp/bt/actions/get_robot_pose.hpp"
-#include "thorp_bt_cpp/bt/actions/select_controller.hpp"
 
 // exploration
 #include "thorp_bt_cpp/bt/actions/segment_rooms.hpp"
@@ -19,7 +19,9 @@
 #include "thorp_bt_cpp/bt/actions/plan_room_exploration.hpp"
 
 // general
+#include "thorp_bt_cpp/bt/actions/use_named_config.hpp"
 #include "thorp_bt_cpp/bt/actions/set_blackboard.hpp"
+#include "thorp_bt_cpp/bt/actions/list_slicing.hpp"
 #include "thorp_bt_cpp/bt/actions/push_to_list.hpp"
 #include "thorp_bt_cpp/bt/actions/pop_from_list.hpp"
 
@@ -49,8 +51,9 @@ namespace thorp::bt
 void registerNodes(BT::BehaviorTreeFactory& factory, ros::NodeHandle& nh, const std::string& nodes_file_path)
 {
   // actions
-  registerNode<bt::actions::ClearCostmaps>(factory, nh, "ClearCostmaps");
   registerNode<bt::actions::GetRobotPose>(factory, nh, "GetRobotPose");
+  registerNode<bt::actions::ClearCostmaps>(factory, nh, "ClearCostmaps");
+  registerNode<bt::actions::TrackProgress>(factory, nh, "TrackProgress");
   BT::RegisterRosService<bt::actions::SmoothPath>(factory, "SmoothPath", nh);
   BT::RegisterSimpleActionClient<bt::actions::GoToPose>(factory, "GoToPose");
   BT::RegisterSimpleActionClient<bt::actions::GetPathAction>(factory, "GetPathAction");
@@ -61,7 +64,9 @@ void registerNodes(BT::BehaviorTreeFactory& factory, ros::NodeHandle& nh, const 
   BT::RegisterSimpleActionClient<bt::actions::PlanRoomSequence>(factory, "PlanRoomSequence");
   BT::RegisterSimpleActionClient<bt::actions::PlanRoomExploration>(factory, "PlanRoomExploration");
 
+  registerNode<bt::actions::UseNamedConfig>(factory, nh, "UseNamedConfig");
   registerNode<bt::actions::PushToList<geometry_msgs::PoseStamped>>(factory, nh, "PushPoseToList");
+  registerNode<bt::actions::ListSlicing<geometry_msgs::PoseStamped>>(factory, nh, "PoseListSlicing");
   registerNode<bt::actions::PopFromList<uint32_t>>(factory, nh, "PopUInt32FromList");
     //    registerNode<bt::actions::SelectController>("SelectController");
     //    registerNode<bt::actions::SetBlackboard<bool>>("SetBool");

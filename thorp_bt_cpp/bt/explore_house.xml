@@ -54,17 +54,42 @@
                     feedback="{goto_pose_feedback}"/>
           <PushPoseToList element="{start_pose}"
                           list="{coverage_waypoints}"/>
-          <SmoothPath service_name="/waypoints_path/connect_waypoints"
-                      timeout="100"
-                      waypoints="{coverage_waypoints}"
-                      path="{coverage_path}"/>
-          <ExePathAction action_name="move_base_flex/exe_path"
-                         controller="TEBPlanner"
-                         goal=""
-                         path="{coverage_path}"
-                         server_timeout="5.000000"
-                         error=""
-                         feedback="{exe_path_feedback}"/>
+          <RetryUntilSuccessful num_attempts="10.0">
+            <Sequence>
+              <PoseListSlicing end=""
+                               start="{reached_waypoint}"
+                               list="{coverage_waypoints}"/>
+              <Parallel failure_threshold="1"
+                        success_threshold="1">
+                <UseNamedConfig config_name="waypoints_following"
+                                source_ns="named_configuration"
+                                target_ns=""/>
+                <Sequence>
+                  <SmoothPath service_name="/waypoints_path/connect_waypoints"
+                              timeout="100"
+                              waypoints="{coverage_waypoints}"
+                              path="{coverage_path}"/>
+                  <ExePathAction action_name="move_base_flex/exe_path"
+                                 controller="TEBPlanner"
+                                 goal=""
+                                 path="{coverage_path}"
+                                 server_timeout="5.000000"
+                                 error=""
+                                 feedback="{exe_path_feedback}"/>
+                </Sequence>
+                <ReactiveSequence>
+                  <GetRobotPose timeout="1"
+                                error=""
+                                robot_pose="{robot_pose}"/>
+                  <TrackProgress robot_pose="{robot_pose}"
+                                 waypoints="{coverage_waypoints}"
+                                 reached_waypoint="{reached_waypoint}"/>
+                </ReactiveSequence>
+              </Parallel>
+            </Sequence>
+          </RetryUntilSuccessful>
+          <SetBlackboard value="0"
+                         output_key="{reached_waypoint}"/>
           <IsListEmpty list="{room_sequence}"/>
         </Sequence>
       </RetryUntilSuccessful>
@@ -183,6 +208,14 @@
       <inout_port name="list"
                   type="std::vector&lt;unsigned int, std::allocator&lt;unsigned int&gt; &gt;"/>
     </Action>
+    <Action ID="PoseListSlicing">
+      <input_port name="end"
+                  type="unsigned long"/>
+      <input_port name="start"
+                  type="unsigned long"/>
+      <inout_port name="list"
+                  type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+    </Action>
     <Action ID="PushPoseToList">
       <input_port name="element"
                   type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
@@ -222,6 +255,22 @@
                   type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
       <output_port name="path"
                    type="nav_msgs::Path_&lt;std::allocator&lt;void&gt; &gt;"/>
+    </Action>
+    <Action ID="TrackProgress">
+      <input_port name="robot_pose"
+                  type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+      <input_port name="waypoints"
+                  type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+      <output_port name="reached_waypoint"
+                   type="unsigned long"/>
+    </Action>
+    <Action ID="UseNamedConfig">
+      <input_port name="config_name"
+                  type="std::string"/>
+      <input_port name="source_ns"
+                  type="std::string"/>
+      <input_port name="target_ns"
+                  type="std::string"/>
     </Action>
   </TreeNodesModel>
 

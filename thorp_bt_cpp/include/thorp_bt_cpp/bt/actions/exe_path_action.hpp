@@ -42,11 +42,11 @@ public:
 
   BT::NodeStatus onAborted(const mbf_msgs::ExePathResultConstPtr& res) override
   {
-    ROS_WARN_NAMED(name(), "ExePath failed at %.2f, %.2f, %.2f; distance to goal: %.2f, angle to goal: %.2f",
-                   res->final_pose.pose.position.x, res->final_pose.pose.position.y,
-                   ttk::yaw(res->final_pose), res->dist_to_goal, res->angle_to_goal);
+    ROS_ERROR_NAMED(name(), "ExePath failed at %.2f, %.2f, %.2f; distance to goal: %.2f, angle to goal: %.2f",
+                    res->final_pose.pose.position.x, res->final_pose.pose.position.y,
+                    ttk::yaw(res->final_pose), res->dist_to_goal, res->angle_to_goal);
 
-    ROS_WARN_NAMED(name(), "Error %d: %s", res->outcome, res->message.c_str());
+    ROS_ERROR_NAMED(name(), "Error %d: %s", res->outcome, res->message.c_str());
 
     utils::setError(*this, res->outcome);
 

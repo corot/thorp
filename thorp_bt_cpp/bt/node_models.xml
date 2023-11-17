@@ -81,6 +81,11 @@
             <output_port name="element" type="unsigned int"/>
             <inout_port name="list" type="std::vector&lt;unsigned int, std::allocator&lt;unsigned int&gt; &gt;"/>
         </Action>
+        <Action ID="PoseListSlicing">
+            <input_port name="end" type="unsigned long"/>
+            <input_port name="start" type="unsigned long"/>
+            <inout_port name="list" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+        </Action>
         <Action ID="PushPoseToList">
             <input_port name="element" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <inout_port name="list" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
@@ -111,6 +116,17 @@
             <output_port name="path" type="nav_msgs::Path_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Control ID="SuperReactiveSequence"/>
+        <Action ID="TrackProgress">
+            <input_port name="reached_threshold" type="double"/>
+            <input_port name="robot_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="waypoints" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+            <output_port name="reached_waypoint" type="unsigned long"/>
+        </Action>
+        <Action ID="UseNamedConfig">
+            <input_port name="config_name" type="std::string"/>
+            <input_port name="source_ns" type="std::string"/>
+            <input_port name="target_ns" type="std::string"/>
+        </Action>
     </TreeNodesModel>
 </root>
 

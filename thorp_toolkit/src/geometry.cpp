@@ -4,11 +4,46 @@
 
 #include "thorp_toolkit/geometry.hpp"
 
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_eigen/tf2_eigen.h>
+#include <Eigen/Geometry>
+
 namespace thorp_toolkit
 {
 
 char ___buffers___[10][256];
 int ___next_buffer___ = -1;
+
+double dot(const std::array<geometry_msgs::Point, 2>& v1, const std::array<geometry_msgs::Point, 2>& v2)
+{
+  Eigen::Vector3d a, b, c, d;
+  tf2::fromMsg(v1[0], a);
+  tf2::fromMsg(v1[1], b);
+  tf2::fromMsg(v2[0], c);
+  tf2::fromMsg(v2[1], d);
+
+  return (b - a).dot(d - c);
+}
+
+double distance2D(const std::array<geometry_msgs::Point, 2>& line_points, const geometry_msgs::Point& point)
+{
+  Eigen::Vector3d p, p0, p1;
+  tf2::fromMsg(point, p);
+  tf2::fromMsg(line_points[0], p0);
+  tf2::fromMsg(line_points[1], p1);
+
+  // 2D
+  p.z() = 0;
+  p0.z() = 0;
+  p1.z() = 0;
+
+  Eigen::Vector3d p0p1 = p1 - p0;
+  Eigen::Vector3d p0p = p - p0;
+  double seg_len = p0p1.norm();
+  double t = p0p.dot(p0p1) / seg_len;
+  t = std::max(0.0, std::min(1.0, t));
+  return (p0p - (p0p1 * t)).norm();
+}
 
 geometry_msgs::Pose createPose(double x, double y, double yaw)
 {

@@ -1,5 +1,5 @@
 move_base_flex/TEBPlanner:
-  weight_viapoint: 200  # overweight viapoints to stick closely to the path
+  weight_viapoint: 200.0  # overweight viapoints to stick closely to the path
 
   # loose goal reached criteria, ignoring orientation and velocity at goal
   xy_goal_tolerance: 0.2

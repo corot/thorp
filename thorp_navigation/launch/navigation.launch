@@ -25,6 +25,10 @@
   <arg name="initial_pose_a"  default="0.0"/>
 
   <param name="named_configs_path" value="$(find thorp_navigation)/param/named_configs"/>
+  <group ns="named_configuration">
+    <rosparam file="$(find thorp_navigation)/param/named_configs/precise_controlling.yaml" command="load" ns="precise_controlling"/>
+    <rosparam file="$(find thorp_navigation)/param/named_configs/waypoints_following.yaml" command="load" ns="waypoints_following"/>
+  </group>
 
   <!--  **************** Move base flex ***************  -->
   <include if="$(arg move_base_flex)" file="$(find thorp_navigation)/launch/includes/move_base_flex.launch.xml">

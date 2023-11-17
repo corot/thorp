@@ -339,6 +339,22 @@ inline double distance2D(const tf::Transform& a, const tf::Transform& b = tf::Tr
                  + std::pow(b.getOrigin().y() - a.getOrigin().y(), 2));
 }
 
+/**
+ * Computes the dot product between the two given vectors
+ * @param v1 Vector AB {from A, to B}
+ * @param v2 Vector CD {from C, to D}
+ * @return AB.CD
+ */
+double dot(const std::array<geometry_msgs::Point, 2>& v1, const std::array<geometry_msgs::Point, 2>& v2);
+
+/**
+ * Euclidean distance between a point and a line segment.
+ * @param line start and end points on the line segment
+ * @param point point to which distance needs to be calculated from
+ * @return distance from point to line segment
+ */
+double distance2D(const std::array<geometry_msgs::Point, 2>& line, const geometry_msgs::Point& point);
+
 
 /**
  * Euclidean distance between 3D points or one point and the origin.

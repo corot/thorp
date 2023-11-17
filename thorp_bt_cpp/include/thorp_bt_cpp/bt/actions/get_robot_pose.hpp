@@ -4,6 +4,8 @@
 #include <behaviortree_cpp_v3/action_node.h>
 #include "thorp_bt_cpp/bt/utils.hpp"
 
+#include <mbf_msgs/ExePathAction.h>
+
 #include <thorp_toolkit/tf2.hpp>
 namespace ttk = thorp_toolkit;
 

@@ -39,6 +39,7 @@ catkin_package(
         tf
         tf2
         tf2_ros
+        tf2_eigen
         tf2_geometry_msgs
         roscpp
         angles
@@ -73,10 +74,12 @@ target_link_libraries(save_pose_node ${catkin_LIBRARIES})
 ## Libraries
 add_library(${PROJECT_NAME}
         src/tf2.cpp
+        src/common.cpp
         src/geometry.cpp
         src/reconfigure.cpp
         src/planning_scene.cpp
-        include/thorp_toolkit/common.hpp)
+        src/progress_tracker.cpp
+        src/alternative_config.cpp)
 add_dependencies(${PROJECT_NAME} thorp_msgs_generate_messages_cpp)
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} )
 

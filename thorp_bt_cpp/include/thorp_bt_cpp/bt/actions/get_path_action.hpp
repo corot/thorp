@@ -29,7 +29,7 @@ public:
 
   virtual BT::NodeStatus onAborted(const mbf_msgs::GetPathResultConstPtr& res) override
   {
-    ROS_WARN_NAMED(name(), "Error %d: %s", res->outcome, res->message.c_str());
+    ROS_ERROR_NAMED(name(), "Error %d: %s", res->outcome, res->message.c_str());
 
     utils::setError(*this, res->outcome);
 

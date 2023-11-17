@@ -81,7 +81,6 @@ class DelTraversedWPs(smach.Sequence):
                                               output_keys=['waypoints'])
         with self:
             smach.Sequence.add('INC_REACHED_WP_BY_1', UDApplyFn('reached_wp', lambda x: None if x is None else x + 1))
-                                   #####remapping={'key': 'reached_wp'})
             smach.Sequence.add('DEL_TRAVERSED_WPS', UDListSlicing(),
                                remapping={'list': 'waypoints',
                                           'start': 'reached_wp'})
