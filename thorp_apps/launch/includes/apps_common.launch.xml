@@ -38,7 +38,7 @@
 
   <!--  ********* Executive and visualization *********  -->
   <group if="$(eval executive == 'smach')">
-    <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)_smach" output="screen" respawn="false">
+    <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)" output="screen" respawn="false">
       <param name="app_name" value="$(arg app_name)"/>
       <param name="start_delay" value="$(arg start_delay)"/>
       <param name="run_introspection_server" value="$(eval arg('viz_executive') or arg('record_video'))"/>

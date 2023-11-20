@@ -25,7 +25,7 @@
   <arg name="camera"         default="kinect"/>  <!-- kinect | xtion -->
   <arg name="laps"           default="1"/>
 
-  <param name="$(arg app_name)_smach/laps" value="$(arg laps)"/>
+  <param name="$(arg app_name)/laps" value="$(arg laps)"/>
 
   <!--  ******* Components common for all apps ********  -->
   <include file="$(find thorp_apps)/launch/includes/apps_common.launch.xml">

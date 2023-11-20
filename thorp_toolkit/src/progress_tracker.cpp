@@ -11,7 +11,7 @@ ProgressTracker::ProgressTracker(const std::vector<geometry_msgs::PoseStamped>& 
   , next_wp(0)
   , reached(false)
   , min_dist(std::numeric_limits<double>::infinity())
-  , viz("waypoints")
+  , viz("visual_markers")
 {
   if (_waypoints.empty())
   {

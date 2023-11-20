@@ -6,7 +6,7 @@
 
   <arg name="publish_bt" default="false"/>
 
-  <node pkg="thorp_bt_cpp" type="bt_runner_node" name="$(arg app_name)_bt" output="$(arg output)" respawn="$(arg respawn)">
+  <node pkg="thorp_bt_cpp" type="bt_runner_node" name="$(arg app_name)" output="$(arg output)" respawn="$(arg respawn)">
     <param name="app_name" value="$(arg app_name)"/>
     <param name="publish_bt" value="$(arg publish_bt)"/>
     <param name="bt_filepath" value="$(find thorp_bt_cpp)/bt/$(arg app_name).xml"/>

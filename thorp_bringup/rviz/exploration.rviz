@@ -1719,13 +1719,7 @@ Visualization Manager:
               Marker Topic: /move_base_flex/TEBPlanner/teb_markers
               Name: Markers
               Namespaces:
-                InfeasibleRobotPose/footprint: true
-                InfeasibleRobotPose/model: true
-                LineObstacles: true
-                PointObstacles: true
-                PolyObstacles: true
-                RobotFootprintModel: true
-                ViaPoints: true
+                {}
               Queue Size: 100
               Value: true
           Enabled: true
@@ -1897,10 +1891,10 @@ Visualization Manager:
           Value: true
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /explore_house_smach/visual_markers
-          Name: Reached Waypoints
+          Marker Topic: /explore_house/visual_markers
+          Name: Waypoints
           Namespaces:
-            gp_marker: true
+            {}
           Queue Size: 100
           Value: true
       Enabled: true

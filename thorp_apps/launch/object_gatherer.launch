@@ -23,7 +23,7 @@
   <!-- App-specific parameters -->
   <arg name="object_types"   default=""/>  <!-- all objects by default -->
 
-  <param name="$(arg app_name)_smach/object_types" value="$(arg object_types)"/>
+  <param name="$(arg app_name)/object_types" value="$(arg object_types)"/>
 
   <!--  ******* Components common for all apps ********  -->
   <include file="$(find thorp_apps)/launch/includes/apps_common.launch.xml">
