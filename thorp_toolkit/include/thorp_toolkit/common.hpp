@@ -18,7 +18,7 @@ namespace thorp_toolkit
  * @param a alpha
  * @return RGBA color msg
  */
-inline std_msgs::ColorRGBA makeColor(float r, float g, float b, float a = 1.0f);
+std_msgs::ColorRGBA makeColor(float r, float g, float b, float a = 1.0f);
 
 /**
  * @brief Make a random RGBA color msg
@@ -26,7 +26,7 @@ inline std_msgs::ColorRGBA makeColor(float r, float g, float b, float a = 1.0f);
  * @param alpha transparency
  * @return RGBA color msg
  */
-inline std_msgs::ColorRGBA randomColor(unsigned int seed = 0, float alpha = 1.0f);
+std_msgs::ColorRGBA randomColor(unsigned int seed = 0, float alpha = 1.0f);
 
 /**
  * @brief Make a RGBA color msg for a color name
@@ -35,7 +35,7 @@ inline std_msgs::ColorRGBA randomColor(unsigned int seed = 0, float alpha = 1.0f
  * @return RGBA color msg
  * @throw  std::out_of_range  If color_name doesn't exist
  */
-inline std_msgs::ColorRGBA namedColor(const std::string& color_name, float alpha = 1.0f);
+std_msgs::ColorRGBA namedColor(const std::string& color_name, float alpha = 1.0f);
 
 /**
  * @brief Receive one message from a topic.

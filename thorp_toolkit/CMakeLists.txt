@@ -77,6 +77,7 @@ add_library(${PROJECT_NAME}
         src/common.cpp
         src/geometry.cpp
         src/reconfigure.cpp
+        src/visualization.cpp
         src/planning_scene.cpp
         src/progress_tracker.cpp
         src/alternative_config.cpp)

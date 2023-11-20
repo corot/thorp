@@ -39,13 +39,15 @@ private:
   {
     geometry_msgs::PoseStamped robot_pose = utils::getInput<geometry_msgs::PoseStamped>(*this, pnh_, "robot_pose");
     pt_->updatePose(robot_pose);
-    setOutput("reached_waypoint", pt_->reachedWaypoint());
+    if (pt_->reachedWaypoint() < std::numeric_limits<size_t>::max())
+      setOutput("reached_waypoint", pt_->reachedWaypoint());
     ROS_ERROR_STREAM_THROTTLE_NAMED(0.5, name(), pt_->reachedWaypoint());
     return BT::NodeStatus::RUNNING;
   }
 
   void onHalted() override
   {
+    pt_->reset();
   }
 
   ros::NodeHandle pnh_;

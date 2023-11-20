@@ -7,7 +7,7 @@
 namespace thorp_toolkit
 {
 
-inline std_msgs::ColorRGBA makeColor(float r, float g, float b, float a)
+std_msgs::ColorRGBA makeColor(float r, float g, float b, float a)
 {
   std_msgs::ColorRGBA color;
   color.r = r;
@@ -17,18 +17,18 @@ inline std_msgs::ColorRGBA makeColor(float r, float g, float b, float a)
   return color;
 }
 
-inline std_msgs::ColorRGBA randomColor(unsigned int seed, float alpha)
+std_msgs::ColorRGBA randomColor(unsigned int seed, float alpha)
 {
-  srand(seed);
+  srand48(seed);
   std_msgs::ColorRGBA color;
-  color.r = float(rand()) / RAND_MAX;
-  color.g = float(rand()) / RAND_MAX;
-  color.b = float(rand()) / RAND_MAX;
+  color.r = drand48();
+  color.g = drand48();
+  color.b = drand48();
   color.a = alpha;
   return color;
 }
 
-inline std_msgs::ColorRGBA namedColor(const std::string& color_name, float alpha)
+std_msgs::ColorRGBA namedColor(const std::string& color_name, float alpha)
 {
   static std::map<std::string, std_msgs::ColorRGBA> color_map;
   if (color_map.empty())

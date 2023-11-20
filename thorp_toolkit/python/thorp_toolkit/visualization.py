@@ -32,8 +32,7 @@ class Visualization(metaclass=Singleton):
             offset = len(self._active_markers) - len(self._markers_array)
             for marker in self._active_markers[offset:]:
                 marker.action = marker.DELETE
-            self._marker_pub.publish(
-                self._markers_array + self._active_markers[offset:])
+            self._marker_pub.publish(self._markers_array + self._active_markers[offset:])
         else:
             self._marker_pub.publish(self._markers_array)
         self._active_markers = self._markers_array
@@ -56,7 +55,7 @@ class Visualization(metaclass=Singleton):
 
     def add_markers(self, markers):
         """
-        Add markers to the to the marker array
+        Append more markers at the of the marker array
         """
         if isinstance(markers, list):
             self._markers_array.extend(markers)

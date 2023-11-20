@@ -4,6 +4,8 @@
 
 #include <geometry_msgs/PoseStamped.h>
 
+#include <thorp_toolkit/visualization.hpp>
+
 namespace thorp_toolkit
 {
 /**
@@ -26,10 +28,12 @@ public:
 
 private:
   std::vector<geometry_msgs::PoseStamped> _waypoints;
-  double _reached_threshold;
-  size_t _next_wp;
-  bool _reached;
-  double _min_dist;
+  double reached_threshold;
+  size_t next_wp;
+  bool reached;
+  double min_dist;
+
+  Visualization viz;
 };
 
 }  // namespace thorp_toolkit

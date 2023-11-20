@@ -5,29 +5,13 @@
 namespace thorp_toolkit
 {
 
-// TODO implement
-class Visualization {
-  // Placeholder for Visualization class in C++
-public:
-  void addDiscMarker(const geometry_msgs::PoseStamped& pose, const std::tuple<double, double, double>& color, const std::tuple<double, double, double, double>& dimensions) {
-    // Implementation for adding a disc marker
-  }
-
-  void publishMarkers() {
-    // Implementation for publishing markers
-  }
-
-  void deleteMarkers() {
-    // Implementation for deleting markers
-  }
-};
-
 ProgressTracker::ProgressTracker(const std::vector<geometry_msgs::PoseStamped>& waypoints, double reached_threshold)
   : _waypoints(waypoints)
-  , _reached_threshold(reached_threshold)
-  , _next_wp(0)
-  , _reached(false)
-  , _min_dist(std::numeric_limits<double>::infinity())
+  , reached_threshold(reached_threshold)
+  , next_wp(0)
+  , reached(false)
+  , min_dist(std::numeric_limits<double>::infinity())
+  , viz("waypoints")
 {
   if (_waypoints.empty())
   {
@@ -37,71 +21,71 @@ ProgressTracker::ProgressTracker(const std::vector<geometry_msgs::PoseStamped>& 
   // Visualize semi-transparent waypoints; will become solid once reached
   for (const auto& wp : _waypoints)
   {
-    Visualization().addDiscMarker(wp, std::make_tuple(0.2, 0.2, 0.000001), std::make_tuple(0, 0, 1.0, 0.25));
+    viz.addDiscMarker(wp, 0.2, makeColor(0, 0, 1.0, 0.25));
   }
-  Visualization().publishMarkers();
+  viz.publishMarkers();
 }
 
 void ProgressTracker::reset()
 {
-  _next_wp = 0;
-  _reached = false;
-  _min_dist = std::numeric_limits<double>::infinity();
-  Visualization().deleteMarkers();
+  next_wp = 0;
+  reached = false;
+  min_dist = std::numeric_limits<double>::infinity();
+  viz.deleteMarkers();
 }
 
 void ProgressTracker::updatePose(const geometry_msgs::PoseStamped& robot_pose)
 {
-  if (_next_wp == std::numeric_limits<size_t>::max())
+  if (next_wp == std::numeric_limits<size_t>::max())
   {
     return;  // already arrived
   }
 
-  double dist = distance2D(robot_pose, _waypoints[_next_wp]);
-  if (_reached && dist > _min_dist)
+  double dist = distance2D(robot_pose, _waypoints[next_wp]);
+  if (reached && dist > min_dist)
   {
-    Visualization().addDiscMarker(_waypoints[_next_wp], std::make_tuple(0.2, 0.2, 0.000001), std::make_tuple(0, 0, 1.0, 1.0));
-    Visualization().publishMarkers();
-    _next_wp += 1;
+    viz.addDiscMarker(_waypoints[next_wp], 0.2, makeColor(0, 0, 1.0, 1.0));
+    viz.publishMarkers();
+    next_wp += 1;
 
-    if (_next_wp < _waypoints.size())
+    if (next_wp < _waypoints.size())
     {
       // go for the next waypoint
-      _reached = false;
-      _min_dist = std::numeric_limits<double>::infinity();
+      reached = false;
+      min_dist = std::numeric_limits<double>::infinity();
     }
     else
     {
       // arrived; clear reached waypoints markers
-      Visualization().deleteMarkers();
-      _next_wp = std::numeric_limits<size_t>::max();
+      viz.deleteMarkers();
+      next_wp = std::numeric_limits<size_t>::max();
     }
     return;
   }
 
-  _min_dist = std::min(_min_dist, dist);
-  if (dist <= _reached_threshold)
+  min_dist = std::min(min_dist, dist);
+  if (dist <= reached_threshold)
   {
-    _reached = true;
+    reached = true;
   }
 }
 
 size_t ProgressTracker::nextWaypoint() const
 {
-  return _next_wp;
+  return next_wp;
 }
 
 size_t ProgressTracker::reachedWaypoint() const
 {
-  if (_next_wp == std::numeric_limits<size_t>::max())
+  if (next_wp == std::numeric_limits<size_t>::max())
   {
     return _waypoints.size() - 1;
   }
-  else if (_next_wp == 0)
+  else if (next_wp == 0)
   {
     return std::numeric_limits<size_t>::max();
   }
-  return _next_wp - 1;
+  return next_wp - 1;
 }
 
 }  // namespace thorp_toolkit
