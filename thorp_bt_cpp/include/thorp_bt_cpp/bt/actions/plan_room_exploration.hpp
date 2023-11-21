@@ -76,14 +76,13 @@ public:
         getInput<std::vector<ipa_building_msgs::RoomInformation>>("room_information_in_meter")->at(room_number - 1);
     geometry_msgs::PointStamped start_point;
     start_point.header.frame_id = "map";
-    //start_point.point = room_info.room_center;
     //self.start_pub.publish(start_point);
     goal.starting_position.x = room_info.room_center.x;
     goal.starting_position.y = room_info.room_center.y;
     goal.starting_position.theta = 0.0; // it's ignored
 
-    // provide the starting pose, so we can move there before starting exploring
-    setOutput("start_pose", ttk::createPoseStamped(room_info.room_center.x, room_info.room_center.y, 0.0, "map"));
+    // keep room center to provide as coverage starting point on output
+    room_center = ttk::toPoint(room_info.room_center);
 
     // IDEA: can use room_info.room_min_max to avoid points colliding with the walls
 
@@ -107,11 +106,19 @@ public:
 
   BT::NodeStatus onSuccess(const ResultConstPtr& res)
   {
+    // provide the starting pose, so we can move there before starting exploring; make it point to the first waypoint
+    double yaw = ttk::heading(room_center, res->coverage_path_pose_stamped.front().pose.position);
+    geometry_msgs::PoseStamped start_pose;
+    setOutput("start_pose", ttk::createPoseStamped(room_center.x, room_center.y, yaw, "map"));
+
     // Use the coverage path provided as a list of stamped poses
     setOutput("coverage_waypoints", res->coverage_path_pose_stamped);
 
     return BT::NodeStatus::SUCCESS;
   }
+
+private:
+  geometry_msgs::Point room_center;
 
   std::vector<geometry_msgs::Point32> loadFOVParam()
   {

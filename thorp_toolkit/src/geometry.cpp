@@ -71,6 +71,28 @@ geometry_msgs::Pose2D toPose2D(const geometry_msgs::Pose& pose)
   return pose_2d;
 }
 
+geometry_msgs::Pose toPose3D(const geometry_msgs::Pose2D& pose)
+{
+  return createPose(pose.x, pose.y, pose.theta);
+}
+
+geometry_msgs::Point32 toPoint(const geometry_msgs::Point& point)
+{
+  geometry_msgs::Point32 point32;
+  point32.x = point.x;
+  point32.y = point.y;
+  return point32;
+}
+
+geometry_msgs::Point toPoint(const geometry_msgs::Point32& point32)
+{
+  geometry_msgs::Point point;
+  point.x = point32.x;
+  point.y = point32.y;
+  return point;
+}
+
+
 std::string toStr3D(const geometry_msgs::Vector3& vector)
 {
   return toCStr3D(vector);

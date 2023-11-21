@@ -11,6 +11,8 @@
 
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Pose2D.h>
+#include <geometry_msgs/Point.h>
+#include <geometry_msgs/Point32.h>
 #include <geometry_msgs/PoseStamped.h>
 
 
@@ -663,6 +665,10 @@ geometry_msgs::PoseStamped createPoseStamped(double x, double y, double yaw, con
  * @return 2D pose msg.
  */
 geometry_msgs::Pose2D toPose2D(const geometry_msgs::Pose& pose);
+geometry_msgs::Pose toPose3D(const geometry_msgs::Pose2D& pose);
+geometry_msgs::Point32 toPoint(const geometry_msgs::Point& point);
+geometry_msgs::Point toPoint(const geometry_msgs::Point32& point);
+
 
 std::string toStr3D(const geometry_msgs::Vector3& vector);
 std::string toStr3D(const geometry_msgs::Vector3Stamped& vector);
