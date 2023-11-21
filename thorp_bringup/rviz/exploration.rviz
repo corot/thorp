@@ -8,6 +8,7 @@ Panels:
         - /TF1/Tree1
         - /Local Planners1/DWA1/Trajectories1
         - /Local Planners1/TEB1/Local Path1
+        - /Exploration1/Current Room1/Status1
       Splitter Ratio: 0.5265780687332153
     Tree Height: 363
   - Class: rviz/Selection
@@ -1720,6 +1721,7 @@ Visualization Manager:
               Name: Markers
               Namespaces:
                 LineObstacles: true
+                PointObstacles: true
                 PolyObstacles: true
                 RobotFootprintModel: true
                 ViaPoints: true
@@ -1815,17 +1817,6 @@ Visualization Manager:
           Shaft Diameter: 0.10000000149011612
           Shaft Length: 0.10000000149011612
           Topic: /exploration/room_exploration/coverage_path
-          Unreliable: false
-          Value: true
-        - Alpha: 1
-          Class: rviz/PointStamped
-          Color: 204; 41; 204
-          Enabled: true
-          History Length: 1
-          Name: Starting Point
-          Queue Size: 10
-          Radius: 0.20000000298023224
-          Topic: /exploration/starting_point
           Unreliable: false
           Value: true
         - Alpha: 1

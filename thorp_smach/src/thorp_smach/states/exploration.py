@@ -1,5 +1,4 @@
 import struct
-import random
 
 import rospy
 import smach
@@ -24,11 +23,9 @@ class SegmentRooms(smach_ros.SimpleActionState):
         super(SegmentRooms, self).__init__('exploration/room_segmentation',
                                            ipa_building_msgs.MapSegmentationAction,
                                            goal_cb=self.make_goal,
-                                           result_cb=self.result_cb,
                                            result_slots=['segmented_map',
                                                          'room_information_in_meter', 'room_information_in_pixel'],
                                            output_keys=['map_image', 'map_origin', 'map_resolution', 'robot_radius'])
-        self.img_pub = rospy.Publisher('exploration/room_segmentation_img', sensor_msgs.Image, queue_size=1, latch=True)
 
     def make_goal(self, ud, goal):
         # Listen for current map
@@ -45,20 +42,7 @@ class SegmentRooms(smach_ros.SimpleActionState):
             for j in range(occ_grid_map.info.width):
                 pixel_value = b'\x00' if occ_grid_map.data[i * occ_grid_map.info.width + j] in [-1, 100] else b'\xFF'
                 goal.input_map.data += pixel_value
-        # ALTERNATIVE: read image from file
-        # import cv2
-        # from cv_bridge import CvBridge
-        # bridge = CvBridge()
-        # cv_image = cv2.imread('/home/jorge/catkin_ws/thorp/src/thorp/thorp_simulation/worlds/maps/fun_house.png',
-        #                       cv2.IMREAD_UNCHANGED)
-        # for i in range(cv_image.shape[0]):
-        #     for j in range(cv_image.shape[1]):
-        #         if cv_image[i][j] < 250:
-        #             cv_image[i][j] = 0
-        #         else:
-        #             cv_image[i][j] = 255
-        # goal.input_map = bridge.cv2_to_imgmsg(cv_image, encoding='mono8')
-        rospy.Publisher('/exploration/img', sensor_msgs.Image, queue_size=1, latch=True).publish(goal.input_map)
+
         goal.map_origin = occ_grid_map.info.origin
         goal.map_resolution = occ_grid_map.info.resolution
         goal.return_format_in_meter = True
@@ -70,27 +54,6 @@ class SegmentRooms(smach_ros.SimpleActionState):
         ud['map_origin'] = goal.map_origin
         ud['map_resolution'] = goal.map_resolution
         ud['robot_radius'] = goal.robot_radius
-
-    def result_cb(self, ud, status, result):
-        # make a random color rooms map to show in RViz
-        rooms_color_map = sensor_msgs.Image()
-        rooms_color_map.header = result.segmented_map.header
-        rooms_color_map.width = result.segmented_map.width
-        rooms_color_map.height = result.segmented_map.height
-        rooms_color_map.step = rooms_color_map.width * 3
-        rooms_color_map.encoding = 'rgb8'
-        for i in range(result.segmented_map.height):
-            for j in range(result.segmented_map.width):
-                idx = i * result.segmented_map.width * 4 + j * 4
-                val = result.segmented_map.data[idx:idx + 4]
-                room = struct.unpack('<BBBB', val)[0]
-                if room > 0:
-                    random.seed(room)
-                    r, g, b = random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)
-                    rooms_color_map.data += struct.pack('<BBB', r, g, b)
-                else:
-                    rooms_color_map.data += struct.pack('<BBB', 0, 0, 0)
-        self.img_pub.publish(rooms_color_map)
 
 
 class PlanRoomSequence(smach_ros.SimpleActionState):
@@ -104,7 +67,6 @@ class PlanRoomSequence(smach_ros.SimpleActionState):
                                                result_cb=self.result_cb,
                                                input_keys=['robot_pose'],
                                                output_keys=['room_sequence'])
-        self.img_pub = rospy.Publisher('exploration/room_sequence_img', sensor_msgs.Image, queue_size=1, latch=True)
 
     def make_goal(self, ud, goal):
         # cannot pass as goal slot cause room_sequence_planning wants a Pose, not a PoseStamped
@@ -113,7 +75,6 @@ class PlanRoomSequence(smach_ros.SimpleActionState):
     def result_cb(self, ud, status, result):
         # room numbers start with 1, so we get them with index + 1
         ud['room_sequence'] = [ri + 1 for ri in result.checkpoints[0].room_indices]
-        self.img_pub.publish(result.sequence_map)
 
 
 class PlanRoomExploration(smach_ros.SimpleActionState):
@@ -127,7 +88,6 @@ class PlanRoomExploration(smach_ros.SimpleActionState):
                                                               'segmented_map', 'robot_pose',
                                                               'room_number', 'room_information_in_meter'],
                                                   output_keys=['start_pose', 'coverage_path'])
-        self.start_pub = rospy.Publisher('/exploration/starting_point', geometry_msgs.PointStamped, queue_size=1)
         self.fov_pub = rospy.Publisher('/exploration/camera_fov', geometry_msgs.PolygonStamped, queue_size=1)
         self.fov_pub_timer = None
 
@@ -159,13 +119,9 @@ class PlanRoomExploration(smach_ros.SimpleActionState):
 
         # use room center as starting point; theta is ignored by room exploration
         room_info = ud['room_information_in_meter'][room_number - 1]
-        start_point = geometry_msgs.PointStamped()
-        start_point.header.frame_id = 'map'
-        start_point.point = room_info.room_center
         goal.starting_position.x = room_info.room_center.x
         goal.starting_position.y = room_info.room_center.y
         goal.starting_position.theta = 0.0  # it's ignored
-        self.start_pub.publish(start_point)
         # provide the starting pose, so we can move there before starting exploring
         ud['start_pose'] = create_2d_pose(room_info.room_center.x, room_info.room_center.y, 0.0, 'map')
         # IDEA: can use room_info.room_min_max to avoid points colliding with the walls
@@ -174,7 +130,6 @@ class PlanRoomExploration(smach_ros.SimpleActionState):
         fov = geometry_msgs.PolygonStamped()
         fov.header.frame_id = 'kinect_rgb_frame'
         fov.polygon.points = goal.field_of_view
-        rospy.Publisher('/exploration/img', sensor_msgs.Image, queue_size=1, latch=True).publish(goal.input_map)
         if not self.fov_pub_timer:
             self.fov_pub_timer = rospy.Timer(rospy.Duration(0.1), lambda e: self.fov_pub.publish(fov))
 

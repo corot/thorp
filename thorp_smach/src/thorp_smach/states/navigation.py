@@ -2,10 +2,8 @@ import rospy
 import smach
 import smach_ros
 
-import geometry_msgs.msg as geo_msgs
 import nav_msgs.msg as nav_msgs
 import mbf_msgs.msg as mbf_msgs
-import mbf_msgs.srv as mbf_srvs
 import thorp_msgs.msg as thorp_msgs
 import thorp_msgs.srv as thorp_srvs
 
@@ -166,9 +164,6 @@ class ExePath(smach_ros.SimpleActionState):
         self.progress_tracker = None
         self.params_ns = '/move_base_flex/' + controller
 
-        # Show target pose (MBF only shows it when calling get_path)
-        self.target_pose_pub = rospy.Publisher('/move_base_flex/current_goal', geo_msgs.PoseStamped, queue_size=1)
-
     def make_goal(self, ud, goal):
         goal.path = ud['path']
         if self.controller:
@@ -177,8 +172,6 @@ class ExePath(smach_ros.SimpleActionState):
             # Set configured tolerance values
             Reconfigure().update_config(self.params_ns, {'xy_goal_tolerance': self.dist_tolerance,
                                                          'yaw_goal_tolerance': self.angle_tolerance})
-        if goal.path.poses:
-            self.target_pose_pub.publish(goal.path.poses[-1])
 
         if self.track_progress:
             rospy.loginfo("Progress tracker initialized with %d waypoints and reached threshold %g m",
