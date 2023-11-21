@@ -1446,7 +1446,7 @@ Visualization Manager:
       Shaft Length: 1
       Shaft Radius: 0.05000000074505806
       Shape: Arrow
-      Topic: /move_base_flex/current_goal
+      Topic: /move_base_flex/controller_goal
       Unreliable: false
       Value: true
     - Alpha: 0.699999988079071
@@ -1719,7 +1719,10 @@ Visualization Manager:
               Marker Topic: /move_base_flex/TEBPlanner/teb_markers
               Name: Markers
               Namespaces:
-                {}
+                LineObstacles: true
+                PolyObstacles: true
+                RobotFootprintModel: true
+                ViaPoints: true
               Queue Size: 100
               Value: true
           Enabled: true
@@ -1894,7 +1897,7 @@ Visualization Manager:
           Marker Topic: /explore_house/visual_markers
           Name: Waypoints
           Namespaces:
-            {}
+            gp_marker: true
           Queue Size: 100
           Value: true
       Enabled: true

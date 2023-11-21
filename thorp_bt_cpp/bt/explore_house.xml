@@ -45,20 +45,17 @@
           <GoToPose action_name="move_base_flex/move_base"
                     angle_tolerance="3.15"
                     controller="TEBPlanner"
-                    dist_tolerance="0.4"
+                    dist_tolerance="0.3"
                     goal=""
                     planner=""
                     pose="{start_pose}"
                     server_timeout="5.000000"
-                    error=""
+                    error="{goto_pose_error}"
                     feedback="{goto_pose_feedback}"/>
           <PushPoseToList element="{start_pose}"
                           list="{coverage_waypoints}"/>
           <RetryUntilSuccessful num_attempts="10.0">
-            <Sequence>
-              <PoseListSlicing end=""
-                               start="{reached_waypoint}"
-                               list="{coverage_waypoints}"/>
+            <Fallback>
               <Parallel failure_threshold="1"
                         success_threshold="1">
                 <UseNamedConfig config_name="waypoints_following"
@@ -74,22 +71,42 @@
                                  goal=""
                                  path="{coverage_path}"
                                  server_timeout="5.000000"
-                                 error=""
+                                 error="{exe_path_error}"
                                  feedback="{exe_path_feedback}"/>
                 </Sequence>
                 <ReactiveSequence>
                   <GetRobotPose timeout="1"
                                 error=""
                                 robot_pose="{robot_pose}"/>
-                  <TrackProgress robot_pose="{robot_pose}"
+                  <TrackProgress reached_threshold=""
+                                 robot_pose="{robot_pose}"
                                  waypoints="{coverage_waypoints}"
-                                 reached_waypoint="{reached_waypoint}"/>
+                                 next_waypoint="{next_waypoint}"/>
                 </ReactiveSequence>
               </Parallel>
-            </Sequence>
+              <ForceFailure>
+                <Sequence>
+                  <PoseListSlicing end=""
+                                   start="{next_waypoint}"
+                                   list="{coverage_waypoints}"/>
+                  <GetPoseListFront list="{coverage_waypoints}"
+                                    element="{next_waypoint_pose}"/>
+                  <GoToPose action_name="move_base_flex/move_base"
+                            angle_tolerance="3.15"
+                            controller="TEBPlanner"
+                            dist_tolerance="0.3"
+                            goal=""
+                            planner=""
+                            pose="{next_waypoint_pose}"
+                            server_timeout="5.000000"
+                            error="{goto_pose_error}"
+                            feedback="{goto_pose_feedback}"/>
+                </Sequence>
+              </ForceFailure>
+            </Fallback>
           </RetryUntilSuccessful>
           <SetBlackboard value="0"
-                         output_key="{reached_waypoint}"/>
+                         output_key="{next_waypoint}"/>
           <IsListEmpty list="{room_sequence}"/>
         </Sequence>
       </RetryUntilSuccessful>
@@ -114,6 +131,12 @@
                    type="unsigned int"/>
       <output_port name="feedback"
                    type="std::optional&lt;mbf_msgs::ExePathFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
+    </Action>
+    <Action ID="GetPoseListFront">
+      <input_port name="list"
+                  type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+      <output_port name="element"
+                   type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
     </Action>
     <Action ID="GetRobotPose">
       <input_port name="timeout"
@@ -257,11 +280,13 @@
                    type="nav_msgs::Path_&lt;std::allocator&lt;void&gt; &gt;"/>
     </Action>
     <Action ID="TrackProgress">
+      <input_port name="reached_threshold"
+                  type="double"/>
       <input_port name="robot_pose"
                   type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
       <input_port name="waypoints"
                   type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
-      <output_port name="reached_waypoint"
+      <output_port name="next_waypoint"
                    type="unsigned long"/>
     </Action>
     <Action ID="UseNamedConfig">

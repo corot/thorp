@@ -24,6 +24,7 @@
 #include "thorp_bt_cpp/bt/actions/list_slicing.hpp"
 #include "thorp_bt_cpp/bt/actions/push_to_list.hpp"
 #include "thorp_bt_cpp/bt/actions/pop_from_list.hpp"
+#include "thorp_bt_cpp/bt/actions/get_list_front.hpp"
 
 // bt conditions
 #include "thorp_bt_cpp/bt/conditions/is_bool_true.hpp"
@@ -65,6 +66,7 @@ void registerNodes(BT::BehaviorTreeFactory& factory, ros::NodeHandle& nh, const 
   BT::RegisterSimpleActionClient<bt::actions::PlanRoomExploration>(factory, "PlanRoomExploration");
 
   registerNode<bt::actions::UseNamedConfig>(factory, nh, "UseNamedConfig");
+  registerNode<bt::actions::GetListFront<geometry_msgs::PoseStamped>>(factory, nh, "GetPoseListFront");
   registerNode<bt::actions::PushToList<geometry_msgs::PoseStamped>>(factory, nh, "PushPoseToList");
   registerNode<bt::actions::ListSlicing<geometry_msgs::PoseStamped>>(factory, nh, "PoseListSlicing");
   registerNode<bt::actions::PopFromList<uint32_t>>(factory, nh, "PopUInt32FromList");

@@ -146,8 +146,8 @@ bool AlternativeConfig::loadAlternativeConfig(const std::string& ns)
   if (dynamic_reconfigure::ConfigTools::size(altern_cfg) > 0)
   {
     std::string params_str = ss.str();
-    ROS_ERROR_STREAM("Alternative configuration loaded from " << source_nh.getNamespace() << ":" << params_str);
-    ROS_ERROR_STREAM("Target server is " << server);
+    ROS_DEBUG_STREAM("Alternative configuration loaded from " << source_nh.getNamespace() << ":" << params_str);
+    ROS_DEBUG_STREAM("Target server is " << server);
     reconf_subsystems[server].config[altern_cfg_] = altern_cfg;
     reconf_subsystems[server].config[current_cfg_] = current_cfg;
 

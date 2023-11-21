@@ -36,6 +36,11 @@ public:
 
   bool setGoal(GoalType& goal) override
   {
+    auto target_pose = getInput<geometry_msgs::PoseStamped>("pose");
+    if (!target_pose)
+      throw BT::RuntimeError(name(), ": pose not provided");
+    goal.target_pose = *target_pose;
+
     if (reconf_)
     {
       auto dist_tolerance = getInput<double>("dist_tolerance");
@@ -54,7 +59,6 @@ public:
     auto controller = getInput<std::string>("controller");
     if (controller)
       goal.controller = *controller;
-    goal.target_pose = *getInput<geometry_msgs::PoseStamped>("pose");
     return true;
   }
 

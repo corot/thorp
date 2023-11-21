@@ -22,7 +22,7 @@ public:
     return { BT::InputPort<geometry_msgs::PoseStamped>("robot_pose"),
              BT::InputPort<std::vector<geometry_msgs::PoseStamped>>("waypoints"),
              BT::InputPort<double>("reached_threshold"),
-             BT::OutputPort<size_t>("reached_waypoint") };
+             BT::OutputPort<size_t>("next_waypoint") };
   }
 
 private:
@@ -39,9 +39,9 @@ private:
   {
     geometry_msgs::PoseStamped robot_pose = utils::getInput<geometry_msgs::PoseStamped>(*this, pnh_, "robot_pose");
     pt_->updatePose(robot_pose);
-    if (pt_->reachedWaypoint() < std::numeric_limits<size_t>::max())
-      setOutput("reached_waypoint", pt_->reachedWaypoint());
-    ROS_ERROR_STREAM_THROTTLE_NAMED(0.5, name(), pt_->reachedWaypoint());
+//    if (pt_->nextWaypoint() < std::numeric_limits<size_t>::max())
+      setOutput("next_waypoint", pt_->nextWaypoint());
+    ROS_ERROR_STREAM_THROTTLE_NAMED(0.5, name(), pt_->nextWaypoint());
     return BT::NodeStatus::RUNNING;
   }
 

@@ -17,6 +17,10 @@
             <output_port name="error" type="unsigned int"/>
             <output_port name="feedback" type="std::optional&lt;mbf_msgs::GetPathFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
         </Action>
+        <Action ID="GetPoseListFront">
+            <input_port name="list" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+            <output_port name="element" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+        </Action>
         <Action ID="GetRobotPose">
             <input_port name="timeout" type="double"/>
             <output_port name="error" type="unsigned int"/>
@@ -120,7 +124,7 @@
             <input_port name="reached_threshold" type="double"/>
             <input_port name="robot_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="waypoints" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
-            <output_port name="reached_waypoint" type="unsigned long"/>
+            <output_port name="next_waypoint" type="unsigned long"/>
         </Action>
         <Action ID="UseNamedConfig">
             <input_port name="config_name" type="std::string"/>
