@@ -7,7 +7,7 @@
 
 #include "thorp_costmap_layers/spatial_hash.hpp"
 
-namespace thorp_costmap_layers
+namespace thorp::costmap_layers
 {
 class Visualization
 {
@@ -31,4 +31,4 @@ private:
                      const std::string& color, float alpha = 1.0f);
 };
 
-}  // namespace thorp_costmap_layers
+}  // namespace thorp::costmap_layers

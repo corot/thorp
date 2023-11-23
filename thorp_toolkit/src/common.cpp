@@ -4,7 +4,7 @@
 
 #include "thorp_toolkit/common.hpp"
 
-namespace thorp_toolkit
+namespace thorp::toolkit
 {
 
 std_msgs::ColorRGBA makeColor(float r, float g, float b, float a)
@@ -49,4 +49,4 @@ std_msgs::ColorRGBA namedColor(const std::string& color_name, float alpha)
   return color;
 }
 
-} /* namespace thorp_toolkit */
+} /* namespace thorp::toolkit */

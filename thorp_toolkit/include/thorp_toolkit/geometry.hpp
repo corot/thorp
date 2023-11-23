@@ -16,7 +16,7 @@
 #include <geometry_msgs/PoseStamped.h>
 
 
-namespace thorp_toolkit
+namespace thorp::toolkit
 {
 
 /**
@@ -741,4 +741,4 @@ double curvature(const geometry_msgs::PoseStamped& pose_a,
                  const geometry_msgs::PoseStamped& pose_b,
                  const geometry_msgs::PoseStamped& pose_c);
 
-} /* namespace thorp_toolkit */
+} /* namespace thorp::toolkit */

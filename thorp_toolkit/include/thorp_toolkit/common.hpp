@@ -7,7 +7,7 @@
 #include <ros/ros.h>
 #include <std_msgs/ColorRGBA.h>
 
-namespace thorp_toolkit
+namespace thorp::toolkit
 {
 
 /**
@@ -67,4 +67,4 @@ std::optional<MessageType> waitForMessage(const std::string& topic, ros::Duratio
   return received_message;
 }
 
-} /* namespace thorp_toolkit */
+} /* namespace thorp::toolkit */

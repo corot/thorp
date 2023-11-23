@@ -4,7 +4,7 @@
 #include "thorp_bt_cpp/bt/utils.hpp"
 
 #include <thorp_toolkit/progress_tracker.hpp>
-namespace ttk = thorp_toolkit;
+namespace ttk = thorp::toolkit;
 
 namespace thorp::bt::actions
 {

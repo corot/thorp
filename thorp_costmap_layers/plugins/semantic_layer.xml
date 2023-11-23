@@ -1,5 +1,5 @@
 <library path="lib/libsemantic_layer">
-  <class type="thorp_costmap_layers::SemanticLayer" base_class_type="costmap_2d::Layer">
+  <class type="thorp::costmap_layers::SemanticLayer" base_class_type="costmap_2d::Layer">
     <description>Adds known obstacles to the global and/or local costmap.</description>
   </class>
 </library>

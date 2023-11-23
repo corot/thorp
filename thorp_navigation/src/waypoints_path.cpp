@@ -6,7 +6,7 @@
 #include <thorp_msgs/ConnectWaypoints.h>
 #include <thorp_toolkit/tf2.hpp>
 #include <thorp_toolkit/geometry.hpp>
-namespace ttk = thorp_toolkit;
+namespace ttk = thorp::toolkit;
 
 #include "thorp_navigation/waypoints_path.hpp"
 

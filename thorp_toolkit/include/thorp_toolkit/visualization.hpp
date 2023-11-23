@@ -10,7 +10,7 @@
 #include "thorp_toolkit/common.hpp"
 // #include "singleton.h"  // Include the header file for Singleton
 
-namespace thorp_toolkit
+namespace thorp::toolkit
 {
 
 class Visualization
@@ -76,4 +76,4 @@ private:
   //  std::vector<visualization_msgs::Marker> active_markers_;  // published markers
 };
 
-} /* namespace thorp_toolkit */
+} /* namespace thorp::toolkit */

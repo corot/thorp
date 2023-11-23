@@ -9,13 +9,13 @@
 #include <thorp_toolkit/tf2.hpp>
 #include <thorp_toolkit/math.hpp>
 #include <thorp_toolkit/geometry.hpp>
-namespace ttk = thorp_toolkit;
+namespace ttk = thorp::toolkit;
 
 
 // action client: ORK's tabletop object recognition
 #include <object_recognition_msgs/TableArray.h>
 
-namespace thorp_perception
+namespace thorp::perception
 {
 
 class ObjectDetectionTable
@@ -249,4 +249,4 @@ private:
   }
 };
 
-};  // namespace thorp_perception
+};  // namespace thorp::perception

@@ -6,7 +6,7 @@
 #include <ros/ros.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <thorp_toolkit/tf2.hpp>
-namespace ttk = thorp_toolkit;
+namespace ttk = thorp::toolkit;
 
 #include <gazebo/gazebo_client.hh>
 #include <gazebo/transport/transport.hh>

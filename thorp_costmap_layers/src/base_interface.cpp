@@ -1,10 +1,10 @@
 #include <thorp_toolkit/geometry.hpp>
-namespace ttk = thorp_toolkit;
+namespace ttk = thorp::toolkit;
 
 #include "thorp_costmap_layers/base_interface.hpp"
 
 
-namespace thorp_costmap_layers
+namespace thorp::costmap_layers
 {
 
 // Initialize the static attributes
@@ -204,4 +204,4 @@ void BaseInterface::removeObject(int hash)
   ids_removed_.insert(hash);
 }
 
-}  // namespace thorp_costmap_layers
+}  // namespace thorp::costmap_layers

@@ -9,7 +9,7 @@
 #include <ipa_building_msgs/MapSegmentationAction.h>
 
 #include <thorp_toolkit/common.hpp>
-namespace ttk = thorp_toolkit;
+namespace ttk = thorp::toolkit;
 
 namespace thorp::bt::actions
 {

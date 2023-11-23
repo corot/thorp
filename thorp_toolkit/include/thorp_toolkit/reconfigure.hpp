@@ -8,7 +8,7 @@
 
 #include <dynamic_reconfigure/Reconfigure.h>
 
-namespace thorp_toolkit
+namespace thorp::toolkit
 {
 
 /**
@@ -53,4 +53,4 @@ private:
   void clear(dynamic_reconfigure::Config& config);
 };
 
-};  // namespace thorp_toolkit
+};  // namespace thorp::toolkit

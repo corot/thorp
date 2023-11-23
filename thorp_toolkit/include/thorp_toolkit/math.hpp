@@ -9,7 +9,7 @@
 
 #include <geometry_msgs/Vector3.h>
 
-namespace thorp_toolkit
+namespace thorp::toolkit
 {
 
 /**
@@ -130,4 +130,4 @@ template <typename T> T sign(T x)
 // Other functions
 
 
-} /* namespace thorp_toolkit */
+} /* namespace thorp::toolkit */

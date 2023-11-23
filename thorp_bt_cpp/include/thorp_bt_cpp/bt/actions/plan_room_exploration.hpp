@@ -10,7 +10,7 @@
 
 #include <thorp_toolkit/common.hpp>
 #include <thorp_toolkit/tf2.hpp>
-namespace ttk = thorp_toolkit;
+namespace ttk = thorp::toolkit;
 
 namespace thorp::bt::actions
 {

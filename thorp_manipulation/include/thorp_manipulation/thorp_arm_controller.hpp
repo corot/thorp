@@ -15,7 +15,7 @@
 #include <thorp_msgs/ThorpError.h>
 
 
-namespace thorp_manipulation
+namespace thorp::manipulation
 {
 
 /**
@@ -216,4 +216,4 @@ protected:
   }
 };
 
-};
+}  // namespace thorp::manipulation;

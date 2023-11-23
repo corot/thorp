@@ -18,9 +18,9 @@
 
 #include <thorp_toolkit/geometry.hpp>
 #include <thorp_toolkit/math.hpp>
-namespace ttk = thorp_toolkit;
+namespace ttk = thorp::toolkit;
 
-namespace thorp_perception
+namespace thorp::perception
 {
 
 class ObjectDetectionColor
@@ -208,4 +208,4 @@ private:
   }
 };
 
-};  // namespace thorp_perception
+};  // namespace thorp::perception

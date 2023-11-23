@@ -9,7 +9,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <gazebo_msgs/LinkStates.h>
 #include <thorp_toolkit/tf2.hpp>
-namespace ttk = thorp_toolkit;
+namespace ttk = thorp::toolkit;
 
 ros::Duration period;
 

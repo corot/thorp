@@ -5,7 +5,7 @@
 #include "thorp_manipulation/joint_state_watchdog.hpp"
 
 
-namespace thorp_manipulation
+namespace thorp::manipulation
 {
 
 JointStateWatchdog::JointStateWatchdog()
@@ -60,4 +60,4 @@ void JointStateWatchdog::jointStateCB(const sensor_msgs::JointState& msg)
   // ROS_ERROR_THROTTLE(1, "%f  %f    %d", gripper_opening.back(), gripper_effort.back(), gripper_joint_index);
 }
 
-}
+}  // namespace thorp::manipulation

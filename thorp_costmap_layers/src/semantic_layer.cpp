@@ -5,7 +5,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 #include <thorp_toolkit/geometry.hpp>
-namespace ttk = thorp_toolkit;
+namespace ttk = thorp::toolkit;
 
 #include "thorp_costmap_layers/srv_interface.hpp"
 #include "thorp_costmap_layers/visualization.hpp"
@@ -16,7 +16,7 @@ using costmap_2d::FREE_SPACE;
 using costmap_2d::LETHAL_OBSTACLE;
 using costmap_2d::NO_INFORMATION;
 
-namespace thorp_costmap_layers
+namespace thorp::costmap_layers
 {
 
 SemanticLayer::SemanticLayer() : old_bounds_(), dsrv_()
@@ -342,6 +342,6 @@ bool SemanticLayer::clipSegment(double edge_left, double edge_right, double edge
   return true;  // (clipped) line is drawn
 }
 
-}  // namespace thorp_costmap_layers
+}  // namespace thorp::costmap_layers
 
-PLUGINLIB_EXPORT_CLASS(thorp_costmap_layers::SemanticLayer, costmap_2d::Layer)
+PLUGINLIB_EXPORT_CLASS(thorp::costmap_layers::SemanticLayer, costmap_2d::Layer)

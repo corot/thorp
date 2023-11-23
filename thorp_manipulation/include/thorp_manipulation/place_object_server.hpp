@@ -11,7 +11,7 @@
 #include "thorp_manipulation/thorp_arm_controller.hpp"
 
 
-namespace thorp_manipulation
+namespace thorp::manipulation
 {
 
 class PlaceObjectServer : public ThorpArmController
@@ -39,4 +39,4 @@ private:
                              std::vector<moveit_msgs::PlaceLocation>& place_locations);
 };
 
-};
+}  // namespace thorp::manipulation;

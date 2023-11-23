@@ -1,6 +1,6 @@
 <library path="lib/libslow_escape_recovery">
   <class name="thorp_mbf_plugins/SlowEscapeRecovery"
-         type="thorp_mbf_plugins::SlowEscapeRecovery"
+         type="thorp::mbf_plugins::SlowEscapeRecovery"
          base_class_type="mbf_costmap_core::CostmapRecovery">
     <description>
       Try to recover from local planner navigation failures by slowly moving away from closest obstacles by

@@ -1,9 +1,9 @@
 #include <thorp_toolkit/common.hpp>
-namespace ttk = thorp_toolkit;
+namespace ttk = thorp::toolkit;
 
 #include "thorp_costmap_layers/visualization.hpp"
 
-namespace thorp_costmap_layers
+namespace thorp::costmap_layers
 {
 
 Visualization::Visualization(ros::NodeHandle& pnh)
@@ -76,4 +76,4 @@ void Visualization::showLineStrip(const std::list<Point2d>& points, const std::s
   debug_markers_pub_.publish(marker);
 }
 
-}  // namespace thorp_costmap_layers
+}  // namespace thorp::costmap_layers

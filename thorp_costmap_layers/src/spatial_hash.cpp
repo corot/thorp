@@ -1,6 +1,6 @@
 #include "thorp_costmap_layers/spatial_hash.hpp"
 
-namespace thorp_costmap_layers
+namespace thorp::costmap_layers
 {
 
 SpatialHash::SpatialHash(double cell_size, bool use_old_hash_function)
@@ -574,4 +574,4 @@ void SpatialHash::getCellRect(const Point2d& point_in_cell, cv::Rect& cell_rect,
 }
 #endif
 
-}  // namespace thorp_costmap_layers
+}  // namespace thorp::costmap_layers

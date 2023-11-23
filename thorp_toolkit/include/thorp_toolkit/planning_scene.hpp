@@ -13,7 +13,7 @@
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 
 
-namespace thorp_toolkit
+namespace thorp::toolkit
 {
 
 /**

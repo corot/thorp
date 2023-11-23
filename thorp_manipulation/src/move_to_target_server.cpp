@@ -6,12 +6,12 @@
 
 // auxiliary libraries
 #include <thorp_toolkit/geometry.hpp>
-namespace ttk = thorp_toolkit;
+namespace ttk = thorp::toolkit;
 
 #include "thorp_manipulation/move_to_target_server.hpp"
 
 
-namespace thorp_manipulation
+namespace thorp::manipulation
 {
 
 
@@ -163,4 +163,4 @@ int32_t MoveToTargetServer::moveArmTo(const geometry_msgs::PoseStamped& target)
   return result.val;
 }
 
-};
+}  // namespace thorp::manipulation;

@@ -5,11 +5,11 @@
 // auxiliary libraries
 #include <thorp_toolkit/tf2.hpp>
 #include <thorp_toolkit/geometry.hpp>
-namespace ttk = thorp_toolkit;
+namespace ttk = thorp::toolkit;
 
 #include "thorp_manipulation/thorp_arm_controller.hpp"
 
-namespace thorp_manipulation
+namespace thorp::manipulation
 {
 
 std::string ThorpArmController::attached_object;
@@ -135,4 +135,4 @@ bool ThorpArmController::validateTargetPose(geometry_msgs::PoseStamped& target, 
   return true;
 }
 
-};
+}  // namespace thorp::manipulation;

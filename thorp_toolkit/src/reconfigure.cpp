@@ -4,7 +4,7 @@
 
 #include "thorp_toolkit/reconfigure.hpp"
 
-namespace thorp_toolkit
+namespace thorp::toolkit
 {
 
 Reconfigure::Reconfigure(const std::string& ns) : nh_(ns)
@@ -117,4 +117,4 @@ void Reconfigure::clear(dynamic_reconfigure::Config& config)
   config.strs.clear();
 }
 
-};  // namespace thorp_toolkit
+};  // namespace thorp::toolkit

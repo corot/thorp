@@ -7,7 +7,7 @@
 #include "thorp_costmap_layers/base_interface.hpp"
 
 
-namespace thorp_costmap_layers
+namespace thorp::costmap_layers
 {
 
 class ServiceInterface : public BaseInterface
@@ -32,4 +32,4 @@ private:
   static constexpr char LOGNAME[] = "srv_interface";
 };
 
-}  // namespace thorp_costmap_layers
+}  // namespace thorp::costmap_layers

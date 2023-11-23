@@ -11,7 +11,7 @@
 #include <thorp_toolkit/planning_scene.hpp>
 #include <thorp_toolkit/geometry.hpp>
 #include <thorp_toolkit/math.hpp>
-namespace ttk = thorp_toolkit;
+namespace ttk = thorp::toolkit;
 
 // other Thorp stuff
 #include <thorp_msgs/ThorpError.h>
@@ -19,7 +19,7 @@ namespace ttk = thorp_toolkit;
 #include "thorp_manipulation/pickup_object_server.hpp"
 
 
-namespace thorp_manipulation
+namespace thorp::manipulation
 {
 
 PickupObjectServer::PickupObjectServer(const std::string& name) :
@@ -93,7 +93,7 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
   }
 
   ROS_INFO("[pickup object] Picking object '%s' with size %.1f x %.1f x %.1f cm at %s...", obj_name.c_str(),
-           obj_size.x * 100, obj_size.y * 100, obj_size.z * 100, ttk::point2cstr2D(obj_pose.pose.position));
+           obj_size.x * 100, obj_size.y * 100, obj_size.z * 100, ttk::toCStr2D(obj_pose.pose.position));
 
   // Prepare grasps
   std::vector<moveit_msgs::Grasp> grasps;
@@ -214,7 +214,7 @@ int32_t PickupObjectServer::makeGrasps(const geometry_msgs::PoseStamped& obj_pos
 
     grasps.push_back(g);
 
-    ROS_DEBUG("[pickup object] Pick attempt %d at pose %s...", attempt, ttk::pose2cstr3D(g.grasp_pose));
+    ROS_DEBUG("[pickup object] Pick attempt %d at pose %s...", attempt, ttk::toCStr3D(g.grasp_pose));
   }
 
   return grasps.size();
@@ -236,4 +236,4 @@ double PickupObjectServer::gripperClosing(const geometry_msgs::PoseStamped& gras
   return closing;
 }
 
-}  // namespace thorp_manipulation
+}  // namespace thorp::manipulation

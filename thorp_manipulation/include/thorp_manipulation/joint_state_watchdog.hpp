@@ -11,9 +11,9 @@
 #include <sensor_msgs/JointState.h>
 
 #include <thorp_toolkit/math.hpp>
-namespace ttk = thorp_toolkit;
+namespace ttk = thorp::toolkit;
 
-namespace thorp_manipulation
+namespace thorp::manipulation
 {
 
 class JointStateWatchdog

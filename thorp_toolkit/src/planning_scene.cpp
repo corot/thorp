@@ -15,7 +15,7 @@
 #include "thorp_toolkit/planning_scene.hpp"
 
 
-namespace thorp_toolkit
+namespace thorp::toolkit
 {
 
 moveit::planning_interface::PlanningSceneInterface& planningScene()

@@ -5,7 +5,7 @@
 #include "thorp_costmap_layers/SemanticLayerConfig.h"
 #include "thorp_costmap_layers/visualization.hpp"
 
-namespace thorp_costmap_layers
+namespace thorp::costmap_layers
 {
 
 class SemanticLayer : public costmap_2d::CostmapLayer
@@ -62,4 +62,4 @@ private:
                    double& x0clip, double& y0clip, double& x1clip, double& y1clip);
 };
 
-}  // namespace thorp_costmap_layers
+}  // namespace thorp::costmap_layers

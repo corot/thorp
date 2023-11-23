@@ -1,6 +1,6 @@
 #include "thorp_toolkit/visualization.hpp"
 
-namespace thorp_toolkit
+namespace thorp::toolkit
 {
 // Initialization of the static member variable
 // template <>
@@ -299,4 +299,4 @@ jsk_rviz_plugins::OverlayText Visualization::createOverlayText(int offsetFromTop
   return msg;
 }
 
-} /* namespace thorp_toolkit */
+} /* namespace thorp::toolkit */

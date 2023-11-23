@@ -8,7 +8,7 @@
 #include <mbf_msgs/MoveBaseAction.h>
 
 #include <thorp_toolkit/geometry.hpp>
-namespace ttk = thorp_toolkit;
+namespace ttk = thorp::toolkit;
 
 namespace thorp::bt::actions
 {

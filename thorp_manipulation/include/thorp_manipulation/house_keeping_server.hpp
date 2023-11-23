@@ -13,7 +13,7 @@
 #include "thorp_manipulation/joint_state_watchdog.hpp"
 
 
-namespace thorp_manipulation
+namespace thorp::manipulation
 {
 
 /**
@@ -71,4 +71,4 @@ private:
   void graspEventCB(const gazebo_grasp_plugin_ros::GazeboGraspEvent& event);
 };
 
-};
+}  // namespace thorp::manipulation;

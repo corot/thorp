@@ -12,12 +12,12 @@
 
 #include <thorp_toolkit/tf2.hpp>
 #include <thorp_toolkit/geometry.hpp>
-namespace ttk = thorp_toolkit;
+namespace ttk = thorp::toolkit;
 
 #include "thorp_navigation/FollowerConfig.h"
 
 
-namespace thorp_navigation
+namespace thorp::navigation
 {
 
 /**
@@ -219,7 +219,7 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "pose_follower");
 
-  thorp_navigation::PoseFollower pf;
+  thorp::navigation::PoseFollower pf;
   pf.init();
 
   ros::spin();

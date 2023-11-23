@@ -7,7 +7,7 @@
 
 #include "thorp_toolkit/alternative_config.hpp"
 
-namespace thorp_toolkit
+namespace thorp::toolkit
 {
 
 AlternativeConfig::AlternativeConfig(const std::string& source_ns, const std::string& target_ns,
@@ -161,4 +161,4 @@ bool AlternativeConfig::loadAlternativeConfig(const std::string& ns)
   return true;
 }
 
-};  // namespace thorp_toolkit
+};  // namespace thorp::toolkit

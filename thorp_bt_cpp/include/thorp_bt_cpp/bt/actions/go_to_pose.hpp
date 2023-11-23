@@ -9,7 +9,7 @@
 
 #include <thorp_toolkit/geometry.hpp>
 #include <thorp_toolkit/reconfigure.hpp>
-namespace ttk = thorp_toolkit;
+namespace ttk = thorp::toolkit;
 
 namespace thorp::bt::actions
 {

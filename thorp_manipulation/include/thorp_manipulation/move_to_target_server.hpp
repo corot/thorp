@@ -12,7 +12,7 @@
 #include "thorp_manipulation/thorp_arm_controller.hpp"
 
 
-namespace thorp_manipulation
+namespace thorp::manipulation
 {
 
 /**
@@ -58,4 +58,4 @@ private:
   int32_t moveArmTo(const geometry_msgs::PoseStamped& target);
 };
 
-};
+}  // namespace thorp::manipulation;

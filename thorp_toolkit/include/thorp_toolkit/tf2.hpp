@@ -16,7 +16,7 @@
 #include <geometry_msgs/PoseStamped.h>
 
 
-namespace thorp_toolkit
+namespace thorp::toolkit
 {
 
 /**
@@ -152,4 +152,4 @@ void pose2tf(const geometry_msgs::Pose& pose, tf::Transform& tf);
  void pose2tf(const geometry_msgs::PoseStamped& pose, tf::StampedTransform& tf);
 
 
-} /* namespace thorp_toolkit */
+} /* namespace thorp::toolkit */

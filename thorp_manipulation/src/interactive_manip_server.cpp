@@ -15,13 +15,13 @@
 #include <thorp_toolkit/math.hpp>
 #include <thorp_toolkit/geometry.hpp>
 #include <thorp_toolkit/planning_scene.hpp>
-namespace ttk = thorp_toolkit;
+namespace ttk = thorp::toolkit;
 
 
 using namespace visualization_msgs;
 
 
-namespace thorp_manipulation
+namespace thorp::manipulation
 {
 
 class InteractiveManipulationServer
@@ -199,14 +199,14 @@ public:
 
 };
 
-};
+}  // namespace thorp::manipulation;
 
 int main(int argc, char** argv)
 {
   // initialize node
   ros::init(argc, argv, "object_interactive_manip_action_server");
 
-  thorp_manipulation::InteractiveManipulationServer manip("drag_and_drop");
+  thorp::manipulation::InteractiveManipulationServer manip("drag_and_drop");
 
   ros::spin();
 

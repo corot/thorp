@@ -5,12 +5,12 @@
 #include <moveit_msgs/GetPlanningScene.h>
 
 #include <thorp_toolkit/planning_scene.hpp>
-namespace ttk = thorp_toolkit;
+namespace ttk = thorp::toolkit;
 
 #include "thorp_manipulation/house_keeping_server.hpp"
 
 
-namespace thorp_manipulation
+namespace thorp::manipulation
 {
 
 
@@ -240,4 +240,4 @@ void HouseKeepingServer::graspEventCB(const gazebo_grasp_plugin_ros::GazeboGrasp
   last_grasp_event_ = event;
 }
 
-};
+}  // namespace thorp::manipulation;

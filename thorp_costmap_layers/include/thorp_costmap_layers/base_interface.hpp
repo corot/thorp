@@ -9,7 +9,7 @@
 #include "thorp_costmap_layers/spatial_hash.hpp"
 #include "thorp_costmap_layers/SemanticLayerConfig.h"
 
-namespace thorp_costmap_layers
+namespace thorp::costmap_layers
 {
 // Struct describing how to reflect an object of a given type on costmaps
 struct ObjectType
@@ -152,4 +152,4 @@ private:
   static constexpr char LOGNAME[] = "base_interface";
 };
 
-}  // namespace thorp_costmap_layers
+}  // namespace thorp::costmap_layers

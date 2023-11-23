@@ -7,7 +7,7 @@
 #include "thorp_toolkit/tf2.hpp"
 
 
-namespace thorp_toolkit
+namespace thorp::toolkit
 {
 
 void tf2pose(const tf::Transform& tf, geometry_msgs::Pose& pose)
@@ -184,4 +184,4 @@ void TF2::sendTransform(const geometry_msgs::Pose& pose, const std::string& from
   sbcaster_.sendTransform(tfs);
 }
 
-} /* namespace thorp_toolkit */
+} /* namespace thorp::toolkit */

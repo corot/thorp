@@ -13,7 +13,7 @@
 #include <mbf_costmap_core/costmap_recovery.h>
 
 
-namespace thorp_mbf_plugins
+namespace thorp::mbf_plugins
 {
 
 /**
@@ -149,4 +149,4 @@ private:
   bool drive_backward_allowed_ = true;    ///< @brief Whether is driving backward allowed
 };
 
-}; // namespace thorp_mbf_plugins
+}; // namespace thorp::mbf_plugins

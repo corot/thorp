@@ -10,13 +10,13 @@
 #include <tf2/LinearMath/Quaternion.h>
 
 #include <thorp_toolkit/geometry.hpp>
-namespace ttk = thorp_toolkit;
+namespace ttk = thorp::toolkit;
 
 #include "thorp_mbf_plugins/slow_escape_recovery.h"
 
-PLUGINLIB_EXPORT_CLASS(thorp_mbf_plugins::SlowEscapeRecovery, mbf_costmap_core::CostmapRecovery)
+PLUGINLIB_EXPORT_CLASS(thorp::mbf_plugins::SlowEscapeRecovery, mbf_costmap_core::CostmapRecovery)
 
-namespace thorp_mbf_plugins
+namespace thorp::mbf_plugins
 {
 
 
@@ -455,4 +455,4 @@ double SlowEscapeRecovery::getPoseCost(double x, double y, double th, costmap_2d
   return total_cost;
 }
 
-}; // namespace thorp_mbf_plugins
+}; // namespace thorp::mbf_plugins

@@ -26,7 +26,7 @@
 #include "thorp_perception/object_detection_table.hpp"
 
 
-namespace thorp_perception
+namespace thorp::perception
 {
 
 class ObjectDetectionServer
@@ -223,13 +223,13 @@ private:
   }
 };
 
-};  // namespace thorp_perception
+};  // namespace thorp::perception
 
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "object_detection_action_server");
 
-  thorp_perception::ObjectDetectionServer server("object_detection");
+  thorp::perception::ObjectDetectionServer server("object_detection");
   ros::spin();
 
   return 0;

@@ -58,6 +58,7 @@ class SegmentRooms(smach_ros.SimpleActionState):
 
 class PlanRoomSequence(smach_ros.SimpleActionState):
     """ Plan rooms visit sequence """
+
     def __init__(self):
         super(PlanRoomSequence, self).__init__('exploration/room_sequence_planning',
                                                ipa_building_msgs.FindRoomSequenceWithCheckpointsAction,
@@ -163,6 +164,7 @@ class ExploreHouse(smach.StateMachine):
      - segment map into rooms and plan visit sequence
      - iterate over all rooms and explore following the planned sequence
     """
+
     def __init__(self):
         super(ExploreHouse, self).__init__(outcomes=['succeeded', 'aborted', 'preempted'])
 
@@ -174,7 +176,7 @@ class ExploreHouse(smach.StateMachine):
                                               output_keys=['completed_rooms'])
         with explore_1_room_sm:
             smach.StateMachine.add('HAVE_EXPLORE_PLAN?', UDIfKey('coverage_path'),  # already have a explore plan?
-                                   transitions={'true': 'INSERT_CURRENT_POSE',      # then skip to traverse poses
+                                   transitions={'true': 'INSERT_CURRENT_POSE',  # then skip to traverse poses
                                                 'false': 'GET_ROBOT_POSE'})
             smach.StateMachine.add('GET_ROBOT_POSE', GetRobotPose(),
                                    transitions={'succeeded': 'PLAN_ROOM_EXPL',
@@ -183,7 +185,7 @@ class ExploreHouse(smach.StateMachine):
                                    transitions={'succeeded': 'GOTO_START_POSE',
                                                 'aborted': 'aborted',
                                                 'preempted': 'preempted'})
-            smach.StateMachine.add('GOTO_START_POSE', GoToPose(dist_tolerance=cfg.LOOSE_DIST_TOLERANCE,   # close enough
+            smach.StateMachine.add('GOTO_START_POSE', GoToPose(dist_tolerance=cfg.LOOSE_DIST_TOLERANCE,  # close enough
                                                                angle_tolerance=cfg.INF_ANGLE_TOLERANCE),  # ignore yaw
                                    transitions={'succeeded': 'INSERT_START_POSE',
                                                 'preempted': 'preempted',
@@ -195,8 +197,8 @@ class ExploreHouse(smach.StateMachine):
                                    remapping={'element': 'start_pose',
                                               'list': 'coverage_path'})
             smach.StateMachine.add('INSERT_CURRENT_POSE', PrependCurrentPose(),  # otherwise we can retake the remaining
-                                   transitions={'succeeded': 'TRAVERSE_POSES',   # plan wherever it is closer to us,
-                                                'aborted': 'aborted'},           # instead of from the beginning
+                                   transitions={'succeeded': 'TRAVERSE_POSES',  # plan wherever it is closer to us,
+                                                'aborted': 'aborted'},  # instead of from the beginning
                                    remapping={'path': 'coverage_path'})
             smach.StateMachine.add('TRAVERSE_POSES', FollowWaypoints(),
                                    transitions={'succeeded': 'ROOM_COMPLETED',
@@ -209,7 +211,7 @@ class ExploreHouse(smach.StateMachine):
             smach.StateMachine.add('ROOM_COMPLETED', RoomCompleted(),
                                    transitions={'succeeded': 'succeeded'})
             DoOnExitContainer.add_finally('CLEAR_EXPLORE_PLAN', UDSetTo('coverage_path', None),  # we only keep current
-                                          run_on=['succeeded', 'aborted'])      # plan when preempted (so we can resume)
+                                          run_on=['succeeded', 'aborted'])  # plan when preempted (so we can resume)
 
         # iterate over all rooms and explore following the planned sequence
         explore_house_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted'],
@@ -227,14 +229,14 @@ class ExploreHouse(smach.StateMachine):
 
         with self:
             smach.StateMachine.add('HAVE_SEGMENTED_MAP?', UDHasKey('segmented_map'),  # already have a rooms map?
-                                   transitions={'true': 'HAVE_ROOM_SEQUENCE?',        # use it for planning!
+                                   transitions={'true': 'HAVE_ROOM_SEQUENCE?',  # use it for planning!
                                                 'false': 'SEGMENT_ROOMS'})
             smach.StateMachine.add('SEGMENT_ROOMS', SegmentRooms(),
                                    transitions={'succeeded': 'GET_ROBOT_POSE',
                                                 'aborted': 'aborted',
                                                 'preempted': 'preempted'})
             smach.StateMachine.add('HAVE_ROOM_SEQUENCE?', UDHasKey('room_sequence'),  # already have a plan?
-                                   transitions={'true': 'EXPLORE_HOUSE',              # follow it!
+                                   transitions={'true': 'EXPLORE_HOUSE',  # follow it!
                                                 'false': 'GET_ROBOT_POSE'})
             smach.StateMachine.add('GET_ROBOT_POSE', GetRobotPose(),
                                    transitions={'succeeded': 'PLAN_ROOM_SEQ',

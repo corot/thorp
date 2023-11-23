@@ -11,7 +11,7 @@
 #include "thorp_manipulation/thorp_arm_controller.hpp"
 
 
-namespace thorp_manipulation
+namespace thorp::manipulation
 {
 
 class PickupObjectServer : public ThorpArmController
@@ -44,4 +44,4 @@ private:
                         const float gripper_tightening_closing);
 };
 
-};
+}  // namespace thorp::manipulation;

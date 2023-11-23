@@ -6,7 +6,7 @@
 
 #include <thorp_toolkit/visualization.hpp>
 
-namespace thorp_toolkit
+namespace thorp::toolkit
 {
 /**
  * Track progress along a list of waypoints, so we can report the last crossed waypoint.
@@ -36,4 +36,4 @@ private:
   Visualization viz;
 };
 
-}  // namespace thorp_toolkit
+}  // namespace thorp::toolkit

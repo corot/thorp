@@ -12,7 +12,7 @@
 #include <thorp_toolkit/planning_scene.hpp>
 #include <thorp_toolkit/geometry.hpp>
 #include <thorp_toolkit/tf2.hpp>
-namespace ttk = thorp_toolkit;
+namespace ttk = thorp::toolkit;
 
 // other Thorp stuff
 #include <thorp_msgs/ThorpError.h>
@@ -20,7 +20,7 @@ namespace ttk = thorp_toolkit;
 #include "thorp_manipulation/place_object_server.hpp"
 
 
-namespace thorp_manipulation
+namespace thorp::manipulation
 {
 
 PlaceObjectServer::PlaceObjectServer(const std::string& name) :
@@ -192,4 +192,4 @@ int32_t PlaceObjectServer::makePlaceLocations(const geometry_msgs::PoseStamped& 
   return place_locations.size();
 }
 
-}  // namespace thorp_manipulation;
+}  // namespace thorp::manipulation;

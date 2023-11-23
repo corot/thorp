@@ -8,7 +8,7 @@
 #include <tf2_eigen/tf2_eigen.h>
 #include <Eigen/Geometry>
 
-namespace thorp_toolkit
+namespace thorp::toolkit
 {
 
 char ___buffers___[10][256];
@@ -306,4 +306,4 @@ double curvature(const geometry_msgs::PoseStamped& pose_a,
   return 4 * area / (dist_ab * dist_bc * dist_ca);
 }
 
-} /* namespace thorp_toolkit */
+} /* namespace thorp::toolkit */

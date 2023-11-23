@@ -12,13 +12,13 @@
 #include <thorp_toolkit/tf2.hpp>
 #include <thorp_toolkit/math.hpp>
 #include <thorp_toolkit/geometry.hpp>
-namespace ttk = thorp_toolkit;
+namespace ttk = thorp::toolkit;
 
 #include "thorp_perception/spatial_hash.hpp"
 #include "thorp_perception/object_detection_color.hpp"
 
 
-namespace thorp_perception
+namespace thorp::perception
 {
 
 /**
@@ -277,4 +277,4 @@ private:
   }
 };
 
-};  // namespace thorp_perception
+};  // namespace thorp::perception

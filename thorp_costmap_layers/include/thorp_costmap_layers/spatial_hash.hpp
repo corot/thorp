@@ -7,7 +7,7 @@
 
 #include <nav_msgs/MapMetaData.h>
 
-namespace thorp_costmap_layers
+namespace thorp::costmap_layers
 {
 struct Point2d
 {
@@ -147,4 +147,4 @@ private:
   int times_;
 };
 
-}  // namespace thorp_costmap_layers
+}  // namespace thorp::costmap_layers

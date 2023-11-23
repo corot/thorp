@@ -8,7 +8,7 @@
 
 #include <dynamic_reconfigure/Reconfigure.h>
 
-namespace thorp_toolkit
+namespace thorp::toolkit
 {
 
 /**
@@ -73,4 +73,4 @@ private:
   bool loadAlternativeConfig(const std::string& ns);
 };
 
-};  // namespace thorp_toolkit
+};  // namespace thorp::toolkit

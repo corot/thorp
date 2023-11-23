@@ -40,10 +40,10 @@ using json = nlohmann::json;
 #include <thorp_toolkit/tf2.hpp>
 #include <thorp_toolkit/common.hpp>
 #include <thorp_toolkit/geometry.hpp>
-namespace ttk = thorp_toolkit;
+namespace ttk = thorp::toolkit;
 
 
-namespace thorp_perception
+namespace thorp::perception
 {
 
 class ObjectDetectionServer
@@ -506,13 +506,13 @@ private:
 
 };
 
-};  // namespace thorp_perception
+};  // namespace thorp::perception
 
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "object_detection");
 
-  thorp_perception::ObjectDetectionServer server("object_detection");
+  thorp::perception::ObjectDetectionServer server("object_detection");
   ros::spin();
 
   return 0;

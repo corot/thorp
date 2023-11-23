@@ -2,7 +2,7 @@
 
 #include <thorp_toolkit/geometry.hpp>
 
-namespace thorp_toolkit
+namespace thorp::toolkit
 {
 
 ProgressTracker::ProgressTracker(const std::vector<geometry_msgs::PoseStamped>& waypoints, double reached_threshold)
@@ -88,4 +88,4 @@ size_t ProgressTracker::reachedWaypoint() const
   return next_wp - 1;
 }
 
-}  // namespace thorp_toolkit
+}  // namespace thorp::toolkit

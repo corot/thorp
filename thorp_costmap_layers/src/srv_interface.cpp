@@ -5,7 +5,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2/utils.h>
 
-namespace thorp_costmap_layers
+namespace thorp::costmap_layers
 {
 
 ServiceInterface::ServiceInterface(ros::NodeHandle& nh, tf2_ros::Buffer& tf, costmap_2d::LayeredCostmap* lcm)
@@ -151,4 +151,4 @@ void ServiceInterface::collisionObjToContours(const moveit_msgs::CollisionObject
   }
 }
 
-}  // namespace thorp_costmap_layers
+}  // namespace thorp::costmap_layers
