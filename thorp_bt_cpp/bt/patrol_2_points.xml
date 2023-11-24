@@ -1,25 +1,81 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root BTCPP_format="3">
   <BehaviorTree ID="patrol_2_points">
-    <Repeat num_cycles="10">
-      <Sequence>
-        <MoveBaseAction action_name="move_base_flex/move_base"
-                        goal="{goal_a}"
-                        x="2"
-                        y="5"
-                        yaw="1.57"
-                        server_timeout="5.000000"
-                        error=""
-                        feedback=""/>
-        <MoveBaseAction action_name="move_base_flex/move_base"
-                        goal="{goal_b}"
-                        x="2"
-                        y="1"
-                        yaw="-1.57"
-                        server_timeout="5.000000"
-                        error=""
-                        feedback=""/>
-      </Sequence>
-    </Repeat>
+    <Sequence>
+      <CreatePoseStamped frame="map"
+                         x="2"
+                         y="5.000000"
+                         yaw="1.57"
+                         pose="{pose_a}"/>
+      <CreatePoseStamped frame="map"
+                         x="2"
+                         y="1"
+                         yaw="-1.57"
+                         pose="{pose_b}"/>
+      <Repeat num_cycles="10">
+        <Sequence>
+          <GoToPose action_name="move_base_flex/move_base"
+                    angle_tolerance=""
+                    controller=""
+                    dist_tolerance=""
+                    goal=""
+                    planner=""
+                    pose="{pose_a}"
+                    server_timeout="5.000000"
+                    error="{goto_pose_error}"
+                    feedback="{goto_pose_feedback}"/>
+          <GoToPose action_name="move_base_flex/move_base"
+                    angle_tolerance=""
+                    controller=""
+                    dist_tolerance=""
+                    goal=""
+                    planner=""
+                    pose="{pose_b}"
+                    server_timeout="5.000000"
+                    error="{goto_pose_error}"
+                    feedback="{goto_pose_feedback}"/>
+        </Sequence>
+      </Repeat>
+    </Sequence>
   </BehaviorTree>
+
+  <!-- Description of Node Models (used by Groot) -->
+  <TreeNodesModel>
+    <Action ID="CreatePoseStamped">
+      <input_port name="frame"
+                  type="std::string"/>
+      <input_port name="x"
+                  type="double"/>
+      <input_port name="y"
+                  type="double"/>
+      <input_port name="yaw"
+                  type="double"/>
+      <output_port name="pose"
+                   type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+    </Action>
+    <Action ID="GoToPose">
+      <input_port name="action_name"
+                  type="std::string">name of the ROS action client</input_port>
+      <input_port name="angle_tolerance"
+                  type="double"/>
+      <input_port name="controller"
+                  type="std::string"/>
+      <input_port name="dist_tolerance"
+                  type="double"/>
+      <input_port name="goal"
+                  type="mbf_msgs::MoveBaseGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
+      <input_port name="planner"
+                  type="std::string"/>
+      <input_port name="pose"
+                  type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+      <input_port name="server_timeout"
+                  default="5.000000"
+                  type="double">timeout to connect to server (seconds)</input_port>
+      <output_port name="error"
+                   type="unsigned int"/>
+      <output_port name="feedback"
+                   type="std::optional&lt;mbf_msgs::MoveBaseFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
+    </Action>
+  </TreeNodesModel>
+
 </root>

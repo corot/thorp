@@ -11,7 +11,7 @@
 #include "thorp_bt_cpp/bt/actions/get_path_action.hpp"
 #include "thorp_bt_cpp/bt/actions/exe_path_action.hpp"
 #include "thorp_bt_cpp/bt/actions/recovery_action.hpp"
-#include "thorp_bt_cpp/bt/actions/move_base_action.hpp"
+#include "thorp_bt_cpp/bt/actions/create_pose_stamped.hpp"
 
 // exploration
 #include "thorp_bt_cpp/bt/actions/segment_rooms.hpp"
@@ -54,13 +54,14 @@ void registerNodes(BT::BehaviorTreeFactory& factory, ros::NodeHandle& nh, const 
   // actions
   registerNode<bt::actions::GetRobotPose>(factory, nh, "GetRobotPose");
   registerNode<bt::actions::TrackProgress>(factory, nh, "TrackProgress");
+  registerNode<bt::actions::CreatePoseStamped>(factory, nh, "CreatePoseStamped");
+
   BT::RegisterRosService<bt::actions::SmoothPath>(factory, "SmoothPath", nh);
   BT::RegisterRosService<bt::actions::ClearCostmaps>(factory, "ClearCostmaps", nh);
   BT::RegisterSimpleActionClient<bt::actions::GoToPose>(factory, "GoToPose");
   BT::RegisterSimpleActionClient<bt::actions::GetPathAction>(factory, "GetPathAction");
   BT::RegisterSimpleActionClient<bt::actions::ExePathAction>(factory, "ExePathAction");
   BT::RegisterSimpleActionClient<bt::actions::RecoveryAction>(factory, "RecoveryAction");
-  BT::RegisterSimpleActionClient<bt::actions::MoveBaseAction>(factory, "MoveBaseAction");
   BT::RegisterSimpleActionClient<bt::actions::SegmentRooms>(factory, "SegmentRooms");
   BT::RegisterSimpleActionClient<bt::actions::PlanRoomSequence>(factory, "PlanRoomSequence");
   BT::RegisterSimpleActionClient<bt::actions::PlanRoomExploration>(factory, "PlanRoomExploration");
