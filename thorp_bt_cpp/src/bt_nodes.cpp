@@ -39,9 +39,6 @@
 // bt tools
 #include <behaviortree_cpp_v3/xml_parsing.h>
 
-// others
-#include "thorp_bt_cpp/bt/utils.hpp"
-
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -52,9 +49,9 @@ namespace thorp::bt
 void registerNodes(BT::BehaviorTreeFactory& factory, ros::NodeHandle& nh, const std::string& nodes_file_path)
 {
   // actions
-  registerNode<bt::actions::GetRobotPose>(factory, nh, "GetRobotPose");
-  registerNode<bt::actions::TrackProgress>(factory, nh, "TrackProgress");
-  registerNode<bt::actions::CreatePoseStamped>(factory, nh, "CreatePoseStamped");
+  factory.registerNodeType<bt::actions::GetRobotPose>("GetRobotPose");
+  factory.registerNodeType<bt::actions::TrackProgress>("TrackProgress");
+  factory.registerNodeType<bt::actions::CreatePoseStamped>("CreatePoseStamped");
 
   BT::RegisterRosService<bt::actions::SmoothPath>(factory, "SmoothPath", nh);
   BT::RegisterRosService<bt::actions::ClearCostmaps>(factory, "ClearCostmaps", nh);
@@ -66,21 +63,21 @@ void registerNodes(BT::BehaviorTreeFactory& factory, ros::NodeHandle& nh, const 
   BT::RegisterSimpleActionClient<bt::actions::PlanRoomSequence>(factory, "PlanRoomSequence");
   BT::RegisterSimpleActionClient<bt::actions::PlanRoomExploration>(factory, "PlanRoomExploration");
 
-  registerNode<bt::actions::UseNamedConfig>(factory, nh, "UseNamedConfig");
-  registerNode<bt::actions::GetListFront<geometry_msgs::PoseStamped>>(factory, nh, "GetPoseListFront");
-  registerNode<bt::actions::PushToList<geometry_msgs::PoseStamped>>(factory, nh, "PushPoseToList");
-  registerNode<bt::actions::ListSlicing<geometry_msgs::PoseStamped>>(factory, nh, "PoseListSlicing");
-  registerNode<bt::actions::PopFromList<uint32_t>>(factory, nh, "PopUInt32FromList");
-    //    registerNode<bt::actions::SelectController>("SelectController");
-    //    registerNode<bt::actions::SetBlackboard<bool>>("SetBool");
-    //    registerNode<bt::actions::SetBlackboard<double>>("SetDouble");
-    //    registerNode<bt::actions::SetBlackboard<unsigned int>>("SetUnsignedInt");
+  factory.registerNodeType<bt::actions::UseNamedConfig>("UseNamedConfig");
+  factory.registerNodeType<bt::actions::GetListFront<geometry_msgs::PoseStamped>>("GetPoseListFront");
+  factory.registerNodeType<bt::actions::PushToList<geometry_msgs::PoseStamped>>("PushPoseToList");
+  factory.registerNodeType<bt::actions::ListSlicing<geometry_msgs::PoseStamped>>("PoseListSlicing");
+  factory.registerNodeType<bt::actions::PopFromList<uint32_t>>("PopUInt32FromList");
+  factory.registerNodeType<bt::actions::SetBlackboard<bool>>("SetBool");
+  factory.registerNodeType<bt::actions::SetBlackboard<double>>("SetDouble");
+  factory.registerNodeType<bt::actions::SetBlackboard<unsigned int>>("SetUnsignedInt");
+
   // conditions
-  registerNode<bt::conditions::IsBoolTrue>(factory, nh, "IsBoolTrue");
-  registerNode<bt::conditions::IsListEmpty<uint32_t>>(factory, nh, "IsListEmpty");
+  factory.registerNodeType<bt::conditions::IsBoolTrue>("IsBoolTrue");
+  factory.registerNodeType<bt::conditions::IsListEmpty<uint32_t>>("IsListEmpty");
 
   // controls
-  registerNode<bt::controls::SuperReactiveSequence>(factory, nh, "SuperReactiveSequence");
+  factory.registerNodeType<bt::controls::SuperReactiveSequence>("SuperReactiveSequence");
 
   // dump to an XML file to load on Groot
   std::ofstream ofs;

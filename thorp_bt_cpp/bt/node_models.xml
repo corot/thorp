@@ -113,6 +113,18 @@
             <output_port name="room_information_in_pixel" type="std::vector&lt;ipa_building_msgs::RoomInformation_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;ipa_building_msgs::RoomInformation_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
             <output_port name="segmented_map" type="sensor_msgs::Image_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
+        <Action ID="SetBool">
+            <input_port name="input" type="bool"/>
+            <output_port name="output" type="bool"/>
+        </Action>
+        <Action ID="SetDouble">
+            <input_port name="input" type="double"/>
+            <output_port name="output" type="double"/>
+        </Action>
+        <Action ID="SetUnsignedInt">
+            <input_port name="input" type="unsigned int"/>
+            <output_port name="output" type="unsigned int"/>
+        </Action>
         <Action ID="SmoothPath">
             <input_port name="service_name" type="std::string">name of the ROS service</input_port>
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>

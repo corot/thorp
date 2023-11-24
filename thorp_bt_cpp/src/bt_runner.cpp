@@ -1,8 +1,6 @@
 #include "thorp_bt_cpp/bt_runner.hpp"
+
 #include "thorp_bt_cpp/bt_nodes.hpp"
-
-#include "mbf_msgs/MoveBaseAction.h"  // TODO remove
-
 
 namespace thorp::bt
 {

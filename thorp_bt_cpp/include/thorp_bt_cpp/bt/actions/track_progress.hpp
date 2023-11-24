@@ -11,7 +11,7 @@ namespace thorp::bt::actions
 class TrackProgress : public BT::StatefulActionNode
 {
 public:
-  TrackProgress(const std::string& name, const BT::NodeConfiguration& config, const ros::NodeHandle& pnh)
+  TrackProgress(const std::string& name, const BT::NodeConfiguration& config)
     : BT::StatefulActionNode(name, config)
   {
   }

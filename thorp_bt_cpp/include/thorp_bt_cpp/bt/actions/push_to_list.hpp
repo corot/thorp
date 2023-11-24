@@ -9,7 +9,7 @@ template <typename T>
 class PushToList : public BT::SyncActionNode
 {
 public:
-  PushToList(const std::string& name, const BT::NodeConfiguration& config, const ros::NodeHandle& pnh)
+  PushToList(const std::string& name, const BT::NodeConfiguration& config)
     : BT::SyncActionNode(name, config)
   {
   }

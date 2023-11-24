@@ -9,7 +9,7 @@ template <typename T>
 class SetBlackboard : public BT::SyncActionNode
 {
 public:
-  SetBlackboard(const std::string& name, const BT::NodeConfiguration& config, const ros::NodeHandle& pnh)
+  SetBlackboard(const std::string& name, const BT::NodeConfiguration& config)
     : BT::SyncActionNode(name, config)
   {
   }

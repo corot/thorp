@@ -15,7 +15,7 @@ namespace thorp::bt::conditions
 class IsBoolTrue : public BT::ConditionNode
 {
 public:
-  IsBoolTrue(const std::string& name, const BT::NodeConfiguration& config, const ros::NodeHandle& pnh)
+  IsBoolTrue(const std::string& name, const BT::NodeConfiguration& config)
     : ConditionNode(name, config)
   {
   }

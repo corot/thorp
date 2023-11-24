@@ -7,7 +7,7 @@ namespace thorp::bt::actions
 class CreatePoseStamped : public BT::SyncActionNode
 {
 public:
-  CreatePoseStamped(const std::string& name, const BT::NodeConfiguration& config, const ros::NodeHandle& pnh)
+  CreatePoseStamped(const std::string& name, const BT::NodeConfiguration& config)
     : BT::SyncActionNode(name, config)
   {
   }

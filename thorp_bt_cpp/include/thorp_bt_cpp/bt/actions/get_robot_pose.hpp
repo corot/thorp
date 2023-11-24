@@ -13,7 +13,7 @@ namespace thorp::bt::actions
 class GetRobotPose : public BT::StatefulActionNode
 {
 public:
-  GetRobotPose(const std::string& name, const BT::NodeConfiguration& config, const ros::NodeHandle& pnh)
+  GetRobotPose(const std::string& name, const BT::NodeConfiguration& config)
     : StatefulActionNode(name, config), timeout_()
   {
   }

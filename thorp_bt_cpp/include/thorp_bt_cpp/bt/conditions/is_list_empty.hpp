@@ -16,7 +16,7 @@ template <typename T>
 class IsListEmpty : public BT::ConditionNode
 {
 public:
-  IsListEmpty(const std::string& name, const BT::NodeConfiguration& config, const ros::NodeHandle& pnh)
+  IsListEmpty(const std::string& name, const BT::NodeConfiguration& config)
     : ConditionNode(name, config)
   {
   }

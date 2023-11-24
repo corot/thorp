@@ -9,7 +9,7 @@ namespace thorp::bt::decorators
 class StoreResult : public BT::DecoratorNode
 {
 public:
-  StoreResult(const std::string& name, const BT::NodeConfiguration& config, const ros::NodeHandle& pnh)
+  StoreResult(const std::string& name, const BT::NodeConfiguration& config)
     : DecoratorNode(name, config)
   {
   }

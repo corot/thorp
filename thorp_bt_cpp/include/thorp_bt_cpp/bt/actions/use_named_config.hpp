@@ -11,7 +11,7 @@ namespace thorp::bt::actions
 class UseNamedConfig : public BT::StatefulActionNode
 {
 public:
-  UseNamedConfig(const std::string& name, const BT::NodeConfiguration& config, const ros::NodeHandle& pnh)
+  UseNamedConfig(const std::string& name, const BT::NodeConfiguration& config)
     : BT::StatefulActionNode(name, config)
   {
     config_name_ = *getInput<std::string>("config_name");

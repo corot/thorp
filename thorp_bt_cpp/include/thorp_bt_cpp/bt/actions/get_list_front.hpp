@@ -9,7 +9,7 @@ template <typename T>
 class GetListFront : public BT::SyncActionNode
 {
 public:
-  GetListFront(const std::string& name, const BT::NodeConfiguration& config, const ros::NodeHandle& pnh)
+  GetListFront(const std::string& name, const BT::NodeConfiguration& config)
     : BT::SyncActionNode(name, config)
   {
   }
