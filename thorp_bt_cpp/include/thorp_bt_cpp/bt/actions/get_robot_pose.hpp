@@ -2,7 +2,6 @@
 
 #include <ros/ros.h>
 #include <behaviortree_cpp_v3/action_node.h>
-#include "thorp_bt_cpp/bt/utils.hpp"
 
 #include <mbf_msgs/ExePathAction.h>
 
@@ -15,7 +14,7 @@ class GetRobotPose : public BT::StatefulActionNode
 {
 public:
   GetRobotPose(const std::string& name, const BT::NodeConfiguration& config, const ros::NodeHandle& pnh)
-    : StatefulActionNode(name, config), timeout_(), pnh_(pnh)
+    : StatefulActionNode(name, config), timeout_()
   {
   }
 
@@ -27,7 +26,7 @@ public:
 
   BT::NodeStatus onStart() override
   {
-    timeout_.fromSec(utils::getInput<double>(*this, pnh_, "timeout"));
+    timeout_.fromSec(*getInput<double>("timeout"));
     return onRunning();
   }
 
@@ -43,7 +42,8 @@ public:
     }
 
     ROS_ERROR_NAMED(name(), "Could not get the current robot pose");
-    utils::setError(*this, mbf_msgs::ExePathResult::TF_ERROR);
+    setOutput("error",  mbf_msgs::ExePathResult::TF_ERROR);
+
     return BT::NodeStatus::FAILURE;
   }
 
@@ -53,6 +53,5 @@ public:
 
 private:
   ros::Duration timeout_;
-  ros::NodeHandle pnh_;
 };
 }  // namespace thorp::bt::actions

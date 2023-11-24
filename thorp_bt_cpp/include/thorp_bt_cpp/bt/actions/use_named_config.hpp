@@ -1,7 +1,6 @@
 #pragma once
 
 #include <behaviortree_cpp_v3/action_node.h>
-#include "thorp_bt_cpp/bt/utils.hpp"
 
 #include <thorp_toolkit/alternative_config.hpp>
 namespace ttk = thorp::toolkit;

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <behaviortree_cpp_v3/action_node.h>
-#include "thorp_bt_cpp/bt/utils.hpp"
 
 namespace thorp::bt::actions
 {
@@ -11,7 +10,7 @@ class PushToList : public BT::SyncActionNode
 {
 public:
   PushToList(const std::string& name, const BT::NodeConfiguration& config, const ros::NodeHandle& pnh)
-    : BT::SyncActionNode(name, config), pnh_(pnh)
+    : BT::SyncActionNode(name, config)
   {
   }
 
@@ -25,13 +24,10 @@ private:
   BT::NodeStatus tick() override
   {
     std::vector<T> list;
-    utils::getInput<std::vector<T>>(*this, pnh_, "list", list);
-    list.insert(list.begin(), utils::getInput<T>(*this, pnh_, "element"));
+    getInput<std::vector<T>>("list", list);
+    list.insert(list.begin(), *getInput<T>("element"));
     setOutput("list", list);
     return BT::NodeStatus::SUCCESS;
   }
-
-private:
-  ros::NodeHandle pnh_;
 };
 }  // namespace thorp::bt::actions

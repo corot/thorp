@@ -65,6 +65,7 @@ void registerNode(BT::BehaviorTreeFactory& factory, const ros::NodeHandle& nh, c
  * If the value is in the form of {key}, queries the BT blackboard.
  * Otherwise treats the value as a constant.
  */
+/*
 template <typename T>
 void getInput(const BT::TreeNode& node, const ros::NodeHandle& nh, const std::string& key, T& val)
 {
@@ -95,12 +96,22 @@ void getInput(const BT::TreeNode& node, const ros::NodeHandle& nh, const std::st
   }
 }
 
+*/
 /**
  * Gets the value of the given input port.
  * If the value is in the form of ${key}, queries the ROS parameter server.
  * If the value is in the form of {key}, queries the BT blackboard.
  * Otherwise treats the value as a constant.
- */
+ *//*
+
+template <typename T>
+T getInput(const BT::TreeNode& node, const ros::NodeHandle& nh, const std::string& key)
+{
+  T val;
+  getInput(node, nh, key, val);
+  return val;
+}
+
 template <typename T>
 T getInput(const BT::TreeNode& node, const ros::NodeHandle& nh, const std::string& key)
 {
@@ -110,9 +121,9 @@ T getInput(const BT::TreeNode& node, const ros::NodeHandle& nh, const std::strin
 }
 
 /** Sets the given error in the blackboard. */
-void setError(BT::TreeNode& node, unsigned int error)
-{
-  node.setOutput("error", error);
-}
+//void setError(BT::TreeNode& node, unsigned int error)
+//{
+//  node.setOutput("error", error);
+//}
 }  // namespace utils
 }  // namespace thorp::bt

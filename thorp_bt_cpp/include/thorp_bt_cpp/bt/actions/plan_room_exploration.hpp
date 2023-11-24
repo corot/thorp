@@ -2,7 +2,6 @@
 
 #include <ros/ros.h>
 #include <behaviortree_cpp_v3/action_node.h>
-#include "thorp_bt_cpp/bt/utils.hpp"
 #include "thorp_bt_cpp/bt/actions/action_client_node.hpp"
 
 #include <geometry_msgs/PolygonStamped.h>

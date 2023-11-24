@@ -1,7 +1,6 @@
 #pragma once
 
 #include <behaviortree_cpp_v3/condition_node.h>
-#include "thorp_bt_cpp/bt/utils.hpp"
 
 namespace thorp::bt::conditions
 {
@@ -18,7 +17,7 @@ class IsListEmpty : public BT::ConditionNode
 {
 public:
   IsListEmpty(const std::string& name, const BT::NodeConfiguration& config, const ros::NodeHandle& pnh)
-    : ConditionNode(name, config), pnh_(pnh)
+    : ConditionNode(name, config)
   {
   }
 
@@ -30,11 +29,8 @@ public:
   BT::NodeStatus tick() override
   {
     std::vector<T> list;
-    utils::getInput<std::vector<T>>(*this, pnh_, "list", list);
+    getInput<std::vector<T>>("list", list);
     return list.empty() ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
   }
-
-private:
-  ros::NodeHandle pnh_;
 };
 }  // namespace thorp::bt::conditions

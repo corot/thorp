@@ -2,7 +2,6 @@
 
 #include <ros/ros.h>
 #include <behaviortree_cpp_v3/action_node.h>
-#include "thorp_bt_cpp/bt/utils.hpp"
 #include "thorp_bt_cpp/bt/actions/action_client_node.hpp"
 
 #include <mbf_msgs/MoveBaseAction.h>
@@ -85,8 +84,7 @@ public:
                     res->dist_to_goal, res->angle_to_goal);
 
     ROS_ERROR_NAMED(name(), "Error %d: %s", res->outcome, res->message.c_str());
-
-    utils::setError(*this, res->outcome);
+    setOutput("error", res->outcome);
 
     return BT::NodeStatus::FAILURE;
   }
