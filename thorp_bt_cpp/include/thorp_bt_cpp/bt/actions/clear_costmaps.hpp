@@ -3,33 +3,27 @@
 #include <ros/ros.h>
 #include <behaviortree_cpp_v3/action_node.h>
 #include "thorp_bt_cpp/bt/utils.hpp"
+#include "thorp_bt_cpp/bt/actions/service_client_node.hpp"
 
 #include <std_srvs/Empty.h>
 
 namespace thorp::bt::actions
 {
-// TODO ServiceNode from BehaviorTreeROS
-class ClearCostmaps : public BT::SyncActionNode
+class ClearCostmaps : public BT::RosServiceNode<std_srvs::Empty>
 {
 public:
-  ClearCostmaps(const std::string& name)
-    : SyncActionNode(name, {})
-    , client_(ros::NodeHandle().serviceClient<std_srvs::Empty>("move_base_flex/clear_costmaps"))
+  ClearCostmaps(ros::NodeHandle& handle, const std::string& node_name, const BT::NodeConfiguration& conf)
+    : RosServiceNode<std_srvs::Empty>(handle, node_name, conf)
   {
-    while (ros::ok() && !client_.waitForExistence(ros::Duration(0.5)))
-    {
-      // ros::ServiceClient::waitForExistence already prints logs
-      ros::spinOnce();
-    }
   }
 
-  BT::NodeStatus tick() override
+  void sendRequest(RequestType& request) override
   {
-    std_srvs::Empty srv;
-    return client_.call(srv) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
   }
 
-private:
-  ros::ServiceClient client_;
+  BT::NodeStatus onResponse(const ResponseType& response) override
+  {
+    return BT::NodeStatus::SUCCESS;
+  }
 };
 }  // namespace thorp::bt::actions

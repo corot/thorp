@@ -53,9 +53,9 @@ void registerNodes(BT::BehaviorTreeFactory& factory, ros::NodeHandle& nh, const 
 {
   // actions
   registerNode<bt::actions::GetRobotPose>(factory, nh, "GetRobotPose");
-  registerNode<bt::actions::ClearCostmaps>(factory, nh, "ClearCostmaps");
   registerNode<bt::actions::TrackProgress>(factory, nh, "TrackProgress");
   BT::RegisterRosService<bt::actions::SmoothPath>(factory, "SmoothPath", nh);
+  BT::RegisterRosService<bt::actions::ClearCostmaps>(factory, "ClearCostmaps", nh);
   BT::RegisterSimpleActionClient<bt::actions::GoToPose>(factory, "GoToPose");
   BT::RegisterSimpleActionClient<bt::actions::GetPathAction>(factory, "GetPathAction");
   BT::RegisterSimpleActionClient<bt::actions::ExePathAction>(factory, "ExePathAction");
