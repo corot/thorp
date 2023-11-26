@@ -48,6 +48,8 @@ namespace thorp::bt
 
 void registerNodes(BT::BehaviorTreeFactory& factory, ros::NodeHandle& nh, const std::string& nodes_file_path)
 {
+  using geometry_msgs::PoseStamped;
+
   // actions
   factory.registerNodeType<bt::actions::GetRobotPose>("GetRobotPose");
   factory.registerNodeType<bt::actions::TrackProgress>("TrackProgress");
@@ -64,17 +66,19 @@ void registerNodes(BT::BehaviorTreeFactory& factory, ros::NodeHandle& nh, const 
   BT::RegisterSimpleActionClient<bt::actions::PlanRoomExploration>(factory, "PlanRoomExploration");
 
   factory.registerNodeType<bt::actions::UseNamedConfig>("UseNamedConfig");
-  factory.registerNodeType<bt::actions::GetListFront<geometry_msgs::PoseStamped>>("GetPoseListFront");
-  factory.registerNodeType<bt::actions::PushToList<geometry_msgs::PoseStamped>>("PushPoseToList");
-  factory.registerNodeType<bt::actions::ListSlicing<geometry_msgs::PoseStamped>>("PoseListSlicing");
-  factory.registerNodeType<bt::actions::PopFromList<uint32_t>>("PopUInt32FromList");
+  factory.registerNodeType<bt::actions::GetListFront<PoseStamped>>("GetPoseListFront");
+  factory.registerNodeType<bt::actions::PushToList<PoseStamped>>("PushPoseToList");
+  factory.registerNodeType<bt::actions::ListSlicing<PoseStamped>>("PoseListSlicing");
+  factory.registerNodeType<bt::actions::PopFromList<PoseStamped>>("PopPoseFromList");
+  factory.registerNodeType<bt::actions::PopFromList<uint32_t>>("PopUIntFromList");
   factory.registerNodeType<bt::actions::SetBlackboard<bool>>("SetBool");
   factory.registerNodeType<bt::actions::SetBlackboard<double>>("SetDouble");
   factory.registerNodeType<bt::actions::SetBlackboard<unsigned int>>("SetUnsignedInt");
 
   // conditions
   factory.registerNodeType<bt::conditions::IsBoolTrue>("IsBoolTrue");
-  factory.registerNodeType<bt::conditions::IsListEmpty<uint32_t>>("IsListEmpty");
+  factory.registerNodeType<bt::conditions::IsListEmpty<uint32_t>>("IsUIntListEmpty");
+  factory.registerNodeType<bt::conditions::IsListEmpty<PoseStamped>>("IsPoseListEmpty");
 
   // controls
   factory.registerNodeType<bt::controls::SuperReactiveSequence>("SuperReactiveSequence");

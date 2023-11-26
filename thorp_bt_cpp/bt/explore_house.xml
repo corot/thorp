@@ -27,7 +27,7 @@
                         room_sequence="{room_sequence}"/>
       <RetryUntilSuccessful num_attempts="999999">
         <Sequence>
-          <PopUInt32FromList element="{room_number}"
+          <PopUIntFromList element="{room_number}"
                              list="{room_sequence}"/>
           <PlanRoomExploration action_name="exploration/room_exploration"
                                goal=""
@@ -54,7 +54,7 @@
                     feedback="{goto_pose_feedback}"/>
           <PushPoseToList element="{start_pose}"
                           list="{coverage_waypoints}"/>
-          <RetryUntilSuccessful num_attempts="10.0">
+          <RetryUntilSuccessful num_attempts="999">
             <Fallback>
               <Parallel failure_threshold="1"
                         success_threshold="1">
@@ -84,30 +84,39 @@
                                  next_waypoint="{next_waypoint}"/>
                 </ReactiveSequence>
               </Parallel>
-              <ForceFailure>
-                <Sequence>
-                  <PoseListSlicing end=""
-                                   start="{next_waypoint}"
-                                   list="{coverage_waypoints}"/>
-                  <GetPoseListFront list="{coverage_waypoints}"
-                                    element="{next_waypoint_pose}"/>
-                  <GoToPose action_name="move_base_flex/move_base"
-                            angle_tolerance="3.15"
-                            controller="TEBPlanner"
-                            dist_tolerance="0.3"
-                            goal=""
-                            planner=""
-                            pose="{next_waypoint_pose}"
-                            server_timeout="5.000000"
-                            error="{goto_pose_error}"
-                            feedback="{goto_pose_feedback}"/>
-                </Sequence>
-              </ForceFailure>
+              <Sequence>
+                <PoseListSlicing end=""
+                                 start="{next_waypoint}"
+                                 list="{coverage_waypoints}"/>
+                <RetryUntilSuccessful num_attempts="999">
+                  <Fallback>
+                    <Sequence>
+                      <GetPoseListFront list="{coverage_waypoints}"
+                                        element="{next_waypoint_pose}"/>
+                      <GoToPose action_name="move_base_flex/move_base"
+                                angle_tolerance="3.15"
+                                controller="TEBPlanner"
+                                dist_tolerance="0.3"
+                                goal=""
+                                planner=""
+                                pose="{next_waypoint_pose}"
+                                server_timeout="5.000000"
+                                error="{goto_pose_error}"
+                                feedback="{goto_pose_feedback}"/>
+                    </Sequence>
+                    <Inverter>
+                      <PopPoseFromList element="{next_waypoint_pose}"
+                                       list="{coverage_waypoints}"/>
+                    </Inverter>
+                  </Fallback>
+                </RetryUntilSuccessful>
+                <IsPoseListEmpty list="{coverage_waypoints}"/>
+              </Sequence>
             </Fallback>
           </RetryUntilSuccessful>
           <SetBlackboard value="0"
                          output_key="{next_waypoint}"/>
-          <IsListEmpty list="{room_sequence}"/>
+          <IsUIntListEmpty list="{room_sequence}"/>
         </Sequence>
       </RetryUntilSuccessful>
     </Sequence>
@@ -169,7 +178,7 @@
       <output_port name="feedback"
                    type="std::optional&lt;mbf_msgs::MoveBaseFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
     </Action>
-    <Condition ID="IsListEmpty">
+    <Condition ID="IsUIntListEmpty">
       <input_port name="list"
                   type="std::vector&lt;unsigned int, std::allocator&lt;unsigned int&gt; &gt;"/>
     </Condition>
@@ -225,7 +234,13 @@
       <output_port name="room_sequence"
                    type="std::vector&lt;unsigned int, std::allocator&lt;unsigned int&gt; &gt;"/>
     </Action>
-    <Action ID="PopUInt32FromList">
+    <Action ID="PopPoseFromList">
+      <output_port name="element"
+                   type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+      <inout_port name="list"
+                  type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+    </Action>
+    <Action ID="PopUIntFromList">
       <output_port name="element"
                    type="unsigned int"/>
       <inout_port name="list"

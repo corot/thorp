@@ -4,7 +4,10 @@
 
 namespace thorp::bt::actions
 {
-/** Pop and return an element from the beginning of a list. */
+/**
+ * Pop and return an element from the beginning of a list.
+ * @return BT::NodeStatus Returns FAILURE if the list is empty, SUCCESS otherwise.
+ */
 template <typename T>
 class PopFromList : public BT::SyncActionNode
 {
@@ -23,8 +26,10 @@ public:
 private:
   BT::NodeStatus tick() override
   {
-    std::vector<T> list;
-    getInput<std::vector<T>>("list", list);
+    std::vector<T> list = *getInput<std::vector<T>>("list");
+    if (list.empty())
+      return BT::NodeStatus::FAILURE;
+
     setOutput("element", list.front());
     list.erase(list.begin());
     setOutput("list", list);

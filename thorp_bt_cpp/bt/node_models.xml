@@ -51,7 +51,10 @@
         <Condition ID="IsBoolTrue">
             <input_port name="input" type="bool"/>
         </Condition>
-        <Condition ID="IsListEmpty">
+        <Condition ID="IsPoseListEmpty">
+            <input_port name="list" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+        </Condition>
+        <Condition ID="IsUIntListEmpty">
             <input_port name="list" type="std::vector&lt;unsigned int, std::allocator&lt;unsigned int&gt; &gt;"/>
         </Condition>
         <Action ID="PlanRoomExploration">
@@ -81,7 +84,11 @@
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
             <output_port name="room_sequence" type="std::vector&lt;unsigned int, std::allocator&lt;unsigned int&gt; &gt;"/>
         </Action>
-        <Action ID="PopUInt32FromList">
+        <Action ID="PopPoseFromList">
+            <output_port name="element" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <inout_port name="list" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+        </Action>
+        <Action ID="PopUIntFromList">
             <output_port name="element" type="unsigned int"/>
             <inout_port name="list" type="std::vector&lt;unsigned int, std::allocator&lt;unsigned int&gt; &gt;"/>
         </Action>
