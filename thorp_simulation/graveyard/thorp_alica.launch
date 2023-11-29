@@ -1,0 +1,74 @@
+<!--
+  Thorp global navigation simulation on Stage:
+  - stage simulator
+  - robot model
+  - navigation
+  - rviz view
+ -->
+
+<launch>
+  <arg name="visualization"  default="true"/>
+
+  <!-- To specify a simulated world other than the default 'maze', provide either word_name
+       (without path nor extension), or specific files (with full path) for both map and world.
+       Optionally, provide also an initial position -->
+  <arg name="world_name"     default="maze"/>
+  <arg name="map_file"       default="$(find thorp_simulation)/worlds/maps/$(arg world_name).yaml"/>
+  <arg name="world_file"     default="$(find thorp_simulation)/worlds/stage/$(arg world_name).world"/>
+  <arg name="initial_pose_x" default="2.0"/>
+  <arg name="initial_pose_y" default="2.0"/>
+  <arg name="initial_pose_a" default="0.0"/>
+
+  <param name="/use_sim_time" value="true"/>
+
+
+    <include file="$(find rr_nav_alica)/launch/nav_server.launch"/>
+
+    <node pkg="rr_nav_alica" type="clicked_point_nav.py" name="clicked_point_nav" output="screen" respawn="true">
+      <param name="tf_prefix" value="" />
+    </node>
+
+  <!--  ******************** Stage ********************  -->
+  <!-- 
+        Publishes transforms:
+          /base_link -> /base_laser
+          /base_footprint -> /base_link (identity)
+          /odom -> base_footprint
+        Publishes topics:
+          /odom : odometry data from the simulated odometry
+          /base_scan : laser data from the simulated laser
+          /base_pose_ground_truth : the ground truth pose
+        Parameters:
+          base_watchdog_timeout : time (s) after receiving the last command on cmd_vel before stopping the robot
+        Args:
+          -g : run in headless mode.
+  --> 
+  <node pkg="stage_ros" type="stageros" name="stageros" args="$(arg world_file)" output="screen" respawn="true">
+    <param name="base_watchdog_timeout" value="0.5"/>
+    <remap from="odom" to="odom"/>
+    <remap from="base_pose_ground_truth" to="base_pose_ground_truth"/>
+    <remap from="cmd_vel" to="mobile_base/commands/velocity"/>
+    <remap from="base_scan" to="kinect/scan"/>
+  </node>
+
+  <!--  ***************** Robot Model *****************  -->
+  <include file="$(find thorp_bringup)/launch/includes/model.launch.xml"/>
+
+  <!--  ************* Common functionality ************  -->
+  <include file="$(find thorp_simulation)/launch/includes/thorp_common.launch.xml">
+    <arg name="map_file"        value="$(arg map_file)"/>
+    <arg name="initial_pose_x"  value="$(arg initial_pose_x)"/>
+    <arg name="initial_pose_y"  value="$(arg initial_pose_y)"/>
+    <arg name="initial_pose_a"  value="$(arg initial_pose_a)"/>
+  </include>
+
+  <!-- we cannot simulate sonars on stage_ros, so disable sonar layer -->
+  <param name="move_base/global_costmap/range_sensor_layer/enabled" value="false"/>
+  <param name="move_base/local_costmap/range_sensor_layer/enabled" value="false"/>
+  <param name="move_base_flex/global_costmap/range_sensor_layer/enabled" value="false"/>
+  <param name="move_base_flex/local_costmap/range_sensor_layer/enabled" value="false"/>
+
+  <!--  **************** Visualization ****************  -->
+  <node if="$(arg visualization)"
+        name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/navigation.rviz" output="screen" respawn="true"/>
+</launch>

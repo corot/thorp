@@ -1,13 +1,5 @@
 include "../../robots/thorp.inc"
 
-# Definition for an obstacle placed on the map.
-define block model
-(
-  size [0.500 0.500 1.500]
-  gui_nose 0
-)
-
-
 # throw in a robot
 thorp
 (
@@ -16,10 +8,6 @@ thorp
   color "gray"
   gui_nose 1
 )
-
-# throw in an obstacle
-block( pose [ 4.000 4.000 0.000 0.000 ] color "red")
-
 
 define floorplan model
 (
