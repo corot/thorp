@@ -11,8 +11,8 @@ namespace thorp::bt::actions
 class ClearCostmaps : public BT::RosServiceNode<std_srvs::Empty>
 {
 public:
-  ClearCostmaps(ros::NodeHandle& handle, const std::string& node_name, const BT::NodeConfiguration& conf)
-    : RosServiceNode<std_srvs::Empty>(handle, node_name, conf)
+  ClearCostmaps(const std::string& node_name, const BT::NodeConfiguration& conf)
+    : RosServiceNode<std_srvs::Empty>(node_name, conf)
   {
   }
 

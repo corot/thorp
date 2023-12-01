@@ -2,6 +2,9 @@
 
 #include <behaviortree_cpp_v3/action_node.h>
 
+#include <thorp_toolkit/geometry.hpp>
+namespace ttk = thorp::toolkit;
+
 namespace thorp::bt::actions
 {
 class CreatePoseStamped : public BT::SyncActionNode

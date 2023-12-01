@@ -9,7 +9,7 @@ namespace thorp::bt::conditions
  *
  * @param[in] list List to evaluate
  *
- * @return  SUCCESS if the given list is empty
+ * @return  SUCCESS if the given list doesn't exist or it's empty
  *          FAILURE if the given list is not empty
  */
 template <typename T>
@@ -28,9 +28,8 @@ public:
 
   BT::NodeStatus tick() override
   {
-    std::vector<T> list;
-    getInput<std::vector<T>>("list", list);
-    return list.empty() ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
+    auto list = getInput<std::vector<T>>("list");
+    return !list || list->empty() ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
   }
 };
 }  // namespace thorp::bt::conditions

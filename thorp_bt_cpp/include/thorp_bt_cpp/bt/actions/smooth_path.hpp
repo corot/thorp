@@ -16,8 +16,8 @@ class SmoothPath: public BT::RosServiceNode<thorp_msgs::ConnectWaypoints>
 {
 
 public:
-  SmoothPath( ros::NodeHandle& handle, const std::string& node_name, const BT::NodeConfiguration & conf):
-    RosServiceNode<thorp_msgs::ConnectWaypoints>(handle, node_name, conf) {}
+  SmoothPath(const std::string& node_name, const BT::NodeConfiguration & conf):
+    RosServiceNode<thorp_msgs::ConnectWaypoints>(node_name, conf) {}
 
   static BT::PortsList providedPorts()
   {

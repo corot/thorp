@@ -28,7 +28,7 @@ public:
   BT::NodeStatus tick() override
   {
     const auto input = getInput<bool>("input");
-    return input ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
+    return input && *input ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
   }
 };
 }  // namespace thorp::bt::conditions

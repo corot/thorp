@@ -20,10 +20,16 @@ public:
   }
 
 private:
-  virtual BT::NodeStatus tick() override
+  BT::NodeStatus tick() override
   {
-    const auto val = getInput<T>("input");
-    setOutput("output", val);
+    const auto value = getInput<T>("input");
+    if (!value)
+    {
+      ROS_ERROR_STREAM_NAMED(name(), "No value provided");
+      return BT::NodeStatus::FAILURE;
+    }
+    ROS_ERROR_STREAM("SetBlackboard  " << *value);
+    setOutput("output", *value);
     return BT::NodeStatus::SUCCESS;
   }
 };

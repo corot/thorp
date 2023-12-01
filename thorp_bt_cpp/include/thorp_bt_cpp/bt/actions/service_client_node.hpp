@@ -32,8 +32,8 @@ class RosServiceNode : public BT::SyncActionNode
 {
 protected:
 
-  RosServiceNode(ros::NodeHandle& nh, const std::string& name, const BT::NodeConfiguration & conf):
-   BT::SyncActionNode(name, conf), node_(nh) { }
+  RosServiceNode(const std::string& name, const BT::NodeConfiguration & conf):
+   BT::SyncActionNode(name, conf) { }
 
 public:
 
@@ -80,14 +80,11 @@ protected:
 
   typename ServiceT::Response reply_;
 
-  // The node that will be used for any ROS operations
-  ros::NodeHandle& node_;
-
   BT::NodeStatus tick() override
   {
     if( !service_client_.isValid() ){
       std::string server = getInput<std::string>("service_name").value();
-      service_client_ = node_.serviceClient<ServiceT>( server );
+      service_client_ = ros::NodeHandle().serviceClient<ServiceT>( server );
     }
 
     unsigned msec;
@@ -115,11 +112,10 @@ protected:
 /// It gives you the opportunity to set the ros::NodeHandle.
 template <class DerivedT> static
   void RegisterRosService(BT::BehaviorTreeFactory& factory,
-                     const std::string& registration_ID,
-                     ros::NodeHandle& node_handle)
+                     const std::string& registration_ID)
 {
-  NodeBuilder builder = [&node_handle](const std::string& name, const NodeConfiguration& config) {
-    return std::make_unique<DerivedT>(node_handle, name, config );
+  NodeBuilder builder = [&](const std::string& name, const NodeConfiguration& config) {
+    return std::make_unique<DerivedT>(name, config );
   };
 
   TreeNodeManifest manifest;

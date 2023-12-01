@@ -28,10 +28,14 @@ private:
   {
     std::vector<T> list = *getInput<std::vector<T>>("list");
     if (list.empty())
-      return BT::NodeStatus::FAILURE;
 
+    {
+      ROS_ERROR_STREAM("empty");
+      return BT::NodeStatus::FAILURE;
+    }
     setOutput("element", list.front());
     list.erase(list.begin());
+    ROS_ERROR_STREAM(list.size());
     setOutput("list", list);
     return BT::NodeStatus::SUCCESS;
   }

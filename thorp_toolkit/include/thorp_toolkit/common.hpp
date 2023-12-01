@@ -38,6 +38,19 @@ std_msgs::ColorRGBA randomColor(unsigned int seed = 0, float alpha = 1.0f);
 std_msgs::ColorRGBA namedColor(const std::string& color_name, float alpha = 1.0f);
 
 /**
+ * @brief Split a comma-separated string into a vector of strings
+ * @param csv Comma-separated values string
+ * @return elements as a vector of strings
+ */
+std::vector<std::string> tokenize(const std::string& csv);
+
+/**
+ * @brief Wait for first clock message if use_sim_time is true
+ * @return true if we get a clock message before timeout or if use_sim_time is false
+ */
+bool waitForSimTime();
+
+/**
  * @brief Receive one message from a topic.
  * This will create a new subscription to the topic, receive one message, then unsubscribe.
  * @param topic name of topic
@@ -47,19 +60,24 @@ std_msgs::ColorRGBA namedColor(const std::string& color_name, float alpha = 1.0f
 template <typename MessageType>
 std::optional<MessageType> waitForMessage(const std::string& topic, ros::Duration timeout = ros::Duration::ZERO)
 {
+  ros::spinOnce();
   std::optional<MessageType> received_message;
   ros::NodeHandle nh;
   ros::Subscriber sub = nh.subscribe<MessageType>(topic, 1,
                                                   [&](auto msg)
                                                   {
+                                                    ROS_ERROR_STREAM(" \tMSG");
+
                                                     received_message = *msg;
                                                     sub.shutdown();
                                                   });
   // Spin and wait for the message up to timeout
   ros::Time time_start = ros::Time::now();
   ros::Rate loop_rate(100);
+  ROS_ERROR("%d \t%d\t%d", received_message.has_value(),  timeout.isZero(),  ((ros::Time::now() - time_start) < timeout));
   while (ros::ok() && !received_message && (timeout.isZero() || (ros::Time::now() - time_start) < timeout))
   {
+    ROS_ERROR("%d \t%d\t%d", received_message.has_value(),  timeout.isZero(),  ((ros::Time::now() - time_start) < timeout));
     ros::spinOnce();
     loop_rate.sleep();
   }

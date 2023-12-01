@@ -1,8 +1,15 @@
 <root>
     <TreeNodesModel>
+        <Action ID="AimCannon">
+            <input_port name="service_name" type="std::string" default="cannon_command">name of the ROS service</input_port>
+            <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
+        </Action>
         <Action ID="ClearCostmaps">
             <input_port name="service_name" type="std::string">name of the ROS service</input_port>
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
+        </Action>
+        <Action ID="ClearPoseList">
+            <inout_port name="list" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
         </Action>
         <Action ID="CreatePoseStamped">
             <input_port name="frame" type="std::string"/>
@@ -20,6 +27,19 @@
             <output_port name="error" type="unsigned int"/>
             <output_port name="feedback" type="std::optional&lt;mbf_msgs::ExePathFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
         </Action>
+        <Action ID="FireCannon">
+            <input_port name="service_name" type="std::string">name of the ROS service</input_port>
+            <input_port name="shots" type="unsigned int"/>
+            <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
+        </Action>
+        <Action ID="FollowPose">
+            <input_port name="action_name" type="std::string">name of the ROS action client</input_port>
+            <input_port name="distance" type="float"/>
+            <input_port name="goal" type="thorp_msgs::FollowPoseGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
+            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
+            <input_port name="stop_at_distance" type="bool"/>
+            <input_port name="time_limit" type="float"/>
+        </Action>
         <Action ID="GetPathAction">
             <input_port name="action_name" type="std::string">name of the ROS action client</input_port>
             <input_port name="goal" type="mbf_msgs::GetPathGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
@@ -35,6 +55,12 @@
             <input_port name="timeout" type="double"/>
             <output_port name="error" type="unsigned int"/>
             <output_port name="robot_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+        </Action>
+        <Action ID="GetUIntFromList">
+            <input_port name="index" type="int" default="0">Index of the element to return; negative values count from the end</input_port>
+            <input_port name="pop" type="bool" default="0">Remove the returned element</input_port>
+            <output_port name="element" type="unsigned int"/>
+            <inout_port name="list" type="std::vector&lt;unsigned int, std::allocator&lt;unsigned int&gt; &gt;"/>
         </Action>
         <Action ID="GoToPose">
             <input_port name="action_name" type="std::string">name of the ROS action client</input_port>
@@ -57,6 +83,14 @@
         <Condition ID="IsUIntListEmpty">
             <input_port name="list" type="std::vector&lt;unsigned int, std::allocator&lt;unsigned int&gt; &gt;"/>
         </Condition>
+        <Action ID="MonitorObjects">
+            <input_port name="max_delay" type="double" default="0.000000">max delay wrt Time::now() (sec); ignored if negative</input_port>
+            <input_port name="target_objects" type="std::string">Comma-separated list of objects to track</input_port>
+            <input_port name="timeout" type="double" default="1.000000">timeout to subscribe to topic (sec)</input_port>
+            <input_port name="topic_name" type="std::string">name of the ROS topic</input_port>
+            <output_port name="tracked_object" type="cob_perception_msgs::Detection_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <output_port name="tracked_object_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+        </Action>
         <Action ID="PlanRoomExploration">
             <input_port name="action_name" type="std::string">name of the ROS action client</input_port>
             <input_port name="goal" type="ipa_building_msgs::RoomExplorationGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
@@ -92,6 +126,9 @@
             <output_port name="element" type="unsigned int"/>
             <inout_port name="list" type="std::vector&lt;unsigned int, std::allocator&lt;unsigned int&gt; &gt;"/>
         </Action>
+        <Condition ID="PoseInBlackboard">
+            <input_port name="key" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+        </Condition>
         <Action ID="PoseListSlicing">
             <input_port name="end" type="unsigned long"/>
             <input_port name="start" type="unsigned long"/>
@@ -132,6 +169,9 @@
             <input_port name="input" type="unsigned int"/>
             <output_port name="output" type="unsigned int"/>
         </Action>
+        <Action ID="Sleep">
+            <input_port name="duration" type="double"/>
+        </Action>
         <Action ID="SmoothPath">
             <input_port name="service_name" type="std::string">name of the ROS service</input_port>
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
@@ -139,6 +179,17 @@
             <output_port name="path" type="nav_msgs::Path_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Control ID="SuperReactiveSequence"/>
+        <Condition ID="TargetReachable">
+            <input_port name="max_angle" type="float"/>
+            <input_port name="max_dist" type="float"/>
+            <input_port name="robot_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="target_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+        </Condition>
+        <Action ID="TiltCannon">
+            <input_port name="angle" type="float"/>
+            <input_port name="service_name" type="std::string">name of the ROS service</input_port>
+            <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
+        </Action>
         <Action ID="TrackProgress">
             <input_port name="reached_threshold" type="double"/>
             <input_port name="robot_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>

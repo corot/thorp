@@ -2,6 +2,9 @@
 
 #include "thorp_bt_cpp/bt_nodes.hpp"
 
+#include <thorp_toolkit/common.hpp>
+namespace ttk = thorp::toolkit;
+
 namespace thorp::bt
 {
 Runner::Runner() : pnh_("~")
@@ -29,7 +32,7 @@ Runner::Runner() : pnh_("~")
   if (bt_ && pnh_.param<bool>("publish_bt", false))
   {
     bt_pub_zmq_.emplace(*bt_);
-    bt_pub_file_.emplace(*bt_, pnh_.param<std::string>("publish_bt_filepath", "pub_bt.xml").c_str());
+    bt_pub_file_.emplace(*bt_, pnh_.param<std::string>("publish_bt_filepath", "/tmp/pub_bt.xml").c_str());
   }
 
   tick_rate_ = pnh_.param("tick_rate", 10.0);
@@ -52,11 +55,17 @@ void Runner::run()
     return;
   }
 */
+
+  // on simulation, wait for the simulated time to start before loading and running the tree
+  ttk::waitForSimTime();
+
   ros::Rate rate(tick_rate_);
   auto status = BT::NodeStatus::RUNNING;
   while (ros::ok() && status == BT::NodeStatus::RUNNING)
   {
     status = bt_->tickRoot();
+
+    ros::spinOnce();
 
     if (!rate.sleep())
     {

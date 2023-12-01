@@ -18,6 +18,7 @@ set(PKG_DEPS
       std_msgs
       std_srvs
       ipa_building_msgs
+      cob_perception_msgs
       costmap_2d
       behaviortree_cpp_v3
       thorp_toolkit
