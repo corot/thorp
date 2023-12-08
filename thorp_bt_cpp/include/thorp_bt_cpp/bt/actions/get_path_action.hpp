@@ -8,6 +8,19 @@
 
 namespace thorp::bt::actions
 {
+
+/**
+ * Calls MBF's get_path action with the given goal.
+ *
+ * @param[in]  action_name    Name of the ROS action
+ * @param[in]  server_timeout Timeout (sec) to connect to the server
+ * @param[in]  goal           Goal to send to the get_path action
+ * @param[out] error          Outcome of get_path action if failure
+ * @param[out] feedback       Feedback provided by get_path action
+ *
+ * @return  SUCCESS if action succeeded
+ *          FAILURE otherwise
+ */
 class GetPathAction : public BT::SimpleActionClientNode<mbf_msgs::GetPathAction>
 {
 public:

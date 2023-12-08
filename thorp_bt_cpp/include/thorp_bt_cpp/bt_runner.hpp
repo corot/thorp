@@ -24,7 +24,7 @@ private:
   std::optional<BT::Tree> bt_;
 
   /** Factory for the BT. */
-  BT::BehaviorTreeFactory bt_factory_;
+  //BT::BehaviorTreeFactory bt_factory_;
 
   /** Publisher to attach Groot and visualize the bt in real time. */
   std::optional<BT::PublisherZMQ> bt_pub_zmq_;

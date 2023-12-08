@@ -1,9 +1,12 @@
 #include "thorp_bt_cpp/bt_runner.hpp"
 
-#include "thorp_bt_cpp/bt_nodes.hpp"
+//#include "thorp_bt_cpp/bt_node_register.hpp"
 
 #include <thorp_toolkit/common.hpp>
 namespace ttk = thorp::toolkit;
+
+
+BT::BehaviorTreeFactory bt_factory_;
 
 namespace thorp::bt
 {
@@ -14,7 +17,7 @@ Runner::Runner() : pnh_("~")
   const std::string nodes_filepath = pnh_.param<std::string>("nodes_filepath", "nodes.xml");
 
   // register behavior tree nodes
-  registerNodes(bt_factory_, pnh_, nodes_filepath);
+  //registerNodes(bt_factory_, pnh_, nodes_filepath);
 
   try
   {

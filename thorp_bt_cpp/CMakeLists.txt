@@ -53,7 +53,10 @@ include_directories(
 )
 
 
-add_library(bt_nodes src/bt_nodes.cpp)
+file(GLOB_RECURSE BT_NODES include/thorp_bt_cpp/bt/actions/*.cpp)
+MESSAGE(${BT_NODES})
+add_library(bt_nodes ${BT_NODES})
+set_target_properties(bt_nodes PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(bt_nodes
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
@@ -66,9 +69,10 @@ target_link_libraries(bt_runner bt_nodes
   ${Boost_LIBRARIES}
 )
 
-add_executable(bt_runner_node src/bt_runner_node.cpp)
-add_dependencies(bt_runner_node ${LIBS})
-target_link_libraries(bt_runner_node bt_runner
+#add_executable(bt_runner_node src/bt_runner_node.cpp /home/jorge/catkin_ws/thorp/src/thorp/thorp_bt_cpp/include/thorp_bt_cpp/bt/actions/create_pose_stamped.hpp /home/jorge/catkin_ws/thorp/src/thorp/thorp_bt_cpp/include/thorp_bt_cpp/bt/actions/go_to_pose.hpp)
+add_executable(bt_runner_node src/bt_runner_node.cpp src/bt_runner.cpp ${BT_NODES}) # include/thorp_bt_cpp/bt/actions/create_pose_stamped.hpp)
+#add_dependencies(bt_runner_node ${LIBS})
+target_link_libraries(bt_runner_node #bt_runner bt_nodes
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
 )

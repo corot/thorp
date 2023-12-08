@@ -2,6 +2,7 @@
 
 #include <ros/ros.h>
 #include <behaviortree_cpp_v3/action_node.h>
+#include "thorp_bt_cpp/bt_node_register.hpp"
 #include "thorp_bt_cpp/bt/actions/action_client_node.hpp"
 
 #include <mbf_msgs/MoveBaseAction.h>
@@ -12,6 +13,19 @@ namespace ttk = thorp::toolkit;
 
 namespace thorp::bt::actions
 {
+
+/**
+ * Calls MBF's move_base action with the given goal.
+ *
+ * @param[in]  action_name    Name of the ROS action
+ * @param[in]  server_timeout Timeout (sec) to connect to the server
+ * @param[in]  goal           Goal to send to the move_base action
+ * @param[out] error          Outcome of move_base action if failure
+ * @param[out] feedback       Feedback provided by move_base action
+ *
+ * @return  SUCCESS if action succeeded
+ *          FAILURE otherwise
+ */
 class GoToPose : public BT::SimpleActionClientNode<mbf_msgs::MoveBaseAction>
 {
 public:
@@ -99,5 +113,9 @@ public:
 
 private:
   std::optional<ttk::Reconfigure> reconf_;
+
+  static ROSActionClientNodeRegister<GoToPose> reg;
 };
 }  // namespace thorp::bt::actions
+
+ROSActionClientNodeRegister<thorp::bt::actions::GoToPose> thorp::bt::actions::GoToPose::reg("GoToPose");

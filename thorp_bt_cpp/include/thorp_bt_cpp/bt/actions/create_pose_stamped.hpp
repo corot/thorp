@@ -1,5 +1,7 @@
 #pragma once
 
+#include "thorp_bt_cpp/bt_node_register.hpp"
+
 #include <behaviortree_cpp_v3/action_node.h>
 
 #include <thorp_toolkit/geometry.hpp>
@@ -33,5 +35,10 @@ private:
                                              *getInput<std::string>("frame")));
     return BT::NodeStatus::SUCCESS;
   }
+
+  static NodeRegister<CreatePoseStamped> reg;
 };
 }  // namespace thorp::bt::actions
+
+
+NodeRegister<thorp::bt::actions::CreatePoseStamped> thorp::bt::actions::CreatePoseStamped::reg("CreatePoseStamped");
