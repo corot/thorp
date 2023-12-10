@@ -17,6 +17,7 @@
   <arg name="record_video"   default="false"/>
   <arg name="world_name"     default="fun_house"/>
   <arg name="localization"   default="gazebo" if="$(eval simulator == 'gazebo')"/>
+  <arg name="localization"   default="amcl" if="$(eval simulator != 'gazebo')"/>
   <arg name="initial_pose_x" default="8.5"/>
   <arg name="initial_pose_y" default="6.0"/>
   <arg name="initial_pose_a" default="0.0"/>
