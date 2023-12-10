@@ -7,6 +7,10 @@
   <arg name="global_frame_id" default="map"/>
   <arg name="smooth_velocity" default="true"/>
 
+  <arg name="debug"          value="$(optenv DEBUG_MBF false)" />
+  <arg if="$(arg debug)"     name="launch_prefix" value="gdb --ex run --args" />
+  <arg unless="$(arg debug)" name="launch_prefix" value="" />
+
   <!-- Velocity smoother and safety controller nodelets -->
   <node if="$(arg smooth_velocity)"
         pkg="nodelet" type="nodelet" name="vel_smoother" output="screen" respawn="true"
@@ -21,7 +25,7 @@
   <include file="$(find turtlebot_navigation)/launch/includes/safety_controller.launch.xml"/>
 
   <!-- Move base flex and move_base_simple/goal relay to send goals with RViz -->
-  <node pkg="mbf_costmap_nav" type="mbf_costmap_nav" name="move_base_flex" output="screen" respawn="true">
+  <node pkg="mbf_costmap_nav" type="mbf_costmap_nav" name="move_base_flex" output="screen" respawn="true" launch-prefix="$(arg launch_prefix)">
     <rosparam file="$(find thorp_navigation)/param/move_base_flex/move_base_flex.yaml" command="load"/>
     <rosparam file="$(find thorp_navigation)/param/move_base_flex/common_costmap.yaml" command="load" ns="global_costmap"/>
     <rosparam file="$(find thorp_navigation)/param/move_base_flex/common_costmap.yaml" command="load" ns="local_costmap"/>
