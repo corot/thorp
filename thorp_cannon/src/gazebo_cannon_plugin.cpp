@@ -131,15 +131,16 @@ public:
       return;
     }
 
-    auto origin_pose = this->cannon_link->WorldPose();
+    auto cannon_pose = this->cannon_link->WorldPose();
 
-    this->SetRocketPose(*rocket_model, origin_pose);
-    this->SetRocketForce(*rocket_model, origin_pose);
+    this->SetRocketPose(*rocket_model, cannon_pose);
+    this->SetRocketForce(*rocket_model, cannon_pose);
   }
 
   void SetRocketPose(gazebo::physics::Model &rocket_model, const ignition::math::Pose3d &cannon_pose)
   {
-    ignition::math::Pose3d rocket_pose = ignition::math::Pose3d(0.1, 0.0, 0.0, 0.0, 0.0, 0.0) * cannon_pose;
+    // displace to the cannon muzzle
+    ignition::math::Pose3d rocket_pose = cannon_pose * ignition::math::Pose3d(0.05, 0.0, 0.0, 0.0, 0.0, 0.0);
     ROS_DEBUG("POSE [X, Y, Z, Roll, Pitch, Yaw] = [%f, %f, %f, %f, %f, %f]",
       rocket_pose.Pos().X(), rocket_pose.Pos().Y(), rocket_pose.Pos().Z(),
       rocket_pose.Rot().Euler().X(), rocket_pose.Rot().Euler().Y(), rocket_pose.Rot().Euler().Z());
