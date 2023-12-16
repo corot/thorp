@@ -39,6 +39,8 @@
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
             <input_port name="stop_at_distance" type="bool"/>
             <input_port name="time_limit" type="float"/>
+            <output_port name="error" type="unsigned char"/>
+            <output_port name="feedback" type="thorp_msgs::FollowPoseFeedback_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Action ID="GetPathAction">
             <input_port name="action_name" type="std::string">name of the ROS action client</input_port>
@@ -180,10 +182,10 @@
         </Action>
         <Control ID="SuperReactiveSequence"/>
         <Condition ID="TargetReachable">
+            <input_port name="follow_feedback" type="thorp_msgs::FollowPoseFeedback_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="max_angle" type="float"/>
             <input_port name="max_dist" type="float"/>
             <input_port name="robot_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <input_port name="target_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Condition>
         <Action ID="TiltCannon">
             <input_port name="angle" type="float"/>

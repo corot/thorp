@@ -94,7 +94,7 @@ void registerNodes(BT::BehaviorTreeFactory& factory, ros::NodeHandle& nh, const 
   factory.registerNodeType<bt::actions::ClearList<PoseStamped>>("ClearPoseList");
   factory.registerNodeType<bt::actions::SetBlackboard<bool>>("SetBool");
   factory.registerNodeType<bt::actions::SetBlackboard<double>>("SetDouble");
-  factory.registerNodeType<bt::actions::SetBlackboard<unsigned int>>("SetUnsignedInt");
+  factory.registerNodeType<bt::actions::SetBlackboard<uint32_t>>("SetUnsignedInt");
 
   // conditions
   factory.registerNodeType<bt::conditions::TargetReachable>("TargetReachable");

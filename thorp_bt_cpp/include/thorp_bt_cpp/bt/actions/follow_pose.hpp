@@ -22,7 +22,9 @@ public:
   {
     return { BT::InputPort<float>("time_limit"),
              BT::InputPort<float>("distance"),
-             BT::InputPort<bool>("stop_at_distance") };
+             BT::InputPort<bool>("stop_at_distance"),
+             BT::OutputPort<uint8_t>("error"),
+             BT::OutputPort<thorp_msgs::FollowPoseFeedback>("feedback") };
   }
 
   bool setGoal(GoalType& goal) override
@@ -35,7 +37,7 @@ public:
 
   void onFeedback(const thorp_msgs::FollowPoseFeedbackConstPtr& feedback) override
   {
-    setOutput("feedback", std::make_optional<thorp_msgs::FollowPoseFeedback>(*feedback));
+    setOutput("feedback", *feedback);
   }
 
   BT::NodeStatus onAborted(const thorp_msgs::FollowPoseResultConstPtr& res) override

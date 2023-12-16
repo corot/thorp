@@ -20,7 +20,6 @@ class MonitorObjects : public BT::SubscriberNode<cob_perception_msgs::DetectionA
 public:
   MonitorObjects(const std::string& name, const BT::NodeConfiguration& conf) : SubscriberNode(name, conf)
   {
-    ROS_ERROR_STREAM("c");
   }
 
   static BT::PortsList providedPorts()
@@ -33,9 +32,7 @@ public:
 protected:
   void onStarted() override
   {
-    ROS_ERROR_STREAM("s");
     auto target_objects_csv = getInput<std::string>("target_objects");
-    ROS_ERROR_STREAM_NAMED(name(), " \n\nSTARTED " <<target_objects_csv.has_value());
     if (target_objects_csv)
     {
       auto target_objects = ttk::tokenize(*target_objects_csv);
@@ -50,9 +47,7 @@ protected:
 
   inline BT::NodeStatus onReceived() override
   {
-    ROS_ERROR_STREAM_NAMED(name(), "on rec");
     cob_perception_msgs::DetectionArray msg = getMsgCopy();
-    ROS_ERROR_STREAM_NAMED(name(), msg.detections.size() << " detected     <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<   ");
     for (const auto& detection : msg.detections)
     {
       if (valid_targets_.count(detection.label))

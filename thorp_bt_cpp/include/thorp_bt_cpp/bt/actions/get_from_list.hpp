@@ -36,12 +36,13 @@ private:
       index += list.size();
     setOutput("element", list[index]);
 
-    ROS_ERROR_STREAM(name() << "\t" << index << "\t" << list[index]);
-    if (auto pop = getInput<bool>("pop"); pop && *pop)
+    auto pop = getInput<bool>("pop");
+    if (pop && *pop)
     {
       list.erase(list.begin() + index);
       setOutput("list", list);
     }
+    ROS_DEBUG_STREAM(name() << "\tindex: " << index << "\telement: " << list[index] << (pop ? "\tpop" : ""));
     return BT::NodeStatus::SUCCESS;
   }
 };

@@ -20,7 +20,8 @@ public:
 
   static BT::PortsList providedPorts()
   {
-    return { BT::InputPort<std::string>("controller"), BT::InputPort<nav_msgs::Path>("path"),
+    return { BT::InputPort<std::string>("controller"),
+             BT::InputPort<nav_msgs::Path>("path"),
              BT::OutputPort<unsigned int>("error"),
              BT::OutputPort<std::optional<mbf_msgs::ExePathFeedback>>("feedback") };
   }

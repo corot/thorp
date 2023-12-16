@@ -124,7 +124,6 @@ public:
 
   inline void onHalted() final
   {
-    ROS_ERROR_STREAM("onHalted    shutdown sub!!!!");
     onHalt();
     {
       std::lock_guard lock(async_spin_mtx_);
@@ -136,7 +135,6 @@ public:
 protected:
   virtual void onStarted()
   {
-    ROS_ERROR_STREAM("s  parent");
   }
 
   virtual BT::NodeStatus onReceived()
@@ -202,8 +200,6 @@ private:
 
   void callback(const SubscriberT& msg)
   {
-
-    ROS_ERROR_STREAM("callback");
     // lock for async spinners
     std::lock_guard lock(async_spin_mtx_);
     nmsg_ = msg;
