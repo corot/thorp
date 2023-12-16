@@ -154,7 +154,7 @@ public:
     {
       action_client_->cancelGoal();
     }
-    setStatus(BT::NodeStatus::IDLE);
+    setStatus(onCancelled());
   }
 
 protected:
