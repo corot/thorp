@@ -1,0 +1,41 @@
+<!--
+  Thorp simulated navigation:
+  - simulated robot (on stage or gazebo)
+  - navigation
+  - rviz view
+ -->
+
+<launch>
+  <arg name="simulator"      default="stage"/>
+  <arg name="visualization"  default="true"/>
+  <arg name="localization"   default="amcl"/>
+  <arg name="world_name"     default="maze"/>
+  <arg name="initial_pose_x" default="2.0"/>
+  <arg name="initial_pose_y" default="2.0"/>
+  <arg name="initial_pose_a" default="0.0"/>
+
+  <param name="/use_sim_time" value="true"/>
+
+  <!--  *************** simulated Thorp ***************  -->
+  <include file="$(find thorp_simulation)/launch/thorp_$(arg simulator).launch">
+    <arg name="world_name"     value="$(arg world_name)"/>
+    <arg name="initial_pose_x" value="$(arg initial_pose_x)"/>
+    <arg name="initial_pose_y" value="$(arg initial_pose_y)"/>
+    <arg name="initial_pose_a" value="$(arg initial_pose_a)"/>
+  </include>
+
+  <!--  ***************** Navigation ******************  -->
+  <include file="$(find thorp_navigation)/launch/navigation.launch">
+    <arg name="smooth_velocity" value="false"/>
+    <arg name="save_robot_pose" value="false"/>
+    <arg name="map_name"        value="$(arg world_name)"/>
+    <arg name="localization"    value="$(arg localization)"/>
+    <arg name="initial_pose_x"  value="$(arg initial_pose_x)"/>
+    <arg name="initial_pose_y"  value="$(arg initial_pose_y)"/>
+    <arg name="initial_pose_a"  value="$(arg initial_pose_a)"/>
+  </include>
+
+  <!--  **************** Visualization ****************  -->
+  <node if="$(arg visualization)"
+        name="rviz" pkg="rviz" type="rviz" args="-d $(find thorp_bringup)/rviz/navigation.rviz" output="screen" respawn="true"/>
+</launch>
