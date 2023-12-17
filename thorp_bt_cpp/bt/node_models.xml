@@ -18,8 +18,8 @@
             <input_port name="yaw" type="double"/>
             <output_port name="pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
-        <Action ID="ExePathAction">
-            <input_port name="action_name" type="std::string">name of the ROS action client</input_port>
+        <Action ID="ExePath">
+            <input_port name="action_name" type="std::string" default="move_base_flex/exe_path">name of the ROS action client</input_port>
             <input_port name="controller" type="std::string"/>
             <input_port name="goal" type="mbf_msgs::ExePathGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
             <input_port name="path" type="nav_msgs::Path_&lt;std::allocator&lt;void&gt; &gt;"/>
@@ -42,7 +42,7 @@
             <output_port name="error" type="unsigned char"/>
             <output_port name="feedback" type="thorp_msgs::FollowPoseFeedback_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
-        <Action ID="GetPathAction">
+        <Action ID="GetPath">
             <input_port name="action_name" type="std::string">name of the ROS action client</input_port>
             <input_port name="goal" type="mbf_msgs::GetPathGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
@@ -140,7 +140,7 @@
             <input_port name="element" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <inout_port name="list" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
         </Action>
-        <Action ID="RecoveryAction">
+        <Action ID="Recovery">
             <input_port name="action_name" type="std::string">name of the ROS action client</input_port>
             <input_port name="goal" type="mbf_msgs::RecoveryGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>

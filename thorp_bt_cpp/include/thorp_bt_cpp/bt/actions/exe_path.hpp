@@ -11,19 +11,22 @@ namespace ttk = thorp::toolkit;
 
 namespace thorp::bt::actions
 {
-class ExePathAction : public BT::SimpleActionClientNode<mbf_msgs::ExePathAction>
+class ExePath : public BT::SimpleActionClientNode<mbf_msgs::ExePathAction>
 {
 public:
-  ExePathAction(const std::string& name, const BT::NodeConfiguration& config) : SimpleActionClientNode(name, config)
+  ExePath(const std::string& name, const BT::NodeConfiguration& config) : SimpleActionClientNode(name, config)
   {
   }
 
   static BT::PortsList providedPorts()
   {
-    return { BT::InputPort<std::string>("controller"),
-             BT::InputPort<nav_msgs::Path>("path"),
-             BT::OutputPort<unsigned int>("error"),
-             BT::OutputPort<std::optional<mbf_msgs::ExePathFeedback>>("feedback") };
+    BT::PortsList ports = BT::SimpleActionClientNode<mbf_msgs::ExePathAction>::providedPorts();
+    ports["action_name"].setDefaultValue("move_base_flex/exe_path");
+    ports.insert({ BT::InputPort<std::string>("controller"),
+                   BT::InputPort<nav_msgs::Path>("path"),
+                   BT::OutputPort<unsigned int>("error"),
+                   BT::OutputPort<std::optional<mbf_msgs::ExePathFeedback>>("feedback") });
+    return ports;
   }
 
   bool setGoal(GoalType& goal) override

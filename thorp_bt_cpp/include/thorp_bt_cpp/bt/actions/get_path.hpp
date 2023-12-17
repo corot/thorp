@@ -8,17 +8,22 @@
 
 namespace thorp::bt::actions
 {
-class GetPathAction : public BT::SimpleActionClientNode<mbf_msgs::GetPathAction>
+class GetPath : public BT::SimpleActionClientNode<mbf_msgs::GetPathAction>
 {
 public:
-  GetPathAction(const std::string& name, const BT::NodeConfiguration& config) : SimpleActionClientNode(name, config)
+  GetPath(const std::string& name, const BT::NodeConfiguration& config) : SimpleActionClientNode(name, config)
   {
   }
 
   static BT::PortsList providedPorts()
   {
-    return { BT::OutputPort<unsigned int>("error"),
-             BT::OutputPort<std::optional<mbf_msgs::GetPathFeedback>>("feedback") };
+    BT::PortsList ports = BT::SimpleActionClientNode<mbf_msgs::GetPathAction>::providedPorts();
+    ports["action_name"].setDefaultValue("move_base_flex/get_path");
+    ports.insert({ BT::InputPort<std::string>("planner"),
+                   BT::InputPort<geometry_msgs::PoseStamped>("target_pose"),
+                   BT::OutputPort<unsigned int>("error"),
+                   BT::OutputPort<std::optional<mbf_msgs::GetPathFeedback>>("feedback") });
+    return ports;
   }
 
   virtual void onFeedback(const mbf_msgs::GetPathFeedbackConstPtr& feedback) override

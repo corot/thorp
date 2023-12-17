@@ -24,13 +24,16 @@ public:
 
   static BT::PortsList providedPorts()
   {
-    return { BT::InputPort<std::string>("planner"),
-             BT::InputPort<std::string>("controller"),
-             BT::InputPort<double>("dist_tolerance"),
-             BT::InputPort<double>("angle_tolerance"),
-             BT::InputPort<geometry_msgs::PoseStamped>("pose"),
-             BT::OutputPort<unsigned int>("error"),
-             BT::OutputPort<std::optional<mbf_msgs::MoveBaseFeedback>>("feedback") };
+    BT::PortsList ports = BT::SimpleActionClientNode<mbf_msgs::MoveBaseAction>::providedPorts();
+    ports["action_name"].setDefaultValue("move_base_flex/move_base");
+    ports.insert({ BT::InputPort<std::string>("planner"),
+                   BT::InputPort<std::string>("controller"),
+                   BT::InputPort<double>("dist_tolerance"),
+                   BT::InputPort<double>("angle_tolerance"),
+                   BT::InputPort<geometry_msgs::PoseStamped>("pose"),
+                   BT::OutputPort<unsigned int>("error"),
+                   BT::OutputPort<std::optional<mbf_msgs::MoveBaseFeedback>>("feedback") });
+    return ports;
   }
 
   bool setGoal(GoalType& goal) override

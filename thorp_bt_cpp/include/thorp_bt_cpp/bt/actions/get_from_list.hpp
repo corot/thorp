@@ -20,8 +20,7 @@ public:
   {
     return { BT::InputPort<bool>("pop", false, "Remove the returned element"),
              BT::InputPort<int32_t>("index", 0, "Index of the element to return; negative values count from the end"),
-             BT::BidirectionalPort<std::vector<T>>("list"),
-             BT::OutputPort<T>("element") };
+             BT::BidirectionalPort<std::vector<T>>("list"), BT::OutputPort<T>("element") };
   }
 
 private:
@@ -42,7 +41,8 @@ private:
       list.erase(list.begin() + index);
       setOutput("list", list);
     }
-    ROS_DEBUG_STREAM(name() << "\tindex: " << index << "\telement: " << list[index] << (pop ? "\tpop" : ""));
+    ROS_DEBUG_STREAM(name() << ":\tindex: " << index << "\telement: " << list[index] << (pop ? "\tpop" : "")
+                            << "\tnew size: " << list.size());
     return BT::NodeStatus::SUCCESS;
   }
 };

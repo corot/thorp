@@ -20,14 +20,16 @@
         </Parallel>
         <Parallel failure_threshold="1"
                   success_threshold="1">
-          <FollowPose action_name="pose_follower/follow"
-                      distance="0.8"
-                      goal=""
-                      server_timeout="5.000000"
-                      stop_at_distance="false"
-                      time_limit="25"
-                      error="{follow_error}"
-                      feedback="{follow_feedback}"/>
+          <ForceFailure>
+            <FollowPose action_name="pose_follower/follow"
+                        distance="0.8"
+                        goal=""
+                        server_timeout="5.000000"
+                        stop_at_distance="false"
+                        time_limit="25"
+                        error="{follow_error}"
+                        feedback="{follow_feedback}"/>
+          </ForceFailure>
           <RetryUntilSuccessful num_attempts="999999">
             <Sequence>
               <GetRobotPose timeout="1"

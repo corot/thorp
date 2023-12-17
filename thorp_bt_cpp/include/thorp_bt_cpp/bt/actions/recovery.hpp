@@ -8,10 +8,10 @@
 
 namespace thorp::bt::actions
 {
-class RecoveryAction : public BT::SimpleActionClientNode<mbf_msgs::RecoveryAction>
+class Recovery : public BT::SimpleActionClientNode<mbf_msgs::RecoveryAction>
 {
 public:
-  RecoveryAction(const std::string& name, const BT::NodeConfiguration& config) : SimpleActionClientNode(name, config)
+  Recovery(const std::string& name, const BT::NodeConfiguration& config) : SimpleActionClientNode(name, config)
   {
   }
 
