@@ -45,4 +45,4 @@ thorp
 
 # throw also a block to play with it
 include "blocks.inc"
-block( pose [ 5.0 -2.0 0.0 0.0 ] color "red" )
+big_block( pose [ 5.0 -2.0 0.0 0.0 ] color "red" )
