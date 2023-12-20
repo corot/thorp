@@ -118,7 +118,6 @@ public:
       }
     }
 
-    // sub_.shutdown();  onStart doesn't get called on subsequent executions!!!
     return status;
   }
 
@@ -201,8 +200,11 @@ private:
   void callback(const SubscriberT& msg)
   {
     // lock for async spinners
-    std::lock_guard lock(async_spin_mtx_);
-    nmsg_ = msg;
+    if (status() == BT::NodeStatus::RUNNING)
+    {
+      std::lock_guard lock(async_spin_mtx_);
+      nmsg_ = msg;
+    }
   }
 };
 

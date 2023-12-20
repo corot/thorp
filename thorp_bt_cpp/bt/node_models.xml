@@ -43,9 +43,11 @@
             <output_port name="feedback" type="thorp_msgs::FollowPoseFeedback_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Action ID="GetPath">
-            <input_port name="action_name" type="std::string">name of the ROS action client</input_port>
+            <input_port name="action_name" type="std::string" default="move_base_flex/get_path">name of the ROS action client</input_port>
             <input_port name="goal" type="mbf_msgs::GetPathGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
+            <input_port name="planner" type="std::string"/>
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
+            <input_port name="target_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="error" type="unsigned int"/>
             <output_port name="feedback" type="std::optional&lt;mbf_msgs::GetPathFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
         </Action>
@@ -65,7 +67,7 @@
             <inout_port name="list" type="std::vector&lt;unsigned int, std::allocator&lt;unsigned int&gt; &gt;"/>
         </Action>
         <Action ID="GoToPose">
-            <input_port name="action_name" type="std::string">name of the ROS action client</input_port>
+            <input_port name="action_name" type="std::string" default="move_base_flex/move_base">name of the ROS action client</input_port>
             <input_port name="angle_tolerance" type="double"/>
             <input_port name="controller" type="std::string"/>
             <input_port name="dist_tolerance" type="double"/>
