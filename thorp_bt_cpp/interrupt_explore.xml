@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="3">
+  <include path="explore_house.xml"/>
+
+  <BehaviorTree ID="interrupt_explore">
+    <RetryUntilSuccessful num_attempts="999">
+      <Fallback>
+        <Parallel failure_threshold="1"
+                  success_threshold="1">
+          <SubTree ID="explore_house"
+                   __shared_blackboard="false"/>
+          <ForceFailure>
+            <MonitorObjects max_delay="0.000000"
+                            target_objects="cat, dog, horse"
+                            timeout="1e6"
+                            topic_name="tracked_objects"
+                            tracked_object="{tracked_object}"
+                            tracked_object_pose="{tracked_object_pose}"/>
+          </ForceFailure>
+        </Parallel>
+        <FollowPose action_name="pose_follower/follow"
+                    distance="0.0"
+                    goal=""
+                    server_timeout="5.000000"
+                    stop_at_distance="false"
+                    time_limit="25"/>
+      </Fallback>
+    </RetryUntilSuccessful>
+  </BehaviorTree>
+
+  <!-- Description of Node Models (used by Groot) -->
+  <TreeNodesModel>
+    <Action ID="FollowPose">
+      <input_port name="action_name"
+                  type="std::string">name of the ROS action client</input_port>
+      <input_port name="distance"
+                  type="float"/>
+      <input_port name="goal"
+                  type="thorp_msgs::FollowPoseGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
+      <input_port name="server_timeout"
+                  default="5.000000"
+                  type="double">timeout to connect to server (seconds)</input_port>
+      <input_port name="stop_at_distance"
+                  type="bool"/>
+      <input_port name="time_limit"
+                  type="float"/>
+    </Action>
+    <Action ID="MonitorObjects">
+      <input_port name="max_delay"
+                  default="0.000000"
+                  type="double">max delay wrt Time::now() (sec); ignored if negative</input_port>
+      <input_port name="target_objects"
+                  type="std::string">Comma-separated list of objects to track</input_port>
+      <input_port name="timeout"
+                  default="1.000000"
+                  type="double">timeout to subscribe to topic (sec)</input_port>
+      <input_port name="topic_name"
+                  type="std::string">name of the ROS topic</input_port>
+      <output_port name="tracked_object"
+                   type="cob_perception_msgs::Detection_&lt;std::allocator&lt;void&gt; &gt;"/>
+      <output_port name="tracked_object_pose"
+                   type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+    </Action>
+  </TreeNodesModel>
+
+</root>

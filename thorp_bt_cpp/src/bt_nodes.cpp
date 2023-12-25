@@ -68,11 +68,11 @@ void registerNodes(BT::BehaviorTreeFactory& factory, ros::NodeHandle& nh, const 
   factory.registerNodeType<bt::actions::CreatePoseStamped>("CreatePoseStamped");
   factory.registerNodeType<bt::actions::UseNamedConfig>("UseNamedConfig");
   factory.registerNodeType<bt::actions::Sleep>("Sleep");
+  factory.registerNodeType<bt::actions::AimCannon>("AimCannon");
 
   BT::RegisterSubscriber<bt::actions::MonitorObjects>(factory, "MonitorObjects");
   BT::RegisterRosService<bt::actions::SmoothPath>(factory, "SmoothPath");
   BT::RegisterRosService<bt::actions::ClearCostmaps>(factory, "ClearCostmaps");
-  BT::RegisterRosService<bt::actions::AimCannon>(factory, "AimCannon");
   BT::RegisterRosService<bt::actions::TiltCannon>(factory, "TiltCannon");
   BT::RegisterRosService<bt::actions::FireCannon>(factory, "FireCannon");
   BT::RegisterSimpleActionClient<bt::actions::GoToPose>(factory, "GoToPose");

@@ -46,11 +46,15 @@
                                max_angle="0.2"
                                max_dist="1.0"
                                robot_pose="{robot_pose}"/>
-              <AimCannon service_name="cannon_command"
-                         timeout="5"/>
+              <AimCannon robot_pose="{robot_pose}"
+                         target_pose="{tracked_object_pose}"
+                         angle="{cannon_tilt_angle}"/>
+              <TiltCannon angle="{cannon_tilt_angle}"
+                          service_name="cannon_command"
+                          timeout="1"/>
               <FireCannon service_name="cannon_command"
                           shots="1"
-                          timeout="5"/>
+                          timeout="1"/>
               <Sleep duration="1.0"/>
               <AlwaysFailure _description="Replace with failing on exhausted ammo"/>
             </Sequence>

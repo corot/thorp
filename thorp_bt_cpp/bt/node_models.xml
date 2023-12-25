@@ -1,8 +1,9 @@
 <root>
     <TreeNodesModel>
         <Action ID="AimCannon">
-            <input_port name="service_name" type="std::string" default="cannon_command">name of the ROS service</input_port>
-            <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
+            <input_port name="robot_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="target_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <output_port name="angle" type="float"/>
         </Action>
         <Action ID="ClearCostmaps">
             <input_port name="service_name" type="std::string">name of the ROS service</input_port>

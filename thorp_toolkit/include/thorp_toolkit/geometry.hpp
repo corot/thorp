@@ -20,6 +20,26 @@ namespace thorp::toolkit
 {
 
 /**
+ * Convert angle from radians to degrees
+ * @param a Angle in radians
+ * @return Angle in degrees
+ */
+inline double toDeg(double a)
+{
+  return angles::to_degrees(a);
+}
+
+/**
+ * Convert angle from degrees to radians
+ * @param a Angle in degrees
+ * @return Angle in radians
+ */
+inline double toRad(double a)
+{
+  return angles::from_degrees(a);
+}
+
+/**
  * Normalize an angle between -π and +π
  * @param a Unnormalized angle
  * @return Normalized angle
