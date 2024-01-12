@@ -29,12 +29,12 @@
             <output_port name="feedback" type="std::optional&lt;mbf_msgs::ExePathFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
         </Action>
         <Action ID="FireCannon">
-            <input_port name="service_name" type="std::string">name of the ROS service</input_port>
+            <input_port name="service_name" type="std::string" default="cannon_command">name of the ROS service</input_port>
             <input_port name="shots" type="unsigned int"/>
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
         </Action>
         <Action ID="FollowPose">
-            <input_port name="action_name" type="std::string">name of the ROS action client</input_port>
+            <input_port name="action_name" type="std::string" default="pose_follower/follow">name of the ROS action client</input_port>
             <input_port name="distance" type="float"/>
             <input_port name="goal" type="thorp_msgs::FollowPoseGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
@@ -92,12 +92,12 @@
             <input_port name="max_delay" type="double" default="0.000000">max delay wrt Time::now() (sec); ignored if negative</input_port>
             <input_port name="target_objects" type="std::string">Comma-separated list of objects to track</input_port>
             <input_port name="timeout" type="double" default="1.000000">timeout to subscribe to topic (sec)</input_port>
-            <input_port name="topic_name" type="std::string">name of the ROS topic</input_port>
+            <input_port name="topic_name" type="std::string" default="tracked_objects">name of the ROS topic</input_port>
             <output_port name="tracked_object" type="cob_perception_msgs::Detection_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="tracked_object_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Action ID="PlanRoomExploration">
-            <input_port name="action_name" type="std::string">name of the ROS action client</input_port>
+            <input_port name="action_name" type="std::string" default="exploration/room_exploration">name of the ROS action client</input_port>
             <input_port name="goal" type="ipa_building_msgs::RoomExplorationGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
             <input_port name="map_image" type="sensor_msgs::Image_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="map_origin" type="geometry_msgs::Pose_&lt;std::allocator&lt;void&gt; &gt;"/>
@@ -112,7 +112,7 @@
             <output_port name="start_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Action ID="PlanRoomSequence">
-            <input_port name="action_name" type="std::string">name of the ROS action client</input_port>
+            <input_port name="action_name" type="std::string" default="exploration/room_sequence_planning">name of the ROS action client</input_port>
             <input_port name="goal" type="ipa_building_msgs::FindRoomSequenceWithCheckpointsGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
             <input_port name="map_image" type="sensor_msgs::Image_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="map_origin" type="geometry_msgs::Pose_&lt;std::allocator&lt;void&gt; &gt;"/>
@@ -144,14 +144,14 @@
             <inout_port name="list" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
         </Action>
         <Action ID="Recovery">
-            <input_port name="action_name" type="std::string">name of the ROS action client</input_port>
+            <input_port name="action_name" type="std::string" default="move_base_flex/recovery">name of the ROS action client</input_port>
             <input_port name="goal" type="mbf_msgs::RecoveryGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
             <output_port name="error" type="unsigned int"/>
             <output_port name="feedback" type="std::optional&lt;mbf_msgs::RecoveryFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
         </Action>
         <Action ID="SegmentRooms">
-            <input_port name="action_name" type="std::string">name of the ROS action client</input_port>
+            <input_port name="action_name" type="std::string" default="exploration/room_segmentation">name of the ROS action client</input_port>
             <input_port name="goal" type="ipa_building_msgs::MapSegmentationGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
             <output_port name="map_image" type="sensor_msgs::Image_&lt;std::allocator&lt;void&gt; &gt;"/>
@@ -178,11 +178,14 @@
             <input_port name="duration" type="double"/>
         </Action>
         <Action ID="SmoothPath">
-            <input_port name="service_name" type="std::string">name of the ROS service</input_port>
+            <input_port name="service_name" type="std::string" default="waypoints_path/connect_waypoints">name of the ROS service</input_port>
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
             <input_port name="waypoints" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
             <output_port name="path" type="nav_msgs::Path_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
+        <Decorator ID="StoreResult">
+            <output_port name="result" type="bool"/>
+        </Decorator>
         <Control ID="SuperReactiveSequence"/>
         <Condition ID="TargetReachable">
             <input_port name="follow_feedback" type="thorp_msgs::FollowPoseFeedback_&lt;std::allocator&lt;void&gt; &gt;"/>
@@ -192,7 +195,7 @@
         </Condition>
         <Action ID="TiltCannon">
             <input_port name="angle" type="float"/>
-            <input_port name="service_name" type="std::string">name of the ROS service</input_port>
+            <input_port name="service_name" type="std::string" default="cannon_command">name of the ROS service</input_port>
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
         </Action>
         <Action ID="TrackProgress">

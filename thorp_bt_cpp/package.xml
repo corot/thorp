@@ -12,17 +12,9 @@
 
     <buildtool_depend>catkin</buildtool_depend>
 
-    <depend>dynamic_reconfigure</depend>
-    <depend>costmap_2d</depend>
-    <depend>angles</depend>
-    <depend>tf</depend>
     <depend>tf2</depend>
-    <depend>tf2_eigen</depend>
-    <depend>tf2_ros</depend>
     <depend>roscpp</depend>
-    <depend>mbf_utility</depend>
     <depend>actionlib</depend>
-    <depend>actionlib_msgs</depend>
     <depend>std_msgs</depend>
     <depend>std_srvs</depend>
     <depend>nav_msgs</depend>

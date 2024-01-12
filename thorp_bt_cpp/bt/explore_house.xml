@@ -81,7 +81,7 @@
                                   source_ns="named_configuration"
                                   target_ns=""/>
                   <Sequence>
-                    <SmoothPath service_name="/waypoints_path/connect_waypoints"
+                    <SmoothPath service_name="waypoints_path/connect_waypoints"
                                 timeout="100"
                                 waypoints="{coverage_waypoints}"
                                 path="{coverage_path}"/>

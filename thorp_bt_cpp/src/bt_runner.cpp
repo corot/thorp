@@ -1,12 +1,15 @@
 #include "thorp_bt_cpp/bt_runner.hpp"
 
-#include "thorp_bt_cpp/bt_nodes.hpp"
+// bt tools
+#include <behaviortree_cpp_v3/xml_parsing.h>
 
 #include <thorp_toolkit/common.hpp>
 namespace ttk = thorp::toolkit;
 
 namespace thorp::bt
 {
+BT::BehaviorTreeFactory Runner::bt_factory_{};
+
 Runner::Runner() : pnh_("~")
 {
   // on simulation, wait for the simulated time to start before loading and running the tree
@@ -16,8 +19,20 @@ Runner::Runner() : pnh_("~")
   const std::string bt_filepath = pnh_.param<std::string>("bt_filepath", "bt.xml");
   const std::string nodes_filepath = pnh_.param<std::string>("nodes_filepath", "nodes.xml");
 
-  // register behavior tree nodes
-  registerNodes(bt_factory_, pnh_, nodes_filepath);
+  // dump to an XML file to load on Groot
+  std::ofstream ofs;
+  ofs.open(nodes_filepath,
+           std::ios::out |        // output file stream
+               std::ios::trunc);  // truncate content
+  if (ofs)
+  {
+    ofs << BT::writeTreeNodesModelXML(bt_factory_) << std::endl;
+    ofs.close();
+  }
+  else
+  {
+    ROS_ERROR_STREAM("Unable to open file to write node models file: " << nodes_filepath);
+  }
 
   try
   {

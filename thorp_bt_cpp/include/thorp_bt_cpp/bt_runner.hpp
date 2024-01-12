@@ -17,14 +17,14 @@ public:
 
   void run();
 
+  /** Factory to create the BT. It's static, so the custom nodes can register themselves with static initialization */
+  static BT::BehaviorTreeFactory bt_factory_;
+
 private:
   ros::NodeHandle pnh_;
 
   /** Behavior tree. */
   std::optional<BT::Tree> bt_;
-
-  /** Factory for the BT. */
-  BT::BehaviorTreeFactory bt_factory_;
 
   /** Publisher to attach Groot and visualize the bt in real time. */
   std::optional<BT::PublisherZMQ> bt_pub_zmq_;
