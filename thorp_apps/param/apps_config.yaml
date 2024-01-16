@@ -1,0 +1,34 @@
+# navigation
+default_planner: 'GlobalPlanner'
+default_controller: 'TEBPlanner'
+follow_controller: 'PoseFollower'
+follow_recovery: ['clear_local_cm', 'escape_distance']
+get_path_recovery: ['clear_global_cm']
+exe_path_recovery: ['clear_local_cm', 'escape_distance', 'out_to_free_space']
+move_base_recovery: ['clear_both_cms', 'escape_distance', 'out_to_free_space']
+tight_dist_tolerance: 0.035
+tight_angle_tolerance: 0.05  # ~3 deg
+loose_dist_tolerance: 0.25
+loose_angle_tolerance: 0.5  # ~30 deg
+inf_angle_tolerance: +Inf
+wp_reached_threshold: 1.0  # we consider a waypoint reached when we pass by at least this distance
+
+# manipulation
+table_min_side: 0.4  # TODO enough to reject shelves, that I cannot handle by now (doll table side is 45 cm)
+table_max_side: 1.0  # TODO I cannot handle such a large table, as I only go to the center of the four sides
+approach_dist_to_table: 0.35  # close enough to properly detect tabletop objects but not for picking
+detach_dist_from_table: 0.45  # far enough to safely navigate around the table to other picking poses
+clear_table_way_timeout: 15.0  # seconds; restore costmap after this time
+picking_planning_frame: 'arm_base_link'
+picking_max_failures: 3  # picking failures allowed for each object on current picking location (resets upon moving)
+picking_dist_to_table: 0.15  # ideal picking distance to the table, as close as possible without risk
+placing_height_on_table: 0.005  # slightly above the table to avoid crashing the object against it
+placing_height_on_tray: 0.03  # well above the tray to avoid colliding with (or ejecting) previously placed objects
+gripper_max_effort: 0.5  # max effort exerted by the gripper on grasping (stops closing upon reaching this value)
+gripper_tightening: 0.002  # additional gripper closing to tighten grasped objects
+max_arm_reach: 0.3
+tray_side_x: 0.14
+tray_side_y: 0.14
+tray_depth: 0.02
+tray_slot: 0.035  # better a divisor of both tray sides
+tray_link: tray_link

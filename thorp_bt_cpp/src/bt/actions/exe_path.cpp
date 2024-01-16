@@ -19,7 +19,7 @@ public:
 
   static BT::PortsList providedPorts()
   {
-    BT::PortsList ports = BT::SimpleActionClientNode<mbf_msgs::ExePathAction>::providedPorts();
+    BT::PortsList ports = BT::SimpleActionClientNode<ActionType>::providedPorts();
     ports["action_name"].setDefaultValue("move_base_flex/exe_path");
     ports.insert({ BT::InputPort<std::string>("controller"),
                    BT::InputPort<nav_msgs::Path>("path"),
@@ -35,12 +35,12 @@ public:
     return true;
   }
 
-  void onFeedback(const mbf_msgs::ExePathFeedbackConstPtr& feedback) override
+  void onFeedback(const FeedbackConstPtr& feedback) override
   {
     setOutput("feedback", std::make_optional<mbf_msgs::ExePathFeedback>(*feedback));
   }
 
-  BT::NodeStatus onAborted(const mbf_msgs::ExePathResultConstPtr& res) override
+  BT::NodeStatus onAborted(const ResultConstPtr& res) override
   {
     ROS_ERROR_NAMED(name(), "ExePath failed at %.2f, %.2f, %.2f; distance to goal: %.2f, angle to goal: %.2f",
                     res->final_pose.pose.position.x, res->final_pose.pose.position.y, ttk::yaw(res->final_pose),

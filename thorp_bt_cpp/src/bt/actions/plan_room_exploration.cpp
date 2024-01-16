@@ -23,7 +23,7 @@ public:
 
   static BT::PortsList providedPorts()
   {
-    BT::PortsList ports = BT::SimpleActionClientNode<ipa_building_msgs::RoomExplorationAction>::providedPorts();
+    BT::PortsList ports = BT::SimpleActionClientNode<ActionType>::providedPorts();
     ports["action_name"].setDefaultValue("exploration/room_exploration");
     ports.insert({ BT::InputPort<geometry_msgs::PoseStamped>("robot_pose"),
                    BT::InputPort<float>("robot_radius"),
@@ -106,7 +106,7 @@ public:
     return true;
   }
 
-  BT::NodeStatus onSuccess(const ResultConstPtr& res)
+  BT::NodeStatus onSuccess(const ResultConstPtr& res) override
   {
     // provide the starting pose, so we can move there before starting exploring; make it point to the first waypoint
     double yaw = ttk::heading(room_center, res->coverage_path_pose_stamped.front().pose.position);

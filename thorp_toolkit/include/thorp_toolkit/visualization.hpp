@@ -41,11 +41,11 @@ public:
   static std::vector<visualization_msgs::Marker>
   createPointMarkers(const std::vector<geometry_msgs::PoseStamped>& poses, double size = 0.01,
                      const std_msgs::ColorRGBA& color = namedColor("blue"), const std::string& ns = "point_marker");
-  static visualization_msgs::Marker createCubeList(const geometry_msgs::PoseStamped& refPose,
+  static visualization_msgs::Marker createCubeList(const geometry_msgs::PoseStamped& ref_pose,
                                                    const std::vector<geometry_msgs::Point>& poses,
                                                    const std::vector<std_msgs::ColorRGBA>& colors, double size = 0.01,
                                                    const std::string& ns = "cube_list");
-  static visualization_msgs::Marker createPointList(const geometry_msgs::PoseStamped& refPose,
+  static visualization_msgs::Marker createPointList(const geometry_msgs::PoseStamped& ref_pose,
                                                     const std::vector<geometry_msgs::Point>& points,
                                                     const std::vector<std_msgs::ColorRGBA>& colors, double size = 0.01,
                                                     const std::string& ns = "point_list");

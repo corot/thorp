@@ -19,13 +19,13 @@ public:
 
   static BT::PortsList providedPorts()
   {
-    BT::PortsList ports = BT::SimpleActionClientNode<thorp_msgs::FollowPoseAction>::providedPorts();
+    BT::PortsList ports = BT::SimpleActionClientNode<ActionType>::providedPorts();
     ports["action_name"].setDefaultValue("pose_follower/follow");
     ports.insert({ BT::InputPort<float>("time_limit"),
                    BT::InputPort<float>("distance"),
                    BT::InputPort<bool>("stop_at_distance"),
                    BT::OutputPort<uint8_t>("error"),
-                   BT::OutputPort<thorp_msgs::FollowPoseFeedback>("feedback") });
+                   BT::OutputPort<FeedbackType>("feedback") });
     return ports;
   }
 
@@ -37,12 +37,12 @@ public:
     return true;
   }
 
-  void onFeedback(const thorp_msgs::FollowPoseFeedbackConstPtr& feedback) override
+  void onFeedback(const FeedbackConstPtr& feedback) override
   {
     setOutput("feedback", *feedback);
   }
 
-  BT::NodeStatus onAborted(const thorp_msgs::FollowPoseResultConstPtr& res) override
+  BT::NodeStatus onAborted(const ResultConstPtr& res) override
   {
     ROS_ERROR_NAMED(name(), "FollowPose failed with error %d", res->outcome);
 

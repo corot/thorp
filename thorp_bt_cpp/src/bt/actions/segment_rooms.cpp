@@ -20,7 +20,7 @@ public:
 
   static BT::PortsList providedPorts()
   {
-    BT::PortsList ports = BT::SimpleActionClientNode<ipa_building_msgs::MapSegmentationAction>::providedPorts();
+    BT::PortsList ports = BT::SimpleActionClientNode<ActionType>::providedPorts();
     ports["action_name"].setDefaultValue("exploration/room_segmentation");
     ports.insert({ BT::OutputPort<sensor_msgs::Image>("map_image"),
                    BT::OutputPort<geometry_msgs::Pose>("map_origin"),
@@ -72,7 +72,7 @@ public:
     return true;
   }
 
-  BT::NodeStatus onSuccess(const ResultConstPtr& res)
+  BT::NodeStatus onSuccess(const ResultConstPtr& res) override
   {
     setOutput("segmented_map", res->segmented_map);
     setOutput("room_information_in_meter", res->room_information_in_meter);

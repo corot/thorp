@@ -212,7 +212,7 @@ Visualization::createPointMarkers(const std::vector<geometry_msgs::PoseStamped>&
   return markers;
 }
 
-visualization_msgs::Marker Visualization::createCubeList(const geometry_msgs::PoseStamped& refPose,
+visualization_msgs::Marker Visualization::createCubeList(const geometry_msgs::PoseStamped& ref_pose,
                                                          const std::vector<geometry_msgs::Point>& poses,
                                                          const std::vector<std_msgs::ColorRGBA>& colors, double size,
                                                          const std::string& ns)
@@ -221,66 +221,31 @@ visualization_msgs::Marker Visualization::createCubeList(const geometry_msgs::Po
   marker.type = visualization_msgs::Marker::CUBE_LIST;
   marker.action = visualization_msgs::Marker::ADD;
   marker.ns = ns;
-  marker.header = refPose.header;
-  marker.pose = refPose.pose;
-  marker.points = poses;
+  marker.header = ref_pose.header;
+  marker.pose = ref_pose.pose;
   marker.scale.x = size;
   marker.scale.y = size;
   marker.scale.z = size;
-
-  /* TODO
-   *if (!colors.empty())
-    {
-      if (std::holds_alternative<std::vector<std::tuple<double, double, double, double>>>(colors[0]))
-      {
-        // colors defined for every element
-        marker.colors = {};
-        for (const auto& color : std::get<std::vector<std::tuple<double, double, double, double>>>(colors[0]))
-        {
-          marker.colors.push_back(makeColor(color));
-        }
-      }
-      else
-      {
-        marker.color = makeColor(std::get<std::tuple<double, double, double, double>>(colors[0]));
-      }
-    }*/
-
+  marker.points = poses;
+  marker.colors = colors;
   return marker;
 }
 
-visualization_msgs::Marker Visualization::createPointList(const geometry_msgs::PoseStamped& refPose,
+visualization_msgs::Marker Visualization::createPointList(const geometry_msgs::PoseStamped& ref_pose,
                                                           const std::vector<geometry_msgs::Point>& points,
                                                           const std::vector<std_msgs::ColorRGBA>& colors, double size,
                                                           const std::string& ns)
 {
   visualization_msgs::Marker marker;
   marker.type = visualization_msgs::Marker::POINTS;
-  marker.header = refPose.header;
-  marker.pose = refPose.pose;
+  marker.header = ref_pose.header;
+  marker.pose = ref_pose.pose;
   marker.ns = ns;
   marker.action = visualization_msgs::Marker::ADD;
   marker.scale.x = size;
   marker.scale.y = size;
-  /* TODO
-    if (!colors.empty())
-    {
-      if (std::holds_alternative<std::vector<std::tuple<double, double, double, double>>>(colors[0]))
-      {
-        // colors defined for every element
-        marker.colors = {};
-        for (const auto& color : std::get<std::vector<std::tuple<double, double, double, double>>>(colors[0]))
-        {
-          marker.colors.push_back(makeColor(color));
-        }
-      }
-      else
-      {
-        marker.color = makeColor(std::get<std::tuple<double, double, double, double>>(colors[0]));
-      }
-    }*/
-
   marker.points = points;
+  marker.colors = colors;
   return marker;
 }
 

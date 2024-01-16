@@ -17,7 +17,7 @@ public:
 
   static BT::PortsList providedPorts()
   {
-    BT::PortsList ports = BT::SimpleActionClientNode<ipa_building_msgs::FindRoomSequenceWithCheckpointsAction>::providedPorts();
+    BT::PortsList ports = BT::SimpleActionClientNode<ActionType>::providedPorts();
     ports["action_name"].setDefaultValue("exploration/room_sequence_planning");
     ports.insert({ BT::InputPort<geometry_msgs::PoseStamped>("robot_pose"),
                    BT::InputPort<float>("robot_radius"),
@@ -42,7 +42,7 @@ public:
     return true;
   }
 
-  BT::NodeStatus onSuccess(const ResultConstPtr& res)
+  BT::NodeStatus onSuccess(const ResultConstPtr& res) override
   {
     auto room_sequence = res->checkpoints.front().room_indices;
     // room numbers start with 1, so we get them with index + 1

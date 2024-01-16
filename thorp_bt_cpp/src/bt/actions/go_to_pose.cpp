@@ -23,7 +23,7 @@ public:
 
   static BT::PortsList providedPorts()
   {
-    BT::PortsList ports = BT::SimpleActionClientNode<mbf_msgs::MoveBaseAction>::providedPorts();
+    BT::PortsList ports = BT::SimpleActionClientNode<ActionType>::providedPorts();
     ports["action_name"].setDefaultValue("move_base_flex/move_base");
     ports.insert({ BT::InputPort<std::string>("planner"),
                    BT::InputPort<std::string>("controller"),
@@ -31,7 +31,7 @@ public:
                    BT::InputPort<double>("angle_tolerance"),
                    BT::InputPort<geometry_msgs::PoseStamped>("pose"),
                    BT::OutputPort<unsigned int>("error"),
-                   BT::OutputPort<std::optional<mbf_msgs::MoveBaseFeedback>>("feedback") });
+                   BT::OutputPort<std::optional<FeedbackType>>("feedback") });
     return ports;
   }
 
@@ -63,9 +63,9 @@ public:
     return true;
   }
 
-  void onFeedback(const mbf_msgs::MoveBaseFeedbackConstPtr& feedback) override
+  void onFeedback(const FeedbackConstPtr& feedback) override
   {
-    setOutput("feedback", std::make_optional<mbf_msgs::MoveBaseFeedback>(*feedback));
+    setOutput("feedback", std::make_optional<FeedbackType>(*feedback));
   }
 
   BT::NodeStatus onSuccess(const ResultConstPtr& res) override
@@ -76,7 +76,7 @@ public:
     return BT::NodeStatus::SUCCESS;
   }
 
-  BT::NodeStatus onAborted(const mbf_msgs::MoveBaseResultConstPtr& res) override
+  BT::NodeStatus onAborted(const ResultConstPtr& res) override
   {
     if (reconf_)
       reconf_->revert();

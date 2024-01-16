@@ -14,6 +14,9 @@
 // Thorp messages
 #include <thorp_msgs/ThorpError.h>
 
+// auxiliary libraries
+#include <thorp_toolkit/planning_scene.hpp>
+namespace ttk = thorp::toolkit;
 
 namespace thorp::manipulation
 {
@@ -56,6 +59,8 @@ public:
   }
 
 protected:
+  ttk::PlanningScene& psi = ttk::PlanningScene::instance();
+
   // Move groups to control arm and gripper with MoveIt!
   moveit::planning_interface::MoveGroupInterface& arm()
   {

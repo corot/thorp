@@ -86,7 +86,7 @@ int32_t PlaceObjectServer::place(const std::string& obj_name, const std::string&
 {
   // Look for obj_name in the planning scene's list of attached collision objects
   geometry_msgs::PoseStamped attached_pose; geometry_msgs::Vector3 obj_size;
-  int32_t result = ttk::getAttachedObjectData(obj_name, attached_pose, obj_size);
+  int32_t result = psi.getAttachedObjectData(obj_name, attached_pose, obj_size);
   if (result < 0)
   {
     // Error occurred while getting object data...

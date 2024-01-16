@@ -7,10 +7,10 @@
 
 namespace thorp::bt::actions
 {
-class ClearCostmaps : public BT::RosServiceNode<std_srvs::Empty>
+class ClearGripper : public BT::RosServiceNode<std_srvs::Empty>
 {
 public:
-  ClearCostmaps(const std::string& node_name, const BT::NodeConfiguration& conf)
+  ClearGripper(const std::string& node_name, const BT::NodeConfiguration& conf)
     : RosServiceNode<ServiceType>(node_name, conf)
   {
   }
@@ -19,7 +19,7 @@ public:
   {
     // overwrite service_name with a default value
     BT::PortsList ports = BT::RosServiceNode<ServiceType>::providedPorts();
-    ports["service_name"].setDefaultValue("move_base_flex/clear_costmaps");
+    ports["service_name"].setDefaultValue("clear_gripper");
     return ports;
   }
 
@@ -33,6 +33,6 @@ public:
   }
 
 private:
-  BT_REGISTER_NODE(ClearCostmaps);
+  BT_REGISTER_NODE(ClearGripper);
 };
 }  // namespace thorp::bt::actions

@@ -53,14 +53,14 @@ class CannonCmd : public BT::RosServiceNode<thorp_msgs::CannonCmd>
 {
 public:
   CannonCmd(const std::string& node_name, const BT::NodeConfiguration& conf)
-    : RosServiceNode<thorp_msgs::CannonCmd>(node_name, conf)
+    : RosServiceNode<ServiceType>(node_name, conf)
   {
   }
 
   static BT::PortsList providedPorts()
   {
     // overwrite service_name with a default value
-    BT::PortsList ports = BT::RosServiceNode<thorp_msgs::CannonCmd>::providedPorts();
+    BT::PortsList ports = BT::RosServiceNode<ServiceType>::providedPorts();
     ports["service_name"].setDefaultValue("cannon_command");
     return ports;
   }
@@ -91,7 +91,7 @@ public:
 
   void sendRequest(RequestType& request) override
   {
-    request.action = thorp_msgs::CannonCmdRequest::TILT;
+    request.action = ServiceType::Request::TILT;
     request.angle = *getInput<float>("angle");
   }
 
@@ -114,7 +114,7 @@ public:
 
   void sendRequest(RequestType& request) override
   {
-    request.action = thorp_msgs::CannonCmdRequest::FIRE;
+    request.action = ServiceType::Request::FIRE;
     request.shots = *getInput<uint32_t>("shots");
   }
 

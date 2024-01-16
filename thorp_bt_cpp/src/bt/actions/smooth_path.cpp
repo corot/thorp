@@ -14,13 +14,13 @@ class SmoothPath : public BT::RosServiceNode<thorp_msgs::ConnectWaypoints>
 {
 public:
   SmoothPath(const std::string& node_name, const BT::NodeConfiguration& conf)
-    : RosServiceNode<thorp_msgs::ConnectWaypoints>(node_name, conf)
+    : RosServiceNode<ServiceType>(node_name, conf)
   {
   }
 
   static BT::PortsList providedPorts()
   {
-    BT::PortsList ports = BT::RosServiceNode<thorp_msgs::ConnectWaypoints>::providedPorts();
+    BT::PortsList ports = BT::RosServiceNode<ServiceType>::providedPorts();
     ports["service_name"].setDefaultValue("waypoints_path/connect_waypoints");
     ports.insert({ BT::InputPort<std::vector<geometry_msgs::PoseStamped>>("waypoints"),
                    BT::OutputPort<nav_msgs::Path>("path") });

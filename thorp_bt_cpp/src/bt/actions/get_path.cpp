@@ -16,21 +16,28 @@ public:
 
   static BT::PortsList providedPorts()
   {
-    BT::PortsList ports = BT::SimpleActionClientNode<mbf_msgs::GetPathAction>::providedPorts();
+    BT::PortsList ports = BT::SimpleActionClientNode<ActionType>::providedPorts();
     ports["action_name"].setDefaultValue("move_base_flex/get_path");
-    ports.insert({ BT::InputPort<std::string>("planner"),
-                   BT::InputPort<geometry_msgs::PoseStamped>("target_pose"),
-                   BT::OutputPort<unsigned int>("error"),
-                   BT::OutputPort<std::optional<mbf_msgs::GetPathFeedback>>("feedback") });
+    ports.insert({ BT::InputPort<std::string>("planner"),                     //
+                   BT::InputPort<geometry_msgs::PoseStamped>("target_pose"),  //
+                   BT::OutputPort<unsigned int>("error"),                     //
+                   BT::OutputPort<std::optional<FeedbackType>>("feedback") });
     return ports;
   }
 
-  virtual void onFeedback(const mbf_msgs::GetPathFeedbackConstPtr& feedback) override
+  bool setGoal(GoalType& goal) override
   {
-    setOutput("feedback", std::make_optional<mbf_msgs::GetPathFeedback>(*feedback));
+    goal.planner = *getInput<std::string>("planner");
+    goal.target_pose = *getInput<geometry_msgs::PoseStamped>("target_pose");
+    return true;
   }
 
-  virtual BT::NodeStatus onAborted(const mbf_msgs::GetPathResultConstPtr& res) override
+  void onFeedback(const FeedbackConstPtr& feedback) override
+  {
+    setOutput("feedback", std::make_optional<FeedbackType>(*feedback));
+  }
+
+  BT::NodeStatus onAborted(const ResultConstPtr& res) override
   {
     ROS_ERROR_NAMED(name(), "Error %d: %s", res->outcome, res->message.c_str());
     setOutput("error", res->outcome);

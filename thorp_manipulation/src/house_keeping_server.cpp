@@ -67,7 +67,7 @@ bool HouseKeepingServer::forceRestingCB(std_srvs::EmptyRequest &request, std_srv
       value = true;
 
   bool moved = false;
-  if (ttk::planningScene().applyPlanningScene(ps))
+  if (psi.applyPlanningScene(ps))
   {
     if (arm().setNamedTarget("resting"))
     {
@@ -92,7 +92,7 @@ bool HouseKeepingServer::forceRestingCB(std_srvs::EmptyRequest &request, std_srv
     ROS_ERROR("[house keeping] Apply relaxed planning scene failed");
   }
 
-  if (!ttk::planningScene().applyPlanningScene(planning_scene_))
+  if (!psi.applyPlanningScene(planning_scene_))
   {
     ROS_ERROR("[house keeping] Restore original planning scene failed");
   }
@@ -149,7 +149,7 @@ bool HouseKeepingServer::clearGripperCB(std_srvs::EmptyRequest &request, std_srv
   {
     // Remove the detached object from the planning scene so the arm doesn't "collide" with the floating ghost
     ROS_INFO("[house keeping] Remove object '%s', detached from gripper", attached_object.c_str());
-    ttk::planningScene().removeCollisionObjects(std::vector<std::string>{attached_object});
+    psi.removeCollisionObjects(std::vector<std::string>{attached_object});
     attached_object = "";
   }
   return gripper_result && detach_result;
@@ -159,7 +159,7 @@ bool HouseKeepingServer::objAttachedCB(std_srvs::TriggerRequest &request, std_sr
 {
   // Logic check: ask planning scene if we have an object attached
   std::map<std::string, moveit_msgs::AttachedCollisionObject> attached_objects =
-    ttk::planningScene().getAttachedObjects();
+    psi.getAttachedObjects();
 //  for (const auto& ao: attached_objects)
 //    ROS_ERROR_STREAM(" " << ao.first<< "     "<< ao.second.object.id<<  "    mio: " <<attached_object);
 
