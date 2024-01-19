@@ -32,7 +32,6 @@
         </Action>
         <Action ID="DetectObjects">
             <input_port name="action_name" type="std::string" default="object_detection">name of the ROS action client</input_port>
-            <input_port name="goal" type="thorp_msgs::DetectObjectsGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
             <input_port name="object_types" type="std::string"/>
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
             <output_port name="objects" type="std::vector&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
@@ -44,7 +43,6 @@
         </Action>
         <Action ID="DragAndDrop">
             <input_port name="action_name" type="std::string" default="drag_and_drop">name of the ROS action client</input_port>
-            <input_port name="goal" type="thorp_msgs::DragAndDropGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
             <input_port name="objects" type="std::vector&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
             <output_port name="feedback" type="std::optional&lt;thorp_msgs::DragAndDropFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
@@ -55,7 +53,6 @@
         <Action ID="ExePath">
             <input_port name="action_name" type="std::string" default="move_base_flex/exe_path">name of the ROS action client</input_port>
             <input_port name="controller" type="std::string"/>
-            <input_port name="goal" type="mbf_msgs::ExePathGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
             <input_port name="path" type="nav_msgs::Path_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
             <output_port name="error" type="unsigned int"/>
@@ -69,7 +66,6 @@
         <Action ID="FollowPose">
             <input_port name="action_name" type="std::string" default="pose_follower/follow">name of the ROS action client</input_port>
             <input_port name="distance" type="float"/>
-            <input_port name="goal" type="thorp_msgs::FollowPoseGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
             <input_port name="stop_at_distance" type="bool"/>
             <input_port name="time_limit" type="float"/>
@@ -78,7 +74,6 @@
         </Action>
         <Action ID="GetPath">
             <input_port name="action_name" type="std::string" default="move_base_flex/get_path">name of the ROS action client</input_port>
-            <input_port name="goal" type="mbf_msgs::GetPathGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
             <input_port name="planner" type="std::string"/>
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
             <input_port name="target_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
@@ -105,7 +100,6 @@
             <input_port name="angle_tolerance" type="double"/>
             <input_port name="controller" type="std::string"/>
             <input_port name="dist_tolerance" type="double"/>
-            <input_port name="goal" type="mbf_msgs::MoveBaseGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
             <input_port name="planner" type="std::string"/>
             <input_port name="pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
@@ -149,7 +143,6 @@
         </Action>
         <Action ID="PickupObject">
             <input_port name="action_name" type="std::string" default="pickup_object">name of the ROS action client</input_port>
-            <input_port name="goal" type="thorp_msgs::PickupObjectGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
             <input_port name="max_effort" type="double"/>
             <input_port name="object_name" type="std::string"/>
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
@@ -160,7 +153,6 @@
         </Action>
         <Action ID="PlaceObject">
             <input_port name="action_name" type="std::string" default="place_object">name of the ROS action client</input_port>
-            <input_port name="goal" type="thorp_msgs::PlaceObjectGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
             <input_port name="object_name" type="std::string"/>
             <input_port name="place_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
@@ -170,7 +162,6 @@
         </Action>
         <Action ID="PlanRoomExploration">
             <input_port name="action_name" type="std::string" default="exploration/room_exploration">name of the ROS action client</input_port>
-            <input_port name="goal" type="ipa_building_msgs::RoomExplorationGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
             <input_port name="map_image" type="sensor_msgs::Image_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="map_origin" type="geometry_msgs::Pose_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="map_resolution" type="float"/>
@@ -185,7 +176,6 @@
         </Action>
         <Action ID="PlanRoomSequence">
             <input_port name="action_name" type="std::string" default="exploration/room_sequence_planning">name of the ROS action client</input_port>
-            <input_port name="goal" type="ipa_building_msgs::FindRoomSequenceWithCheckpointsGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
             <input_port name="map_image" type="sensor_msgs::Image_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="map_origin" type="geometry_msgs::Pose_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="map_resolution" type="float"/>
@@ -218,7 +208,6 @@
         <Action ID="Recovery">
             <input_port name="action_name" type="std::string" default="move_base_flex/recovery">name of the ROS action client</input_port>
             <input_port name="behavior" type="std::string"/>
-            <input_port name="goal" type="mbf_msgs::RecoveryGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
             <output_port name="feedback" type="std::optional&lt;mbf_msgs::RecoveryFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
         </Action>
@@ -227,7 +216,6 @@
         </Action>
         <Action ID="SegmentRooms">
             <input_port name="action_name" type="std::string" default="exploration/room_segmentation">name of the ROS action client</input_port>
-            <input_port name="goal" type="ipa_building_msgs::MapSegmentationGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
             <output_port name="map_image" type="sensor_msgs::Image_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="map_origin" type="geometry_msgs::Pose_&lt;std::allocator&lt;void&gt; &gt;"/>
@@ -240,7 +228,6 @@
         <Action ID="SetArmConfig">
             <input_port name="action_name" type="std::string" default="move_to_target">name of the ROS action client</input_port>
             <input_port name="configuration" type="std::string"/>
-            <input_port name="goal" type="thorp_msgs::MoveToTargetGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action server</input_port>
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
             <output_port name="error" type="unsigned int"/>
             <output_port name="feedback" type="std::optional&lt;thorp_msgs::MoveToTargetFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>

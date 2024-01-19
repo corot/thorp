@@ -15,9 +15,11 @@
 
 namespace BT
 {
-// TODO PR this to upstream
+/**
+ * Base Action to implement a ROS Action client node
+ */
 template <class ActionT>
-class SimpleActionClientNode : public BT::ActionNodeBase
+class RosActionNode : public ActionNodeBase
 {
 protected:
   using GoalType = typename ActionT::_action_goal_type::_goal_type;
@@ -26,13 +28,12 @@ protected:
   typedef boost::shared_ptr<const FeedbackType> FeedbackConstPtr;
   typedef boost::shared_ptr<const ResultType> ResultConstPtr;
 
-  SimpleActionClientNode(const std::string& xml_tag_name, const BT::NodeConfiguration& conf)
-    : BT::ActionNodeBase(xml_tag_name, conf)
+  RosActionNode(const std::string& xml_tag_name, const NodeConfiguration& conf) : ActionNodeBase(xml_tag_name, conf)
   {
   }
 
 private:
-  static constexpr char LOGNAME[] = "SimpleActionClientNode";
+  static constexpr char LOGNAME[] = "RosActionNode";
 
   inline bool createActionClient(double timeout)
   {
@@ -62,7 +63,7 @@ private:
 
   inline void feedbackCb(const FeedbackConstPtr& feedback)
   {
-    feedback_ = feedback;
+    onFeedback(feedback);
   }
 
   /**
@@ -80,15 +81,6 @@ private:
   }
 
   /**
-   * @brief Function to perform some user-defined operation if a new goal is received. If it returns True, the new goal
-   * is sent to the server.
-   */
-  virtual bool onNewGoalReceived(const GoalType& goal)
-  {
-    return true;
-  }
-
-  /**
    * @brief Function to perform some user-defined operation on the latest feedback message from the action server.
    */
   virtual void onFeedback(const FeedbackConstPtr& feedback)
@@ -98,51 +90,63 @@ private:
   /**
    * @brief Function to perform some user-defined operation upon successful
    * completion of the action. Could put a value on the blackboard.
-   * @return BT::NodeStatus Returns SUCCESS by default, user may override return another value
+   * @return NodeStatus Returns SUCCESS by default, user may override return another value
    */
-  virtual BT::NodeStatus onSuccess(const ResultConstPtr& res)
+  virtual NodeStatus onSucceeded(const ResultConstPtr& res)
   {
-    return BT::NodeStatus::SUCCESS;
+    return NodeStatus::SUCCESS;
   }
 
   /**
    * @brief Function to perform some user-defined operation whe the action is aborted.
-   * @return BT::NodeStatus Returns FAILURE by default, user may override return another value
+   * @return NodeStatus Returns FAILURE by default, user may override return another value
    */
-  virtual BT::NodeStatus onAborted(const ResultConstPtr& res)
+  virtual NodeStatus onAborted(const ResultConstPtr& res)
   {
-    return BT::NodeStatus::FAILURE;
+    return NodeStatus::FAILURE;
   }
 
   /**
    * @brief Function to perform some user-defined operation when the action is cancelled.
-   * @return BT::NodeStatus Returns SUCCESS by default, user may override return another value
+   * @return NodeStatus Returns SUCCESS by default, user may override return another value
    */
-  virtual BT::NodeStatus onCancelled()
+  virtual NodeStatus onCanceled()
   {
-    return BT::NodeStatus::SUCCESS;
+    return NodeStatus::SUCCESS;
+  }
+
+  /**
+   * @brief Function to perform some user-defined operation when the action finishes, independently of the outcome.
+   * This gets called right before onSucceeded, onAborted and onCanceled, so it's the right place to do cleanups
+   * required regardless of what happened.
+   */
+  virtual void onFinished()
+  {
   }
 
   /**
    * @brief Function to perform some user-defined operation when the goal is rejected by server.
-   * @return BT::NodeStatus Returns FAILURE by default, user may override return another value
+   * @return NodeStatus Returns FAILURE by default, user may override return another value
    */
-  virtual BT::NodeStatus onRejected()
+  virtual NodeStatus onRejected()
   {
-    return BT::NodeStatus::FAILURE;
+    return NodeStatus::FAILURE;
   }
 
 public:
   using ActionType = ActionT;
 
-  SimpleActionClientNode() = delete;
-  virtual ~SimpleActionClientNode() = default;
+  RosActionNode() = delete;
+  ~RosActionNode() override = default;
 
+  /**
+   * @brief ROS action client node default ports
+   * These ports are mandatory; child classes must include them if they override this method
+   */
   static PortsList providedPorts()
   {
     return { InputPort<std::string>("action_name", "name of the ROS action client"),
-             InputPort<double>("server_timeout", 5.0, "timeout to connect to server (seconds)"),
-             InputPort<GoalType>("goal", "goal to send to the action server") };
+             InputPort<double>("server_timeout", 5.0, "timeout to connect to server (seconds)") };
   }
 
   /**
@@ -154,109 +158,84 @@ public:
     {
       action_client_->cancelGoal();
     }
-    setStatus(onCancelled());
+    onFinished();
+    setStatus(NodeStatus::IDLE);
   }
 
 protected:
   std::string action_name_;
   typename std::unique_ptr<actionlib::SimpleActionClient<ActionT>> action_client_;
-  GoalType goal_;
-  FeedbackConstPtr feedback_;
 
   /**
-   * @brief To implement by the child class to create a goal locally
-   * @param goal Reference to the goal object to fill
-   * @return True by overriding methods
+   * @brief To implement by the child class to provide a goal
+   * It will be called on every tick, so children should return std::nullopt
+   * after the first call unless they want to preempt the currently running goal
+   * @return Optional new goal
    */
-  virtual bool setGoal(GoalType& goal) { return false; };
+  virtual std::optional<GoalType> getGoal() = 0;
 
   /**
    * @brief The main override required by a BT action
-   * @return BT::NodeStatus Status of tick execution
+   * @return NodeStatus Status of tick execution
    */
-  inline BT::NodeStatus tick() final
+  inline NodeStatus tick() final
   {
+    onTick();
+
     if (!action_client_)
     {
       if (!getInput("action_name", action_name_))
       {
         ROS_ERROR_NAMED(LOGNAME, "action_name is not defined");
-        return BT::NodeStatus::FAILURE;
+        return NodeStatus::FAILURE;
       }
 
       double server_timeout;
       getInput("server_timeout", server_timeout);
       if (!createActionClient(server_timeout))
       {
-        return BT::NodeStatus::FAILURE;
+        return NodeStatus::FAILURE;
       }
     }
 
-    if (status() == BT::NodeStatus::IDLE)
+    if (auto goal = getGoal(); goal)
     {
-      if (/*!getInput("goal", goal_) &&*/ !setGoal(goal_))
-      {
-        ROS_WARN_NAMED(LOGNAME, "goal is not defined. Exiting with success.");
-        return BT::NodeStatus::SUCCESS;
-      }
-
-      setStatus(BT::NodeStatus::RUNNING);
-
       if (!action_client_->isServerConnected())
       {
         ROS_ERROR_STREAM(LOGNAME << ": Action server " << action_name_ << " not connected");
         onServerUnavailable();
-        return BT::NodeStatus::FAILURE;
+        return NodeStatus::FAILURE;
       }
 
-      onTick();
-      feedback_.reset();  // TODO this is a fix needed
-      action_client_->sendGoal(goal_, {}, {}, boost::bind(&SimpleActionClientNode::feedbackCb, this, _1));
+      setStatus(NodeStatus::RUNNING);
+      action_client_->sendGoal(*goal, {}, {}, boost::bind(&RosActionNode::feedbackCb, this, _1));
     }
-    else
+    else if (status() == NodeStatus::IDLE)
     {
-      onTick();
-      GoalType new_goal;
-      if (/*getInput("goal", new_goal) || setGoal(new_goal)*  TODO  by now we don't allow preemption */  false)
-      {
-        if (new_goal != goal_)
-        {
-          if (onNewGoalReceived(new_goal))
-          {
-            goal_ = new_goal;
-            feedback_.reset();  // TODO this is a fix needed
-            action_client_->sendGoal(goal_, {}, {}, boost::bind(&SimpleActionClientNode::feedbackCb, this, _1));
-          }
-          else
-          {
-            ROS_INFO_NAMED(LOGNAME, "New goal received but not sent to server");
-          }
-        }
-      }
+      ROS_ERROR_NAMED(LOGNAME, "No goal provided. Exiting with failure.");
+      return NodeStatus::FAILURE;
     }
 
     auto action_state = action_client_->getState();
-
     if (action_state == actionlib::SimpleClientGoalState::PENDING ||
         action_state == actionlib::SimpleClientGoalState::ACTIVE)
     {
-      if (feedback_)
-      {
-        onFeedback(feedback_);
-      }
       return NodeStatus::RUNNING;
     }
     else if (action_state == actionlib::SimpleClientGoalState::SUCCEEDED)
     {
-      return onSuccess(action_client_->getResult());
+      onFinished();
+      return onSucceeded(action_client_->getResult());
     }
     else if (action_state == actionlib::SimpleClientGoalState::ABORTED)
     {
+      onFinished();
       return onAborted(action_client_->getResult());
     }
     else if (action_state == actionlib::SimpleClientGoalState::PREEMPTED)
     {
-      return onCancelled();
+      onFinished();
+      return onCanceled();
     }
     else if (action_state == actionlib::SimpleClientGoalState::REJECTED)
     {
@@ -265,24 +244,9 @@ protected:
     else
     {
       ROS_ERROR_STREAM(LOGNAME << ": Action server " << action_name_ << " returned unknown state");
-      return BT::NodeStatus::FAILURE;
+      return NodeStatus::FAILURE;
     }
   }
 };
-
-template <class DerivedT>
-static void RegisterSimpleActionClient(BT::BehaviorTreeFactory& factory, const std::string& registration_ID)
-{
-  BT::NodeBuilder builder = [](const std::string& name, const BT::NodeConfiguration& config)
-  { return std::make_unique<DerivedT>(name, config); };
-
-  BT::TreeNodeManifest manifest;
-  manifest.type = getType<DerivedT>();
-  manifest.ports = DerivedT::providedPorts();
-  manifest.registration_ID = registration_ID;
-  const auto& basic_ports = SimpleActionClientNode<typename DerivedT::ActionType>::providedPorts();
-  manifest.ports.insert(basic_ports.begin(), basic_ports.end());
-  factory.registerBuilder(manifest, builder);
-}
 
 }  // namespace BT

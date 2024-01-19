@@ -18,7 +18,7 @@
                     angle_tolerance=""
                     controller=""
                     dist_tolerance=""
-                    goal=""
+
                     planner=""
                     pose="{pose_a}"
                     server_timeout="5.000000"
@@ -28,7 +28,7 @@
                     angle_tolerance=""
                     controller=""
                     dist_tolerance=""
-                    goal=""
+
                     planner=""
                     pose="{pose_b}"
                     server_timeout="5.000000"

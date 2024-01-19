@@ -1,7 +1,7 @@
 #include <behaviortree_cpp_v3/action_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
-#include "thorp_bt_cpp/action_client_node.hpp"
+#include "thorp_bt_cpp/ros_action_node.hpp"
 
 #include <mbf_msgs/ExePathAction.h>
 
@@ -10,34 +10,46 @@ namespace ttk = thorp::toolkit;
 
 namespace thorp::bt::actions
 {
-class ExePath : public BT::SimpleActionClientNode<mbf_msgs::ExePathAction>
+class ExePath : public BT::RosActionNode<mbf_msgs::ExePathAction>
 {
 public:
-  ExePath(const std::string& name, const BT::NodeConfiguration& config) : SimpleActionClientNode(name, config)
+  ExePath(const std::string& name, const BT::NodeConfiguration& config) : RosActionNode(name, config)
   {
   }
 
   static BT::PortsList providedPorts()
   {
-    BT::PortsList ports = BT::SimpleActionClientNode<ActionType>::providedPorts();
+    BT::PortsList ports = BT::RosActionNode<ActionType>::providedPorts();
     ports["action_name"].setDefaultValue("move_base_flex/exe_path");
-    ports.insert({ BT::InputPort<std::string>("controller"),
-                   BT::InputPort<nav_msgs::Path>("path"),
-                   BT::OutputPort<unsigned int>("error"),
-                   BT::OutputPort<std::optional<mbf_msgs::ExePathFeedback>>("feedback") });
+    ports.insert({ BT::InputPort<std::string>("controller"),  //
+                   BT::InputPort<nav_msgs::Path>("path"),     //
+                   BT::OutputPort<unsigned int>("error"),     //
+                   BT::OutputPort<std::optional<FeedbackType>>("feedback") });
     return ports;
   }
 
-  bool setGoal(GoalType& goal) override
+  std::optional<GoalType> getGoal() override
   {
-    goal.controller = *getInput<std::string>("controller");
-    goal.path = *getInput<nav_msgs::Path>("path");
-    return true;
+    GoalType new_goal;
+    new_goal.controller = *getInput<std::string>("controller");
+    new_goal.path = *getInput<nav_msgs::Path>("path");
+
+    if (!current_goal_ || *current_goal_ != new_goal)
+    {
+      current_goal_ = new_goal;
+      return current_goal_;
+    }
+    return std::nullopt;
   }
 
   void onFeedback(const FeedbackConstPtr& feedback) override
   {
-    setOutput("feedback", std::make_optional<mbf_msgs::ExePathFeedback>(*feedback));
+    setOutput("feedback", std::make_optional<FeedbackType>(*feedback));
+  }
+
+  void onFinished() override
+  {
+    current_goal_.reset();
   }
 
   BT::NodeStatus onAborted(const ResultConstPtr& res) override
@@ -53,6 +65,8 @@ public:
   }
 
 private:
+  std::optional<GoalType> current_goal_;
+
   BT_REGISTER_NODE(ExePath);
 };
 }  // namespace thorp::bt::actions

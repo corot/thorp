@@ -1,7 +1,7 @@
 #include <behaviortree_cpp_v3/action_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
-#include "thorp_bt_cpp/action_client_node.hpp"
+#include "thorp_bt_cpp/ros_action_node.hpp"
 
 #include <moveit_msgs/CollisionObject.h>
 #include <thorp_msgs/DragAndDropAction.h>
@@ -11,16 +11,16 @@ namespace thorp::bt::actions
 /**
  * Wait for user to drag and drop a tabletop object and return its name, pickup and place poses.
  */
-class DragAndDrop : public BT::SimpleActionClientNode<thorp_msgs::DragAndDropAction>
+class DragAndDrop : public BT::RosActionNode<thorp_msgs::DragAndDropAction>
 {
 public:
-  DragAndDrop(const std::string& name, const BT::NodeConfiguration& config) : SimpleActionClientNode(name, config)
+  DragAndDrop(const std::string& name, const BT::NodeConfiguration& config) : RosActionNode(name, config)
   {
   }
 
   static BT::PortsList providedPorts()
   {
-    BT::PortsList ports = BT::SimpleActionClientNode<ActionType>::providedPorts();
+    BT::PortsList ports = BT::RosActionNode<ActionType>::providedPorts();
     ports["action_name"].setDefaultValue("drag_and_drop");
     ports.insert({ // BT::InputPort<std::string>("output_frame"),                           // TODO
                    BT::InputPort<std::vector<moveit_msgs::CollisionObject>>("objects"),  //
@@ -32,16 +32,21 @@ public:
     return ports;
   }
 
-  bool setGoal(GoalType& goal) override
+  std::optional<GoalType> getGoal() override
   {
+    if (status() == BT::NodeStatus::RUNNING)
+      return std::nullopt;
+
     ros::NodeHandle pnh("~");
+
+    GoalType goal;
     goal.output_frame = pnh.param("picking_planning_frame", std::string("arm_base_link"));
     const auto objects = *getInput<std::vector<moveit_msgs::CollisionObject>>("objects");
     std::for_each(objects.begin(), objects.end(), [&](const auto& o) { goal.object_names.push_back(o.id); });
-    return true;
+    return goal;
   }
 
-  BT::NodeStatus onSuccess(const ResultConstPtr& res) override
+  BT::NodeStatus onSucceeded(const ResultConstPtr& res) override
   {
     ROS_INFO_STREAM_NAMED(name(), "Drag and drop " << res->object_name);
     setOutput("object_name", res->object_name);

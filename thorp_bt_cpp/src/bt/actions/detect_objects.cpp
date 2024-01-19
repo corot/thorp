@@ -1,7 +1,7 @@
 #include <behaviortree_cpp_v3/action_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
-#include "thorp_bt_cpp/action_client_node.hpp"
+#include "thorp_bt_cpp/ros_action_node.hpp"
 
 #include <moveit_msgs/CollisionObject.h>
 #include <thorp_msgs/DetectObjectsAction.h>
@@ -20,16 +20,16 @@ namespace thorp::bt::actions
  * All detected objects and the support surface will be added to the planning scene as collision objects.
  * If clear_scene is true, the planning scene will be previously emptied.
  */
-class DetectObjects : public BT::SimpleActionClientNode<thorp_msgs::DetectObjectsAction>
+class DetectObjects : public BT::RosActionNode<thorp_msgs::DetectObjectsAction>
 {
 public:
-  DetectObjects(const std::string& name, const BT::NodeConfiguration& config) : SimpleActionClientNode(name, config)
+  DetectObjects(const std::string& name, const BT::NodeConfiguration& config) : RosActionNode(name, config)
   {
   }
 
   static BT::PortsList providedPorts()
   {
-    BT::PortsList ports = BT::SimpleActionClientNode<ActionType>::providedPorts();
+    BT::PortsList ports = BT::RosActionNode<ActionType>::providedPorts();
     ports["action_name"].setDefaultValue("object_detection");
     ports.insert({ BT::InputPort<std::string>("object_types"),                            //
                    BT::OutputPort<std::vector<moveit_msgs::CollisionObject>>("objects"),  //
@@ -37,11 +37,15 @@ public:
     return ports;
   }
 
-  bool setGoal(GoalType& goal) override
+  std::optional<GoalType> getGoal() override
   {
+    if (status() == BT::NodeStatus::RUNNING)
+      return std::nullopt;
+
+    GoalType goal;
     goal.clear_scene = false;
     // TODO goal.output_frame = *getInput<std::string>("support_surf");
-    return true;
+    return goal;
   }
 
   void onFeedback(const FeedbackConstPtr& feedback) override
@@ -49,7 +53,7 @@ public:
     setOutput("feedback", std::make_optional<FeedbackType>(*feedback));
   }
 
-  BT::NodeStatus onSuccess(const ResultConstPtr& res) override
+  BT::NodeStatus onSucceeded(const ResultConstPtr& res) override
   {
     std::unordered_set<std::string> valid_targets;
     auto object_types_csv = *getInput<std::string>("object_types");

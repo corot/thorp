@@ -1,22 +1,22 @@
 #include <behaviortree_cpp_v3/action_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
-#include "thorp_bt_cpp/action_client_node.hpp"
+#include "thorp_bt_cpp/ros_action_node.hpp"
 
 #include <mbf_msgs/GetPathAction.h>
 
 namespace thorp::bt::actions
 {
-class GetPath : public BT::SimpleActionClientNode<mbf_msgs::GetPathAction>
+class GetPath : public BT::RosActionNode<mbf_msgs::GetPathAction>
 {
 public:
-  GetPath(const std::string& name, const BT::NodeConfiguration& config) : SimpleActionClientNode(name, config)
+  GetPath(const std::string& name, const BT::NodeConfiguration& config) : RosActionNode(name, config)
   {
   }
 
   static BT::PortsList providedPorts()
   {
-    BT::PortsList ports = BT::SimpleActionClientNode<ActionType>::providedPorts();
+    BT::PortsList ports = BT::RosActionNode<ActionType>::providedPorts();
     ports["action_name"].setDefaultValue("move_base_flex/get_path");
     ports.insert({ BT::InputPort<std::string>("planner"),                     //
                    BT::InputPort<geometry_msgs::PoseStamped>("target_pose"),  //
@@ -25,11 +25,15 @@ public:
     return ports;
   }
 
-  bool setGoal(GoalType& goal) override
+  std::optional<GoalType> getGoal() override
   {
+    if (status() == BT::NodeStatus::RUNNING)
+      return std::nullopt;
+
+    GoalType goal;
     goal.planner = *getInput<std::string>("planner");
     goal.target_pose = *getInput<geometry_msgs::PoseStamped>("target_pose");
-    return true;
+    return goal;
   }
 
   void onFeedback(const FeedbackConstPtr& feedback) override

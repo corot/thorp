@@ -1,7 +1,7 @@
 #include <behaviortree_cpp_v3/action_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
-#include "thorp_bt_cpp/action_client_node.hpp"
+#include "thorp_bt_cpp/ros_action_node.hpp"
 
 #include <thorp_msgs/PickupObjectAction.h>
 
@@ -10,16 +10,16 @@ namespace thorp::bt::actions
 /**
  * Pickup a given object from a support surface.
  */
-class PickupObject : public BT::SimpleActionClientNode<thorp_msgs::PickupObjectAction>
+class PickupObject : public BT::RosActionNode<thorp_msgs::PickupObjectAction>
 {
 public:
-  PickupObject(const std::string& name, const BT::NodeConfiguration& config) : SimpleActionClientNode(name, config)
+  PickupObject(const std::string& name, const BT::NodeConfiguration& config) : RosActionNode(name, config)
   {
   }
 
   static BT::PortsList providedPorts()
   {
-    BT::PortsList ports = BT::SimpleActionClientNode<ActionType>::providedPorts();
+    BT::PortsList ports = BT::RosActionNode<ActionType>::providedPorts();
     ports["action_name"].setDefaultValue("pickup_object");
     ports.insert({ BT::InputPort<std::string>("object_name"),   //
                    BT::InputPort<std::string>("support_surf"),  //
@@ -30,15 +30,19 @@ public:
     return ports;
   }
 
-  bool setGoal(GoalType& goal) override
+  std::optional<GoalType> getGoal() override
   {
+    if (status() == BT::NodeStatus::RUNNING)
+      return std::nullopt;
+
+    GoalType goal;
     goal.object_name = *getInput<std::string>("object_name");
     goal.support_surf = *getInput<std::string>("support_surf");
     goal.max_effort = *getInput<double>("max_effort");
     goal.tightening = *getInput<double>("tightening");
     // TODO param gripper_max_effort = 0.5
     // TODO param gripper_tightening = 0.002
-    return true;
+    return goal;
   }
 
   void onFeedback(const FeedbackConstPtr& feedback) override

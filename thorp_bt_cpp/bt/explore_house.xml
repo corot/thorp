@@ -8,7 +8,7 @@
         </Inverter>
         <Sequence>
           <SegmentRooms action_name="exploration/room_segmentation"
-                        goal=""
+
                         server_timeout="5.000000"
                         map_image="{map_image}"
                         map_origin="{map_origin}"
@@ -21,7 +21,7 @@
                         error=""
                         robot_pose="{robot_pose}"/>
           <PlanRoomSequence action_name="exploration/room_sequence_planning"
-                            goal=""
+
                             map_image="{map_image}"
                             map_origin="{map_origin}"
                             map_resolution="{map_resolution}"
@@ -44,7 +44,7 @@
                                element="{room_number}"
                                list="{room_sequence}"/>
               <PlanRoomExploration action_name="exploration/room_exploration"
-                                   goal=""
+
                                    map_image="{map_image}"
                                    map_origin="{map_origin}"
                                    map_resolution="{map_resolution}"
@@ -67,7 +67,6 @@
                       angle_tolerance="3.15"
                       controller="TEBPlanner"
                       dist_tolerance="0.3"
-                      goal=""
                       planner=""
                       pose="{start_pose}"
                       server_timeout="5.000000"
@@ -86,12 +85,12 @@
                                 waypoints="{coverage_waypoints}"
                                 path="{coverage_path}"/>
                     <ExePath action_name="move_base_flex/exe_path"
-                                   controller="TEBPlanner"
-                                   goal=""
-                                   path="{coverage_path}"
-                                   server_timeout="5.000000"
-                                   error="{exe_path_error}"
-                                   feedback="{exe_path_feedback}"/>
+                             controller="TEBPlanner"
+
+                             path="{coverage_path}"
+                             server_timeout="5.000000"
+                             error="{exe_path_error}"
+                             feedback="{exe_path_feedback}"/>
                   </Sequence>
                   <ReactiveSequence>
                     <GetRobotPose timeout="1"
@@ -113,7 +112,6 @@
                                   angle_tolerance="3.15"
                                   controller="TEBPlanner"
                                   dist_tolerance="0.3"
-                                  goal=""
                                   planner=""
                                   pose="{next_waypoint_pose}"
                                   server_timeout="5.000000"

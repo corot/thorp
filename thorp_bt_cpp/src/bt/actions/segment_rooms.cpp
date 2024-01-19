@@ -1,7 +1,7 @@
 #include <behaviortree_cpp_v3/action_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
-#include "thorp_bt_cpp/action_client_node.hpp"
+#include "thorp_bt_cpp/ros_action_node.hpp"
 
 #include <nav_msgs/OccupancyGrid.h>
 #include <ipa_building_msgs/MapSegmentationAction.h>
@@ -11,35 +11,39 @@ namespace ttk = thorp::toolkit;
 
 namespace thorp::bt::actions
 {
-class SegmentRooms : public BT::SimpleActionClientNode<ipa_building_msgs::MapSegmentationAction>
+class SegmentRooms : public BT::RosActionNode<ipa_building_msgs::MapSegmentationAction>
 {
 public:
-  SegmentRooms(const std::string& name, const BT::NodeConfiguration& config) : SimpleActionClientNode(name, config)
+  SegmentRooms(const std::string& name, const BT::NodeConfiguration& config) : RosActionNode(name, config)
   {
   }
 
   static BT::PortsList providedPorts()
   {
-    BT::PortsList ports = BT::SimpleActionClientNode<ActionType>::providedPorts();
+    BT::PortsList ports = BT::RosActionNode<ActionType>::providedPorts();
     ports["action_name"].setDefaultValue("exploration/room_segmentation");
-    ports.insert({ BT::OutputPort<sensor_msgs::Image>("map_image"),
-                   BT::OutputPort<geometry_msgs::Pose>("map_origin"),
-                   BT::OutputPort<float>("map_resolution"),
-                   BT::OutputPort<float>("robot_radius"),
-                   BT::OutputPort<sensor_msgs::Image>("segmented_map"),
+    ports.insert({ BT::OutputPort<sensor_msgs::Image>("map_image"),      //
+                   BT::OutputPort<geometry_msgs::Pose>("map_origin"),    //
+                   BT::OutputPort<float>("map_resolution"),              //
+                   BT::OutputPort<float>("robot_radius"),                //
+                   BT::OutputPort<sensor_msgs::Image>("segmented_map"),  //
                    BT::OutputPort<std::vector<ipa_building_msgs::RoomInformation>>("room_information_in_meter"),
                    BT::OutputPort<std::vector<ipa_building_msgs::RoomInformation>>("room_information_in_pixel") });
     return ports;
   }
 
-  bool setGoal(GoalType& goal) override
+  std::optional<GoalType> getGoal() override
   {
+    if (status() == BT::NodeStatus::RUNNING)
+      return std::nullopt;
+
     auto map = ttk::waitForMessage<nav_msgs::OccupancyGrid>("map");
     if (!map)
     {
       ROS_ERROR_NAMED(name(), "Unable to retrieve map");
-      return false;
+      return std::nullopt;
     }
+    GoalType goal;
     goal.input_map.header = map->header;
     goal.input_map.height = map->info.height;
     goal.input_map.width = map->info.width;
@@ -69,10 +73,10 @@ public:
     setOutput("map_resolution", goal.map_resolution);
     setOutput("robot_radius", goal.robot_radius);
 
-    return true;
+    return goal;
   }
 
-  BT::NodeStatus onSuccess(const ResultConstPtr& res) override
+  BT::NodeStatus onSucceeded(const ResultConstPtr& res) override
   {
     setOutput("segmented_map", res->segmented_map);
     setOutput("room_information_in_meter", res->room_information_in_meter);
