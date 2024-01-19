@@ -7,8 +7,7 @@ namespace thorp::bt::actions
 class Sleep : public BT::StatefulActionNode
 {
 public:
-  Sleep(const std::string& name, const BT::NodeConfiguration& config)
-    : StatefulActionNode(name, config)
+  Sleep(const std::string& name, const BT::NodeConfiguration& config) : StatefulActionNode(name, config)
   {
   }
 
@@ -17,6 +16,7 @@ public:
     return { BT::InputPort<double>("duration") };
   }
 
+private:
   BT::NodeStatus onStart() override
   {
     start_time_ = ros::Time::now();
@@ -33,7 +33,6 @@ public:
   {
   }
 
-private:
   ros::Time start_time_;
   ros::Duration duration_;
 

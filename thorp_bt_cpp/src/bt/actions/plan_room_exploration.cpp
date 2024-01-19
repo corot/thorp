@@ -37,6 +37,7 @@ public:
     return ports;
   }
 
+private:
   std::optional<GoalType> getGoal() override
   {
     if (status() == BT::NodeStatus::RUNNING)
@@ -84,7 +85,7 @@ public:
     goal.starting_position.theta = 0.0;  // it's ignored
 
     // keep room center to provide as coverage starting point on output
-    room_center = ttk::toPoint(room_info.room_center);
+    room_center_ = ttk::toPoint(room_info.room_center);
 
     // IDEA: can use room_info.room_min_max to avoid points colliding with the walls
 
@@ -109,18 +110,15 @@ ros::Timer fov_pub_timer = nh.createTimer(ros::Duration(0.1),
   BT::NodeStatus onSucceeded(const ResultConstPtr& res) override
   {
     // provide the starting pose, so we can move there before starting exploring; make it point to the first waypoint
-    double yaw = ttk::heading(room_center, res->coverage_path_pose_stamped.front().pose.position);
+    double yaw = ttk::heading(room_center_, res->coverage_path_pose_stamped.front().pose.position);
     geometry_msgs::PoseStamped start_pose;
-    setOutput("start_pose", ttk::createPoseStamped(room_center.x, room_center.y, yaw, "map"));
+    setOutput("start_pose", ttk::createPoseStamped(room_center_.x, room_center_.y, yaw, "map"));
 
     // Use the coverage path provided as a list of stamped poses
     setOutput("coverage_waypoints", res->coverage_path_pose_stamped);
 
     return BT::NodeStatus::SUCCESS;
   }
-
-private:
-  geometry_msgs::Point room_center;
 
   std::vector<geometry_msgs::Point32> loadFOVParam()
   {
@@ -152,6 +150,8 @@ private:
     }
     return fov_points;
   }
+
+  geometry_msgs::Point room_center_;
 
   BT_REGISTER_NODE(PlanRoomExploration);
 };

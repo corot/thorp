@@ -24,7 +24,8 @@ public:
     ports["action_name"].setDefaultValue("drag_and_drop");
     ports.insert({ // BT::InputPort<std::string>("output_frame"),                           // TODO
                    BT::InputPort<std::vector<moveit_msgs::CollisionObject>>("objects"),  //
-                   // BT::OutputPort<moveit_msgs::CollisionObject>("target_object"),        //  TODO
+                                                                                         // BT::OutputPort<moveit_msgs::CollisionObject>("target_object"),
+                                                                                         // //  TODO
                    BT::OutputPort<std::string>("object_name"),                 //
                    BT::OutputPort<geometry_msgs::PoseStamped>("pickup_pose"),  //
                    BT::OutputPort<geometry_msgs::PoseStamped>("place_pose"),   //
@@ -32,6 +33,7 @@ public:
     return ports;
   }
 
+private:
   std::optional<GoalType> getGoal() override
   {
     if (status() == BT::NodeStatus::RUNNING)
@@ -68,7 +70,6 @@ public:
     return BT::NodeStatus::FAILURE;
   }
 
-private:
   BT_REGISTER_NODE(DragAndDrop);
 };
 }  // namespace thorp::bt::actions

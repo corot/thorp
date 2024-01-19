@@ -32,6 +32,7 @@ public:
     return ports;
   }
 
+private:
   std::optional<GoalType> getGoal() override
   {
     if (status() == BT::NodeStatus::RUNNING)
@@ -85,7 +86,6 @@ public:
     return BT::NodeStatus::SUCCESS;
   }
 
-private:
   BT_REGISTER_NODE(SegmentRooms);
 };
 }  // namespace thorp::bt::actions

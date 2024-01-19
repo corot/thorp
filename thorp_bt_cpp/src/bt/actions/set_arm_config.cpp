@@ -21,11 +21,13 @@ public:
   {
     BT::PortsList ports = BT::RosActionNode<ActionType>::providedPorts();
     ports["action_name"].setDefaultValue("move_to_target");
-    ports.insert({ BT::InputPort<std::string>("configuration"), BT::OutputPort<unsigned int>("error"),
+    ports.insert({ BT::InputPort<std::string>("configuration"),  //
+                   BT::OutputPort<unsigned int>("error"),        //
                    BT::OutputPort<std::optional<FeedbackType>>("feedback") });
     return ports;
   }
 
+private:
   std::optional<GoalType> getGoal() override
   {
     if (status() == BT::NodeStatus::RUNNING)
@@ -50,7 +52,6 @@ public:
     return BT::NodeStatus::FAILURE;
   }
 
-private:
   BT_REGISTER_NODE(SetArmConfig);
 };
 }  // namespace thorp::bt::actions

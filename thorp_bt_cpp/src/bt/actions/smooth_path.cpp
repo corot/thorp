@@ -27,6 +27,7 @@ public:
     return ports;
   }
 
+private:
   void sendRequest(RequestType& request) override
   {
     request.max_steps = 5;
@@ -42,13 +43,12 @@ public:
     return BT::NodeStatus::SUCCESS;
   }
 
-  virtual BT::NodeStatus onFailedRequest(RosServiceNode::FailureCause failure) override
+  BT::NodeStatus onFailedRequest(RosServiceNode::FailureCause failure) override
   {
     ROS_ERROR("Smooth path failed %d", static_cast<int>(failure));
     return BT::NodeStatus::FAILURE;
   }
 
-private:
   BT_REGISTER_NODE(SmoothPath);
 };
 }  // namespace thorp::bt::actions

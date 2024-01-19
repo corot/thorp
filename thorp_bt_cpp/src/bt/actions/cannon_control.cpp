@@ -22,8 +22,7 @@ public:
   static BT::PortsList providedPorts()
   {
     return { BT::InputPort<geometry_msgs::PoseStamped>("robot_pose"),
-             BT::InputPort<geometry_msgs::PoseStamped>("target_pose"),
-             BT::OutputPort<float>("angle")};
+             BT::InputPort<geometry_msgs::PoseStamped>("target_pose"), BT::OutputPort<float>("angle") };
   }
 
 private:
@@ -65,6 +64,7 @@ public:
     return ports;
   }
 
+private:
   BT::NodeStatus onResponse(const ResponseType& response) override
   {
     if (response.error.code == thorp_msgs::ThorpError::SUCCESS)
@@ -89,6 +89,7 @@ public:
     return ports;
   }
 
+private:
   void sendRequest(RequestType& request) override
   {
     request.action = ServiceType::Request::TILT;
@@ -112,6 +113,7 @@ public:
     return ports;
   }
 
+private:
   void sendRequest(RequestType& request) override
   {
     request.action = ServiceType::Request::FIRE;

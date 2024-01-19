@@ -34,6 +34,7 @@ public:
     return ports;
   }
 
+private:
   std::optional<GoalType> getGoal() override
   {
     GoalType new_goal;
@@ -92,7 +93,6 @@ public:
     return BT::NodeStatus::FAILURE;
   }
 
-private:
   std::optional<GoalType> current_goal_;
   std::optional<ttk::Reconfigure> reconf_;
 

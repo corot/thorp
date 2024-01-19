@@ -23,6 +23,7 @@ public:
     return ports;
   }
 
+private:
   void sendRequest(RequestType& request) override
   {
   }
@@ -32,7 +33,6 @@ public:
     return BT::NodeStatus::SUCCESS;
   }
 
-private:
   BT_REGISTER_NODE(ClearCostmaps);
 };
 }  // namespace thorp::bt::actions

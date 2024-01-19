@@ -29,6 +29,7 @@ public:
     return ports;
   }
 
+private:
   std::optional<GoalType> getGoal() override
   {
     if (status() == BT::NodeStatus::RUNNING)
@@ -54,7 +55,6 @@ public:
     return BT::NodeStatus::FAILURE;
   }
 
-private:
   BT_REGISTER_NODE(PlaceObject);
 };
 }  // namespace thorp::bt::actions

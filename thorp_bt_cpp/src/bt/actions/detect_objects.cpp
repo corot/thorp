@@ -37,6 +37,7 @@ public:
     return ports;
   }
 
+private:
   std::optional<GoalType> getGoal() override
   {
     if (status() == BT::NodeStatus::RUNNING)
@@ -71,7 +72,7 @@ public:
     std::vector<moveit_msgs::CollisionObject> objects;
     for (const auto& object : res->objects)
     {
-      const auto obj_type = object.id.substr(0, object.id.find(' ')); // remove index
+      const auto obj_type = object.id.substr(0, object.id.find(' '));  // remove index
       if (valid_targets.empty() || valid_targets.find(obj_type) != valid_targets.end())
       {
         objects.emplace_back(object);
@@ -91,7 +92,6 @@ public:
     return BT::NodeStatus::FAILURE;
   }
 
-private:
   BT_REGISTER_NODE(DetectObjects);
 };
 }  // namespace thorp::bt::actions

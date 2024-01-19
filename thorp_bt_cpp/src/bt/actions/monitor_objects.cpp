@@ -1,7 +1,7 @@
 #include <behaviortree_cpp_v3/action_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
-#include "thorp_bt_cpp/subscriber_node.hpp"
+#include "thorp_bt_cpp/ros_subscriber_node.hpp"
 
 #include <cob_perception_msgs/DetectionArray.h>
 
@@ -15,16 +15,16 @@ namespace thorp::bt::actions
  * Monitor tracked objects for a subset of objects.
  * @return BT::NodeStatus Returns SUCCESS if a tracked object is seen before timeout, FAILURE otherwise
  */
-class MonitorObjects : public BT::SubscriberNode<cob_perception_msgs::DetectionArray>
+class MonitorObjects : public BT::RosSubscriberNode<cob_perception_msgs::DetectionArray>
 {
 public:
-  MonitorObjects(const std::string& name, const BT::NodeConfiguration& conf) : SubscriberNode(name, conf)
+  MonitorObjects(const std::string& name, const BT::NodeConfiguration& conf) : RosSubscriberNode(name, conf)
   {
   }
 
   static BT::PortsList providedPorts()
   {
-    BT::PortsList ports = BT::SubscriberNode<cob_perception_msgs::DetectionArray>::providedPorts();
+    BT::PortsList ports = BT::RosSubscriberNode<cob_perception_msgs::DetectionArray>::providedPorts();
     ports["topic_name"].setDefaultValue("tracked_objects");
     ports.insert({ BT::InputPort<std::string>("target_objects", "Comma-separated list of objects to track"),
                    BT::OutputPort<cob_perception_msgs::Detection>("tracked_object"),
@@ -32,7 +32,7 @@ public:
     return ports;
   }
 
-protected:
+private:
   void onStarted() override
   {
     auto target_objects_csv = getInput<std::string>("target_objects");
@@ -64,7 +64,6 @@ protected:
     return BT::NodeStatus::RUNNING;
   }
 
-private:
   std::unordered_set<std::string> valid_targets_;
 
   BT_REGISTER_NODE(MonitorObjects);

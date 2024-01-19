@@ -23,6 +23,7 @@ public:
              BT::OutputPort<geometry_msgs::PoseStamped>("robot_pose") };
   }
 
+private:
   BT::NodeStatus onStart() override
   {
     timeout_.fromSec(*getInput<double>("timeout"));
@@ -41,7 +42,7 @@ public:
     }
 
     ROS_ERROR_NAMED(name(), "Could not get the current robot pose");
-    setOutput("error",  mbf_msgs::ExePathResult::TF_ERROR);
+    setOutput("error", mbf_msgs::ExePathResult::TF_ERROR);
 
     return BT::NodeStatus::FAILURE;
   }
@@ -50,7 +51,6 @@ public:
   {
   }
 
-private:
   ros::Duration timeout_;
 
   BT_REGISTER_NODE(GetRobotPose);

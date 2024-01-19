@@ -28,6 +28,7 @@ public:
     return ports;
   }
 
+private:
   void sendRequest(RequestType& request) override
   {
   }
@@ -42,7 +43,6 @@ public:
     return BT::NodeStatus::FAILURE;
   }
 
-private:
   BT_REGISTER_NODE(ObjectAttached);
 };
 }  // namespace thorp::bt::actions

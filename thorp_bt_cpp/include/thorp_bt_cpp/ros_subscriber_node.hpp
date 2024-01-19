@@ -19,18 +19,18 @@ namespace BT
  * timeout (sec).
  */
 template <class SubscriberT>
-class SubscriberNode : public BT::StatefulActionNode
+class RosSubscriberNode : public BT::StatefulActionNode
 {
 public:
   using SubscriberType = SubscriberT;
 
-  SubscriberNode(const std::string& name, const BT::NodeConfiguration& conf) : BT::StatefulActionNode(name, conf)
+  RosSubscriberNode(const std::string& name, const BT::NodeConfiguration& conf) : BT::StatefulActionNode(name, conf)
   {
   }
 
-  SubscriberNode() = delete;
+  RosSubscriberNode() = delete;
 
-  virtual ~SubscriberNode() = default;
+  virtual ~RosSubscriberNode() = default;
 
   static PortsList providedPorts()
   {
@@ -48,7 +48,7 @@ public:
     if (!topic_.empty())
     {
       onStarted();
-      sub_ = ros::NodeHandle().subscribe(topic_, 1, &SubscriberNode::callback, this);
+      sub_ = ros::NodeHandle().subscribe(topic_, 1, &RosSubscriberNode::callback, this);
     }
     else
     {
@@ -188,7 +188,7 @@ protected:
   }
 
 private:
-  static constexpr auto LOGNAME = "SubscriberNode";
+  static constexpr auto LOGNAME = "RosSubscriberNode";
 
   std::optional<SubscriberT> nmsg_;
   SubscriberT msg_;
@@ -218,7 +218,7 @@ static void RegisterSubscriber(BT::BehaviorTreeFactory& factory, const std::stri
   manifest.type = getType<DerivedT>();
   manifest.ports = DerivedT::providedPorts();
   manifest.registration_ID = registration_ID;
-  const auto& basic_ports = SubscriberNode<typename DerivedT::SubscriberType>::providedPorts();
+  const auto& basic_ports = RosSubscriberNode<typename DerivedT::SubscriberType>::providedPorts();
   manifest.ports.insert(basic_ports.begin(), basic_ports.end());
   factory.registerBuilder(manifest, builder);
 }

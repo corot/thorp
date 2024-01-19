@@ -8,8 +8,7 @@ namespace thorp::bt::decorators
 class StoreResult : public BT::DecoratorNode
 {
 public:
-  StoreResult(const std::string& name, const BT::NodeConfiguration& config)
-    : DecoratorNode(name, config)
+  StoreResult(const std::string& name, const BT::NodeConfiguration& config) : DecoratorNode(name, config)
   {
   }
 
@@ -18,6 +17,7 @@ public:
     return { BT::OutputPort<bool>("result") };
   }
 
+private:
   BT::NodeStatus tick() override
   {
     // tick child
@@ -32,12 +32,11 @@ public:
     // child has finished execution
     haltChild();
 
-    setOutput("result", child_status == BT::NodeStatus::SUCCESS ? true : false);
+    setOutput("result", child_status == BT::NodeStatus::SUCCESS);
 
     return child_status;
   }
 
-private:
   BT_REGISTER_NODE(StoreResult);
 };
 }  // namespace thorp::bt::decorators
