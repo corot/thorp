@@ -1,7 +1,7 @@
 #include <behaviortree_cpp_v3/action_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
-#include "thorp_bt_cpp/service_client_node.hpp"
+#include "thorp_bt_cpp/ros_service_node.hpp"
 
 #include <std_srvs/Trigger.h>
 
