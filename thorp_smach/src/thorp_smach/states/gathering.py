@@ -7,7 +7,7 @@ from thorp_msgs.msg import PlanPickingAction
 
 from .costmaps import TableAsObstacle
 from .semantics import TableMarkVisited
-from .perception import MonitorTables, ObjectDetection, ObjectsDetected, ClearMarkers
+from .perception import MonitorTables, DetectObjects, ObjectsDetected, ClearMarkers
 from .navigation import GetRobotPose, AreSamePose, GoToPose, AlignToTable, DetachFromTable
 from .manipulation import ClearPlanningScene
 from .pickup_objs import PickupReachableObjs
@@ -164,7 +164,7 @@ class GatherObjects(smach.StateMachine):
                                                 'aborted': 'aborted',
                                                 'preempted': 'preempted'},
                                    remapping={'pose': 'closest_picking_pose'})
-            smach.StateMachine.add('DETECT_OBJECTS', ObjectDetection(),
+            smach.StateMachine.add('DETECT_OBJECTS', DetectObjects(),
                                    transitions={'succeeded': 'TABLE_VISITED',
                                                 'aborted': 'aborted',
                                                 'preempted': 'preempted'})
@@ -241,7 +241,7 @@ class GatherObjects(smach.StateMachine):
                                                 'aborted': 'aborted',  # restore original configuration on error
                                                 'preempted': 'preempted',
                                                 'tray_full': 'tray_full'})
-            smach.StateMachine.add('DETECT_OBJECTS', ObjectDetection(),
+            smach.StateMachine.add('DETECT_OBJECTS', DetectObjects(),
                                    transitions={'succeeded': 'OBJECTS_LEFT?',
                                                 'aborted': 'aborted',
                                                 'preempted': 'preempted'})

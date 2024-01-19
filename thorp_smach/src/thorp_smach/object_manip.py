@@ -11,7 +11,7 @@ import thorp_msgs.msg as thorp_msgs
 import arbotix_msgs.srv as arbotix_srvs
 
 from thorp_smach.states.common import ExecuteUserCommand
-from thorp_smach.states.perception import ObjectDetection
+from thorp_smach.states.perception import DetectObjects
 from thorp_smach.states.manipulation import FoldArm, PickupObject, PlaceObject, ClearPlanningScene
 
 from thorp_smach.utils import run_sm
@@ -48,13 +48,13 @@ with sm:
 
     smach.StateMachine.add('EXE_USER_CMD',
                            ExecuteUserCommand(rospy.get_param('object_manip_user_commands/valid_commands')),
-                           transitions={'start': 'OBJECT_DETECTION',
-                                        'reset': 'OBJECT_DETECTION',
+                           transitions={'start': 'DETECT_OBJECTS',
+                                        'reset': 'DETECT_OBJECTS',
                                         'clear': 'CLEAR_GRIPPER',
                                         'fold': 'FOLD_ARM',
                                         'stop': 'FOLD_ARM_AND_RELAX',
                                         'invalid_command': 'error'})
-    smach.StateMachine.add('OBJECT_DETECTION', ObjectDetection(),
+    smach.StateMachine.add('DETECT_OBJECTS', DetectObjects(),
                            transitions={'succeeded': 'DRAG_AND_DROP',
                                         'preempted': 'preempted',
                                         'aborted': 'aborted'})
@@ -69,15 +69,15 @@ with sm:
                                                        result_slots=['pickup_pose', 'place_pose']),
                            transitions={'succeeded': 'PICKUP_OBJECT',
                                         'preempted': 'preempted',
-                                        'aborted': 'OBJECT_DETECTION'})
+                                        'aborted': 'DETECT_OBJECTS'})
     smach.StateMachine.add('PICKUP_OBJECT',
                            PickupObject(),
                            transitions={'succeeded': 'PLACE_OBJECT',
                                         'preempted': 'preempted',
-                                        'aborted': 'OBJECT_DETECTION'})
+                                        'aborted': 'DETECT_OBJECTS'})
     smach.StateMachine.add('PLACE_OBJECT',
                            PlaceObject(),
-                           transitions={'succeeded': 'OBJECT_DETECTION',
+                           transitions={'succeeded': 'DETECT_OBJECTS',
                                         'preempted': 'preempted',
                                         'aborted': 'CLEAR_GRIPPER'})
     smach.StateMachine.add('CLEAR_GRIPPER',
@@ -87,9 +87,9 @@ with sm:
                                         'aborted': 'aborted'})
     smach.StateMachine.add('FOLD_ARM',
                            FoldArm(),
-                           transitions={'succeeded': 'OBJECT_DETECTION',
+                           transitions={'succeeded': 'DETECT_OBJECTS',
                                         'preempted': 'preempted',
-                                        'aborted': 'OBJECT_DETECTION'})
+                                        'aborted': 'DETECT_OBJECTS'})
     smach.StateMachine.add('FOLD_ARM_AND_RELAX',
                            FoldArm(),
                            transitions={'succeeded': 'RELAX_ARM_AND_STOP',

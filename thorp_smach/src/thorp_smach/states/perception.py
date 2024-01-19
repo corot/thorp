@@ -14,9 +14,9 @@ from thorp_toolkit.geometry import point3d2str, pose2d2str, TF2, to_transform
 from .. import config as cfg
 
 
-class ObjectDetection(smach_ros.SimpleActionState):
+class DetectObjects(smach_ros.SimpleActionState):
     """
-    Object detection state:
+    Detect objects state:
     Tries to segment a support surface and classify the tabletop objects found on it. Returns only the
     objects of types listed on 'object_types' input key (or all if it's not provided).
     As output, it returns the objects as a list of moveit_msgs/CollisionObject msgs and a single msg for
@@ -26,12 +26,12 @@ class ObjectDetection(smach_ros.SimpleActionState):
     """
 
     def __init__(self, clear_scene=False):
-        super(ObjectDetection, self).__init__('object_detection',
-                                              thorp_msgs.DetectObjectsAction,
-                                              goal_cb=self.goal_cb,
-                                              result_cb=self.result_cb,
-                                              input_keys=['object_types'],
-                                              output_keys=['objects', 'surface'])
+        super(DetectObjects, self).__init__('object_detection',
+                                            thorp_msgs.DetectObjectsAction,
+                                            goal_cb=self.goal_cb,
+                                            result_cb=self.result_cb,
+                                            input_keys=['object_types'],
+                                            output_keys=['objects', 'surface'])
         self.clear_scene = clear_scene
 
     def goal_cb(self, ud, goal):

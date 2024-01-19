@@ -213,7 +213,7 @@ class PlaceOnTray(smach.Sequence):
         self.userdata.surface = PlanningScene().get_obj('tray')
 
         with self:
-            smach.Sequence.add('POSE_ON_TRAY', GetPoseOnTray(tray_link))
+            smach.Sequence.add('POSE_ON_TRAY', NextPoseOnTray(tray_link))
             smach.Sequence.add('PLACE_ON_TRAY', PlaceObject(),
                                remapping={'place_pose': 'pose_on_tray'})
             smach.Sequence.add('AT_TRAY_LEVEL', TranslatePose(-cfg.PLACING_HEIGHT_ON_TRAY, 'z'),
@@ -221,15 +221,14 @@ class PlaceOnTray(smach.Sequence):
             smach.Sequence.add('MOVE_TO_TRAY', MoveObjToTray())
 
 
-class GetPoseOnTray(smach.State):
+class NextPoseOnTray(smach.State):
     """
-    Calculate the next pose within the tray to use.
+    Calculate the next pose where to put an object on the tray.
     """
 
     def __init__(self, tray_link):
         smach.State.__init__(self,
                              outcomes=['succeeded', 'tray_full'],
-                             input_keys=['tray'],
                              output_keys=['pose_on_tray'])
         self.tray_link = tray_link
         self.tray_full = False

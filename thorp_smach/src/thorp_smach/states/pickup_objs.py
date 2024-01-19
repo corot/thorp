@@ -5,7 +5,7 @@ import smach
 
 from thorp_toolkit.geometry import TF2, distance_2d
 
-from .perception import ObjectDetection
+from .perception import DetectObjects
 from .manipulation import ClearGripper, ClearPlanningScene, FoldArm, PickupObject, PlaceOnTray
 
 from ..containers.do_on_exit import DoOnExit as DoOnExitContainer
@@ -122,7 +122,7 @@ class PickupReachableObjs(DoOnExitContainer):
 
         pickup_1_obj_sm.userdata.max_effort = cfg.GRIPPER_MAX_EFFORT
         with pickup_1_obj_sm:
-            smach.StateMachine.add('DETECT_OBJECTS', ObjectDetection(),
+            smach.StateMachine.add('DETECT_OBJECTS', DetectObjects(),
                                    transitions={'succeeded': 'SELECT_TARGET',
                                                 'aborted': 'aborted',
                                                 'preempted': 'preempted'})
@@ -166,7 +166,7 @@ class PickupReachableObjs(DoOnExitContainer):
                                    transitions={'succeeded': 'DETECT_OBJECTS',
                                                 'preempted': 'preempted',
                                                 'aborted': 'aborted'})
-            smach.StateMachine.add('DETECT_OBJECTS', ObjectDetection(),
+            smach.StateMachine.add('DETECT_OBJECTS', DetectObjects(),
                                    transitions={'succeeded': 'SELECT_TARGET',
                                                 'aborted': 'aborted',
                                                 'preempted': 'preempted'})

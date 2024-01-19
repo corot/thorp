@@ -13,7 +13,7 @@ from thorp_toolkit.geometry import TF2, get_size_from_co, distance_2d, heading
 
 from thorp_smach.states.common import ExecuteUserCommand
 from thorp_smach.states.geometry import TranslatePose
-from thorp_smach.states.perception import ObjectDetection
+from thorp_smach.states.perception import DetectObjects
 from thorp_smach.states.manipulation import FoldArm, PickupObject, PlaceObject, DisplaceObject
 
 from thorp_smach.utils import run_sm
@@ -84,20 +84,20 @@ with sm:
 
     smach.StateMachine.add('EXE_USER_CMD',
                            ExecuteUserCommand(['start', 'stop', 'fold', 'clear']),
-                           transitions={'start': 'OBJECT_DETECTION',
+                           transitions={'start': 'DETECT_OBJECTS',
                                         'fold': 'FOLD_ARM',
                                         'clear': 'CLEAR_GRIPPER',
                                         'stop': 'FOLD_ARM_AND_RELAX',
                                         'invalid_command': 'error'})
-    smach.StateMachine.add('OBJECT_DETECTION',
-                           ObjectDetection(),
+    smach.StateMachine.add('DETECT_OBJECTS',
+                           DetectObjects(),
                            transitions={'succeeded': 'GET_DETECTED_CUBES',
                                         'preempted': 'preempted',
                                         'aborted': 'error'})
     smach.StateMachine.add('GET_DETECTED_CUBES',
                            GetDetectedCubes(),
                            transitions={'succeeded': 'STACK_CUBES',
-                                        'retry': 'OBJECT_DETECTION'})
+                                        'retry': 'DETECT_OBJECTS'})
 
     # Stack cubes sub state machine; iterates over the detected cubes and stack them over the one most in front of the arm
     sc_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted'],
@@ -141,14 +141,14 @@ with sm:
                             'aborted': 'error'})
     smach.StateMachine.add('CLEAR_GRIPPER',
                            smach_ros.ServiceState('clear_gripper', std_srvs.Empty),
-                           transitions={'succeeded': 'OBJECT_DETECTION',
+                           transitions={'succeeded': 'DETECT_OBJECTS',
                                         'preempted': 'preempted',
                                         'aborted': 'aborted'})
     smach.StateMachine.add('FOLD_ARM',
                            FoldArm(),
-                           transitions={'succeeded': 'OBJECT_DETECTION',
+                           transitions={'succeeded': 'DETECT_OBJECTS',
                                         'preempted': 'preempted',
-                                        'aborted': 'OBJECT_DETECTION'})
+                                        'aborted': 'DETECT_OBJECTS'})
     smach.StateMachine.add('FOLD_ARM_AND_RELAX',
                            FoldArm(),
                            transitions={'succeeded': 'RELAX_ARM_AND_STOP',
