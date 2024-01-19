@@ -256,7 +256,6 @@
         <Decorator ID="StoreResult">
             <output_port name="result" type="bool"/>
         </Decorator>
-        <Control ID="SuperReactiveSequence"/>
         <Condition ID="TargetReachable">
             <input_port name="follow_feedback" type="thorp_msgs::FollowPoseFeedback_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="max_angle" type="float"/>
