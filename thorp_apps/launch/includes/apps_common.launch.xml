@@ -45,9 +45,6 @@
     <rosparam file="$(find thorp_bringup)/param/named_configs/waypoints_following.yaml" command="load" ns="waypoints_following"/>
   </group>
 
-  <!--  ***************** Visual aids *****************  -->
-  <node pkg="thorp_bringup" type="show_velocity.py" name="show_velocity" output="screen" respawn="true"/>
-
   <!--  ********* Executive and visualization *********  -->
   <group if="$(eval executive == 'smach')">
     <node pkg="thorp_smach" type="$(arg app_name).py" name="$(arg app_name)" output="screen" respawn="false">
