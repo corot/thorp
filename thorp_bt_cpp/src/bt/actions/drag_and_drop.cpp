@@ -50,7 +50,7 @@ public:
   {
     ROS_INFO_STREAM_NAMED(name(), "Drag and drop " << res->object_name);
     setOutput("object_name", res->object_name);
-    setOutput("pickup_pose", res->pick_pose);
+    setOutput("pickup_pose", res->pickup_pose);
     setOutput("place_pose", res->place_pose);
 
     return BT::NodeStatus::SUCCESS;

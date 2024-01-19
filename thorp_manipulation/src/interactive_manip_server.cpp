@@ -91,9 +91,9 @@ public:
   {
     thorp_msgs::DragAndDropResult result;
     result.object_name = marker_name;
-    result.pick_pose.header = poses_header;
+    result.pickup_pose.header = poses_header;
     result.place_pose.header = poses_header;
-    result.pick_pose.pose = start_pose;
+    result.pickup_pose.pose = start_pose;
     result.place_pose.pose = end_pose;
     result.place_pose.pose.position.z += 0.005;
 

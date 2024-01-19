@@ -8,7 +8,7 @@ string   output_frame
 # result definition
 
 string object_name
-geometry_msgs/PoseStamped pick_pose
+geometry_msgs/PoseStamped pickup_pose
 geometry_msgs/PoseStamped place_pose
 
 ---

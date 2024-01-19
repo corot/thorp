@@ -66,7 +66,7 @@ with sm:
                                                        goal_cb=list_obj_names,
                                                        goal_slots=['output_frame'],
                                                        result_cb=get_selected_obj,
-                                                       result_slots=['pick_pose', 'place_pose']),
+                                                       result_slots=['pickup_pose', 'place_pose']),
                            transitions={'succeeded': 'PICKUP_OBJECT',
                                         'preempted': 'preempted',
                                         'aborted': 'OBJECT_DETECTION'})
