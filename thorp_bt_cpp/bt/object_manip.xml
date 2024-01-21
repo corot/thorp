@@ -1,139 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root BTCPP_format="3">
-  <BehaviorTree ID="object_manip">
-    <Repeat num_cycles="999999">
-      <Sequence>
-        <DetectObjects action_name="object_detection"
-
-                       object_types=""
-                       server_timeout="5.000000"
-                       objects="{objects}"
-                       surface="{surface}"/>
-        <DragAndDrop action_name="drag_and_drop"
-
-                     objects="{objects}"
-                     server_timeout="5.000000"
-                     feedback=""
-                     object_name="{object_name}"
-                     pickup_pose="{pickup_pose}"
-                     place_pose="{place_pose}"/>
-        <PickupObject action_name="pickup_object"
-
-                      max_effort="0.5"
-                      object_name="{object_name}"
-                      server_timeout="5.000000"
-                      support_surf="table"
-                      tightening="0.002"
-                      error="{error}"
-                      feedback=""/>
-        <PlaceObject action_name="place_object"
-
-                     object_name="{object_name}"
-                     place_pose="{place_pose}"
-                     server_timeout="5.000000"
-                     support_surf="table"
-                     error="{error}"
-                     feedback=""/>
-      </Sequence>
-    </Repeat>
-  </BehaviorTree>
-
-  <!-- Description of Node Models (used by Groot) -->
-  <TreeNodesModel>
-    <Action ID="DetectObjects">
-      <input_port name="action_name"
-                  default="object_detection"
-                  type="std::string">name of the ROS action client
-      </input_port>
-      <input_port name="goal"
-                  type="thorp_msgs::DetectObjectsGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action
-        server
-      </input_port>
-      <input_port name="object_types"
-                  type="std::string"/>
-      <input_port name="server_timeout"
-                  default="5.000000"
-                  type="double">timeout to connect to server (seconds)
-      </input_port>
-      <output_port name="objects"
-                   type="std::vector&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
-      <output_port name="surface"
-                   type="moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;"/>
-    </Action>
-    <Action ID="DragAndDrop">
-      <input_port name="action_name"
-                  default="drag_and_drop"
-                  type="std::string">name of the ROS action client
-      </input_port>
-      <input_port name="goal"
-                  type="thorp_msgs::DragAndDropGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action
-        server
-      </input_port>
-      <input_port name="objects"
-                  type="std::vector&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
-      <input_port name="server_timeout"
-                  default="5.000000"
-                  type="double">timeout to connect to server (seconds)
-      </input_port>
-      <output_port name="feedback"
-                   type="std::optional&lt;thorp_msgs::DragAndDropFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
-      <output_port name="object_name"
-                   type="std::string"/>
-      <output_port name="pickup_pose"
-                   type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-      <output_port name="place_pose"
-                   type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-    </Action>
-    <Action ID="PickupObject">
-      <input_port name="action_name"
-                  default="pickup_object"
-                  type="std::string">name of the ROS action client
-      </input_port>
-      <input_port name="goal"
-                  type="thorp_msgs::PickupObjectGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action
-        server
-      </input_port>
-      <input_port name="max_effort"
-                  type="double"/>
-      <input_port name="object_name"
-                  type="std::string"/>
-      <input_port name="server_timeout"
-                  default="5.000000"
-                  type="double">timeout to connect to server (seconds)
-      </input_port>
-      <input_port name="support_surf"
-                  type="std::string"/>
-      <input_port name="tightening"
-                  type="double"/>
-      <output_port name="error"
-                   type="unsigned int"/>
-      <output_port name="feedback"
-                   type="std::optional&lt;thorp_msgs::PickupObjectFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
-    </Action>
-    <Action ID="PlaceObject">
-      <input_port name="action_name"
-                  default="place_object"
-                  type="std::string">name of the ROS action client
-      </input_port>
-      <input_port name="goal"
-                  type="thorp_msgs::PlaceObjectGoal_&lt;std::allocator&lt;void&gt; &gt;">goal to send to the action
-        server
-      </input_port>
-      <input_port name="object_name"
-                  type="std::string"/>
-      <input_port name="place_pose"
-                  type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-      <input_port name="server_timeout"
-                  default="5.000000"
-                  type="double">timeout to connect to server (seconds)
-      </input_port>
-      <input_port name="support_surf"
-                  type="std::string"/>
-      <output_port name="error"
-                   type="unsigned int"/>
-      <output_port name="feedback"
-                   type="std::optional&lt;thorp_msgs::PlaceObjectFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
-    </Action>
-  </TreeNodesModel>
-
+    <BehaviorTree ID="object_manip">
+        <Repeat num_cycles="999999">
+            <Sequence>
+                <DetectObjects action_name="object_detection"
+                               object_types=""
+                               server_timeout="5.000000"
+                               objects="{objects}"
+                               surface="{surface}"/>
+                <DragAndDrop action_name="drag_and_drop"
+                             objects="{objects}"
+                             server_timeout="5.000000"
+                             feedback=""
+                             object_name="{object_name}"
+                             pickup_pose="{pickup_pose}"
+                             place_pose="{place_pose}"/>
+                <PickupObject action_name="pickup_object"
+                              max_effort="0.5"
+                              object_name="{object_name}"
+                              server_timeout="5.000000"
+                              support_surf="table"
+                              tightening="0.002"
+                              error="{error}"
+                              feedback=""/>
+                <PlaceObject action_name="place_object"
+                             object_name="{object_name}"
+                             place_pose="{place_pose}"
+                             server_timeout="5.000000"
+                             support_surf="table"
+                             error="{error}"
+                             feedback=""/>
+            </Sequence>
+        </Repeat>
+    </BehaviorTree>
 </root>
