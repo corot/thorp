@@ -1,36 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root BTCPP_format="3">
-    <BehaviorTree ID="object_manip">
-        <Repeat num_cycles="999999">
-            <Sequence>
-                <DetectObjects action_name="object_detection"
-                               object_types=""
-                               server_timeout="5.000000"
-                               objects="{objects}"
-                               surface="{surface}"/>
-                <DragAndDrop action_name="drag_and_drop"
-                             objects="{objects}"
-                             server_timeout="5.000000"
-                             feedback=""
-                             object_name="{object_name}"
-                             pickup_pose="{pickup_pose}"
-                             place_pose="{place_pose}"/>
-                <PickupObject action_name="pickup_object"
-                              max_effort="0.5"
-                              object_name="{object_name}"
-                              server_timeout="5.000000"
-                              support_surf="table"
-                              tightening="0.002"
-                              error="{error}"
-                              feedback=""/>
-                <PlaceObject action_name="place_object"
-                             object_name="{object_name}"
-                             place_pose="{place_pose}"
-                             server_timeout="5.000000"
-                             support_surf="table"
-                             error="{error}"
-                             feedback=""/>
-            </Sequence>
-        </Repeat>
-    </BehaviorTree>
+  <include path="manipulation.xml"/>
+
+  <BehaviorTree ID="object_manip">
+    <Repeat num_cycles="999999">
+      <Sequence>
+        <DetectObjects action_name="object_detection"
+                       object_types=""
+                       server_timeout="5.000000"
+                       objects="{objects}"
+                       surface="{surface}"/>
+        <DragAndDrop action_name="drag_and_drop"
+                     objects="{objects}"
+                     server_timeout="5.000000"
+                     feedback=""
+                     object_name="{object_name}"
+                     pickup_pose="{pickup_pose}"
+                     place_pose="{place_pose}"/>
+        <SubTree ID="pickup_object" __autoremap="true"/>
+        <SubTree ID="place_object" __autoremap="true"/>
+      </Sequence>
+    </Repeat>
+  </BehaviorTree>
 </root>

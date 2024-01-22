@@ -205,6 +205,7 @@
             <input_port name="element" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <inout_port name="list" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
         </Action>
+        <Control ID="RecoverAndRetry"/>
         <Action ID="Recovery">
             <input_port name="action_name" type="std::string" default="move_base_flex/recovery">name of the ROS action client</input_port>
             <input_port name="behavior" type="std::string"/>

@@ -54,7 +54,7 @@ private:
   BT::NodeStatus onAborted(const ResultConstPtr& res) override
   {
     ROS_ERROR_NAMED(name(), "Error %d: %s", res->error.code, res->error.text.c_str());
-    setOutput("error", res->error.code);
+    setOutput("error", (unsigned int)res->error.code);
 
     return BT::NodeStatus::FAILURE;
   }

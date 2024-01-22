@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="3">
+  <BehaviorTree ID="pickup_object">
+    <RecoverAndRetry>
+      <PickupObject action_name="pickup_object"
+                    max_effort="0.5"
+                    object_name="{object_name}"
+                    server_timeout="5.000000"
+                    support_surf="table"
+                    tightening="0.002"
+                    error="{error}"
+                    feedback=""/>
+      <ClearOctomap service_name="clear_octomap"
+                    timeout="100"/>
+    </RecoverAndRetry>
+  </BehaviorTree>
+
+  <BehaviorTree ID="place_object">
+    <RecoverAndRetry>
+      <PlaceObject action_name="place_object"
+                   object_name="{object_name}"
+                   place_pose="{place_pose}"
+                   server_timeout="5.000000"
+                   support_surf="table"
+                   error="{error}"
+                   feedback=""/>
+      <ClearOctomap service_name="clear_octomap"
+                    timeout="100"/>
+    </RecoverAndRetry>
+  </BehaviorTree>
+</root>
