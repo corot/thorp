@@ -27,10 +27,10 @@ public:
 private:
   BT::NodeStatus tick() override
   {
-    setOutput("pose", ttk::createPoseStamped(*getInput<double>("x"),
-                                             *getInput<double>("y"),
-                                             *getInput<double>("yaw"),
-                                             *getInput<std::string>("frame")));
+    setOutput("pose", ttk::createPose(*getInput<double>("x"),
+                                      *getInput<double>("y"),
+                                      *getInput<double>("yaw"),
+                                      *getInput<std::string>("frame")));
     return BT::NodeStatus::SUCCESS;
   }
 

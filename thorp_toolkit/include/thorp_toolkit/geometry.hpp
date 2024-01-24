@@ -677,7 +677,16 @@ inline bool samePose(const geometry_msgs::PoseStamped& a, const geometry_msgs::P
 
 geometry_msgs::Pose createPose(double x, double y, double yaw);
 
-geometry_msgs::PoseStamped createPoseStamped(double x, double y, double yaw, const std::string& frame);
+geometry_msgs::Pose createPose(double x, double y, double z, double roll, double pitch, double yaw);
+
+geometry_msgs::PoseStamped createPose(double x, double y, double yaw, const std::string& frame);
+
+geometry_msgs::PoseStamped createPose(double x, double y, double z, double roll, double pitch, double yaw,
+                                      const std::string& frame);
+
+geometry_msgs::Transform toTransform(const geometry_msgs::Pose& pose);
+
+geometry_msgs::TransformStamped toTransform(const geometry_msgs::PoseStamped& pose);
 
 /**
  * Extract a 2D pose from a geometry_msgs/Pose msg.

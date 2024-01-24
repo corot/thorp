@@ -19,7 +19,7 @@ table_max_side: 1.0  # TODO I cannot handle such a large table, as I only go to 
 approach_dist_to_table: 0.35  # close enough to properly detect tabletop objects but not for picking
 detach_dist_from_table: 0.45  # far enough to safely navigate around the table to other picking poses
 clear_table_way_timeout: 15.0  # seconds; restore costmap after this time
-picking_planning_frame: 'arm_base_link'
+picking_planning_frame: arm_base_link
 picking_max_failures: 3  # picking failures allowed for each object on current picking location (resets upon moving)
 picking_dist_to_table: 0.15  # ideal picking distance to the table, as close as possible without risk
 placing_height_on_table: 0.005  # slightly above the table to avoid crashing the object against it

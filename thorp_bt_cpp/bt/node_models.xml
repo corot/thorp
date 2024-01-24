@@ -107,7 +107,7 @@
             <output_port name="feedback" type="std::optional&lt;mbf_msgs::MoveBaseFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
         </Action>
         <Action ID="GripperBusy">
-            <input_port name="service_name" type="std::string" default="obj_attached">name of the ROS service</input_port>
+            <input_port name="service_name" type="std::string" default="gripper_busy">name of the ROS service</input_port>
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
             <output_port name="attached_object" type="std::string"/>
         </Action>
@@ -141,6 +141,9 @@
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
             <output_port name="attached_object" type="std::string"/>
         </Action>
+        <Condition ID="ObjectsDetected">
+            <input_port name="objects" type="std::vector&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+        </Condition>
         <Action ID="PickupObject">
             <input_port name="action_name" type="std::string" default="pickup_object">name of the ROS action client</input_port>
             <input_port name="max_effort" type="double"/>
@@ -205,6 +208,21 @@
             <input_port name="element" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <inout_port name="list" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
         </Action>
+        <Action ID="ReadBoolParam">
+            <input_port name="key" type="std::string"/>
+            <input_port name="negate" type="bool"/>
+            <output_port name="value" type="bool"/>
+        </Action>
+        <Action ID="ReadDoubleParam">
+            <input_port name="key" type="std::string"/>
+            <input_port name="negate" type="bool"/>
+            <output_port name="value" type="double"/>
+        </Action>
+        <Action ID="ReadIntParam">
+            <input_port name="key" type="std::string"/>
+            <input_port name="negate" type="bool"/>
+            <output_port name="value" type="int"/>
+        </Action>
         <Control ID="RecoverAndRetry"/>
         <Action ID="Recovery">
             <input_port name="action_name" type="std::string" default="move_base_flex/recovery">name of the ROS action client</input_port>
@@ -225,6 +243,12 @@
             <output_port name="room_information_in_meter" type="std::vector&lt;ipa_building_msgs::RoomInformation_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;ipa_building_msgs::RoomInformation_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
             <output_port name="room_information_in_pixel" type="std::vector&lt;ipa_building_msgs::RoomInformation_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;ipa_building_msgs::RoomInformation_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
             <output_port name="segmented_map" type="sensor_msgs::Image_&lt;std::allocator&lt;void&gt; &gt;"/>
+        </Action>
+        <Action ID="SelectNextTarget">
+            <input_port name="failures" type="std::map&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;, unsigned int, std::less&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; &gt;, std::allocator&lt;std::pair&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; const, unsigned int&gt; &gt; &gt;"/>
+            <input_port name="objects" type="std::vector&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+            <output_port name="target_name" type="std::string"/>
+            <output_port name="tightening" type="double"/>
         </Action>
         <Action ID="SetArmConfig">
             <input_port name="action_name" type="std::string" default="move_to_target">name of the ROS action client</input_port>
@@ -273,6 +297,15 @@
             <input_port name="robot_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="next_waypoint" type="unsigned long"/>
             <inout_port name="waypoints" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+        </Action>
+        <Action ID="TransformPose">
+            <input_port name="pitch" type="double"/>
+            <input_port name="roll" type="double"/>
+            <input_port name="x" type="double"/>
+            <input_port name="y" type="double"/>
+            <input_port name="yaw" type="double"/>
+            <input_port name="z" type="double"/>
+            <inout_port name="pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Action ID="UseNamedConfig">
             <input_port name="config_name" type="std::string"/>

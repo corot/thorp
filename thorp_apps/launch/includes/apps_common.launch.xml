@@ -34,7 +34,7 @@
   </group>
 
   <!--  ************* Apps configuration **************  -->
-  <rosparam file="$(find thorp_apps)/param/apps_config.yaml" command="load"/>
+  <rosparam file="$(find thorp_apps)/param/apps_config.yaml" command="load" ns="$(arg app_name)"/>
 
   <!--  ************ Named configurations *************  -->
   <!-- Python reconfigure helper reads all yaml files inside this path -->

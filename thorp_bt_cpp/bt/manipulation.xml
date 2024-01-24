@@ -1,18 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root BTCPP_format="3">
   <BehaviorTree ID="pickup_object">
-    <RecoverAndRetry>
-      <PickupObject action_name="pickup_object"
-                    max_effort="0.5"
-                    object_name="{object_name}"
-                    server_timeout="5.000000"
-                    support_surf="table"
-                    tightening="0.002"
-                    error="{error}"
-                    feedback=""/>
-      <ClearOctomap service_name="clear_octomap"
-                    timeout="100"/>
-    </RecoverAndRetry>
+    <Sequence>
+      <ForceSuccess>
+        <Sequence>
+          <Fallback>
+            <ObjectAttached service_name="obj_attached"
+                            timeout="100"
+                            attached_object="{attached_object}"/>
+            <GripperBusy service_name="gripper_busy"
+                         timeout="100"
+                         attached_object="{attached_object}"/>
+          </Fallback>
+          <ClearGripper service_name="clear_gripper"
+                        timeout="100"/>
+        </Sequence>
+      </ForceSuccess>
+      <RecoverAndRetry>
+        <PickupObject action_name="pickup_object"
+                      max_effort="0.5"
+                      object_name="{object_name}"
+                      server_timeout="5.000000"
+                      support_surf="table"
+                      tightening="{tightening}"
+                      error="{error}"
+                      feedback=""/>
+        <ClearOctomap service_name="clear_octomap"
+                      timeout="100"/>
+      </RecoverAndRetry>
+      <Fallback>
+        <GripperBusy service_name="gripper_busy"
+                     timeout="100"
+                     attached_object="{attached_object}"/>
+        <ForceFailure>
+          <ClearGripper service_name="clear_gripper"
+                        timeout="100"/>
+        </ForceFailure>
+      </Fallback>
+    </Sequence>
   </BehaviorTree>
 
   <BehaviorTree ID="place_object">
@@ -27,5 +52,35 @@
       <ClearOctomap service_name="clear_octomap"
                     timeout="100"/>
     </RecoverAndRetry>
+  </BehaviorTree>
+
+  <BehaviorTree ID="place_on_tray">
+    <Sequence>
+      <NextPoseOnTray tray_link="{tray_link}"
+                      pose_on_tray="{pose_on_tray}"/>
+      <RecoverAndRetry>
+        <PlaceObject action_name="place_object"
+                     object_name="{object_name}"
+                     place_pose="{pose_on_tray}"
+                     server_timeout="5.000000"
+                     support_surf="tray"
+                     error="{error}"
+                     feedback=""/>
+        <ClearOctomap service_name="clear_octomap"
+                      timeout="100"/>
+      </RecoverAndRetry>
+      <ReadDoubleParam key="placing_height_on_tray"
+                       negate="true"
+                       value="{tray_z_offset}"/>
+      <TransformPose pitch=""
+                     roll=""
+                     x=""
+                     y=""
+                     yaw=""
+                     z="{tray_z_offset}"
+                     pose="{pose_on_tray}"/>
+      <MoveObjectToTray object_name="{object_name}"
+                        pose_on_tray="{pose_on_tray}"/>
+    </Sequence>
   </BehaviorTree>
 </root>

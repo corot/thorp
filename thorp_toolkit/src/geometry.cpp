@@ -54,12 +54,53 @@ geometry_msgs::Pose createPose(double x, double y, double yaw)
   return pose;
 }
 
-geometry_msgs::PoseStamped createPoseStamped(double x, double y, double yaw, const std::string& frame)
+geometry_msgs::Pose createPose(double x, double y, double z, double roll, double pitch, double yaw)
+{
+  geometry_msgs::Pose pose;
+  pose.position.x = x;
+  pose.position.y = y;
+  pose.position.z = z;
+  pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(roll, pitch, yaw);
+  return pose;
+}
+
+geometry_msgs::PoseStamped createPose(double x, double y, double yaw, const std::string& frame)
 {
   geometry_msgs::PoseStamped pose;
   pose.header.frame_id = frame;
   pose.pose = createPose(x, y, yaw);
   return pose;
+}
+
+geometry_msgs::PoseStamped createPose(double x, double y, double z, double roll, double pitch, double yaw,
+                                      const std::string& frame)
+{
+  geometry_msgs::PoseStamped pose;
+  pose.header.frame_id = frame;
+  pose.pose = createPose(x, y, z, roll, pitch, yaw);
+  return pose;
+}
+
+geometry_msgs::Transform toTransform(const geometry_msgs::Pose& pose)
+{
+  geometry_msgs::Transform tf;
+  tf.translation.x = pose.position.x;
+  tf.translation.y = pose.position.y;
+  tf.translation.z = pose.position.z;
+  tf.rotation.x = pose.orientation.x;
+  tf.rotation.y = pose.orientation.y;
+  tf.rotation.z = pose.orientation.z;
+  tf.rotation.w = pose.orientation.w;
+  return tf;
+}
+
+geometry_msgs::TransformStamped toTransform(const geometry_msgs::PoseStamped& pose)
+{
+  geometry_msgs::TransformStamped tf;
+  tf.header = pose.header;
+  tf.child_frame_id = pose.header.frame_id;
+  tf.transform = toTransform(pose.pose);
+  return tf;
 }
 
 geometry_msgs::Pose2D toPose2D(const geometry_msgs::Pose& pose)

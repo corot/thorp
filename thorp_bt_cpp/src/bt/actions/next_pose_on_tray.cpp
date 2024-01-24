@@ -28,6 +28,9 @@ public:
     offset_y_ = (slots_y_ % 2 == 0) ? tray_slot_ / 2.0 : 0.0;
     offset_z_ = pnh.param("placing_height_on_tray", 0.03);
 
+    ROS_DEBUG_NAMED(name, "Tray dimensions: %g x %g m. %d x %d slots of %g x %g m each",
+                    tray_side_x, tray_side_y, slots_x_, slots_y_, tray_slot_, tray_slot_);
+
     visualizePlacePoses();
   }
 
@@ -74,20 +77,19 @@ private:
     if (next_x_ == 0)
     {
       next_y_ = (next_y_ + 1) % slots_y_;
-      if (next_x_ == next_y_ && next_x_ == 0)
+      if (next_x_ == next_y_)
       {
         tray_full_ = true;
       }
     }
 
-    geometry_msgs::PoseStamped pose = ttk::createPoseStamped(x, y, 0, tray_link_);
-    pose.pose.position.z = z;
+    geometry_msgs::PoseStamped pose = ttk::createPose(x, y, z, 0, 0, 0, tray_link_);
     return pose;
   }
 
   void visualizePlacePoses()
   {
-    geometry_msgs::PoseStamped ref_pose = ttk::createPoseStamped(0, 0, 0, tray_link_);
+    geometry_msgs::PoseStamped ref_pose = ttk::createPose(0, 0, 0, tray_link_);
     std::vector<geometry_msgs::Point> points;
     for (int i = 0; i < slots_x_ * slots_y_; ++i)
     {
@@ -98,7 +100,8 @@ private:
     ttk::Visualization viz;
     viz.addMarkers({ ttk::Visualization::createPointList(ref_pose, points, colors, 0.01) });
     viz.publishMarkers();
-    tray_full_ = false;
+
+    tray_full_ = false;  // calling nextPose for all slots will make the tray "full"!
   }
 
   BT_REGISTER_NODE(NextPoseOnTray);

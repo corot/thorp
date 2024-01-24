@@ -12,7 +12,7 @@ from ..containers.do_on_exit import DoOnExit as DoOnExitContainer
 from .. import config as cfg
 
 
-class TargetSelection(smach.State):
+class SelectNextTarget(smach.State):
     """
     Select the closest object within arm reach
     'failures' dictionary lists all previous pick failures for each object. If there aren't non-attempted
@@ -48,7 +48,7 @@ class TargetSelection(smach.State):
         targets = [(t, d, ud['failures'][t.id]) for t, d in targets]
         targets = sorted(targets, key=lambda t: t[2])  # sort by increasing number of failed picks
         for target, dist, failures in targets:
-            # we add a random extra tightening, the bigger the more we retry, but with some randomness
+            # we add a random extra tightening, the bigger, the more we retry, but with some randomness
             if failures < cfg.PICKING_MAX_FAILURES:
                 extra_tightening = uniform(-cfg.GRIPPER_TIGHTENING, cfg.GRIPPER_TIGHTENING * failures)
                 rospy.loginfo("Retrying target '%s' (%d previous failures; %.1f mm of extra tightening)",
@@ -126,7 +126,7 @@ class PickupReachableObjs(DoOnExitContainer):
                                    transitions={'succeeded': 'SELECT_TARGET',
                                                 'aborted': 'aborted',
                                                 'preempted': 'preempted'})
-            smach.StateMachine.add('SELECT_TARGET', TargetSelection(),
+            smach.StateMachine.add('SELECT_TARGET', SelectNextTarget(),
                                    transitions={'have_target': 'PICKUP_OBJECT',
                                                 'no_targets': 'succeeded'},
                                    remapping={'target': 'object'})
@@ -170,7 +170,7 @@ class PickupReachableObjs(DoOnExitContainer):
                                    transitions={'succeeded': 'SELECT_TARGET',
                                                 'aborted': 'aborted',
                                                 'preempted': 'preempted'})
-            smach.StateMachine.add('SELECT_TARGET', TargetSelection(),  # just used to check if there are objects left
+            smach.StateMachine.add('SELECT_TARGET', SelectNextTarget(),  # just used to check if there are objects left
                                    transitions={'have_target': 'PICKUP_OBJECTS',  # restart picking if so
                                                 'no_targets': 'succeeded'})
             DoOnExitContainer.add_finally('CLEAR_P_SCENE', ClearPlanningScene())

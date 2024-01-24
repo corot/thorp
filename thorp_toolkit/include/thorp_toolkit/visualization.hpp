@@ -52,7 +52,7 @@ public:
   static jsk_rviz_plugins::OverlayText createOverlayText(int offsetFromTop, const std_msgs::ColorRGBA& color,
                                                          const std::string& text, double text_size);
 
-  Visualization(const std::string& topic = "~visual_markers", double lifetime = 60);
+  Visualization(const std::string& topic = "visual_markers", double lifetime = 60);
   void publishMarkers(int start_id = 1);
   void reset();
   void deleteMarkers();

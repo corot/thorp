@@ -112,7 +112,7 @@ ros::Timer fov_pub_timer = nh.createTimer(ros::Duration(0.1),
     // provide the starting pose, so we can move there before starting exploring; make it point to the first waypoint
     double yaw = ttk::heading(room_center_, res->coverage_path_pose_stamped.front().pose.position);
     geometry_msgs::PoseStamped start_pose;
-    setOutput("start_pose", ttk::createPoseStamped(room_center_.x, room_center_.y, yaw, "map"));
+    setOutput("start_pose", ttk::createPose(room_center_.x, room_center_.y, yaw, "map"));
 
     // Use the coverage path provided as a list of stamped poses
     setOutput("coverage_waypoints", res->coverage_path_pose_stamped);

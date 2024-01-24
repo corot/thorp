@@ -37,7 +37,7 @@ private:
   {
     if (response.success)
     {
-      setOutput("attached_object", std::tolower(response.message, std::locale()));
+      setOutput("attached_object", response.message);
       return BT::NodeStatus::SUCCESS;
     }
     return BT::NodeStatus::FAILURE;

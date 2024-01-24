@@ -23,7 +23,7 @@ public:
   {
     // overwrite service_name with a default value
     BT::PortsList ports = BT::RosServiceNode<ServiceType>::providedPorts();
-    ports["service_name"].setDefaultValue("obj_attached");
+    ports["service_name"].setDefaultValue("gripper_busy");
     ports.insert({ BT::OutputPort<std::string>("attached_object") });
     return ports;
   }
@@ -37,7 +37,8 @@ private:
   {
     if (response.success)
     {
-      setOutput("attached_object", std::tolower(response.message, std::locale()));
+      ROS_INFO_STREAM(response.message);
+      setOutput("attached_object", response.message);
       return BT::NodeStatus::SUCCESS;
     }
     return BT::NodeStatus::FAILURE;
