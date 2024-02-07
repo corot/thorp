@@ -18,7 +18,7 @@
                         room_information_in_pixel="{room_information_in_pixel}"
                         segmented_map="{segmented_map}"/>
           <GetRobotPose timeout="10.0"
-                        error=""
+                        error="{error}"
                         robot_pose="{robot_pose}"/>
           <PlanRoomSequence action_name="exploration/room_sequence_planning"
 
@@ -94,7 +94,7 @@
                   </Sequence>
                   <ReactiveSequence>
                     <GetRobotPose timeout="1"
-                                  error=""
+                                  error="{error}"
                                   robot_pose="{robot_pose}"/>
                     <TrackProgress reached_threshold=""
                                    robot_pose="{robot_pose}"

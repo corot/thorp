@@ -223,6 +223,10 @@
             <input_port name="negate" type="bool"/>
             <output_port name="value" type="int"/>
         </Action>
+        <Action ID="RecordPickupFailure">
+            <input_port name="target_name" type="std::string"/>
+            <inout_port name="failures" type="std::map&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;, unsigned int, std::less&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; &gt;, std::allocator&lt;std::pair&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; const, unsigned int&gt; &gt; &gt;"/>
+        </Action>
         <Control ID="RecoverAndRetry"/>
         <Action ID="Recovery">
             <input_port name="action_name" type="std::string" default="move_base_flex/recovery">name of the ROS action client</input_port>

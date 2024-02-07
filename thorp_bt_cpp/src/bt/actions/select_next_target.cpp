@@ -65,6 +65,12 @@ private:
       }
     }
 
+    if (targets.empty())
+    {
+      ROS_WARN_NAMED(name(), "No targets within range (closer than %g m)", max_arm_reach_);
+      return BT::NodeStatus::FAILURE;
+    }
+
     // Sort by increasing distance
     std::sort(targets.begin(), targets.end(),
               [](const auto& a, const auto& b) { return std::get<1>(a) < std::get<1>(b); });
@@ -95,7 +101,7 @@ private:
         }
         else
         {
-          setOutput("tightening", 0.0);
+          setOutput("tightening", tightening_delta_);
         }
         setOutput("target_name", target);
         ROS_INFO_NAMED(name(), "Next target: '%s', located at %.2f m from the arm", target.c_str(), dist);

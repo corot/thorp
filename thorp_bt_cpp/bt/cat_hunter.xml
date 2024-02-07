@@ -40,7 +40,7 @@
                               tracked_object="{tracked_object}"
                               tracked_object_pose="{tracked_object_pose}"/>
               <GetRobotPose timeout="1"
-                            error=""
+                            error="{error}"
                             robot_pose="{robot_pose}"/>
               <TargetReachable follow_feedback="{follow_feedback}"
                                max_angle="0.2"
