@@ -227,18 +227,28 @@ double PickupObjectServer::gripperClosing(const geometry_msgs::PoseStamped& gras
 {
   double heading = ttk::heading(grasp_pose);  // obj direction from the arm (grasp pose must be in arm reference frame)
   double obj_yaw = ttk::yaw(obj_pose);        // obj orientation
+  double abs_diff_old = std::abs(ttk::wrapAngle(obj_yaw - heading));
   double abs_diff_ = std::abs(ttk::minAngle(grasp_pose, obj_pose));     // absolute angles difference
   double abs_diff = abs_diff_ > M_PI_2 ? M_PI - abs_diff_ : abs_diff_;  // normalized to 0 .. pi/2
+  //abs_diff = abs_diff > M_PI_2 ? M_PI - abs_diff : abs_diff;
+
+  bool x_aligned_old = abs_diff < M_PI/4.0 || abs_diff > M_PI*3/4.0;  // x-aligned: angle to gripper paddles < 45 deg
   double diag_angle = std::atan(obj_size.y / obj_size.x);  // angle of the diagonal of the obj base
-  bool x_aligned = abs_diff + diag_angle < M_PI_2;         // combined decided the side we will grasp
+  bool x_aligned = abs_diff + diag_angle < M_PI_2;
   double closing = x_aligned ? obj_size.y : obj_size.x;
-  ROS_DEBUG("%f\t%f\t%f\t%f\t%f\t%f\t%d\t%f\t%f", heading, obj_yaw, abs_diff_, abs_diff, diag_angle, abs_diff + diag_angle, x_aligned, obj_size.x, obj_size.y);
-  ROS_DEBUG_COND(x_aligned, "using Y");
-  ROS_DEBUG_COND(!x_aligned, "using X");
+  ROS_ERROR("%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%f\t%f", heading, obj_yaw, abs_diff_old, abs_diff_, abs_diff, diag_angle, abs_diff + diag_angle, x_aligned, obj_size.x, obj_size.y);
+  ROS_ERROR_COND(x_aligned, "using Y ");
+  ROS_ERROR_COND(!x_aligned, "using X ");
   closing -= gripper_tightening_closing;      // reduce slightly for tightening
   ROS_INFO("Gripper closing: %f (%f - %f -> using %s-dimension of: %f x %f)   tightening: %g",
            closing, obj_yaw, heading, x_aligned ? "y" : "x", obj_size.x, obj_size.y, gripper_tightening_closing);
   return closing;
 }
+
+
+//frame_id: "base_footprint"
+//           pose:   largo along x and x away from robot
+//  db: "[\"size\",[0.02266445755958557,0.011164776980876923,0.02444341778755188]
+
 
 }  // namespace thorp::manipulation
