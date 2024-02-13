@@ -17,7 +17,6 @@ from thorp_smach.states.perception import DetectObjects
 from thorp_smach.states.manipulation import FoldArm, PickupObject, PlaceObject, DisplaceObject
 
 from thorp_smach.utils import run_sm
-from thorp_smach import config as cfg
 
 
 class GetDetectedCubes(smach.State):
@@ -30,6 +29,7 @@ class GetDetectedCubes(smach.State):
 
     def execute(self, ud):
         # Compose a list containing id, pose, distance and heading for all cubes within arm reach
+        max_arm_reach = rospy.get_param('~max_arm_reach')
         objects = []
         for obj in ud.objects:
             if not obj.id.startswith('cube'):
@@ -39,8 +39,8 @@ class GetDetectedCubes(smach.State):
             obj_pose.header.stamp = rospy.Time(0)
             obj_pose = TF2().transform_pose(obj_pose, obj_pose.header.frame_id, ud.arm_ref_frame)
             distance = distance_2d(obj_pose.pose)
-            if distance > cfg.MAX_ARM_REACH:
-                rospy.logdebug("'%s' is out of reach (%d > %d)", obj.id, distance, cfg.MAX_ARM_REACH)
+            if distance > max_arm_reach:
+                rospy.logdebug("'%s' is out of reach (%d > %d)", obj.id, distance, max_arm_reach)
                 continue
             direction = heading(obj_pose.pose)
             objects.append((obj, obj_pose, distance, direction))
@@ -50,7 +50,7 @@ class GetDetectedCubes(smach.State):
         # Sort them by increasing heading; we stack over the one most in front of the arm, called base
         objects = sorted(objects, key=lambda x: abs(x[-1]))
         place_pose = objects[0][1]
-        place_pose.pose.position.z += get_size_from_co(objects[0][0])[2] + cfg.PLACING_HEIGHT_ON_TABLE
+        place_pose.pose.position.z += get_size_from_co(objects[0][0])[2] + rospy.get_param('~placing_height_on_table')
         ud.place_pose = place_pose
         ud.other_cubes = [obj[0] for obj in objects[1:]]
         return 'succeeded'
@@ -65,7 +65,7 @@ class IncreasePlaceHeight(smach.State):
                              output_keys=['place_pose'])
 
     def execute(self, ud):
-        ud.place_pose.pose.position.z += get_size_from_co(ud.object)[2] + cfg.PLACING_HEIGHT_ON_TABLE
+        ud.place_pose.pose.position.z += get_size_from_co(ud.object)[2] + rospy.get_param('~placing_height_on_table')
         return 'succeeded'
 
 
@@ -110,8 +110,8 @@ with sm:
         sc_sm = smach.StateMachine(outcomes=['succeeded', 'preempted', 'aborted', 'continue'],
                                    input_keys=['place_pose', 'object', 'surface'],
                                    output_keys=[])
-        sc_sm.userdata.max_effort = cfg.GRIPPER_MAX_EFFORT
-        sc_sm.userdata.tightening = cfg.GRIPPER_TIGHTENING / 2.0
+        sc_sm.userdata.max_effort = rospy.get_param('~gripper_max_effort')
+        sc_sm.userdata.tightening = sc_sm.userdata.max_effort / 2.0
         with sc_sm:
             smach.StateMachine.add('PICKUP_OBJECT',
                                    PickupObject(),
@@ -123,7 +123,7 @@ with sm:
                                    transitions={'succeeded': 'AT_STACK_LEVEL',
                                                 'preempted': 'preempted',
                                                 'aborted': 'aborted'})
-            smach.StateMachine.add('AT_STACK_LEVEL', TranslatePose(-cfg.PLACING_HEIGHT_ON_TABLE, 'z'),
+            smach.StateMachine.add('AT_STACK_LEVEL', TranslatePose(-rospy.get_param('~placing_height_on_table'), 'z'),
                                    remapping={'pose': 'place_pose'},             # undo added clearance
                                    transitions={'succeeded': 'READJUST_POSE'})   # to replicate gravity
             smach.StateMachine.add('READJUST_POSE',

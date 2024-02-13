@@ -15,8 +15,6 @@ from .userdata import UDIfKey, UDHasKey, UDSetTo, UDInsertInList
 from .navigation import GetRobotPose, GoToPose, FollowWaypoints, DelTraversedWPs, PrependCurrentPose
 from ..containers.do_on_exit import DoOnExit as DoOnExitContainer
 
-from .. import config as cfg
-
 
 class SegmentRooms(smach_ros.SimpleActionState):
     def __init__(self):
@@ -47,7 +45,7 @@ class SegmentRooms(smach_ros.SimpleActionState):
         goal.map_resolution = occ_grid_map.info.resolution
         goal.return_format_in_meter = True
         goal.return_format_in_pixel = True
-        goal.robot_radius = rospy.get_param('/move_base_flex/global_costmap/robot_radius', 0.18)
+        goal.robot_radius = rospy.get_param('move_base_flex/global_costmap/robot_radius', 0.18)
         # those values are also needed by PlanRoomSequence and PlanRoomExploration, so share them as output keys
         # the segmented map comes with its own origin and resolution, but are the same as for the input map
         ud['map_image'] = goal.input_map
@@ -112,7 +110,7 @@ class PlanRoomExploration(smach_ros.SimpleActionState):
                 else:
                     goal.input_map.data += b'\x00'
 
-        fov_points = rospy.get_param('/exploration/room_exploration/field_of_view_points')
+        fov_points = rospy.get_param('exploration/room_exploration/field_of_view_points')
         goal.field_of_view_origin = TF2().transform_pose(None, 'kinect_rgb_frame', 'base_footprint').pose.position
         goal.field_of_view = [geometry_msgs.Point32(*pt) for pt in fov_points]
         goal.planning_mode = 2  # plan a path for coverage with the robot's field of view
@@ -185,8 +183,9 @@ class ExploreHouse(smach.StateMachine):
                                    transitions={'succeeded': 'GOTO_START_POSE',
                                                 'aborted': 'aborted',
                                                 'preempted': 'preempted'})
-            smach.StateMachine.add('GOTO_START_POSE', GoToPose(dist_tolerance=cfg.LOOSE_DIST_TOLERANCE,  # close enough
-                                                               angle_tolerance=cfg.INF_ANGLE_TOLERANCE),  # ignore yaw
+            smach.StateMachine.add('GOTO_START_POSE', GoToPose(dist_tolerance=rospy.get_param('~loose_dist_tolerance'),
+                                                               angle_tolerance=rospy.get_param('~inf_angle_tolerance')),
+                                   # close enough and ignore yaw
                                    transitions={'succeeded': 'INSERT_START_POSE',
                                                 'preempted': 'preempted',
                                                 'aborted': 'INSERT_CURRENT_POSE'},

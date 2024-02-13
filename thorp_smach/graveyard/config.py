@@ -1,4 +1,4 @@
-DEFAULT_PLANNER = 'GlobalPlanner'
+# DEFAULT_PLANNER = 'GlobalPlanner'
 DEFAULT_CONTROLLER = 'TEBPlanner'
 FOLLOW_CONTROLLER = 'PoseFollower'
 FOLLOW_RECOVERY = ['clear_local_cm', 'escape_distance']

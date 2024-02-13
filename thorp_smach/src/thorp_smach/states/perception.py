@@ -11,8 +11,6 @@ from rail_manipulation_msgs.srv import SegmentObjects
 
 from thorp_toolkit.geometry import point3d2str, pose2d2str, TF2, to_transform
 
-from .. import config as cfg
-
 
 class DetectObjects(smach_ros.SimpleActionState):
     """
@@ -109,8 +107,10 @@ class CheckTableSize(smach.State):
                                              input_keys=['table'])
 
     def execute(self, ud):
+        table_min_side = rospy.get_param('~table_min_side')
+        table_max_side = rospy.get_param('~table_max_side')
         center, width, length = ud['table'].center, ud['table'].width, ud['table'].depth
-        if min(width, length) < cfg.TABLE_MIN_SIDE or max(width, length) > cfg.TABLE_MAX_SIDE:
+        if min(width, length) < table_min_side or max(width, length) > table_max_side:
             rospy.loginfo("Table at %s rejected due to invalid size: %.2f x %.2f", point3d2str(center), width, length)
             return 'aborted'
         return 'succeeded'

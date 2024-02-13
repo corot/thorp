@@ -9,7 +9,6 @@ from .perception import DetectObjects
 from .manipulation import ClearGripper, ClearPlanningScene, FoldArm, PickupObject, PlaceOnTray
 
 from ..containers.do_on_exit import DoOnExit as DoOnExitContainer
-from .. import config as cfg
 
 
 class SelectNextTarget(smach.State):
@@ -29,10 +28,13 @@ class SelectNextTarget(smach.State):
         self.arm_on_bfp_rf = TF2().transform_pose(None, manip_frame, 'base_footprint')
 
     def execute(self, ud):
+        gripper_tightening = rospy.get_param('~gripper_tightening')
+        max_arm_reach = rospy.get_param('~max_arm_reach')
+
         targets = []
         for obj in ud['objects']:
             dist = distance_2d(obj.pose, self.arm_on_bfp_rf)  # assumed in arm base reference frame
-            if dist <= (cfg.MAX_ARM_REACH - 3e-3):  # 3 mm safety margin to account for perception noise
+            if dist <= (max_arm_reach - 3e-3):  # 3 mm safety margin to account for perception noise
                 targets.append((obj, dist))
         targets = sorted(targets, key=lambda t: t[1])  # sort by increasing distance
         for target, dist in targets:
@@ -40,23 +42,25 @@ class SelectNextTarget(smach.State):
                 continue
             rospy.loginfo("Next target: '%s', located at %.2f m from the arm", target.id, dist)
             ud['target'] = target
-            ud['tightening'] = cfg.GRIPPER_TIGHTENING
+            ud['tightening'] = gripper_tightening
             return 'have_target'
 
-        rospy.loginfo("No new targets within the %.2f m arm reach", cfg.MAX_ARM_REACH)
+        rospy.loginfo("No new targets within the %.2f m arm reach", max_arm_reach)
+
         # all targets have already failed at least once; try with the one with less previous failures
+        picking_max_failures = rospy.get_param('~picking_max_failures')
         targets = [(t, d, ud['failures'][t.id]) for t, d in targets]
         targets = sorted(targets, key=lambda t: t[2])  # sort by increasing number of failed picks
         for target, dist, failures in targets:
             # we add a random extra tightening, the bigger, the more we retry, but with some randomness
-            if failures < cfg.PICKING_MAX_FAILURES:
-                extra_tightening = uniform(-cfg.GRIPPER_TIGHTENING, cfg.GRIPPER_TIGHTENING * failures)
+            if failures < picking_max_failures:
+                extra_tightening = uniform(-gripper_tightening, gripper_tightening * failures)
                 rospy.loginfo("Retrying target '%s' (%d previous failures; %.1f mm of extra tightening)",
                               target.id, failures, extra_tightening * 1000)
                 ud['target'] = target
-                ud['tightening'] = cfg.GRIPPER_TIGHTENING + extra_tightening
+                ud['tightening'] = gripper_tightening + extra_tightening
                 return 'have_target'
-        rospy.loginfo("No targets to retry (failed less than %d times)", cfg.PICKING_MAX_FAILURES)
+        rospy.loginfo("No targets to retry (failed less than %d times)", picking_max_failures)
         return 'no_targets'
 
 
@@ -78,8 +82,9 @@ class RecordFailure(smach.State):
         else:
             ud['failures'][ud['object'].id] += 1
         failures = ud['failures'][ud['object'].id]
-        assert failures <= cfg.PICKING_MAX_FAILURES, "We are retrying more than max failures"
-        if failures < cfg.PICKING_MAX_FAILURES:
+        picking_max_failures = rospy.get_param('~picking_max_failures')
+        assert failures <= picking_max_failures, "We are retrying more than max failures"
+        if failures < picking_max_failures:
             rospy.loginfo("Pick object '%s' failed %d time(s)", ud['object'].id, failures)
         else:
             rospy.logwarn("Pick object '%s' failed %d times; giving up", ud['object'].id, failures)
@@ -120,7 +125,7 @@ class PickupReachableObjs(DoOnExitContainer):
                                              input_keys=['object_types', 'failures'],
                                              output_keys=['failures'])
 
-        pickup_1_obj_sm.userdata.max_effort = cfg.GRIPPER_MAX_EFFORT
+        pickup_1_obj_sm.userdata.max_effort = rospy.get_param('~gripper_max_effort')
         with pickup_1_obj_sm:
             smach.StateMachine.add('DETECT_OBJECTS', DetectObjects(),
                                    transitions={'succeeded': 'SELECT_TARGET',

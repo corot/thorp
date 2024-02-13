@@ -15,7 +15,6 @@ from thorp_smach.states.perception import DetectObjects
 from thorp_smach.states.manipulation import FoldArm, PickupObject, PlaceObject, ClearPlanningScene
 
 from thorp_smach.utils import run_sm
-from thorp_smach import config as cfg
 
 rospy.init_node('object_manip_smach')
 
@@ -28,9 +27,9 @@ with sm:
     sm.userdata.ucmd_progress = thorp_msgs.UserCommandFeedback()
     sm.userdata.ucmd_outcome = thorp_msgs.UserCommandResult()
     sm.userdata.od_attempt = 0
-    sm.userdata.output_frame = cfg.PICKING_PLANNING_FRAME
-    sm.userdata.max_effort = cfg.GRIPPER_MAX_EFFORT
-    sm.userdata.tightening = cfg.GRIPPER_TIGHTENING
+    sm.userdata.output_frame = rospy.get_param('~picking_planning_frame')
+    sm.userdata.max_effort = rospy.get_param('~gripper_max_effort')
+    sm.userdata.tightening = rospy.get_param('~gripper_tightening')
 
     # drag_and_drop operates with object names, while object detection provides a list collision objects
     # and pick/drop actions target is also a collision object; hence, we need these conversion callbacks

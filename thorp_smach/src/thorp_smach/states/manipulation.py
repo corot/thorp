@@ -12,7 +12,6 @@ from thorp_toolkit.visualization import Visualization
 
 from .geometry import TranslatePose
 from .userdata import UDExtractAttr
-from .. import config as cfg
 
 
 class ClearOctomap(smach_ros.ServiceState):
@@ -207,16 +206,16 @@ class PlaceOnTray(smach.Sequence):
                                           connector_outcome='succeeded',
                                           input_keys=['object'])
         # add a collision object for the tray surface, right above the mesh
-        tray_link = rospy.get_param('tray_link', 'tray_link')
+        tray_link = rospy.get_param('~tray_link', 'tray_link')
         PlanningScene().add_tray(create_3d_pose(0, 0, 0.0015, 0, 0, 0, tray_link),
-                                 (cfg.TRAY_SIDE_X + 0.01, cfg.TRAY_SIDE_Y + 0.01, 0.002))
+                                 (rospy.get_param('~tray_side_x') + 0.01, rospy.get_param('~tray_side_y') + 0.01, 0.002))
         self.userdata.surface = PlanningScene().get_obj('tray')
 
         with self:
             smach.Sequence.add('POSE_ON_TRAY', NextPoseOnTray(tray_link))
             smach.Sequence.add('PLACE_ON_TRAY', PlaceObject(),
                                remapping={'place_pose': 'pose_on_tray'})
-            smach.Sequence.add('AT_TRAY_LEVEL', TranslatePose(-cfg.PLACING_HEIGHT_ON_TRAY, 'z'),
+            smach.Sequence.add('AT_TRAY_LEVEL', TranslatePose(-rospy.get_param('~placing_height_on_tray'), 'z'),
                                remapping={'pose': 'pose_on_tray'})  # undo added clearance to replicate gravity
             smach.Sequence.add('MOVE_TO_TRAY', MoveObjToTray())
 
@@ -230,12 +229,15 @@ class NextPoseOnTray(smach.State):
         smach.State.__init__(self,
                              outcomes=['succeeded', 'tray_full'],
                              output_keys=['pose_on_tray'])
+        self.tray_slot = rospy.get_param('~tray_slot')
+        self.tray_side_x = rospy.get_param('~tray_side_x')
+        self.tray_side_y = rospy.get_param('~tray_side_y')
         self.tray_link = tray_link
         self.tray_full = False
-        self.slots_x = int(cfg.TRAY_SIDE_X / cfg.TRAY_SLOT + 0.1)  # avoid float division pitfall
-        self.slots_y = int(cfg.TRAY_SIDE_Y / cfg.TRAY_SLOT + 0.1)  # until I switch to Python3
-        self.offset_x = 0.0 if self.slots_x % 2 else cfg.TRAY_SLOT / 2.0
-        self.offset_y = 0.0 if self.slots_y % 2 else cfg.TRAY_SLOT / 2.0
+        self.slots_x = int(self.tray_side_x / self.tray_slot + 0.1)  # avoid float division pitfall
+        self.slots_y = int(self.tray_side_y / self.tray_slot + 0.1)  # until I switch to Python3
+        self.offset_x = 0.0 if self.slots_x % 2 else self.tray_slot / 2.0
+        self.offset_y = 0.0 if self.slots_y % 2 else self.tray_slot / 2.0
         self.next_x = 0
         self.next_y = 0
 
@@ -252,14 +254,14 @@ class NextPoseOnTray(smach.State):
         if self.tray_full:
             return 'tray_full'
 
-        place_pose_z = cfg.PLACING_HEIGHT_ON_TRAY  # place objects 3cm above the tray, so they fall into position
-        ud['pose_on_tray'] = self._next_pose(place_pose_z)
+        # place objects 3cm above the tray, so they fall into position
+        ud['pose_on_tray'] = self._next_pose(rospy.get_param('~placing_height_on_tray'))
         return 'succeeded'
 
     def _next_pose(self, z):
         # Get next empty location coordinates
-        x = (self.next_x - self.slots_x/2) * cfg.TRAY_SLOT + self.offset_x
-        y = (self.next_y - self.slots_y/2) * cfg.TRAY_SLOT + self.offset_y
+        x = (self.next_x - self.slots_x/2) * self.tray_slot + self.offset_x
+        y = (self.next_y - self.slots_y/2) * self.tray_slot + self.offset_y
         self.next_x = (self.next_x + 1) % self.slots_x
         if self.next_x == 0:
             self.next_y = (self.next_y + 1) % self.slots_y

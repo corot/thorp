@@ -16,8 +16,6 @@ from .userdata import UDInsertInList, UDListSlicing, UDApplyFn
 from ..states.costmaps import ClearTableWay, RestoreTableWay
 from ..containers.do_on_exit import DoOnExit as DoOnExitContainer
 
-from .. import config as cfg
-
 Reconfigure().load_named_configs()  # load named configurations from the default location
 
 
@@ -56,6 +54,7 @@ class PrependCurrentPose(smach.Sequence):
     Normally we do this to ensure that we follow the whole path without skipping to the nearest pose.
     This also helps progress tracker when the first waypoint is already behind.
     """
+
     def __init__(self):
         super(PrependCurrentPose, self).__init__(outcomes=['succeeded', 'aborted'],
                                                  connector_outcome='succeeded',
@@ -72,6 +71,7 @@ class DelTraversedWPs(smach.Sequence):
     """
     Deleted waypoints up to the last reached one.
     """
+
     def __init__(self):
         super(DelTraversedWPs, self).__init__(outcomes=['succeeded', 'aborted'],
                                               connector_outcome='succeeded',
@@ -86,6 +86,7 @@ class DelTraversedWPs(smach.Sequence):
 
 class PoseAsPath(smach.State):
     """ Add a path to the ud containing just the input pose """
+
     def __init__(self):
         super(PoseAsPath, self).__init__(outcomes=['succeeded'],
                                          input_keys=['pose'],
@@ -112,22 +113,23 @@ class PosesAsPath(smach.State):
 
 class GoToPose(smach_ros.SimpleActionState):
     def __init__(self,
-                 planner=cfg.DEFAULT_PLANNER,
-                 controller=cfg.DEFAULT_CONTROLLER,
-                 rec_behaviors=cfg.MOVE_BASE_RECOVERY,
-                 dist_tolerance=None, angle_tolerance=None):
+                 planner=None,
+                 controller=None,
+                 rec_behaviors=None,
+                 dist_tolerance=None,
+                 angle_tolerance=None):
         super(GoToPose, self).__init__('move_base_flex/move_base',
                                        mbf_msgs.MoveBaseAction,
                                        goal_cb=self.make_goal,
                                        goal_slots=['target_pose'],
                                        result_cb=self.result_cb,
                                        result_slots=['outcome', 'message'])
-        self.planner = planner
-        self.controller = controller
-        self.rec_behaviors = rec_behaviors
+        self.planner = planner or rospy.get_param('~default_planner')
+        self.controller = controller or rospy.get_param('~default_controller')
+        self.rec_behaviors = rec_behaviors or rospy.get_param('~move_base_recovery')
         self.dist_tolerance = dist_tolerance
         self.angle_tolerance = angle_tolerance
-        self.params_ns = '/move_base_flex/' + controller
+        self.params_ns = 'move_base_flex/' + self.controller
 
     def make_goal(self, ud, goal):
         if self.planner:
@@ -148,8 +150,7 @@ class GoToPose(smach_ros.SimpleActionState):
 
 
 class ExePath(smach_ros.SimpleActionState):
-    def __init__(self, controller=cfg.DEFAULT_CONTROLLER, dist_tolerance=None, angle_tolerance=None,
-                 track_progress=False):
+    def __init__(self, controller=None, dist_tolerance=None, angle_tolerance=None, track_progress=False):
         super(ExePath, self).__init__('move_base_flex/exe_path',
                                       mbf_msgs.ExePathAction,
                                       goal_cb=self.make_goal,
@@ -157,12 +158,12 @@ class ExePath(smach_ros.SimpleActionState):
                                       result_slots=['outcome', 'message'],
                                       input_keys=['path', 'waypoints'],
                                       output_keys=['reached_wp'])
-        self.controller = controller
+        self.controller = controller or rospy.get_param('~default_controller')
         self.dist_tolerance = dist_tolerance
         self.angle_tolerance = angle_tolerance
         self.track_progress = track_progress
         self.progress_tracker = None
-        self.params_ns = '/move_base_flex/' + controller
+        self.params_ns = 'move_base_flex/' + self.controller
 
     def make_goal(self, ud, goal):
         goal.path = ud['path']
@@ -174,9 +175,10 @@ class ExePath(smach_ros.SimpleActionState):
                                                          'yaw_goal_tolerance': self.angle_tolerance})
 
         if self.track_progress:
+            wp_reached_threshold = rospy.get_param('~wp_reached_threshold')
             rospy.loginfo("Progress tracker initialized with %d waypoints and reached threshold %g m",
-                          len(ud['waypoints']), cfg.WP_REACHED_THRESHOLD)
-            self.progress_tracker = ProgressTracker(ud['waypoints'], cfg.WP_REACHED_THRESHOLD)
+                          len(ud['waypoints']), wp_reached_threshold)
+            self.progress_tracker = ProgressTracker(ud['waypoints'], wp_reached_threshold)
 
     def result_cb(self, ud, status, result):
         if self.dist_tolerance and self.angle_tolerance:
@@ -200,6 +202,7 @@ class ExePath(smach_ros.SimpleActionState):
 
 class LookToPose(ExePath):
     """ Turn toward a given pose """
+
     def __init__(self):
         super(LookToPose, self).__init__()
         super(ExePath, self).register_input_keys(['robot_pose', 'target_pose'])  # extend ExePath inputs
@@ -213,7 +216,7 @@ class LookToPose(ExePath):
         pose = copy.deepcopy(ud['robot_pose'])
         pose.pose.orientation = quaternion_msg_from_yaw(heading_to_target)
         goal.path = nav_msgs.Path(pose.header, [pose])
-        goal.controller = cfg.DEFAULT_CONTROLLER
+        goal.controller = rospy.get_param('~default_controller')
 
 
 class Recovery(smach_ros.SimpleActionState):
@@ -227,11 +230,11 @@ class Recovery(smach_ros.SimpleActionState):
 class ExePathFailed(smach.State):
     """ Handle failures on ExePath state """
 
-    def __init__(self, recovery_behaviors=cfg.EXE_PATH_RECOVERY):
+    def __init__(self, recovery_behaviors=None):
         super(ExePathFailed, self).__init__(outcomes=['recover', 'next_wp', 'aborted'],
                                             input_keys=['path', 'waypoints', 'reached_wp', 'outcome', 'message'],
                                             output_keys=['path', 'waypoints', 'next_wp', 'recovery_behavior'])
-        self.recovery_behaviors = recovery_behaviors
+        self.recovery_behaviors = recovery_behaviors or rospy.get_param('~exe_path_recovery')
         self.consecutive_failures = 0
 
     def execute(self, ud):
@@ -322,7 +325,8 @@ class FollowWaypoints(DoOnExitContainer):
     """
     Follow a list of waypoints after converting them into a smooth path executable by MBF controllers
     """
-    def __init__(self, controller=cfg.DEFAULT_CONTROLLER):
+
+    def __init__(self, controller=None):
         super(FollowWaypoints, self).__init__(outcomes=['succeeded', 'aborted', 'preempted'],
                                               input_keys=['waypoints'],
                                               output_keys=['waypoints', 'reached_wp', 'outcome', 'message'])
@@ -335,11 +339,11 @@ class FollowWaypoints(DoOnExitContainer):
                                                 'aborted': 'aborted',
                                                 'preempted': 'preempted'})
             smach.StateMachine.add('EXE_PATH', ExePath(controller,  # already using loose goal reached criteria
-                                                       track_progress=True),   # required to retake an interrupted path
+                                                       track_progress=True),  # required to retake an interrupted path
                                    transitions={'succeeded': 'succeeded',
                                                 'aborted': 'FAILURE',
                                                 'preempted': 'preempted'})
-            smach.StateMachine.add('FAILURE', ExePathFailed(cfg.FOLLOW_RECOVERY),
+            smach.StateMachine.add('FAILURE', ExePathFailed(rospy.get_param('~follow_recovery')),
                                    transitions={'recover': 'RECOVER',
                                                 'next_wp': 'NEXT_WP',
                                                 'aborted': 'aborted'})
@@ -348,7 +352,7 @@ class FollowWaypoints(DoOnExitContainer):
                                                 'aborted': 'FAILURE',
                                                 'preempted': 'preempted'},
                                    remapping={'behavior': 'recovery_behavior'})
-            smach.StateMachine.add('NEXT_WP', GoToPose(),           # already using loose goal reached criteria
+            smach.StateMachine.add('NEXT_WP', GoToPose(),  # already using loose goal reached criteria
                                    transitions={'succeeded': 'SMOOTH_PATH',
                                                 'aborted': 'SKIP_WP',  # also if failed; at least we have skip a wp
                                                 'preempted': 'preempted'},
@@ -363,7 +367,8 @@ class FollowWaypoints(DoOnExitContainer):
 
 class TraversePoses(smach.Iterator):
     """ Visit a list of stamped poses """
-    def __init__(self, dist_tolerance=cfg.LOOSE_DIST_TOLERANCE, angle_tolerance=cfg.LOOSE_ANGLE_TOLERANCE):
+
+    def __init__(self):
         super(TraversePoses, self).__init__(outcomes=['succeeded', 'preempted', 'aborted'],
                                             input_keys=['poses'],
                                             output_keys=['outcome', 'message'],
@@ -372,8 +377,9 @@ class TraversePoses(smach.Iterator):
                                             exhausted_outcome='succeeded')
 
         with self:
-            smach.Iterator.set_contained_state('GO_TO_POSE', GoToPose(dist_tolerance=dist_tolerance,
-                                                                      angle_tolerance=angle_tolerance),
+            smach.Iterator.set_contained_state('GO_TO_POSE',
+                                               GoToPose(dist_tolerance=rospy.get_param('~loose_dist_tolerance'),
+                                                        angle_tolerance=rospy.get_param('~loose_angle_tolerance')),
                                                loop_outcomes=['succeeded'])
 
 
@@ -385,7 +391,7 @@ class FollowPose(smach_ros.SimpleActionState):
         self.follow_distance = distance
 
     def make_goal(self, ud, goal):
-        goal.time_limit = rospy.Duration(25)   # TODO
+        goal.time_limit = rospy.Duration(25)  # TODO
         goal.distance = self.follow_distance
         goal.stop_at_distance = False  # TODO
 
@@ -397,6 +403,7 @@ class SmoothPath(smach_ros.ServiceState):
     """
     Call path smoother with a list of waypoints to obtain a smooth path connecting them
     """
+
     def __init__(self):
         super(SmoothPath, self).__init__('waypoints_path/connect_waypoints', thorp_srvs.ConnectWaypoints,
                                          request_cb=self.request_cb,

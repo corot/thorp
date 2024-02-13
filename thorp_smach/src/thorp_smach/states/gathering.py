@@ -13,8 +13,6 @@ from .manipulation import ClearPlanningScene
 from .pickup_objs import PickupReachableObjs
 from ..containers.do_on_exit import DoOnExit as DoOnExitContainer
 
-from .. import config as cfg
-
 
 class MakePickingPlan(smach_ros.SimpleActionState):
     def __init__(self):
@@ -26,11 +24,11 @@ class MakePickingPlan(smach_ros.SimpleActionState):
                                               output_keys=['picking_plan'])
 
     def make_goal(self, ud, goal):
-        goal.planning_frame = cfg.PICKING_PLANNING_FRAME
-        goal.approach_dist = cfg.APPROACH_DIST_TO_TABLE
-        goal.picking_dist = cfg.PICKING_DIST_TO_TABLE
-        goal.detach_dist = cfg.DETACH_DIST_FROM_TABLE
-        goal.max_arm_reach = cfg.MAX_ARM_REACH - cfg.TIGHT_DIST_TOLERANCE
+        goal.planning_frame = rospy.get_param('~picking_planning_frame')
+        goal.approach_dist = rospy.get_param('~approach_dist_to_table')
+        goal.picking_dist = rospy.get_param('~picking_dist_to_table')
+        goal.detach_dist = rospy.get_param('~detach_dist_from_table')
+        goal.max_arm_reach = rospy.get_param('~max_arm_reach') - rospy.get_param('~tight_dist_tolerance')
 
     def result_cb(self, ud, status, result):
         ud['picking_plan'] = result.picking_plan.locations
@@ -105,7 +103,8 @@ class CountGivenUpObjects(smach.State):
                                                   output_keys=['given_up_count'])
 
     def execute(self, ud):
-        ud['given_up_count'] += sum(1 for fc in ud['failures'].values() if fc == cfg.PICKING_MAX_FAILURES)
+        picking_max_failures = rospy.get_param('~picking_max_failures')
+        ud['given_up_count'] += sum(1 for fc in ud['failures'].values() if fc == picking_max_failures)
         return 'succeeded'
 
 
@@ -140,7 +139,7 @@ class GatherObjects(smach.StateMachine):
                                            input_keys=['table', 'table_pose'])
         with approach_table_sm:
             smach.Sequence.add('GET_ROBOT_POSE', GetRobotPose())
-            smach.Sequence.add('CALC_APPROACH', ClosestSidePose(cfg.APPROACH_DIST_TO_TABLE),
+            smach.Sequence.add('CALC_APPROACH', ClosestSidePose(rospy.get_param('~approach_dist_to_table')),
                                transitions={'no_valid_table': 'aborted'},
                                remapping={'pose': 'closest_approach_pose'})
             smach.Sequence.add('APPROACH_TABLE', GoToPose(),  # use default tolerances; no precision needed here
@@ -155,7 +154,7 @@ class GatherObjects(smach.StateMachine):
         with make_picking_plan_sm:
             smach.StateMachine.add('GET_ROBOT_POSE', GetRobotPose(),
                                    transitions={'succeeded': 'PICKING_POSE'})
-            smach.StateMachine.add('PICKING_POSE', ClosestSidePose(cfg.PICKING_DIST_TO_TABLE),
+            smach.StateMachine.add('PICKING_POSE', ClosestSidePose(rospy.get_param('~picking_dist_to_table')),
                                    transitions={'succeeded': 'ALIGN_TO_TABLE',
                                                 'no_valid_table': 'aborted'},
                                    remapping={'pose': 'closest_picking_pose'})
