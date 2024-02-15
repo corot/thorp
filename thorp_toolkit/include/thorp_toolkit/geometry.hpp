@@ -7,6 +7,8 @@
 #include <numeric>
 
 #include <tf/tf.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+
 #include <angles/angles.h>
 
 #include <geometry_msgs/Pose.h>
@@ -216,6 +218,28 @@ inline double yaw(const geometry_msgs::PoseStamped& pose)
 inline double yaw(const geometry_msgs::TransformStamped& tf)
 {
   return tf::getYaw(tf.transform.rotation);
+}
+
+/**
+ * Set the yaw of a given pose.
+ * @warning This is only intended for 2D poses, as it will discard pitch and roll.
+ * @param pose Pose
+ */
+inline void setYaw(geometry_msgs::Pose& pose, double new_yaw)
+{
+  tf2::Quaternion quat_tf;
+  quat_tf.setRPY(0, 0, new_yaw);
+  pose.orientation = tf2::toMsg(quat_tf);
+}
+
+/**
+ * Set the yaw of a given pose.
+ * @warning This is only intended for 2D poses, as it will discard pitch and roll.
+ * @param pose Stamped pose
+ */
+inline void setYaw(geometry_msgs::PoseStamped& pose, double new_yaw)
+{
+  setYaw(pose.pose, new_yaw);
 }
 
 /**

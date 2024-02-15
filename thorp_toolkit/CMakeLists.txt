@@ -73,14 +73,15 @@ target_link_libraries(save_pose_node ${catkin_LIBRARIES})
 
 ## Libraries
 add_library(${PROJECT_NAME}
-        src/tf2.cpp
+        src/alternative_config.cpp
         src/common.cpp
         src/geometry.cpp
-        src/reconfigure.cpp
-        src/visualization.cpp
         src/planning_scene.cpp
         src/progress_tracker.cpp
-        src/alternative_config.cpp)
+        src/reconfigure.cpp
+        src/semantic_layer.cpp
+        src/tf2.cpp
+        src/visualization.cpp)
 add_dependencies(${PROJECT_NAME} thorp_msgs_generate_messages_cpp)
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} )
 

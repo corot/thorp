@@ -8,13 +8,12 @@
 #include <visualization_msgs/MarkerArray.h>
 
 #include "thorp_toolkit/common.hpp"
-// #include "singleton.h"  // Include the header file for Singleton
 
 namespace thorp::toolkit
 {
 
 class Visualization
-{  // : public Singleton<Visualization> {
+{
 public:
   static constexpr double MIN_SCALE = 1e-6;
 
