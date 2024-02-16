@@ -1,10 +1,9 @@
-import rospy
 import smach
 import smach_ros
 
 import mbf_msgs.srv as mbf_srvs
 
-from thorp_toolkit.semantic_layer import SemanticLayer
+from thorp_costmap_layers.srv_iface_client import SemanticLayer
 
 
 class AddToCostmap(smach.State):

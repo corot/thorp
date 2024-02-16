@@ -10,28 +10,31 @@ project(thorp_costmap_layers)
 
 if (NOT CMAKE_BUILD_TYPE MATCHES Debug)
     add_definitions(-DNDEBUG)
-endif()
+endif ()
 
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  tf2_ros
-  costmap_2d
-  shape_msgs
-  moveit_msgs
-  geometry_msgs
-  visualization_msgs
-  dynamic_reconfigure
-  thorp_toolkit
-  thorp_msgs
+             roscpp
+             tf2_ros
+             costmap_2d
+             shape_msgs
+             geometry_msgs
+             visualization_msgs
+             message_generation
+             dynamic_reconfigure
+             thorp_toolkit
+             thorp_msgs
 )
 
-generate_dynamic_reconfigure_options(
-  cfg/SemanticLayer.cfg
-)
+add_message_files(DIRECTORY msg FILES Object.msg)
+add_service_files(DIRECTORY srv FILES UpdateObjects.srv)
+
+catkin_python_setup()
+
+generate_messages(DEPENDENCIES geometry_msgs)
+
+generate_dynamic_reconfigure_options(cfg/SemanticLayer.cfg)
 
 find_package(Boost 1.58 REQUIRED)
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(JSONCPP jsoncpp)
 
 include_directories(
   include
@@ -44,38 +47,38 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES semantic_layer
   CATKIN_DEPENDS
-        tf2_ros
-        roscpp
-        costmap_2d
-        moveit_msgs
-        geometry_msgs
-        visualization_msgs
-        dynamic_reconfigure
-        thorp_toolkit
-        thorp_msgs
+  tf2_ros
+  roscpp
+  costmap_2d
+  geometry_msgs
+  visualization_msgs
+  dynamic_reconfigure
+  thorp_toolkit
+  thorp_msgs
 )
 
 #######################################################################################################################
 # semantic layer
 #######################################################################################################################
 add_library(semantic_layer
-  src/semantic_layer.cpp
-  src/base_interface.cpp
-  src/srv_interface.cpp
-  src/visualization.cpp
-  src/spatial_hash.cpp
+            src/semantic_layer.cpp
+            src/base_interface.cpp
+            src/srv_interface.cpp
+            src/srv_iface_client.cpp
+            src/visualization.cpp
+            src/spatial_hash.cpp
 )
 
 target_link_libraries(semantic_layer
-  ${JSONCPP_LIBRARIES}
-  ${catkin_LIBRARIES}
+                      ${JSONCPP_LIBRARIES}
+                      ${catkin_LIBRARIES}
 )
 
 add_dependencies(semantic_layer ${PROJECT_NAME}_gencfg)
 
-if(catkin_EXPORTED_LIBRARIES)
-  add_dependencies(semantic_layer ${catkin_EXPORTED_LIBS})
-endif()
+if (catkin_EXPORTED_LIBRARIES)
+    add_dependencies(semantic_layer ${catkin_EXPORTED_LIBS})
+endif ()
 
 install(TARGETS semantic_layer
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

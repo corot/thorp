@@ -5,9 +5,9 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Vector3.h>
 
-#include "rr_nav_semantic_layer/Object.h"
+#include "thorp_costmap_layers/Object.h"
 
-namespace rr::nav::semantic_layer
+namespace thorp::costmap_layers
 {
 class ServiceClient
 {
@@ -20,11 +20,11 @@ public:
   bool removeObject(const std::string& name, const std::string& type, const std::string& costmap = "both");
 
 private:
-  bool callSrv(ros::ServiceClient& srv, const rr_nav_semantic_layer::Object& obj, const std::string& costmap);
+  bool callSrv(ros::ServiceClient& srv, const thorp_costmap_layers::Object& obj, const std::string& costmap);
 
   ros::NodeHandle nh_;
   ros::ServiceClient lcm_sl_srv_;
   ros::ServiceClient gcm_sl_srv_;
 };
 
-}  // namespace rr::nav::semantic_layer
+}  // namespace thorp::costmap_layers

@@ -4,9 +4,6 @@
 #include <dynamic_reconfigure/server.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
-#include <thorp_toolkit/geometry.hpp>
-namespace ttk = thorp::toolkit;
-
 #include "thorp_costmap_layers/srv_interface.hpp"
 #include "thorp_costmap_layers/visualization.hpp"
 

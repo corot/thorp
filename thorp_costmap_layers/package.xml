@@ -18,8 +18,8 @@
   <depend>moveit_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>visualization_msgs</depend>
+  <depend>message_generation</depend>
   <depend>dynamic_reconfigure</depend>
-  <depend>libjsoncpp-dev</depend>
   <depend>thorp_toolkit</depend>
   <depend>thorp_msgs</depend>
 

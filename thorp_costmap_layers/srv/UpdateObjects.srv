@@ -1,0 +1,15 @@
+# Add/remove/modify objects
+
+Object[] objects
+
+---
+
+# response: first error found (processing stops)
+
+byte SUCCESS             = 0
+byte OBJECT_NOT_FOUND    = 1
+byte INVALID_OBJECT_TYPE = 2
+byte INVALID_TARGET_POSE = 3
+
+byte code
+string text

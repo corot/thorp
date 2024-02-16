@@ -1,20 +1,20 @@
-#include "thorp_toolkit/semantic_layer.hpp"
+#include "thorp_costmap_layers/srv_iface_client.hpp"
 
-#include <thorp_msgs/UpdateCollisionObjs.h>
+#include <thorp_costmap_layers/UpdateObjects.h>
 
 #include <rr_geometry/converters.hpp>
 namespace rrg = rapyuta::geometry_2d;
 
-namespace rr::nav::semantic_layer
+namespace thorp::costmap_layers
 {
 ServiceClient::ServiceClient()
 {
   lcm_sl_srv_ =
-      nh_.serviceClient<thorp_msgs::UpdateCollisionObjs>("move_base_flex/local_costmap/semantic/update_objects");
+      nh_.serviceClient<thorp_costmap_layers::UpdateObjects>("move_base_flex/local_costmap/semantic/update_objects");
   gcm_sl_srv_ =
-      nh_.serviceClient<thorp_msgs::UpdateCollisionObjs>("move_base_flex/global_costmap/semantic/update_objects");
+      nh_.serviceClient<thorp_costmap_layers::UpdateObjects>("move_base_flex/global_costmap/semantic/update_objects");
 
-  if (!lcm_sl_srv_.waitForExistence(ros::Duration(10.0)) || !gcm_sl_srv_.waitForExistence(ros::Duration(1.0)))
+  if (!lcm_sl_srv_.waitForExistence(ros::Duration(30.0)) || !gcm_sl_srv_.waitForExistence(ros::Duration(30.0)))
   {
     ROS_ERROR("Failed to find the semantic layer's update_objects service");
   }
@@ -23,8 +23,8 @@ ServiceClient::ServiceClient()
 bool ServiceClient::addObject(const std::string& name, const std::string& type, const geometry_msgs::PoseStamped& pose,
                               const geometry_msgs::Vector3& size, const std::string& costmap)
 {
-  rr_nav_semantic_layer::Object obj;
-  obj.operation = rr_nav_semantic_layer::Object::ADD;
+  thorp_costmap_layers::Object obj;
+  obj.operation = thorp_costmap_layers::Object::ADD;
   obj.name = name;
   obj.type = type;
   obj.pose = pose;
@@ -42,11 +42,11 @@ bool ServiceClient::addObject(const std::string& name, const std::string& type, 
 
 bool ServiceClient::removeObject(const std::string& name, const std::string& type, const std::string& costmap)
 {
-  thorp_msgs::UpdateCollisionObjs::Request req;
-  thorp_msgs::UpdateCollisionObjs::Response resp;
+  thorp_costmap_layers::UpdateObjects::Request req;
+  thorp_costmap_layers::UpdateObjects::Response resp;
 
-  rr_nav_semantic_layer::Object obj;
-  obj.operation = rr_nav_semantic_layer::Object::REMOVE;
+  thorp_costmap_layers::Object obj;
+  obj.operation = thorp_costmap_layers::Object::REMOVE;
   obj.name = name;
   obj.type = type;
 
@@ -60,11 +60,11 @@ bool ServiceClient::removeObject(const std::string& name, const std::string& typ
   return true;
 }
 
-bool ServiceClient::callSrv(ros::ServiceClient& srv, const rr_nav_semantic_layer::Object& obj,
+bool ServiceClient::callSrv(ros::ServiceClient& srv, const thorp_costmap_layers::Object& obj,
                             const std::string& costmap)
 {
-  thorp_msgs::UpdateCollisionObjs::Request req;
-  thorp_msgs::UpdateCollisionObjs::Response resp;
+  thorp_costmap_layers::UpdateObjects::Request req;
+  thorp_costmap_layers::UpdateObjects::Response resp;
   req.objects.push_back(obj);
 
   if (!srv.call(req, resp))
@@ -72,9 +72,9 @@ bool ServiceClient::callSrv(ros::ServiceClient& srv, const rr_nav_semantic_layer
     ROS_ERROR_STREAM("Semantic layer's update_objects service call failed");
     return false;
   }
-  if (resp.code != thorp_msgs::UpdateCollisionObjs::Response::SUCCESS)
+  if (resp.code != thorp_costmap_layers::UpdateObjects::Response::SUCCESS)
   {
-    bool add = obj.operation == rr_nav_semantic_layer::Object::ADD;
+    bool add = obj.operation == thorp_costmap_layers::Object::ADD;
     // clang-format off
     ROS_ERROR_STREAM((add ? "Add" : "Remove") << " object " << obj.name <<
                      (add ? " to " : " from ") << costmap << " costmap "
@@ -85,4 +85,4 @@ bool ServiceClient::callSrv(ros::ServiceClient& srv, const rr_nav_semantic_layer
   return true;
 }
 
-}  // namespace rr::nav::semantic_layer
+}  // namespace thorp::costmap_layers

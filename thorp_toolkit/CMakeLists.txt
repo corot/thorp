@@ -79,7 +79,6 @@ add_library(${PROJECT_NAME}
         src/planning_scene.cpp
         src/progress_tracker.cpp
         src/reconfigure.cpp
-        src/semantic_layer.cpp
         src/tf2.cpp
         src/visualization.cpp)
 add_dependencies(${PROJECT_NAME} thorp_msgs_generate_messages_cpp)

@@ -30,12 +30,13 @@ def test_semantic_layer(node):
     sl = SemanticLayer()
 
     # add some obstacles
-    assert sl.add_object('obs0', 'blocked_area', p11, sz1, costmap='global')
-    assert sl.remove_object('obs0', 'blocked_area', costmap='global')
-    assert sl.add_object('obs1', 'obstacle', p11, sz1, costmap='local')
-    assert sl.add_object('obs2', 'obstacle', p11, sz2, costmap='local')
-    assert sl.add_object('obs3', 'obstacle', p11, sz3, costmap='local')
-    assert sl.add_object('obs4', 'obstacle', p11, sz4, costmap='local')
+    assert sl.add_object('obs0', 'blocked_area', p11, sz1, costmap='both')
+    assert sl.add_object('fs1', 'free_space', p11, sz1, costmap='local')
+    assert sl.remove_object('obs0', 'blocked_area', costmap='both')
+    assert sl.add_object('obs1', 'obstacle', p11, sz1, costmap='both')
+    assert sl.add_object('obs2', 'obstacle', p11, sz2, costmap='both')
+    assert sl.add_object('obs3', 'obstacle', p11, sz3, costmap='both')
+    assert sl.add_object('obs4', 'obstacle', p11, sz4, costmap='both')
 
     # add some free space
     assert sl.add_object('fs1', 'free_space', p11, (2.5, 2.9), costmap='local')
@@ -78,3 +79,17 @@ def test_semantic_layer(node):
     # assert len(sl.objects_at(p16, (1, 1))) == 2
     # Visualization().add_box_marker(p16, (1, 1, 0.0001), Visualization.rand_color(0.2))
     # Visualization().publish_markers()
+
+
+def test_3_boxes_challenge(node):
+    p00 = create_2d_pose(4.0, 0.5, 0.0, 'map')
+    p11 = create_2d_pose(4.8, 1.0, 0.0, 'map')
+    p22 = create_2d_pose(5.6, 0.5, 0.0, 'map')
+    sz3 = (0.35, 0.35)
+
+    sl = SemanticLayer()
+
+    # add 3 obstacles forming a difficult narrow passage
+    assert sl.add_object('obs1', 'obstacle', p00, sz3, costmap='both')
+    assert sl.add_object('obs2', 'obstacle', p11, sz3, costmap='both')
+    assert sl.add_object('obs3', 'obstacle', p22, sz3, costmap='both')

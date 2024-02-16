@@ -2,10 +2,9 @@
 
 #include <moveit_msgs/CollisionObject.h>
 
-#include <thorp_msgs/UpdateCollisionObjs.h>
+#include <thorp_costmap_layers/UpdateObjects.h>
 
 #include "thorp_costmap_layers/base_interface.hpp"
-
 
 namespace thorp::costmap_layers
 {
@@ -16,15 +15,14 @@ public:
   ServiceInterface(ros::NodeHandle& nh, tf2_ros::Buffer& tf, costmap_2d::LayeredCostmap* layered_costmap);
   ~ServiceInterface();
 
-  void reconfigure(const thorp_costmap_layers::SemanticLayerConfig& config);
+  void reconfigure(const thorp_costmap_layers::SemanticLayerConfig& config) override;
 
-  bool updateCollisionObjs(thorp_msgs::UpdateCollisionObjs::Request& request,
-                           thorp_msgs::UpdateCollisionObjs::Response& response);
+  bool updateObjects(thorp_costmap_layers::UpdateObjects::Request& request,
+                     thorp_costmap_layers::UpdateObjects::Response& response);
 
 private:
-  void collisionObjToContours(const moveit_msgs::CollisionObject& collision_object,
-                              std::vector<std::vector<geometry_msgs::PoseStamped>>& contours,
-                              double length_padding, double width_padding) const;
+  void objectToContour(const thorp_costmap_layers::Object& object, std::vector<geometry_msgs::PoseStamped>& contour,
+                       double length_padding, double width_padding) const;
 
   ros::ServiceServer update_srv_;
 
