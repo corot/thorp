@@ -2,17 +2,24 @@
 
 #include <thorp_costmap_layers/UpdateObjects.h>
 
-#include <rr_geometry/converters.hpp>
-namespace rrg = rapyuta::geometry_2d;
+#include <thorp_toolkit/geometry.hpp>
+namespace ttk = thorp::toolkit;
 
 namespace thorp::costmap_layers
 {
+
+ServiceClient& ServiceClient::instance()
+{
+  static ServiceClient instance;
+  return instance;
+}
+
 ServiceClient::ServiceClient()
 {
-  lcm_sl_srv_ =
-      nh_.serviceClient<thorp_costmap_layers::UpdateObjects>("move_base_flex/local_costmap/semantic/update_objects");
-  gcm_sl_srv_ =
-      nh_.serviceClient<thorp_costmap_layers::UpdateObjects>("move_base_flex/global_costmap/semantic/update_objects");
+  lcm_sl_srv_ = nh_.serviceClient<thorp_costmap_layers::UpdateObjects>(
+      "move_base_flex/local_costmap/semantic_layer/update_objects");
+  gcm_sl_srv_ = nh_.serviceClient<thorp_costmap_layers::UpdateObjects>(
+      "move_base_flex/global_costmap/semantic_layer/update_objects");
 
   if (!lcm_sl_srv_.waitForExistence(ros::Duration(30.0)) || !gcm_sl_srv_.waitForExistence(ros::Duration(30.0)))
   {
@@ -35,7 +42,7 @@ bool ServiceClient::addObject(const std::string& name, const std::string& type, 
   if ((costmap == "global" || costmap == "both") && !callSrv(gcm_sl_srv_, obj, "global"))
     return false;
 
-  ROS_INFO("Added object %s of type %s at %s to %s costmap%s", name.c_str(), type.c_str(), rrg::toStr(pose).c_str(),
+  ROS_INFO("Added object %s of type %s at %s to %s costmap%s", name.c_str(), type.c_str(), ttk::toCStr2D(pose),
            costmap.c_str(), costmap == "both" ? "s" : "");
   return true;
 }

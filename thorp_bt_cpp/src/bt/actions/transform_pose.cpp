@@ -2,6 +2,8 @@
 
 #include "thorp_bt_cpp/node_register.hpp"
 
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+
 #include <thorp_toolkit/geometry.hpp>
 namespace ttk = thorp::toolkit;
 

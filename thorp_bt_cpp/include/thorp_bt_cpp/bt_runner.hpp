@@ -23,6 +23,9 @@ public:
 private:
   ros::NodeHandle pnh_;
 
+  /** Running app name. */
+  std::string app_name_;
+
   /** Behavior tree. */
   std::optional<BT::Tree> bt_;
 

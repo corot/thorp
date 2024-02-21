@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="3">
+  <BehaviorTree ID="attach_to_table">
+    <Sequence>
+      <ClearTableAccess table="{table}"
+                        table_pose="{picking_pose}"/>
+      <PoseAsPath pose="{picking_pose}"
+                  path="{picking_path}"/>
+      <ExePath action_name="move_base_flex/exe_path"
+               controller="TEBPlanner"
+               path="{picking_path}"
+               server_timeout="5.000000"
+               error="{error}"
+               feedback="{exe_path_feedback}"/>
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="detach_from_table">
+    <Sequence>
+      <PoseAsPath pose="{detach_pose}"
+                  path="{detach_path}"/>
+      <ExePath action_name="move_base_flex/exe_path"
+               controller="TEBPlanner"
+               path="{detach_path}"
+               server_timeout="5.000000"
+               error="{error}"
+               feedback="{exe_path_feedback}"/>
+      <RestoreTableAccess table="{table}"/>
+    </Sequence>
+  </BehaviorTree>
+</root>

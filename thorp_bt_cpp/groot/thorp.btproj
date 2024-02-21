@@ -4,7 +4,9 @@
     <include path="../bt/cat_hunter.xml"/>
     <include path="../bt/explore_house.xml"/>
     <include path="../bt/manipulation.xml"/>
+    <include path="../bt/navigation.xml"/>
+    <include path="../bt/object_gatherer.xml"/>
     <include path="../bt/object_manip.xml"/>
-    <include path="../bt/pickup_objects.xml"/>
     <include path="../bt/patrol_2_points.xml"/>
+    <include path="../bt/pickup_objects.xml"/>
 </root>

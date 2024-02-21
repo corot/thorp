@@ -3,8 +3,8 @@
 #include "thorp_bt_cpp/node_register.hpp"
 #include "thorp_bt_cpp/ros_service_node.hpp"
 
-#include <thorp_toolkit/tf2.hpp>
 #include <thorp_toolkit/geometry.hpp>
+#include <thorp_toolkit/tf2.hpp>
 namespace ttk = thorp::toolkit;
 
 #include <thorp_msgs/CannonCmd.h>

@@ -5,9 +5,6 @@
 
 #include <thorp_msgs/FollowPoseAction.h>
 
-#include <thorp_toolkit/geometry.hpp>
-namespace ttk = thorp::toolkit;
-
 namespace thorp::bt::actions
 {
 class FollowPose : public BT::RosActionNode<thorp_msgs::FollowPoseAction>

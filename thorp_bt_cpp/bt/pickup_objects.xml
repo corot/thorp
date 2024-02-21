@@ -3,32 +3,40 @@
   <include path="manipulation.xml"/>
 
   <BehaviorTree ID="pickup_objects">
-    <KeepRunningUntilFailure>
-      <RecoverAndRetry>
-        <Sequence>
-          <DetectObjects action_name="object_detection"
-                         object_types=""
-                         server_timeout="5.000000"
-                         objects="{objects}"
-                         surface="{surface}"/>
-          <ObjectsDetected objects="{objects}"/>
-          <SelectNextTarget failures="{failures}"
-                            objects="{objects}"
-                            target_name="{object_name}"
-                            tightening="{tightening}"/>
-          <IfThenElse>
-            <SubTree ID="pickup_object" __autoremap="true"/>
-            <SubTree ID="place_on_tray" __autoremap="true"/>
-            <RecordPickupFailure target_name="{object_name}"
-                                 failures="{failures}"/>
-          </IfThenElse>
-        </Sequence>
-        <SetArmConfig action_name="move_to_target"
-                      configuration="resting"
-                      server_timeout="5.000000"
-                      error="{error}"
-                      feedback=""/>
-      </RecoverAndRetry>
-    </KeepRunningUntilFailure>
+    <Fallback>
+      <KeepRunningUntilFailure>
+        <RecoverAndRetry>
+          <Sequence>
+            <DetectObjects action_name="object_detection"
+                           object_types=""
+                           server_timeout="5.000000"
+                           objects="{objects}"
+                           surface="{surface}"/>
+            <ObjectsDetected objects="{objects}"/>
+            <SelectNextTarget failures="{failures}"
+                              objects="{objects}"
+                              target_name="{object_name}"
+                              tightening="{tightening}"/>
+            <IfThenElse>
+              <SubTree ID="pickup_object"/>
+              <SubTree ID="place_on_tray"/>
+              <RecordPickupFailure target_name="{object_name}"
+                                   failures="{failures}"/>
+            </IfThenElse>
+          </Sequence>
+          <SetArmConfig action_name="move_to_target"
+                        configuration="resting"
+                        server_timeout="5.000000"
+                        error="{error}"
+                        feedback=""/>
+        </RecoverAndRetry>
+      </KeepRunningUntilFailure>
+      <Inverter>
+        <SelectNextTarget failures="{failures}"
+                          objects="{objects}"
+                          target_name="{object_name}"
+                          tightening="{tightening}"/>
+      </Inverter>
+    </Fallback>
   </BehaviorTree>
 </root>
