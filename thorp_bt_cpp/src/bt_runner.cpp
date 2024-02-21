@@ -15,9 +15,10 @@ Runner::Runner() : pnh_("~")
   // on simulation, wait for the simulated time to start before loading and running the tree
   ttk::waitForSimTime();
 
-  const std::string app_name = pnh_.param<std::string>("app_name", "");
-  const std::string bt_filepath = pnh_.param<std::string>("bt_filepath", "bt.xml");
-  const std::string nodes_filepath = pnh_.param<std::string>("nodes_filepath", "nodes.xml");
+  std::string bt_filepath, nodes_filepath;
+  pnh_.getParam("app_name", app_name_);
+  pnh_.getParam("bt_filepath", bt_filepath);
+  pnh_.getParam("nodes_filepath", nodes_filepath);
 
   // dump to an XML file to load on Groot
   std::ofstream ofs;
@@ -37,7 +38,7 @@ Runner::Runner() : pnh_("~")
   try
   {
     bt_factory_.registerBehaviorTreeFromFile(bt_filepath);
-    bt_ = bt_factory_.createTree(app_name);
+    bt_ = bt_factory_.createTree(app_name_);
   }
   catch (const std::exception& e)
   {
@@ -65,10 +66,11 @@ void Runner::run()
 {
   if (!bt_)
   {
-    ROS_ERROR_STREAM_NAMED("bt_runner", "Behavior tree is not initialized");
+    ROS_ERROR_STREAM_NAMED("bt_runner", "Behavior tree for " << app_name_ << " is not initialized");
     return;
   }
 
+  ros::Time time_start = ros::Time::now();
   ros::Rate rate(tick_rate_);
   auto status = BT::NodeStatus::RUNNING;
   while (ros::ok() && status == BT::NodeStatus::RUNNING)
@@ -84,6 +86,8 @@ void Runner::run()
                               tick_rate_, rate.cycleTime().toSec());
     }
   }
+  const double completion_time = (ros::Time::now() - time_start).toSec();
+  ROS_INFO_NAMED("bt_runner", "%s completed in %.2fs with status %d", app_name_.c_str(), completion_time, (int)status);
 }
 
 }  // namespace thorp::bt

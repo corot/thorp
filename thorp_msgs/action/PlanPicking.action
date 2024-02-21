@@ -1,3 +1,5 @@
+# Group objects into picking locations and sort them to make a picking plan
+
 # goal definition
 
 geometry_msgs/PoseStamped robot_pose

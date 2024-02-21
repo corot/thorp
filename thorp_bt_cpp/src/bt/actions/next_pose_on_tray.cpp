@@ -3,6 +3,7 @@
 #include "thorp_bt_cpp/node_register.hpp"
 
 #include <thorp_toolkit/geometry.hpp>
+#include <thorp_toolkit/planning_scene.hpp>
 #include <thorp_toolkit/visualization.hpp>
 namespace ttk = thorp::toolkit;
 
@@ -28,9 +29,12 @@ public:
     offset_y_ = (slots_y_ % 2 == 0) ? tray_slot_ / 2.0 : 0.0;
     offset_z_ = pnh.param("placing_height_on_tray", 0.03);
 
-    ROS_DEBUG_NAMED(name, "Tray dimensions: %g x %g m. %d x %d slots of %g x %g m each",
-                    tray_side_x, tray_side_y, slots_x_, slots_y_, tray_slot_, tray_slot_);
+    ROS_DEBUG_NAMED(name, "Tray dimensions: %g x %g m. %d x %d slots of %g x %g m each", tray_side_x, tray_side_y,
+                    slots_x_, slots_y_, tray_slot_, tray_slot_);
 
+    // add a collision object for the tray surface, right above the mesh
+    ttk::PlanningScene::instance().addTray(ttk::createPose(0, 0, 0.0015, 0, 0, 0, tray_link_),
+                                           { tray_side_x + 0.01, tray_side_y + 0.01, 0.002 });
     visualizePlacePoses();
   }
 

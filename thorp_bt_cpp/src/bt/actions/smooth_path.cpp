@@ -39,13 +39,13 @@ private:
 
   BT::NodeStatus onResponse(const ResponseType& response) override
   {
-    setOutput<nav_msgs::Path>("path", response.path);
+    setOutput("path", response.path);
     return BT::NodeStatus::SUCCESS;
   }
 
   BT::NodeStatus onFailedRequest(RosServiceNode::FailureCause failure) override
   {
-    ROS_ERROR("Smooth path failed %d", static_cast<int>(failure));
+    ROS_ERROR_NAMED(name(), "Smoothing path failed %d", static_cast<int>(failure));
     return BT::NodeStatus::FAILURE;
   }
 

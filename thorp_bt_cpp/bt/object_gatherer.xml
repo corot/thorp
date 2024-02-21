@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="3">
+  <include path="navigation.xml"/>
+
+  <include path="explore_house.xml"/>
+
+  <include path="pickup_objects.xml"/>
+
+  <BehaviorTree ID="object_gatherer">
+    <RetryUntilSuccessful num_attempts="999999">
+      <Fallback>
+        <Parallel failure_threshold="1"
+                  success_threshold="1">
+          <SubTree ID="explore_house"
+                   __shared_blackboard="false"/>
+          <ForceFailure>
+            <RetryUntilSuccessful num_attempts="999999">
+              <DetectTables service_name="rail_segmentation/segment_objects"
+                            timeout="100"
+                            table="{table}"
+                            table_pose="{table_pose}"/>
+            </RetryUntilSuccessful>
+          </ForceFailure>
+        </Parallel>
+        <Sequence>
+          <GetRobotPose timeout="1"
+                        error="{error}"
+                        robot_pose="{robot_pose}"/>
+          <LookAtPose action_name="move_base_flex/exe_path"
+                      controller="TEBPlanner"
+                      robot_pose="{robot_pose}"
+                      server_timeout="5.000000"
+                      target_pose="{table_pose}"
+                      error="{error}"
+                      feedback="{look_at_feedback}"/>
+          <DetectTables service_name="rail_segmentation/segment_objects"
+                        timeout="100"
+                        table="{table}"
+                        table_pose="{table_pose}"/>
+          <TableValidSize table="{table}"/>
+          <ReadDoubleParam key="approach_dist_to_table"
+                           negate=""
+                           value="{approach_dist_to_table}"/>
+          <ClosestTableSide distance="{approach_dist_to_table}"
+                            robot_pose="{robot_pose}"
+                            table="{table}"
+                            table_pose="{table_pose}"
+                            closest_pose="{approach_pose}"/>
+          <GoToPose action_name="move_base_flex/move_base"
+                    angle_tolerance=""
+                    controller="TEBPlanner"
+                    dist_tolerance=""
+                    planner=""
+                    pose="{approach_pose}"
+                    server_timeout="5.000000"
+                    error="{error}"
+                    feedback="{goto_pose_feedback}"/>
+          <GetRobotPose timeout="1"
+                        error="{error}"
+                        robot_pose="{robot_pose}"/>
+          <ReadDoubleParam key="picking_dist_to_table"
+                           negate=""
+                           value="{picking_dist_to_table}"/>
+          <ClosestTableSide distance="{picking_dist_to_table}"
+                            robot_pose="{robot_pose}"
+                            table="{table}"
+                            table_pose="{table_pose}"
+                            closest_pose="{picking_pose}"/>
+          <SubTree ID="attach_to_table"/>
+          <GetRobotPose timeout="1"
+                        error="{error}"
+                        robot_pose="{robot_pose}"/>
+          <DetectObjects action_name="object_detection"
+                         object_types=""
+                         server_timeout="5.000000"
+                         objects="{objects}"
+                         surface="{surface}"/>
+          <TableAsObstacle table="{table}"
+                           table_pose="{table_pose}"/>
+          <Sequence>
+            <ObjectsDetected objects="{objects}"/>
+            <MakePickingPlan action_name="manipulation/plan_picking"
+                             objects="{objects}"
+                             robot_pose="{robot_pose}"
+                             server_timeout="5.000000"
+                             surface="{surface}"
+                             picking_plan="{picking_plan}"/>
+            <KeepRunningUntilFailure>
+              <Sequence>
+                <PopPickupLocation approach_pose="{approach_pose}"
+                                   detach_pose="{detach_pose}"
+                                   picking_pose="{picking_pose}"
+                                   picking_plan="{picking_plan}"/>
+                <Fallback>
+                  <AreSamePose angle_tolerance="0.1"
+                               dist_tolerance="0.05"
+                               pose1="{robot_pose}"
+                               pose2="{picking_pose}"/>
+                  <Sequence>
+                    <GoToPose action_name="move_base_flex/move_base"
+                              angle_tolerance=""
+                              controller="TEBPlanner"
+                              dist_tolerance=""
+                              planner=""
+                              pose="{approach_pose}"
+                              server_timeout="5.000000"
+                              error="{error}"
+                              feedback="{goto_pose_feedback}"/>
+                    <SubTree ID="attach_to_table"/>
+                  </Sequence>
+                </Fallback>
+                <SubTree ID="pickup_objects"/>
+                <ClearRailMarkers service_name="rail_segmentation/clear_markers"
+                                  timeout="100"/>
+                <ClearPlanningScene keep_tray="true"/>
+                <SubTree ID="detach_from_table"/>
+              </Sequence>
+            </KeepRunningUntilFailure>
+          </Sequence>
+        </Sequence>
+      </Fallback>
+    </RetryUntilSuccessful>
+  </BehaviorTree>
+</root>

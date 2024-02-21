@@ -15,6 +15,7 @@ set(PKG_DEPS
       rail_manipulation_msgs
       behaviortree_cpp_v3
       thorp_toolkit
+      thorp_costmap_layers
 )
 
 find_package(catkin REQUIRED

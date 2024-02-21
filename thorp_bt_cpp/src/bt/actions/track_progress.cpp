@@ -17,8 +17,10 @@ public:
 
   static BT::PortsList providedPorts()
   {
-    return { BT::InputPort<geometry_msgs::PoseStamped>("robot_pose"), BT::BidirectionalPort<Waypoints>("waypoints"),
-             BT::InputPort<double>("reached_threshold"), BT::OutputPort<size_t>("next_waypoint") };
+    return { BT::InputPort<geometry_msgs::PoseStamped>("robot_pose"),  //
+             BT::BidirectionalPort<Waypoints>("waypoints"),            //
+             BT::InputPort<double>("reached_threshold"),               //
+             BT::OutputPort<size_t>("next_waypoint") };
   }
 
 private:
@@ -40,12 +42,11 @@ private:
     if (next_waypoint_ != pt_->nextWaypoint())
     {
       next_waypoint_ = pt_->nextWaypoint();
-      setOutput("waypoints",
-                Waypoints{ waypoints_.begin() + std::min(next_waypoint_, waypoints_.size()), waypoints_.end() });
+      auto consumed = std::min(next_waypoint_, waypoints_.size());
+      setOutput("waypoints", Waypoints{ waypoints_.begin() + consumed, waypoints_.end() });
       setOutput("next_waypoint", next_waypoint_);
-      auto v = Waypoints{ waypoints_.begin() + next_waypoint_, waypoints_.end() };
-      ROS_INFO_STREAM_NAMED(name(), "Next waypoint: " << next_waypoint_ << " (" << v.size() << "/" << waypoints_.size()
-                                                      << " left)");
+      ROS_INFO_STREAM_NAMED(name(), "Next waypoint: " << next_waypoint_ << " (" << waypoints_.size() - consumed << "/"
+                                                      << waypoints_.size() << " left)");
     }
     return BT::NodeStatus::RUNNING;
   }

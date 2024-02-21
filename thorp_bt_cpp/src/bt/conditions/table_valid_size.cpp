@@ -14,10 +14,10 @@ namespace thorp::bt::conditions
  * SUCCESS if table dimensions are within limits
  * FAILURE otherwise
  */
-class CheckTableSize : public BT::ConditionNode
+class TableValidSize : public BT::ConditionNode
 {
 public:
-  CheckTableSize(const std::string& name, const BT::NodeConfiguration& config) : BT::ConditionNode(name, config)
+  TableValidSize(const std::string& name, const BT::NodeConfiguration& config) : BT::ConditionNode(name, config)
   {
   }
 
@@ -49,6 +49,6 @@ private:
     return BT::NodeStatus::SUCCESS;
   }
 
-  BT_REGISTER_NODE(CheckTableSize);
+  BT_REGISTER_NODE(TableValidSize);
 };
 }  // namespace thorp::bt::conditions
