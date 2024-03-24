@@ -26,17 +26,17 @@ from thorp_toolkit.geometry import TF2, distance_2d, create_2d_pose, create_3d_p
 
 surfaces = [{'name': 'doll_table',
              'size': (0.45, 0.45),
-             'objs': 4,
+             'objs': 2,
              'dist': 'uniform',  # different distributions: 'uniform', 'diagonal', 'xor', '+/+'
              'count': 2},
             {'name': 'lack_table',
              'size': (0.55, 0.55),
-             'objs': 6,
+             'objs': 3,
              'dist': 'uniform',  # different distributions: 'uniform', 'diagonal', 'xor', '+/+'
              'count': 2},
             {'name': 'lack_table_x15',
              'size': (0.825, 0.55),
-             'objs': 10,
+             'objs': 5,
              'dist': 'uniform',  # different distributions: 'uniform', 'diagonal', 'xor', '+/+'
              'count': 1}
             ]
@@ -58,15 +58,15 @@ cats = [{'name': 'cat_black', 'count': 2},
 models = {}
 
 # a sample of objects mostly at reachable locations
-PLAYGROUND_OBJS = [('star', 'star', (0.28, 0.017, 0.5, 0.0, 0.0, 0.2)),
-                   ('clover', 'clover', (0.36, -0.037, 0.5, 0.0, 0.0, 1.4)),
-                   ('square', 'square', (0.29, -0.16, 0.5, 0.0, 0.0, 1.1)),
-                   ('triangle', 'triangle', (0.32, 0.1, 0.5, 0.0, 0.0, 0.1)),
-                   ('rectangle', 'rectangle', (0.27, 0.15, 0.5, 0.0, 0.0, 0.4)),
-                   ('cross', 'cross', (0.37, 0.15, 0.5, 0.0, 0.0, 0.75)),
-                   ('tower', 'tower', (0.38, -0.14, 0.5, 0.0, 0.0, 0.15)),
-                   ('circle', 'circle', (0.48, 0.12, 0.5, 0.0, 0.0, 1.15)),
-                   ('cube', 'cube', (0.46, 0.1, 0.5, 0.0, 0.0, 0.85))]
+PLAYGROUND_OBJS = [('star', 'star', (-0.17, 0.017, 0.5, 0.0, 0.0, 0.2)),
+                #   ('clover', 'clover', (-0.11, -0.037, 0.5, 0.0, 0.0, 1.4)),
+                   ('square', 'square', (-0.16, -0.16, 0.5, 0.0, 0.0, 1.1)),
+                 #  ('triangle', 'triangle', (-0.13, 0.1, 0.5, 0.0, 0.0, 0.1)),
+               #    ('rectangle', 'rectangle', (-0.22, 0.15, 0.5, 0.0, 0.0, 0.4)),
+              #     ('cross', 'cross', (-0.06, 0.15, 0.5, 0.0, 0.0, 0.75)),
+             #      ('tower', 'tower', (-0.07, -0.14, 0.5, 0.0, 0.0, 0.15)),
+                   ('circle', 'circle', (0.03, 0.12, 0.5, 0.0, 0.0, 1.15)),
+                   ('cube', 'cube', (0.01, 0.1, 0.5, 0.0, 0.0, 0.85))]
 
 # cubes at reachable locations, ready to stack
 PLAYGROUND_CUBES = [('cube 1', 'cube', (-0.15, 0.017, 0.45, 0.0, 0.0, 0.2)),
@@ -341,9 +341,9 @@ if __name__ == "__main__":
                     'ground_plane::link')
         spawn_objects(surface, 0)
     elif sys.argv[1] == 'playground_fixed':  # a sample of objects mostly at reachable locations
-        spawn_model('lack_table', models['lack_table'], create_2d_pose(0.45, 0, 0.0), 'ground_plane::link')
+        spawn_model('lack_table', models['lack_table'], create_2d_pose(2, 1, 0.0), 'ground_plane::link')
         for obj in PLAYGROUND_OBJS:
-            spawn_model(obj[0], models[obj[1]], create_3d_pose(*obj[2]), 'ground_plane::link')
+            spawn_model(obj[0], models[obj[1]], create_3d_pose(*obj[2]), 'lack_table::link')
     elif sys.argv[1] == 'playground_cubes':  # cubes at reachable locations, ready to stack
         spawn_model('doll_table', models['doll_table'], create_2d_pose(0.38, 0, 0.0), 'ground_plane::link')
         for obj in PLAYGROUND_CUBES:

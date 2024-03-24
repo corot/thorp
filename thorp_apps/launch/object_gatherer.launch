@@ -14,10 +14,10 @@
   <arg name="viz_executive"  default="false"/>
   <arg name="start_delay"    default="0.0"/>
   <arg name="record_video"   default="false"/>
-  <arg name="world_name"     default="fun_house"/>
+  <arg name="world_name"     default="empty"/>
   <arg name="localization"   default="gazebo" if="$(eval simulator == 'gazebo')"/>
-  <arg name="initial_pose_x" default="8.5"/>
-  <arg name="initial_pose_y" default="6.0"/>
+  <arg name="initial_pose_x" default="1"/>
+  <arg name="initial_pose_y" default="1"/>
   <arg name="initial_pose_a" default="0.0"/>
 
   <!-- App-specific parameters -->
@@ -41,7 +41,8 @@
 
   <group if="$(eval simulator != 'none')">
     <!-- Spawn objects randomly around the house -->
-    <node pkg="thorp_simulation" type="spawn_gazebo_models.py" name="objects_spawner" output="screen" args="objects"/>
+    <node pkg="thorp_simulation" type="spawn_gazebo_models.py" name="objects_spawner" output="screen"
+          args="playground_fixed"/>
   </group>
 
   <!--  ***************** Navigation ******************  -->
