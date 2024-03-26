@@ -45,12 +45,6 @@ std_msgs::ColorRGBA namedColor(const std::string& color_name, float alpha = 1.0f
 std::vector<std::string> tokenize(const std::string& csv);
 
 /**
- * @brief Wait for first clock message if use_sim_time is true
- * @return true if we get a clock message before timeout or if use_sim_time is false
- */
-bool waitForSimTime();
-
-/**
  * @brief Receive one message from a topic.
  * This will create a new subscription to the topic, receive one message, then unsubscribe.
  * @param topic name of topic
@@ -74,13 +68,15 @@ std::optional<MessageType> waitForMessage(const std::string& topic, ros::Duratio
   // Spin and wait for the message up to timeout
   ros::Time time_start = ros::Time::now();
   ros::Rate loop_rate(100);
-  ROS_ERROR("%d \t%d\t%d", received_message.has_value(),  timeout.isZero(),  ((ros::Time::now() - time_start) < timeout));
+  ROS_ERROR("%d \t%d\t%d\t%f\t%f", received_message.has_value(),  timeout.isZero(),  ((ros::Time::now() - time_start) < timeout), time_start.toSec(), ros::Time::now().toSec());
   while (ros::ok() && !received_message && (timeout.isZero() || (ros::Time::now() - time_start) < timeout))
   {
-    ROS_ERROR("%d \t%d\t%d", received_message.has_value(),  timeout.isZero(),  ((ros::Time::now() - time_start) < timeout));
+    ROS_ERROR("%d \t%d\t%d\t%f\t%f", received_message.has_value(),  timeout.isZero(),  ((ros::Time::now() - time_start) < timeout), time_start.toSec(), ros::Time::now().toSec());
     ros::spinOnce();
     loop_rate.sleep();
   }
+  ROS_ERROR("out");
+  ROS_ERROR("%d \t%d\t%d\t%f\t%f", received_message.has_value(),  timeout.isZero(),  ((ros::Time::now() - time_start) < timeout), time_start.toSec(), ros::Time::now().toSec());
 
   return received_message;
 }

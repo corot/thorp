@@ -12,8 +12,16 @@ BT::BehaviorTreeFactory Runner::bt_factory_{};
 
 Runner::Runner() : pnh_("~")
 {
+}
+
+bool Runner::loadTree()
+{
   // on simulation, wait for the simulated time to start before loading and running the tree
-  ttk::waitForSimTime();
+  if (!ros::Time::waitForValid(ros::WallDuration(60)))
+  {
+    ROS_ERROR_STREAM_NAMED("bt_runner", "No valid time after 60 seconds");
+    return false;
+  }
 
   std::string bt_filepath, nodes_filepath;
   pnh_.getParam("app_name", app_name_);
@@ -33,6 +41,7 @@ Runner::Runner() : pnh_("~")
   else
   {
     ROS_ERROR_STREAM("Unable to open file to write node models file: " << nodes_filepath);
+    return false;
   }
 
   try
@@ -44,7 +53,7 @@ Runner::Runner() : pnh_("~")
   {
     ROS_ERROR_STREAM_NAMED("bt_runner", "Failed to load behavior tree " << bt_filepath);
     ROS_ERROR_STREAM_NAMED("bt_runner", e.what());
-    bt_.reset();
+    return false;
   }
 
   // init publishers for debugging bt
@@ -60,6 +69,7 @@ Runner::Runner() : pnh_("~")
     ROS_WARN_NAMED("bt_runner", "Tick rate %.2f is non-positive, defaulting to 10 Hz", tick_rate_);
     tick_rate_ = 10;
   }
+  return true;
 }
 
 void Runner::run()

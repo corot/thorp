@@ -68,22 +68,4 @@ std::vector<std::string> tokenize(const std::string& csv)
   return result;
 }
 
-bool waitForSimTime()
-{
-  // In sim, wait for clock to start
-  ros::NodeHandle nh;
-  if (nh.param<bool>("/use_sim_time", false))
-  {
-    ROS_ERROR("1");
-    auto msg = waitForMessage<rosgraph_msgs::Clock>("/clock", ros::Duration(60));
-    ROS_ERROR("2");
-    if ( !msg)
-    {
-      ROS_FATAL("No clock msgs after 60 seconds, being use_sim_time true");
-      return false;
-    }
-  }
-  return true;
-}
-
 } /* namespace thorp::toolkit */

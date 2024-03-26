@@ -15,6 +15,8 @@ class Runner
 public:
   Runner();
 
+  bool loadTree();
+
   void run();
 
   /** Factory to create the BT. It's static, so the custom nodes can register themselves with static initialization */
