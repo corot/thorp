@@ -1,0 +1,8 @@
+# Query objects within a region
+
+geometry_msgs/Point lower_left
+geometry_msgs/Point upper_right
+
+---
+
+Object[] objects

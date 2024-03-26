@@ -14,7 +14,12 @@ struct Point2d
   Point2d() : x(0), y(0)
   {
   }
+
   Point2d(double x, double y) : x(x), y(y)
+  {
+  }
+
+  Point2d(const geometry_msgs::Point& p) : x(p.x), y(p.y)
   {
   }
 

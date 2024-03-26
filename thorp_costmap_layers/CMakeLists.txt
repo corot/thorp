@@ -26,7 +26,8 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 add_message_files(DIRECTORY msg FILES Object.msg)
-add_service_files(DIRECTORY srv FILES UpdateObjects.srv)
+add_service_files(DIRECTORY srv FILES QueryObjects.srv
+                                      UpdateObjects.srv)
 
 catkin_python_setup()
 

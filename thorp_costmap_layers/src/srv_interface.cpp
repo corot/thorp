@@ -10,6 +10,9 @@ ServiceInterface::ServiceInterface(ros::NodeHandle& nh, tf2_ros::Buffer& tf, cos
   : BaseInterface(nh, tf, lcm)
 {
   // Service to add/modify/remove semantic objects to the costmap
+  query_srv_ = nh_.advertiseService("query_objects", &ServiceInterface::queryObjects, this);
+
+  // Service to add/modify/remove semantic objects to the costmap
   update_srv_ = nh_.advertiseService("update_objects", &ServiceInterface::updateObjects, this);
 }
 
@@ -18,6 +21,24 @@ ServiceInterface::~ServiceInterface() = default;
 void ServiceInterface::reconfigure(const thorp_costmap_layers::SemanticLayerConfig& config)
 {
   enabled_ = config.service_enabled;
+}
+
+bool ServiceInterface::queryObjects(thorp_costmap_layers::QueryObjects::Request& request,
+                                    thorp_costmap_layers::QueryObjects::Response& response)
+{
+  std::vector<Object> objects = getObjectsInRegion(Point2d(request.lower_left), Point2d(request.upper_right));
+  for (const auto& obj : objects)
+  {
+    thorp_costmap_layers::Object msg;
+    // TODO our hash doesn't store the objects, so we cannot recover name and exact pose
+    msg.type = obj.type;
+    msg.pose.pose.position.x = (obj.bounding_box.br.x + obj.bounding_box.tl.x) / 2.0;
+    msg.pose.pose.position.y = (obj.bounding_box.br.y + obj.bounding_box.tl.y) / 2.0;
+    msg.dimensions.x = obj.bounding_box.br.x - obj.bounding_box.tl.x;
+    msg.dimensions.y = obj.bounding_box.tl.y - obj.bounding_box.br.y;
+    response.objects.push_back(msg);
+  }
+  return true;
 }
 
 bool ServiceInterface::updateObjects(thorp_costmap_layers::UpdateObjects::Request& request,

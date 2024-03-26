@@ -19,14 +19,24 @@ public:
 
   bool removeObject(const std::string& name, const std::string& type, const std::string& costmap = "both");
 
+  std::vector<thorp_costmap_layers::Object> queryObjects(const geometry_msgs::Point& lower_left,
+                                                         const geometry_msgs::Point& upper_right,
+                                                         const std::string& costmap = "both");
+
 private:
   ServiceClient();
 
-  bool callSrv(ros::ServiceClient& srv, const thorp_costmap_layers::Object& obj, const std::string& costmap);
+  bool callUpdateSrv(ros::ServiceClient& srv, const thorp_costmap_layers::Object& obj, const std::string& costmap);
+
+  bool callQuerySrv(ros::ServiceClient& srv, const geometry_msgs::Point& lower_left,
+                    const geometry_msgs::Point& upper_right, std::vector<thorp_costmap_layers::Object>& objects,
+                    const std::string& costmap);
 
   ros::NodeHandle nh_;
-  ros::ServiceClient lcm_sl_srv_;
-  ros::ServiceClient gcm_sl_srv_;
+  ros::ServiceClient lcm_qo_srv_;
+  ros::ServiceClient gcm_qo_srv_;
+  ros::ServiceClient lcm_uo_srv_;
+  ros::ServiceClient gcm_uo_srv_;
 
   // Disable copy and assignment
   ServiceClient(const ServiceClient&) = delete;

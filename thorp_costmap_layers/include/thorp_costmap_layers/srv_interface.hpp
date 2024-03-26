@@ -2,6 +2,7 @@
 
 #include <moveit_msgs/CollisionObject.h>
 
+#include <thorp_costmap_layers/QueryObjects.h>
 #include <thorp_costmap_layers/UpdateObjects.h>
 
 #include "thorp_costmap_layers/base_interface.hpp"
@@ -17,6 +18,9 @@ public:
 
   void reconfigure(const thorp_costmap_layers::SemanticLayerConfig& config) override;
 
+  bool queryObjects(thorp_costmap_layers::QueryObjects::Request& request,
+                    thorp_costmap_layers::QueryObjects::Response& response);
+
   bool updateObjects(thorp_costmap_layers::UpdateObjects::Request& request,
                      thorp_costmap_layers::UpdateObjects::Response& response);
 
@@ -24,6 +28,7 @@ private:
   void objectToContour(const thorp_costmap_layers::Object& object, std::vector<geometry_msgs::PoseStamped>& contour,
                        double length_padding, double width_padding) const;
 
+  ros::ServiceServer query_srv_;
   ros::ServiceServer update_srv_;
 
   /// Module name for logging
