@@ -21,7 +21,7 @@ public:
     ports.insert({ BT::InputPort<std::string>("planner"),                     //
                    BT::InputPort<geometry_msgs::PoseStamped>("target_pose"),  //
                    BT::OutputPort<nav_msgs::Path>("path"),                    //
-                   BT::OutputPort<unsigned int>("error"),                     //
+                   BT::OutputPort<int>("error"),                              //
                    BT::OutputPort<std::optional<FeedbackType>>("feedback") });
     return ports;
   }
@@ -53,7 +53,7 @@ private:
   BT::NodeStatus onAborted(const ResultConstPtr& res) override
   {
     ROS_ERROR_NAMED(name(), "Get path failed with error %d: %s", res->outcome, res->message.c_str());
-    setOutput("error", res->outcome);
+    setOutput<int>("error", res->outcome);
 
     return BT::NodeStatus::FAILURE;
   }

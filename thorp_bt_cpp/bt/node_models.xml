@@ -82,7 +82,7 @@
             <input_port name="controller" type="std::string"/>
             <input_port name="path" type="nav_msgs::Path_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
-            <output_port name="error" type="unsigned int"/>
+            <output_port name="error" type="int"/>
             <output_port name="feedback" type="std::optional&lt;mbf_msgs::ExePathFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
         </Action>
         <Action ID="FireCannon">
@@ -96,7 +96,7 @@
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
             <input_port name="stop_at_distance" type="bool"/>
             <input_port name="time_limit" type="float"/>
-            <output_port name="error" type="unsigned char"/>
+            <output_port name="error" type="int"/>
             <output_port name="feedback" type="thorp_msgs::FollowPoseFeedback_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Action ID="GetPath">
@@ -104,7 +104,7 @@
             <input_port name="planner" type="std::string"/>
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
             <input_port name="target_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <output_port name="error" type="unsigned int"/>
+            <output_port name="error" type="int"/>
             <output_port name="feedback" type="std::optional&lt;mbf_msgs::GetPathFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
             <output_port name="path" type="nav_msgs::Path_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
@@ -114,7 +114,7 @@
         </Action>
         <Action ID="GetRobotPose">
             <input_port name="timeout" type="double"/>
-            <output_port name="error" type="unsigned int"/>
+            <output_port name="error" type="int"/>
             <output_port name="robot_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Action ID="GetUIntFromList">
@@ -131,7 +131,7 @@
             <input_port name="planner" type="std::string"/>
             <input_port name="pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
-            <output_port name="error" type="unsigned int"/>
+            <output_port name="error" type="int"/>
             <output_port name="feedback" type="std::optional&lt;mbf_msgs::MoveBaseFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
         </Action>
         <Action ID="GripperBusy">
@@ -154,7 +154,7 @@
             <input_port name="robot_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
             <input_port name="target_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <output_port name="error" type="unsigned int"/>
+            <output_port name="error" type="int"/>
             <output_port name="feedback" type="std::optional&lt;mbf_msgs::ExePathFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
         </Action>
         <Action ID="MakePickingPlan">
@@ -196,7 +196,7 @@
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
             <input_port name="support_surf" type="std::string"/>
             <input_port name="tightening" type="double"/>
-            <output_port name="error" type="unsigned int"/>
+            <output_port name="error" type="int"/>
             <output_port name="feedback" type="std::optional&lt;thorp_msgs::PickupObjectFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
         </Action>
         <Condition ID="PickupPlanCompleted">
@@ -208,7 +208,7 @@
             <input_port name="place_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
             <input_port name="support_surf" type="std::string"/>
-            <output_port name="error" type="unsigned int"/>
+            <output_port name="error" type="int"/>
             <output_port name="feedback" type="std::optional&lt;thorp_msgs::PlaceObjectFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
         </Action>
         <Action ID="PlanRoomExploration">
@@ -320,7 +320,7 @@
             <input_port name="action_name" type="std::string" default="move_to_target">name of the ROS action client</input_port>
             <input_port name="configuration" type="std::string"/>
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
-            <output_port name="error" type="unsigned int"/>
+            <output_port name="error" type="int"/>
             <output_port name="feedback" type="std::optional&lt;thorp_msgs::MoveToTargetFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
         </Action>
         <Action ID="SetBool">
@@ -353,6 +353,10 @@
         </Action>
         <Condition ID="TableValidSize">
             <input_port name="table" type="rail_manipulation_msgs::SegmentedObject_&lt;std::allocator&lt;void&gt; &gt;"/>
+        </Condition>
+        <Condition ID="TableVisited">
+            <input_port name="table" type="rail_manipulation_msgs::SegmentedObject_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="table_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Condition>
         <Condition ID="TargetReachable">
             <input_port name="follow_feedback" type="thorp_msgs::FollowPoseFeedback_&lt;std::allocator&lt;void&gt; &gt;"/>

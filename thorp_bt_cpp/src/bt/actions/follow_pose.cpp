@@ -21,7 +21,7 @@ public:
     ports.insert({ BT::InputPort<float>("time_limit"),       //
                    BT::InputPort<float>("distance"),         //
                    BT::InputPort<bool>("stop_at_distance"),  //
-                   BT::OutputPort<uint8_t>("error"),         //
+                   BT::OutputPort<int>("error"),             //
                    BT::OutputPort<FeedbackType>("feedback") });
     return ports;
   }
@@ -49,7 +49,7 @@ private:
     ROS_ERROR_NAMED(name(), "FollowPose failed with error %d", res->outcome);
 
     // TODO add message field    ROS_ERROR_NAMED(name(), "Error %d: %s", res->outcome, res->message.c_str());
-    setOutput("error", res->outcome);
+    setOutput<int>("error", res->outcome);
 
     return BT::NodeStatus::FAILURE;
   }

@@ -19,7 +19,8 @@ public:
 
   static BT::PortsList providedPorts()
   {
-    return { BT::InputPort<double>("timeout"), BT::OutputPort<unsigned int>("error"),
+    return { BT::InputPort<double>("timeout"),  //
+             BT::OutputPort<int>("error"),      //
              BT::OutputPort<geometry_msgs::PoseStamped>("robot_pose") };
   }
 
@@ -42,7 +43,7 @@ private:
     }
 
     ROS_ERROR_NAMED(name(), "Could not get the current robot pose");
-    setOutput("error", mbf_msgs::ExePathResult::TF_ERROR);
+    setOutput<int>("error", mbf_msgs::ExePathResult::TF_ERROR);
 
     return BT::NodeStatus::FAILURE;
   }

@@ -42,8 +42,7 @@ private:
     if (std::min(table.width, table.depth) < table_min_side ||
         std::max(table.width, table.depth) > table_max_side)
     {
-      ROS_INFO_NAMED(name(), "Table detected at %s rejected due to invalid size: %.2f x %.2f",
-                     ttk::toCStr2D(table.center), table.width, table.depth);
+      ROS_INFO_NAMED(name(), "Table rejected due to invalid size: %.2f x %.2f", table.width, table.depth);
       return BT::NodeStatus::FAILURE;
     }
     return BT::NodeStatus::SUCCESS;

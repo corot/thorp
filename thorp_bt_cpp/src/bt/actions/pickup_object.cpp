@@ -25,7 +25,7 @@ public:
                    BT::InputPort<std::string>("support_surf"),  //
                    BT::InputPort<double>("max_effort"),         //
                    BT::InputPort<double>("tightening"),         //
-                   BT::OutputPort<unsigned int>("error"),       //
+                   BT::OutputPort<int>("error"),                //
                    BT::OutputPort<std::optional<FeedbackType>>("feedback") });
     return ports;
   }
@@ -54,7 +54,7 @@ private:
   BT::NodeStatus onAborted(const ResultConstPtr& res) override
   {
     ROS_ERROR_NAMED(name(), "Error %d: %s", res->error.code, res->error.text.c_str());
-    setOutput("error", (unsigned int)res->error.code);
+    setOutput<int>("error", res->error.code);
 
     return BT::NodeStatus::FAILURE;
   }

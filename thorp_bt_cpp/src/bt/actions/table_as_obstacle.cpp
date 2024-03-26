@@ -31,10 +31,13 @@ private:
   {
     const auto table = *getInput<rail_manipulation_msgs::SegmentedObject>("table");
     const auto table_pose = *getInput<geometry_msgs::PoseStamped>("table_pose");
+    const auto table_name = table.name                                                           // avoid name
+                            + "_" + std::to_string((int)std::round(table_pose.pose.position.x))  // collisions
+                            + "_" + std::to_string((int)std::round(table_pose.pose.position.y));
     geometry_msgs::Vector3 table_size;
     table_size.x = table.depth;
     table_size.y = table.width;
-    tcl::ServiceClient::instance().addObject(table.name, "obstacle", table_pose, table_size, "both");
+    tcl::ServiceClient::instance().addObject(table_name, "obstacle", table_pose, table_size, "both");
     return BT::NodeStatus::SUCCESS;
   }
 
