@@ -22,7 +22,7 @@ public:
     ros::NodeHandle pnh("~");
     max_arm_reach_ = pnh.param("max_arm_reach", 0.3);
     max_failures_ = pnh.param("picking_max_failures", 3);
-    tightening_delta_ = pnh.param("gripper_tightening", 0.002);
+    tightening_ = pnh.param("gripper_tightening", 0.002);
     std::string manip_frame = pnh.param("picking_planning_frame", std::string("arm_base_link"));
     arm_pose_on_bfp_rf_.header.frame_id = manip_frame;
     if (!ttk::TF2::instance().transformPose("base_footprint", arm_pose_on_bfp_rf_, arm_pose_on_bfp_rf_,
@@ -41,7 +41,7 @@ public:
 private:
   double max_arm_reach_;
   uint32_t max_failures_;
-  double tightening_delta_;
+  double tightening_;
   geometry_msgs::PoseStamped arm_pose_on_bfp_rf_;
 
   BT::NodeStatus tick() override
@@ -86,14 +86,14 @@ private:
       return entry->second;
     };
 
-    std::default_random_engine generator;
     for (const auto& [target, dist] : targets)
     {
       if (auto fc = failures_count(target); fc < max_failures_)
       {
         if (fc)
         {
-          std::uniform_real_distribution<double> uniform(-tightening_delta_, tightening_delta_ * fc);
+          static std::default_random_engine generator;
+          std::uniform_real_distribution<double> uniform(0.0, tightening_ * 2.0 * fc);
           auto extra_tightening = uniform(generator);
           ROS_INFO_NAMED(name(), "Retrying target '%s' (%d previous failures; %.1f mm of extra tightening)",
                          target.c_str(), fc, extra_tightening * 1000);
@@ -101,7 +101,7 @@ private:
         }
         else
         {
-          setOutput("tightening", tightening_delta_);
+          setOutput("tightening", tightening_);
         }
         setOutput("target_name", target);
         ROS_INFO_NAMED(name(), "Next target: '%s', located at %.2f m from the arm", target.c_str(), dist);
