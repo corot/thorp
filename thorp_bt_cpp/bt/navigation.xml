@@ -3,12 +3,12 @@
   <BehaviorTree ID="attach_to_table">
     <Sequence>
       <ClearTableAccess table="{table}"
-                        table_pose="{picking_pose}"/>
-      <PoseAsPath pose="{picking_pose}"
-                  path="{picking_path}"/>
+                        table_pose="{pose}"/>
+      <PoseAsPath pose="{pose}"
+                  path="{path}"/>
       <ExePath action_name="move_base_flex/exe_path"
                controller="TEBPlanner"
-               path="{picking_path}"
+               path="{path}"
                server_timeout="5.000000"
                error="{error}"
                feedback="{exe_path_feedback}"/>
@@ -17,11 +17,11 @@
 
   <BehaviorTree ID="detach_from_table">
     <Sequence>
-      <PoseAsPath pose="{detach_pose}"
-                  path="{detach_path}"/>
+      <PoseAsPath pose="{pose}"
+                  path="{path}"/>
       <ExePath action_name="move_base_flex/exe_path"
                controller="TEBPlanner"
-               path="{detach_path}"
+               path="{path}"
                server_timeout="5.000000"
                error="{error}"
                feedback="{exe_path_feedback}"/>
