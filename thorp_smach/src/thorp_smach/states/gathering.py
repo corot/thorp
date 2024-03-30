@@ -8,13 +8,16 @@ from thorp_msgs.msg import PlanPickingAction
 from .costmaps import TableAsObstacle
 from .semantics import TableMarkVisited
 from .perception import MonitorTables, DetectObjects, ObjectsDetected, ClearMarkers
-from .navigation import GetRobotPose, AreSamePose, GoToPose, AlignToTable, DetachFromTable
+from .navigation import GetRobotPose, AreSamePose, GoToPose, AttachToTable, DetachFromTable
 from .manipulation import ClearPlanningScene
 from .pickup_objs import PickupReachableObjs
 from ..containers.do_on_exit import DoOnExit as DoOnExitContainer
 
 
 class MakePickingPlan(smach_ros.SimpleActionState):
+    """
+    Group objects into picking locations and sort them to make a picking plan
+    """
     def __init__(self):
         super(MakePickingPlan, self).__init__('manipulation/plan_picking',
                                               PlanPickingAction,
@@ -34,9 +37,9 @@ class MakePickingPlan(smach_ros.SimpleActionState):
         ud['picking_plan'] = result.picking_plan.locations
 
 
-class ClosestSidePose(smach.State):
+class ClosestTableSide(smach.State):
     """
-    Calculate the four locations around a segmented surface at a given distance and return the closest to the robot.
+    Calculate the four locations around a table at a given distance and return the closest to the robot.
     """
 
     def __init__(self, distance):
@@ -139,7 +142,7 @@ class GatherObjects(smach.StateMachine):
                                            input_keys=['table', 'table_pose'])
         with approach_table_sm:
             smach.Sequence.add('GET_ROBOT_POSE', GetRobotPose())
-            smach.Sequence.add('CALC_APPROACH', ClosestSidePose(rospy.get_param('~approach_dist_to_table')),
+            smach.Sequence.add('CALC_APPROACH', ClosestTableSide(rospy.get_param('~approach_dist_to_table')),
                                transitions={'no_valid_table': 'aborted'},
                                remapping={'pose': 'closest_approach_pose'})
             smach.Sequence.add('APPROACH_TABLE', GoToPose(),  # use default tolerances; no precision needed here
@@ -154,11 +157,11 @@ class GatherObjects(smach.StateMachine):
         with make_picking_plan_sm:
             smach.StateMachine.add('GET_ROBOT_POSE', GetRobotPose(),
                                    transitions={'succeeded': 'PICKING_POSE'})
-            smach.StateMachine.add('PICKING_POSE', ClosestSidePose(rospy.get_param('~picking_dist_to_table')),
-                                   transitions={'succeeded': 'ALIGN_TO_TABLE',
+            smach.StateMachine.add('PICKING_POSE', ClosestTableSide(rospy.get_param('~picking_dist_to_table')),
+                                   transitions={'succeeded': 'ATTACH_TO_TABLE',
                                                 'no_valid_table': 'aborted'},
                                    remapping={'pose': 'closest_picking_pose'})
-            smach.StateMachine.add('ALIGN_TO_TABLE', AlignToTable(),
+            smach.StateMachine.add('ATTACH_TO_TABLE', AttachToTable(),
                                    transitions={'succeeded': 'DETECT_OBJECTS',
                                                 'aborted': 'aborted',
                                                 'preempted': 'preempted'},
@@ -194,9 +197,9 @@ class GatherObjects(smach.StateMachine):
                                    remapping={'pose1': 'robot_pose',
                                               'pose2': 'picking_pose'})
             smach.StateMachine.add('GOTO_APPROACH', GoToPose(),  # use default tolerances; no precision needed here
-                                   transitions={'succeeded': 'ALIGN_TO_TABLE'},
+                                   transitions={'succeeded': 'ATTACH_TO_TABLE'},
                                    remapping={'target_pose': 'approach_pose'})
-            smach.StateMachine.add('ALIGN_TO_TABLE', AlignToTable(),
+            smach.StateMachine.add('ATTACH_TO_TABLE', AttachToTable(),
                                    transitions={'succeeded': 'PICK_OBJECTS'},
                                    remapping={'pose': 'picking_pose'})
             smach.StateMachine.add('PICK_OBJECTS', PickupReachableObjs(),

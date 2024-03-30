@@ -3,6 +3,8 @@ import smach_ros
 
 import mbf_msgs.srv as mbf_srvs
 
+from geometry_msgs.msg import Vector3
+
 from thorp_costmap_layers.srv_iface_client import SemanticLayer
 
 
@@ -41,33 +43,33 @@ class TableAsObstacle(smach.State):
 
     def execute(self, ud):
         name, width, length = ud['table'].name, ud['table'].width, ud['table'].depth
-        SemanticLayer().add_object(name, 'obstacle', ud['pose'], (length, width), 'both')
+        SemanticLayer().add_object(name, 'obstacle', ud['pose'], Vector3(length, width, 0.0), 'both')
         return 'succeeded'
 
 
-class ClearTableWay(smach.State):
+class ClearTableAccess(smach.State):
     """
     Clear an area on local costmap so the controller can approach the table
     """
 
     def __init__(self):
-        super(ClearTableWay, self).__init__(outcomes=['succeeded'],
-                                            input_keys=['table', 'pose'])
+        super(ClearTableAccess, self).__init__(outcomes=['succeeded'],
+                                               input_keys=['table', 'pose'])
 
     def execute(self, ud):
         obj_name = ud['table'].name + ' approach'
-        SemanticLayer().add_object(obj_name, 'free_space', ud['pose'], [1.0, 0.5], 'local')
+        SemanticLayer().add_object(obj_name, 'free_space', ud['pose'], Vector3(1.0, 0.5, 0.0), 'local')
         return 'succeeded'
 
 
-class RestoreTableWay(smach.State):
+class RestoreTableAccess(smach.State):
     """
-    restore the area cleared to approach the table, so we don't collide with it after detaching
+    Restore the area cleared to approach the table, so we don't collide with it after detaching
     """
 
     def __init__(self):
-        super(RestoreTableWay, self).__init__(outcomes=['succeeded'],
-                                              input_keys=['table'])
+        super(RestoreTableAccess, self).__init__(outcomes=['succeeded'],
+                                                 input_keys=['table'])
 
     def execute(self, ud):
         obj_name = ud['table'].name + ' approach'

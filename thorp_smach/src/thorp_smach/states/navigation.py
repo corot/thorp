@@ -13,7 +13,7 @@ from thorp_toolkit.progress_tracker import ProgressTracker
 
 from .common import SetNamedConfig, DismissNamedConfig
 from .userdata import UDInsertInList, UDListSlicing, UDApplyFn
-from ..states.costmaps import ClearTableWay, RestoreTableWay
+from ..states.costmaps import ClearTableAccess, RestoreTableAccess
 from ..containers.do_on_exit import DoOnExit as DoOnExitContainer
 
 Reconfigure().load_named_configs()  # load named configurations from the default location
@@ -273,21 +273,21 @@ class ExePathFailed(smach.State):
             return 'aborted'
 
 
-class AlignToTable(DoOnExitContainer):
+class AttachToTable(DoOnExitContainer):
     def __init__(self):
-        super(AlignToTable, self).__init__(outcomes=['succeeded', 'aborted', 'preempted'],
-                                           input_keys=['table', 'pose'],
-                                           output_keys=['outcome', 'message'])
+        super(AttachToTable, self).__init__(outcomes=['succeeded', 'aborted', 'preempted'],
+                                            input_keys=['table', 'pose'],
+                                            output_keys=['outcome', 'message'])
         with self:
             self.userdata['behavior'] = 'out_to_free_space'
-            DoOnExitContainer.add('CLEAR_WAY', ClearTableWay(),
+            DoOnExitContainer.add('CLEAR_WAY', ClearTableAccess(),
                                   transitions={'succeeded': 'PRECISE_CTRL'})
             DoOnExitContainer.add('PRECISE_CTRL', SetNamedConfig('precise_controlling'),
                                   transitions={'succeeded': 'POSE_AS_PATH',
                                                'aborted': 'aborted'})
             DoOnExitContainer.add('POSE_AS_PATH', PoseAsPath(),
-                                  transitions={'succeeded': 'ALIGN_TO_TABLE'})
-            DoOnExitContainer.add('ALIGN_TO_TABLE', ExePath(),
+                                  transitions={'succeeded': 'ATTACH_TO_TABLE'})
+            DoOnExitContainer.add('ATTACH_TO_TABLE', ExePath(),
                                   transitions={'succeeded': 'succeeded',
                                                'aborted': 'TO_FREE_SPACE',
                                                'preempted': 'preempted'})
@@ -295,7 +295,7 @@ class AlignToTable(DoOnExitContainer):
                                   transitions={'succeeded': 'CLEAR_WAY',  # retry  TODO: potential inf loop!
                                                'aborted': 'aborted',
                                                'preempted': 'preempted'})
-            DoOnExitContainer.add_finally('RESTORE_WAY', RestoreTableWay())
+            DoOnExitContainer.add_finally('RESTORE_WAY', RestoreTableAccess())
             DoOnExitContainer.add_finally('STANDARD_CTRL', DismissNamedConfig('precise_controlling'))
 
 
@@ -306,7 +306,7 @@ class DetachFromTable(DoOnExitContainer):
                                               output_keys=['outcome', 'message'])
         with self:
             self.userdata['behavior'] = 'out_to_free_space'
-            DoOnExitContainer.add('CLEAR_WAY', ClearTableWay(),
+            DoOnExitContainer.add('CLEAR_WAY', ClearTableAccess(),
                                   transitions={'succeeded': 'POSE_AS_PATH'})
             DoOnExitContainer.add('POSE_AS_PATH', PoseAsPath(),
                                   transitions={'succeeded': 'AWAY_FROM_TABLE'})
@@ -318,7 +318,7 @@ class DetachFromTable(DoOnExitContainer):
                                   transitions={'succeeded': 'CLEAR_WAY',  # retry
                                                'aborted': 'aborted',
                                                'preempted': 'preempted'})
-            DoOnExitContainer.add_finally('RESTORE_WAY', RestoreTableWay())
+            DoOnExitContainer.add_finally('RESTORE_WAY', RestoreTableAccess())
 
 
 class FollowWaypoints(DoOnExitContainer):
