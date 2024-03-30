@@ -39,7 +39,7 @@
       <collision>
         <xacro:insert_block name="visual_origin"/>
         <geometry>
-          <box size="0.04 0.185 0.03"/>
+          <box size="0.185 0.03 0.04"/>  <!-- match mesh rotation of pi/2 around x and z axis -->
         </geometry>
       </collision>
       <inertial>
