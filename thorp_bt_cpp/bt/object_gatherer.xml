@@ -50,13 +50,13 @@
                             robot_pose="{robot_pose}"
                             table="{table}"
                             table_pose="{table_pose}"
-                            closest_pose="{detection_pose}"/>
+                            closest_pose="{detach_pose}"/>
           <GoToPose action_name="move_base_flex/move_base"
                     angle_tolerance=""
                     controller="TEBPlanner"
                     dist_tolerance=""
                     planner=""
-                    pose="{detection_pose}"
+                    pose="{detach_pose}"
                     server_timeout="5.000000"
                     error="{error}"
                     feedback="{goto_pose_feedback}"/>
@@ -87,54 +87,64 @@
                              server_timeout="5.000000"
                              objects="{objects}"
                              surface="{surface}"/>
-              <ObjectsDetected objects="{objects}"/>
+              <Fallback>
+                <ObjectsDetected given_up_count="{given_up_count}"
+                                 ignore_given_up="true"
+                                 objects="{objects}"/>
+                <ForceFailure>
+                  <SubTree ID="detach_from_table"
+                           table="{table}"
+                           pose="{detach_pose}"/>
+                </ForceFailure>
+              </Fallback>
               <MakePickingPlan action_name="manipulation/plan_picking"
                                objects="{objects}"
                                robot_pose="{robot_pose}"
                                server_timeout="5.000000"
                                surface="{surface}"
                                picking_plan="{picking_plan}"/>
-              <KeepRunningUntilFailure>
-                <Sequence>
-                  <PopPickupLocation approach_pose="{approach_pose}"
-                                     detach_pose="{detach_pose}"
-                                     picking_pose="{picking_pose}"
-                                     picking_plan="{picking_plan}"/>
-                  <Fallback>
-                    <AreSamePose angle_tolerance="0.1"
-                                 dist_tolerance="0.05"
-                                 pose1="{robot_pose}"
-                                 pose2="{picking_pose}"/>
-                    <Sequence>
-                      <ClearRailMarkers service_name="rail_segmentation/clear_markers"
-                                        timeout="100"/>
-                      <ClearPlanningScene keep_tray="true"/>
-                      <SubTree ID="detach_from_table"
-                               table="{table}"
-                               pose="{detection_pose}"/>
-                      <GoToPose action_name="move_base_flex/move_base"
-                                angle_tolerance=""
-                                controller="TEBPlanner"
-                                dist_tolerance=""
-                                planner=""
-                                pose="{approach_pose}"
-                                server_timeout="5.000000"
-                                error="{error}"
-                                feedback="{goto_pose_feedback}"/>
-                      <SubTree ID="attach_to_table"
-                               table="{table}"
-                               pose="{picking_pose}"/>
-                    </Sequence>
-                  </Fallback>
-                  <SubTree ID="pickup_objects"/>
-                  <ClearRailMarkers service_name="rail_segmentation/clear_markers"
-                                    timeout="100"/>
-                  <ClearPlanningScene keep_tray="true"/>
-                  <SubTree ID="detach_from_table"
-                           table="{table}"
-                           pose="{detach_pose}"/>
-                </Sequence>
-              </KeepRunningUntilFailure>
+              <Inverter>
+                <KeepRunningUntilFailure>
+                  <Sequence>
+                    <PopPickupLocation approach_pose="{approach_pose}"
+                                       detach_pose="{new_detach_pose}"
+                                       picking_pose="{picking_pose}"
+                                       picking_plan="{picking_plan}"/>
+                    <Fallback>
+                      <AreSamePose angle_tolerance="0.1"
+                                   dist_tolerance="0.05"
+                                   pose1="{robot_pose}"
+                                   pose2="{picking_pose}"/>
+                      <Sequence>
+                        <ClearRailMarkers service_name="rail_segmentation/clear_markers"
+                                          timeout="100"/>
+                        <ClearPlanningScene keep_tray="true"/>
+                        <SubTree ID="detach_from_table"
+                                 table="{table}"
+                                 pose="{detach_pose}"/>
+                        <GoToPose action_name="move_base_flex/move_base"
+                                  angle_tolerance=""
+                                  controller="TEBPlanner"
+                                  dist_tolerance=""
+                                  planner=""
+                                  pose="{approach_pose}"
+                                  server_timeout="5.000000"
+                                  error="{error}"
+                                  feedback="{goto_pose_feedback}"/>
+                        <SubTree ID="attach_to_table"
+                                 table="{table}"
+                                 pose="{picking_pose}"/>
+                      </Sequence>
+                    </Fallback>
+                    <SubTree ID="pickup_objects"/>
+                    <ClearRailMarkers service_name="rail_segmentation/clear_markers"
+                                      timeout="100"/>
+                    <ClearPlanningScene keep_tray="true"/>
+                    <SetPose input="{new_detach_pose}"
+                             output="{detach_pose}"/>
+                  </Sequence>
+                </KeepRunningUntilFailure>
+              </Inverter>
             </Sequence>
           </KeepRunningUntilFailure>
         </Sequence>

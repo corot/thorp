@@ -158,7 +158,7 @@ class PickingPlanner(actionlib.SimpleActionServer):
             ploc.objects.remove(obj)  # TODO make a test for this and move the remove to within the loop (much simpler)
         # TODO: why I sort again? I may break the optimization done above!!!
         sorted_plocs = sorted(sorted_plocs, key=lambda pl: len(pl.objects))  # sort again after removing duplicates
-        self.viz_pick_locs(sorted_plocs, max_arm_reach)
+        self.viz_picking_plan(sorted_plocs, max_arm_reach)
         return sorted_plocs
 
     @staticmethod
@@ -190,15 +190,15 @@ class PickingPlanner(actionlib.SimpleActionServer):
         for ploc in pls_to_remove:
             pick_locs.remove(ploc)
 
-    def viz_pick_locs(self, pick_locs, max_arm_reach):
+    def viz_picking_plan(self, pick_locs, max_arm_reach):
         Visualization().clear_markers()
-        for pl in pick_locs:
-            color = Visualization.rand_color(0.4)
+        for i, pl in enumerate(pick_locs):
+            color = Visualization.rand_color(0.5)
             Visualization().add_disc_marker(pl.arm_pose, [max_arm_reach * 2.0] * 2, color)
 
             text_pose = deepcopy(pl.arm_pose)
             text_pose.pose.position.z += 0.15
-            Visualization().add_text_marker(text_pose, pl.name + ' ' + str(len(pl.objects)), 0.2, color)
+            Visualization().add_text_marker(text_pose, f"{i + 1} {pl.name} {len(pl.objects)}", 0.2, color)
 
             for obj in pl.objects:
                 text_pose = deepcopy(obj.pose)

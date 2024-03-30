@@ -187,6 +187,8 @@
             <output_port name="attached_object" type="std::string"/>
         </Action>
         <Condition ID="ObjectsDetected">
+            <input_port name="given_up_count" type="unsigned int"/>
+            <input_port name="ignore_given_up" type="bool"/>
             <input_port name="objects" type="std::vector&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
         </Condition>
         <Action ID="PickupObject">
@@ -330,6 +332,10 @@
         <Action ID="SetDouble">
             <input_port name="input" type="double"/>
             <output_port name="output" type="double"/>
+        </Action>
+        <Action ID="SetPose">
+            <input_port name="input" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <output_port name="output" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Action ID="SetUnsignedInt">
             <input_port name="input" type="unsigned int"/>

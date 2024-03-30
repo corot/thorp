@@ -21,7 +21,8 @@
               <SubTree ID="pickup_object"/>
               <SubTree ID="place_on_tray"/>
               <RecordPickupFailure target_name="{object_name}"
-                                   failures="{failures}"/>
+                                   failures="{failures}"
+                                   given_up_count="{given_up_count}"/>
             </IfThenElse>
           </Sequence>
           <SetArmConfig action_name="move_to_target"

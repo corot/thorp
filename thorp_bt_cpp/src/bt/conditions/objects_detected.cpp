@@ -15,7 +15,9 @@ public:
 
   static BT::PortsList providedPorts()
   {
-    return { BT::InputPort<std::vector<moveit_msgs::CollisionObject>>("objects") };
+    return { BT::InputPort<std::vector<moveit_msgs::CollisionObject>>("objects"),  //
+             BT::InputPort<uint32_t>("given_up_count"),                            //
+             BT::InputPort<bool>("ignore_given_up") };
   }
 
 private:
@@ -27,6 +29,18 @@ private:
       ROS_INFO_STREAM_NAMED(name(), "No objects available");
       return BT::NodeStatus::FAILURE;
     }
+
+    auto ignore_given_up = getInput<bool>("ignore_given_up");
+    if (ignore_given_up && *ignore_given_up)
+    {
+      auto given_up_count = getInput<uint32_t>("given_up_count");
+      if (given_up_count && *given_up_count == objects->size())
+      {
+        ROS_INFO_STREAM_NAMED(name(), "All " << objects->size() << " detected objects have been given up");
+        return BT::NodeStatus::FAILURE;
+      }
+    }
+
     ROS_INFO_STREAM_NAMED(name(), objects->size() << " objects available");
     return BT::NodeStatus::SUCCESS;
   }
