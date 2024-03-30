@@ -8,7 +8,6 @@
         </Inverter>
         <Sequence>
           <SegmentRooms action_name="exploration/room_segmentation"
-
                         server_timeout="5.000000"
                         map_image="{map_image}"
                         map_origin="{map_origin}"
@@ -21,7 +20,6 @@
                         error="{error}"
                         robot_pose="{robot_pose}"/>
           <PlanRoomSequence action_name="exploration/room_sequence_planning"
-
                             map_image="{map_image}"
                             map_origin="{map_origin}"
                             map_resolution="{map_resolution}"
@@ -44,7 +42,6 @@
                                element="{room_number}"
                                list="{room_sequence}"/>
               <PlanRoomExploration action_name="exploration/room_exploration"
-
                                    map_image="{map_image}"
                                    map_origin="{map_origin}"
                                    map_resolution="{map_resolution}"

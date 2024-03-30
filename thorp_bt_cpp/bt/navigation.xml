@@ -1,31 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root BTCPP_format="3">
   <BehaviorTree ID="attach_to_table">
-    <Sequence>
-      <ClearTableAccess table="{table}"
-                        table_pose="{pose}"/>
-      <PoseAsPath pose="{pose}"
-                  path="{path}"/>
-      <ExePath action_name="move_base_flex/exe_path"
-               controller="TEBPlanner"
-               path="{path}"
-               server_timeout="5.000000"
-               error="{error}"
-               feedback="{exe_path_feedback}"/>
-    </Sequence>
+    <Parallel failure_threshold="1"
+              success_threshold="1">
+      <Sequence>
+        <ClearTableAccess table="{table}"
+                          table_pose="{pose}"/>
+        <PoseAsPath pose="{pose}"
+                    path="{path}"/>
+        <ExePath action_name="move_base_flex/exe_path"
+                 controller="TEBPlanner"
+                 path="{path}"
+                 server_timeout="5.000000"
+                 error="{error}"
+                 feedback="{exe_path_feedback}"/>
+      </Sequence>
+      <UseNamedConfig config_name="precise_controlling"
+                      source_ns="named_configuration"
+                      target_ns=""/>
+    </Parallel>
   </BehaviorTree>
 
   <BehaviorTree ID="detach_from_table">
-    <Sequence>
-      <PoseAsPath pose="{pose}"
-                  path="{path}"/>
-      <ExePath action_name="move_base_flex/exe_path"
-               controller="TEBPlanner"
-               path="{path}"
-               server_timeout="5.000000"
-               error="{error}"
-               feedback="{exe_path_feedback}"/>
-      <RestoreTableAccess table="{table}"/>
-    </Sequence>
+    <Parallel failure_threshold="1"
+              success_threshold="1">
+      <Sequence>
+        <PoseAsPath pose="{pose}"
+                    path="{path}"/>
+        <ExePath action_name="move_base_flex/exe_path"
+                 controller="TEBPlanner"
+                 path="{path}"
+                 server_timeout="5.000000"
+                 error="{error}"
+                 feedback="{exe_path_feedback}"/>
+        <RestoreTableAccess table="{table}"/>
+      </Sequence>
+      <UseNamedConfig config_name="precise_controlling"
+                      source_ns="named_configuration"
+                      target_ns=""/>
+    </Parallel>
   </BehaviorTree>
 </root>
