@@ -17,7 +17,7 @@ define floorplan model
 )
 
 resolution 0.02
-interval_sim 100  # simulation timestep in milliseconds
+interval_sim 50  # simulation timestep in milliseconds
 
 window
 (
