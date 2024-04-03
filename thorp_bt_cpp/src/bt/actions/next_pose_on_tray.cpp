@@ -15,27 +15,21 @@ namespace thorp::bt::actions
 class NextPoseOnTray : public BT::SyncActionNode
 {
 public:
-  NextPoseOnTray(const std::string& name, const BT::NodeConfiguration& config)
-    : BT::SyncActionNode(name, config), tray_full_(false), next_x_(0), next_y_(0)
+  NextPoseOnTray(const std::string& name, const BT::NodeConfiguration& config) : BT::SyncActionNode(name, config)
   {
     ros::NodeHandle pnh("~");
     tray_link_ = pnh.param("tray_link", std::string("tray_link"));
     tray_slot_ = pnh.param("tray_slot", 0.035);
-    const double tray_side_x = pnh.param("tray_side_x", 0.14);
-    const double tray_side_y = pnh.param("tray_side_y", 0.14);
-    slots_x_ = std::round(tray_side_x / tray_slot_ + 0.1);
-    slots_y_ = std::round(tray_side_y / tray_slot_ + 0.1);
+    tray_side_x_ = pnh.param("tray_side_x", 0.14);
+    tray_side_y_ = pnh.param("tray_side_y", 0.14);
+    slots_x_ = std::round(tray_side_x_ / tray_slot_ + 0.1);
+    slots_y_ = std::round(tray_side_y_ / tray_slot_ + 0.1);
     offset_x_ = (slots_x_ % 2 == 0) ? tray_slot_ / 2.0 : 0.0;
     offset_y_ = (slots_y_ % 2 == 0) ? tray_slot_ / 2.0 : 0.0;
     offset_z_ = pnh.param("placing_height_on_tray", 0.03);
 
-    ROS_DEBUG_NAMED(name, "Tray dimensions: %g x %g m. %d x %d slots of %g x %g m each", tray_side_x, tray_side_y,
+    ROS_DEBUG_NAMED(name, "Tray dimensions: %g x %g m. %d x %d slots of %g x %g m each", tray_side_x_, tray_side_y_,
                     slots_x_, slots_y_, tray_slot_, tray_slot_);
-
-    // add a collision object for the tray surface, right above the mesh
-    ttk::PlanningScene::instance().addTray(ttk::createPose(0, 0, 0.0015, 0, 0, 0, tray_link_),
-                                           { tray_side_x + 0.01, tray_side_y + 0.01, 0.002 });
-    visualizePlacePoses();
   }
 
   static BT::PortsList providedPorts()
@@ -46,18 +40,30 @@ public:
 
 private:
   std::string tray_link_;
-  double tray_slot_;
-  bool tray_full_;
-  int slots_x_;
-  int slots_y_;
-  double offset_x_;
-  double offset_y_;
-  double offset_z_;
-  int next_x_;
-  int next_y_;
+  double tray_slot_ = 0.0;
+  double tray_side_x_ = 0.0;
+  double tray_side_y_ = 0.0;
+  bool tray_created_ = 0;
+  bool tray_full_ = 0;
+  int slots_x_ = 0;
+  int slots_y_ = 0;
+  double offset_x_ = 0.0;
+  double offset_y_ = 0.0;
+  double offset_z_ = 0.0;
+  int next_x_ = 0;
+  int next_y_ = 0;
 
   BT::NodeStatus tick() override
   {
+    if (!tray_created_)
+    {
+      // on first call, add a collision object for the tray surface, right above the mesh
+      ttk::PlanningScene::instance().addTray(ttk::createPose(0, 0, 0.0015, 0, 0, 0, tray_link_),
+                                             { tray_side_x_ + 0.01, tray_side_y_ + 0.01, 0.002 });
+      visualizePlacePoses();
+      tray_created_ = true;
+    }
+
     if (tray_full_)
     {
       ROS_WARN_NAMED(name(), "Tray is full");

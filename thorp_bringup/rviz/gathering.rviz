@@ -2258,6 +2258,14 @@ Visualization Manager:
         - Class: rviz/MarkerArray
           Enabled: true
           Marker Topic: /picking_planner/visual_markers
+          Name: Picking plan
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: true
+        - Class: rviz/MarkerArray
+          Enabled: true
+          Marker Topic: /object_gatherer/visual_markers
           Name: Visual markers
           Namespaces:
             {}
@@ -2639,11 +2647,7 @@ Visualization Manager:
                   Marker Topic: /move_base_flex/TEBPlanner/teb_markers
                   Name: Markers
                   Namespaces:
-                    LineObstacles: true
-                    PointObstacles: true
-                    PolyObstacles: true
-                    RobotFootprintModel: true
-                    ViaPoints: true
+                    {}
                   Queue Size: 100
                   Value: true
               Enabled: true
@@ -2735,7 +2739,7 @@ Visualization Manager:
           Shaft Length: 1
           Shaft Radius: 0.05000000074505806
           Shape: Arrow
-          Topic: /move_base_flex/current_goal
+          Topic: /move_base_flex/controller_goal
           Unreliable: false
           Value: true
         - Alpha: 1
