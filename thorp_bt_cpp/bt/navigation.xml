@@ -1,5 +1,60 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root BTCPP_format="3">
+
+  <BehaviorTree ID="follow_waypoints">
+    <Parallel failure_threshold="1"
+              success_threshold="1">
+      <UseNamedConfig config_name="waypoints_following"
+                      source_ns="named_configuration"
+                      target_ns=""/>
+      <Sequence>
+        <SmoothPath service_name="waypoints_path/connect_waypoints"
+                    timeout="100"
+                    waypoints="{waypoints}"
+                    path="{path}"/>
+        <ExePath action_name="move_base_flex/exe_path"
+                 controller="TEBPlanner"
+                 path="{path}"
+                 server_timeout="5.000000"
+                 error="{exe_path_error}"
+                 feedback="{exe_path_feedback}"/>
+      </Sequence>
+      <ReactiveSequence>
+        <GetRobotPose timeout="1"
+                      error="{error}"
+                      robot_pose="{robot_pose}"/>
+        <TrackProgress reached_threshold=""
+                       robot_pose="{robot_pose}"
+                       next_waypoint="{next_waypoint}"
+                       waypoints="{waypoints}"/>
+      </ReactiveSequence>
+    </Parallel>
+  </BehaviorTree>
+
+  <BehaviorTree ID="reach_first_pose">
+    <RetryUntilSuccessful num_attempts="999999">
+      <Fallback>
+        <Sequence>
+          <GetPoseListFront list="{poses}"
+                            element="{next_pose}"/>
+          <GoToPose action_name="move_base_flex/move_base"
+                    angle_tolerance="3.15"
+                    controller="TEBPlanner"
+                    dist_tolerance="0.3"
+                    planner=""
+                    pose="{next_pose}"
+                    server_timeout="5.000000"
+                    error="{goto_pose_error}"
+                    feedback="{goto_pose_feedback}"/>
+        </Sequence>
+        <Inverter>
+          <PopPoseFromList element="{next_pose}"
+                           list="{poses}"/>
+        </Inverter>
+      </Fallback>
+    </RetryUntilSuccessful>
+  </BehaviorTree>
+
   <BehaviorTree ID="attach_to_table">
     <Parallel failure_threshold="1"
               success_threshold="1">
