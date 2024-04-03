@@ -54,11 +54,6 @@ void PlanningScene::addTray(const geometry_msgs::PoseStamped& pose, const std::v
   co.primitives.resize(1);
   co.primitives[0].type = shape_msgs::SolidPrimitive::BOX;
   co.primitives[0].dimensions = size;
-  //    co.primitive_poses.resize(1);
-  //    co.primitive_poses[0].position.x = 0.1;
-  //    co.primitive_poses[0].position.y = 0;
-  //    co.primitive_poses[0].position.z = -0.2;
-  //    co.primitive_poses[0].orientation.w = 1.0;
   moveit_msgs::ObjectColor color;
   color.id = co.id;
   color.color = namedColor("green");

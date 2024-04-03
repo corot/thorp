@@ -60,23 +60,17 @@ std::optional<MessageType> waitForMessage(const std::string& topic, ros::Duratio
   ros::Subscriber sub = nh.subscribe<MessageType>(topic, 1,
                                                   [&](auto msg)
                                                   {
-                                                    ROS_ERROR_STREAM(" \tMSG");
-
                                                     received_message = *msg;
                                                     sub.shutdown();
                                                   });
   // Spin and wait for the message up to timeout
   ros::Time time_start = ros::Time::now();
   ros::Rate loop_rate(100);
-  ROS_ERROR("%d \t%d\t%d\t%f\t%f", received_message.has_value(),  timeout.isZero(),  ((ros::Time::now() - time_start) < timeout), time_start.toSec(), ros::Time::now().toSec());
   while (ros::ok() && !received_message && (timeout.isZero() || (ros::Time::now() - time_start) < timeout))
   {
-    ROS_ERROR("%d \t%d\t%d\t%f\t%f", received_message.has_value(),  timeout.isZero(),  ((ros::Time::now() - time_start) < timeout), time_start.toSec(), ros::Time::now().toSec());
     ros::spinOnce();
     loop_rate.sleep();
   }
-  ROS_ERROR("out");
-  ROS_ERROR("%d \t%d\t%d\t%f\t%f", received_message.has_value(),  timeout.isZero(),  ((ros::Time::now() - time_start) < timeout), time_start.toSec(), ros::Time::now().toSec());
 
   return received_message;
 }

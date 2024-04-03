@@ -30,15 +30,14 @@ private:
   {
     std::vector<T> list = *getInput<std::vector<T>>("list");
     if (list.empty())
-
     {
-      ROS_ERROR_STREAM("empty");
+      ROS_DEBUG_STREAM(name() << "Tried to pop from empty list");
       return BT::NodeStatus::FAILURE;
     }
     setOutput("element", list.front());
     list.erase(list.begin());
-    ROS_ERROR_STREAM(list.size());
     setOutput("list", list);
+    ROS_DEBUG_STREAM(name() << ":\tnew size is " << list.size());
     return BT::NodeStatus::SUCCESS;
   }
 
