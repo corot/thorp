@@ -118,6 +118,6 @@ def cat_hunter_sm():
 
 
 if __name__ == '__main__':
-    rospy.init_node('cat_hunter_smach')
+    rospy.init_node('cat_hunter')
 
     run_sm(cat_hunter_sm(), rospy.get_param('~app_name'))

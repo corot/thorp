@@ -69,7 +69,7 @@ class IncreasePlaceHeight(smach.State):
         return 'succeeded'
 
 
-rospy.init_node('stack_all_cubes_smach')
+rospy.init_node('stack_all_cubes')
 
 # Object manipulation top-level sm
 sm = smach.StateMachine(outcomes=['stop', 'error', 'aborted', 'preempted'],

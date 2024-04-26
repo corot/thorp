@@ -16,7 +16,7 @@ from thorp_smach.states.manipulation import FoldArm, PickupObject, PlaceObject, 
 
 from thorp_smach.utils import run_sm
 
-rospy.init_node('object_manip_smach')
+rospy.init_node('object_manip')
 
 # Object manipulation top-level sm
 sm = smach.StateMachine(outcomes=['stop', 'error', 'aborted', 'preempted'],

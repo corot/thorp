@@ -10,7 +10,7 @@ from thorp_smach.utils import run_sm
 
 
 if __name__ == '__main__':
-    rospy.init_node('explore_house_smach')
+    rospy.init_node('explore_house')
 
     explore_house_sm = ExploreHouse()
     explore_house_once = smach.Sequence(outcomes=['succeeded', 'aborted', 'preempted'],

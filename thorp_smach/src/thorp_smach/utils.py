@@ -3,14 +3,13 @@ import smach
 import smach_ros
 
 from thorp_toolkit.common import wait_for_mbf, wait_for_sim_time
-from thorp_toolkit.geometry import TF2
 
 
 def run_sm(sm, name, asw=None, parent_ud=smach.UserData()):
     """
     Run the given state machine
     :param sm: Target state machine
-    :param name: State machine name
+    :param name: State machine's name
     :param asw: Action server wrapper; used to interact with the target sm instead of just calling execute
     :param parent_ud: Parent state machine userdata
     """

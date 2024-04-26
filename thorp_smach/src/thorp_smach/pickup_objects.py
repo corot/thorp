@@ -8,6 +8,6 @@ from thorp_smach.utils import run_sm
 
 
 if __name__ == '__main__':
-    rospy.init_node('pickup_objects_smach')
+    rospy.init_node('pickup_objects')
 
     run_sm(PickupReachableObjs(), rospy.get_param('~app_name'))

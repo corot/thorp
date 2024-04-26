@@ -108,7 +108,7 @@ def object_gatherer_sm(target_types):
 
 
 if __name__ == '__main__':
-    rospy.init_node('object_gatherer_smach')
+    rospy.init_node('object_gatherer')
 
     target_types = rospy.get_param('~object_types', '').split()
     run_sm(object_gatherer_sm(target_types), rospy.get_param('~app_name'))

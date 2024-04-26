@@ -51,7 +51,7 @@ def patrol_2_points_sm():
 
 
 if __name__ == '__main__':
-    rospy.init_node('patrol_2_points_smach')
+    rospy.init_node('patrol_2_points')
 
     target_types = rospy.get_param('~object_types', '').split()
     run_sm(patrol_2_points_sm(), rospy.get_param('~app_name'))
