@@ -42,4 +42,5 @@
   <run_depend>thorp_navigation</run_depend>
   <run_depend>thorp_perception</run_depend>
   <run_depend>thorp_manipulation</run_depend>
+  <run_depend>thorp_rviz_plugins</run_depend>
 </package>

@@ -1,0 +1,16 @@
+<class_libraries>
+  <library path="lib/libthorp_rviz_plugins_cancel_navigation_tool">
+    <class name="thorp::rviz_plugins/CancelNavigationTool" type="thorp::rviz_plugins::CancelNavigationTool" base_class_type="rviz::Tool">
+      <description>
+        A tool to cancel navigation.
+      </description>
+    </class>
+  </library>
+  <library path="lib/libthorp_rviz_plugins_clear_costmap_tool">
+    <class name="thorp::rviz_plugins/ClearCostmapTool" type="thorp::rviz_plugins::ClearCostmapTool" base_class_type="rviz::Tool">
+      <description>
+        A tool to clear costmap.
+      </description>
+    </class>
+  </library>
+</class_libraries>
