@@ -7,7 +7,8 @@
   <include path="pickup_objects.xml"/>
 
   <BehaviorTree ID="cleanup_table">
-    <RetryUntilSuccessful num_attempts="3">
+    <Repeat num_cycles="2"
+            _description="Recheck that we left no objects behind">
       <Fallback>
         <Sequence>
           <DetectObjects action_name="object_detection"
@@ -31,12 +32,13 @@
                            server_timeout="5.000000"
                            surface="{surface}"
                            picking_plan="{picking_plan}"/>
-          <KeepRunningUntilFailure>
+          <ForEachPickupLocation element="{pickup_location}"
+                                 list="{picking_plan}">
             <Sequence>
-              <PopPickupLocation approach_pose="{approach_pose}"
-                                 detach_pose="{new_detach_pose}"
-                                 picking_pose="{picking_pose}"
-                                 picking_plan="{picking_plan}"/>
+              <ExpandPickupLocation approach_pose="{approach_pose}"
+                                    detach_pose="{new_detach_pose}"
+                                    picking_pose="{picking_pose}"
+                                    pickup_location="{pickup_location}"/>
               <Fallback>
                 <AreSamePose angle_tolerance="0.1"
                              dist_tolerance="0.05"
@@ -64,16 +66,16 @@
                 </Sequence>
               </Fallback>
               <SubTree ID="pickup_objects"/>
-              <ClearRailMarkers service_name="rail_segmentation/clear_markers"
-                                timeout="100"/>
-              <ClearPlanningScene keep_tray="true"/>
               <SetPose input="{new_detach_pose}"
                        output="{detach_pose}"/>
             </Sequence>
-          </KeepRunningUntilFailure>
+          </ForEachPickupLocation>
+          <ClearRailMarkers service_name="rail_segmentation/clear_markers"
+                            timeout="100"/>
+          <ClearPlanningScene keep_tray="true"/>
         </Sequence>
       </Fallback>
-    </RetryUntilSuccessful>
+    </Repeat>
   </BehaviorTree>
 
   <BehaviorTree ID="object_gatherer">

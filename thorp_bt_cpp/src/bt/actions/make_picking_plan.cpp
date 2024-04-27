@@ -25,7 +25,7 @@ public:
     ports.insert({ BT::InputPort<geometry_msgs::PoseStamped>("robot_pose"),              //
                    BT::InputPort<std::vector<moveit_msgs::CollisionObject>>("objects"),  //
                    BT::InputPort<moveit_msgs::CollisionObject>("surface"),               //
-                   BT::OutputPort<thorp_msgs::PickingPlan>("picking_plan") });
+                   BT::OutputPort<std::vector<thorp_msgs::PickLocation>>("picking_plan") });
     return ports;
   }
 
@@ -53,7 +53,7 @@ private:
 
   BT::NodeStatus onSucceeded(const ResultConstPtr& res) override
   {
-    setOutput("picking_plan", res->picking_plan);
+    setOutput("picking_plan", res->picking_plan.locations);
 
     return BT::NodeStatus::SUCCESS;
   }
