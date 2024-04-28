@@ -58,22 +58,26 @@ cats = [{'name': 'cat_black', 'count': 2},
 models = {}
 
 # a sample of objects mostly at reachable locations
-PLAYGROUND_OBJS = [('star', 'star', (0.28, 0.017, 0.5, 0.0, 0.0, 0.2)),
-                   ('clover', 'clover', (0.36, -0.037, 0.5, 0.0, 0.0, 1.4)),
-                   ('square', 'square', (0.29, -0.16, 0.5, 0.0, 0.0, 1.1)),
-                   ('triangle', 'triangle', (0.32, 0.1, 0.5, 0.0, 0.0, 0.1)),
-                   ('rectangle', 'rectangle', (0.27, 0.15, 0.5, 0.0, 0.0, 0.4)),
-                   ('cross', 'cross', (0.37, 0.15, 0.5, 0.0, 0.0, 0.75)),
-                   ('tower', 'tower', (0.38, -0.14, 0.5, 0.0, 0.0, 0.15)),
-                   ('circle', 'circle', (0.48, 0.12, 0.5, 0.0, 0.0, 1.15)),
-                   ('cube', 'cube', (0.46, 0.1, 0.5, 0.0, 0.0, 0.85))]
+PLAYGROUND_OBJS = [('square',    'square',    (-0.22,  0.15,  0.5, 0.0, 0.0, 0.4)),
+                   ('cross',     'cross',     (-0.06,  0.15,  0.5, 0.0, 0.0, 0.75)),
+                   ('circle',    'circle',    (0.03,   0.12,  0.5, 0.0, 0.0, 1.15)),
+                   ('cube',      'cube',      (0.01,   0.1,   0.5, 0.0, 0.0, 0.85)),
+                   ('triangle',  'triangle',  (-0.13,  0.1,   0.5, 0.0, 0.0, 0.1)),
+                   ('star',      'star',      (-0.17,  0.017, 0.5, 0.0, 0.0, 0.2)),
+                   ('clover',    'clover',    (-0.11, -0.037, 0.5, 0.0, 0.0, 1.4)),
+                   ('pentagon',  'pentagon',  (-0.07, -0.14,  0.5, 0.0, 0.0, 0.15)),
+                   ('rectangle', 'rectangle', (-0.16, -0.16,  0.5, 0.0, 0.0, 1.1))]
 
 # cubes at reachable locations, ready to stack
-PLAYGROUND_CUBES = [('cube 1', 'cube', (-0.15, 0.017, 0.45, 0.0, 0.0, 0.2)),
+PLAYGROUND_CUBES = [('cube 1', 'cube', (-0.14, -0.16, 0.45, 0.0, 0.0, 1.1)),
                     ('cube 2', 'cube', (-0.11, -0.10, 0.45, 0.0, 0.0, 0.15)),
-                    ('cube 3', 'cube', (-0.14, -0.16, 0.45, 0.0, 0.0, 1.1)),
-                    ('cube 4', 'cube', (-0.12, 0.15, 0.45, 0.0, 0.0, 0.4)),
-                    ('cube 5', 'cube', (-0.11, 0.10, 0.45, 0.0, 0.0, 0.85))]
+                    ('cube 3', 'cube', (-0.15,  0.02, 0.45, 0.0, 0.0, 0.2)),
+                    ('cube 4', 'cube', (-0.11,  0.10, 0.45, 0.0, 0.0, 0.85)),
+                    ('cube 5', 'cube', (-0.12,  0.15, 0.45, 0.0, 0.0, 0.4))]
+
+# 2 rows of cubes tightly spaced
+N_ROWS_OF_CUBES = [('cube ' + str(i), 'cube',
+                    (-((i // 10) / 10 + 0.15), ((i % 10) - 5) / 20.0, 0.45, 0.0, 0.0, 0.0)) for i in range(20)]
 
 SURFS_MIN_DIST = 1.5
 OBJS_MIN_DIST = 0.08
@@ -337,16 +341,22 @@ if __name__ == "__main__":
         spawn_rockets()
     elif sys.argv[1] == 'playground_random':  # random objects over a random table
         surface = random.choice(surfaces)
-        spawn_model(surface['name'] + '_0', models[surface['name']], create_2d_pose(0.44, 0, pi / 2.0),
-                    'ground_plane::link')
+        surf_name = surface['name']
+        spawn_model(surf_name + '_0', models[surf_name], create_2d_pose(0.45, 0.0, pi / 2.0), 'ground_plane::link')
         spawn_objects(surface, 0)
     elif sys.argv[1] == 'playground_fixed':  # a sample of objects mostly at reachable locations
-        spawn_model('lack_table', models['lack_table'], create_2d_pose(0.45, 0, 0.0), 'ground_plane::link')
+        spawn_model('lack_table', models['lack_table'], create_2d_pose(0.45, 0.0, 0.0), 'ground_plane::link')
         for obj in PLAYGROUND_OBJS:
-            spawn_model(obj[0], models[obj[1]], create_3d_pose(*obj[2]), 'ground_plane::link')
+            spawn_model(obj[0], models[obj[1]], create_3d_pose(*obj[2]), 'lack_table::link')
     elif sys.argv[1] == 'playground_cubes':  # cubes at reachable locations, ready to stack
-        spawn_model('doll_table', models['doll_table'], create_2d_pose(0.38, 0, 0.0), 'ground_plane::link')
+        spawn_model('lack_table', models['lack_table'], create_2d_pose(0.45, 0.0, 0.0), 'ground_plane::link')
         for obj in PLAYGROUND_CUBES:
-            spawn_model(obj[0], models[obj[1]], create_3d_pose(*obj[2]), 'doll_table::link')
+            spawn_model(obj[0], models[obj[1]], create_3d_pose(*obj[2]), 'lack_table::link')
+    elif sys.argv[1] == 'playground_rows':  # cubes at reachable locations, ready to stack
+        spawn_model('lack_table', models['lack_table'], create_2d_pose(0.45, 0.0, 0.0), 'ground_plane::link')
+        for obj in N_ROWS_OF_CUBES:
+            spawn_model(obj[0], models[obj[1]], create_3d_pose(*obj[2]), 'lack_table::link')
+    else:
+        rospy.logerr("Unrecognized objects type %s", str(sys.argv[1]))
 
     sys.exit(0)
