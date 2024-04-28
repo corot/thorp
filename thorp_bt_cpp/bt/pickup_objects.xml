@@ -7,6 +7,10 @@
       <KeepRunningUntilFailure>
         <RecoverAndRetry>
           <Sequence>
+            <Inverter>
+              <TrayFull service_name="manipulation/tray/get_capacity"
+                        timeout="100"/>
+            </Inverter>
             <DetectObjects action_name="object_detection"
                            object_types=""
                            server_timeout="5.000000"
@@ -35,11 +39,15 @@
                         feedback=""/>
         </RecoverAndRetry>
       </KeepRunningUntilFailure>
-      <Inverter>
-        <SelectNextTarget failures="{failures}"
-                          objects="{objects}"
-                          target_name="{object_name}"
-                          tightening="{tightening}"/>
+      <Inverter _description="To report FAILURE only if we still have reachable targets or tray is full">
+        <Sequence>
+          <TrayFull service_name="manipulation/tray/get_capacity"
+                    timeout="100"/>
+          <SelectNextTarget failures="{failures}"
+                            objects="{objects}"
+                            target_name="{object_name}"
+                            tightening="{tightening}"/>
+        </Sequence>
       </Inverter>
     </Fallback>
   </BehaviorTree>

@@ -35,10 +35,10 @@
           <ForEachPickupLocation element="{pickup_location}"
                                  list="{picking_plan}">
             <Sequence>
-              <ExpandPickupLocation approach_pose="{approach_pose}"
+              <ExpandPickupLocation pickup_location="{pickup_location}"
+                                    approach_pose="{approach_pose}"
                                     detach_pose="{new_detach_pose}"
-                                    picking_pose="{picking_pose}"
-                                    pickup_location="{pickup_location}"/>
+                                    picking_pose="{picking_pose}"/>
               <Fallback>
                 <AreSamePose angle_tolerance="0.1"
                              dist_tolerance="0.05"
@@ -47,7 +47,9 @@
                 <Sequence>
                   <ClearRailMarkers service_name="rail_segmentation/clear_markers"
                                     timeout="100"/>
-                  <ClearPlanningScene keep_tray="true"/>
+                  <ClearPlanningScene keep_tray="true"
+                                      service_name="manipulation/clear_planning_scene"
+                                      timeout="100"/>
                   <SubTree ID="detach_from_table"
                            table="{table}"
                            pose="{detach_pose}"/>
@@ -72,7 +74,9 @@
           </ForEachPickupLocation>
           <ClearRailMarkers service_name="rail_segmentation/clear_markers"
                             timeout="100"/>
-          <ClearPlanningScene keep_tray="true"/>
+          <ClearPlanningScene keep_tray="true"
+                              service_name="manipulation/clear_planning_scene"
+                              timeout="100"/>
         </Sequence>
       </Fallback>
     </Repeat>
@@ -155,7 +159,9 @@
                    table="{table}"/>
           <SetUnsignedInt input="0"
                           output="{given_up_count}"/>
-          <AlwaysFailure _description="To continue exploration"/>
+          <TrayFull service_name="manipulation/tray/get_capacity"
+                    timeout="100"
+                    _description="Otherwise continue exploration"/>
         </Sequence>
       </Fallback>
     </RetryUntilSuccessful>

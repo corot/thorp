@@ -39,18 +39,19 @@ public:
     if (running_child_)
     {
       BT::NodeStatus child_state = child_node_->executeTick();
-      running_child_ = (child_state == BT::NodeStatus::RUNNING);
+      running_child_ = child_state == BT::NodeStatus::RUNNING;
       if (running_child_)
       {
         return BT::NodeStatus::RUNNING;
       }
-      else
+      haltChild();
+      if (child_state == BT::NodeStatus::FAILURE)
       {
-        haltChild();
+        return BT::NodeStatus::FAILURE;
       }
     }
 
-    std::vector<T> list = *getInput<std::vector<T>>("list");
+    auto list = *getInput<std::vector<T>>("list");
     while (!list.empty())
     {
       setStatus(BT::NodeStatus::RUNNING);

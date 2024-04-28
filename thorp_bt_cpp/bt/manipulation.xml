@@ -56,7 +56,9 @@
 
   <BehaviorTree ID="place_on_tray">
     <Sequence>
-      <NextPoseOnTray pose_on_tray="{pose_on_tray}"/>
+      <NextPoseOnTray service_name="manipulation/tray/get_next_pose"
+                      timeout="100"
+                      pose_on_tray="{pose_on_tray}"/>
       <RecoverAndRetry>
         <PlaceObject action_name="place_object"
                      object_name="{object_name}"
@@ -67,9 +69,14 @@
                      feedback=""/>
         <ClearOctomap service_name="clear_octomap"
                       timeout="100"/>
+        <NextPoseOnTray service_name="manipulation/tray/get_next_pose"
+                        timeout="100"
+                        pose_on_tray="{pose_on_tray}"/>
       </RecoverAndRetry>
       <AddObjectToTray object_name="{object_name}"
-                        pose_on_tray="{pose_on_tray}"/>
+                       pose_on_tray="{pose_on_tray}"
+                       service_name="manipulation/tray/add_object"
+                       timeout="100"/>
     </Sequence>
   </BehaviorTree>
 </root>

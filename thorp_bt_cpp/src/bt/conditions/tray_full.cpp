@@ -3,18 +3,18 @@
 #include "thorp_bt_cpp/node_register.hpp"
 #include "thorp_bt_cpp/ros_service_node.hpp"
 
-#include <thorp_msgs/TrayNextPose.h>
+#include <thorp_msgs/TrayCapacity.h>
 
-namespace thorp::bt::actions
+namespace thorp::bt::conditions
 {
 /**
- * Calculate the next pose where to put an object on the tray.
- * Return FAILURE if the tray is full.
+ * Check whether the tray is full.
+ * Return SUCCESS if the tray is full.
  */
-class NextPoseOnTray : public BT::RosServiceNode<thorp_msgs::TrayNextPose>
+class TrayFull : public BT::RosServiceNode<thorp_msgs::TrayCapacity>
 {
 public:
-  NextPoseOnTray(const std::string& name, const BT::NodeConfiguration& conf) : RosServiceNode<ServiceType>(name, conf)
+  TrayFull(const std::string& name, const BT::NodeConfiguration& conf) : RosServiceNode<ServiceType>(name, conf)
   {
   }
 
@@ -22,8 +22,7 @@ public:
   {
     // overwrite service_name with a default value
     BT::PortsList ports = BT::RosServiceNode<ServiceType>::providedPorts();
-    ports["service_name"].setDefaultValue("manipulation/tray/get_next_pose");
-    ports.insert({ BT::OutputPort<geometry_msgs::PoseStamped>("pose_on_tray") });
+    ports["service_name"].setDefaultValue("manipulation/tray/get_capacity");
     return ports;
   }
 
@@ -34,10 +33,11 @@ private:
 
   BT::NodeStatus onResponse(const ResponseType& response) override
   {
-    setOutput("pose_on_tray", response.pose_on_tray);
-    return BT::NodeStatus::SUCCESS;
+    bool tray_full = response.current == 0;
+    ROS_DEBUG_NAMED(name(), "The tray is full");
+    return tray_full ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
   }
 
-  BT_REGISTER_NODE(NextPoseOnTray);
+  BT_REGISTER_NODE(TrayFull);
 };
-}  // namespace thorp::bt::actions
+}  // namespace thorp::bt::conditions
