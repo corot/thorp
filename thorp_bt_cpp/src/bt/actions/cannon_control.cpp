@@ -51,8 +51,8 @@ private:
 class CannonCmd : public BT::RosServiceNode<thorp_msgs::CannonCmd>
 {
 public:
-  CannonCmd(const std::string& node_name, const BT::NodeConfiguration& conf)
-    : RosServiceNode<ServiceType>(node_name, conf)
+  CannonCmd(const std::string& name, const BT::NodeConfiguration& conf)
+    : RosServiceNode<ServiceType>(name, conf)
   {
   }
 
@@ -78,7 +78,7 @@ private:
 class TiltCannon : public CannonCmd
 {
 public:
-  TiltCannon(const std::string& node_name, const BT::NodeConfiguration& conf) : CannonCmd(node_name, conf)
+  TiltCannon(const std::string& name, const BT::NodeConfiguration& conf) : CannonCmd(name, conf)
   {
   }
 
@@ -102,7 +102,7 @@ private:
 class FireCannon : public CannonCmd
 {
 public:
-  FireCannon(const std::string& node_name, const BT::NodeConfiguration& conf) : CannonCmd(node_name, conf)
+  FireCannon(const std::string& name, const BT::NodeConfiguration& conf) : CannonCmd(name, conf)
   {
   }
 

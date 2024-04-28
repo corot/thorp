@@ -14,8 +14,8 @@ namespace thorp::bt::actions
 class ObjectAttached : public BT::RosServiceNode<std_srvs::Trigger>
 {
 public:
-  ObjectAttached(const std::string& node_name, const BT::NodeConfiguration& conf)
-    : RosServiceNode<ServiceType>(node_name, conf)
+  ObjectAttached(const std::string& name, const BT::NodeConfiguration& conf)
+    : RosServiceNode<ServiceType>(name, conf)
   {
   }
 

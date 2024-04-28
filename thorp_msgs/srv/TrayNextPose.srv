@@ -1,0 +1,6 @@
+# Get the next available pose on tray, decreasing capacity by one.
+# Call will fail if the tray is full.
+
+---
+
+geometry_msgs/PoseStamped pose_on_tray

@@ -1,0 +1,7 @@
+tray:
+  name: tray
+  link: tray_link
+  side_x: 0.14
+  side_y: 0.14
+  depth: 0.02
+  slot: 0.035  # better a divisor of both tray sides

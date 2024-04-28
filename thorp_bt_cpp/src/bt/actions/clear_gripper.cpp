@@ -10,8 +10,8 @@ namespace thorp::bt::actions
 class ClearGripper : public BT::RosServiceNode<std_srvs::Empty>
 {
 public:
-  ClearGripper(const std::string& node_name, const BT::NodeConfiguration& conf)
-    : RosServiceNode<ServiceType>(node_name, conf)
+  ClearGripper(const std::string& name, const BT::NodeConfiguration& conf)
+    : RosServiceNode<ServiceType>(name, conf)
   {
   }
 

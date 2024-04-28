@@ -42,6 +42,7 @@
   <run_depend>gazebo_grasp_plugin_ros</run_depend>
   <run_depend>thorp_msgs</run_depend>
   <run_depend>thorp_toolkit</run_depend>
+  <run_depend>thorp_description</run_depend>
   <run_depend>thorp_moveit_config</run_depend>
 
   <run_depend>turtlebot_arm_bringup</run_depend>

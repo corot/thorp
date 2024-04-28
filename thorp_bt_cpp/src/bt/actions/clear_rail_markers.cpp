@@ -10,8 +10,8 @@ namespace thorp::bt::actions
 class ClearRailMarkers : public BT::RosServiceNode<std_srvs::Empty>
 {
 public:
-  ClearRailMarkers(const std::string& node_name, const BT::NodeConfiguration& conf)
-    : RosServiceNode<ServiceType>(node_name, conf)
+  ClearRailMarkers(const std::string& name, const BT::NodeConfiguration& conf)
+    : RosServiceNode<ServiceType>(name, conf)
   {
   }
 

@@ -1,0 +1,6 @@
+# Add an object to the tray, displacing it on the planning scene
+
+string object_name
+geometry_msgs/PoseStamped pose_on_tray
+
+---

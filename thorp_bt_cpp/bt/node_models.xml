@@ -1,5 +1,11 @@
 <root>
     <TreeNodesModel>
+        <Action ID="AddObjectToTray">
+            <input_port name="object_name" type="std::string"/>
+            <input_port name="pose_on_tray" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="service_name" type="std::string" default="manipulation/tray/add_object">name of the ROS service</input_port>
+            <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
+        </Action>
         <Action ID="AimCannon">
             <input_port name="robot_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="target_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
@@ -25,6 +31,8 @@
         </Action>
         <Action ID="ClearPlanningScene">
             <input_port name="keep_tray" type="bool"/>
+            <input_port name="service_name" type="std::string" default="manipulation/clear_planning_scene">name of the ROS service</input_port>
+            <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
         </Action>
         <Action ID="ClearPoseList">
             <inout_port name="list" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
@@ -63,10 +71,6 @@
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
             <output_port name="table" type="rail_manipulation_msgs::SegmentedObject_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="table_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-        </Action>
-        <Action ID="DisplaceObject">
-            <input_port name="new_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <input_port name="object_name" type="std::string"/>
         </Action>
         <Action ID="DragAndDrop">
             <input_port name="action_name" type="std::string" default="drag_and_drop">name of the ROS action client</input_port>
@@ -183,12 +187,9 @@
             <output_port name="tracked_object" type="cob_perception_msgs::Detection_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="tracked_object_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
-        <Action ID="MoveObjectToTray">
-            <input_port name="object_name" type="std::string"/>
-            <input_port name="pose_on_tray" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-        </Action>
         <Action ID="NextPoseOnTray">
-            <input_port name="tray_link" type="std::string"/>
+            <input_port name="service_name" type="std::string" default="manipulation/tray/get_next_pose">name of the ROS service</input_port>
+            <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
             <output_port name="pose_on_tray" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Action ID="ObjectAttached">
@@ -298,9 +299,6 @@
             <input_port name="behavior" type="std::string"/>
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
             <output_port name="feedback" type="std::optional&lt;mbf_msgs::RecoveryFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
-        </Action>
-        <Action ID="RemoveObject">
-            <input_port name="object_name" type="std::string"/>
         </Action>
         <Action ID="RestoreTableAccess">
             <input_port name="table" type="rail_manipulation_msgs::SegmentedObject_&lt;std::allocator&lt;void&gt; &gt;"/>

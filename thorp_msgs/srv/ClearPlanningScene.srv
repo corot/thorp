@@ -1,0 +1,5 @@
+# Clear the planning scene, optionally sparing the tray and its content
+
+bool keep_tray
+
+---

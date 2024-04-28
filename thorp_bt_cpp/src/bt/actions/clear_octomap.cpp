@@ -10,8 +10,8 @@ namespace thorp::bt::actions
 class ClearOctomap : public BT::RosServiceNode<std_srvs::Empty>
 {
 public:
-  ClearOctomap(const std::string& node_name, const BT::NodeConfiguration& conf)
-    : RosServiceNode<ServiceType>(node_name, conf)
+  ClearOctomap(const std::string& name, const BT::NodeConfiguration& conf)
+    : RosServiceNode<ServiceType>(name, conf)
   {
   }
 

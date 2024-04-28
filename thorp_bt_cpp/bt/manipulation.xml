@@ -56,8 +56,7 @@
 
   <BehaviorTree ID="place_on_tray">
     <Sequence>
-      <NextPoseOnTray tray_link="{tray_link}"
-                      pose_on_tray="{pose_on_tray}"/>
+      <NextPoseOnTray pose_on_tray="{pose_on_tray}"/>
       <RecoverAndRetry>
         <PlaceObject action_name="place_object"
                      object_name="{object_name}"
@@ -69,17 +68,7 @@
         <ClearOctomap service_name="clear_octomap"
                       timeout="100"/>
       </RecoverAndRetry>
-      <ReadDoubleParam key="placing_height_on_tray"
-                       negate="true"
-                       value="{tray_z_offset}"/>
-      <TransformPose pitch=""
-                     roll=""
-                     x=""
-                     y=""
-                     yaw=""
-                     z="{tray_z_offset}"
-                     pose="{pose_on_tray}"/>
-      <MoveObjectToTray object_name="{object_name}"
+      <AddObjectToTray object_name="{object_name}"
                         pose_on_tray="{pose_on_tray}"/>
     </Sequence>
   </BehaviorTree>

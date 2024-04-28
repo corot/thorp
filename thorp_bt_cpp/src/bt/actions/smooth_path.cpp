@@ -13,8 +13,8 @@ namespace thorp::bt::actions
 class SmoothPath : public BT::RosServiceNode<thorp_msgs::ConnectWaypoints>
 {
 public:
-  SmoothPath(const std::string& node_name, const BT::NodeConfiguration& conf)
-    : RosServiceNode<ServiceType>(node_name, conf)
+  SmoothPath(const std::string& name, const BT::NodeConfiguration& conf)
+    : RosServiceNode<ServiceType>(name, conf)
   {
   }
 

@@ -23,85 +23,71 @@ PlanningScene& PlanningScene::instance()
   return instance;
 }
 
-moveit_msgs::CollisionObject PlanningScene::getObject(const std::string& obj_id)
+moveit_msgs::CollisionObject PlanningScene::getObject(const std::string& obj_name)
 {
   // Look for obj_name in the list of collision objects
-  std::map<std::string, moveit_msgs::CollisionObject> objects = getObjects(std::vector<std::string>{ obj_id });
+  std::map<std::string, moveit_msgs::CollisionObject> objects = getObjects(std::vector<std::string>{ obj_name });
 
   if (objects.empty())
   {
-    ROS_ERROR("[planning scene] Collision object '%s' not found", obj_id.c_str());
-    throw std::invalid_argument("Collision object '" + obj_id + "' not found");
+    ROS_ERROR("[planning scene] Collision object '%s' not found", obj_name.c_str());
+    throw std::invalid_argument("Collision object '" + obj_name + "' not found");
   }
 
   if (objects.size() > 1)
   {
     // This should not happen, as object detection tries to provide unique names to all objects...
     ROS_WARN("[planning scene] More than one (%lu) collision objects with id '%s' found!", objects.size(),
-             obj_id.c_str());
+             obj_name.c_str());
   }
 
-  return objects[obj_id];
+  return objects[obj_name];
 }
 
-void PlanningScene::addTray(const geometry_msgs::PoseStamped& pose, const std::vector<double>& size)
+void PlanningScene::addObject(const std::string& name, const geometry_msgs::PoseStamped& pose,
+                              const std::vector<double>& size, const std::string& color)
 {
   moveit_msgs::CollisionObject co;
-  co.id = "tray";
+  co.id = name;
   co.header = pose.header;
   co.pose = pose.pose;
   co.operation = moveit_msgs::CollisionObject::ADD;
   co.primitives.resize(1);
   co.primitives[0].type = shape_msgs::SolidPrimitive::BOX;
   co.primitives[0].dimensions = size;
-  moveit_msgs::ObjectColor color;
-  color.id = co.id;
-  color.color = namedColor("green");
-  addCollisionObjects({ co }, { color });
+  moveit_msgs::ObjectColor obj_color;
+  obj_color.id = co.id;
+  obj_color.color = namedColor(color);
+  addCollisionObjects({ co }, { obj_color });
 }
 
-void PlanningScene::removeAll(bool keep_objs_on_tray)
+void PlanningScene::removeAll(const std::set<std::string>& exempted)
 {
   auto objs_to_remove = getKnownObjectNames();
-  if (keep_objs_on_tray)
+  for (const auto& obj : exempted)
   {
-    std::set<std::string> objs_to_skip{ "tray" };
-    objs_to_skip.insert(objs_on_tray_.begin(), objs_on_tray_.end());
-    for (const auto& obj : objs_to_skip)
+    auto it = std::find(objs_to_remove.begin(), objs_to_remove.end(), obj);
+    if (it != objs_to_remove.end())
     {
-      auto it = std::find(objs_to_remove.begin(), objs_to_remove.end(), obj);
-      if (it != objs_to_remove.end())
-      {
-        objs_to_remove.erase(it);
-      }
+      objs_to_remove.erase(it);
     }
   }
-  else
-  {
-    objs_on_tray_.clear();
-  }
   removeCollisionObjects(objs_to_remove);
 }
 
-void PlanningScene::removeObject(const std::string& obj_id)
+void PlanningScene::removeObject(const std::string& obj_name)
 {
-  std::vector<std::string> objs_to_remove{ obj_id };
+  std::vector<std::string> objs_to_remove{ obj_name };
   removeCollisionObjects(objs_to_remove);
 }
 
-void PlanningScene::displaceObject(const std::string& obj_id, const geometry_msgs::PoseStamped& new_pose)
+void PlanningScene::displaceObject(const std::string& obj_name, const geometry_msgs::PoseStamped& new_pose)
 {
-  auto co = getObject(obj_id);
+  auto co = getObject(obj_name);
   co.header = new_pose.header;
   co.pose = new_pose.pose;
   co.operation = moveit_msgs::CollisionObject::MOVE;
   applyCollisionObject(co);
-}
-
-void PlanningScene::moveObjectToTray(const std::string& obj_id, const geometry_msgs::PoseStamped& pose_on_tray)
-{
-  displaceObject(obj_id, pose_on_tray);
-  objs_on_tray_.insert(obj_id);
 }
 
 int32_t PlanningScene::extractObjectData(const moveit_msgs::CollisionObject& obj, geometry_msgs::PoseStamped& obj_pose,

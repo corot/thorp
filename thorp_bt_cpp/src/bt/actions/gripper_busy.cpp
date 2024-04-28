@@ -14,8 +14,8 @@ namespace thorp::bt::actions
 class GripperBusy : public BT::RosServiceNode<std_srvs::Trigger>
 {
 public:
-  GripperBusy(const std::string& node_name, const BT::NodeConfiguration& conf)
-    : RosServiceNode<ServiceType>(node_name, conf)
+  GripperBusy(const std::string& name, const BT::NodeConfiguration& conf)
+    : RosServiceNode<ServiceType>(name, conf)
   {
   }
 

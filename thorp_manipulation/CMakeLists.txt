@@ -20,6 +20,7 @@ add_executable(manipulation_server src/thorp_arm_controller.cpp
                                    src/move_to_target_server.cpp
                                    src/house_keeping_server.cpp
                                    src/joint_state_watchdog.cpp
+                                   src/tray_manager_server.cpp
                                    src/manipulation_server.cpp)
 target_link_libraries(manipulation_server ${catkin_LIBRARIES})
 add_dependencies(manipulation_server thorp_msgs_generate_messages_cpp)

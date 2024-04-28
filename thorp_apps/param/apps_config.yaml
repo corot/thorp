@@ -23,12 +23,6 @@ picking_planning_frame: arm_base_link
 picking_max_failures: 3  # picking failures allowed for each object on current picking location (resets upon moving)
 picking_dist_to_table: 0.15  # ideal picking distance to the table, as close as possible without risk
 placing_height_on_table: 0.005  # slightly above the table to avoid crashing the object against it
-placing_height_on_tray: 0.03  # well above the tray to avoid colliding with (or ejecting) previously placed objects
 gripper_max_effort: 0.5  # max effort exerted by the gripper on grasping (stops closing upon reaching this value)
 gripper_tightening: 0.0015  # additional gripper closing to tighten grasped objects
 max_arm_reach: 0.3
-tray_side_x: 0.14
-tray_side_y: 0.14
-tray_depth: 0.02
-tray_slot: 0.035  # better a divisor of both tray sides
-tray_link: tray_link

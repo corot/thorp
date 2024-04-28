@@ -9,10 +9,11 @@
   <!--  ****** Manipulation and interaction nodes *****  -->
 
   <node pkg="thorp_manipulation" type="manipulation_server" name="manipulation" output="screen" respawn="true">
-    <rosparam if="$(arg simulation)" file="$(find thorp_manipulation)/param/pick_and_place_gazebo.yaml" command="load"/>
-    <rosparam unless="$(arg simulation)" file="$(find thorp_manipulation)/param/pick_and_place.yaml" command="load"/>
-  </node>
-
+    <rosparam file="$(find thorp_manipulation)/param/pick_and_place_gazebo.yaml" command="load" if="$(arg simulation)"/>
+    <rosparam file="$(find thorp_manipulation)/param/pick_and_place.yaml" command="load" unless="$(arg simulation)"/>
+    <rosparam file="$(find thorp_description)/config/tray.yaml" command="load"/>
+  </node>`
+`
   <node pkg="thorp_manipulation" type="picking_planner_server.py" name="picking_planner" output="screen" respawn="true"/>
 
   <node pkg="thorp_manipulation" type="scene_interaction_server" name="scene_interaction" output="screen" respawn="true"/>

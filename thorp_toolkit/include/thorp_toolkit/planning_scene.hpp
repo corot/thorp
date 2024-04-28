@@ -22,17 +22,16 @@ class PlanningScene : public moveit::planning_interface::PlanningSceneInterface
 public:
   static PlanningScene& instance();
 
-  moveit_msgs::CollisionObject getObject(const std::string& obj_id);
+  moveit_msgs::CollisionObject getObject(const std::string& obj_name);
 
-  void addTray(const geometry_msgs::PoseStamped& pose, const std::vector<double>& size);
+  void addObject(const std::string& name, const geometry_msgs::PoseStamped& pose, const std::vector<double>& size,
+                 const std::string& color);
 
-  void removeAll(bool keep_objs_on_tray = false);
+  void removeAll(const std::set<std::string>& exempted = {});
 
-  void removeObject(const std::string& obj_id);
+  void removeObject(const std::string& obj_name);
 
-  void displaceObject(const std::string& obj_id, const geometry_msgs::PoseStamped& new_pose);
-
-  void moveObjectToTray(const std::string& obj_id, const geometry_msgs::PoseStamped& pose_on_tray);
+  void displaceObject(const std::string& obj_name, const geometry_msgs::PoseStamped& new_pose);
 
   /**
    * Extract pose and size from a collision object
@@ -65,8 +64,6 @@ public:
 
 private:
   PlanningScene() = default;
-
-  std::set<std::string> objs_on_tray_;
 
   // Disable copy and assignment
   PlanningScene(const PlanningScene&) = delete;

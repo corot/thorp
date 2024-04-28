@@ -17,8 +17,8 @@ namespace thorp::bt::actions
 class DetectTables : public BT::RosServiceNode<rail_manipulation_msgs::SegmentObjects>
 {
 public:
-  DetectTables(const std::string& node_name, const BT::NodeConfiguration& conf)
-    : RosServiceNode<ServiceType>(node_name, conf)
+  DetectTables(const std::string& name, const BT::NodeConfiguration& conf)
+    : RosServiceNode<ServiceType>(name, conf)
   {
   }
 
