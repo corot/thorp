@@ -249,7 +249,7 @@ public:
       obj_color.color = ttk::makeColor(rail_obj.rgb[0], rail_obj.rgb[1], rail_obj.rgb[2]);
 
       ROS_INFO("[object detection] Object at %s classified as %s", ttk::toCStr2D(co.pose), rail_obj.name.c_str());
-      result.objects.push_back(co);  // TODO   try emplace
+      result.objects.push_back(co);
       markers.markers.emplace_back(makeLabelMarker(obj_colors.size(), rail_obj.height, co, obj_color.color));
       markers.markers.emplace_back(makeVolumeMarker(obj_colors.size(), rail_obj.bounding_volume));
       obj_colors.push_back(obj_color);

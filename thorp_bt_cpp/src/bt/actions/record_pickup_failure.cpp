@@ -28,10 +28,6 @@ private:
   {
     const auto target_name = *getInput<std::string>("target_name");
     auto failures = getInput<std::map<std::string, uint32_t>>("failures");
-    ROS_ERROR_STREAM_COND(!failures, "empty");
-    ROS_ERROR_STREAM_COND(failures && failures->find(target_name) == failures->end(), "not found");
-    ROS_ERROR_STREAM_COND(failures && failures->find(target_name) != failures->end(),
-                          " found  " << failures->find(target_name)->second);
     if (!failures)
       failures = std::map<std::string, uint32_t>{ { target_name, 1 } };
     else if (auto entry = failures->find(target_name); entry == failures->end())
@@ -47,9 +43,10 @@ private:
     ROS_ASSERT_MSG(failures_count <= max_failures, "More failures than allowed?");
     if (failures_count == max_failures)
     {
-      const auto given_up_count = getInput<uint32_t>("given_up_count");
-      setOutput("given_up_count", given_up_count ? *given_up_count + 1 : 1);
-      ROS_ERROR_STREAM("GIVEN UP " << (given_up_count ? *given_up_count + 1 : 1));
+      const auto given_up_count_opt = getInput<uint32_t>("given_up_count");
+      const auto given_up_count = given_up_count_opt ? *given_up_count_opt + 1 : 1;
+      setOutput("given_up_count", given_up_count);
+      ROS_DEBUG_STREAM(target_name << " given up; " << given_up_count << " gave up in total");
     }
 
     return BT::NodeStatus::SUCCESS;

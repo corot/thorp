@@ -34,7 +34,7 @@ private:
   BT::NodeStatus onResponse(const ResponseType& response) override
   {
     bool tray_full = response.current == 0;
-    ROS_DEBUG_NAMED(name(), "The tray is full");
+    ROS_DEBUG_COND_NAMED(tray_full, name(), "The tray is full");
     return tray_full ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
   }
 
