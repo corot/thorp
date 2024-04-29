@@ -75,9 +75,9 @@ PLAYGROUND_CUBES = [('cube 1', 'cube', (-0.14, -0.16, 0.45, 0.0, 0.0, 1.1)),
                     ('cube 4', 'cube', (-0.11,  0.10, 0.45, 0.0, 0.0, 0.85)),
                     ('cube 5', 'cube', (-0.12,  0.15, 0.45, 0.0, 0.0, 0.4))]
 
-# 2 rows of cubes tightly spaced
+# 5 rows of 8 cubes tightly spaced; tailored for lack table
 N_ROWS_OF_CUBES = [('cube ' + str(i), 'cube',
-                    (-((i // 10) / 10 + 0.15), ((i % 10) - 5) / 20.0, 0.45, 0.0, 0.0, 0.0)) for i in range(20)]
+                    (((i // 8) - 2) / 10, ((i % 8) - 4) / 18.0, 0.45, 0.0, 0.0, 0.0)) for i in range(40)]
 
 SURFS_MIN_DIST = 1.5
 OBJS_MIN_DIST = 0.08
