@@ -4,7 +4,7 @@ import rospy
 
 from math import atan, degrees, radians
 from std_msgs.msg import Float64
-from thorp_msgs.srv import CannonCmd, CannonCmdRequest
+from thorp_msgs.srv import CannonCommand, CannonCommandRequest
 from thorp_msgs.msg import ThorpError
 from arbotix_msgs.msg import Digital, Analog
 from sensor_msgs.msg import JointState
@@ -16,7 +16,7 @@ class CannonCtrlNode:
     def __init__(self):
         self._simulation = rospy.get_param('/use_sim_time', False)
 
-        self._cannon_cmd_srv = rospy.Service('cannon_command', CannonCmd, self.handle_cannon_command)
+        self._cannon_cmd_srv = rospy.Service('cannon_command', CannonCommand, self.handle_cannon_command)
 
         self._fire_cannon_pub = rospy.Publisher('arbotix/cannon_trigger', Digital, queue_size=5, latch=True)
         if self._simulation:
@@ -84,13 +84,13 @@ class CannonCtrlNode:
         return ThorpError(code=ThorpError.SUCCESS)
 
     def handle_cannon_command(self, request):
-        if request.action == CannonCmdRequest.AIM:
+        if request.action == CannonCommandRequest.AIM:
             return self.aim_to_target()
 
-        if request.action == CannonCmdRequest.TILT:
+        if request.action == CannonCommandRequest.TILT:
             return self.tilt(request.angle)
 
-        if request.action == CannonCmdRequest.FIRE:
+        if request.action == CannonCommandRequest.FIRE:
             return self.fire(request.shots)
 
     def spin(self):

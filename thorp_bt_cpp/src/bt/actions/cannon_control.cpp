@@ -7,7 +7,7 @@
 #include <thorp_toolkit/tf2.hpp>
 namespace ttk = thorp::toolkit;
 
-#include <thorp_msgs/CannonCmd.h>
+#include <thorp_msgs/CannonCommand.h>
 
 namespace thorp::bt::actions
 {
@@ -48,10 +48,10 @@ private:
   BT_REGISTER_NODE(AimCannon);
 };
 
-class CannonCmd : public BT::RosServiceNode<thorp_msgs::CannonCmd>
+class CannonCommand : public BT::RosServiceNode<thorp_msgs::CannonCommand>
 {
 public:
-  CannonCmd(const std::string& name, const BT::NodeConfiguration& conf)
+  CannonCommand(const std::string& name, const BT::NodeConfiguration& conf)
     : RosServiceNode<ServiceType>(name, conf)
   {
   }
@@ -75,16 +75,16 @@ private:
   }
 };
 
-class TiltCannon : public CannonCmd
+class TiltCannon : public CannonCommand
 {
 public:
-  TiltCannon(const std::string& name, const BT::NodeConfiguration& conf) : CannonCmd(name, conf)
+  TiltCannon(const std::string& name, const BT::NodeConfiguration& conf) : CannonCommand(name, conf)
   {
   }
 
   static BT::PortsList providedPorts()
   {
-    BT::PortsList ports = CannonCmd::providedPorts();
+    BT::PortsList ports = CannonCommand::providedPorts();
     ports.insert({ BT::InputPort<float>("angle") });
     return ports;
   }
@@ -99,16 +99,16 @@ private:
   BT_REGISTER_NODE(TiltCannon);
 };
 
-class FireCannon : public CannonCmd
+class FireCannon : public CannonCommand
 {
 public:
-  FireCannon(const std::string& name, const BT::NodeConfiguration& conf) : CannonCmd(name, conf)
+  FireCannon(const std::string& name, const BT::NodeConfiguration& conf) : CannonCommand(name, conf)
   {
   }
 
   static BT::PortsList providedPorts()
   {
-    BT::PortsList ports = CannonCmd::providedPorts();
+    BT::PortsList ports = CannonCommand::providedPorts();
     ports.insert({ BT::InputPort<uint32_t>("shots") });
     return ports;
   }

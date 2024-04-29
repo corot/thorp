@@ -3,13 +3,13 @@
 import sys
 import rospy
 
-from thorp_msgs.srv import CannonCmd, CannonCmdRequest
+from thorp_msgs.srv import CannonCommand
 
 
 def cannon_command(cmd, arg):
     rospy.wait_for_service('cannon_command')
     try:
-        srv = rospy.ServiceProxy('cannon_command', CannonCmd)
+        srv = rospy.ServiceProxy('cannon_command', CannonCommand)
         resp1 = srv(cmd, arg, arg)
         print(resp1)
     except rospy.ServiceException as e:

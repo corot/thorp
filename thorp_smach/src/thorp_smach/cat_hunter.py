@@ -27,7 +27,7 @@ class Attack(FollowPose):
 
         # cannon commands service client
         rospy.wait_for_service('cannon_command', 30.0)
-        self.cannon_srv = rospy.ServiceProxy('cannon_command', thorp_srvs.CannonCmd)
+        self.cannon_srv = rospy.ServiceProxy('cannon_command', thorp_srvs.CannonCommand)
 
     def _goal_feedback_cb(self, feedback):
         super(Attack, self)._goal_feedback_cb(feedback)
@@ -36,14 +36,14 @@ class Attack(FollowPose):
                  feedback.dist_to_target <= self.fire_max_dist * 1.5 and \
                  abs(feedback.angle_to_target) <= self.fire_max_angle * 2.5:
                 # do not spam the cannon with aim commands it cannot execute fast
-                resp = self.cannon_srv(thorp_srvs.CannonCmdRequest.AIM, None, None)
+                resp = self.cannon_srv(thorp_srvs.CannonCommandRequest.AIM, None, None)
                 if resp.error.code != thorp_msgs.ThorpError.SUCCESS:
                     rospy.logerr("Aim cannon failed with error code %d: %s", resp.error.code, resp.error.text)
                 self.last_aim_command_time = rospy.get_time()
             if rospy.get_time() - self.last_fire_command_time > 1.0 and \
                  feedback.dist_to_target <= self.fire_max_dist and \
                  abs(feedback.angle_to_target) <= self.fire_max_angle:
-                resp = self.cannon_srv(thorp_srvs.CannonCmdRequest.FIRE, None, 1)
+                resp = self.cannon_srv(thorp_srvs.CannonCommandRequest.FIRE, None, 1)
                 if resp.error.code != thorp_msgs.ThorpError.SUCCESS:
                     rospy.logerr("Fire cannon failed with error code %d: %s", resp.error.code, resp.error.text)
                 self.request_preempt()  # TODO: we cannot verify the kill, so by now just stop the attack

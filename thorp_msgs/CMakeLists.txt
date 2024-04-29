@@ -11,7 +11,7 @@ add_message_files(DIRECTORY msg
                  )
 
 add_service_files(DIRECTORY srv
-                     FILES CannonCmd.srv
+                     FILES CannonCommand.srv
                            ClearPlanningScene.srv
                            ConnectWaypoints.srv
                            TrayAddObject.srv
