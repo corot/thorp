@@ -41,12 +41,12 @@
       </KeepRunningUntilFailure>
       <Inverter _description="To report FAILURE only if we still have reachable targets or tray is full">
         <Sequence>
-          <TrayFull service_name="manipulation/tray/get_capacity"
-                    timeout="100"/>
           <SelectNextTarget failures="{failures}"
                             objects="{objects}"
                             target_name="{object_name}"
                             tightening="{tightening}"/>
+          <TrayFull service_name="manipulation/tray/get_capacity"
+                    timeout="100"/>
         </Sequence>
       </Inverter>
     </Fallback>

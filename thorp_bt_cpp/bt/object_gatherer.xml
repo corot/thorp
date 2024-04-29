@@ -21,6 +21,11 @@
                              ignore_given_up="true"
                              objects="{objects}"/>
           </Inverter>
+          <ClearRailMarkers service_name="rail_segmentation/clear_markers"
+                            timeout="100"/>
+          <ClearPlanningScene keep_tray="true"
+                              service_name="manipulation/clear_planning_scene"
+                              timeout="100"/>
         </Sequence>
         <Sequence>
           <GetRobotPose timeout="1"
@@ -72,98 +77,103 @@
                        output="{detach_pose}"/>
             </Sequence>
           </ForEachPickupLocation>
-          <ClearRailMarkers service_name="rail_segmentation/clear_markers"
-                            timeout="100"/>
-          <ClearPlanningScene keep_tray="true"
-                              service_name="manipulation/clear_planning_scene"
-                              timeout="100"/>
         </Sequence>
       </Fallback>
     </Repeat>
   </BehaviorTree>
 
   <BehaviorTree ID="object_gatherer">
-    <RetryUntilSuccessful num_attempts="999999">
-      <Fallback>
+    <KeepRunningUntilFailure>
+      <Sequence>
         <Parallel failure_threshold="1"
                   success_threshold="1">
-          <SubTree ID="explore_house"
-                   __shared_blackboard="false"/>
           <ForceFailure>
-            <RetryUntilSuccessful num_attempts="999999">
-              <Sequence>
-                <DetectTables service_name="rail_segmentation/segment_objects"
-                              timeout="100"
-                              table="{table}"
-                              table_pose="{table_pose}"/>
-                <Inverter>
-                  <TableVisited table="{table}"
-                                table_pose="{table_pose}"/>
-                </Inverter>
-              </Sequence>
-            </RetryUntilSuccessful>
+            <SubTree ID="explore_house"
+                     __shared_blackboard="false"/>
           </ForceFailure>
+          <RetryUntilSuccessful num_attempts="999999">
+            <Sequence>
+              <DetectTables service_name="rail_segmentation/segment_objects"
+                            timeout="100"
+                            table="{table}"
+                            table_pose="{table_pose}"/>
+              <Inverter>
+                <TableVisited table="{table}"
+                              table_pose="{table_pose}"/>
+              </Inverter>
+            </Sequence>
+          </RetryUntilSuccessful>
         </Parallel>
-        <Sequence>
-          <GetRobotPose timeout="1"
-                        error="{error}"
-                        robot_pose="{robot_pose}"/>
-          <LookAtPose action_name="move_base_flex/exe_path"
-                      controller="TEBPlanner"
-                      robot_pose="{robot_pose}"
-                      server_timeout="5.000000"
-                      target_pose="{table_pose}"
-                      error="{error}"
-                      feedback="{look_at_feedback}"/>
-          <DetectTables service_name="rail_segmentation/segment_objects"
-                        timeout="100"
-                        table="{table}"
-                        table_pose="{table_pose}"/>
-          <ReadDoubleParam key="approach_dist_to_table"
-                           negate=""
-                           value="{approach_dist_to_table}"/>
-          <ClosestTableSide distance="{approach_dist_to_table}"
-                            robot_pose="{robot_pose}"
-                            table="{table}"
-                            table_pose="{table_pose}"
-                            closest_pose="{detach_pose}"/>
-          <GoToPose action_name="move_base_flex/move_base"
-                    angle_tolerance=""
-                    controller="TEBPlanner"
-                    dist_tolerance=""
-                    planner=""
-                    pose="{detach_pose}"
-                    server_timeout="5.000000"
-                    error="{error}"
-                    feedback="{goto_pose_feedback}"/>
-          <TableAsObstacle table="{table}"
-                           table_pose="{table_pose}"/>
-          <TableValidSize table="{table}"/>
-          <GetRobotPose timeout="1"
-                        error="{error}"
-                        robot_pose="{robot_pose}"/>
-          <ReadDoubleParam key="picking_dist_to_table"
-                           negate=""
-                           value="{picking_dist_to_table}"/>
-          <ClosestTableSide distance="{picking_dist_to_table}"
-                            robot_pose="{robot_pose}"
-                            table="{table}"
-                            table_pose="{table_pose}"
-                            closest_pose="{planning_pose}"/>
-          <SubTree ID="attach_to_table"
-                   table="{table}"
-                   pose="{planning_pose}"/>
-          <SubTree ID="cleanup_table"/>
-          <SubTree ID="detach_from_table"
-                   pose="{detach_pose}"
+        <IfThenElse>
+          <SubTree ID="validate_table"
+                   detach_pose="{inspect_pose}"
+                   table_pose="{table_pose}"
                    table="{table}"/>
-          <SetUnsignedInt input="0"
-                          output="{given_up_count}"/>
-          <TrayFull service_name="manipulation/tray/get_capacity"
+          <Sequence>
+            <GetRobotPose timeout="1"
+                          error="{error}"
+                          robot_pose="{robot_pose}"/>
+            <ReadDoubleParam key="picking_dist_to_table"
+                             negate=""
+                             value="{picking_dist_to_table}"/>
+            <ClosestTableSide distance="{picking_dist_to_table}"
+                              robot_pose="{robot_pose}"
+                              table="{table}"
+                              table_pose="{table_pose}"
+                              closest_pose="{planning_pose}"/>
+            <SubTree ID="attach_to_table"
+                     table="{table}"
+                     pose="{planning_pose}"/>
+            <SubTree ID="cleanup_table"
+                     detach_pose="{inspect_pose}"/>
+            <SubTree ID="detach_from_table"
+                     pose="{inspect_pose}"
+                     table="{table}"/>
+            <SetUnsignedInt input="0"
+                            output="{given_up_count}"/>
+          </Sequence>
+          <AlwaysSuccess/>
+        </IfThenElse>
+      </Sequence>
+    </KeepRunningUntilFailure>
+  </BehaviorTree>
+
+  <BehaviorTree ID="validate_table">
+    <Sequence>
+      <GetRobotPose timeout="1"
+                    error="{error}"
+                    robot_pose="{robot_pose}"/>
+      <LookAtPose action_name="move_base_flex/exe_path"
+                  controller="TEBPlanner"
+                  robot_pose="{robot_pose}"
+                  server_timeout="5.000000"
+                  target_pose="{table_pose}"
+                  error="{error}"
+                  feedback="{look_at_feedback}"/>
+      <DetectTables service_name="rail_segmentation/segment_objects"
                     timeout="100"
-                    _description="Otherwise continue exploration"/>
-        </Sequence>
-      </Fallback>
-    </RetryUntilSuccessful>
+                    table="{table}"
+                    table_pose="{table_pose}"/>
+      <ReadDoubleParam key="approach_dist_to_table"
+                       negate=""
+                       value="{approach_dist_to_table}"/>
+      <ClosestTableSide distance="{approach_dist_to_table}"
+                        robot_pose="{robot_pose}"
+                        table="{table}"
+                        table_pose="{table_pose}"
+                        closest_pose="{inspect_pose}"/>
+      <GoToPose action_name="move_base_flex/move_base"
+                angle_tolerance=""
+                controller="TEBPlanner"
+                dist_tolerance=""
+                planner=""
+                pose="{inspect_pose}"
+                server_timeout="5.000000"
+                error="{error}"
+                feedback="{goto_pose_feedback}"/>
+      <TableAsObstacle table="{table}"
+                       table_pose="{table_pose}"/>
+      <TableValidSize table="{table}"/>
+    </Sequence>
   </BehaviorTree>
 </root>
