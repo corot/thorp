@@ -10,7 +10,8 @@ local_costmap:
   transform_tolerance: 0.5
 
   plugins:
-    - {name: range_sensor_layer, type: "range_sensor_layer::RangeSensorLayer"}
-    - {name: obstacle_layer,     type: "costmap_2d::VoxelLayer"}
-    - {name: semantic_layer,     type: "thorp::costmap_layers::SemanticLayer"}
-    - {name: inflation_layer,    type: "costmap_2d::InflationLayer"}
+    - {name: sonars_layer,    type: "range_sensor_layer::RangeSensorLayer"}
+    - {name: infrared_layer,  type: "range_sensor_layer::RangeSensorLayer"}
+    - {name: obstacle_layer,  type: "costmap_2d::VoxelLayer"}
+    - {name: semantic_layer,  type: "thorp::costmap_layers::SemanticLayer"}
+    - {name: inflation_layer, type: "costmap_2d::InflationLayer"}

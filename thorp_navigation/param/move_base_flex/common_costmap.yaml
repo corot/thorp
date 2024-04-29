@@ -23,14 +23,21 @@ obstacle_layer:
   virtual: {data_type: LaserScan, topic: virtual, marking: true, clearing: true, min_obstacle_height: 0.4, max_obstacle_height: 0.8}   ### TODO DROP?????
   bumpers: {data_type: PointCloud2, topic: bumpers, marking: true, clearing: false, min_obstacle_height: 0.0, max_obstacle_height: 0.2}
 
-range_sensor_layer:
+sonars_layer:
   clear_threshold:      0.46
   mark_threshold:       0.98
   no_readings_timeout:  2.0
   clear_on_max_reading: true
-  ns:     /mobile_base/sensors
-  topics: [sonars/m90, sonars/m72, sonars/m54, sonars/m36, sonars/m18, sonars/0, sonars/p18, sonars/p36, sonars/p54, sonars/p72, sonars/p90,
-           infrared/arm, infrared/l155, infrared/l180, infrared/r180, infrared/r155]
+  ns:     /mobile_base/sensors/sonars
+  topics: [m90, m72, m54, m36, m18, 0, p18, p36, p54, p72, p90]
+
+infrared_layer:
+  clear_threshold:      0.4
+  mark_threshold:       0.9
+  no_readings_timeout:  2.0
+  clear_on_max_reading: true
+  ns:     /mobile_base/sensors/infrared
+  topics: [arm, l155, l180, r180, r155]
 
 semantic_layer:
   enabled: true
