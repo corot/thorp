@@ -16,20 +16,22 @@ namespace thorp::manipulation
 
 class PlaceObjectServer : public ThorpArmController
 {
+public:
+  explicit PlaceObjectServer(const std::string& name,
+                             std::function<const std::vector<std::string>&()> get_tray_content_fn);
+  ~PlaceObjectServer();
+
 private:
+  std::function<const std::vector<std::string>&()> get_tray_content_fn_;
+
   // Thorp pickup object action server
   actionlib::SimpleActionServer<thorp_msgs::PlaceObjectAction> as_;
 
   const int PLACE_ATTEMPTS = 5;
 
-public:
-  explicit PlaceObjectServer(const std::string& name);
-  ~PlaceObjectServer();
-
   void executeCB(const thorp_msgs::PlaceObjectGoal::ConstPtr& goal);
   void preemptCB();
 
-private:
   int32_t place(const std::string& obj_name, const std::string& surface, const geometry_msgs::PoseStamped& pose);
 
   int32_t makePlaceLocations(const geometry_msgs::PoseStamped& target_pose,

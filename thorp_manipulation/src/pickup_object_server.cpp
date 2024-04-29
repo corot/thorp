@@ -112,37 +112,7 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
   goal.end_effector = gripper().getName();
   goal.support_surface_name = surface;
   goal.allow_gripper_support_collision = true;
-
-  // TODO: play with the many other options:
-  // goal.attached_object_touch_links : string[] --> defaults to gripper; can change by just fingers
-
-  //  # Optionally notify the pick action that it should approach the object further,
-  //  # as much as possible (this minimizing the distance to the object before the grasp)
-  //  # along the approach direction; Note: this option changes the grasping poses
-  //  # supplied in possible_grasps[] such that they are closer to the object when possible.
-  //  goal.minimize_object_distance = true;   this sometimes makes the grippers crash with the table
-
-  //  # an optional list of obstacles that we have semantic information about
-  //  # and that can be touched/pushed/moved in the course of grasping;
-  //  # CAREFUL: If the object name 'all' is used, collisions with all objects are disabled during the approach & lift.
-  //  string[] allowed_touch_objects
-
-  //  # The maximum amount of time the motion planner is allowed to plan for
-  //  float64 allowed_planning_time
-  //
-  //  # Planning options
-  //  PlanningOptions planning_options
-  //  # If the plan becomes invalidated during execution, it is possible to have
-  //  # that plan recomputed and execution restarted. This flag enables this
-  //  # functionality
-  //    bool replan
-  //
-  //  # The maximum number of replanning attempts
-  //    int32 replan_attempts
-  //
-  //  # The amount of time to wait in between replanning attempts (in seconds)
-  //    float64 replan_delay
-  // ROS_WARN_STREAM("[pickup object] planning options: " << goal.planning_options);
+  goal.allowed_touch_objects = { obj_name, surface };
 
   // Allow some leeway in position (meters) and orientation (radians)
   arm().setGoalPositionTolerance(0.001);  // TODO: same values already set on parent class; add to the goal if needed
@@ -206,9 +176,6 @@ int32_t PickupObjectServer::makeGrasps(const geometry_msgs::PoseStamped& obj_pos
     g.grasp_posture.points.resize(1);
     g.grasp_posture.points[0].positions.push_back(gripperClosing(g.grasp_pose, obj_pose, obj_size, tightening));
     g.grasp_posture.points[0].effort.push_back(max_effort);
-
-    g.allowed_touch_objects.push_back(obj_name);
-    g.allowed_touch_objects.push_back(surface);
 
     g.id = std::to_string(attempt);
 

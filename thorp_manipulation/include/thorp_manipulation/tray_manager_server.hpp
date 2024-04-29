@@ -29,6 +29,8 @@ public:
   TrayManagerServer();
   ~TrayManagerServer() = default;
 
+  const std::vector<std::string>& getTrayContent() { return objs_on_tray_; }
+
 private:
   static constexpr char LOGNAME[] = "tray_mng";
 
@@ -43,7 +45,6 @@ private:
   ttk::PlanningScene& planning_scene_;
   ttk::Visualization visualization_;
 
-  std::string tray_name_;
   std::string tray_link_;
   double tray_slot_ = 0.0;
   double tray_side_x_ = 0.0;

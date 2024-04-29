@@ -23,8 +23,10 @@ namespace ttk = thorp::toolkit;
 namespace thorp::manipulation
 {
 
-PlaceObjectServer::PlaceObjectServer(const std::string& name) :
-  as_(name, boost::bind(&PlaceObjectServer::executeCB, this, _1), false)
+PlaceObjectServer::PlaceObjectServer(const std::string& name,
+                                     std::function<const std::vector<std::string>&()> get_tray_content_fn)
+  : as_(name, boost::bind(&PlaceObjectServer::executeCB, this, _1), false)
+  , get_tray_content_fn_(std::move(get_tray_content_fn))
 {
   ROS_INFO("[place object] Starting place action server...");
 
@@ -106,6 +108,12 @@ int32_t PlaceObjectServer::place(const std::string& obj_name, const std::string&
   moveit_msgs::PlaceGoal goal = arm().constructPlaceGoal(obj_name, locations, false);
   goal.support_surface_name = surface;
   goal.allow_gripper_support_collision = true;
+  if (surface == "tray")
+  {
+    goal.allowed_touch_objects = get_tray_content_fn_();
+  }
+  goal.allowed_touch_objects.push_back(obj_name);
+  goal.allowed_touch_objects.push_back(surface);
 
   // Allow some leeway in position (meters) and orientation (radians)
   arm().setGoalPositionTolerance(0.001);  // TODO: same values already set on parent class; add to the goal if needed
@@ -178,9 +186,6 @@ int32_t PlaceObjectServer::makePlaceLocations(const geometry_msgs::PoseStamped& 
     l.post_place_posture.joint_names.push_back("gripper_joint");
     l.post_place_posture.points.resize(1);
     l.post_place_posture.points[0].positions.push_back(gripper_open);
-
-    l.allowed_touch_objects.push_back(obj_name);
-    l.allowed_touch_objects.push_back(surface);
 
     l.id = std::to_string(attempt);
 

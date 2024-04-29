@@ -13,7 +13,6 @@ TrayManagerServer::TrayManagerServer() : planning_scene_(ttk::PlanningScene::ins
 {
   ros::NodeHandle pnh("~");
   ros::NodeHandle tray_nh(pnh, "tray");
-  tray_name_ = tray_nh.param("name", std::string("tray"));
   tray_link_ = tray_nh.param("link", std::string("tray_link"));
   tray_slot_ = tray_nh.param("slot", 0.035);
   tray_side_x_ = tray_nh.param("side_x", 0.14);
@@ -27,7 +26,7 @@ TrayManagerServer::TrayManagerServer() : planning_scene_(ttk::PlanningScene::ins
   ROS_DEBUG_NAMED(LOGNAME, "Tray dimensions: %g x %g m. %d x %d slots of %g x %g m each", tray_side_x_, tray_side_y_,
                   slots_x_, slots_y_, tray_slot_, tray_slot_);
 
-  planning_scene_.addObject(tray_name_, ttk::createPose(0, 0, 0.0015, 0, 0, 0, tray_link_),
+  planning_scene_.addObject("tray", ttk::createPose(0, 0, 0.0015, 0, 0, 0, tray_link_),
                             { tray_side_x_ + 0.01, tray_side_y_ + 0.01, 0.002 }, "green");
 
   clear_pl_scene_srv_ = pnh.advertiseService("clear_planning_scene", &TrayManagerServer::clearPlanningSceneCB, this);
@@ -44,7 +43,7 @@ bool TrayManagerServer::clearPlanningSceneCB(thorp_msgs::ClearPlanningSceneReque
   std::set<std::string> exempted;
   if (request.keep_tray)
   {
-    exempted.insert(tray_name_);
+    exempted.insert("tray");
     exempted.insert(objs_on_tray_.begin(), objs_on_tray_.end());
   }
   planning_scene_.removeAll(exempted);

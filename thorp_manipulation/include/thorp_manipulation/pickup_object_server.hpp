@@ -16,20 +16,19 @@ namespace thorp::manipulation
 
 class PickupObjectServer : public ThorpArmController
 {
+public:
+  explicit PickupObjectServer(const std::string& name);
+  ~PickupObjectServer();
+
 private:
   // Thorp pickup object action server
   actionlib::SimpleActionServer<thorp_msgs::PickupObjectAction> as_;
 
   const int PICK_ATTEMPTS = 5;
 
-public:
-  explicit PickupObjectServer(const std::string& name);
-  ~PickupObjectServer();
-
   void executeCB(const thorp_msgs::PickupObjectGoal::ConstPtr& goal);
   void preemptCB();
 
-private:
   int32_t pickup(const std::string& obj_name, const std::string& surface,
                  const float max_effort = 0.0, const float tightening = 0.001);
 

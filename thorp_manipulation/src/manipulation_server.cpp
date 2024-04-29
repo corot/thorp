@@ -8,17 +8,18 @@
 #include "thorp_manipulation/house_keeping_server.hpp"
 #include "thorp_manipulation/tray_manager_server.hpp"
 
+using namespace thorp::manipulation;
 
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "manipulation");
 
   // Create pickup, place and move_to_target action servers
-  thorp::manipulation::TrayManagerServer  tray_mng;
-  thorp::manipulation::HouseKeepingServer hk_server;
-  thorp::manipulation::MoveToTargetServer mtt_server("move_to_target");
-  thorp::manipulation::PickupObjectServer pick_server("pickup_object");
-  thorp::manipulation::PlaceObjectServer  place_server("place_object");
+  TrayManagerServer tray_mng;
+  HouseKeepingServer hk_server;
+  MoveToTargetServer mtt_server("move_to_target");
+  PickupObjectServer pick_server("pickup_object");
+  PlaceObjectServer place_server("place_object", std::bind(&TrayManagerServer::getTrayContent, &tray_mng));
 
   // Set up an asynchronous spinner as the move groups operations need continuous spinning
   ros::AsyncSpinner spinner(4);
