@@ -4,13 +4,12 @@ import smach_ros
 
 import std_srvs.srv as std_srvs
 import thorp_msgs.msg as thorp_msgs
+import thorp_msgs.srv as thorp_srvs
 import control_msgs.msg as control_msgs
 
 from thorp_toolkit.planning_scene import PlanningScene
-from thorp_toolkit.geometry import create_2d_pose, create_3d_pose, pose2d2str, get_size_from_co
-from thorp_toolkit.visualization import Visualization
+from thorp_toolkit.geometry import pose2d2str, create_3d_pose
 
-from .geometry import TranslatePose
 from .userdata import UDExtractAttr
 
 
@@ -28,6 +27,7 @@ class ObjAttached(smach_ros.ServiceState):
     """
     Check if we have a collision object attached to the gripper, according to the planning scene
     """
+
     def __init__(self):
         super(ObjAttached, self).__init__('obj_attached', std_srvs.Trigger,
                                           response_cb=self.response_cb,
@@ -51,6 +51,7 @@ class GripperBusy(smach_ros.ServiceState):
     """
     Check if the gripper is physically holding an object, regardless of what the planning scene says
     """
+
     def __init__(self):
         super(GripperBusy, self).__init__('gripper_busy', std_srvs.Trigger,
                                           response_cb=self.response_cb,
@@ -72,6 +73,7 @@ class GripperBusy(smach_ros.ServiceState):
 
 class FoldArm(smach.Concurrence):
     """ Concurrently fold arm and close the gripper """
+
     def __init__(self):
         super(FoldArm, self).__init__(outcomes=['succeeded', 'preempted', 'aborted'],
                                       default_outcome='succeeded',
@@ -93,6 +95,7 @@ class FoldArm(smach.Concurrence):
 
 class StoredConfig(smach_ros.SimpleActionState):
     """ Move arm into one of the stored configuration (resting, right_up, etc.) """
+
     def __init__(self, config):
         super(StoredConfig, self).__init__('move_to_target',
                                            thorp_msgs.MoveToTargetAction,
@@ -107,6 +110,7 @@ class PickupObject(smach.Iterator):
     If we already have an object attached, we clear the gripper before pickup.
     If pickup succeeds, we still check if we have the object physically grasped.
     """
+
     def __init__(self, attempts=2):
         super(PickupObject, self).__init__(outcomes=['succeeded', 'preempted', 'aborted'],
                                            input_keys=['object', 'surface', 'max_effort', 'tightening'],
@@ -148,7 +152,7 @@ class PickupObject(smach.Iterator):
                                        transitions={'true': 'succeeded',
                                                     'false': 'CLEAR_ATTACHED',
                                                     'error': 'aborted'})
-                smach.StateMachine.add('CLEAR_ATTACHED', ClearGripper(),      # clear the falsely attached object; don't
+                smach.StateMachine.add('CLEAR_ATTACHED', ClearGripper(),  # clear the falsely attached object; don't
                                        transitions={'succeeded': 'aborted'})  # retry, as it's not available anymore
                 smach.StateMachine.add('CLEAR_OCTOMAP', ClearOctomap(),
                                        transitions={'succeeded': 'continue',
@@ -162,6 +166,7 @@ class PickupObject(smach.Iterator):
 
 class PlaceObject(smach.Iterator):
     """  Place a given object, optionally retrying up to a given number of times  """
+
     def __init__(self, attempts=2):
         super(PlaceObject, self).__init__(outcomes=['succeeded', 'preempted', 'aborted'],
                                           input_keys=['object', 'surface', 'place_pose'],
@@ -201,73 +206,42 @@ class PlaceObject(smach.Iterator):
 
 class PlaceOnTray(smach.Sequence):
     """  Place a given object on the tray  """
+
     def __init__(self):
         super(PlaceOnTray, self).__init__(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'],
                                           connector_outcome='succeeded',
                                           input_keys=['object'])
-        # add a collision object for the tray surface, right above the mesh
-        tray_link = rospy.get_param('~tray_link', 'tray_link')
-        PlanningScene().add_tray(create_3d_pose(0, 0, 0.0015, 0, 0, 0, tray_link),
-                                 (rospy.get_param('~tray_side_x') + 0.01, rospy.get_param('~tray_side_y') + 0.01, 0.002))
+        # TODO create a fake surface because PlaceObject expects a CollisionObject (but just to get the id)
+        # TODO as on BT C++, I can just use surface name (WARN: goal field is called support_surf)
+        PlanningScene().add_tray(create_3d_pose(0, 0, 0, 0, 0, 0, 'tray_link'), (0, 0, 0))
         self.userdata.surface = PlanningScene().get_obj('tray')
 
         with self:
-            smach.Sequence.add('POSE_ON_TRAY', NextPoseOnTray(tray_link))
+            smach.Sequence.add('POSE_ON_TRAY', NextPoseOnTray())
             smach.Sequence.add('PLACE_ON_TRAY', PlaceObject(),
                                remapping={'place_pose': 'pose_on_tray'})
-            smach.Sequence.add('AT_TRAY_LEVEL', TranslatePose(-rospy.get_param('~placing_height_on_tray'), 'z'),
-                               remapping={'pose': 'pose_on_tray'})  # undo added clearance to replicate gravity
-            smach.Sequence.add('MOVE_TO_TRAY', MoveObjToTray())
+            smach.Sequence.add('MOVE_TO_TRAY', AddObjToTray())
 
 
-class NextPoseOnTray(smach.State):
+class NextPoseOnTray(smach_ros.ServiceState):
     """
-    Calculate the next pose where to put an object on the tray.
+    Request the next pose where to put an object on the tray.
     """
 
-    def __init__(self, tray_link):
-        smach.State.__init__(self,
-                             outcomes=['succeeded', 'tray_full'],
-                             output_keys=['pose_on_tray'])
-        self.tray_slot = rospy.get_param('~tray_slot')
-        self.tray_side_x = rospy.get_param('~tray_side_x')
-        self.tray_side_y = rospy.get_param('~tray_side_y')
-        self.tray_link = tray_link
-        self.tray_full = False
-        self.slots_x = int(self.tray_side_x / self.tray_slot + 0.1)  # avoid float division pitfall
-        self.slots_y = int(self.tray_side_y / self.tray_slot + 0.1)  # until I switch to Python3
-        self.offset_x = 0.0 if self.slots_x % 2 else self.tray_slot / 2.0
-        self.offset_y = 0.0 if self.slots_y % 2 else self.tray_slot / 2.0
-        self.next_x = 0
-        self.next_y = 0
+    def __init__(self):
+        super(NextPoseOnTray, self).__init__('manipulation/tray/get_next_pose', thorp_srvs.TrayNextPose,
+                                             response_cb=self.response_cb,
+                                             outcomes=['succeeded', 'tray_full'],
+                                             output_keys=['pose_on_tray'])
 
-        # visualize place poses (for debugging)
-        points = []
-        for _ in range(self.slots_x * self.slots_y):
-            points.append(self._next_pose(0.01).pose.position)
-        Visualization().add_markers(Visualization().create_point_list(create_2d_pose(0, 0, 0, self.tray_link),
-                                                                      points, [1, 0, 0, 1]))  # solid red points
-        Visualization().publish_markers()
-        self.tray_full = False
+    def response_cb(self, ud, response):
+        ud['pose_on_tray'] = response.pose_on_tray
 
     def execute(self, ud):
-        if self.tray_full:
-            return 'tray_full'
-
-        # place objects 3cm above the tray, so they fall into position
-        ud['pose_on_tray'] = self._next_pose(rospy.get_param('~placing_height_on_tray'))
-        return 'succeeded'
-
-    def _next_pose(self, z):
-        # Get next empty location coordinates
-        x = (self.next_x - self.slots_x/2) * self.tray_slot + self.offset_x
-        y = (self.next_y - self.slots_y/2) * self.tray_slot + self.offset_y
-        self.next_x = (self.next_x + 1) % self.slots_x
-        if self.next_x == 0:
-            self.next_y = (self.next_y + 1) % self.slots_y
-            if self.next_x == self.next_y == 0:
-                self.tray_full = True
-        return create_3d_pose(x, y, z, 0, 0, 0, self.tray_link)
+        outcome = super(NextPoseOnTray, self).execute(ud)
+        if outcome == 'succeeded':
+            return outcome
+        return 'tray_full'
 
 
 class RemoveObject(smach.State):
@@ -286,20 +260,18 @@ class RemoveObject(smach.State):
         return 'succeeded'
 
 
-class ClearPlanningScene(smach.State):
+class ClearPlanningScene(smach_ros.ServiceState):
     """
     Clear the planning scene, optionally sparing the tray and its content
     """
 
     def __init__(self, keep_tray=True):
-        smach.State.__init__(self,
-                             outcomes=['succeeded'])
+        super(ClearPlanningScene, self).__init__('manipulation/clear_planning_scene', thorp_srvs.ClearPlanningScene,
+                                                 request_cb=self.request_cb)
         self.keep_tray = keep_tray
 
-    def execute(self, ud):
-        rospy.loginfo("Clearing planning scene")
-        PlanningScene().remove_all(self.keep_tray)
-        return 'succeeded'
+    def request_cb(self, ud, request):
+        request.keep_tray = self.keep_tray
 
 
 class DisplaceObject(smach.State):
@@ -318,20 +290,16 @@ class DisplaceObject(smach.State):
         return 'succeeded'
 
 
-class MoveObjToTray(smach.State):
+class AddObjToTray(smach_ros.ServiceState):
     """
-    Move a collision object to the tray. The input pose z-coordinate is at tray's bottom;
-    we need to add half the object size, so it appears at the right height on planning scene.
+    Add a collision object to the tray.
     """
 
     def __init__(self):
-        smach.State.__init__(self,
-                             outcomes=['succeeded'],
-                             input_keys=['object', 'pose_on_tray'])
+        super(AddObjToTray, self).__init__('manipulation/tray/add_object', thorp_srvs.TrayAddObject,
+                                           request_cb=self.request_cb,
+                                           input_keys=['object', 'pose_on_tray'])
 
-    def execute(self, ud):
-        pose_on_tray = ud['pose_on_tray']
-        pose_on_tray.pose.position.z += get_size_from_co(ud['object'])[2] / 2.0
-        PlanningScene().move_obj_to_tray(ud['object'].id, pose_on_tray)
-        rospy.loginfo("Object '%s' moved to tray at %s", ud['object'].id, pose2d2str(pose_on_tray))
-        return 'succeeded'
+    def request_cb(self, ud, request):
+        request.object_name = ud['object'].id
+        request.pose_on_tray = ud['pose_on_tray']

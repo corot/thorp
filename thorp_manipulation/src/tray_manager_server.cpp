@@ -40,6 +40,8 @@ TrayManagerServer::TrayManagerServer() : planning_scene_(ttk::PlanningScene::ins
 bool TrayManagerServer::clearPlanningSceneCB(thorp_msgs::ClearPlanningSceneRequest& request,
                                              thorp_msgs::ClearPlanningSceneResponse& response)
 {
+  ROS_INFO_NAMED(LOGNAME, "Clearing planning scene %s", request.keep_tray ? "; keeping the tray and its content" : "");
+
   std::set<std::string> exempted;
   if (request.keep_tray)
   {
