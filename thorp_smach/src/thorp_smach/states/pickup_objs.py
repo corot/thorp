@@ -48,25 +48,25 @@ class SelectNextTarget(smach.State):
         rospy.loginfo("No new targets within the %.2f m arm reach", max_arm_reach)
 
         # all targets have already failed at least once; try with the one with less previous failures
-        picking_max_failures = rospy.get_param('~picking_max_failures')
+        pickup_max_failures = rospy.get_param('~pickup_max_failures')
         targets = [(t, d, ud['failures'][t.id]) for t, d in targets]
         targets = sorted(targets, key=lambda t: t[2])  # sort by increasing number of failed picks
         for target, dist, failures in targets:
             # we add a random extra tightening, the bigger, the more we retry, but with some randomness
-            if failures < picking_max_failures:
+            if failures < pickup_max_failures:
                 extra_tightening = uniform(-gripper_tightening, gripper_tightening * failures)
                 rospy.loginfo("Retrying target '%s' (%d previous failures; %.1f mm of extra tightening)",
                               target.id, failures, extra_tightening * 1000)
                 ud['target'] = target
                 ud['tightening'] = gripper_tightening + extra_tightening
                 return 'have_target'
-        rospy.loginfo("No targets to retry (failed less than %d times)", picking_max_failures)
+        rospy.loginfo("No targets to retry (failed less than %d times)", pickup_max_failures)
         return 'no_targets'
 
 
 class RecordFailure(smach.State):
     """
-    Increase by one the number of picking failures for a given object
+    Increase by one the number of pickup failures for a given object
     Return always 'succeeded'
     """
 
@@ -82,9 +82,9 @@ class RecordFailure(smach.State):
         else:
             ud['failures'][ud['object'].id] += 1
         failures = ud['failures'][ud['object'].id]
-        picking_max_failures = rospy.get_param('~picking_max_failures')
-        assert failures <= picking_max_failures, "We are retrying more than max failures"
-        if failures < picking_max_failures:
+        pickup_max_failures = rospy.get_param('~pickup_max_failures')
+        assert failures <= pickup_max_failures, "We are retrying more than max failures"
+        if failures < pickup_max_failures:
             rospy.loginfo("Pick object '%s' failed %d time(s)", ud['object'].id, failures)
         else:
             rospy.logwarn("Pick object '%s' failed %d times; giving up", ud['object'].id, failures)
@@ -93,7 +93,7 @@ class RecordFailure(smach.State):
 
 class ClearFailures(smach.State):
     """
-    Clear the picking failures for a given object (normally after successfully picking it)
+    Clear the pickup failures for a given object (normally after successfully picking it up)
     Always returns 'succeeded', even if the object was not listed on 'failures' dictionary.
     """
 
@@ -176,7 +176,7 @@ class PickupReachableObjs(DoOnExitContainer):
                                                 'aborted': 'aborted',
                                                 'preempted': 'preempted'})
             smach.StateMachine.add('SELECT_TARGET', SelectNextTarget(),  # just used to check if there are objects left
-                                   transitions={'have_target': 'PICKUP_OBJECTS',  # restart picking if so
+                                   transitions={'have_target': 'PICKUP_OBJECTS',  # restart pickup if so
                                                 'no_targets': 'succeeded'})
             DoOnExitContainer.add_finally('CLEAR_P_SCENE', ClearPlanningScene())
             DoOnExitContainer.add_finally('FINAL_FOLD_ARM', FoldArm())

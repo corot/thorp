@@ -11,36 +11,37 @@ from itertools import permutations
 from thorp_toolkit.geometry import TF2, to_transform, translate_pose, transform_pose, create_2d_pose, distance_2d
 from thorp_toolkit.transform import Transform
 from thorp_toolkit.visualization import Visualization
-from thorp_msgs.msg import ObjectToPick, PickingPlan, PickLocation, PlanPickingAction, PlanPickingResult
+from thorp_msgs.msg import ObjectToPickup, PickupPlan, PickupLocation, MakePickupPlanAction, MakePickupPlanResult
 
 
-class PickingPlanner(actionlib.SimpleActionServer):
+class PickupPlanner(actionlib.SimpleActionServer):
     """
-    Group objects into picking locations and sort them to make a picking plan
+    Group objects into pickup locations and sort them to make a pickup plan
     """
+
     def __init__(self):
-        super().__init__('manipulation/plan_picking', PlanPickingAction, self.execute_cb, False)
+        super().__init__('manipulation/make_pickup_plan', MakePickupPlanAction, self.execute_cb, False)
 
-        self.poses_viz = rospy.Publisher('manipulation/picking_poses', geometry_msgs.PoseArray, queue_size=1)
+        self.poses_viz = rospy.Publisher('manipulation/pickup_poses', geometry_msgs.PoseArray, queue_size=1)
         self.start()
 
     def execute_cb(self, goal):
-        picking_poses, closest_pose = self.surface_sides_poses(goal.robot_pose, goal.surface, goal.picking_dist)
-        picking_locs = self.group_objects(goal.robot_pose, goal.objects, picking_poses, goal.planning_frame,
-                                          goal.max_arm_reach,
-                                          - (goal.approach_dist - goal.picking_dist),
-                                          - (goal.detach_dist - goal.picking_dist))
-        picking_plan = self.make_picking_plan(goal.robot_pose, picking_locs)
-        result = PlanPickingResult()
-        result.picking_plan.travelled_dist = self.traveled_dist(goal.robot_pose, picking_plan)
-        result.picking_plan.locations = picking_plan
+        pickup_poses, closest_pose = self.surface_sides_poses(goal.robot_pose, goal.surface, goal.pickup_dist)
+        pickup_locs = self.group_objects(goal.robot_pose, goal.objects, pickup_poses, goal.planning_frame,
+                                         goal.max_arm_reach,
+                                         - (goal.approach_dist - goal.pickup_dist),
+                                         - (goal.detach_dist - goal.pickup_dist))
+        pickup_plan = self.make_pickup_plan(goal.robot_pose, pickup_locs)
+        result = MakePickupPlanResult()
+        result.pickup_plan.travelled_dist = self.traveled_dist(goal.robot_pose, pickup_plan)
+        result.pickup_plan.locations = pickup_plan
         self.set_succeeded(result)
 
     def surface_sides_poses(self, robot_pose, surface, distance):
         """
         Calculate the four locations around a rectangular surface at a given distance.
         :param robot_pose: current robot pose, expected on map frame
-        :param surface: picking surface as a CollisionObject
+        :param surface: pickup surface as a CollisionObject
         :param distance:
         :return: poses, closest_pose; all on map frame
         """
@@ -60,8 +61,8 @@ class PickingPlanner(actionlib.SimpleActionServer):
         from math import pi
         poses = [('p_x', create_2d_pose(p_x, 0.0, -pi, 'surface_frame')),
                  ('n_x', create_2d_pose(n_x, 0.0, 0.0, 'surface_frame')),
-                 ('p_y', create_2d_pose(0.0, p_y, -pi/2.0, 'surface_frame')),
-                 ('n_y', create_2d_pose(0.0, n_y, +pi/2.0, 'surface_frame'))]
+                 ('p_y', create_2d_pose(0.0, p_y, -pi / 2.0, 'surface_frame')),
+                 ('n_y', create_2d_pose(0.0, n_y, +pi / 2.0, 'surface_frame'))]
         pose_array = geometry_msgs.PoseArray()  # for visualization
         sides_poses = {}
         for name, pose in poses:
@@ -79,62 +80,63 @@ class PickingPlanner(actionlib.SimpleActionServer):
         self.poses_viz.publish(pose_array)
         return sides_poses, closest_pose
 
-    def group_objects(self, robot_pose, objects, picking_poses, planning_frame, max_arm_reach, approach_offset, detach_offset):
+    def group_objects(self, robot_pose, objects, pickup_poses, planning_frame, max_arm_reach, approach_offset,
+                      detach_offset):
         """
-        Group detected objects reachable from each picking location (that is, within arm's reach).
+        Group detected objects reachable from each pickup location (that is, within arm's reach).
         We first eliminate the locations without objects only reachable from there.
         If an object can be reached from two of the remaining locations, we choose
         the one that places the object closer to the robot arm.
         :param robot_pose:
         :param objects:
-        :param picking_poses: list of picking locations on map frame
+        :param pickup_poses: list of pickup locations on map frame
         :param max_arm_reach:
         :param planning_frame:
         :param approach_offset:
         :param detach_offset:
-        :return: picking locations, a list of PickLocation objects
+        :return: pickup locations, a list of PickupLocation objects
         """
         bfp_to_arm_tf = Transform.create(TF2().lookup_transform('base_footprint', planning_frame))  # base to arm tf
         map_to_fbp_tf = Transform.create(TF2().lookup_transform('map', 'base_footprint'))  # map to base
         pick_locs = []
-        for name, picking_pose in picking_poses.items():
+        for name, pickup_pose in pickup_poses.items():
             # current distance from the robot (stored but not used by now)
-            dist_from_robot = distance_2d(picking_pose, robot_pose)
+            dist_from_robot = distance_2d(pickup_pose, robot_pose)
             # apply base to arm tf, so we get arm pose on map reference for each location
-            arm_pose_mrf = (Transform.create(picking_pose) * bfp_to_arm_tf).to_geometry_msg_pose_stamped()
+            arm_pose_mrf = (Transform.create(pickup_pose) * bfp_to_arm_tf).to_geometry_msg_pose_stamped()
             # detected objects poses are in arm reference, so their modulo is the distance to the arm
             objs = []
             for i, obj in enumerate(objects):
-                # transform object pose from base to map frame, so we can compare distances to picking locations
+                # transform object pose from base to map frame, so we can compare distances to pickup locations
                 # we must limit max arm reach with our navigation tolerance when reaching the goal, as that will
-                # be our probable picking pose, instead of the ideal one received as input
+                # be our probable pickup pose, instead of the ideal one received as input
                 obj_pose_mrf = (map_to_fbp_tf * Transform.create(obj.pose)).to_geometry_msg_pose_stamped()
                 dist = distance_2d(obj_pose_mrf, arm_pose_mrf)  # both on map rf
                 if dist <= max_arm_reach:
-                    objs.append(ObjectToPick(obj.id, dist, obj_pose_mrf))
+                    objs.append(ObjectToPickup(obj.id, dist, obj_pose_mrf))
             if not objs:
                 continue  # no objects reachable from here; keep going
-            # sort objects by increasing distance from the arm; that should make picking easier,
+            # sort objects by increasing distance from the arm; that should make pickup easier,
             # as we won't hit closer objects when going over them (not 100% sure if this is true)
             objs = sorted(objs, key=lambda o: o.distance)
 
             # set also the approach and detach poses by translating by the respective offsets
-            approach_pose = deepcopy(picking_pose)
+            approach_pose = deepcopy(pickup_pose)
             translate_pose(approach_pose, approach_offset, 'x')
-            detach_pose = deepcopy(picking_pose)
+            detach_pose = deepcopy(pickup_pose)
             translate_pose(detach_pose, detach_offset, 'x')
-            pick_locs.append(PickLocation(name, dist_from_robot, objs, arm_pose_mrf,
-                                          approach_pose, picking_pose, detach_pose))
+            pick_locs.append(PickupLocation(name, dist_from_robot, objs, arm_pose_mrf,
+                                            approach_pose, pickup_pose, detach_pose))
         if not pick_locs:
             rospy.loginfo("No reachable objects")
             return pick_locs
 
-        # find the most efficient sequence of picking locations: try all permutations, sort and get the first
+        # find the most efficient sequence of pickup locations: try all permutations, sort and get the first
         possible_plans = []
         for perm in permutations(pick_locs):
             perm = list(perm)  # convert to list, so we can remove elements
             self.filter_pick_locs(perm)
-            possible_plans.append(PickingPlan(self.traveled_dist(robot_pose, perm), perm))
+            possible_plans.append(PickupPlan(self.traveled_dist(robot_pose, perm), perm))
         # sort by  1) fewer locations to visit  2) less travelled distance (in case of match)
         sorted_plans = sorted(possible_plans, key=lambda p: (len(p.locations), p.travelled_dist))
         sorted_plocs = sorted_plans[0].locations
@@ -158,7 +160,7 @@ class PickingPlanner(actionlib.SimpleActionServer):
             ploc.objects.remove(obj)  # TODO make a test for this and move the remove to within the loop (much simpler)
         # TODO: why I sort again? I may break the optimization done above!!!
         sorted_plocs = sorted(sorted_plocs, key=lambda pl: len(pl.objects))  # sort again after removing duplicates
-        self.viz_picking_plan(sorted_plocs, max_arm_reach)
+        self.viz_pickup_plan(sorted_plocs, max_arm_reach)
         return sorted_plocs
 
     @staticmethod
@@ -168,16 +170,16 @@ class PickingPlanner(actionlib.SimpleActionServer):
         """
         if not pick_locs:
             return 0.0
-        total_dist = distance_2d(robot_pose, pick_locs[0].picking_pose)
+        total_dist = distance_2d(robot_pose, pick_locs[0].pickup_pose)
         for ploc1, ploc2 in zip(pick_locs, pick_locs[1:]):
-            total_dist += distance_2d(ploc1.picking_pose, ploc2.picking_pose)
+            total_dist += distance_2d(ploc1.pickup_pose, ploc2.pickup_pose)
         return total_dist
 
     @staticmethod
     def filter_pick_locs(pick_locs):
         """
         Traverse pick locations in order, discarding those whose objects are all present in other locations
-        (that is, we can skip them when picking without missing any object)
+        (that is, we can skip them when picking up without missing any object)
         """
         pls_to_remove = []
         for ploc in pick_locs:
@@ -190,7 +192,7 @@ class PickingPlanner(actionlib.SimpleActionServer):
         for ploc in pls_to_remove:
             pick_locs.remove(ploc)
 
-    def viz_picking_plan(self, pick_locs, max_arm_reach):
+    def viz_pickup_plan(self, pick_locs, max_arm_reach):
         Visualization().clear_markers()
         for i, pl in enumerate(pick_locs):
             color = Visualization.rand_color(0.5)
@@ -207,29 +209,29 @@ class PickingPlanner(actionlib.SimpleActionServer):
 
         Visualization().publish_markers()
 
-    def make_picking_plan(self, robot_pose, picking_locs):
+    def make_pickup_plan(self, robot_pose, pickup_locs):
         """
-        Sort picking locations by visiting order, so we can iterate over the list for collecting all objects.
-        :return: picking plan
+        Sort pickup locations by visiting order, so we can iterate over the list for collecting all objects.
+        :return: pickup plan
         """
-        picking_plan = []
-        while picking_locs:
+        pickup_plan = []
+        while pickup_locs:
             closest_ploc = None
             closest_dist = float('inf')
-            for ploc in picking_locs:
+            for ploc in pickup_locs:
                 dist = distance_2d(ploc.approach_pose, robot_pose)
                 if dist < closest_dist:
                     closest_dist = dist
                     closest_ploc = ploc
-            picking_locs.remove(closest_ploc)
-            picking_plan.append(closest_ploc)
+            pickup_locs.remove(closest_ploc)
+            pickup_plan.append(closest_ploc)
             robot_pose = closest_ploc.approach_pose
-            Visualization().add_text_marker(closest_ploc.approach_pose, str(len(picking_plan)) + ' ' + str(closest_dist))
+            Visualization().add_text_marker(closest_ploc.approach_pose, str(len(pickup_plan)) + ' ' + str(closest_dist))
             Visualization().publish_markers()
-        return picking_plan
+        return pickup_plan
 
 
 if __name__ == '__main__':
-    rospy.init_node('picking_planner')
-    pp = PickingPlanner()
+    rospy.init_node('pickup_planner')
+    pp = PickupPlanner()
     rospy.spin()

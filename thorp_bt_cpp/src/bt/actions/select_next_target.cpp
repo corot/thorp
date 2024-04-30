@@ -21,9 +21,9 @@ public:
   {
     ros::NodeHandle pnh("~");
     max_arm_reach_ = pnh.param("max_arm_reach", 0.3);
-    max_failures_ = pnh.param("picking_max_failures", 3);
+    max_failures_ = pnh.param("pickup_max_failures", 3);
     tightening_ = pnh.param("gripper_tightening", 0.002);
-    std::string manip_frame = pnh.param("picking_planning_frame", std::string("arm_base_link"));
+    std::string manip_frame = pnh.param("pickup_planning_frame", std::string("arm_base_link"));
     arm_pose_on_bfp_rf_.header.frame_id = manip_frame;
     if (!ttk::TF2::instance().transformPose("base_footprint", arm_pose_on_bfp_rf_, arm_pose_on_bfp_rf_,
                                             ros::Duration(10)))

@@ -90,10 +90,10 @@
             <output_port name="feedback" type="std::optional&lt;mbf_msgs::ExePathFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
         </Action>
         <Action ID="ExpandPickupLocation">
-            <input_port name="pickup_location" type="thorp_msgs::PickLocation_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="pickup_location" type="thorp_msgs::PickupLocation_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="approach_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="detach_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <output_port name="picking_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <output_port name="pickup_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Action ID="FireCannon">
             <input_port name="service_name" type="std::string" default="cannon_command">name of the ROS service</input_port>
@@ -110,8 +110,8 @@
             <output_port name="feedback" type="thorp_msgs::FollowPoseFeedback_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Decorator ID="ForEachPickupLocation">
-            <output_port name="element" type="thorp_msgs::PickLocation_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <inout_port name="list" type="std::vector&lt;thorp_msgs::PickLocation_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;thorp_msgs::PickLocation_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+            <output_port name="element" type="thorp_msgs::PickupLocation_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <inout_port name="list" type="std::vector&lt;thorp_msgs::PickupLocation_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;thorp_msgs::PickupLocation_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
         </Decorator>
         <Action ID="GetPath">
             <input_port name="action_name" type="std::string" default="move_base_flex/get_path">name of the ROS action client</input_port>
@@ -171,13 +171,13 @@
             <output_port name="error" type="int"/>
             <output_port name="feedback" type="std::optional&lt;mbf_msgs::ExePathFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
         </Action>
-        <Action ID="MakePickingPlan">
-            <input_port name="action_name" type="std::string" default="manipulation/plan_picking">name of the ROS action client</input_port>
+        <Action ID="MakePickupPlan">
+            <input_port name="action_name" type="std::string" default="manipulation/make_pickup_plan">name of the ROS action client</input_port>
             <input_port name="objects" type="std::vector&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
             <input_port name="robot_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
             <input_port name="surface" type="moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <output_port name="picking_plan" type="std::vector&lt;thorp_msgs::PickLocation_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;thorp_msgs::PickLocation_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+            <output_port name="pickup_plan" type="std::vector&lt;thorp_msgs::PickupLocation_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;thorp_msgs::PickupLocation_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
         </Action>
         <Action ID="MonitorObjects">
             <input_port name="max_delay" type="double" default="0.000000">max delay wrt Time::now() (sec); ignored if negative</input_port>
@@ -213,7 +213,7 @@
             <output_port name="feedback" type="std::optional&lt;thorp_msgs::PickupObjectFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
         </Action>
         <Condition ID="PickupPlanCompleted">
-            <input_port name="list" type="std::vector&lt;thorp_msgs::PickLocation_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;thorp_msgs::PickLocation_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+            <input_port name="list" type="std::vector&lt;thorp_msgs::PickupLocation_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;thorp_msgs::PickupLocation_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
         </Condition>
         <Action ID="PlaceObject">
             <input_port name="action_name" type="std::string" default="place_object">name of the ROS action client</input_port>

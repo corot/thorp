@@ -31,24 +31,24 @@
           <GetRobotPose timeout="1"
                         error="{error}"
                         robot_pose="{robot_pose}"/>
-          <MakePickingPlan action_name="manipulation/plan_picking"
+          <MakePickupPlan action_name="manipulation/make_pickup_plan"
                            objects="{objects}"
                            robot_pose="{robot_pose}"
                            server_timeout="5.000000"
                            surface="{surface}"
-                           picking_plan="{picking_plan}"/>
+                           pickup_plan="{pickup_plan}"/>
           <ForEachPickupLocation element="{pickup_location}"
-                                 list="{picking_plan}">
+                                 list="{pickup_plan}">
             <Sequence>
               <ExpandPickupLocation pickup_location="{pickup_location}"
                                     approach_pose="{approach_pose}"
                                     detach_pose="{new_detach_pose}"
-                                    picking_pose="{picking_pose}"/>
+                                    pickup_pose="{pickup_pose}"/>
               <Fallback>
                 <AreSamePose angle_tolerance="0.1"
                              dist_tolerance="0.05"
                              pose1="{robot_pose}"
-                             pose2="{picking_pose}"/>
+                             pose2="{pickup_pose}"/>
                 <Sequence>
                   <ClearRailMarkers service_name="rail_segmentation/clear_markers"
                                     timeout="100"/>
@@ -69,7 +69,7 @@
                             feedback="{goto_pose_feedback}"/>
                   <SubTree ID="attach_to_table"
                            table="{table}"
-                           pose="{picking_pose}"/>
+                           pose="{pickup_pose}"/>
                 </Sequence>
               </Fallback>
               <SubTree ID="pickup_objects"/>
@@ -113,10 +113,10 @@
             <GetRobotPose timeout="1"
                           error="{error}"
                           robot_pose="{robot_pose}"/>
-            <ReadDoubleParam key="picking_dist_to_table"
+            <ReadDoubleParam key="pickup_dist_to_table"
                              negate=""
-                             value="{picking_dist_to_table}"/>
-            <ClosestTableSide distance="{picking_dist_to_table}"
+                             value="{pickup_dist_to_table}"/>
+            <ClosestTableSide distance="{pickup_dist_to_table}"
                               robot_pose="{robot_pose}"
                               table="{table}"
                               table_pose="{table_pose}"

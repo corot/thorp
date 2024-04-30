@@ -2,7 +2,7 @@
 
 #include "thorp_bt_cpp/node_register.hpp"
 
-#include <thorp_msgs/PickLocation.h>
+#include <thorp_msgs/PickupLocation.h>
 
 namespace thorp::bt::decorators
 {
@@ -87,5 +87,5 @@ private:
 };
 
 // Register a builder for each templated version this class
-BT_REGISTER_TEMPLATE_NODE(ForEach<thorp_msgs::PickLocation>, "ForEachPickupLocation");
+BT_REGISTER_TEMPLATE_NODE(ForEach<thorp_msgs::PickupLocation>, "ForEachPickupLocation");
 }  // namespace thorp::bt::decorators

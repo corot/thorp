@@ -104,7 +104,7 @@ class StoredConfig(smach_ros.SimpleActionState):
 class PickupObject(smach.Iterator):
     """
     Pickup a given object, optionally retrying up to a given number of times.
-    If we already have an object attached, we clear the gripper before picking.
+    If we already have an object attached, we clear the gripper before pickup.
     If pickup succeeds, we still check if we have the object physically grasped.
     """
     def __init__(self, attempts=2):

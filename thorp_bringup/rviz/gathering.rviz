@@ -2253,12 +2253,12 @@ Visualization Manager:
           Shaft Length: 0.23000000417232513
           Shaft Radius: 0.009999999776482582
           Shape: Arrow (Flat)
-          Topic: /manipulation/picking_poses
+          Topic: /manipulation/pickup_poses
           Unreliable: false
           Value: true
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /picking_planner/visual_markers
+          Marker Topic: /pickup_planner/visual_markers
           Name: Picking plan
           Namespaces:
             {}

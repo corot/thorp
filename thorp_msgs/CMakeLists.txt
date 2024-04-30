@@ -4,9 +4,9 @@ find_package(catkin REQUIRED COMPONENTS std_msgs nav_msgs moveit_msgs geometry_m
 
 add_message_files(DIRECTORY msg
                       FILES KeyboardInput.msg
-                            ObjectToPick.msg
-                            PickingPlan.msg
-                            PickLocation.msg
+                            ObjectToPickup.msg
+                            PickupPlan.msg
+                            PickupLocation.msg
                             ThorpError.msg
                  )
 
@@ -21,13 +21,13 @@ add_service_files(DIRECTORY srv
 
 add_action_files(DIRECTORY action
                      FILES DetectObjects.action
+                           DragAndDrop.action
+                           FollowPose.action
+                           MakePickupPlan.action
                            MoveToTarget.action
                            PickupObject.action
                            PlaceObject.action
-                           PlanPicking.action
-                           DragAndDrop.action
                            UserCommand.action
-                           FollowPose.action
                 )
 
 generate_messages(DEPENDENCIES std_msgs nav_msgs moveit_msgs geometry_msgs actionlib_msgs)

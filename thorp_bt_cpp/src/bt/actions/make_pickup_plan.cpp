@@ -4,28 +4,28 @@
 #include "thorp_bt_cpp/ros_action_node.hpp"
 
 #include <geometry_msgs/PoseStamped.h>
-#include <thorp_msgs/PlanPickingAction.h>
+#include <thorp_msgs/MakePickupPlanAction.h>
 
 namespace thorp::bt::actions
 {
 /**
- * Group objects into picking locations and sort them to make a picking plan
+ * Group objects into pickup locations and sort them to make a pickup plan
  */
-class MakePickingPlan : public BT::RosActionNode<thorp_msgs::PlanPickingAction>
+class MakePickupPlan : public BT::RosActionNode<thorp_msgs::MakePickupPlanAction>
 {
 public:
-  MakePickingPlan(const std::string& name, const BT::NodeConfiguration& config) : RosActionNode(name, config)
+  MakePickupPlan(const std::string& name, const BT::NodeConfiguration& config) : RosActionNode(name, config)
   {
   }
 
   static BT::PortsList providedPorts()
   {
     BT::PortsList ports = BT::RosActionNode<ActionType>::providedPorts();
-    ports["action_name"].setDefaultValue("manipulation/plan_picking");
+    ports["action_name"].setDefaultValue("manipulation/make_pickup_plan");
     ports.insert({ BT::InputPort<geometry_msgs::PoseStamped>("robot_pose"),              //
                    BT::InputPort<std::vector<moveit_msgs::CollisionObject>>("objects"),  //
                    BT::InputPort<moveit_msgs::CollisionObject>("surface"),               //
-                   BT::OutputPort<std::vector<thorp_msgs::PickLocation>>("picking_plan") });
+                   BT::OutputPort<std::vector<thorp_msgs::PickupLocation>>("pickup_plan") });
     return ports;
   }
 
@@ -41,9 +41,9 @@ private:
     goal.surface = *getInput<moveit_msgs::CollisionObject>("surface");
 
     ros::NodeHandle pnh("~");
-    pnh.getParam("picking_planning_frame", goal.planning_frame);
+    pnh.getParam("pickup_planning_frame", goal.planning_frame);
     pnh.getParam("approach_dist_to_table", goal.approach_dist);
-    pnh.getParam("picking_dist_to_table", goal.picking_dist);
+    pnh.getParam("pickup_dist_to_table", goal.pickup_dist);
     pnh.getParam("detach_dist_from_table", goal.detach_dist);
     pnh.getParam("max_arm_reach", goal.max_arm_reach);
     goal.max_arm_reach -= pnh.param("tight_dist_tolerance", 0.0);
@@ -53,11 +53,11 @@ private:
 
   BT::NodeStatus onSucceeded(const ResultConstPtr& res) override
   {
-    setOutput("picking_plan", res->picking_plan.locations);
+    setOutput("pickup_plan", res->pickup_plan.locations);
 
     return BT::NodeStatus::SUCCESS;
   }
 
-  BT_REGISTER_NODE(MakePickingPlan);
+  BT_REGISTER_NODE(MakePickupPlan);
 };
 }  // namespace thorp::bt::actions

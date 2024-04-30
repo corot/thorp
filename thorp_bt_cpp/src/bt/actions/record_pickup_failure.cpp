@@ -6,7 +6,7 @@ namespace thorp::bt::actions
 {
 /**
  * Increase by one the number of picking failures for a given object.
- * If failures reach picking_max_failures, increase by one the number of given up objects.
+ * If failures reach pickup_max_failures, increase by one the number of given up objects.
  * Always returns SUCCESS
  */
 class RecordPickupFailure : public BT::SyncActionNode
@@ -38,7 +38,7 @@ private:
     setOutput("failures", *failures);
     ROS_INFO_STREAM_NAMED(name(), "Pickup " << target_name << " failed " << failures->at(target_name) << " time(s)");
 
-    const auto max_failures = ros::NodeHandle("~").param("picking_max_failures", 3);
+    const auto max_failures = ros::NodeHandle("~").param("pickup_max_failures", 3);
     const auto failures_count = failures->find(target_name)->second;
     ROS_ASSERT_MSG(failures_count <= max_failures, "More failures than allowed?");
     if (failures_count == max_failures)

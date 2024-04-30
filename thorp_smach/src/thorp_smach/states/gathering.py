@@ -3,7 +3,7 @@ import smach
 import smach_ros
 
 from thorp_toolkit.geometry import TF2, to_transform, transform_pose, create_2d_pose, distance_2d
-from thorp_msgs.msg import PlanPickingAction
+from thorp_msgs.msg import MakePickupPlanAction
 
 from .costmaps import TableAsObstacle
 from .semantics import TableMarkVisited
@@ -14,27 +14,28 @@ from .pickup_objs import PickupReachableObjs
 from ..containers.do_on_exit import DoOnExit as DoOnExitContainer
 
 
-class MakePickingPlan(smach_ros.SimpleActionState):
+class MakePickupPlan(smach_ros.SimpleActionState):
     """
-    Group objects into picking locations and sort them to make a picking plan
+    Group objects into pickup locations and sort them to make a pickup plan
     """
+
     def __init__(self):
-        super(MakePickingPlan, self).__init__('manipulation/plan_picking',
-                                              PlanPickingAction,
-                                              goal_cb=self.make_goal,
-                                              goal_slots=['robot_pose', 'objects', 'surface'],
-                                              result_cb=self.result_cb,
-                                              output_keys=['picking_plan'])
+        super(MakePickupPlan, self).__init__('manipulation/make_pickup_plan',
+                                             MakePickupPlanAction,
+                                             goal_cb=self.make_goal,
+                                             goal_slots=['robot_pose', 'objects', 'surface'],
+                                             result_cb=self.result_cb,
+                                             output_keys=['pickup_plan'])
 
     def make_goal(self, ud, goal):
-        goal.planning_frame = rospy.get_param('~picking_planning_frame')
+        goal.planning_frame = rospy.get_param('~pickup_planning_frame')
         goal.approach_dist = rospy.get_param('~approach_dist_to_table')
-        goal.picking_dist = rospy.get_param('~picking_dist_to_table')
+        goal.pickup_dist = rospy.get_param('~pickup_dist_to_table')
         goal.detach_dist = rospy.get_param('~detach_dist_from_table')
         goal.max_arm_reach = rospy.get_param('~max_arm_reach') - rospy.get_param('~tight_dist_tolerance')
 
     def result_cb(self, ud, status, result):
-        ud['picking_plan'] = result.picking_plan.locations
+        ud['pickup_plan'] = result.pickup_plan.locations
 
 
 class ClosestTableSide(smach.State):
@@ -85,19 +86,19 @@ class PickLocFields(smach.State):
 
     def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded'],
-                             input_keys=['picking_loc'],
-                             output_keys=['approach_pose', 'picking_pose', 'detach_pose'])
+                             input_keys=['pickup_loc'],
+                             output_keys=['approach_pose', 'pickup_pose', 'detach_pose'])
 
     def execute(self, ud):
-        ud['approach_pose'] = ud['picking_loc'].approach_pose
-        ud['picking_pose'] = ud['picking_loc'].picking_pose
-        ud['detach_pose'] = ud['picking_loc'].detach_pose
+        ud['approach_pose'] = ud['pickup_loc'].approach_pose
+        ud['pickup_pose'] = ud['pickup_loc'].pickup_pose
+        ud['detach_pose'] = ud['pickup_loc'].detach_pose
         return 'succeeded'
 
 
 class CountGivenUpObjects(smach.State):
     """
-    Increase given up objects count with the failures from last picking spot
+    Increase given up objects count with the failures from last pickup location
     """
 
     def __init__(self):
@@ -106,8 +107,8 @@ class CountGivenUpObjects(smach.State):
                                                   output_keys=['given_up_count'])
 
     def execute(self, ud):
-        picking_max_failures = rospy.get_param('~picking_max_failures')
-        ud['given_up_count'] += sum(1 for fc in ud['failures'].values() if fc == picking_max_failures)
+        pickup_max_failures = rospy.get_param('~pickup_max_failures')
+        ud['given_up_count'] += sum(1 for fc in ud['failures'].values() if fc == pickup_max_failures)
         return 'succeeded'
 
 
@@ -150,22 +151,22 @@ class GatherObjects(smach.StateMachine):
                                             'preempted': 'preempted'},
                                remapping={'target_pose': 'closest_approach_pose'})
 
-        # detects objects over the table, and make a picking plan
-        make_picking_plan_sm = DoOnExitContainer(outcomes=['succeeded', 'aborted', 'preempted', 'no_reachable_objs'],
-                                                 input_keys=['table', 'table_pose', 'object_types'],
-                                                 output_keys=['closest_picking_pose', 'picking_plan'])
-        with make_picking_plan_sm:
+        # detects objects over the table, and make a pickup plan
+        make_pickup_plan_sm = DoOnExitContainer(outcomes=['succeeded', 'aborted', 'preempted', 'no_reachable_objs'],
+                                                input_keys=['table', 'table_pose', 'object_types'],
+                                                output_keys=['closest_pickup_pose', 'pickup_plan'])
+        with make_pickup_plan_sm:
             smach.StateMachine.add('GET_ROBOT_POSE', GetRobotPose(),
-                                   transitions={'succeeded': 'PICKING_POSE'})
-            smach.StateMachine.add('PICKING_POSE', ClosestTableSide(rospy.get_param('~picking_dist_to_table')),
+                                   transitions={'succeeded': 'PICKUP_POSE'})
+            smach.StateMachine.add('PICKUP_POSE', ClosestTableSide(rospy.get_param('~pickup_dist_to_table')),
                                    transitions={'succeeded': 'ATTACH_TO_TABLE',
                                                 'no_valid_table': 'aborted'},
-                                   remapping={'pose': 'closest_picking_pose'})
+                                   remapping={'pose': 'closest_pickup_pose'})
             smach.StateMachine.add('ATTACH_TO_TABLE', AttachToTable(),
                                    transitions={'succeeded': 'DETECT_OBJECTS',
                                                 'aborted': 'aborted',
                                                 'preempted': 'preempted'},
-                                   remapping={'pose': 'closest_picking_pose'})
+                                   remapping={'pose': 'closest_pickup_pose'})
             smach.StateMachine.add('DETECT_OBJECTS', DetectObjects(),
                                    transitions={'succeeded': 'TABLE_VISITED',
                                                 'aborted': 'aborted',
@@ -176,32 +177,32 @@ class GatherObjects(smach.StateMachine):
                                    transitions={'succeeded': 'OBJECTS_FOUND?'},
                                    remapping={'pose': 'table_pose'})
             smach.StateMachine.add('OBJECTS_FOUND?', ObjectsDetected(),
-                                   transitions={'true': 'MAKE_PICKING_PLAN',
+                                   transitions={'true': 'MAKE_PICKUP_PLAN',
                                                 'false': 'no_reachable_objs'})
-            smach.StateMachine.add('MAKE_PICKING_PLAN', MakePickingPlan())
+            smach.StateMachine.add('MAKE_PICKUP_PLAN', MakePickupPlan())
             DoOnExitContainer.add_finally('CLEAR_P_SCENE', ClearPlanningScene())
 
-        # go to a picking location and pick all objects reachable from there
+        # go to a pickup location and pick all objects reachable from there
         pickup_objects_sm = smach.StateMachine(outcomes=['succeeded', 'aborted', 'preempted', 'tray_full'],
-                                               input_keys=['given_up_count', 'table', 'picking_loc', 'object_types'],
+                                               input_keys=['given_up_count', 'table', 'pickup_loc', 'object_types'],
                                                output_keys=['given_up_count'])
 
         with pickup_objects_sm:
             smach.StateMachine.add('PICK_LOC_FIELDS', PickLocFields(),
                                    transitions={'succeeded': 'GET_ROBOT_POSE'})
             smach.StateMachine.add('GET_ROBOT_POSE', GetRobotPose(),
-                                   transitions={'succeeded': 'AT_PICKING_POSE?'})
-            smach.StateMachine.add('AT_PICKING_POSE?', AreSamePose(),
+                                   transitions={'succeeded': 'AT_PICKUP_POSE?'})
+            smach.StateMachine.add('AT_PICKUP_POSE?', AreSamePose(),
                                    transitions={'true': 'PICK_OBJECTS',
                                                 'false': 'GOTO_APPROACH'},
                                    remapping={'pose1': 'robot_pose',
-                                              'pose2': 'picking_pose'})
+                                              'pose2': 'pickup_pose'})
             smach.StateMachine.add('GOTO_APPROACH', GoToPose(),  # use default tolerances; no precision needed here
                                    transitions={'succeeded': 'ATTACH_TO_TABLE'},
                                    remapping={'target_pose': 'approach_pose'})
             smach.StateMachine.add('ATTACH_TO_TABLE', AttachToTable(),
                                    transitions={'succeeded': 'PICK_OBJECTS'},
-                                   remapping={'pose': 'picking_pose'})
+                                   remapping={'pose': 'pickup_pose'})
             smach.StateMachine.add('PICK_OBJECTS', PickupReachableObjs(),
                                    transitions={'succeeded': 'COUNT_GIVEN_UP'})
             smach.StateMachine.add('COUNT_GIVEN_UP', CountGivenUpObjects(),
@@ -212,32 +213,32 @@ class GatherObjects(smach.StateMachine):
             smach.StateMachine.add('DETACH_FROM_TABLE', DetachFromTable(),
                                    remapping={'pose': 'detach_pose'})
 
-        # iterate over all picking locations in the plan
+        # iterate over all pickup locations in the plan
         pickup_objects_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted', 'tray_full'],
-                                           input_keys=['given_up_count', 'table', 'picking_plan', 'object_types'],
+                                           input_keys=['given_up_count', 'table', 'pickup_plan', 'object_types'],
                                            output_keys=['given_up_count'],
-                                           it=lambda: pickup_objects_it.userdata.picking_plan,
-                                           it_label='picking_loc',
+                                           it=lambda: pickup_objects_it.userdata.pickup_plan,
+                                           it_label='pickup_loc',
                                            exhausted_outcome='succeeded')
         with pickup_objects_it:
             smach.Iterator.set_contained_state('', pickup_objects_sm, loop_outcomes=['succeeded'])
 
-        # Full SM: approach the table, make a picking plan and execute it, double-checking that we left no object behind
+        # Full SM: approach the table, make a pickup plan and execute it, double-checking that we left no object behind
         with self:
             smach.StateMachine.add('APPROACH_TABLE', approach_table_sm,
                                    transitions={'succeeded': 'RE_DETECT_TABLE',
                                                 'aborted': 'aborted',
                                                 'preempted': 'preempted'})
             smach.StateMachine.add('RE_DETECT_TABLE', MonitorTables(2.0),
-                                   transitions={'succeeded': 'MAKE_PICK_PLAN',
+                                   transitions={'succeeded': 'MAKE_PICKUP_PLAN',
                                                 # re-detect when nearby for more precision,
                                                 'aborted': 'succeeded'})  # or just succeed to give up if not seen again
-            smach.StateMachine.add('MAKE_PICK_PLAN', make_picking_plan_sm,
-                                   transitions={'succeeded': 'EXEC_PICK_PLAN',
+            smach.StateMachine.add('MAKE_PICKUP_PLAN', make_pickup_plan_sm,
+                                   transitions={'succeeded': 'EXEC_PICKUP_PLAN',
                                                 'aborted': 'aborted',
                                                 'preempted': 'preempted',
                                                 'no_reachable_objs': 'succeeded'})
-            smach.StateMachine.add('EXEC_PICK_PLAN', pickup_objects_it,
+            smach.StateMachine.add('EXEC_PICKUP_PLAN', pickup_objects_it,
                                    transitions={'succeeded': 'DETECT_OBJECTS',
                                                 # double-check that we left no object behind
                                                 'aborted': 'aborted',  # restore original configuration on error
@@ -248,7 +249,7 @@ class GatherObjects(smach.StateMachine):
                                                 'aborted': 'aborted',
                                                 'preempted': 'preempted'})
             smach.StateMachine.add('OBJECTS_LEFT?', ThereAreObjectsLeft(),
-                                   transitions={'true': 'APPROACH_TABLE',  # at least one object left; restart picking
+                                   transitions={'true': 'APPROACH_TABLE',  # at least one object left; restart pickup
                                                 'false': 'succeeded'})  # otherwise, we are done
 
     def execute(self, parent_ud=smach.UserData()):

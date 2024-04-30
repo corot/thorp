@@ -14,7 +14,7 @@
     <rosparam file="$(find thorp_description)/config/tray.yaml" command="load"/>
   </node>`
 `
-  <node pkg="thorp_manipulation" type="picking_planner_server.py" name="picking_planner" output="screen" respawn="true"/>
+  <node pkg="thorp_manipulation" type="pickup_planner_server.py" name="pickup_planner" output="screen" respawn="true"/>
 
   <node pkg="thorp_manipulation" type="scene_interaction_server" name="scene_interaction" output="screen" respawn="true"/>
 

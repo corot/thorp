@@ -27,7 +27,7 @@ with sm:
     sm.userdata.ucmd_progress = thorp_msgs.UserCommandFeedback()
     sm.userdata.ucmd_outcome = thorp_msgs.UserCommandResult()
     sm.userdata.od_attempt = 0
-    sm.userdata.output_frame = rospy.get_param('~picking_planning_frame')
+    sm.userdata.output_frame = rospy.get_param('~pickup_planning_frame')
     sm.userdata.max_effort = rospy.get_param('~gripper_max_effort')
     sm.userdata.tightening = rospy.get_param('~gripper_tightening')
 

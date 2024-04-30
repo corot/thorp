@@ -42,7 +42,7 @@ private:
     ros::NodeHandle pnh("~");
 
     GoalType goal;
-    goal.output_frame = pnh.param("picking_planning_frame", std::string("arm_base_link"));
+    goal.output_frame = pnh.param("pickup_planning_frame", std::string("arm_base_link"));
     const auto objects = *getInput<std::vector<moveit_msgs::CollisionObject>>("objects");
     std::for_each(objects.begin(), objects.end(), [&](const auto& o) { goal.object_names.push_back(o.id); });
     return goal;
