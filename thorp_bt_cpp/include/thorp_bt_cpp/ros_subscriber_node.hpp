@@ -35,7 +35,7 @@ public:
   static PortsList providedPorts()
   {
     return { InputPort<std::string>("topic_name", "name of the ROS topic"),
-             InputPort<double>("timeout", 1.0, "timeout to subscribe to topic (sec)"),
+             InputPort<double>("timeout", 1.0, "timeout to subscribe to topic (sec); infinite if <= 0"),
              InputPort<double>("max_delay", 0.0, "max delay wrt Time::now() (sec); ignored if negative") };
   }
 
@@ -70,51 +70,49 @@ public:
   inline NodeStatus onRunning() final
   {
     BT::NodeStatus status;
-    {
-      // lock for async spinners
-      std::lock_guard lock(async_spin_mtx_);
-      if (nmsg_)
-      {
-        {
-          std::lock_guard lock(msg_mtx_);
-          msg_ = nmsg_.value();
-        }
 
-        if constexpr (ros::message_traits::HasHeader<SubscriberT>::value)
+    // lock for async spinners
+    std::lock_guard lock(async_spin_mtx_);
+    if (nmsg_)
+    {
+      {
+        std::lock_guard lock(msg_mtx_);
+        msg_ = nmsg_.value();
+      }
+
+      if constexpr (ros::message_traits::HasHeader<SubscriberT>::value)
+      {
+        if (max_delay_ != ros::Duration(0) && ros::Time::now() - msg_.header.stamp > max_delay_)
         {
-          if (max_delay_ != ros::Duration(0) && ros::Time::now() - msg_.header.stamp > max_delay_)
-          {
-            ROS_DEBUG_STREAM_NAMED(LOGNAME, "Message received from topic "
-                                                << topic_ << " is too old: " << ros::Time::now() - msg_.header.stamp
-                                                << " > " << max_delay_);
-            status = onMaxDelay();
-          }
-          else
-          {
-            status = onReceived();
-          }
+          ROS_DEBUG_STREAM_NAMED(LOGNAME, "Message received from topic "
+                                              << topic_ << " is too old: " << ros::Time::now() - msg_.header.stamp
+                                              << " > " << max_delay_);
+          status = onMaxDelay();
         }
         else
         {
           status = onReceived();
         }
-        nmsg_.reset();
       }
       else
       {
-        const auto action_elapsed_time = ros::Time::now() - start_time_;
-        if (timeout_ != ros::Duration(0) && action_elapsed_time > timeout_)
-        {
-          ROS_ERROR_STREAM_NAMED(LOGNAME,
-                                 "No message received in topic " << topic_ << " after " << action_elapsed_time);
-          status = onTimeout();
-        }
-        else
-        {
-          ROS_DEBUG_STREAM_THROTTLE_NAMED(
-              1.0, LOGNAME, "Waiting for message from topic " << topic_ << "; elapsed time: " << action_elapsed_time);
-          return NodeStatus::RUNNING;
-        }
+        status = onReceived();
+      }
+      nmsg_.reset();
+    }
+    else
+    {
+      const auto action_elapsed_time = ros::Time::now() - start_time_;
+      if (!timeout_.isZero() && action_elapsed_time > timeout_)
+      {
+        ROS_ERROR_STREAM_NAMED(LOGNAME, "No message received in topic " << topic_ << " after " << action_elapsed_time);
+        status = onTimeout();
+      }
+      else
+      {
+        ROS_DEBUG_STREAM_THROTTLE_NAMED(
+            1.0, LOGNAME, "Waiting for message from topic " << topic_ << "; elapsed time: " << action_elapsed_time);
+        return NodeStatus::RUNNING;
       }
     }
 
@@ -207,20 +205,5 @@ private:
     }
   }
 };
-
-template <class DerivedT>
-static void RegisterSubscriber(BT::BehaviorTreeFactory& factory, const std::string& registration_ID)
-{
-  BT::NodeBuilder builder = [](const std::string& name, const BT::NodeConfiguration& config)
-  { return std::make_unique<DerivedT>(name, config); };
-
-  BT::TreeNodeManifest manifest;
-  manifest.type = getType<DerivedT>();
-  manifest.ports = DerivedT::providedPorts();
-  manifest.registration_ID = registration_ID;
-  const auto& basic_ports = RosSubscriberNode<typename DerivedT::SubscriberType>::providedPorts();
-  manifest.ports.insert(basic_ports.begin(), basic_ports.end());
-  factory.registerBuilder(manifest, builder);
-}
 
 }  // namespace BT

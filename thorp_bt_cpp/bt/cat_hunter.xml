@@ -11,9 +11,9 @@
             <SubTree ID="explore_house"
                      __shared_blackboard="false"/>
           </ForceFailure>
-          <MonitorObjects max_delay="0.000000"
+          <MonitorObjects max_delay="0.0"
                           target_objects="cat, dog, horse"
-                          timeout="1e6"
+                          timeout="0.0"
                           topic_name="tracked_objects"
                           tracked_object="{tracked_object}"
                           tracked_object_pose="{tracked_object_pose}"/>
@@ -32,7 +32,7 @@
           <RetryUntilSuccessful num_attempts="-1">
             <IfThenElse>
               <MonitorObjects name="TargetVisible"
-                              max_delay="0.000000"
+                              max_delay="0.0"
                               target_objects="cat, dog, horse"
                               timeout="0.2"
                               topic_name="tracked_objects"
