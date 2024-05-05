@@ -1,9 +1,9 @@
 #include <behaviortree_cpp_v3/action_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
-#include "thorp_bt_cpp/ros_service_node.hpp"
+#include "thorp_bt_cpp/ros_action_node.hpp"
 
-#include <rail_manipulation_msgs/SegmentObjects.h>
+#include <rail_manipulation_msgs/SegmentObjectsAction.h>
 
 #include <thorp_toolkit/geometry.hpp>
 #include <thorp_toolkit/tf2.hpp>
@@ -14,37 +14,42 @@ namespace thorp::bt::actions
 /**
  * Segment the observed scene in search of tables
  */
-class DetectTables : public BT::RosServiceNode<rail_manipulation_msgs::SegmentObjects>
+class DetectTables : public BT::RosActionNode<rail_manipulation_msgs::SegmentObjectsAction>
 {
 public:
   DetectTables(const std::string& name, const BT::NodeConfiguration& conf)
-    : RosServiceNode<ServiceType>(name, conf)
+    : RosActionNode<ActionType>(name, conf)
   {
   }
 
   static BT::PortsList providedPorts()
   {
-    BT::PortsList ports = BT::RosServiceNode<ServiceType>::providedPorts();
-    ports["service_name"].setDefaultValue("rail_segmentation/segment_objects");
+    BT::PortsList ports = BT::RosActionNode<ActionType>::providedPorts();
+    ports["action_name"].setDefaultValue("rail_segmentation/segment_objects");
     ports.insert({ BT::OutputPort<rail_manipulation_msgs::SegmentedObject>("table"),  //
                    BT::OutputPort<geometry_msgs::PoseStamped>("table_pose") });
     return ports;
   }
 
 private:
-  void sendRequest(RequestType& request) override
+  std::optional<GoalType> getGoal() override
   {
-    request.only_surface = true;
+    if (status() == BT::NodeStatus::RUNNING)
+      return std::nullopt;
+
+    GoalType goal;
+    goal.only_surface = true;
+    return goal;
   }
 
-  BT::NodeStatus onResponse(const ResponseType& response) override
+  BT::NodeStatus onSucceeded(const ResultConstPtr& res) override
   {
-    if (response.segmented_objects.objects.empty())
+    if (res->segmented_objects.objects.empty())
     {
       // No tables detected
       return BT::NodeStatus::FAILURE;
     }
-    auto table = response.segmented_objects.objects.front();
+    auto table = res->segmented_objects.objects.front();
     table.name = "table";
     geometry_msgs::PoseStamped table_pose;
     table_pose.header = table.point_cloud.header;
@@ -63,9 +68,10 @@ private:
     return BT::NodeStatus::SUCCESS;
   }
 
-  BT::NodeStatus onFailedRequest(RosServiceNode::FailureCause failure) override
+  BT::NodeStatus onAborted(const ResultConstPtr& res) override
   {
-    ROS_ERROR_NAMED(name(), "Segment objects failed %d", static_cast<int>(failure));
+    ROS_ERROR_NAMED(name(), "Segment objects failed");
+
     return BT::NodeStatus::FAILURE;
   }
 

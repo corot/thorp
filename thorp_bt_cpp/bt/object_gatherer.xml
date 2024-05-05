@@ -93,8 +93,8 @@
           </ForceFailure>
           <RetryUntilSuccessful num_attempts="-1">
             <Sequence>
-              <DetectTables service_name="rail_segmentation/segment_objects"
-                            timeout="100"
+              <DetectTables action_name="rail_segmentation/segment_objects"
+                            server_timeout="5"
                             table="{table}"
                             table_pose="{table_pose}"/>
               <Inverter>
@@ -159,8 +159,8 @@
                   target_pose="{table_pose}"
                   error="{error}"
                   feedback="{look_at_feedback}"/>
-      <DetectTables service_name="rail_segmentation/segment_objects"
-                    timeout="100"
+      <DetectTables action_name="rail_segmentation/segment_objects"
+                    server_timeout="5"
                     table="{table}"
                     table_pose="{table_pose}"/>
       <ReadDoubleParam key="approach_dist_to_table"
@@ -183,8 +183,8 @@
       <GetRobotPose timeout="1"
                     error="{error}"
                     robot_pose="{robot_pose}"/>
-      <DetectTables service_name="rail_segmentation/segment_objects"
-                    timeout="100"
+      <DetectTables action_name="rail_segmentation/segment_objects"
+                    server_timeout="5"
                     table="{table}"
                     table_pose="{table_pose}"/>
       <ClosestTableSide distance="{approach_dist_to_table}"
