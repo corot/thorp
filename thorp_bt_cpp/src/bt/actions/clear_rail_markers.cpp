@@ -7,18 +7,18 @@
 
 namespace thorp::bt::actions
 {
-class ClearRailMarkers : public BT::RosServiceNode<std_srvs::Empty>
+class ClearRailMarkers : public BT::RosServiceNode<std_srvs::Empty, BT::SyncActionNode>
 {
 public:
   ClearRailMarkers(const std::string& name, const BT::NodeConfiguration& conf)
-    : RosServiceNode<ServiceType>(name, conf)
+    : RosServiceNode<ServiceType, ParentType>(name, conf)
   {
   }
 
   static BT::PortsList providedPorts()
   {
     // overwrite service_name with a default value
-    BT::PortsList ports = BT::RosServiceNode<ServiceType>::providedPorts();
+    BT::PortsList ports = BT::RosServiceNode<ServiceType, ParentType>::providedPorts();
     ports["service_name"].setDefaultValue("rail_segmentation/clear_markers");
     return ports;
   }

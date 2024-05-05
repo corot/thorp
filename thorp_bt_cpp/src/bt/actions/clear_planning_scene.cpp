@@ -10,18 +10,18 @@ namespace thorp::bt::actions
 /**
  * Clear the planning scene, optionally sparing the tray and its content
  */
-class ClearPlanningScene : public BT::RosServiceNode<thorp_msgs::ClearPlanningScene>
+class ClearPlanningScene : public BT::RosServiceNode<thorp_msgs::ClearPlanningScene, BT::SyncActionNode>
 {
 public:
   ClearPlanningScene(const std::string& name, const BT::NodeConfiguration& conf)
-    : RosServiceNode<ServiceType>(name, conf)
+    : RosServiceNode<ServiceType, ParentType>(name, conf)
   {
   }
 
   static BT::PortsList providedPorts()
   {
     // overwrite service_name with a default value
-    BT::PortsList ports = BT::RosServiceNode<ServiceType>::providedPorts();
+    BT::PortsList ports = BT::RosServiceNode<ServiceType, ParentType>::providedPorts();
     ports["service_name"].setDefaultValue("manipulation/clear_planning_scene");
     ports.insert({ BT::InputPort<bool>("keep_tray") });
     return ports;

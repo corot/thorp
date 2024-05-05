@@ -1,28 +1,27 @@
-#include <behaviortree_cpp_v3/action_node.h>
+#include <behaviortree_cpp_v3/condition_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
 #include "thorp_bt_cpp/ros_service_node.hpp"
 
 #include <std_srvs/Trigger.h>
 
-namespace thorp::bt::actions
+namespace thorp::bt::condition
 {
 /**
- * Check if the gripper is physically holding an object, regardless of what the planning scene says
- * This should be a condition, but then we would need to handle the service instead of using RosServiceNode
+ * Check if the gripper is physically holding an object, regardless of what the planning scene says.
  */
-class ObjectAttached : public BT::RosServiceNode<std_srvs::Trigger>
+class ObjectAttached : public BT::RosServiceNode<std_srvs::Trigger, BT::ConditionNode>
 {
 public:
   ObjectAttached(const std::string& name, const BT::NodeConfiguration& conf)
-    : RosServiceNode<ServiceType>(name, conf)
+    : RosServiceNode<ServiceType, ParentType>(name, conf)
   {
   }
 
   static BT::PortsList providedPorts()
   {
     // overwrite service_name with a default value
-    BT::PortsList ports = BT::RosServiceNode<ServiceType>::providedPorts();
+    BT::PortsList ports = BT::RosServiceNode<ServiceType, ParentType>::providedPorts();
     ports["service_name"].setDefaultValue("obj_attached");
     ports.insert({ BT::OutputPort<std::string>("attached_object") });
     return ports;
@@ -45,4 +44,4 @@ private:
 
   BT_REGISTER_NODE(ObjectAttached);
 };
-}  // namespace thorp::bt::actions
+}  // namespace thorp::bt::condition

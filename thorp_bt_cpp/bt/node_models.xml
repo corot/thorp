@@ -148,11 +148,11 @@
             <output_port name="error" type="int"/>
             <output_port name="feedback" type="std::optional&lt;mbf_msgs::MoveBaseFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
         </Action>
-        <Action ID="GripperBusy">
+        <Condition ID="GripperBusy">
             <input_port name="service_name" type="std::string" default="gripper_busy">name of the ROS service</input_port>
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
             <output_port name="attached_object" type="std::string"/>
-        </Action>
+        </Condition>
         <Condition ID="IsBoolTrue">
             <input_port name="input" type="bool"/>
         </Condition>
@@ -182,7 +182,7 @@
         <Action ID="MonitorObjects">
             <input_port name="max_delay" type="double" default="0.000000">max delay wrt Time::now() (sec); ignored if negative</input_port>
             <input_port name="target_objects" type="std::string">Comma-separated list of objects to track</input_port>
-            <input_port name="timeout" type="double" default="1.000000">timeout to subscribe to topic (sec)</input_port>
+            <input_port name="timeout" type="double" default="1.000000">timeout to subscribe to topic (sec); infinite if &lt;= 0</input_port>
             <input_port name="topic_name" type="std::string" default="tracked_objects">name of the ROS topic</input_port>
             <output_port name="tracked_object" type="cob_perception_msgs::Detection_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="tracked_object_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
@@ -192,11 +192,11 @@
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
             <output_port name="pose_on_tray" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
-        <Action ID="ObjectAttached">
+        <Condition ID="ObjectAttached">
             <input_port name="service_name" type="std::string" default="obj_attached">name of the ROS service</input_port>
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
             <output_port name="attached_object" type="std::string"/>
-        </Action>
+        </Condition>
         <Condition ID="ObjectsDetected">
             <input_port name="given_up_count" type="unsigned int"/>
             <input_port name="ignore_given_up" type="bool"/>
@@ -392,10 +392,10 @@
             <input_port name="z" type="double"/>
             <inout_port name="pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
-        <Action ID="TrayFull">
+        <Condition ID="TrayFull">
             <input_port name="service_name" type="std::string" default="manipulation/tray/get_capacity">name of the ROS service</input_port>
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
-        </Action>
+        </Condition>
         <Action ID="UseNamedConfig">
             <input_port name="config_name" type="std::string"/>
             <input_port name="source_ns" type="std::string"/>

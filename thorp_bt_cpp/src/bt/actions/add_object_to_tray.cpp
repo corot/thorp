@@ -10,17 +10,18 @@ namespace thorp::bt::actions
 /**
  * Add a collision object to the tray.
  */
-class AddObjectToTray : public BT::RosServiceNode<thorp_msgs::TrayAddObject>
+class AddObjectToTray : public BT::RosServiceNode<thorp_msgs::TrayAddObject, BT::SyncActionNode>
 {
 public:
-  AddObjectToTray(const std::string& name, const BT::NodeConfiguration& conf) : RosServiceNode<ServiceType>(name, conf)
+  AddObjectToTray(const std::string& name, const BT::NodeConfiguration& conf)
+    : RosServiceNode<ServiceType, ParentType>(name, conf)
   {
   }
 
   static BT::PortsList providedPorts()
   {
     // overwrite service_name with a default value
-    BT::PortsList ports = BT::RosServiceNode<ServiceType>::providedPorts();
+    BT::PortsList ports = BT::RosServiceNode<ServiceType, ParentType>::providedPorts();
     ports["service_name"].setDefaultValue("manipulation/tray/add_object");
     ports.insert({ BT::InputPort<std::string>("object_name"),  //
                    BT::InputPort<geometry_msgs::PoseStamped>("pose_on_tray") });

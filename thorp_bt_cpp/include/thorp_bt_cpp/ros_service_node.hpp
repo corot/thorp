@@ -8,18 +8,20 @@
 namespace BT
 {
 /**
- * Base Action to implement a ROS Service client node
+ * Base node to implement a ROS Service client node.
+ * Templated parent class should be SyncActionNode for actions or ConditionNode for conditions
  */
-template <class ServiceT>
-class RosServiceNode : public SyncActionNode
+template <class ServiceT, class ParentT>
+class RosServiceNode : public ParentT
 {
 protected:
-  RosServiceNode(const std::string& name, const NodeConfiguration& conf) : SyncActionNode(name, conf)
+  RosServiceNode(const std::string& name, const NodeConfiguration& conf) : ParentT(name, conf)
   {
   }
 
 public:
-  using BaseClass = RosServiceNode<ServiceT>;
+  using BaseClass = RosServiceNode<ServiceT, ParentT>;
+  using ParentType = ParentT;
   using ServiceType = ServiceT;
   using RequestType = typename ServiceT::Request;
   using ResponseType = typename ServiceT::Response;
@@ -32,7 +34,7 @@ public:
   static PortsList providedPorts()
   {
     return { InputPort<std::string>("service_name", "name of the ROS service"),
-             InputPort<unsigned>("timeout", 100, "timeout to connect to server (milliseconds)") };
+             InputPort<unsigned int>("timeout", 100, "timeout to connect to server (milliseconds)") };
   }
 
   /// User must implement this method.
@@ -63,12 +65,11 @@ protected:
   {
     if (!service_client_.isValid())
     {
-      std::string server = getInput<std::string>("service_name").value();
+      std::string server = ParentT::template getInput<std::string>("service_name").value();
       service_client_ = ros::NodeHandle().serviceClient<ServiceT>(server);
     }
 
-    unsigned msec;
-    getInput("timeout", msec);
+    unsigned int msec = ParentT::template getInput<unsigned int>("timeout").value();
     ros::Duration timeout(static_cast<double>(msec) * 1e-3);
 
     bool connected = service_client_.waitForExistence(timeout);

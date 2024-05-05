@@ -7,18 +7,18 @@
 
 namespace thorp::bt::actions
 {
-class ClearOctomap : public BT::RosServiceNode<std_srvs::Empty>
+class ClearOctomap : public BT::RosServiceNode<std_srvs::Empty, BT::SyncActionNode>
 {
 public:
   ClearOctomap(const std::string& name, const BT::NodeConfiguration& conf)
-    : RosServiceNode<ServiceType>(name, conf)
+    : RosServiceNode<ServiceType, ParentType>(name, conf)
   {
   }
 
   static BT::PortsList providedPorts()
   {
     // overwrite service_name with a default value
-    BT::PortsList ports = BT::RosServiceNode<ServiceType>::providedPorts();
+    BT::PortsList ports = BT::RosServiceNode<ServiceType, ParentType>::providedPorts();
     ports["service_name"].setDefaultValue("clear_octomap");
     return ports;
   }

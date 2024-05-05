@@ -48,18 +48,18 @@ private:
   BT_REGISTER_NODE(AimCannon);
 };
 
-class CannonCommand : public BT::RosServiceNode<thorp_msgs::CannonCommand>
+class CannonCommand : public BT::RosServiceNode<thorp_msgs::CannonCommand, BT::SyncActionNode>
 {
 public:
   CannonCommand(const std::string& name, const BT::NodeConfiguration& conf)
-    : RosServiceNode<ServiceType>(name, conf)
+    : RosServiceNode<ServiceType, ParentType>(name, conf)
   {
   }
 
   static BT::PortsList providedPorts()
   {
     // overwrite service_name with a default value
-    BT::PortsList ports = BT::RosServiceNode<ServiceType>::providedPorts();
+    BT::PortsList ports = BT::RosServiceNode<ServiceType, ParentType>::providedPorts();
     ports["service_name"].setDefaultValue("cannon_command");
     return ports;
   }

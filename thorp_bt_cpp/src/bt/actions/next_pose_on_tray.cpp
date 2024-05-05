@@ -11,17 +11,18 @@ namespace thorp::bt::actions
  * Calculate the next pose where to put an object on the tray.
  * Return FAILURE if the tray is full.
  */
-class NextPoseOnTray : public BT::RosServiceNode<thorp_msgs::TrayNextPose>
+class NextPoseOnTray : public BT::RosServiceNode<thorp_msgs::TrayNextPose, BT::SyncActionNode>
 {
 public:
-  NextPoseOnTray(const std::string& name, const BT::NodeConfiguration& conf) : RosServiceNode<ServiceType>(name, conf)
+  NextPoseOnTray(const std::string& name, const BT::NodeConfiguration& conf)
+    : RosServiceNode<ServiceType, ParentType>(name, conf)
   {
   }
 
   static BT::PortsList providedPorts()
   {
     // overwrite service_name with a default value
-    BT::PortsList ports = BT::RosServiceNode<ServiceType>::providedPorts();
+    BT::PortsList ports = BT::RosServiceNode<ServiceType, ParentType>::providedPorts();
     ports["service_name"].setDefaultValue("manipulation/tray/get_next_pose");
     ports.insert({ BT::OutputPort<geometry_msgs::PoseStamped>("pose_on_tray") });
     return ports;

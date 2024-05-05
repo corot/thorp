@@ -7,18 +7,18 @@
 
 namespace thorp::bt::actions
 {
-class ClearCostmaps : public BT::RosServiceNode<std_srvs::Empty>
+class ClearCostmaps : public BT::RosServiceNode<std_srvs::Empty, BT::SyncActionNode>
 {
 public:
   ClearCostmaps(const std::string& name, const BT::NodeConfiguration& conf)
-    : RosServiceNode<ServiceType>(name, conf)
+    : RosServiceNode<ServiceType, ParentType>(name, conf)
   {
   }
 
   static BT::PortsList providedPorts()
   {
     // overwrite service_name with a default value
-    BT::PortsList ports = BT::RosServiceNode<ServiceType>::providedPorts();
+    BT::PortsList ports = BT::RosServiceNode<ServiceType, ParentType>::providedPorts();
     ports["service_name"].setDefaultValue("move_base_flex/clear_costmaps");
     return ports;
   }

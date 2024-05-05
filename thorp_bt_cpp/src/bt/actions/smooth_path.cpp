@@ -10,17 +10,17 @@ namespace ttk = thorp::toolkit;
 
 namespace thorp::bt::actions
 {
-class SmoothPath : public BT::RosServiceNode<thorp_msgs::ConnectWaypoints>
+class SmoothPath : public BT::RosServiceNode<thorp_msgs::ConnectWaypoints, BT::SyncActionNode>
 {
 public:
   SmoothPath(const std::string& name, const BT::NodeConfiguration& conf)
-    : RosServiceNode<ServiceType>(name, conf)
+    : RosServiceNode<ServiceType, ParentType>(name, conf)
   {
   }
 
   static BT::PortsList providedPorts()
   {
-    BT::PortsList ports = BT::RosServiceNode<ServiceType>::providedPorts();
+    BT::PortsList ports = BT::RosServiceNode<ServiceType, ParentType>::providedPorts();
     ports["service_name"].setDefaultValue("waypoints_path/connect_waypoints");
     ports.insert({ BT::InputPort<std::vector<geometry_msgs::PoseStamped>>("waypoints"),
                    BT::OutputPort<nav_msgs::Path>("path") });
