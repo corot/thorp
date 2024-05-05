@@ -32,7 +32,7 @@
                             room_sequence="{room_sequence}"/>
         </Sequence>
       </Fallback>
-      <RetryUntilSuccessful num_attempts="999999">
+      <RetryUntilSuccessful num_attempts="-1">
         <Sequence>
           <Fallback>
             <Inverter>
@@ -62,7 +62,7 @@
           <Sequence>
             <SubTree ID="reach_first_pose"
                      poses="{coverage_waypoints}"/>
-            <RetryUntilSuccessful num_attempts="999999">
+            <RetryUntilSuccessful num_attempts="-1">
               <Fallback>
                 <SubTree ID="follow_waypoints"
                          waypoints="{coverage_waypoints}"/>

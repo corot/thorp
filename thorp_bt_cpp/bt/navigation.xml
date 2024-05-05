@@ -32,7 +32,7 @@
   </BehaviorTree>
 
   <BehaviorTree ID="reach_first_pose">
-    <RetryUntilSuccessful num_attempts="999999">
+    <RetryUntilSuccessful num_attempts="-1">
       <Fallback>
         <Sequence>
           <GetPoseListFront list="{poses}"

@@ -6,7 +6,7 @@
     <Sequence>
       <ReadDoubleParam key="gripper_tightening"
                        value="{tightening}"/>
-      <Repeat num_cycles="999999">
+      <Repeat num_cycles="-1">
         <Sequence>
           <DetectObjects action_name="object_detection"
                          object_types=""

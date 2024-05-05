@@ -3,35 +3,34 @@
   <include path="explore_house.xml"/>
 
   <BehaviorTree ID="cat_hunter">
-    <RetryUntilSuccessful num_attempts="999999">
-      <Fallback>
+    <KeepRunningUntilFailure>
+      <Sequence>
         <Parallel failure_threshold="1"
                   success_threshold="1">
-          <SubTree ID="explore_house"
-                   __shared_blackboard="false"/>
           <ForceFailure>
-            <MonitorObjects max_delay="0.000000"
-                            target_objects="cat, dog, horse"
-                            timeout="1e6"
-                            topic_name="tracked_objects"
-                            tracked_object="{tracked_object}"
-                            tracked_object_pose="{tracked_object_pose}"/>
+            <SubTree ID="explore_house"
+                     __shared_blackboard="false"/>
           </ForceFailure>
+          <MonitorObjects max_delay="0.000000"
+                          target_objects="cat, dog, horse"
+                          timeout="1e6"
+                          topic_name="tracked_objects"
+                          tracked_object="{tracked_object}"
+                          tracked_object_pose="{tracked_object_pose}"/>
         </Parallel>
         <Parallel failure_threshold="1"
                   success_threshold="1">
-          <ForceFailure>
+          <ForceSuccess>
             <FollowPose action_name="pose_follower/follow"
                         distance="0.8"
-
                         server_timeout="5.000000"
                         stop_at_distance="false"
                         time_limit="25"
                         error="{follow_error}"
                         feedback="{follow_feedback}"/>
-          </ForceFailure>
-          <RetryUntilSuccessful num_attempts="999999">
-            <Sequence>
+          </ForceSuccess>
+          <RetryUntilSuccessful num_attempts="-1">
+            <IfThenElse>
               <MonitorObjects name="TargetVisible"
                               max_delay="0.000000"
                               target_objects="cat, dog, horse"
@@ -39,28 +38,31 @@
                               topic_name="tracked_objects"
                               tracked_object="{tracked_object}"
                               tracked_object_pose="{tracked_object_pose}"/>
-              <GetRobotPose timeout="1"
-                            error="{error}"
-                            robot_pose="{robot_pose}"/>
-              <TargetReachable follow_feedback="{follow_feedback}"
-                               max_angle="0.2"
-                               max_dist="1.0"
-                               robot_pose="{robot_pose}"/>
-              <AimCannon robot_pose="{robot_pose}"
-                         target_pose="{tracked_object_pose}"
-                         angle="{cannon_tilt_angle}"/>
-              <TiltCannon angle="{cannon_tilt_angle}"
-                          service_name="cannon_command"
-                          timeout="1"/>
-              <FireCannon service_name="cannon_command"
-                          shots="1"
-                          timeout="1"/>
-              <Sleep duration="1.0"/>
-              <AlwaysFailure _description="Replace with failing on exhausted ammo"/>
-            </Sequence>
+              <Sequence>
+                <GetRobotPose timeout="1"
+                              error="{error}"
+                              robot_pose="{robot_pose}"/>
+                <TargetReachable follow_feedback="{follow_feedback}"
+                                 max_angle="0.2"
+                                 max_dist="1.0"
+                                 robot_pose="{robot_pose}"/>
+                <AimCannon robot_pose="{robot_pose}"
+                           target_pose="{tracked_object_pose}"
+                           angle="{cannon_tilt_angle}"/>
+                <TiltCannon angle="{cannon_tilt_angle}"
+                            service_name="cannon_command"
+                            timeout="1"/>
+                <FireCannon service_name="cannon_command"
+                            shots="1"
+                            timeout="1"/>
+                <Sleep duration="1.0"/>
+                <AlwaysFailure _description="Replace with failing on exhausted ammo"/>
+              </Sequence>
+              <AlwaysSuccess/>
+            </IfThenElse>
           </RetryUntilSuccessful>
         </Parallel>
-      </Fallback>
-    </RetryUntilSuccessful>
+      </Sequence>
+    </KeepRunningUntilFailure>
   </BehaviorTree>
 </root>
