@@ -40,7 +40,7 @@ bool Runner::loadTree()
   }
   else
   {
-    ROS_ERROR_STREAM("Unable to open file to write node models file: " << nodes_filepath);
+    ROS_ERROR_STREAM_NAMED("bt_runner", "Unable to open file to write node models file: " << nodes_filepath);
     return false;
   }
 
