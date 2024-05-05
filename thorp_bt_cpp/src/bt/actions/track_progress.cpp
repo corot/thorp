@@ -31,17 +31,17 @@ private:
     next_waypoint_ = 0;
     waypoints_ = *getInput<Waypoints>("waypoints");
     auto reached_threshold = getInput<double>("reached_threshold");
-    pt_ = std::make_unique<ttk::ProgressTracker>(waypoints_, reached_threshold ? *reached_threshold : 1.0);
+    pt_.init(waypoints_, reached_threshold ? *reached_threshold : 1.0);
     ROS_INFO_STREAM_NAMED(name(), "Tracking progress along " << waypoints_.size() << " waypoints");
     return BT::NodeStatus::RUNNING;
   }
 
   BT::NodeStatus onRunning() override
   {
-    pt_->updatePose(*getInput<geometry_msgs::PoseStamped>("robot_pose"));
-    if (next_waypoint_ != pt_->nextWaypoint())
+    pt_.updatePose(*getInput<geometry_msgs::PoseStamped>("robot_pose"));
+    if (next_waypoint_ != pt_.nextWaypoint())
     {
-      next_waypoint_ = pt_->nextWaypoint();
+      next_waypoint_ = pt_.nextWaypoint();
       auto consumed = std::min(next_waypoint_, waypoints_.size());
       setOutput("waypoints", Waypoints{ waypoints_.begin() + consumed, waypoints_.end() });
       setOutput("next_waypoint", next_waypoint_);
@@ -53,10 +53,10 @@ private:
 
   void onHalted() override
   {
-    pt_->reset();
+    pt_.reset();
   }
 
-  std::unique_ptr<ttk::ProgressTracker> pt_;
+  ttk::ProgressTracker pt_;
   size_t next_waypoint_;
   Waypoints waypoints_;
 

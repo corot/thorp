@@ -9,7 +9,6 @@ namespace thorp::toolkit
 Visualization::Visualization(const std::string& topic, double lifetime) : lifetime_(lifetime)
 {
   markers_pub_ = ros::NodeHandle("~").advertise<visualization_msgs::MarkerArray>(topic, 1);
-  //  ros::Duration(0.25).sleep();  // wait a moment until the publisher is ready
 }
 
 void Visualization::publishMarkers(int start_id)

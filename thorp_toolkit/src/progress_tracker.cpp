@@ -5,87 +5,107 @@
 namespace thorp::toolkit
 {
 
-ProgressTracker::ProgressTracker(const std::vector<geometry_msgs::PoseStamped>& waypoints, double reached_threshold)
-  : _waypoints(waypoints)
-  , reached_threshold(reached_threshold)
-  , next_wp(0)
-  , reached(false)
-  , min_dist(std::numeric_limits<double>::infinity())
-  , viz("visual_markers")
+ProgressTracker::ProgressTracker() : viz_("waypoints")
 {
-  if (_waypoints.empty())
+}
+
+void ProgressTracker::init(const std::vector<geometry_msgs::PoseStamped>& waypoints, double reached_threshold)
+{
+  if (waypoints.empty())
   {
     throw std::invalid_argument("Waypoints must be a non-empty list of poses");
   }
 
-  // Visualize semi-transparent waypoints; will become solid once reached
-  for (const auto& wp : _waypoints)
+  next_wp_ = 0;
+  reached_ = false;
+  min_dist_ = std::numeric_limits<double>::infinity();
+  waypoints_ = waypoints;
+  reached_threshold_ = reached_threshold;
+
+  // Visualize semi-transparent waypoints; will become solid once reached_
+  for (const auto& wp : waypoints_)
   {
-    viz.addDiscMarker(wp, 0.2, makeColor(0, 0, 1.0, 0.25));
+    viz_.addDiscMarker(wp, 0.2, makeColor(0, 0, 1.0, 0.25));
   }
-  viz.publishMarkers();
+  viz_.publishMarkers();
 }
 
 void ProgressTracker::reset()
 {
-  next_wp = 0;
-  reached = false;
-  min_dist = std::numeric_limits<double>::infinity();
-  viz.deleteMarkers();
+  waypoints_.clear();
+  next_wp_ = 0;
+  reached_ = false;
+  min_dist_ = std::numeric_limits<double>::infinity();
+  viz_.reset();
 }
 
 void ProgressTracker::updatePose(const geometry_msgs::PoseStamped& robot_pose)
 {
-  if (next_wp == std::numeric_limits<size_t>::max())
+  if (waypoints_.empty())
+  {
+    throw std::invalid_argument("Not initialized");
+  }
+
+  if (next_wp_ == std::numeric_limits<size_t>::max())
   {
     return;  // already arrived
   }
 
-  double dist = distance2D(robot_pose, _waypoints[next_wp]);
-  if (reached && dist > min_dist)
+  double dist = distance2D(robot_pose, waypoints_[next_wp_]);
+  if (reached_ && dist > min_dist_)
   {
-    viz.addDiscMarker(_waypoints[next_wp], 0.2, makeColor(0, 0, 1.0, 1.0));
-    viz.publishMarkers();
-    next_wp += 1;
+    viz_.addDiscMarker(waypoints_[next_wp_], 0.2, makeColor(0, 0, 1.0, 1.0));
+    viz_.publishMarkers();
+    next_wp_ += 1;
 
-    if (next_wp < _waypoints.size())
+    if (next_wp_ < waypoints_.size())
     {
       // go for the next waypoint
-      reached = false;
-      min_dist = std::numeric_limits<double>::infinity();
+      reached_ = false;
+      min_dist_ = std::numeric_limits<double>::infinity();
     }
     else
     {
       // arrived; clear reached waypoints markers
-      viz.deleteMarkers();
-      next_wp = std::numeric_limits<size_t>::max();
+      viz_.deleteMarkers();
+      next_wp_ = std::numeric_limits<size_t>::max();
     }
     return;
   }
 
-  min_dist = std::min(min_dist, dist);
-  if (dist <= reached_threshold)
+  min_dist_ = std::min(min_dist_, dist);
+  if (dist <= reached_threshold_)
   {
-    reached = true;
+    reached_ = true;
   }
 }
 
 size_t ProgressTracker::nextWaypoint() const
 {
-  return next_wp;
+  if (waypoints_.empty())
+  {
+    throw std::invalid_argument("Not initialized");
+  }
+
+  return next_wp_;
 }
 
 size_t ProgressTracker::reachedWaypoint() const
 {
-  if (next_wp == std::numeric_limits<size_t>::max())
+  if (waypoints_.empty())
   {
-    return _waypoints.size() - 1;
+    throw std::invalid_argument("Not initialized");
   }
-  else if (next_wp == 0)
+
+  if (next_wp_ == std::numeric_limits<size_t>::max())
+  {
+    return waypoints_.size() - 1;
+  }
+  else if (next_wp_ == 0)
   {
     return std::numeric_limits<size_t>::max();
   }
-  return next_wp - 1;
+  return next_wp_ - 1;
 }
 
 }  // namespace thorp::toolkit

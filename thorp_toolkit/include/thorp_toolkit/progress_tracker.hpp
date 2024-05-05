@@ -16,7 +16,9 @@ namespace thorp::toolkit
 class ProgressTracker
 {
 public:
-  ProgressTracker(const std::vector<geometry_msgs::PoseStamped>& waypoints, double reached_threshold);
+  ProgressTracker();
+
+  void init(const std::vector<geometry_msgs::PoseStamped>& waypoints, double reached_threshold);
 
   void reset();
 
@@ -27,13 +29,13 @@ public:
   size_t reachedWaypoint() const;
 
 private:
-  std::vector<geometry_msgs::PoseStamped> _waypoints;
-  double reached_threshold;
-  size_t next_wp;
-  bool reached;
-  double min_dist;
+  std::vector<geometry_msgs::PoseStamped> waypoints_;
+  double reached_threshold_;
+  size_t next_wp_;
+  bool reached_;
+  double min_dist_;
 
-  Visualization viz;
+  Visualization viz_;
 };
 
 }  // namespace thorp::toolkit

@@ -42,8 +42,8 @@ private:
   ros::ServiceServer tray_capacity_srv_;
   ros::ServiceServer tray_next_pose_srv_;
   ros::ServiceServer clear_pl_scene_srv_;
-  ttk::PlanningScene& planning_scene_;
   ttk::Visualization visualization_;
+  ttk::PlanningScene& planning_scene_;
 
   std::string tray_link_;
   double tray_slot_ = 0.0;
