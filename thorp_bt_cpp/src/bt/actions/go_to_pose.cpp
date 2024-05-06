@@ -36,6 +36,9 @@ public:
   }
 
 private:
+  std::optional<ttk::Reconfigure> reconf_;
+  std::optional<GoalType> current_goal_;
+
   std::optional<GoalType> getGoal() override
   {
     GoalType new_goal;
@@ -93,9 +96,6 @@ private:
 
     return BT::NodeStatus::FAILURE;
   }
-
-  std::optional<GoalType> current_goal_;
-  std::optional<ttk::Reconfigure> reconf_;
 
   BT_REGISTER_NODE(GoToPose);
 };

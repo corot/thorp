@@ -10,6 +10,7 @@ set(PKG_DEPS
       nav_msgs
       std_msgs
       std_srvs
+      jsk_rviz_plugins
       ipa_building_msgs
       cob_perception_msgs
       rail_manipulation_msgs

@@ -28,15 +28,24 @@ public:
   }
 
 private:
+  std::optional<GoalType> current_goal_;
+
   std::optional<GoalType> getGoal() override
   {
-    if (status() == BT::NodeStatus::RUNNING)
-      return std::nullopt;
+    GoalType new_goal;
+    new_goal.target_type = GoalType::NAMED_TARGET;
+    new_goal.named_target = *getInput<std::string>("configuration");
+    if (!current_goal_ || *current_goal_ != new_goal)
+    {
+      current_goal_ = new_goal;
+      return current_goal_;
+    }
+    return std::nullopt;
+  }
 
-    GoalType goal;
-    goal.target_type = GoalType::NAMED_TARGET;
-    goal.named_target = *getInput<std::string>("configuration");
-    return goal;
+  void onFinished() override
+  {
+    current_goal_.reset();
   }
 
   void onFeedback(const FeedbackConstPtr& feedback) override

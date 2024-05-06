@@ -33,6 +33,8 @@ public:
   }
 
 private:
+  std::optional<GoalType> current_goal_;
+
   std::optional<GoalType> getGoal() override
   {
     GoalType new_goal;
@@ -73,8 +75,6 @@ private:
 
     return BT::NodeStatus::FAILURE;
   }
-
-  std::optional<GoalType> current_goal_;
 
   BT_REGISTER_NODE(LookAtPose);
 };
