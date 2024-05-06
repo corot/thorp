@@ -88,8 +88,7 @@
         <Parallel failure_threshold="1"
                   success_threshold="1">
           <ForceFailure>
-            <SubTree ID="explore_house"
-                     __shared_blackboard="false"/>
+            <SubTree ID="explore_house"/>
           </ForceFailure>
           <RetryUntilSuccessful num_attempts="-1">
             <Sequence>
@@ -134,6 +133,7 @@
                      table="{table}"
                      pose="{planning_pose}"/>
             <SubTree ID="cleanup_table"
+                     table="{table}"
                      detach_pose="{detach_pose}"/>
             <SubTree ID="detach_from_table"
                      pose="{detach_pose}"

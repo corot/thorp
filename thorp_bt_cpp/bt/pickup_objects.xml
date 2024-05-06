@@ -24,9 +24,13 @@
                               target_name="{object_name}"
                               tightening="{tightening}"/>
             <IfThenElse>
-              <SubTree ID="pickup_object"/>
+              <SubTree ID="pickup_object"
+                       object_name="{object_name}"
+                       tightening="{tightening}"
+                       error="{error}"/>
               <SubTree ID="place_on_tray"
-                       tray_full="{tray_full}"/>
+                       object_name="{object_name}"
+                       error="{error}"/>
               <RecordPickupFailure target_name="{object_name}"
                                    failures="{failures}"
                                    given_up_count="{given_up_count}"/>

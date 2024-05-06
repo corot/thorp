@@ -8,8 +8,7 @@
         <Parallel failure_threshold="1"
                   success_threshold="1">
           <ForceFailure>
-            <SubTree ID="explore_house"
-                     __shared_blackboard="false"/>
+            <SubTree ID="explore_house"/>
           </ForceFailure>
           <MonitorObjects max_delay="0.0"
                           target_objects="cat, dog, horse"
