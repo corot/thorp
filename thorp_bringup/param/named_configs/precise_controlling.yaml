@@ -6,6 +6,8 @@ move_base_flex/TEBPlanner:
   max_vel_x: 0.2
   max_vel_theta: 2.0
   max_vel_x_backwards: 0.1
+  acc_lim_x: 0.2
+  acc_lim_theta: 0.5
   control_look_ahead_poses: 1
   weight_kinematics_forward_drive: 50.0
 

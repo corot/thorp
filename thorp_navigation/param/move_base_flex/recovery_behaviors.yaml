@@ -9,7 +9,7 @@ recovery_behaviors:
   - {name: out_to_free_space, type: thorp_mbf_plugins/SlowEscapeRecovery}
 #  - {name: lp_altern_config,  type: change_config_recovery/ChangeConfigRecovery}
 #  - {name: gp_altern_config,  type: clear_costmap_recovery/ClearCostmapRecovery}   # TODO dyn reconf. for NavFn and/or change global costmap params
-  - {name: clearing_rotation, type: rotate_recovery/RotateRecovery}
+#  - {name: clearing_rotation, type: rotate_recovery/RotateRecovery}
 
 # Define parameters for loaded recovery behaviors
 

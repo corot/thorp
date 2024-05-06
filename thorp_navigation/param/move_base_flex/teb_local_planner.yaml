@@ -34,8 +34,8 @@ TEBPlanner:
 
   xy_goal_tolerance: 0.1
   yaw_goal_tolerance: 0.1
-  trans_stopped_vel: 0.1  # robot will oscillate if too low
-  theta_stopped_vel: 0.1
+  trans_stopped_vel: 0.06  # robot will oscillate if too low
+  theta_stopped_vel: 0.08
   free_goal_vel: False
   complete_global_plan: True
 
