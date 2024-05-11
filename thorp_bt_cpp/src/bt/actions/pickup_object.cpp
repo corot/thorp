@@ -20,7 +20,7 @@ public:
   static BT::PortsList providedPorts()
   {
     BT::PortsList ports = BT::RosActionNode<ActionType>::providedPorts();
-    ports["action_name"].setDefaultValue("pickup_object");
+    ports["action_name"].setDefaultValue("manipulation/pickup_object");
     ports.insert({ BT::InputPort<std::string>("object_name"),   //
                    BT::InputPort<std::string>("support_surf"),  //
                    BT::InputPort<double>("max_effort"),         //

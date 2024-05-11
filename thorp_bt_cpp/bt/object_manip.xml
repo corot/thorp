@@ -50,7 +50,7 @@
                            output_key="user_command"/>
           </Sequence>
           <Sequence>
-            <SetArmConfig action_name="move_to_target"
+            <SetArmConfig action_name="manipulation/move_to_target"
                           configuration="resting"
                           server_timeout="5.000000"
                           error="{error}"

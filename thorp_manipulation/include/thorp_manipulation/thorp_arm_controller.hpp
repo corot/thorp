@@ -29,18 +29,16 @@ namespace thorp::manipulation
 class ThorpArmController
 {
 public:
-  ThorpArmController()
+  ThorpArmController() : pnh_("~")
   {
-    ros::NodeHandle nh, pnh("~");
-
     // Read arm control parameters
-    pnh.param("arm_ctrl_ref_frame", arm_ref_frame, std::string("arm_base_link"));
-    pnh.param("vertical_backlash_scale", vertical_backlash_scale, 0.0);
-    pnh.param("vertical_backlash_delta", vertical_backlash_delta, 0.0);
-    pnh.param("fall_short_distance_delta", fall_short_distance_delta, 0.0);
-    pnh.param("gripper_asymmetry_yaw_delta", gripper_asymmetry_yaw_delta, 0.0);
+    pnh_.param("arm_ctrl_ref_frame", arm_ref_frame, std::string("arm_base_link"));
+    pnh_.param("vertical_backlash_scale", vertical_backlash_scale, 0.0);
+    pnh_.param("vertical_backlash_delta", vertical_backlash_delta, 0.0);
+    pnh_.param("fall_short_distance_delta", fall_short_distance_delta, 0.0);
+    pnh_.param("gripper_asymmetry_yaw_delta", gripper_asymmetry_yaw_delta, 0.0);
 
-    nh.param("gripper_controller/max_opening", gripper_open, 0.0454321);
+    ros::NodeHandle().param("gripper_controller/max_opening", gripper_open, 0.0454321);
 
     // Default target poses reference frame: we normally work relative to
     // the arm base, so our calculated roll/pitch/yaw angles make sense
@@ -54,11 +52,10 @@ public:
     arm().allowReplanning(true);
   }
 
-  ~ThorpArmController()
-  {
-  }
+  ~ThorpArmController() = default;
 
 protected:
+  ros::NodeHandle pnh_;
   ttk::PlanningScene& psi = ttk::PlanningScene::instance();
 
   // Move groups to control arm and gripper with MoveIt!

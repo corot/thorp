@@ -20,7 +20,7 @@ public:
   static BT::PortsList providedPorts()
   {
     BT::PortsList ports = BT::RosActionNode<ActionType>::providedPorts();
-    ports["action_name"].setDefaultValue("move_to_target");
+    ports["action_name"].setDefaultValue("manipulation/move_to_target");
     ports.insert({ BT::InputPort<std::string>("configuration"),  //
                    BT::OutputPort<int>("error"),                 //
                    BT::OutputPort<std::optional<FeedbackType>>("feedback") });

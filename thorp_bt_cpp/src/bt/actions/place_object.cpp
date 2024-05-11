@@ -20,7 +20,7 @@ public:
   static BT::PortsList providedPorts()
   {
     BT::PortsList ports = BT::RosActionNode<ActionType>::providedPorts();
-    ports["action_name"].setDefaultValue("place_object");
+    ports["action_name"].setDefaultValue("manipulation/place_object");
     ports.insert({ BT::InputPort<std::string>("object_name"),                //
                    BT::InputPort<std::string>("support_surf"),               //
                    BT::InputPort<geometry_msgs::PoseStamped>("place_pose"),  //

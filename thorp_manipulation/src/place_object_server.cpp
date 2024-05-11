@@ -25,7 +25,7 @@ namespace thorp::manipulation
 
 PlaceObjectServer::PlaceObjectServer(const std::string& name,
                                      std::function<const std::vector<std::string>&()> get_tray_content_fn)
-  : as_(name, boost::bind(&PlaceObjectServer::executeCB, this, _1), false)
+  : as_(pnh_, name, boost::bind(&PlaceObjectServer::executeCB, this, _1), false)
   , get_tray_content_fn_(std::move(get_tray_content_fn))
 {
   ROS_INFO("[place object] Starting place action server...");

@@ -12,7 +12,7 @@ import geometry_msgs.msg as geometry_msgs
 def pickup(object):
     # Creates the SimpleActionClient, passing the type of the action
     # (PickupObjectAction) to the constructor.
-    client = actionlib.SimpleActionClient('/pickup_object', thorp_msgs.PickupObjectAction)
+    client = actionlib.SimpleActionClient('manipulation/pickup_object', thorp_msgs.PickupObjectAction)
 
     # Waits until the action server has started up and started listening for goals
     client.wait_for_server()

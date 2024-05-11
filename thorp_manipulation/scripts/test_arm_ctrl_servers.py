@@ -13,7 +13,7 @@ import geometry_msgs.msg as geometry_msgs
 def move_to_target_client(value):
     # Creates the SimpleActionClient, passing the type of the action
     # (MoveToTargetAction) to the constructor.
-    client = actionlib.SimpleActionClient('/move_to_target', thorp_msgs.MoveToTargetAction)
+    client = actionlib.SimpleActionClient('manipulation/move_to_target', thorp_msgs.MoveToTargetAction)
 
     # Waits until the action server has started up and started listening for goals
     client.wait_for_server()

@@ -97,7 +97,7 @@ class StoredConfig(smach_ros.SimpleActionState):
     """ Move arm into one of the stored configuration (resting, right_up, etc.) """
 
     def __init__(self, config):
-        super(StoredConfig, self).__init__('move_to_target',
+        super(StoredConfig, self).__init__('manipulation/move_to_target',
                                            thorp_msgs.MoveToTargetAction,
                                            goal=thorp_msgs.MoveToTargetGoal(
                                                thorp_msgs.MoveToTargetGoal.NAMED_TARGET,
@@ -138,7 +138,7 @@ class PickupObject(smach.Iterator):
                 smach.StateMachine.add('CLEAR_GRIPPER', ClearGripper(),
                                        transitions={'succeeded': 'PICKUP_OBJECT'})
                 smach.StateMachine.add('PICKUP_OBJECT',
-                                       smach_ros.SimpleActionState('pickup_object',
+                                       smach_ros.SimpleActionState('manipulation/pickup_object',
                                                                    thorp_msgs.PickupObjectAction,
                                                                    goal_slots=['object_name',
                                                                                'support_surf',
@@ -184,7 +184,7 @@ class PlaceObject(smach.Iterator):
                 smach.StateMachine.add('GET_SURF_NAME', UDExtractAttr('id', 'surface', 'support_surf'),
                                        transitions={'succeeded': 'PLACE_OBJECT'})
                 smach.StateMachine.add('PLACE_OBJECT',
-                                       smach_ros.SimpleActionState('place_object',
+                                       smach_ros.SimpleActionState('manipulation/place_object',
                                                                    thorp_msgs.PlaceObjectAction,
                                                                    goal_slots=['object_name',
                                                                                'support_surf',

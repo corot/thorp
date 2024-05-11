@@ -36,7 +36,7 @@
                                    given_up_count="{given_up_count}"/>
             </IfThenElse>
           </Sequence>
-          <SetArmConfig action_name="move_to_target"
+          <SetArmConfig action_name="manipulation/move_to_target"
                         configuration="resting"
                         server_timeout="5.000000"
                         error="{error}"

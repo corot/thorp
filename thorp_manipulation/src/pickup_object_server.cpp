@@ -23,7 +23,7 @@ namespace thorp::manipulation
 {
 
 PickupObjectServer::PickupObjectServer(const std::string& name) :
-  as_(name, boost::bind(&PickupObjectServer::executeCB, this, _1), false)
+  as_(pnh_, name, boost::bind(&PickupObjectServer::executeCB, this, _1), false)
 {
   ROS_INFO("[pickup object] Starting pickup action server...");
 
