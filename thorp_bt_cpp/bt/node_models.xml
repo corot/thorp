@@ -17,6 +17,7 @@
             <input_port name="pose1" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="pose2" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Condition>
+        <Condition ID="CannonHasAmmo"/>
         <Action ID="ClearCostmaps">
             <input_port name="service_name" type="std::string" default="move_base_flex/clear_costmaps">name of the ROS service</input_port>
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>

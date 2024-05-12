@@ -5,6 +5,7 @@
   <BehaviorTree ID="cat_hunter">
     <KeepRunningUntilFailure>
       <Sequence>
+        <CannonHasAmmo/>
         <Parallel failure_threshold="1"
                   success_threshold="1">
           <ForceFailure>
@@ -30,13 +31,16 @@
           </ForceSuccess>
           <RetryUntilSuccessful num_attempts="-1">
             <IfThenElse>
-              <MonitorObjects name="TargetVisible"
-                              max_delay="0.0"
-                              target_objects="cat, dog, horse"
-                              timeout="0.2"
-                              topic_name="tracked_objects"
-                              tracked_object="{tracked_object}"
-                              tracked_object_pose="{tracked_object_pose}"/>
+              <Sequence>
+                <CannonHasAmmo/>
+                <MonitorObjects name="TargetVisible"
+                                max_delay="0.0"
+                                target_objects="cat, dog, horse"
+                                timeout="0.2"
+                                topic_name="tracked_objects"
+                                tracked_object="{tracked_object}"
+                                tracked_object_pose="{tracked_object_pose}"/>
+              </Sequence>
               <Sequence>
                 <GetRobotPose timeout="1"
                               error="{error}"

@@ -3,7 +3,7 @@
 import rospy
 
 from math import atan, degrees, radians
-from std_msgs.msg import Float64
+from std_msgs.msg import Float64, UInt8
 from thorp_msgs.srv import CannonCommand, CannonCommandRequest
 from thorp_msgs.msg import ThorpError
 from arbotix_msgs.msg import Digital, Analog
@@ -18,11 +18,15 @@ class CannonCtrlNode:
 
         self._cannon_cmd_srv = rospy.Service('cannon_command', CannonCommand, self.handle_cannon_command)
 
-        self._fire_cannon_pub = rospy.Publisher('arbotix/cannon_trigger', Digital, queue_size=5, latch=True)
         if self._simulation:
             self._tilt_cannon_pub = rospy.Publisher('cannon_joint/command', Float64, queue_size=5, latch=True)
+            self._shots_left = 100
         else:
             self._tilt_cannon_pub = rospy.Publisher('arbotix/cannon_servo', Analog, queue_size=5, latch=True)
+            self._shots_left = 6
+        self._fire_cannon_pub = rospy.Publisher('arbotix/cannon_trigger', Digital, queue_size=5, latch=True)
+        self._shots_left_pub = rospy.Publisher('~shots_left', UInt8, latch=True, queue_size=1)
+        self._shots_left_pub.publish(self._shots_left)
 
         # Subscribe to a target pose to aim to
         self._target_obj_pose = None
@@ -73,7 +77,6 @@ class CannonCtrlNode:
 
     def fire(self, shots):
         if shots > 0:
-            rospy.loginfo("Firing cannon! %d shot%s", shots, 's' if shots > 1 else '')
             msg = Digital(value=1)
             msg.header.stamp = rospy.get_rostime()
             self._fire_cannon_pub.publish(msg)
@@ -81,6 +84,9 @@ class CannonCtrlNode:
             msg.value = 0
             msg.header.stamp = rospy.get_rostime()
             self._fire_cannon_pub.publish(msg)
+            self._shots_left -= shots
+            self._shots_left_pub.publish(self._shots_left)
+            rospy.loginfo("Firing %d cannon shot%s! (%d left)", shots, 's' if shots > 1 else '', self._shots_left)
         return ThorpError(code=ThorpError.SUCCESS)
 
     def handle_cannon_command(self, request):
