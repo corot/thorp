@@ -46,13 +46,6 @@
             <input_port name="table" type="rail_manipulation_msgs::SegmentedObject_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="table_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
-        <Action ID="ClosestTableSide">
-            <input_port name="distance" type="double"/>
-            <input_port name="robot_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <input_port name="table" type="rail_manipulation_msgs::SegmentedObject_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <input_port name="table_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <output_port name="closest_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-        </Action>
         <Action ID="CreatePoseStamped">
             <input_port name="frame" type="std::string"/>
             <input_port name="x" type="double"/>
@@ -114,6 +107,11 @@
             <output_port name="element" type="thorp_msgs::PickupLocation_&lt;std::allocator&lt;void&gt; &gt;"/>
             <inout_port name="list" type="std::vector&lt;thorp_msgs::PickupLocation_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;thorp_msgs::PickupLocation_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
         </Decorator>
+        <Action ID="GetClosestPose">
+            <input_port name="poses" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+            <input_port name="target_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <output_port name="closest_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+        </Action>
         <Action ID="GetPath">
             <input_port name="action_name" type="std::string" default="move_base_flex/get_path">name of the ROS action client</input_port>
             <input_port name="planner" type="std::string"/>
@@ -126,6 +124,12 @@
         <Action ID="GetPoseListFront">
             <input_port name="list" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
             <output_port name="element" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+        </Action>
+        <Action ID="GetPosesAroundTable">
+            <input_port name="distance" type="double"/>
+            <input_port name="table" type="rail_manipulation_msgs::SegmentedObject_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="table_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <output_port name="table_side_poses" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
         </Action>
         <Action ID="GetRobotPose">
             <input_port name="timeout" type="double"/>
@@ -175,6 +179,7 @@
         <Action ID="MakePickupPlan">
             <input_port name="action_name" type="std::string" default="manipulation/make_pickup_plan">name of the ROS action client</input_port>
             <input_port name="objects" type="std::vector&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+            <input_port name="pickup_poses" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
             <input_port name="robot_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
             <input_port name="surface" type="moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;"/>
@@ -388,13 +393,14 @@
             <inout_port name="waypoints" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
         </Action>
         <Action ID="TransformPose">
+            <input_port name="in_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="pitch" type="double"/>
             <input_port name="roll" type="double"/>
             <input_port name="x" type="double"/>
             <input_port name="y" type="double"/>
             <input_port name="yaw" type="double"/>
             <input_port name="z" type="double"/>
-            <inout_port name="pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <output_port name="out_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Condition ID="TrayFull">
             <input_port name="service_name" type="std::string" default="manipulation/tray/get_capacity">name of the ROS service</input_port>

@@ -22,9 +22,10 @@ public:
   {
     BT::PortsList ports = BT::RosActionNode<ActionType>::providedPorts();
     ports["action_name"].setDefaultValue("manipulation/make_pickup_plan");
-    ports.insert({ BT::InputPort<geometry_msgs::PoseStamped>("robot_pose"),              //
-                   BT::InputPort<std::vector<moveit_msgs::CollisionObject>>("objects"),  //
-                   BT::InputPort<moveit_msgs::CollisionObject>("surface"),               //
+    ports.insert({ BT::InputPort<geometry_msgs::PoseStamped>("robot_pose"),                 //
+                   BT::InputPort<std::vector<geometry_msgs::PoseStamped>>("pickup_poses"),  //
+                   BT::InputPort<std::vector<moveit_msgs::CollisionObject>>("objects"),     //
+                   BT::InputPort<moveit_msgs::CollisionObject>("surface"),                  //
                    BT::OutputPort<std::vector<thorp_msgs::PickupLocation>>("pickup_plan") });
     return ports;
   }
@@ -37,6 +38,7 @@ private:
 
     GoalType goal;
     goal.robot_pose = *getInput<geometry_msgs::PoseStamped>("robot_pose");
+    goal.pickup_poses = *getInput<std::vector<geometry_msgs::PoseStamped>>("pickup_poses");
     goal.objects = *getInput<std::vector<moveit_msgs::CollisionObject>>("objects");
     goal.surface = *getInput<moveit_msgs::CollisionObject>("surface");
 

@@ -22,15 +22,16 @@ class PickupPlanner(actionlib.SimpleActionServer):
     def __init__(self):
         super().__init__('manipulation/make_pickup_plan', MakePickupPlanAction, self.execute_cb, False)
 
+        self.viz = Visualization()
         self.poses_viz = rospy.Publisher('manipulation/pickup_poses', geometry_msgs.PoseArray, queue_size=1)
         self.start()
 
     def execute_cb(self, goal):
-        pickup_poses, closest_pose = self.surface_sides_poses(goal.robot_pose, goal.surface, goal.pickup_dist)
-        pickup_locs = self.group_objects(goal.robot_pose, goal.objects, pickup_poses, goal.planning_frame,
+        pickup_locs = self.group_objects(goal.robot_pose, goal.pickup_poses, goal.objects, goal.planning_frame,
                                          goal.max_arm_reach,
                                          - (goal.approach_dist - goal.pickup_dist),
                                          - (goal.detach_dist - goal.pickup_dist))
+        print(len(goal.pickup_poses), len(pickup_locs))
         pickup_plan = self.make_pickup_plan(goal.robot_pose, pickup_locs)
         result = MakePickupPlanResult()
         result.pickup_plan.travelled_dist = self.traveled_dist(goal.robot_pose, pickup_plan)
@@ -39,7 +40,7 @@ class PickupPlanner(actionlib.SimpleActionServer):
 
     def surface_sides_poses(self, robot_pose, surface, distance):
         """
-        Calculate the four locations around a rectangular surface at a given distance.
+        Calculate the four locations around a rectangular surface at a given distance.  TODO DEL   keep old as deprecated for smach
         :param robot_pose: current robot pose, expected on map frame
         :param surface: pickup surface as a CollisionObject
         :param distance:
@@ -80,7 +81,7 @@ class PickupPlanner(actionlib.SimpleActionServer):
         self.poses_viz.publish(pose_array)
         return sides_poses, closest_pose
 
-    def group_objects(self, robot_pose, objects, pickup_poses, planning_frame, max_arm_reach, approach_offset,
+    def group_objects(self, robot_pose, pickup_poses, objects, planning_frame, max_arm_reach, approach_offset,
                       detach_offset):
         """
         Group detected objects reachable from each pickup location (that is, within arm's reach).
@@ -88,8 +89,8 @@ class PickupPlanner(actionlib.SimpleActionServer):
         If an object can be reached from two of the remaining locations, we choose
         the one that places the object closer to the robot arm.
         :param robot_pose:
-        :param objects:
         :param pickup_poses: list of pickup locations on map frame
+        :param objects:
         :param max_arm_reach:
         :param planning_frame:
         :param approach_offset:
@@ -99,7 +100,7 @@ class PickupPlanner(actionlib.SimpleActionServer):
         bfp_to_arm_tf = Transform.create(TF2().lookup_transform('base_footprint', planning_frame))  # base to arm tf
         map_to_fbp_tf = Transform.create(TF2().lookup_transform('map', 'base_footprint'))  # map to base
         pick_locs = []
-        for name, pickup_pose in pickup_poses.items():
+        for pickup_pose in pickup_poses:
             # current distance from the robot (stored but not used by now)
             dist_from_robot = distance_2d(pickup_pose, robot_pose)
             # apply base to arm tf, so we get arm pose on map reference for each location
@@ -125,7 +126,7 @@ class PickupPlanner(actionlib.SimpleActionServer):
             translate_pose(approach_pose, approach_offset, 'x')
             detach_pose = deepcopy(pickup_pose)
             translate_pose(detach_pose, detach_offset, 'x')
-            pick_locs.append(PickupLocation(name, dist_from_robot, objs, arm_pose_mrf,
+            pick_locs.append(PickupLocation(str(len(pick_locs) + 1), dist_from_robot, objs, arm_pose_mrf,
                                             approach_pose, pickup_pose, detach_pose))
         if not pick_locs:
             rospy.loginfo("No reachable objects")
@@ -193,21 +194,29 @@ class PickupPlanner(actionlib.SimpleActionServer):
             pick_locs.remove(ploc)
 
     def viz_pickup_plan(self, pick_locs, max_arm_reach):
-        Visualization().clear_markers()
+        self.viz.clear_markers()
+        pose_array = geometry_msgs.PoseArray()  # picking poses visualization
         for i, pl in enumerate(pick_locs):
+            if i == 0:
+                pose_array.header = deepcopy(pl.pickup_pose.header)
+            pose_array.poses.append(deepcopy(pl.pickup_pose.pose))
+            pose_array.poses[-1].position.z += 0.025  # raise over costmap to make it visible  TODO or floor level
+
             color = Visualization.rand_color(0.5)
-            Visualization().add_disc_marker(pl.arm_pose, [max_arm_reach * 2.0] * 2, color)
+            self.viz.add_disc_marker(pl.arm_pose, [max_arm_reach * 2.0] * 2, color)
 
             text_pose = deepcopy(pl.arm_pose)
             text_pose.pose.position.z += 0.15
-            Visualization().add_text_marker(text_pose, f"{i + 1} {pl.name} {len(pl.objects)}", 0.2, color)
+            self.viz.add_text_marker(text_pose, f"{i + 1} {pl.name} {len(pl.objects)}", 0.2, color)
 
             for obj in pl.objects:
                 text_pose = deepcopy(obj.pose)
                 text_pose.pose.position.z += 0.05
-                Visualization().add_text_marker(text_pose, pl.name + ' ' + obj.name, 0.1, color)
+                self.viz.add_text_marker(text_pose, pl.name + ' ' + obj.name, 0.1, color)
 
-        Visualization().publish_markers()
+        self.poses_viz.publish(pose_array)
+        self.viz.publish_markers()
+
 
     def make_pickup_plan(self, robot_pose, pickup_locs):
         """
@@ -219,15 +228,15 @@ class PickupPlanner(actionlib.SimpleActionServer):
             closest_ploc = None
             closest_dist = float('inf')
             for ploc in pickup_locs:
-                dist = distance_2d(ploc.approach_pose, robot_pose)
+                dist = distance_2d(ploc.pickup_pose, robot_pose)
                 if dist < closest_dist:
                     closest_dist = dist
                     closest_ploc = ploc
             pickup_locs.remove(closest_ploc)
             pickup_plan.append(closest_ploc)
-            robot_pose = closest_ploc.approach_pose
-            Visualization().add_text_marker(closest_ploc.approach_pose, str(len(pickup_plan)) + ' ' + str(closest_dist))
-            Visualization().publish_markers()
+            robot_pose = closest_ploc.pickup_pose
+            self.viz.add_text_marker(closest_ploc.pickup_pose, str(len(pickup_plan)) + ' ' + str(closest_dist))
+        self.viz.publish_markers()
         return pickup_plan
 
 

@@ -24,7 +24,8 @@ public:
              BT::InputPort<double>("roll"),   //
              BT::InputPort<double>("pitch"),  //
              BT::InputPort<double>("yaw"),    //
-             BT::BidirectionalPort<geometry_msgs::PoseStamped>("pose") };
+             BT::InputPort<geometry_msgs::PoseStamped>("in_pose"),
+             BT::OutputPort<geometry_msgs::PoseStamped>("out_pose") };
   }
 
 private:
@@ -42,11 +43,11 @@ private:
     double roll = o_roll ? *o_roll : 0.0;
     double pitch = o_pitch ? *o_pitch : 0.0;
     double yaw = o_yaw ? *o_yaw : 0.0;
-    auto pose = *getInput<geometry_msgs::PoseStamped>("pose");
+    auto pose = *getInput<geometry_msgs::PoseStamped>("in_pose");
     geometry_msgs::TransformStamped tf =
         ttk::toTransform(ttk::createPose(x, y, z, roll, pitch, yaw, pose.header.frame_id));
     tf2::doTransform(pose, pose, tf);
-    setOutput("pose", pose);
+    setOutput("out_pose", pose);
     return BT::NodeStatus::SUCCESS;
   }
 

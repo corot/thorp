@@ -7,6 +7,10 @@
 
 namespace thorp::bt::actions
 {
+/**
+ * Create a nav_msgs/Path msg with a single pose.
+ * @return  SUCCESS always
+ */
 class PoseAsPath : public BT::SyncActionNode
 {
 public:
