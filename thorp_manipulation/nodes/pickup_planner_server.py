@@ -16,7 +16,8 @@ from thorp_msgs.msg import ObjectToPickup, PickupPlan, PickupLocation, MakePicku
 
 class PickupPlanner(actionlib.SimpleActionServer):
     """
-    Group objects into pickup locations and sort them to make a pickup plan
+    Group objects into pickup locations and sort them to make a pickup plan.
+    If no pickup poses are provided, we create 4 on the surface sides
     """
 
     def __init__(self):
@@ -27,11 +28,11 @@ class PickupPlanner(actionlib.SimpleActionServer):
         self.start()
 
     def execute_cb(self, goal):
-        pickup_locs = self.group_objects(goal.robot_pose, goal.pickup_poses, goal.objects, goal.planning_frame,
+        pickup_poses = goal.pickup_poses or self.surface_sides_poses(goal.robot_pose, goal.surface, goal.pickup_dist)
+        pickup_locs = self.group_objects(goal.robot_pose, pickup_poses, goal.objects, goal.planning_frame,
                                          goal.max_arm_reach,
                                          - (goal.approach_dist - goal.pickup_dist),
                                          - (goal.detach_dist - goal.pickup_dist))
-        print(len(goal.pickup_poses), len(pickup_locs))
         pickup_plan = self.make_pickup_plan(goal.robot_pose, pickup_locs)
         result = MakePickupPlanResult()
         result.pickup_plan.travelled_dist = self.traveled_dist(goal.robot_pose, pickup_plan)
@@ -40,11 +41,11 @@ class PickupPlanner(actionlib.SimpleActionServer):
 
     def surface_sides_poses(self, robot_pose, surface, distance):
         """
-        Calculate the four locations around a rectangular surface at a given distance.  TODO DEL   keep old as deprecated for smach
+        Calculate the four locations around a rectangular surface at a given distance.
         :param robot_pose: current robot pose, expected on map frame
         :param surface: pickup surface as a CollisionObject
         :param distance:
-        :return: poses, closest_pose; all on map frame
+        :return: poses on map frame
         """
         length, width, _ = surface.primitives[0].dimensions
         p_x = distance + length / 2.0
@@ -79,7 +80,7 @@ class PickupPlanner(actionlib.SimpleActionServer):
         pose_array.poses.append(deepcopy(closest_pose.pose))
         pose_array.poses[-1].position.z += 0.05  # remark the closest pose with a double arrow
         self.poses_viz.publish(pose_array)
-        return sides_poses, closest_pose
+        return sides_poses
 
     def group_objects(self, robot_pose, pickup_poses, objects, planning_frame, max_arm_reach, approach_offset,
                       detach_offset):
