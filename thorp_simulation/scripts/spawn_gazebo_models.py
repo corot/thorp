@@ -19,7 +19,7 @@ from math import pi, copysign, sqrt
 from itertools import product
 
 from nav_msgs.msg import MapMetaData
-from mbf_msgs.srv import CheckPose, CheckPoseRequest
+from mbf_msgs.srv import CheckPose, CheckPoseRequest, CheckPoseResponse
 from gazebo_msgs.srv import SpawnModel, DeleteModel
 
 from thorp_toolkit.geometry import TF2, distance_2d, create_2d_pose, create_3d_pose, pose2d2str
@@ -138,7 +138,8 @@ def close_to_obstacle(x, y, theta, clearance):
     resp = close_to_obstacle.check_srv(pose=create_2d_pose(x, y, theta, 'map'),
                                        safety_dist=clearance - close_to_obstacle.robot_radius,
                                        costmap=CheckPoseRequest.GLOBAL_COSTMAP)
-    if resp.state > 0 or resp.cost > 0:
+    if resp.state > CheckPoseResponse.FREE or resp.cost > 0:
+        # note that we also reject poses that return INSCRIBED, LETHAL, UNKNOWN and OUTSIDE
         return True
     return False
 
@@ -273,11 +274,11 @@ def spawn_cats(use_preferred_locs=False):
 def spawn_rockets():
     # spawn 10 x 10 rockets
     rocket_index = 1
-    for i, j in product(range(-10, 0), range(10)):
+    for i, j in product(range(10), range(10)):
         spawn_model(
             name='rocket' + str(rocket_index),
             model=models['rocket'],
-            pose=create_2d_pose(i, j, 0),
+            pose=create_2d_pose(i/10 - 40, j/10 - 40, 0),
             frame='ground_plane::link'
         )
         rocket_index += 1
