@@ -2056,8 +2056,7 @@ Visualization Manager:
           Marker Topic: /object_detection/visual_markers
           Name: Object Names
           Namespaces:
-            b_volumes: true
-            labels: true
+            {}
           Queue Size: 100
           Value: true
         - Alpha: 1
@@ -2245,11 +2244,28 @@ Visualization Manager:
           Axes Length: 0.30000001192092896
           Axes Radius: 0.009999999776482582
           Class: rviz/PoseArray
+          Color: 237; 212; 0
+          Enabled: true
+          Head Length: 0.07000000029802322
+          Head Radius: 0.029999999329447746
+          Name: Table side poses
+          Queue Size: 10
+          Shaft Length: 0.23000000417232513
+          Shaft Radius: 0.009999999776482582
+          Shape: Arrow (3D)
+          Topic: /object_gatherer/poses_around_table
+          Unreliable: false
+          Value: true
+        - Alpha: 1
+          Arrow Length: 0.30000001192092896
+          Axes Length: 0.30000001192092896
+          Axes Radius: 0.009999999776482582
+          Class: rviz/PoseArray
           Color: 255; 25; 0
           Enabled: true
           Head Length: 0.07000000029802322
           Head Radius: 0.029999999329447746
-          Name: Picking poses
+          Name: Pick up poses
           Queue Size: 10
           Shaft Length: 0.23000000417232513
           Shaft Radius: 0.009999999776482582
@@ -2262,8 +2278,7 @@ Visualization Manager:
           Marker Topic: /pickup_planner/visual_markers
           Name: Picking plan
           Namespaces:
-            gp_marker: true
-            text_marker: true
+            {}
           Queue Size: 100
           Value: true
         - Class: rviz/MarkerArray
@@ -2361,8 +2376,7 @@ Visualization Manager:
           Marker Topic: /exploration/room_sequence_planning/room_sequence_marker
           Name: Room Sequence Plan
           Namespaces:
-            room_sequence_checkpoints: true
-            room_sequence_rooms: true
+            {}
           Queue Size: 100
           Value: true
         - Class: rviz/Image
@@ -2382,7 +2396,7 @@ Visualization Manager:
           Marker Topic: /object_gatherer/waypoints
           Name: Waypoints
           Namespaces:
-            gp_marker: true
+            {}
           Queue Size: 100
           Value: true
       Enabled: true
@@ -2658,13 +2672,7 @@ Visualization Manager:
                   Marker Topic: /move_base_flex/TEBPlanner/teb_markers
                   Name: Markers
                   Namespaces:
-                    InfeasibleRobotPose/footprint: true
-                    InfeasibleRobotPose/model: true
-                    LineObstacles: true
-                    PointObstacles: true
-                    PolyObstacles: true
-                    RobotFootprintModel: true
-                    ViaPoints: true
+                    {}
                   Queue Size: 100
                   Value: true
               Enabled: true

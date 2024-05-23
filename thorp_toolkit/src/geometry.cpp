@@ -133,6 +133,27 @@ geometry_msgs::Point toPoint(const geometry_msgs::Point32& point32)
   return point;
 }
 
+geometry_msgs::PoseArray toPoseArray(const std::vector<geometry_msgs::PoseStamped>& poses, double z_delta,
+                                     const std::string& default_frame_id)
+{
+  geometry_msgs::PoseArray pa;
+  if (poses.empty())
+  {
+    pa.header.stamp = ros::Time::now();
+    pa.header.frame_id = default_frame_id;
+  }
+  else
+  {
+    pa.header = poses.front().header;
+    for (const auto& pose : poses)
+    {
+      pa.poses.push_back(pose.pose);
+      if (z_delta != 0.0)
+        pa.poses.back().position.z += z_delta;
+    }
+  }
+  return pa;
+}
 
 std::string toStr3D(const geometry_msgs::Vector3& vector)
 {

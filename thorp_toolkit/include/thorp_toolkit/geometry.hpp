@@ -15,6 +15,7 @@
 #include <geometry_msgs/Pose2D.h>
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Point32.h>
+#include <geometry_msgs/PoseArray.h>
 #include <geometry_msgs/PoseStamped.h>
 
 
@@ -711,6 +712,9 @@ geometry_msgs::PoseStamped createPose(double x, double y, double z, double roll,
 geometry_msgs::Transform toTransform(const geometry_msgs::Pose& pose);
 
 geometry_msgs::TransformStamped toTransform(const geometry_msgs::PoseStamped& pose);
+
+geometry_msgs::PoseArray toPoseArray(const std::vector<geometry_msgs::PoseStamped>& poses, double z_delta = 0.0,
+                                     const std::string& default_frame_id = "map");
 
 /**
  * Extract a 2D pose from a geometry_msgs/Pose msg.
