@@ -65,6 +65,7 @@
   <group if="$(eval executive == 'bt')">
     <include file="$(find thorp_bt_cpp)/launch/bt_runner.launch">
       <arg name="app_name" value="$(arg app_name)"/>
+      <arg name="start_delay" value="$(arg start_delay)"/>
       <arg name="publish_bt" value="$(arg viz_executive)"/>
     </include>
 

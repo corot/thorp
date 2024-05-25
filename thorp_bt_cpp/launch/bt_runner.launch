@@ -3,7 +3,7 @@
   <arg name="respawn" default="false"/>
 
   <arg name="app_name"/>
-
+  <arg name="start_delay" default="0.0"/>
   <arg name="publish_bt" default="false"/>
 
   <arg name="debug"          value="$(optenv DEBUG_BT false)" />
@@ -13,6 +13,7 @@
   <node pkg="thorp_bt_cpp" type="bt_runner_node" name="$(arg app_name)"
         output="$(arg output)" respawn="$(arg respawn)" launch-prefix="$(arg launch_prefix)">
     <param name="app_name" value="$(arg app_name)"/>
+    <param name="start_delay" value="$(arg start_delay)"/>
     <param name="publish_bt" value="$(arg publish_bt)"/>
     <param name="bt_filepath" value="$(find thorp_bt_cpp)/bt/$(arg app_name).xml"/>
     <param name="nodes_filepath" value="$(find thorp_bt_cpp)/bt/node_models.xml"/>

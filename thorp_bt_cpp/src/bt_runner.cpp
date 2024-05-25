@@ -80,6 +80,8 @@ void Runner::run()
     return;
   }
 
+  ros::Duration(pnh_.param("start_delay", 0.0)).sleep();
+
   ros::Time time_start = ros::Time::now();
   ros::Rate rate(tick_rate_);
   auto status = BT::NodeStatus::RUNNING;
