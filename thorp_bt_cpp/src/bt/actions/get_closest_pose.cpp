@@ -8,7 +8,8 @@ namespace ttk = thorp::toolkit;
 namespace thorp::bt::actions
 {
 /**
- * Return the closest pose to a target one.
+ * Return the closest pose from a list to a target one.
+ * Returns FAILURE if the list is empty, SUCCESS otherwise.
  */
 class GetClosestPose : public BT::SyncActionNode
 {
@@ -28,9 +29,14 @@ private:
   BT::NodeStatus tick() override
   {
     const auto poses = *getInput<std::vector<geometry_msgs::PoseStamped>>("poses");
-    const auto target_pose = *getInput<geometry_msgs::PoseStamped>("target_pose");
+    if (poses.empty())
+    {
+      ROS_WARN_STREAM_NAMED(name(), "Pose list is empty");
+      return BT::NodeStatus::FAILURE;
+    }
 
     // Find the closest pose to the target one
+    const auto target_pose = *getInput<geometry_msgs::PoseStamped>("target_pose");
     geometry_msgs::PoseStamped closest_pose;
     double closest_dist = std::numeric_limits<double>::infinity();
     for (auto& pose : poses)
