@@ -17,6 +17,7 @@
             <input_port name="pose1" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="pose2" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Condition>
+        <Condition ID="BumperPressed"/>
         <Condition ID="CannonHasAmmo"/>
         <Action ID="ClearCostmaps">
             <input_port name="service_name" type="std::string" default="move_base_flex/clear_costmaps">name of the ROS service</input_port>
@@ -66,6 +67,7 @@
             <output_port name="table" type="rail_manipulation_msgs::SegmentedObject_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="table_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
+        <Action ID="DisableSafetyController"/>
         <Action ID="DragAndDrop">
             <input_port name="action_name" type="std::string" default="drag_and_drop">name of the ROS action client</input_port>
             <input_port name="objects" type="std::vector&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
@@ -75,6 +77,7 @@
             <output_port name="pickup_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="place_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
+        <Action ID="EnableSafetyController"/>
         <Action ID="ExePath">
             <input_port name="action_name" type="std::string" default="move_base_flex/exe_path">name of the ROS action client</input_port>
             <input_port name="controller" type="std::string"/>

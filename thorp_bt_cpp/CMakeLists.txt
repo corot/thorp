@@ -6,6 +6,7 @@ set(PKG_DEPS
       roscpp
       actionlib
       geometry_msgs
+      kobuki_msgs
       mbf_msgs
       nav_msgs
       std_msgs

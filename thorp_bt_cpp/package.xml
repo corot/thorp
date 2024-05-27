@@ -19,6 +19,7 @@
     <depend>std_srvs</depend>
     <depend>nav_msgs</depend>
     <depend>mbf_msgs</depend>
+    <depend>kobuki_msgs</depend>
     <depend>geometry_msgs</depend>
     <depend>jsk_rviz_plugins</depend>
     <depend>ipa_building_msgs</depend>
