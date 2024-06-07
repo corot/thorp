@@ -130,6 +130,7 @@
         </Action>
         <Action ID="GetPosesAroundTable">
             <input_port name="distance" type="double"/>
+            <input_port name="split_long_sides" type="bool" default="0">Create two poses on sides longer than max_arm_reach x 2</input_port>
             <input_port name="table" type="rail_manipulation_msgs::SegmentedObject_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="table_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="table_side_poses" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>

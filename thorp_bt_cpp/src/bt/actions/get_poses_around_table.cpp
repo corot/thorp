@@ -42,6 +42,7 @@ public:
     return { BT::InputPort<rail_manipulation_msgs::SegmentedObject>("table"),  //
              BT::InputPort<geometry_msgs::PoseStamped>("table_pose"),          //
              BT::InputPort<double>("distance"),                                //
+             BT::InputPort<bool>("split_long_sides", false, "Create two poses on sides longer than max_arm_reach x 2"),
              BT::OutputPort<std::vector<geometry_msgs::PoseStamped>>("table_side_poses") };
   }
 
@@ -56,6 +57,7 @@ private:
   {
     const auto table = *getInput<rail_manipulation_msgs::SegmentedObject>("table");
     const auto table_pose = *getInput<geometry_msgs::PoseStamped>("table_pose");
+    const auto split_long = *getInput<bool>("split_long_sides");
     const auto distance = *getInput<double>("distance");
 
     // Create 0, 1 or 2 poses for each of the four sides around the table
@@ -70,7 +72,7 @@ private:
       if (l < min_pickup_side_)
         return {};
       // one at the center of the side
-      if (l < max_arm_reach_ * 2.0)
+      if (l < max_arm_reach_ * 2.0 || !split_long)
         return { ttk::createPose(x, y, t, "table_frame") };
       // split the side into two poses
       return { ttk::createPose(x == 0.0 ? -l / 4.0 : x, y == 0.0 ? -l / 4.0 : y, t, "table_frame"),
@@ -107,7 +109,6 @@ private:
 
     valid_poses_pub_.publish(ttk::toPoseArray(poses, 0.01, table_tf.header.frame_id));
     blocked_poses_pub_.publish(ttk::toPoseArray(removed_poses, 0.01, table_tf.header.frame_id));
-    ros::Duration(10).sleep();
 
     setOutput("table_side_poses", poses);
 
