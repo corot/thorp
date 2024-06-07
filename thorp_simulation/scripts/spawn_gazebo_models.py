@@ -24,22 +24,55 @@ from gazebo_msgs.srv import SpawnModel, DeleteModel
 
 from thorp_toolkit.geometry import TF2, distance_2d, create_2d_pose, create_3d_pose, pose2d2str
 
+# name: surface name
+# size: x, y dimensions
+# objs: number of tabletop objects to spawn
+# dist: distributions models (one of 'uniform', 'diagonal', 'xor', '+/+')
+# count: number of surfaces of this type to spawn
+# frame: reference frame in gazebo (optional)
 surfaces = [{'name': 'doll_table',
              'size': (0.45, 0.45),
              'objs': 4,
-             'dist': 'uniform',  # different distributions: 'uniform', 'diagonal', 'xor', '+/+'
+             'dist': 'uniform',
              'count': 2},
             {'name': 'lack_table',
              'size': (0.55, 0.55),
              'objs': 6,
-             'dist': 'uniform',  # different distributions: 'uniform', 'diagonal', 'xor', '+/+'
+             'dist': 'uniform',
              'count': 2},
             {'name': 'lack_table_x15',
              'size': (0.825, 0.55),
              'objs': 10,
-             'dist': 'uniform',  # different distributions: 'uniform', 'diagonal', 'xor', '+/+'
+             'dist': 'uniform',
              'count': 1}
             ]
+
+small_house_surfaces = [{'name': 'ShoeRack',
+                         'size': (0.86, 0.26),
+                         'objs': 4,
+                         'dist': 'uniform',
+                         'count': 0,
+                         'frame': 'ShoeRack_01_001::aws_robomaker_residential_ShoeRack_01::link'},
+                        {'name': 'CoffeeTable',
+                         'size': (1.33, 0.67),
+                         'objs': 6,
+                         'dist': 'uniform',
+                         'count': 0,
+                         'frame': 'CoffeeTable_01_001::aws_robomaker_residential_CoffeeTable_01::link'},
+                        {'name': 'TVCabinet',
+                         'size': (0.5, 2.0),
+                         'objs': 10,
+                         'dist': 'uniform',
+                         'count': 0,
+                         'frame': 'TVCabinet_01_001::aws_robomaker_residential_TVCabinet_01::link'},
+                        {'name': 'BalconyTable',
+                         'size': (0.56, 0.56),
+                         'objs': 4,
+                         'dist': 'uniform',
+                         'count': 0,
+                         'frame': 'BalconyTable_01_001::aws_robomaker_residential_BalconyTable_01::link'}
+                        ]
+
 objects = ['wood_cube_2_5cm',
            'tower',
            'cube',
@@ -181,11 +214,12 @@ def spawn_objects(surf, surf_index, preferred_obj=None):
             continue
         added_poses.append(pose)
         model_name = '_'.join([surf['name'], str(surf_index), obj_name, str(obj_index)])
+        model_frame = surf['frame'] if 'frame' in surf else surf['name'] + '_' + str(surf_index) + '::link'
         success = spawn_model(
             name=model_name,
             model=models[obj_name],
             pose=pose,
-            frame=surf['name'] + '_' + str(surf_index) + '::link'
+            frame=model_frame
         )
         if success:
             spawned[obj_name] += 1
@@ -334,9 +368,13 @@ if __name__ == "__main__":
     random.seed()
     use_preferred_locs = len(sys.argv) > 2 and '-l' in sys.argv
     rospy.loginfo("Spawning %s in %s locations", sys.argv[1], 'preferred' if use_preferred_locs else 'random')
-    if sys.argv[1] == 'objects':
+    if sys.argv[1] == 'fun_house_objects':
         spawn_surfaces(use_preferred_locs)
-        rospy.loginfo("Spawned objects:\n  " + '\n  '.join('{}: {}'.format(k, v) for k, v in spawned.items()))
+        rospy.loginfo("Spawned objects:\n  " + '\n  '.join(f'{k}: {v}' for k, v in spawned.items()))
+    elif sys.argv[1] == 'small_house_objects':
+        for surface in small_house_surfaces:
+            spawn_objects(surface, 0)
+        rospy.loginfo("Spawned objects:\n  " + '\n  '.join(f'{k}: {v}' for k, v in spawned.items()))
     elif sys.argv[1] == 'cats':
         spawn_cats(use_preferred_locs)
         spawn_rockets()
