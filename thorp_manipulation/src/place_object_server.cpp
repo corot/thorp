@@ -183,7 +183,7 @@ int32_t PlaceObjectServer::makePlaceLocations(const geometry_msgs::PoseStamped& 
     l.post_place_retreat.min_distance = 0.01;
     l.post_place_retreat.desired_distance = 0.05;
 
-    l.post_place_posture.joint_names.push_back("gripper_joint");
+    l.post_place_posture.joint_names.emplace_back("gripper_joint");
     l.post_place_posture.points.resize(1);
     l.post_place_posture.points[0].positions.push_back(gripper_open);
 

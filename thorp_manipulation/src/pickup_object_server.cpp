@@ -93,7 +93,7 @@ int32_t PickupObjectServer::pickup(const std::string& obj_name, const std::strin
   }
 
   ROS_INFO("[pickup object] Picking object '%s' with size %.1f x %.1f x %.1f cm at %s...", obj_name.c_str(),
-           obj_size.x * 100, obj_size.y * 100, obj_size.z * 100, ttk::toCStr2D(obj_pose.pose.position));
+           obj_size.x * 100, obj_size.y * 100, obj_size.z * 100, ttk::toCStr3D(obj_pose.pose.position));
 
   // Prepare grasps
   std::vector<moveit_msgs::Grasp> grasps;
@@ -166,13 +166,13 @@ int32_t PickupObjectServer::makeGrasps(const geometry_msgs::PoseStamped& obj_pos
     g.post_grasp_retreat.min_distance = 0.025;
     g.post_grasp_retreat.desired_distance = 0.05;
 
-    g.pre_grasp_posture.joint_names.push_back("gripper_joint");
+    g.pre_grasp_posture.joint_names.emplace_back("gripper_joint");
     g.pre_grasp_posture.points.resize(1);
     g.pre_grasp_posture.points[0].positions.push_back(gripper_open);
 
     // As we grasp the object "blindly", just in the center, we use the maximum possible value as the opened gripper
     // position and the dimension more aligned with the arm yaw, minus a "tightening" factor, as the closed position
-    g.grasp_posture.joint_names.push_back("gripper_joint");
+    g.grasp_posture.joint_names.emplace_back("gripper_joint");
     g.grasp_posture.points.resize(1);
     g.grasp_posture.points[0].positions.push_back(gripperClosing(g.grasp_pose, obj_pose, obj_size, tightening));
     g.grasp_posture.points[0].effort.push_back(max_effort);

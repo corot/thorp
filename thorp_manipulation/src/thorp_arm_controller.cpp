@@ -48,13 +48,11 @@ bool ThorpArmController::validateTargetPose(geometry_msgs::PoseStamped& target, 
     target_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("target_pose", 1, true);
   }
 
-  // We always work relative to the arm base, so we can calculate meaningful roll/pitch/yaw angles; as
-  // given values are ignored, replace them with an identity quaternion to allow position-only targets
+  // We always work relative to the arm base, so we can calculate meaningful roll/pitch/yaw angles
   if (target.header.frame_id != arm_ref_frame)
   {
     // Target's timestamp is irrelevant, and can trigger a TransformException if very recent; zero it!
     target.header.stamp = ros::Time(0.0);
-    tf::quaternionTFToMsg(tf::createIdentityQuaternion(), target.pose.orientation);
     if (!ttk::TF2::instance().transformPose(arm_ref_frame, target, target))
       return false;
   }
@@ -71,7 +69,7 @@ bool ThorpArmController::validateTargetPose(geometry_msgs::PoseStamped& target, 
   double d = sqrt(x*x + y*y + z*z);
   if (d > MAX_DISTANCE)
   {
-    // Maximum reachable distance by the turtlebot arm is 30 cm, but above twenty something the arm makes
+    // Maximum reachable distance by the turtlebot arm is 30 cm, but above twenty-something the arm makes
     // strange and ugly contortions, and overcomes the reduced elbow lower limit we have to operate always
     // with the same gripper orientation
     // XXX solved constraining also both shoulder limits (180 deg. operation); we get back the 30 cm limit
@@ -94,8 +92,8 @@ bool ThorpArmController::validateTargetPose(geometry_msgs::PoseStamped& target, 
   double pitch_delta1 = (z > 0.0 ? -M_PI_2 * (z/MAX_HEIGHT) : 0.0);
   double pitch_delta2 = ((attempt%2)*2 - 1) * (std::ceil(attempt/2.0)*0.05);  // +/- increasing deltas
   ROS_DEBUG("[arm controller] Pitch high target correction: %f;  random variation: %f", pitch_delta1, pitch_delta2);
-
-  double rp = (M_PI_2 - std::asin((d - 0.1)/0.22)) + pitch_delta1 + pitch_delta2;
+  double d2d = sqrt(x*x + y*y);
+  double rp = (M_PI_2 - std::asin((d2d - 0.1)/0.22)) + pitch_delta1 + pitch_delta2;
   double ry = ttk::heading(target.pose);
   double rr = 0.0;
   target.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(rr, rp, ry);
@@ -115,8 +113,8 @@ bool ThorpArmController::validateTargetPose(geometry_msgs::PoseStamped& target, 
   if (compensate_gripper_asymmetry)
   {
     // Slightly increase the yaw because only the right finger opens, and so there's more grasping room on the right
-    target.pose.position.x = d*std::cos(ry + gripper_asymmetry_yaw_delta);
-    target.pose.position.y = d*std::sin(ry + gripper_asymmetry_yaw_delta);
+    target.pose.position.x = d2d*std::cos(ry + gripper_asymmetry_yaw_delta);
+    target.pose.position.y = d2d*std::sin(ry + gripper_asymmetry_yaw_delta);
     target.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(rr, rp, ry + gripper_asymmetry_yaw_delta);
     ROS_DEBUG("[arm controller] Compensate gripper asymmetry increasing yaw by %frad", gripper_asymmetry_yaw_delta);
   }
@@ -124,12 +122,13 @@ bool ThorpArmController::validateTargetPose(geometry_msgs::PoseStamped& target, 
   if (compensate_distance_fall_short)
   {
     // Slightly increase distance... no justification, really. It just put the target in the center of the gripper!
+    // TODO: I guess that has to do with the bug on compensate_gripper_asymmetry (using d instead of d2d)
     target.pose.position.x += fall_short_distance_delta*std::cos(ry);
     target.pose.position.y += fall_short_distance_delta*std::sin(ry);
     ROS_DEBUG("[arm controller] Compensate distance fall short increasing distance by %fm", fall_short_distance_delta);
   }
 
-  ROS_DEBUG("[arm controller] Target pose [%s] [d: %.2f]", ttk::toCStr3D(target.pose), d);
+  ROS_DEBUG("[arm controller] Target pose [%s] [d: %.2f] [d2d: %.2f]", ttk::toCStr3D(target.pose), d, d2d);
   target_pose_pub.publish(target);
 
   return true;

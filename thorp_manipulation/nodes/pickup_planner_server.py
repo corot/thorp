@@ -98,6 +98,7 @@ class PickupPlanner(actionlib.SimpleActionServer):
         :param detach_offset:
         :return: pickup locations, a list of PickupLocation objects
         """
+        rospy.loginfo("Grouping %d objects into %d pickup poses", len(objects), len(pickup_poses))
         bfp_to_arm_tf = Transform.create(TF2().lookup_transform('base_footprint', planning_frame))  # base to arm tf
         map_to_fbp_tf = Transform.create(TF2().lookup_transform('map', 'base_footprint'))  # map to base
         pick_locs = []
