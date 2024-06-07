@@ -7,80 +7,80 @@
   <include path="pickup_objects.xml"/>
 
   <BehaviorTree ID="cleanup_table">
-    <Repeat num_cycles="2"
-            _description="Recheck that we left no objects behind">
-      <Fallback>
-        <Sequence>
-          <DetectObjects action_name="object_detection"
-                         object_types=""
-                         server_timeout="5.000000"
-                         objects="{objects}"
-                         surface="{surface}"/>
-          <Inverter>
-            <ObjectsDetected given_up_count="{given_up_count}"
-                             ignore_given_up="true"
-                             objects="{objects}"/>
-          </Inverter>
-          <ClearRailMarkers service_name="rail_segmentation/clear_markers"
-                            timeout="100"/>
-          <ClearPlanningScene keep_tray="true"
-                              service_name="manipulation/clear_planning_scene"
+    <Sequence>
+      <ReadDoubleParam key="pickup_dist_to_table"
+                       negate=""
+                       value="{pickup_dist_to_table}"/>
+      <GetPosesAroundTable distance="{pickup_dist_to_table}"
+                           split_long_sides="true"
+                           table="{table}"
+                           table_pose="{table_pose}"
+                           table_side_poses="{pickup_poses}"/>
+      <Repeat num_cycles="2"
+              _description="Recheck that we left no objects behind">
+        <Fallback>
+          <Sequence>
+            <DetectObjects action_name="object_detection"
+                           object_types=""
+                           server_timeout="5.000000"
+                           objects="{objects}"
+                           surface="{surface}"/>
+            <Inverter>
+              <ObjectsDetected given_up_count="{given_up_count}"
+                               ignore_given_up="true"
+                               objects="{objects}"/>
+            </Inverter>
+            <ClearRailMarkers service_name="rail_segmentation/clear_markers"
                               timeout="100"/>
-        </Sequence>
-        <Sequence>
-          <GetRobotPose timeout="1"
-                        error="{error}"
-                        robot_pose="{robot_pose}"/>
-          <MakePickupPlan action_name="manipulation/make_pickup_plan"
-                          objects="{objects}"
-                          pickup_poses="{pickup_poses}"
-                          robot_pose="{robot_pose}"
-                          server_timeout="5.000000"
-                          surface="{surface}"
-                          pickup_plan="{pickup_plan}"/>
-          <ForEachPickupLocation element="{pickup_location}"
-                                 list="{pickup_plan}">
-            <Sequence>
-              <ExpandPickupLocation pickup_location="{pickup_location}"
-                                    approach_pose="{approach_pose}"
-                                    detach_pose="{new_detach_pose}"
-                                    pickup_pose="{pickup_pose}"/>
-              <Fallback>
-                <AreSamePose angle_tolerance="0.1"
-                             dist_tolerance="0.05"
-                             pose1="{robot_pose}"
-                             pose2="{pickup_pose}"/>
-                <Sequence>
-                  <ClearRailMarkers service_name="rail_segmentation/clear_markers"
-                                    timeout="100"/>
-                  <ClearPlanningScene keep_tray="true"
-                                      service_name="manipulation/clear_planning_scene"
-                                      timeout="100"/>
-                  <SubTree ID="detach_from_table"
-                           table="{table}"
-                           pose="{detach_pose}"/>
-                  <GoToPose action_name="move_base_flex/move_base"
-                            angle_tolerance=""
-                            controller="TEBPlanner"
-                            dist_tolerance=""
-                            planner=""
-                            pose="{approach_pose}"
+            <ClearPlanningScene keep_tray="true"
+                                service_name="manipulation/clear_planning_scene"
+                                timeout="100"/>
+          </Sequence>
+          <Sequence>
+            <GetRobotPose timeout="1"
+                          error="{error}"
+                          robot_pose="{robot_pose}"/>
+            <MakePickupPlan action_name="manipulation/make_pickup_plan"
+                            objects="{objects}"
+                            pickup_poses="{pickup_poses}"
+                            robot_pose="{robot_pose}"
                             server_timeout="5.000000"
-                            error="{error}"
-                            feedback="{goto_pose_feedback}"/>
-                  <SubTree ID="attach_to_table"
-                           table="{table}"
-                           pose="{pickup_pose}"/>
-                </Sequence>
-              </Fallback>
-              <SubTree ID="pickup_objects"/>
-              <SetPose input="{new_detach_pose}"
-                       output="{detach_pose}"/>
-            </Sequence>
-          </ForEachPickupLocation>
-        </Sequence>
-      </Fallback>
-    </Repeat>
+                            surface="{surface}"
+                            pickup_plan="{pickup_plan}"/>
+            <ForEachPickupLocation element="{pickup_location}"
+                                   list="{pickup_plan}">
+              <Sequence>
+                <ExpandPickupLocation pickup_location="{pickup_location}"
+                                      approach_pose="{approach_pose}"
+                                      detach_pose="{detach_pose}"
+                                      pickup_pose="{pickup_pose}"/>
+                <GoToPose action_name="move_base_flex/move_base"
+                          angle_tolerance=""
+                          controller="TEBPlanner"
+                          dist_tolerance=""
+                          planner=""
+                          pose="{approach_pose}"
+                          server_timeout="5.000000"
+                          error="{error}"
+                          feedback="{goto_pose_feedback}"/>
+                <SubTree ID="attach_to_table"
+                         table="{table}"
+                         pose="{pickup_pose}"/>
+                <SubTree ID="pickup_objects"/>
+                <ClearRailMarkers service_name="rail_segmentation/clear_markers"
+                                  timeout="100"/>
+                <ClearPlanningScene keep_tray="true"
+                                    service_name="manipulation/clear_planning_scene"
+                                    timeout="100"/>
+                <SubTree ID="detach_from_table"
+                         table="{table}"
+                         pose="{detach_pose}"/>
+              </Sequence>
+            </ForEachPickupLocation>
+          </Sequence>
+        </Fallback>
+      </Repeat>
+    </Sequence>
   </BehaviorTree>
 
   <BehaviorTree ID="object_gatherer">
@@ -106,45 +106,11 @@
         </Parallel>
         <IfThenElse>
           <SubTree ID="validate_table"
-                   inspect_pose="{detach_pose}"
                    table_pose="{table_pose}"
                    table="{table}"/>
-          <Sequence>
-            <GoToPose action_name="move_base_flex/move_base"
-                      angle_tolerance=""
-                      controller="TEBPlanner"
-                      dist_tolerance=""
-                      planner=""
-                      pose="{detach_pose}"
-                      server_timeout="5.000000"
-                      error="{error}"
-                      feedback="{goto_pose_feedback}"/>
-            <GetRobotPose timeout="1"
-                          error="{error}"
-                          robot_pose="{robot_pose}"/>
-            <ReadDoubleParam key="pickup_dist_to_table"
-                             negate=""
-                             value="{pickup_dist_to_table}"/>
-            <GetPosesAroundTable distance="{pickup_dist_to_table}"
-                                 table="{table}"
-                                 table_pose="{table_pose}"
-                                 table_side_poses="{pickup_poses}"/>
-            <GetClosestPose poses="{pickup_poses}"
-                            target_pose="{robot_pose}"
-                            closest_pose="{planning_pose}"/>
-            <SubTree ID="attach_to_table"
-                     table="{table}"
-                     pose="{planning_pose}"/>
-            <SubTree ID="cleanup_table"
-                     table="{table}"
-                     pickup_poses="{pickup_poses}"
-                     detach_pose="{detach_pose}"/>
-            <SubTree ID="detach_from_table"
-                     pose="{detach_pose}"
-                     table="{table}"/>
-            <SetUnsignedInt input="0"
-                            output="{given_up_count}"/>
-          </Sequence>
+          <SubTree ID="cleanup_table"
+                   table_pose="{table_pose}"
+                   table="{table}"/>
           <AlwaysSuccess/>
         </IfThenElse>
       </Sequence>
@@ -186,22 +152,12 @@
                 server_timeout="5.000000"
                 error="{error}"
                 feedback="{goto_pose_feedback}"/>
-      <GetRobotPose timeout="1"
-                    error="{error}"
-                    robot_pose="{robot_pose}"/>
       <DetectTables action_name="rail_segmentation/segment_objects"
                     server_timeout="5"
                     table="{table}"
                     table_pose="{table_pose}"/>
-      <GetPosesAroundTable distance="{approach_dist_to_table}"
-                           table="{table}"
-                           table_pose="{table_pose}"
-                           table_side_poses="{approach_poses}"/>
       <TableAsObstacle table="{table}"
                        table_pose="{table_pose}"/>
-      <GetClosestPose poses="{approach_poses}"
-                      target_pose="{robot_pose}"
-                      closest_pose="{inspect_pose}"/>
       <TableValidSize table="{table}"/>
     </Sequence>
   </BehaviorTree>
