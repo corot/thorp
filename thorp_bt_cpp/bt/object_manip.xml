@@ -13,31 +13,33 @@
                  case_5="clear"
                  case_6="fold"
                  variable="{user_command}">
-          <Sequence>
-            <DetectObjects action_name="object_detection"
-                           object_types=""
-                           server_timeout="5.000000"
+          <ForceSuccess>
+            <Sequence>
+              <DetectObjects action_name="object_detection"
+                             object_types=""
+                             server_timeout="5.000000"
+                             objects="{objects}"
+                             surface="{surface}"/>
+              <DragAndDrop action_name="drag_and_drop"
                            objects="{objects}"
-                           surface="{surface}"/>
-            <DragAndDrop action_name="drag_and_drop"
-                         objects="{objects}"
-                         server_timeout="5.000000"
-                         feedback=""
-                         object_name="{object_name}"
-                         pickup_pose="{pickup_pose}"
-                         place_pose="{place_pose}"/>
-            <ReadDoubleParam key="gripper_tightening"
-                             negate=""
-                             value="{tightening}"/>
-            <SubTree ID="pickup_object"
-                     object_name="{object_name}"
-                     tightening="{tightening}"
-                     error="{error}"/>
-            <SubTree ID="place_object"
-                     object_name="{object_name}"
-                     place_pose="{place_pose}"
-                     error="{error}"/>
-          </Sequence>
+                           server_timeout="5.000000"
+                           feedback=""
+                           object_name="{object_name}"
+                           pickup_pose="{pickup_pose}"
+                           place_pose="{place_pose}"/>
+              <ReadDoubleParam key="gripper_tightening"
+                               negate=""
+                               value="{tightening}"/>
+              <SubTree ID="pickup_object"
+                       object_name="{object_name}"
+                       tightening="{tightening}"
+                       error="{error}"/>
+              <SubTree ID="place_object"
+                       object_name="{object_name}"
+                       place_pose="{place_pose}"
+                       error="{error}"/>
+            </Sequence>
+          </ForceSuccess>
           <SetBlackboard value=""
                          output_key="user_command"/>
           <SetBlackboard value="start"
