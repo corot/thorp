@@ -18,7 +18,7 @@
         <collision name='collision'>
           <geometry>
             <box>
-              <size>0.025 0.025 0.025</size>
+              <size>0.026 0.026 0.026 </size>
             </box>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -41,6 +41,7 @@
         </velocity_decay>
         <inertial>
           <mass>0.0073</mass>
+          <pose>0 0 0.0125 0 0 0</pose>
           <inertia>
             <ixx>7.60417e-07</ixx>
             <ixy>0</ixy>
