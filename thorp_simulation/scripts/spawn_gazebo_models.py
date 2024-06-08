@@ -30,6 +30,7 @@ from thorp_toolkit.geometry import TF2, distance_2d, create_2d_pose, create_3d_p
 # dist: distributions models (one of 'uniform', 'diagonal', 'xor', '+/+')
 # count: number of surfaces of this type to spawn
 # frame: reference frame in gazebo (optional)
+# offset: x, y displacement of the distribution (optional)
 surfaces = [{'name': 'doll_table',
              'size': (0.45, 0.45),
              'objs': 4,
@@ -48,11 +49,12 @@ surfaces = [{'name': 'doll_table',
             ]
 
 small_house_surfaces = [{'name': 'ShoeRack',
-                         'size': (0.86, 0.26),
+                         'size': (0.82, 0.22),
                          'objs': 4,
                          'dist': 'uniform',
                          'count': 0,
-                         'frame': 'ShoeRack_01_001::aws_robomaker_residential_ShoeRack_01::link'},
+                         'frame': 'ShoeRack_01_001::aws_robomaker_residential_ShoeRack_01::link',
+                         'offset': (0.0, 0.05)},
                         {'name': 'CoffeeTable',
                          'size': (1.33, 0.67),
                          'objs': 6,
@@ -102,11 +104,11 @@ PLAYGROUND_OBJS = [('square',    'square',    (-0.22,  0.15,  0.5, 0.0, 0.0, 0.4
                    ('rectangle', 'rectangle', (-0.16, -0.16,  0.5, 0.0, 0.0, 1.1))]
 
 # cubes at reachable locations, ready to stack
-PLAYGROUND_CUBES = [('cube 1', 'cube', (-0.14, -0.16, 0.45, 0.0, 0.0, 1.1)),
-                    ('cube 2', 'cube', (-0.11, -0.10, 0.45, 0.0, 0.0, 0.15)),
-                    ('cube 3', 'cube', (-0.15,  0.02, 0.45, 0.0, 0.0, 0.2)),
-                    ('cube 4', 'cube', (-0.11,  0.10, 0.45, 0.0, 0.0, 0.85)),
-                    ('cube 5', 'cube', (-0.12,  0.15, 0.45, 0.0, 0.0, 0.4))]
+PLAYGROUND_CUBES = [('cube 1', 'cube', (-0.14, -0.16, 0.5, 0.0, 0.0, 1.1)),
+                    ('cube 2', 'cube', (-0.11, -0.10, 0.5, 0.0, 0.0, 0.15)),
+                    ('cube 3', 'cube', (-0.15,  0.02, 0.5, 0.0, 0.0, 0.2)),
+                    ('cube 4', 'cube', (-0.11,  0.10, 0.5, 0.0, 0.0, 0.85)),
+                    ('cube 5', 'cube', (-0.12,  0.15, 0.5, 0.0, 0.0, 0.4))]
 
 # 5 rows of 8 cubes tightly spaced; tailored for lack table
 N_ROWS_OF_CUBES = [('cube ' + str(i), 'cube',
@@ -152,7 +154,7 @@ def close_to_robot(pose, robot_pose, min_dist):
 
 def close_to_prev_pose(pose, added_poses, min_dist):
     # check if the pose is closer than MIN_DIST to any of the previous poses
-    # TODO I need something less naive to add more than 10 objects, e.g. spatial hash
+    # TODO I need something less naive to add more than 10 objects, e.g. spatial hash or KDtree
     for prev_pose in added_poses:
         if distance_2d(pose, prev_pose) < min_dist:
             return True
@@ -181,12 +183,13 @@ def spawn_objects(surf, surf_index, preferred_obj=None):
     added_poses = [create_3d_pose(0, 0, 0, 0, 0, 0)]  # fake pose to avoid the (non-reachable) surface's center
     obj_index = 0
     margin = rospy.get_param('table_margins_clearance', 0.1)  # no obstacles at table margins
+    offset_x, offset_y = surf.get('offset', (0, 0))
     while obj_index < surf['objs'] and not rospy.is_shutdown():
         obj_name = preferred_obj or random.choice(objects)
 
         # even distribution
-        x = random.uniform((-surf['size'][0] + margin) / 2.0, (+surf['size'][0] - margin) / 2.0)
-        y = random.uniform((-surf['size'][1] + margin) / 2.0, (+surf['size'][1] - margin) / 2.0)
+        x = random.uniform((-surf['size'][0] + margin) / 2.0, (+surf['size'][0] - margin) / 2.0) + offset_x
+        y = random.uniform((-surf['size'][1] + margin) / 2.0, (+surf['size'][1] - margin) / 2.0) + offset_y
 
         if surf['dist'] == 'diagonal':
             # half surface by diagonal
@@ -214,7 +217,7 @@ def spawn_objects(surf, surf_index, preferred_obj=None):
             continue
         added_poses.append(pose)
         model_name = '_'.join([surf['name'], str(surf_index), obj_name, str(obj_index)])
-        model_frame = surf['frame'] if 'frame' in surf else surf['name'] + '_' + str(surf_index) + '::link'
+        model_frame = surf.get('frame', surf['name'] + '_' + str(surf_index) + '::link')
         success = spawn_model(
             name=model_name,
             model=models[obj_name],

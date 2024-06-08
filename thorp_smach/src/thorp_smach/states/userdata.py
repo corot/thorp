@@ -144,8 +144,8 @@ class UDListSlicing(smach.State):
         self.step = step
 
     def execute(self, ud):
-        start = ud['start'] if 'start' in ud else self.start
-        stop = ud['stop'] if 'stop' in ud else self.stop
-        step = ud['step'] if 'step' in ud else self.step
+        start = ud.get('start', self.start)
+        stop = ud.get('stop', self.stop)
+        step = ud.get('step', self.step)
         ud['list'] = ud['list'][start:stop:step]
         return 'succeeded'
