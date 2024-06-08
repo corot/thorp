@@ -59,6 +59,7 @@ struct Rectangle
 struct Object
 {
   int id = -1;
+  std::string name;
   std::string type;
   Rectangle bounding_box;
   std::list<Point2d> contour_points;

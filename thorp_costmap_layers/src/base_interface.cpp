@@ -148,6 +148,7 @@ void BaseInterface::contoursToHash(const std::vector<std::vector<geometry_msgs::
     }
     object.bounding_box = Rectangle(Point2d(min_x, min_y), Point2d(max_x, max_y));
     object.type = type;
+    object.name = id;
     object.id = makeHash(id, i);
     updateObject(object);
     primitives_count_[id] = contours.size();

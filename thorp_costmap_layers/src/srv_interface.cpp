@@ -31,6 +31,7 @@ bool ServiceInterface::queryObjects(thorp_costmap_layers::QueryObjects::Request&
   {
     thorp_costmap_layers::Object msg;
     // TODO our hash doesn't store the objects, so we cannot recover name and exact pose
+    msg.name = obj.name;
     msg.type = obj.type;
     msg.pose.pose.position.x = (obj.bounding_box.br.x + obj.bounding_box.tl.x) / 2.0;
     msg.pose.pose.position.y = (obj.bounding_box.br.y + obj.bounding_box.tl.y) / 2.0;
