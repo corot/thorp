@@ -39,6 +39,7 @@ private:
 
     GoalType goal;
     goal.only_surface = true;
+    goal.surface_min_side = ros::NodeHandle("~").param("table_min_side", 0.3);
     return goal;
   }
 

@@ -14,8 +14,9 @@ inf_angle_tolerance: +Inf
 wp_reached_threshold: 1.0  # we consider a waypoint reached when we pass by at least this distance
 
 # manipulation
-table_min_side: 0.4  # TODO enough to reject shelves, that I cannot handle by now (doll table side is 45 cm)
-table_max_side: 1.0  # TODO I cannot handle such a large table, as I only go to the center of the four sides
+table_min_side: 0.2  # to include also shelves; for reference, doll table side is 45 cm
+table_max_side: 1.2  # anything bigger won't fit into the camera fov anyway
+table_min_pickup_side: 0.35  # to avoid picking up from shelves laterals, too narrow and partially blocked
 approach_dist_to_table: 0.35  # close enough to properly detect tabletop objects but not for picking up
 detach_dist_from_table: 0.45  # far enough to safely navigate around the table to other pickup locations
 clear_table_way_timeout: 15.0  # seconds; restore costmap after this time
