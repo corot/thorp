@@ -59,7 +59,7 @@ bool TrayManagerServer::trayAddObjectCB(thorp_msgs::TrayAddObjectRequest& reques
   // we need to add half the object size, so it appears at the right height on planning scene
   geometry_msgs::PoseStamped obj_pose;
   geometry_msgs::Vector3 obj_size;
-  planning_scene_.getObjectData(request.object_name, obj_pose, obj_size);  // TODO getObjectSize
+  planning_scene_.getObjectData(request.object_name, obj_pose, obj_size);
   request.pose_on_tray.pose.position.z = obj_size.z / 2.0;
   ROS_INFO_NAMED(LOGNAME, "Object '%s' added to tray at %s", request.object_name.c_str(),
                  ttk::toCStr3D(request.pose_on_tray));
