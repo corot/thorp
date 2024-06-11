@@ -53,7 +53,7 @@
   <group if="$(eval pipeline == 'RAIL')">
     <node pkg="thorp_perception" type="rail_object_detection_server" name="object_detection" output="screen" respawn="true">
       <param name="publish_static_tf" value="false"/>
-      <param name="max_matching_error" value="1e-4"/>
+      <param name="max_matching_error" value="0.000004"/>
       <param name="output_frame" value="base_footprint"/>
     </node>
 
