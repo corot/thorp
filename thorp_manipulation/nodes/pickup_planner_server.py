@@ -219,7 +219,6 @@ class PickupPlanner(actionlib.SimpleActionServer):
         self.poses_viz.publish(pose_array)
         self.viz.publish_markers()
 
-
     def make_pickup_plan(self, robot_pose, pickup_locs):
         """
         Sort pickup locations by visiting order, so we can iterate over the list for collecting all objects.
