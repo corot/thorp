@@ -15,6 +15,7 @@ import sys
 import rospy
 import rospkg
 
+from scipy.spatial import KDTree
 from math import pi, copysign, sqrt
 from itertools import product
 
@@ -148,17 +149,27 @@ def spawn_model(name, model, pose, frame):
 
 
 def close_to_robot(pose, robot_pose, min_dist):
-    # check if the pose is closer than MIN_DIST to the current robot pose
+    """
+    Check if the pose is closer than min_dist to the current robot pose
+    """
     return distance_2d(pose, robot_pose) < min_dist
 
 
 def close_to_prev_pose(pose, added_poses, min_dist):
-    # check if the pose is closer than MIN_DIST to any of the previous poses
-    # TODO I need something less naive to add more than 10 objects, e.g. spatial hash or KDtree
-    for prev_pose in added_poses:
-        if distance_2d(pose, prev_pose) < min_dist:
-            return True
-    return False
+    """
+    Check if the pose is closer than min_dist to any of the previous poses
+    """
+    if not added_poses:
+        return False
+
+    # Convert poses to a list of coordinates to feed the KDTree
+    pose_coords = [[p.position.x, p.position.y] for p in added_poses]
+    kdtree = KDTree(pose_coords)
+
+    # Query the KDTree for the nearest neighbors and check if there is any one within the min_dist
+    dist, _ = kdtree.query([pose.position.x, pose.position.y], distance_upper_bound=min_dist)
+
+    return dist < min_dist
 
 
 def close_to_obstacle(x, y, theta, clearance):
@@ -183,13 +194,24 @@ def spawn_objects(surf, surf_index, preferred_obj=None):
     added_poses = [create_3d_pose(0, 0, 0, 0, 0, 0)]  # fake pose to avoid the (non-reachable) surface's center
     obj_index = 0
     margin = rospy.get_param('table_margins_clearance', 0.1)  # no obstacles at table margins
+    reachable = rospy.get_param('max_distance_from_border', 0.2)  # no obstacles beyond arm reach
     offset_x, offset_y = surf.get('offset', (0, 0))
+
+    # Compute the unreachable inner area
+    inner_min_x = -surf['size'][0] / 2.0 + reachable
+    inner_max_x = +surf['size'][0] / 2.0 - reachable
+    inner_min_y = -surf['size'][1] / 2.0 + reachable
+    inner_max_y = +surf['size'][1] / 2.0 - reachable
     while obj_index < surf['objs'] and not rospy.is_shutdown():
         obj_name = preferred_obj or random.choice(objects)
 
         # even distribution
         x = random.uniform((-surf['size'][0] + margin) / 2.0, (+surf['size'][0] - margin) / 2.0) + offset_x
         y = random.uniform((-surf['size'][1] + margin) / 2.0, (+surf['size'][1] - margin) / 2.0) + offset_y
+
+        # check if the generated position is within the unreachable inner area
+        if inner_min_x <= x <= inner_max_x and inner_min_y <= y <= inner_max_y:
+            continue
 
         if surf['dist'] == 'diagonal':
             # half surface by diagonal
