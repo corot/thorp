@@ -20,10 +20,10 @@ table_min_pickup_side: 0.35  # to avoid picking up from shelves laterals, too na
 approach_dist_to_table: 0.35  # close enough to properly detect tabletop objects but not for picking up
 detach_dist_from_table: 0.45  # far enough to safely navigate around the table to other pickup locations
 clear_table_way_timeout: 15.0  # seconds; restore costmap after this time
-pickup_planning_frame: arm_base_link
+pickup_planning_frame: arm_base_link  # TODO: reconsider this;  it should not be a param, I think
 pickup_max_failures: 3  # pickup failures allowed for each object on current pickup location (resets upon moving)
 pickup_dist_to_table: 0.15  # ideal picking distance to the table, as close as possible without risk
 placing_height_on_table: 0.005  # slightly above the table to avoid crashing the object against it
 gripper_max_effort: 0.5  # max effort exerted by the gripper on grasping (stops closing upon reaching this value)
 gripper_tightening: 0.0015  # additional gripper closing to tighten grasped objects
-max_arm_reach: 0.3
+max_arm_reach: 0.3  # distance reachable by the arm as measured from the robot base frame

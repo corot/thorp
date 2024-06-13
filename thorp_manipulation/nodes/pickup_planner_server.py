@@ -44,8 +44,8 @@ class PickupPlanner(actionlib.SimpleActionServer):
         Calculate the four locations around a rectangular surface at a given distance.
         :param robot_pose: current robot pose, expected on map frame
         :param surface: pickup surface as a CollisionObject
-        :param distance:
-        :return: poses on map frame
+        :param distance: distance from the resulting poses to the surface borders
+        :return: list of poses on map reference frame
         """
         length, width, _ = surface.primitives[0].dimensions
         p_x = distance + length / 2.0
@@ -80,7 +80,7 @@ class PickupPlanner(actionlib.SimpleActionServer):
         pose_array.poses.append(deepcopy(closest_pose.pose))
         pose_array.poses[-1].position.z += 0.05  # remark the closest pose with a double arrow
         self.poses_viz.publish(pose_array)
-        return sides_poses
+        return list(sides_poses.values())
 
     def group_objects(self, robot_pose, pickup_poses, objects, planning_frame, max_arm_reach, approach_offset,
                       detach_offset):
@@ -89,13 +89,13 @@ class PickupPlanner(actionlib.SimpleActionServer):
         We first eliminate the locations without objects only reachable from there.
         If an object can be reached from two of the remaining locations, we choose
         the one that places the object closer to the robot arm.
-        :param robot_pose:
+        :param robot_pose: current robot pose, expected on map frame
         :param pickup_poses: list of pickup locations on map frame
-        :param objects:
-        :param max_arm_reach:
+        :param objects: list of the detected objects to group
+        :param max_arm_reach: distance reachable by the arm as measured from the robot base frame
         :param planning_frame:
-        :param approach_offset:
-        :param detach_offset:
+        :param approach_offset: distance to subtract from the picking pose to obtain the approach pose
+        :param detach_offset: distance to subtract from the picking pose to obtain the detach pose
         :return: pickup locations, a list of PickupLocation objects
         """
         rospy.loginfo("Grouping %d objects into %d pickup poses", len(objects), len(pickup_poses))
