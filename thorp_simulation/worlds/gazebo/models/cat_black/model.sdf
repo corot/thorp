@@ -39,6 +39,7 @@
         </contact>
         <plugin name='body_contact_sensor_plugin' filename='libgazebo_ros_bumper.so'>
           <bumperTopicName>gazebo/contacts</bumperTopicName>
+          <frameName>world</frameName>
         </plugin>
       </sensor>
     </link>
@@ -73,6 +74,7 @@
         </contact>
         <plugin name='head_contact_sensor_plugin' filename='libgazebo_ros_bumper.so'>
           <bumperTopicName>gazebo/contacts</bumperTopicName>
+          <frameName>world</frameName>
         </plugin>
       </sensor>
     </link>
