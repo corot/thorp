@@ -3,7 +3,7 @@
  -->
 
 <launch>
-  <arg name="pipeline"/>  <!-- ORK / COB / RAIL -->
+  <arg name="pipeline"/>  <!-- ORK / COB / YOLO / RAIL -->
   <arg name="target_objects" default="[]"/>
 
   <!--  **************** ORK pipeline *****************  -->
@@ -47,6 +47,13 @@
     <node name="cob_object_tracking" pkg="thorp_perception" type="object_tracking.py" output="screen" respawn="true">
       <rosparam param="target_objects" subst_value="True">$(arg target_objects)</rosparam>
     </node>
+  </group>
+
+  <!--  ************ YOLO Object Detection ************  -->
+  <group if="$(eval pipeline == 'YOLO')">
+    <include file="$(find darknet_ros)/launch/darknet_ros.launch">
+      <arg name="image" value="/kinect/rgb/image_raw"/>
+    </include>
   </group>
 
   <!--  ************ RAIL Object Detection ************  -->
