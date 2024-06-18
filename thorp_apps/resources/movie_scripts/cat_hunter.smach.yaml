@@ -1,7 +1,10 @@
-# Movie script for cat hunter app
+# Movie script for SMACH cat hunter app on fun house
 # We update camera location when starting the following states
 #  - frame: camera reference frame
-#  - focus can be either a 3D point (provided as a list of three floats) or a userdata key containing a stamped pose (TODO more flexible)
+#  - focus can be one of
+#    - 3D point (provided as a list of three floats)
+#    - SMACH userdata key containing a stamped pose
+#    - ROS topic providing a stamped pose
 #  - eye must be a 3D point relative to focus location
 
 PLAN_ROOM_EXPL:

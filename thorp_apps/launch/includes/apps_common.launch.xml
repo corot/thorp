@@ -66,7 +66,7 @@
     <include file="$(find thorp_bt_cpp)/launch/bt_runner.launch">
       <arg name="app_name" value="$(arg app_name)"/>
       <arg name="start_delay" value="$(arg start_delay)"/>
-      <arg name="publish_bt" value="$(arg viz_executive)"/>
+      <arg name="publish_bt" value="$(eval arg('viz_executive') or arg('record_video'))"/>
     </include>
 
     <group if="$(arg viz_executive)">
@@ -80,9 +80,9 @@
     <node if="$(eval simulator == 'gazebo')"
           pkg="thorp_simulation" type="gazebo_camera_control" name="gz_camera_control"/>
 
-    <node pkg="thorp_apps" type="movie_director.py" name="movie_director">
+    <node pkg="thorp_simulation" type="movie_director.py" name="movie_director">
       <param name="app_name" value="$(arg app_name)"/>
-      <param name="script_path" value="$(eval find('thorp_apps')+'/resources/movie_scripts/' + arg('app_name') + '.yaml')"/>
+      <param name="script_path" value="$(eval find('thorp_apps')+'/resources/movie_scripts/' + arg('app_name') + '.' + arg('executive') + '.yaml')"/>
     </node>
   </group>
 </launch>

@@ -15,9 +15,10 @@ import rospy
 import pickle
 import base64
 
-from smach_ros import introspection
+from std_msgs.msg import String
+from smach_ros.introspection import STATUS_TOPIC
 from smach_msgs.msg import SmachContainerStatus
-from geometry_msgs.msg import Point, Vector3
+from geometry_msgs.msg import Point, Vector3, PoseStamped
 from view_controller_msgs.msg import CameraPlacement
 
 
@@ -53,6 +54,8 @@ def parse_state(state, camera_instructions, userdata=None):
             focus_point = Point(*focus)
         elif isinstance(focus, str):
             focus_point = userdata[focus].pose.position
+        elif isinstance(focus, dict):
+            focus_point = rospy.wait_for_message(focus['topic'], PoseStamped).pose.position
         else:
             raise KeyError("Invalid focus type: %s" % str(type(focus)))
 
@@ -102,6 +105,56 @@ def smach_status_cb(msg):
         rospy.logdebug("State %s not found in script", str(ke))  # normal; most states won't be listed in the script!
 
 
+def bt_status_cb(msg):
+    try:
+        current_state = msg.data
+        camera_instructions = script[current_state]
+        rospy.loginfo("Placing camera for state %s", current_state)
+        place_camera(*parse_state(current_state, camera_instructions))
+    except KeyError as ke:
+        rospy.logdebug("State %s not found in script", str(ke))  # normal; most states won't be listed in the script!
+
+def get_value_from_path(msg, path):
+    keys = path.split('.')
+    value = msg
+    try:
+        for key in keys:
+            value = getattr(value, key)
+        return value
+    except AttributeError:
+        rospy.logerr(f"Path '{path}' not found in message.")
+        return None
+
+def callback_factory(topic_name, path):
+    def callback(msg):
+        topic_values[topic_name] = msg
+        print()
+        print(topic_name)
+        print()
+        print(msg)
+        print()
+        # rospy.loginfo(f"Extracted value for {topic_name}: {value}")
+        # value = get_value_from_path(msg, path)
+        # if value is not None:
+        #     topic_values[topic_name] = value
+        #     rospy.loginfo(f"Extracted value for {topic_name}: {value}")
+    return callback
+
+def create_subscribers(script):
+    for key, entry in script.items():
+        if isinstance(entry['focus'], dict):
+            topic = entry['focus'].get('topic')
+            path = entry['focus'].get('path')
+            # if not topic or not path:
+            #     rospy.logerr(f"Invalid entry in YAML: {key}")
+            #     continue
+
+            global topic_values
+            topic_values[topic] = None
+
+            rospy.Subscriber(topic, PoseStamped, callback_factory(topic, path))
+
+
 if __name__ == "__main__":
     rospy.init_node("movie_director")
 
@@ -122,8 +175,11 @@ if __name__ == "__main__":
     #     target_frame, focus_point, eye_point = parse_state(state)
     #     place_camera(target_frame, focus_point, eye_point)
 
+    topic_values = {}
+    create_subscribers(script)
+
     server_name = rospy.get_param('~app_name')
-    status_topic = server_name + introspection.STATUS_TOPIC
-    cs_sub = rospy.Subscriber(status_topic, SmachContainerStatus, smach_status_cb, queue_size=5)
+    rospy.Subscriber(server_name + STATUS_TOPIC, SmachContainerStatus, smach_status_cb, queue_size=5)
+    rospy.Subscriber(server_name + '/bt_status', String, bt_status_cb, queue_size=5)
 
     rospy.spin()

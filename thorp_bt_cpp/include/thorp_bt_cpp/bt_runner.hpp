@@ -5,6 +5,7 @@
 #include <behaviortree_cpp_v3/bt_factory.h>
 
 // bt publisher
+#include <thorp_bt_cpp/bt_ros_logger.hpp>
 #include <behaviortree_cpp_v3/loggers/bt_file_logger.h>
 #include <behaviortree_cpp_v3/loggers/bt_zmq_publisher.h>
 
@@ -36,6 +37,9 @@ private:
 
   /** Publisher to save the bt to a file and visualize with Groot at a later time. */
   std::optional<BT::FileLogger> bt_pub_file_;
+
+  /** Publisher to a ROS topic. */
+  std::optional<BT::RosLogger> bt_pub_topic_;
 
   /** Tick rate of the bt. */
   double tick_rate_;

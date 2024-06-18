@@ -61,6 +61,7 @@ bool Runner::loadTree()
   {
     bt_pub_zmq_.emplace(*bt_);
     bt_pub_file_.emplace(*bt_, pnh_.param<std::string>("publish_bt_filepath", "/tmp/pub_bt.xml").c_str());
+    bt_pub_topic_.emplace(*bt_);
   }
 
   tick_rate_ = pnh_.param("tick_rate", 10.0);

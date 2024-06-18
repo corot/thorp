@@ -44,7 +44,7 @@ file(GLOB_RECURSE BT_NODES
         src/bt/controls/*.cpp
         src/bt/decorators/*.cpp)
 
-add_library(bt_runner src/bt_runner.cpp)
+add_library(bt_runner src/bt_runner.cpp src/bt_ros_logger.cpp)
 target_link_libraries(bt_runner
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
