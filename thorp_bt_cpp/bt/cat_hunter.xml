@@ -2,6 +2,56 @@
 <root BTCPP_format="3">
   <include path="explore_house.xml"/>
 
+  <BehaviorTree ID="hunt_cat">
+    <Parallel failure_threshold="1"
+              success_threshold="1">
+      <ForceSuccess>
+        <FollowPose action_name="pose_follower/follow"
+                    distance="0.8"
+                    server_timeout="5.000000"
+                    stop_at_distance="false"
+                    time_limit="25"
+                    error="{follow_error}"
+                    feedback="{follow_feedback}"/>
+      </ForceSuccess>
+      <RetryUntilSuccessful num_attempts="-1">
+        <IfThenElse>
+          <Sequence>
+            <CannonHasAmmo/>
+            <MonitorObjects name="TargetVisible"
+                            max_delay="0.0"
+                            target_objects="cat, dog, horse"
+                            timeout="0.2"
+                            topic_name="tracked_objects"
+                            tracked_object="{tracked_object}"
+                            tracked_object_pose="{tracked_object_pose}"/>
+          </Sequence>
+          <Sequence>
+            <GetRobotPose timeout="1"
+                          error="{error}"
+                          robot_pose="{robot_pose}"/>
+            <TargetReachable follow_feedback="{follow_feedback}"
+                             max_angle="0.2"
+                             max_dist="1.0"
+                             robot_pose="{robot_pose}"/>
+            <AimCannon robot_pose="{robot_pose}"
+                       target_pose="{tracked_object_pose}"
+                       angle="{cannon_tilt_angle}"/>
+            <TiltCannon angle="{cannon_tilt_angle}"
+                        service_name="cannon_command"
+                        timeout="1"/>
+            <FireCannon service_name="cannon_command"
+                        shots="1"
+                        timeout="1"/>
+            <Sleep duration="1.0"/>
+            <AlwaysFailure _description="Replace with failing on exhausted ammo"/>
+          </Sequence>
+          <AlwaysSuccess/>
+        </IfThenElse>
+      </RetryUntilSuccessful>
+    </Parallel>
+  </BehaviorTree>
+
   <BehaviorTree ID="cat_hunter">
     <KeepRunningUntilFailure>
       <Sequence>
@@ -18,53 +68,7 @@
                           tracked_object="{tracked_object}"
                           tracked_object_pose="{tracked_object_pose}"/>
         </Parallel>
-        <Parallel failure_threshold="1"
-                  success_threshold="1">
-          <ForceSuccess>
-            <FollowPose action_name="pose_follower/follow"
-                        distance="0.8"
-                        server_timeout="5.000000"
-                        stop_at_distance="false"
-                        time_limit="25"
-                        error="{follow_error}"
-                        feedback="{follow_feedback}"/>
-          </ForceSuccess>
-          <RetryUntilSuccessful num_attempts="-1">
-            <IfThenElse>
-              <Sequence>
-                <CannonHasAmmo/>
-                <MonitorObjects name="TargetVisible"
-                                max_delay="0.0"
-                                target_objects="cat, dog, horse"
-                                timeout="0.2"
-                                topic_name="tracked_objects"
-                                tracked_object="{tracked_object}"
-                                tracked_object_pose="{tracked_object_pose}"/>
-              </Sequence>
-              <Sequence>
-                <GetRobotPose timeout="1"
-                              error="{error}"
-                              robot_pose="{robot_pose}"/>
-                <TargetReachable follow_feedback="{follow_feedback}"
-                                 max_angle="0.2"
-                                 max_dist="1.0"
-                                 robot_pose="{robot_pose}"/>
-                <AimCannon robot_pose="{robot_pose}"
-                           target_pose="{tracked_object_pose}"
-                           angle="{cannon_tilt_angle}"/>
-                <TiltCannon angle="{cannon_tilt_angle}"
-                            service_name="cannon_command"
-                            timeout="1"/>
-                <FireCannon service_name="cannon_command"
-                            shots="1"
-                            timeout="1"/>
-                <Sleep duration="1.0"/>
-                <AlwaysFailure _description="Replace with failing on exhausted ammo"/>
-              </Sequence>
-              <AlwaysSuccess/>
-            </IfThenElse>
-          </RetryUntilSuccessful>
-        </Parallel>
+        <SubTree ID="hunt_cat"/>
       </Sequence>
     </KeepRunningUntilFailure>
   </BehaviorTree>
