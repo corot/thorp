@@ -46,6 +46,13 @@
       <param name="target_models" value="$(arg cat_models)"/>
       <param name="prowling_step" value="0.02"/>
       <!-- update period is hardcoded to 0.25 seconds, so this is the only way to change cats speed -->
+
+      <!-- send deceased cats outside the house -->
+      <param name="outside_x" value="4.0" if="$(eval world_name == 'fun_house')"/>
+      <param name="outside_y" value="1.0" if="$(eval world_name == 'fun_house')"/>
+
+      <param name="outside_x" value="-7.5" if="$(eval world_name == 'small_house')"/>
+      <param name="outside_y" value="4.5" if="$(eval world_name == 'small_house')"/>
     </node>
 
     <!-- Add interactive markers to move the cats on RViz -->

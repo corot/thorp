@@ -32,6 +32,8 @@ class CatsController:
         # and so I cannot read if from the parameter server  TODO: find a better solution
         self.prowling_step = rospy.get_param('~prowling_step', 0.01)
         self.hit_sock_duration = rospy.get_param('~hit_sock_duration', 2.0)
+        self.outside_location_x = rospy.get_param('~outside_x', 0.0)
+        self.outside_location_y = rospy.get_param('~outside_y', 0.0)
         self.hit_roll_threshold = rospy.get_param('~hit_roll_threshold', math.pi / 3.0)
         self.set_model_state_srv = rospy.ServiceProxy("gazebo/set_model_state", SetModelState, persistent=True)
         self.set_model_state_srv.wait_for_service(30)
@@ -73,7 +75,8 @@ class CatsController:
                     rospy.loginfo("Cat %s toppled at %s! (|roll| > %g)",
                                   model_name, pose3d2str(msg.pose[index]), self.hit_roll_threshold)
                     # send toppled cats out of the house and stop tracking them
-                    pose = create_2d_pose(4.0 + len(self.killed_cats), 1.0, math.pi / 2.0)
+                    pose = create_2d_pose(self.outside_location_x + len(self.killed_cats), self.outside_location_y,
+                                          math.pi / 2.0)
                     self.set_model_state_srv(ModelState(model_name, pose, Twist(), 'map'))
                     self.killed_cats.append(model_name)
                     del self.alive_cats[model_name]
