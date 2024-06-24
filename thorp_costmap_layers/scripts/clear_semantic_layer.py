@@ -7,6 +7,7 @@ Remove all objects from the semantic layer on both the local and global costmaps
 import rospy
 
 from geometry_msgs.msg import Point
+from thorp_toolkit.reconfigure import Reconfigure
 from thorp_costmap_layers.srv_iface_client import SemanticLayer
 
 
@@ -22,6 +23,9 @@ def main():
     upper_right.x = 1000
     upper_right.y = 1000
 
+    # Costmaps must be updating during the clearing
+    Reconfigure().update_config('move_base_flex', {'shutdown_costmaps': False})
+
     # Remove each object from both costmaps
     for obj in semantic_layer.query_objects(lower_left, upper_right, costmap='local'):
         if not semantic_layer.remove_object(obj.name, obj.type, costmap='local'):
@@ -29,6 +33,8 @@ def main():
     for obj in semantic_layer.query_objects(lower_left, upper_right, costmap='global'):
         if not semantic_layer.remove_object(obj.name, obj.type, costmap='global'):
             rospy.logerr(f"Failed to remove object {obj.name} of type {obj.type} on global costmap")
+
+    Reconfigure().restore_config('move_base_flex', ['shutdown_costmaps'])
 
 
 if __name__ == '__main__':
