@@ -8,7 +8,7 @@ time before publishing, adding some information, e.g. moving, certitude and so.
 Author:
     Jorge Santos
 """
-
+import geometry_msgs.msg
 import rospy
 import tf2_ros
 
@@ -16,7 +16,7 @@ import collections
 
 from copy import deepcopy
 from cv_bridge import CvBridge
-from thorp_toolkit.geometry import distance_3d
+from thorp_toolkit.geometry import TF2, distance_3d, project_future_pose, yaw, transform_point, calculate_velocity
 
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import TransformStamped, PoseStamped
@@ -38,6 +38,8 @@ class ObjectTrackingNode(object):
         # init the node
         rospy.init_node('cob_object_tracking', anonymous=False)
 
+        TF2()  # to start filling tf buffer
+
         self._buffer_length = 4   # TODO param  should be discard_after * freq
         self._discard_after = rospy.Duration(0.5)
         self._tracked_objs = {}
@@ -52,11 +54,12 @@ class ObjectTrackingNode(object):
                                            self.image_callback, queue_size=1)
 
         # Advertise the results and markers for visualization on RViz
+        self._tf2_bcaster = tf2_ros.TransformBroadcaster()
         self._objects_pub = rospy.Publisher('tracked_objects', DetectionArray, queue_size=1)
         self._markers_pub = rospy.Publisher('tracked_objects_markers', MarkerArray, queue_size=1)
         self._images_pub = rospy.Publisher('tracked_objects_images', Image, queue_size=1)
         self._target_pub = rospy.Publisher('target_object_pose', PoseStamped, queue_size=1)
-        self._tf2_bcaster = tf2_ros.TransformBroadcaster()
+        self._predicted_pub = rospy.Publisher('target_object_predicted_pose', PoseStamped, queue_size=1)
 
     def shutdown(self):
         """
@@ -113,12 +116,28 @@ class ObjectTrackingNode(object):
                     self.pub_transform(obs)
                     self.pub_img_quad(obs)
                     if obs.label in self._target_objs:
-                        target_candidates.append((obs.pose, distance_3d(obs.pose.pose)))
+                        target_candidates.append((obs_buffer, distance_3d(obs.pose)))
 
             if target_candidates:
                 sorted(target_candidates, key=lambda x: x[1], reverse=True)
-                self._target_pub.publish(target_candidates[0][0])
-                ma.markers.append(self.make_target_marker(target_candidates[0][0]))
+                target = target_candidates[0]
+                target_pose = target[0][-1].pose
+                self._target_pub.publish(target_pose)
+                ma.markers.append(self.make_target_marker(target_pose))
+
+                points = []
+                for obs in target[0]:
+                    pose_wrt_map = TF2().transform_pose(obs.pose, None, 'map')
+                    points.append(geometry_msgs.msg.PointStamped(pose_wrt_map.header, pose_wrt_map.pose.position))
+
+                velocity = calculate_velocity(points)
+                if velocity > 0.01:
+                    future_pose = project_future_pose(points, 1.0)  # projecting 1 second into the future
+                else:
+                    future_pose = target_pose
+
+                rospy.logdebug("Target direction: %f; speed: %f m/s", yaw(future_pose), calculate_velocity(points))
+                self._predicted_pub.publish(future_pose)
 
             if da.detections:
                 self._objects_pub.publish(da)
@@ -135,7 +154,7 @@ class ObjectTrackingNode(object):
         marker.ns = 'target'
         marker.type = Marker.SPHERE
         marker.action = Marker.ADD
-        marker.lifetime = rospy.Duration(0.1)  # short lived to make easy to figure out when we have a target
+        marker.lifetime = rospy.Duration(0.1)  # short-lived to make easy to figure out when we have a target
         marker.scale.x = 0.75
         marker.scale.y = 0.75
         marker.scale.z = 0.75

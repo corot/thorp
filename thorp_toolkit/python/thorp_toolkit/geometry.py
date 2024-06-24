@@ -1,5 +1,5 @@
-from math import *
-from copy import deepcopy
+import numpy as np
+from numpy import pi
 from numbers import Number
 
 import rospy
@@ -74,12 +74,12 @@ def heading(pose1, pose2=None):
         pose2 = pose1
         pose1 = geometry_msgs.Pose()  # 0, 0, 0 pose, i.e. origin
     p1, p2 = __get_naked_poses(pose1, pose2)
-    return atan2(p2.position.y - p1.position.y, p2.position.x - p1.position.x)
+    return np.arctan2(p2.position.y - p1.position.y, p2.position.x - p1.position.x)
 
 
 def distance(x1, y1, x2, y2):
     """ Euclidean distance between 2D points """
-    return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2))
+    return np.sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2))
 
 
 def distance_2d(pose1, pose2=None):
@@ -89,8 +89,8 @@ def distance_2d(pose1, pose2=None):
         pose2 = pose1
         pose1 = geometry_msgs.Pose()  # 0, 0, 0 pose, i.e. origin
     p1, p2 = __get_naked_poses(pose1, pose2)
-    return sqrt(pow(p2.position.x - p1.position.x, 2)
-              + pow(p2.position.y - p1.position.y, 2))
+    return np.sqrt(pow(p2.position.x - p1.position.x, 2)
+                 + pow(p2.position.y - p1.position.y, 2))
 
 
 def distance_3d(pose1, pose2=None):
@@ -100,9 +100,9 @@ def distance_3d(pose1, pose2=None):
         pose2 = pose1
         pose1 = geometry_msgs.Pose()  # 0, 0, 0 pose, i.e. origin
     p1, p2 = __get_naked_poses(pose1, pose2)
-    return sqrt(pow(p2.position.x - p1.position.x, 2)
-              + pow(p2.position.y - p1.position.y, 2)
-              + pow(p2.position.z - p1.position.z, 2))
+    return np.sqrt(pow(p2.position.x - p1.position.x, 2)
+                 + pow(p2.position.y - p1.position.y, 2)
+                 + pow(p2.position.z - p1.position.z, 2))
 
 
 def get_euler(pose_or_quat):
@@ -317,7 +317,7 @@ def translate_pose(pose, delta, axis_or_theta, relative=True):
     elif axis_or_theta == 'x':
         theta = 0.0
     elif axis_or_theta == 'y':
-        theta = pi/2
+        theta = pi / 2
     elif axis_or_theta == 'z':
         p.position.z += delta
         return __set_naked_pose(pose, p)
@@ -325,8 +325,8 @@ def translate_pose(pose, delta, axis_or_theta, relative=True):
         raise rospy.ROSException(axis_or_theta + " is neither a number nor a valid axis ('x', 'y' or 'z')")
     if relative:
         theta = norm_angle(theta + yaw(p))
-    p.position.x += cos(theta) * delta
-    p.position.y += sin(theta) * delta
+    p.position.x += np.cos(theta) * delta
+    p.position.y += np.sin(theta) * delta
     return __set_naked_pose(pose, p)
 
 
@@ -362,15 +362,17 @@ def transform_pose(pose, tf):
     return tf2_geometry_msgs.do_transform_pose(p, tf)
 
 
-def apply_transform(pose, tf):
-    """ Apply the given transform to a stamped pose, keeping its reference frame """
-    if not isinstance(pose, geometry_msgs.PoseStamped):
-        raise rospy.ROSException("Input parameter pose is not a valid geometry_msgs stamped pose")
+def transform_point(point, tf):
+    """ Transform the given point with the given transform """
+    # do_transform_point expects a stamped point, but it ignores the header
+    if isinstance(point, geometry_msgs.Point):
+        p = geometry_msgs.PointStamped(None, point)
+    elif isinstance(point, geometry_msgs.PointStamped):
+        p = point
+    else:
+        raise rospy.ROSException("Input parameter point is not a valid geometry_msgs point object")
 
-    p = deepcopy(pose)
-    p = tf2_geometry_msgs.do_transform_pose(p, tf)
-    p.header = pose.header
-    return p
+    return tf2_geometry_msgs.do_transform_point(p, tf)
 
 
 def same_pose(pose1, pose2, xy_tolerance=0.0001, yaw_tolerance=0.0001):
@@ -383,6 +385,50 @@ def same_pose(pose1, pose2, xy_tolerance=0.0001, yaw_tolerance=0.0001):
     @return true if both poses are the same within tolerance margins
     """
     return distance_3d(pose1, pose2) <= xy_tolerance and abs(angles_diff(yaw(pose1), yaw(pose2))) <= yaw_tolerance
+
+
+def calculate_velocity(points):
+    """
+    Calculate velocities between consecutive poses and return the average.
+    """
+    velocities = []
+    for i in range(1, len(points)):
+        delta_time = (points[i].header.stamp - points[i - 1].header.stamp).to_sec()
+        if delta_time == 0:
+            continue
+        dx = points[i].point.x - points[i - 1].point.x
+        dy = points[i].point.y - points[i - 1].point.y
+        velocity = np.sqrt(dx ** 2 + dy ** 2) / delta_time
+        velocities.append(velocity)
+    return abs(np.mean(velocities)) if velocities else 0
+
+
+def calculate_direction(points):
+    if len(points) < 2:
+        return 0
+    dx = points[-1].point.x - points[0].point.x
+    dy = points[-1].point.y - points[0].point.y
+    return np.arctan2(dy, dx)
+
+
+def project_future_pose(points, future_time):
+    """
+    Project the future pose using the list of last known positions.
+    """
+    velocity = calculate_velocity(points)
+    heading = calculate_direction(points)
+
+    future_point = geometry_msgs.Point()
+    future_point.x = points[-1].point.x + np.cos(heading) * velocity * future_time
+    future_point.y = points[-1].point.y + np.sin(heading) * velocity * future_time
+    future_point.z = points[-1].point.z  # Assume the same z for 2D projection
+
+    future_pose = geometry_msgs.PoseStamped()
+    future_pose.header = points[-1].header
+    future_pose.pose.position = future_point
+    future_pose.pose.orientation = quaternion_msg_from_yaw(heading)
+
+    return future_pose
 
 
 class TF2(metaclass=Singleton):
@@ -400,9 +446,13 @@ class TF2(metaclass=Singleton):
             raise err
 
     def transform_pose(self, pose_in, frame_from, frame_to, timeout=rospy.Duration(2.0)):
-        """ Transform pose_in from one frame to another, or create
-        the corresponding pose if None is provided on pose_in """
-        if not pose_in:
+        """
+        Transform pose_in from one frame to another, or create
+        the corresponding pose if None is provided on pose_in
+        """
+        if pose_in:
+            frame_from = pose_in.header.frame_id
+        else:
             pose_in = geometry_msgs.PoseStamped()
             pose_in.header.frame_id = frame_from
             pose_in.header.stamp = rospy.Time(0.0)
@@ -410,15 +460,15 @@ class TF2(metaclass=Singleton):
         try:
             return self.__buff__.transform(pose_in, frame_to, timeout)
         except tf2_ros.TransformException as err:
-            raise rospy.ROSException("Could not transform pose from %s to %s: %s" % (frame_from, frame_to, str(err)))
+            raise rospy.ROSException(f"Could not transform pose from {frame_from} to {frame_to}: {err}")
         except rospy.exceptions.ROSInterruptException:
             pass
 
     def lookup_transform(self, frame_from, frame_to, timestamp=rospy.Time(0.0), timeout=rospy.Duration(1.0)):
         try:
-            return self.__buff__.lookup_transform(frame_from, frame_to, timestamp, timeout)
+            return self.__buff__.lookup_transform(frame_to, frame_from, timestamp, timeout)
         except tf2_ros.TransformException as err:
-            raise rospy.ROSException("Could not lookup transform from %s to %s: %s" % (frame_from, frame_to, str(err)))
+            raise rospy.ROSException(f"Could not lookup transform from {frame_from} to {frame_to}: {err}")
         except rospy.exceptions.ROSInterruptException:
             pass
 

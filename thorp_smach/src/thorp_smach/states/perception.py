@@ -140,7 +140,7 @@ class MonitorTables(smach.State):
                 table = segmented_objs[0]
                 pose = geo_msgs.PoseStamped(table.point_cloud.header,
                                             geo_msgs.Pose(table.center, table.orientation))
-                pose = TF2().transform_pose(pose, pose.header.frame_id, 'map')
+                pose = TF2().transform_pose(pose, None, 'map')
                 width, length = table.width, table.depth
                 table_tf = to_transform(pose, 'table_frame')
                 TF2().publish_transform(table_tf)

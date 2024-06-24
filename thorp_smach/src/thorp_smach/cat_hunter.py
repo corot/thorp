@@ -58,7 +58,7 @@ class Attack(FollowPose):
             rospy.logerr("Cannon commands service call failed: %s", err)
 
     def _highlight_target(self, pose, fire=False):
-        Visualization().add_disc_marker(TF2().transform_pose(pose, pose.header.frame_id, 'map'),
+        Visualization().add_disc_marker(TF2().transform_pose(pose, None, 'map'),
                                         [1.0, 1.0], [0.8, 0.0, 0.0, 0.6] if fire else [0.0, 0.0, 0.8, 0.4])
         Visualization().publish_markers()
 

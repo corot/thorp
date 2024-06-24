@@ -54,7 +54,7 @@ class PickupPlanner(actionlib.SimpleActionServer):
         n_y = - p_y
         surface_pose = geometry_msgs.PoseStamped(surface.header, surface.pose)
         surface_pose.header.stamp = rospy.Time()  # as we don't know how old is the observation
-        surface_pose = TF2().transform_pose(surface_pose, surface_pose.header.frame_id, 'map')
+        surface_pose = TF2().transform_pose(surface_pose, None, 'map')
         surface_tf = to_transform(surface_pose, 'surface_frame')
         TF2().publish_transform(surface_tf)
         surface_tf.transform.translation.z = 0.0
@@ -100,20 +100,20 @@ class PickupPlanner(actionlib.SimpleActionServer):
         """
         rospy.loginfo("Grouping %d objects into %d pickup poses", len(objects), len(pickup_poses))
         bfp_to_arm_tf = Transform.create(TF2().lookup_transform('base_footprint', planning_frame))  # base to arm tf
-        map_to_fbp_tf = Transform.create(TF2().lookup_transform('map', 'base_footprint'))  # map to base
+        bfp_to_map_tf = Transform.create(TF2().lookup_transform('base_footprint', 'map'))  # base to map tf
         pick_locs = []
         for pickup_pose in pickup_poses:
             # current distance from the robot (stored but not used by now)
             dist_from_robot = distance_2d(pickup_pose, robot_pose)
             # apply base to arm tf, so we get arm pose on map reference for each location
-            arm_pose_mrf = (Transform.create(pickup_pose) * bfp_to_arm_tf).to_geometry_msg_pose_stamped()
+            arm_pose_mrf = (Transform.create(pickup_pose) * bfp_to_arm_tf.inverse()).to_geometry_msg_pose_stamped()
             # detected objects poses are in arm reference, so their modulo is the distance to the arm
             objs = []
             for i, obj in enumerate(objects):
                 # transform object pose from base to map frame, so we can compare distances to pickup locations
                 # we must limit max arm reach with our navigation tolerance when reaching the goal, as that will
                 # be our probable pickup pose, instead of the ideal one received as input
-                obj_pose_mrf = (map_to_fbp_tf * Transform.create(obj.pose)).to_geometry_msg_pose_stamped()
+                obj_pose_mrf = (bfp_to_map_tf * Transform.create(obj.pose)).to_geometry_msg_pose_stamped()
                 dist = distance_2d(obj_pose_mrf, arm_pose_mrf)  # both on map rf
                 if dist <= max_arm_reach:
                     objs.append(ObjectToPickup(obj.id, dist, obj_pose_mrf))
