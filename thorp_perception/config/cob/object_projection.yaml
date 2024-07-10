@@ -1,5 +1,4 @@
 # Set your depth image topic here, default is for openni2
-#depth_topic: "/kinect/depth_registered/hw_registered/image_rect"
 depth_topic: "/kinect/depth_registered/image_raw"
 
 # Set your face detection topic here
