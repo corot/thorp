@@ -70,7 +70,10 @@
     </include>
 
     <group if="$(arg viz_executive)">
-      <node pkg="groot" type="Groot" name="groot" args="--mode monitor --autoconnect" output="screen" respawn="true"/>
+      <!--<node pkg="groot" type="Groot" name="groot" args="&#45;&#45;mode monitor &#45;&#45;autoconnect" output="screen" respawn="true"/>
+      todo start groot2 maybe with https://github.com/acschaefer/aliencontrol
+
+      -->
     </group>
   </group>
 

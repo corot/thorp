@@ -1,4 +1,4 @@
-#include <behaviortree_cpp_v3/condition_node.h>
+#include <behaviortree_cpp/condition_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
 
@@ -19,7 +19,7 @@ template <typename T>
 class IsListEmpty : public BT::ConditionNode
 {
 public:
-  IsListEmpty(const std::string& name, const BT::NodeConfiguration& config)
+  IsListEmpty(const std::string& name, const BT::NodeConfig& config)
     : ConditionNode(name, config)
   {
   }

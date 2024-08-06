@@ -1,4 +1,4 @@
-#include <behaviortree_cpp_v3/action_node.h>
+#include <behaviortree_cpp/action_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
 #include "thorp_bt_cpp/ros_service_node.hpp"
@@ -15,7 +15,7 @@ namespace thorp::bt::actions
 class AimCannon : public BT::SyncActionNode
 {
 public:
-  AimCannon(const std::string& name, const BT::NodeConfiguration& config) : BT::SyncActionNode(name, config)
+  AimCannon(const std::string& name, const BT::NodeConfig& config) : BT::SyncActionNode(name, config)
   {
   }
 
@@ -51,7 +51,7 @@ private:
 class CannonCommand : public BT::RosServiceNode<thorp_msgs::CannonCommand, BT::SyncActionNode>
 {
 public:
-  CannonCommand(const std::string& name, const BT::NodeConfiguration& conf)
+  CannonCommand(const std::string& name, const BT::NodeConfig& conf)
     : RosServiceNode<ServiceType, ParentType>(name, conf)
   {
   }
@@ -78,7 +78,7 @@ private:
 class TiltCannon : public CannonCommand
 {
 public:
-  TiltCannon(const std::string& name, const BT::NodeConfiguration& conf) : CannonCommand(name, conf)
+  TiltCannon(const std::string& name, const BT::NodeConfig& conf) : CannonCommand(name, conf)
   {
   }
 
@@ -102,7 +102,7 @@ private:
 class FireCannon : public CannonCommand
 {
 public:
-  FireCannon(const std::string& name, const BT::NodeConfiguration& conf) : CannonCommand(name, conf)
+  FireCannon(const std::string& name, const BT::NodeConfig& conf) : CannonCommand(name, conf)
   {
   }
 

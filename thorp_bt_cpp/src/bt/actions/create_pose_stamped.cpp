@@ -1,4 +1,4 @@
-#include <behaviortree_cpp_v3/action_node.h>
+#include <behaviortree_cpp/action_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
 
@@ -10,7 +10,7 @@ namespace thorp::bt::actions
 class CreatePoseStamped : public BT::SyncActionNode
 {
 public:
-  CreatePoseStamped(const std::string& name, const BT::NodeConfiguration& config)
+  CreatePoseStamped(const std::string& name, const BT::NodeConfig& config)
     : BT::SyncActionNode(name, config)
   {
   }

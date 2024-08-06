@@ -4,7 +4,7 @@
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 
-#include <behaviortree_cpp_v3/loggers/abstract_logger.h>
+#include <behaviortree_cpp/loggers/abstract_logger.h>
 
 namespace BT
 {

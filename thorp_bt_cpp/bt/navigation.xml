@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<root BTCPP_format="3">
+<root BTCPP_format="4">
   <BehaviorTree ID="attach_to_table">
-    <Parallel failure_threshold="1"
-              success_threshold="1">
+    <Parallel failure_count="1"
+              success_count="1">
       <Sequence>
         <DisableSafetyController/>
         <ClearTableAccess table="{table}"
@@ -29,8 +29,8 @@
   </BehaviorTree>
 
   <BehaviorTree ID="detach_from_table">
-    <Parallel failure_threshold="1"
-              success_threshold="1">
+    <Parallel failure_count="1"
+              success_count="1">
       <Sequence>
         <PoseAsPath pose="{pose}"
                     path="{path}"/>
@@ -50,8 +50,8 @@
   </BehaviorTree>
 
   <BehaviorTree ID="follow_waypoints">
-    <Parallel failure_threshold="1"
-              success_threshold="1">
+    <Parallel failure_count="1"
+              success_count="1">
       <UseNamedConfig config_name="waypoints_following"
                       source_ns="named_configuration"
                       target_ns=""/>
@@ -71,7 +71,7 @@
         <GetRobotPose timeout="1"
                       error="{error}"
                       robot_pose="{robot_pose}"/>
-        <TrackProgress reached_threshold=""
+        <TrackProgress reached_threshold="1"
                        robot_pose="{robot_pose}"
                        next_waypoint="{next_waypoint}"
                        waypoints="{waypoints}"/>

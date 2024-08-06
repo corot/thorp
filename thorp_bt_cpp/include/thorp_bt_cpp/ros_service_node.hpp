@@ -1,7 +1,7 @@
 #pragma once
 
-#include <behaviortree_cpp_v3/action_node.h>
-#include <behaviortree_cpp_v3/bt_factory.h>
+#include <behaviortree_cpp/action_node.h>
+#include <behaviortree_cpp/bt_factory.h>
 #include <ros/ros.h>
 #include <ros/service_client.h>
 
@@ -15,7 +15,7 @@ template <class ServiceT, class ParentT>
 class RosServiceNode : public ParentT
 {
 protected:
-  RosServiceNode(const std::string& name, const NodeConfiguration& conf) : ParentT(name, conf)
+  RosServiceNode(const std::string& name, const NodeConfig& conf) : ParentT(name, conf)
   {
   }
 

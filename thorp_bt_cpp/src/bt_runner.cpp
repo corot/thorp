@@ -1,7 +1,7 @@
 #include "thorp_bt_cpp/bt_runner.hpp"
 
 // bt tools
-#include <behaviortree_cpp_v3/xml_parsing.h>
+#include <behaviortree_cpp/xml_parsing.h>
 
 #include <thorp_toolkit/common.hpp>
 namespace ttk = thorp::toolkit;
@@ -59,8 +59,8 @@ bool Runner::loadTree()
   // init publishers for debugging bt
   if (bt_ && pnh_.param<bool>("publish_bt", false))
   {
-    bt_pub_zmq_.emplace(*bt_);
-    bt_pub_file_.emplace(*bt_, pnh_.param<std::string>("publish_bt_filepath", "/tmp/pub_bt.xml").c_str());
+    bt_pub_groot_.emplace(*bt_);
+    bt_pub_file_.emplace(*bt_, pnh_.param<std::string>("publish_bt_filepath", "/tmp/" + app_name_ + ".btlog").c_str());
     bt_pub_topic_.emplace(*bt_);
   }
 
@@ -84,20 +84,15 @@ void Runner::run()
   ros::Duration(pnh_.param("start_delay", 0.0)).sleep();
 
   ros::Time time_start = ros::Time::now();
-  ros::Rate rate(tick_rate_);
+  using namespace std::chrono;
+  auto tick_period = duration_cast<system_clock::duration>(duration<double>(1.0 / tick_rate_));
   auto status = BT::NodeStatus::RUNNING;
-  while (ros::ok() && status == BT::NodeStatus::RUNNING)
+  while (ros::ok() && !BT::isStatusCompleted(status))
   {
-    status = bt_->tickRoot();
-
+    bt_->tickOnce();
     ros::spinOnce();
 
-    if (!rate.sleep())
-    {
-      ROS_WARN_THROTTLE_NAMED(1.0, "bt_runner",
-                              "Missed desired tick rate of %.2fHz, most recent tick actually took %.2f seconds",
-                              tick_rate_, rate.cycleTime().toSec());
-    }
+    bt_->sleep(tick_period);
   }
   const double completion_time = (ros::Time::now() - time_start).toSec();
   ROS_INFO_NAMED("bt_runner", "%s completed in %.2fs with status %d", app_name_.c_str(), completion_time, (int)status);

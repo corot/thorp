@@ -1,4 +1,4 @@
-#include <behaviortree_cpp_v3/action_node.h>
+#include <behaviortree_cpp/action_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
 #include "thorp_bt_cpp/ros_action_node.hpp"
@@ -13,7 +13,7 @@ namespace thorp::bt::actions
 class ExePath : public BT::RosActionNode<mbf_msgs::ExePathAction>
 {
 public:
-  ExePath(const std::string& name, const BT::NodeConfiguration& config) : RosActionNode(name, config)
+  ExePath(const std::string& name, const BT::NodeConfig& config) : RosActionNode(name, config)
   {
   }
 

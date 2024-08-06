@@ -2,12 +2,12 @@
 
 #include <ros/ros.h>
 
-#include <behaviortree_cpp_v3/bt_factory.h>
+#include <behaviortree_cpp/bt_factory.h>
 
 // bt publisher
 #include <thorp_bt_cpp/bt_ros_logger.hpp>
-#include <behaviortree_cpp_v3/loggers/bt_file_logger.h>
-#include <behaviortree_cpp_v3/loggers/bt_zmq_publisher.h>
+#include <behaviortree_cpp/loggers/bt_file_logger_v2.h>
+#include <behaviortree_cpp/loggers/groot2_publisher.h>
 
 namespace thorp::bt
 {
@@ -32,11 +32,11 @@ private:
   /** Behavior tree. */
   std::optional<BT::Tree> bt_;
 
-  /** Publisher to attach Groot and visualize the bt in real time. */
-  std::optional<BT::PublisherZMQ> bt_pub_zmq_;
+  /** Publisher to attach Groot2 and visualize the bt in real time. */
+  std::optional<BT::Groot2Publisher> bt_pub_groot_;
 
   /** Publisher to save the bt to a file and visualize with Groot at a later time. */
-  std::optional<BT::FileLogger> bt_pub_file_;
+  std::optional<BT::FileLogger2> bt_pub_file_;
 
   /** Publisher to a ROS topic. */
   std::optional<BT::RosLogger> bt_pub_topic_;

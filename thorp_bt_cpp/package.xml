@@ -25,7 +25,7 @@
     <depend>ipa_building_msgs</depend>
     <depend>cob_perception_msgs</depend>
     <depend>rail_manipulation_msgs</depend>
-    <depend>behaviortree_cpp_v3</depend>
+    <depend>behaviortree_cpp</depend>
 
     <depend>thorp_costmap_layers</depend>
     <depend>thorp_toolkit</depend>

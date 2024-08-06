@@ -1,4 +1,6 @@
-#include <behaviortree_cpp_v3/action_node.h>
+#include <unordered_set>
+
+#include <behaviortree_cpp/action_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
 #include "thorp_bt_cpp/ros_subscriber_node.hpp"
@@ -18,7 +20,7 @@ namespace thorp::bt::actions
 class MonitorObjects : public BT::RosSubscriberNode<cob_perception_msgs::DetectionArray>
 {
 public:
-  MonitorObjects(const std::string& name, const BT::NodeConfiguration& conf) : RosSubscriberNode(name, conf)
+  MonitorObjects(const std::string& name, const BT::NodeConfig& conf) : RosSubscriberNode(name, conf)
   {
   }
 

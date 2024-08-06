@@ -1,4 +1,4 @@
-<root>
+<root BTCPP_format="4">
     <TreeNodesModel>
         <Action ID="AddObjectToTray">
             <input_port name="object_name" type="std::string"/>
@@ -7,29 +7,29 @@
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
         </Action>
         <Action ID="AimCannon">
-            <input_port name="robot_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <input_port name="target_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="angle" type="float"/>
+            <input_port name="target_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="robot_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Condition ID="AreSamePose">
+            <input_port name="pose2" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="pose1" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="angle_tolerance" type="double"/>
             <input_port name="dist_tolerance" type="double"/>
-            <input_port name="pose1" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <input_port name="pose2" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Condition>
         <Condition ID="BumperPressed"/>
         <Condition ID="CannonHasAmmo"/>
         <Action ID="ClearCostmaps">
-            <input_port name="service_name" type="std::string" default="move_base_flex/clear_costmaps">name of the ROS service</input_port>
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
+            <input_port name="service_name" type="std::string" default="move_base_flex/clear_costmaps">name of the ROS service</input_port>
         </Action>
         <Action ID="ClearGripper">
-            <input_port name="service_name" type="std::string" default="clear_gripper">name of the ROS service</input_port>
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
+            <input_port name="service_name" type="std::string" default="clear_gripper">name of the ROS service</input_port>
         </Action>
         <Action ID="ClearOctomap">
-            <input_port name="service_name" type="std::string" default="clear_octomap">name of the ROS service</input_port>
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
+            <input_port name="service_name" type="std::string" default="clear_octomap">name of the ROS service</input_port>
         </Action>
         <Action ID="ClearPlanningScene">
             <input_port name="keep_tray" type="bool"/>
@@ -40,127 +40,127 @@
             <inout_port name="list" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
         </Action>
         <Action ID="ClearRailMarkers">
-            <input_port name="service_name" type="std::string" default="rail_segmentation/clear_markers">name of the ROS service</input_port>
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
+            <input_port name="service_name" type="std::string" default="rail_segmentation/clear_markers">name of the ROS service</input_port>
         </Action>
         <Action ID="ClearTableAccess">
-            <input_port name="table" type="rail_manipulation_msgs::SegmentedObject_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="table_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="table" type="rail_manipulation_msgs::SegmentedObject_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Action ID="CreatePoseStamped">
-            <input_port name="frame" type="std::string"/>
-            <input_port name="x" type="double"/>
-            <input_port name="y" type="double"/>
-            <input_port name="yaw" type="double"/>
             <output_port name="pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="frame" type="std::string"/>
+            <input_port name="yaw" type="double"/>
+            <input_port name="y" type="double"/>
+            <input_port name="x" type="double"/>
         </Action>
         <Action ID="DetectObjects">
-            <input_port name="action_name" type="std::string" default="object_detection">name of the ROS action client</input_port>
-            <input_port name="object_types" type="std::string"/>
-            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
-            <output_port name="objects" type="std::vector&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
             <output_port name="surface" type="moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <output_port name="objects" type="std::vector&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+            <input_port name="object_types" type="std::string"/>
+            <input_port name="action_name" type="std::string" default="object_detection">name of the ROS action client</input_port>
+            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
         </Action>
         <Action ID="DetectTables">
+            <output_port name="table_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <output_port name="table" type="rail_manipulation_msgs::SegmentedObject_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="action_name" type="std::string" default="rail_segmentation/segment_objects">name of the ROS action client</input_port>
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
-            <output_port name="table" type="rail_manipulation_msgs::SegmentedObject_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <output_port name="table_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Action ID="DisableSafetyController"/>
         <Action ID="DragAndDrop">
-            <input_port name="action_name" type="std::string" default="drag_and_drop">name of the ROS action client</input_port>
-            <input_port name="objects" type="std::vector&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
-            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
             <output_port name="feedback" type="std::optional&lt;thorp_msgs::DragAndDropFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
-            <output_port name="object_name" type="std::string"/>
-            <output_port name="pickup_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="place_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <output_port name="pickup_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <output_port name="object_name" type="std::string"/>
+            <input_port name="objects" type="std::vector&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+            <input_port name="action_name" type="std::string" default="drag_and_drop">name of the ROS action client</input_port>
+            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
         </Action>
         <Action ID="EnableSafetyController"/>
         <Action ID="ExePath">
-            <input_port name="action_name" type="std::string" default="move_base_flex/exe_path">name of the ROS action client</input_port>
-            <input_port name="controller" type="std::string"/>
             <input_port name="path" type="nav_msgs::Path_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
-            <output_port name="error" type="int"/>
             <output_port name="feedback" type="std::optional&lt;mbf_msgs::ExePathFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
+            <output_port name="error" type="int"/>
+            <input_port name="controller" type="std::string"/>
+            <input_port name="action_name" type="std::string" default="move_base_flex/exe_path">name of the ROS action client</input_port>
+            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
         </Action>
         <Action ID="ExpandPickupLocation">
-            <input_port name="pickup_location" type="thorp_msgs::PickupLocation_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <output_port name="pickup_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="approach_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="detach_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <output_port name="pickup_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="pickup_location" type="thorp_msgs::PickupLocation_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Action ID="FireCannon">
-            <input_port name="service_name" type="std::string" default="cannon_command">name of the ROS service</input_port>
             <input_port name="shots" type="unsigned int"/>
+            <input_port name="service_name" type="std::string" default="cannon_command">name of the ROS service</input_port>
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
         </Action>
         <Action ID="FollowPose">
-            <input_port name="action_name" type="std::string" default="pose_follower/follow">name of the ROS action client</input_port>
-            <input_port name="distance" type="float"/>
-            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
-            <input_port name="stop_at_distance" type="bool"/>
-            <input_port name="time_limit" type="float"/>
-            <output_port name="error" type="int"/>
             <output_port name="feedback" type="thorp_msgs::FollowPoseFeedback_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <output_port name="error" type="int"/>
+            <input_port name="stop_at_distance" type="bool"/>
+            <input_port name="distance" type="float"/>
+            <input_port name="time_limit" type="float"/>
+            <input_port name="action_name" type="std::string" default="pose_follower/follow">name of the ROS action client</input_port>
+            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
         </Action>
         <Decorator ID="ForEachPickupLocation">
             <output_port name="element" type="thorp_msgs::PickupLocation_&lt;std::allocator&lt;void&gt; &gt;"/>
             <inout_port name="list" type="std::vector&lt;thorp_msgs::PickupLocation_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;thorp_msgs::PickupLocation_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
         </Decorator>
         <Action ID="GetClosestPose">
-            <input_port name="poses" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
-            <input_port name="target_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="closest_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="target_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="poses" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
         </Action>
         <Action ID="GetPath">
-            <input_port name="action_name" type="std::string" default="move_base_flex/get_path">name of the ROS action client</input_port>
-            <input_port name="planner" type="std::string"/>
-            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
-            <input_port name="target_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <output_port name="error" type="int"/>
             <output_port name="feedback" type="std::optional&lt;mbf_msgs::GetPathFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
+            <output_port name="error" type="int"/>
             <output_port name="path" type="nav_msgs::Path_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="target_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="planner" type="std::string"/>
+            <input_port name="action_name" type="std::string" default="move_base_flex/get_path">name of the ROS action client</input_port>
+            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
         </Action>
         <Action ID="GetPoseListFront">
-            <input_port name="list" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
             <output_port name="element" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="list" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
         </Action>
         <Action ID="GetPosesAroundTable">
-            <input_port name="distance" type="double"/>
-            <input_port name="split_long_sides" type="bool" default="0">Create two poses on sides longer than max_arm_reach x 2</input_port>
-            <input_port name="table" type="rail_manipulation_msgs::SegmentedObject_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <input_port name="table_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="table_side_poses" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+            <input_port name="split_long_sides" type="bool" default="false">Create two poses on sides longer than max_arm_reach x 2</input_port>
+            <input_port name="distance" type="double"/>
+            <input_port name="table_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="table" type="rail_manipulation_msgs::SegmentedObject_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Action ID="GetRobotPose">
-            <input_port name="timeout" type="double"/>
-            <output_port name="error" type="int"/>
             <output_port name="robot_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <output_port name="error" type="int"/>
+            <input_port name="timeout" type="double"/>
         </Action>
         <Action ID="GetUIntFromList">
-            <input_port name="index" type="int" default="0">Index of the element to return; negative values count from the end</input_port>
-            <input_port name="pop" type="bool" default="0">Remove the returned element</input_port>
             <output_port name="element" type="unsigned int"/>
             <inout_port name="list" type="std::vector&lt;unsigned int, std::allocator&lt;unsigned int&gt; &gt;"/>
+            <input_port name="index" type="int" default="0">Index of the element to return; negative values count from the end</input_port>
+            <input_port name="pop" type="bool" default="false">Remove the returned element</input_port>
         </Action>
         <Action ID="GoToPose">
-            <input_port name="action_name" type="std::string" default="move_base_flex/move_base">name of the ROS action client</input_port>
-            <input_port name="angle_tolerance" type="double"/>
-            <input_port name="controller" type="std::string"/>
-            <input_port name="dist_tolerance" type="double"/>
-            <input_port name="planner" type="std::string"/>
-            <input_port name="pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
-            <output_port name="error" type="int"/>
             <output_port name="feedback" type="std::optional&lt;mbf_msgs::MoveBaseFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
+            <output_port name="error" type="int"/>
+            <input_port name="angle_tolerance" type="double"/>
+            <input_port name="dist_tolerance" type="double"/>
+            <input_port name="pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="controller" type="std::string"/>
+            <input_port name="planner" type="std::string"/>
+            <input_port name="action_name" type="std::string" default="move_base_flex/move_base">name of the ROS action client</input_port>
+            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
         </Action>
         <Condition ID="GripperBusy">
+            <output_port name="attached_object" type="std::string"/>
             <input_port name="service_name" type="std::string" default="gripper_busy">name of the ROS service</input_port>
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
-            <output_port name="attached_object" type="std::string"/>
         </Condition>
         <Condition ID="IsBoolTrue">
             <input_port name="input" type="bool"/>
@@ -172,92 +172,92 @@
             <input_port name="list" type="std::vector&lt;unsigned int, std::allocator&lt;unsigned int&gt; &gt;"/>
         </Condition>
         <Action ID="LookAtPose">
-            <input_port name="action_name" type="std::string" default="move_base_flex/exe_path">name of the ROS action client</input_port>
-            <input_port name="controller" type="std::string"/>
-            <input_port name="robot_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
-            <input_port name="target_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <output_port name="error" type="int"/>
             <output_port name="feedback" type="std::optional&lt;mbf_msgs::ExePathFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
+            <output_port name="error" type="int"/>
+            <input_port name="target_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="robot_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="controller" type="std::string"/>
+            <input_port name="action_name" type="std::string" default="move_base_flex/exe_path">name of the ROS action client</input_port>
+            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
         </Action>
         <Action ID="MakePickupPlan">
-            <input_port name="action_name" type="std::string" default="manipulation/make_pickup_plan">name of the ROS action client</input_port>
-            <input_port name="objects" type="std::vector&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
-            <input_port name="pickup_poses" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
-            <input_port name="robot_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
-            <input_port name="surface" type="moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="pickup_plan" type="std::vector&lt;thorp_msgs::PickupLocation_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;thorp_msgs::PickupLocation_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+            <input_port name="surface" type="moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="objects" type="std::vector&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+            <input_port name="robot_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="pickup_poses" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+            <input_port name="action_name" type="std::string" default="manipulation/make_pickup_plan">name of the ROS action client</input_port>
+            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
         </Action>
         <Action ID="MonitorObjects">
-            <input_port name="max_delay" type="double" default="0.000000">max delay wrt Time::now() (sec); ignored if negative</input_port>
+            <output_port name="tracked_object_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <output_port name="tracked_object" type="cob_perception_msgs::Detection_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="topic_name" type="std::string" default="tracked_objects">name of the ROS topic</input_port>
             <input_port name="target_objects" type="std::string">Comma-separated list of objects to track</input_port>
             <input_port name="timeout" type="double" default="1.000000">timeout to subscribe to topic (sec); infinite if &lt;= 0</input_port>
-            <input_port name="topic_name" type="std::string" default="tracked_objects">name of the ROS topic</input_port>
-            <output_port name="tracked_object" type="cob_perception_msgs::Detection_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <output_port name="tracked_object_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="max_delay" type="double" default="0.000000">max delay wrt Time::now() (sec); ignored if negative</input_port>
         </Action>
         <Action ID="NextPoseOnTray">
+            <output_port name="pose_on_tray" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="service_name" type="std::string" default="manipulation/tray/get_next_pose">name of the ROS service</input_port>
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
-            <output_port name="pose_on_tray" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Condition ID="ObjectAttached">
+            <output_port name="attached_object" type="std::string"/>
             <input_port name="service_name" type="std::string" default="obj_attached">name of the ROS service</input_port>
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
-            <output_port name="attached_object" type="std::string"/>
         </Condition>
         <Condition ID="ObjectsDetected">
-            <input_port name="given_up_count" type="unsigned int"/>
             <input_port name="ignore_given_up" type="bool"/>
+            <input_port name="given_up_count" type="unsigned int"/>
             <input_port name="objects" type="std::vector&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
         </Condition>
         <Action ID="PickupObject">
-            <input_port name="action_name" type="std::string" default="manipulation/pickup_object">name of the ROS action client</input_port>
-            <input_port name="max_effort" type="double"/>
-            <input_port name="object_name" type="std::string"/>
-            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
-            <input_port name="support_surf" type="std::string"/>
-            <input_port name="tightening" type="double"/>
-            <output_port name="error" type="int"/>
             <output_port name="feedback" type="std::optional&lt;thorp_msgs::PickupObjectFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
+            <output_port name="error" type="int"/>
+            <input_port name="max_effort" type="double"/>
+            <input_port name="support_surf" type="std::string"/>
+            <input_port name="object_name" type="std::string"/>
+            <input_port name="tightening" type="double"/>
+            <input_port name="action_name" type="std::string" default="manipulation/pickup_object">name of the ROS action client</input_port>
+            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
         </Action>
         <Condition ID="PickupPlanCompleted">
             <input_port name="list" type="std::vector&lt;thorp_msgs::PickupLocation_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;thorp_msgs::PickupLocation_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
         </Condition>
         <Action ID="PlaceObject">
-            <input_port name="action_name" type="std::string" default="manipulation/place_object">name of the ROS action client</input_port>
-            <input_port name="object_name" type="std::string"/>
-            <input_port name="place_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
-            <input_port name="support_surf" type="std::string"/>
-            <output_port name="error" type="int"/>
             <output_port name="feedback" type="std::optional&lt;thorp_msgs::PlaceObjectFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
+            <output_port name="error" type="int"/>
+            <input_port name="place_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="support_surf" type="std::string"/>
+            <input_port name="object_name" type="std::string"/>
+            <input_port name="action_name" type="std::string" default="manipulation/place_object">name of the ROS action client</input_port>
+            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
         </Action>
         <Action ID="PlanRoomExploration">
-            <input_port name="action_name" type="std::string" default="exploration/room_exploration">name of the ROS action client</input_port>
-            <input_port name="map_image" type="sensor_msgs::Image_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <input_port name="map_origin" type="geometry_msgs::Pose_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <input_port name="map_resolution" type="float"/>
-            <input_port name="robot_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <input_port name="robot_radius" type="float"/>
-            <input_port name="room_information_in_meter" type="std::vector&lt;ipa_building_msgs::RoomInformation_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;ipa_building_msgs::RoomInformation_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
-            <input_port name="room_number" type="unsigned int"/>
-            <input_port name="segmented_map" type="sensor_msgs::Image_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
             <output_port name="coverage_waypoints" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+            <input_port name="room_number" type="unsigned int"/>
+            <input_port name="map_origin" type="geometry_msgs::Pose_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="room_information_in_meter" type="std::vector&lt;ipa_building_msgs::RoomInformation_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;ipa_building_msgs::RoomInformation_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+            <input_port name="map_resolution" type="float"/>
+            <input_port name="map_image" type="sensor_msgs::Image_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="robot_radius" type="float"/>
+            <input_port name="robot_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="segmented_map" type="sensor_msgs::Image_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="action_name" type="std::string" default="exploration/room_exploration">name of the ROS action client</input_port>
             <output_port name="start_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
         </Action>
         <Action ID="PlanRoomSequence">
-            <input_port name="action_name" type="std::string" default="exploration/room_sequence_planning">name of the ROS action client</input_port>
-            <input_port name="map_image" type="sensor_msgs::Image_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <input_port name="map_origin" type="geometry_msgs::Pose_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="map_resolution" type="float"/>
-            <input_port name="robot_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <input_port name="robot_radius" type="float"/>
-            <input_port name="room_information_in_pixel" type="std::vector&lt;ipa_building_msgs::RoomInformation_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;ipa_building_msgs::RoomInformation_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
-            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
+            <input_port name="map_origin" type="geometry_msgs::Pose_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="map_image" type="sensor_msgs::Image_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="room_sequence" type="std::vector&lt;unsigned int, std::allocator&lt;unsigned int&gt; &gt;"/>
+            <input_port name="room_information_in_pixel" type="std::vector&lt;ipa_building_msgs::RoomInformation_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;ipa_building_msgs::RoomInformation_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+            <input_port name="robot_radius" type="float"/>
+            <input_port name="robot_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="action_name" type="std::string" default="exploration/room_sequence_planning">name of the ROS action client</input_port>
+            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
         </Action>
         <Action ID="PopPoseFromList">
             <output_port name="element" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
@@ -268,8 +268,8 @@
             <inout_port name="list" type="std::vector&lt;unsigned int, std::allocator&lt;unsigned int&gt; &gt;"/>
         </Action>
         <Action ID="PoseAsPath">
-            <input_port name="pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="path" type="nav_msgs::Path_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Condition ID="PoseInBlackboard">
             <input_port name="key" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
@@ -284,106 +284,103 @@
             <inout_port name="list" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
         </Action>
         <Action ID="ReadBoolParam">
-            <input_port name="key" type="std::string"/>
-            <input_port name="negate" type="bool"/>
             <output_port name="value" type="bool"/>
+            <input_port name="negate" type="bool"/>
+            <input_port name="key" type="std::string"/>
         </Action>
         <Action ID="ReadDoubleParam">
-            <input_port name="key" type="std::string"/>
-            <input_port name="negate" type="bool"/>
             <output_port name="value" type="double"/>
+            <input_port name="negate" type="bool"/>
+            <input_port name="key" type="std::string"/>
         </Action>
         <Action ID="ReadIntParam">
-            <input_port name="key" type="std::string"/>
-            <input_port name="negate" type="bool"/>
             <output_port name="value" type="int"/>
+            <input_port name="negate" type="bool"/>
+            <input_port name="key" type="std::string"/>
         </Action>
         <Action ID="ReadUserCommands">
             <output_port name="user_command" type="std::string"/>
         </Action>
         <Action ID="RecordPickupFailure">
-            <input_port name="target_name" type="std::string"/>
-            <inout_port name="failures" type="std::map&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;, unsigned int, std::less&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; &gt;, std::allocator&lt;std::pair&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; const, unsigned int&gt; &gt; &gt;"/>
             <inout_port name="given_up_count" type="unsigned int"/>
+            <inout_port name="failures" type="std::map&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;, unsigned int, std::less&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; &gt;, std::allocator&lt;std::pair&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; const, unsigned int&gt; &gt; &gt;"/>
+            <input_port name="target_name" type="std::string"/>
         </Action>
         <Control ID="RecoverAndRetry"/>
         <Action ID="Recovery">
-            <input_port name="action_name" type="std::string" default="move_base_flex/recovery">name of the ROS action client</input_port>
-            <input_port name="behavior" type="std::string"/>
-            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
             <output_port name="feedback" type="std::optional&lt;mbf_msgs::RecoveryFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
+            <input_port name="behavior" type="std::string"/>
+            <input_port name="action_name" type="std::string" default="move_base_flex/recovery">name of the ROS action client</input_port>
+            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
         </Action>
         <Action ID="RestoreTableAccess">
             <input_port name="table" type="rail_manipulation_msgs::SegmentedObject_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Action ID="SegmentRooms">
+            <output_port name="room_information_in_pixel" type="std::vector&lt;ipa_building_msgs::RoomInformation_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;ipa_building_msgs::RoomInformation_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+            <output_port name="robot_radius" type="float"/>
+            <output_port name="map_resolution" type="float"/>
+            <output_port name="segmented_map" type="sensor_msgs::Image_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <output_port name="map_origin" type="geometry_msgs::Pose_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <output_port name="map_image" type="sensor_msgs::Image_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <output_port name="room_information_in_meter" type="std::vector&lt;ipa_building_msgs::RoomInformation_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;ipa_building_msgs::RoomInformation_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
             <input_port name="action_name" type="std::string" default="exploration/room_segmentation">name of the ROS action client</input_port>
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
-            <output_port name="map_image" type="sensor_msgs::Image_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <output_port name="map_origin" type="geometry_msgs::Pose_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <output_port name="map_resolution" type="float"/>
-            <output_port name="robot_radius" type="float"/>
-            <output_port name="room_information_in_meter" type="std::vector&lt;ipa_building_msgs::RoomInformation_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;ipa_building_msgs::RoomInformation_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
-            <output_port name="room_information_in_pixel" type="std::vector&lt;ipa_building_msgs::RoomInformation_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;ipa_building_msgs::RoomInformation_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
-            <output_port name="segmented_map" type="sensor_msgs::Image_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Action ID="SelectNextTarget">
-            <input_port name="failures" type="std::map&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;, unsigned int, std::less&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; &gt;, std::allocator&lt;std::pair&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; const, unsigned int&gt; &gt; &gt;"/>
-            <input_port name="objects" type="std::vector&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
-            <output_port name="target_name" type="std::string"/>
             <output_port name="tightening" type="double"/>
+            <input_port name="failures" type="std::map&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;, unsigned int, std::less&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; &gt;, std::allocator&lt;std::pair&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; const, unsigned int&gt; &gt; &gt;"/>
+            <output_port name="target_name" type="std::string"/>
+            <input_port name="objects" type="std::vector&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
         </Action>
         <Action ID="SetArmConfig">
-            <input_port name="action_name" type="std::string" default="manipulation/move_to_target">name of the ROS action client</input_port>
-            <input_port name="configuration" type="std::string"/>
-            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
-            <output_port name="error" type="int"/>
             <output_port name="feedback" type="std::optional&lt;thorp_msgs::MoveToTargetFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
+            <output_port name="error" type="int"/>
+            <input_port name="configuration" type="std::string"/>
+            <input_port name="action_name" type="std::string" default="manipulation/move_to_target">name of the ROS action client</input_port>
+            <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
         </Action>
         <Action ID="SetBool">
-            <input_port name="input" type="bool"/>
             <output_port name="output" type="bool"/>
+            <input_port name="input" type="bool"/>
         </Action>
         <Action ID="SetDouble">
-            <input_port name="input" type="double"/>
             <output_port name="output" type="double"/>
+            <input_port name="input" type="double"/>
         </Action>
         <Action ID="SetPose">
-            <input_port name="input" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="output" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="input" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Action ID="SetUnsignedInt">
-            <input_port name="input" type="unsigned int"/>
             <output_port name="output" type="unsigned int"/>
-        </Action>
-        <Action ID="Sleep">
-            <input_port name="duration" type="double"/>
+            <input_port name="input" type="unsigned int"/>
         </Action>
         <Action ID="SmoothPath">
+            <output_port name="path" type="nav_msgs::Path_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="waypoints" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
             <input_port name="service_name" type="std::string" default="waypoints_path/connect_waypoints">name of the ROS service</input_port>
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
-            <input_port name="waypoints" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
-            <output_port name="path" type="nav_msgs::Path_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Decorator ID="StoreResult">
             <output_port name="result" type="bool"/>
         </Decorator>
         <Action ID="TableAsObstacle">
-            <input_port name="table" type="rail_manipulation_msgs::SegmentedObject_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="table_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="table" type="rail_manipulation_msgs::SegmentedObject_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Condition ID="TableValidSize">
             <input_port name="table" type="rail_manipulation_msgs::SegmentedObject_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Condition>
         <Condition ID="TableVisited">
-            <input_port name="table" type="rail_manipulation_msgs::SegmentedObject_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="table_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="table" type="rail_manipulation_msgs::SegmentedObject_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Condition>
         <Condition ID="TargetReachable">
             <input_port name="follow_feedback" type="thorp_msgs::FollowPoseFeedback_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="robot_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="max_angle" type="float"/>
             <input_port name="max_dist" type="float"/>
-            <input_port name="robot_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Condition>
         <Action ID="TiltCannon">
             <input_port name="angle" type="float"/>
@@ -392,28 +389,28 @@
         </Action>
         <Action ID="TrackProgress">
             <input_port name="reached_threshold" type="double"/>
-            <input_port name="robot_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="next_waypoint" type="unsigned long"/>
             <inout_port name="waypoints" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+            <input_port name="robot_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Action ID="TransformPose">
+            <output_port name="out_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="in_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="yaw" type="double"/>
             <input_port name="pitch" type="double"/>
             <input_port name="roll" type="double"/>
-            <input_port name="x" type="double"/>
-            <input_port name="y" type="double"/>
-            <input_port name="yaw" type="double"/>
             <input_port name="z" type="double"/>
-            <output_port name="out_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="y" type="double"/>
+            <input_port name="x" type="double"/>
         </Action>
         <Condition ID="TrayFull">
-            <input_port name="service_name" type="std::string" default="manipulation/tray/get_capacity">name of the ROS service</input_port>
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
+            <input_port name="service_name" type="std::string" default="manipulation/tray/get_capacity">name of the ROS service</input_port>
         </Condition>
         <Action ID="UseNamedConfig">
-            <input_port name="config_name" type="std::string"/>
-            <input_port name="source_ns" type="std::string"/>
             <input_port name="target_ns" type="std::string"/>
+            <input_port name="source_ns" type="std::string"/>
+            <input_port name="config_name" type="std::string"/>
         </Action>
     </TreeNodesModel>
 </root>

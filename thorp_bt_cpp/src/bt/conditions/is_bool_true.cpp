@@ -1,4 +1,4 @@
-#include <behaviortree_cpp_v3/condition_node.h>
+#include <behaviortree_cpp/condition_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
 
@@ -15,7 +15,7 @@ namespace thorp::bt::conditions
 class IsBoolTrue : public BT::ConditionNode
 {
 public:
-  IsBoolTrue(const std::string& name, const BT::NodeConfiguration& config)
+  IsBoolTrue(const std::string& name, const BT::NodeConfig& config)
     : ConditionNode(name, config)
   {
   }

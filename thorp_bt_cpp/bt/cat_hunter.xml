@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<root BTCPP_format="3">
+<root BTCPP_format="4">
   <include path="explore_house.xml"/>
 
   <BehaviorTree ID="hunt_cat">
-    <Parallel failure_threshold="1"
-              success_threshold="1">
+    <Parallel failure_count="1"
+              success_count="1">
       <ForceSuccess>
         <FollowPose action_name="pose_follower/follow"
                     distance="0.8"
@@ -43,7 +43,7 @@
             <FireCannon service_name="cannon_command"
                         shots="1"
                         timeout="1"/>
-            <Sleep duration="1.0"/>
+            <Sleep msec="1000"/>
             <AlwaysFailure _description="Replace with failing on exhausted ammo"/>
           </Sequence>
           <AlwaysSuccess/>
@@ -56,8 +56,8 @@
     <KeepRunningUntilFailure>
       <Sequence>
         <CannonHasAmmo/>
-        <Parallel failure_threshold="1"
-                  success_threshold="1">
+        <Parallel failure_count="1"
+                  success_count="1">
           <ForceFailure>
             <SubTree ID="explore_house"/>
           </ForceFailure>

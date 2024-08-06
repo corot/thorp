@@ -1,4 +1,4 @@
-#include <behaviortree_cpp_v3/action_node.h>
+#include <behaviortree_cpp/action_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
 
@@ -12,7 +12,7 @@ namespace thorp::bt::actions
 class GetRobotPose : public BT::StatefulActionNode
 {
 public:
-  GetRobotPose(const std::string& name, const BT::NodeConfiguration& config)
+  GetRobotPose(const std::string& name, const BT::NodeConfig& config)
     : StatefulActionNode(name, config), timeout_()
   {
   }

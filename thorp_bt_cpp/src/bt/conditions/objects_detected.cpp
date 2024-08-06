@@ -1,4 +1,4 @@
-#include <behaviortree_cpp_v3/condition_node.h>
+#include <behaviortree_cpp/condition_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
 
@@ -9,7 +9,7 @@ namespace thorp::bt::conditions
 class ObjectsDetected : public BT::ConditionNode
 {
 public:
-  ObjectsDetected(const std::string& name, const BT::NodeConfiguration& config) : BT::ConditionNode(name, config)
+  ObjectsDetected(const std::string& name, const BT::NodeConfig& config) : BT::ConditionNode(name, config)
   {
   }
 
@@ -39,6 +39,7 @@ private:
         ROS_INFO_STREAM_NAMED(name(), "All " << objects->size() << " detected objects have been given up");
         return BT::NodeStatus::FAILURE;
       }
+      ROS_INFO_STREAM_COND_NAMED(given_up_count && *given_up_count, name(), *given_up_count << " given up objects");
     }
 
     ROS_INFO_STREAM_NAMED(name(), objects->size() << " objects available");

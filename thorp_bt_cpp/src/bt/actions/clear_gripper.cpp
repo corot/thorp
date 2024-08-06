@@ -1,4 +1,4 @@
-#include <behaviortree_cpp_v3/action_node.h>
+#include <behaviortree_cpp/action_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
 #include "thorp_bt_cpp/ros_service_node.hpp"
@@ -10,7 +10,7 @@ namespace thorp::bt::actions
 class ClearGripper : public BT::RosServiceNode<std_srvs::Empty, BT::SyncActionNode>
 {
 public:
-  ClearGripper(const std::string& name, const BT::NodeConfiguration& conf)
+  ClearGripper(const std::string& name, const BT::NodeConfig& conf)
     : RosServiceNode<ServiceType, ParentType>(name, conf)
   {
   }

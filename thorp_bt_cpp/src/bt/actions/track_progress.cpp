@@ -1,4 +1,4 @@
-#include <behaviortree_cpp_v3/action_node.h>
+#include <behaviortree_cpp/action_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
 
@@ -11,7 +11,7 @@ namespace thorp::bt::actions
 class TrackProgress : public BT::StatefulActionNode
 {
 public:
-  TrackProgress(const std::string& name, const BT::NodeConfiguration& config) : BT::StatefulActionNode(name, config)
+  TrackProgress(const std::string& name, const BT::NodeConfig& config) : BT::StatefulActionNode(name, config)
   {
   }
 
@@ -31,7 +31,7 @@ private:
     next_waypoint_ = 0;
     waypoints_ = *getInput<Waypoints>("waypoints");
     auto reached_threshold = getInput<double>("reached_threshold");
-    pt_.init(waypoints_, reached_threshold ? *reached_threshold : 1.0);
+    pt_.init(waypoints_, reached_threshold ? *reached_threshold : 1.0);  // TODO use paran
     ROS_INFO_STREAM_NAMED(name(), "Tracking progress along " << waypoints_.size() << " waypoints");
     return BT::NodeStatus::RUNNING;
   }

@@ -1,4 +1,4 @@
-#include <behaviortree_cpp_v3/action_node.h>
+#include <behaviortree_cpp/action_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
 #include "thorp_bt_cpp/ros_action_node.hpp"
@@ -17,7 +17,7 @@ namespace thorp::bt::actions
 class DetectTables : public BT::RosActionNode<rail_manipulation_msgs::SegmentObjectsAction>
 {
 public:
-  DetectTables(const std::string& name, const BT::NodeConfiguration& conf)
+  DetectTables(const std::string& name, const BT::NodeConfig& conf)
     : RosActionNode<ActionType>(name, conf)
   {
   }

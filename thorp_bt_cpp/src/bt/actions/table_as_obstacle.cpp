@@ -1,4 +1,4 @@
-#include <behaviortree_cpp_v3/action_node.h>
+#include <behaviortree_cpp/action_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
 
@@ -16,7 +16,7 @@ namespace thorp::bt::actions
 class TableAsObstacle : public BT::SyncActionNode
 {
 public:
-  TableAsObstacle(const std::string& name, const BT::NodeConfiguration& config) : BT::SyncActionNode(name, config)
+  TableAsObstacle(const std::string& name, const BT::NodeConfig& config) : BT::SyncActionNode(name, config)
   {
   }
 

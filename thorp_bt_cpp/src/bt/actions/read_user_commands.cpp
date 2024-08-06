@@ -1,4 +1,4 @@
-#include <behaviortree_cpp_v3/action_node.h>
+#include <behaviortree_cpp/action_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
 
@@ -13,7 +13,7 @@ namespace thorp::bt::actions
 class ReadUserCommands : public BT::SyncActionNode
 {
 public:
-  ReadUserCommands(const std::string& name, const BT::NodeConfiguration& config) : BT::SyncActionNode(name, config)
+  ReadUserCommands(const std::string& name, const BT::NodeConfig& config) : BT::SyncActionNode(name, config)
   {
     ros::NodeHandle nh;
     valid_cmds_ = nh.param("object_manip_user_commands/valid_commands", valid_cmds_);

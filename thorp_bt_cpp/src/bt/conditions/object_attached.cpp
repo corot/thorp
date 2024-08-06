@@ -1,4 +1,4 @@
-#include <behaviortree_cpp_v3/condition_node.h>
+#include <behaviortree_cpp/condition_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
 #include "thorp_bt_cpp/ros_service_node.hpp"
@@ -13,7 +13,7 @@ namespace thorp::bt::condition
 class ObjectAttached : public BT::RosServiceNode<std_srvs::Trigger, BT::ConditionNode>
 {
 public:
-  ObjectAttached(const std::string& name, const BT::NodeConfiguration& conf)
+  ObjectAttached(const std::string& name, const BT::NodeConfig& conf)
     : RosServiceNode<ServiceType, ParentType>(name, conf)
   {
   }

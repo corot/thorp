@@ -1,4 +1,4 @@
-#include <behaviortree_cpp_v3/action_node.h>
+#include <behaviortree_cpp/action_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
 #include "thorp_bt_cpp/ros_service_node.hpp"
@@ -13,7 +13,7 @@ namespace thorp::bt::actions
 class AddObjectToTray : public BT::RosServiceNode<thorp_msgs::TrayAddObject, BT::SyncActionNode>
 {
 public:
-  AddObjectToTray(const std::string& name, const BT::NodeConfiguration& conf)
+  AddObjectToTray(const std::string& name, const BT::NodeConfig& conf)
     : RosServiceNode<ServiceType, ParentType>(name, conf)
   {
   }

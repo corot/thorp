@@ -1,4 +1,4 @@
-#include <behaviortree_cpp_v3/decorator_node.h>
+#include <behaviortree_cpp/decorator_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
 
@@ -23,7 +23,7 @@ template <typename T>
 class ForEach : public BT::DecoratorNode
 {
 public:
-  ForEach(const std::string& name, const BT::NodeConfiguration& config)
+  ForEach(const std::string& name, const BT::NodeConfig& config)
     : BT::DecoratorNode(name, config)
   {
   }

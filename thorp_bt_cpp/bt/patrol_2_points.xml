@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<root BTCPP_format="3">
+<root BTCPP_format="4">
   <BehaviorTree ID="patrol_2_points">
     <Sequence>
       <CreatePoseStamped frame="map"
@@ -18,7 +18,6 @@
                     angle_tolerance=""
                     controller=""
                     dist_tolerance=""
-
                     planner=""
                     pose="{pose_a}"
                     server_timeout="5.000000"
@@ -28,7 +27,6 @@
                     angle_tolerance=""
                     controller=""
                     dist_tolerance=""
-
                     planner=""
                     pose="{pose_b}"
                     server_timeout="5.000000"

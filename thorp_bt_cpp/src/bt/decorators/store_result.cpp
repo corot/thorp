@@ -1,4 +1,4 @@
-#include <behaviortree_cpp_v3/decorator_node.h>
+#include <behaviortree_cpp/decorator_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
 
@@ -8,7 +8,7 @@ namespace thorp::bt::decorators
 class StoreResult : public BT::DecoratorNode
 {
 public:
-  StoreResult(const std::string& name, const BT::NodeConfiguration& config) : DecoratorNode(name, config)
+  StoreResult(const std::string& name, const BT::NodeConfig& config) : DecoratorNode(name, config)
   {
   }
 

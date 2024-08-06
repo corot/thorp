@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<root BTCPP_format="3" project_name="ThorpBT">
+<root BTCPP_format="4" project_name="ThorpBT">
     <include path="../bt/node_models.xml"/>
     <include path="../bt/cat_hunter.xml"/>
     <include path="../bt/explore_house.xml"/>

@@ -1,4 +1,4 @@
-#include <behaviortree_cpp_v3/action_node.h>
+#include <behaviortree_cpp/action_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
 
@@ -17,7 +17,7 @@ class SelectNextTarget : public BT::SyncActionNode
 public:
   using Object = moveit_msgs::CollisionObject;
 
-  SelectNextTarget(const std::string& name, const BT::NodeConfiguration& config) : BT::SyncActionNode(name, config)
+  SelectNextTarget(const std::string& name, const BT::NodeConfig& config) : BT::SyncActionNode(name, config)
   {
     ros::NodeHandle pnh("~");
     max_arm_reach_ = pnh.param("max_arm_reach", 0.3);

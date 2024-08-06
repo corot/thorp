@@ -1,4 +1,4 @@
-#include <behaviortree_cpp_v3/action_node.h>
+#include <behaviortree_cpp/action_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
 
@@ -14,7 +14,7 @@ template <typename T>
 class GetListFront : public BT::SyncActionNode
 {
 public:
-  GetListFront(const std::string& name, const BT::NodeConfiguration& config)
+  GetListFront(const std::string& name, const BT::NodeConfig& config)
     : BT::SyncActionNode(name, config)
   {
   }

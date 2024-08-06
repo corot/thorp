@@ -1,4 +1,4 @@
-#include <behaviortree_cpp_v3/condition_node.h>
+#include <behaviortree_cpp/condition_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
 
@@ -11,7 +11,7 @@ template <typename T>
 class InBlackboard : public BT::ConditionNode
 {
 public:
-  InBlackboard(const std::string& name, const BT::NodeConfiguration& config)
+  InBlackboard(const std::string& name, const BT::NodeConfig& config)
     : BT::ConditionNode(name, config)
   {
   }

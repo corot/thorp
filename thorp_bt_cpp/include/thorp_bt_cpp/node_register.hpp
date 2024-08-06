@@ -3,11 +3,11 @@
 #include <type_traits>
 
 #include <ros/ros.h>
-#include <behaviortree_cpp_v3/tree_node.h>
+#include <behaviortree_cpp/tree_node.h>
 
 #include "thorp_bt_cpp/bt_runner.hpp"
 
-#include <behaviortree_cpp_v3/bt_factory.h>
+#include <behaviortree_cpp/bt_factory.h>
 
 namespace thorp::bt
 {

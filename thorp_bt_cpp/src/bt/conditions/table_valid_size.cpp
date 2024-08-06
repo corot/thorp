@@ -1,4 +1,4 @@
-#include <behaviortree_cpp_v3/condition_node.h>
+#include <behaviortree_cpp/condition_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
 
@@ -17,7 +17,7 @@ namespace thorp::bt::conditions
 class TableValidSize : public BT::ConditionNode
 {
 public:
-  TableValidSize(const std::string& name, const BT::NodeConfiguration& config) : BT::ConditionNode(name, config)
+  TableValidSize(const std::string& name, const BT::NodeConfig& config) : BT::ConditionNode(name, config)
   {
   }
 

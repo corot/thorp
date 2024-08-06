@@ -1,4 +1,4 @@
-#include <behaviortree_cpp_v3/control_node.h>
+#include <behaviortree_cpp/control_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
 
@@ -19,7 +19,7 @@ namespace thorp::bt::controls
 class RecoverAndRetry : public BT::ControlNode
 {
 public:
-  RecoverAndRetry(const std::string& name, const BT::NodeConfiguration& config) : ControlNode(name, config)
+  RecoverAndRetry(const std::string& name, const BT::NodeConfig& config) : ControlNode(name, config)
   {
   }
 

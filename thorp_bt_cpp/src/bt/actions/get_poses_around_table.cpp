@@ -1,4 +1,4 @@
-#include <behaviortree_cpp_v3/action_node.h>
+#include <behaviortree_cpp/action_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
 
@@ -18,7 +18,7 @@ namespace thorp::bt::actions
 class GetPosesAroundTable : public BT::SyncActionNode
 {
 public:
-  GetPosesAroundTable(const std::string& name, const BT::NodeConfiguration& config) : BT::SyncActionNode(name, config)
+  GetPosesAroundTable(const std::string& name, const BT::NodeConfig& config) : BT::SyncActionNode(name, config)
   {
     ttk::getParam("max_arm_reach", max_arm_reach_);
     ttk::getParam("table_min_pickup_side", min_pickup_side_);
@@ -126,7 +126,7 @@ private:
     mbf_msgs::CheckPose srv;
     srv.request.pose = pose;
     srv.request.costmap = mbf_msgs::CheckPoseRequest::GLOBAL_COSTMAP;
-    srv.request.safety_dist = -0.15;  // pickup poses can be within the table, and so in collision
+    srv.request.safety_dist = -0.1;  // pickup poses can be within the table, and so in collision
     if (!check_pose_srv_.call(srv))
     {
       ROS_WARN_NAMED(name(), "MBF check pose service failed; assume pose is not blocked");

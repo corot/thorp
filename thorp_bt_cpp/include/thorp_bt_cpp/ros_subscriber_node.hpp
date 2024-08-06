@@ -1,8 +1,8 @@
 #pragma once
 
 // behaviortree_cpp
-#include <behaviortree_cpp_v3/behavior_tree.h>
-#include <behaviortree_cpp_v3/bt_factory.h>
+#include <behaviortree_cpp/behavior_tree.h>
+#include <behaviortree_cpp/bt_factory.h>
 
 // std
 #include <optional>
@@ -24,7 +24,7 @@ class RosSubscriberNode : public BT::StatefulActionNode
 public:
   using SubscriberType = SubscriberT;
 
-  RosSubscriberNode(const std::string& name, const BT::NodeConfiguration& conf) : BT::StatefulActionNode(name, conf)
+  RosSubscriberNode(const std::string& name, const BT::NodeConfig& conf) : BT::StatefulActionNode(name, conf)
   {
   }
 

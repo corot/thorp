@@ -1,9 +1,9 @@
 #pragma once
 
 // behaviortree_cpp
-#include <behaviortree_cpp_v3/action_node.h>
-#include <behaviortree_cpp_v3/bt_factory.h>
-#include <behaviortree_cpp_v3/tree_node.h>
+#include <behaviortree_cpp/action_node.h>
+#include <behaviortree_cpp/bt_factory.h>
+#include <behaviortree_cpp/tree_node.h>
 
 // ros
 #include <ros/ros.h>
@@ -28,7 +28,7 @@ protected:
   typedef boost::shared_ptr<const FeedbackType> FeedbackConstPtr;
   typedef boost::shared_ptr<const ResultType> ResultConstPtr;
 
-  RosActionNode(const std::string& xml_tag_name, const NodeConfiguration& conf) : ActionNodeBase(xml_tag_name, conf)
+  RosActionNode(const std::string& xml_tag_name, const NodeConfig& conf) : ActionNodeBase(xml_tag_name, conf)
   {
   }
 
@@ -159,7 +159,6 @@ public:
       action_client_->cancelGoal();
     }
     onFinished();
-    setStatus(NodeStatus::IDLE);
   }
 
 protected:

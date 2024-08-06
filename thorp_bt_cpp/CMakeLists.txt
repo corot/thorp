@@ -15,7 +15,7 @@ set(PKG_DEPS
       ipa_building_msgs
       cob_perception_msgs
       rail_manipulation_msgs
-      behaviortree_cpp_v3
+      behaviortree_cpp
       thorp_toolkit
       thorp_costmap_layers
 )

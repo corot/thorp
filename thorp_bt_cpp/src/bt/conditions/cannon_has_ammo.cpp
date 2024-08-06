@@ -1,4 +1,4 @@
-#include <behaviortree_cpp_v3/condition_node.h>
+#include <behaviortree_cpp/condition_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
 
@@ -14,7 +14,7 @@ namespace thorp::bt::conditions
 class CannonHasAmmo : public BT::ConditionNode
 {
 public:
-  CannonHasAmmo(const std::string& name, const BT::NodeConfiguration& config) : BT::ConditionNode(name, config)
+  CannonHasAmmo(const std::string& name, const BT::NodeConfig& config) : BT::ConditionNode(name, config)
   {
     sub_ = ros::NodeHandle().subscribe("cannon_ctrl/shots_left", 1, &CannonHasAmmo::callback);
   }

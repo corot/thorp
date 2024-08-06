@@ -1,4 +1,6 @@
-#include <behaviortree_cpp_v3/action_node.h>
+#include <unordered_set>
+
+#include <behaviortree_cpp/action_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
 #include "thorp_bt_cpp/ros_action_node.hpp"
@@ -23,7 +25,7 @@ namespace thorp::bt::actions
 class DetectObjects : public BT::RosActionNode<thorp_msgs::DetectObjectsAction>
 {
 public:
-  DetectObjects(const std::string& name, const BT::NodeConfiguration& config) : RosActionNode(name, config)
+  DetectObjects(const std::string& name, const BT::NodeConfig& config) : RosActionNode(name, config)
   {
   }
 
@@ -45,6 +47,7 @@ private:
 
     GoalType goal;
     goal.clear_scene = false;
+    ////TODO min side,,,, pasar de alguna forma    but not really needed, as perception will call the srv, not the action
     // TODO goal.output_frame = *getInput<std::string>("support_surf");
     return goal;
   }

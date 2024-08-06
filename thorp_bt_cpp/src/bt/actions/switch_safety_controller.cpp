@@ -1,4 +1,4 @@
-#include <behaviortree_cpp_v3/action_node.h>
+#include <behaviortree_cpp/action_node.h>
 
 #include "thorp_bt_cpp/node_register.hpp"
 
@@ -9,7 +9,7 @@ namespace thorp::bt::actions
 class EnableSafetyController : public BT::SyncActionNode
 {
 public:
-  EnableSafetyController(const std::string& name, const BT::NodeConfiguration& config)
+  EnableSafetyController(const std::string& name, const BT::NodeConfig& config)
     : BT::SyncActionNode(name, config)
   {
     pub_ = ros::NodeHandle().advertise<std_msgs::Empty>("kobuki_safety_controller/enable", 1);
@@ -30,7 +30,7 @@ private:
 class DisableSafetyController : public BT::SyncActionNode
 {
 public:
-  DisableSafetyController(const std::string& name, const BT::NodeConfiguration& config)
+  DisableSafetyController(const std::string& name, const BT::NodeConfig& config)
     : BT::SyncActionNode(name, config)
   {
     pub_ = ros::NodeHandle().advertise<std_msgs::Empty>("kobuki_safety_controller/disable", 1);
