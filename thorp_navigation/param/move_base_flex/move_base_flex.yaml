@@ -4,6 +4,7 @@ global_frame: map
 
 oscillation_timeout: 6.0
 oscillation_distance: 0.1
+force_stop_on_cancel: true
 
 # Local planner parameters
 controllers:
