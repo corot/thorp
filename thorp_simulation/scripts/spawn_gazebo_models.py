@@ -410,7 +410,7 @@ if __name__ == "__main__":
         spawn_model(surf_name + '_0', models[surf_name], create_2d_pose(0.45, 0.0, pi / 2.0), 'ground_plane::link')
         spawn_objects(surface, 0)
     elif sys.argv[1] == 'playground_fixed':  # a sample of objects mostly at reachable locations
-        spawn_model('lack_table', models['lack_table'], create_2d_pose(2, 0.0, 0.0), 'ground_plane::link')
+        spawn_model('lack_table', models['lack_table'], create_2d_pose(0.45, 0.0, 0.0), 'ground_plane::link')
         for obj in PLAYGROUND_OBJS:
             spawn_model(obj[0], models[obj[1]], create_3d_pose(*obj[2]), 'lack_table::link')
     elif sys.argv[1] == 'playground_cubes':  # cubes at reachable locations, ready to stack
