@@ -2,13 +2,14 @@
 
 #include "thorp_bt_cpp/node_register.hpp"
 
-#include <kobuki_msgs/BumperEvent.h>
+#include <thorp_toolkit/kobuki_base.hpp>
+namespace ttk = thorp::toolkit;
 
 namespace thorp::bt::conditions
 {
 /**
- * Check whether the cannon still has ammunition to fire. Returns:
- * SUCCESS if so
+ * Listen for bumper pressed events. Returns:
+ * SUCCESS if an event has occurred (no time limit on when)
  * FAILURE otherwise
  */
 class BumperPressed : public BT::ConditionNode
@@ -16,24 +17,31 @@ class BumperPressed : public BT::ConditionNode
 public:
   BumperPressed(const std::string& name, const BT::NodeConfig& config) : BT::ConditionNode(name, config)
   {
-    sub_ = ros::NodeHandle().subscribe("mobile_base/events/bumper", 1, &BumperPressed::callback);
+    sub_ = ros::NodeHandle().subscribe("mobile_base/events/bumper", 1, &BumperPressed::callback, this);
   }
 
 private:
-  inline static bool bumper_pressed_ = false;
-  inline static ros::Subscriber sub_;
+  bool bumper_pressed_ = false;
+  ros::Subscriber sub_;
 
-  inline static void callback(const kobuki_msgs::BumperEvent& msg)
+  void callback(const kobuki_msgs::BumperEvent& msg)
   {
     if (bumper_pressed_ = msg.state == kobuki_msgs::BumperEvent::PRESSED; bumper_pressed_)
     {
-      ROS_INFO_STREAM("bumper pressed " << msg.bumper);
+      emitWakeUpSignal();  // trigger immediate reaction
+
+      ROS_INFO_STREAM_NAMED(name(), ttk::bumperName(msg.bumper) << " bumper pressed");
     }
   }
 
   BT::NodeStatus tick() override
   {
-    return bumper_pressed_ ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
+    if (bumper_pressed_)
+    {
+      bumper_pressed_ = false;
+      return BT::NodeStatus::SUCCESS;
+    }
+    return BT::NodeStatus::FAILURE;
   }
 
   BT_REGISTER_NODE(BumperPressed);

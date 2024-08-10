@@ -76,6 +76,7 @@ add_library(${PROJECT_NAME}
         src/alternative_config.cpp
         src/common.cpp
         src/geometry.cpp
+        src/kobuki_base.cpp
         src/planning_scene.cpp
         src/progress_tracker.cpp
         src/reconfigure.cpp
