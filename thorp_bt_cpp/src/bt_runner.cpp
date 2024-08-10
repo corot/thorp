@@ -84,16 +84,33 @@ void Runner::run()
   ros::Duration(pnh_.param("start_delay", 0.0)).sleep();
 
   ros::Time time_start = ros::Time::now();
+
   using namespace std::chrono;
   auto tick_period = duration_cast<system_clock::duration>(duration<double>(1.0 / tick_rate_));
   auto status = BT::NodeStatus::RUNNING;
   while (ros::ok() && !BT::isStatusCompleted(status))
   {
-    bt_->tickOnce();
+    // Record the start time to subtract the time used on tick and ROS spin from the sleep time
+    auto start_time = system_clock::now();
+
+    status = bt_->tickOnce();
     ros::spinOnce();
 
-    bt_->sleep(tick_period);
+    // Sleep tick period minus elapsed time
+    auto elapsed_time = system_clock::now() - start_time;
+    auto sleep_time = tick_period - elapsed_time;
+    if (sleep_time > system_clock::duration::zero())
+    {
+      bt_->sleep(sleep_time);
+    }
+    else
+    {
+      ROS_WARN_THROTTLE_NAMED(1.0, "bt_runner",
+                              "Missed desired tick rate of %.2fHz, most recent tick actually took %.2f seconds",
+                              tick_rate_, duration_cast<duration<double>>(elapsed_time).count());
+    }
   }
+
   const double completion_time = (ros::Time::now() - time_start).toSec();
   ROS_INFO_NAMED("bt_runner", "%s completed in %.2fs with status %d", app_name_.c_str(), completion_time, (int)status);
 }
