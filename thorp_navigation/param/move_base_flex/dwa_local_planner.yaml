@@ -9,7 +9,7 @@ DWAPlanner:
 
   max_vel_trans: 0.5  # choose slightly less than the base's capability
   min_vel_trans: 0.1  # this is the min trans velocity when there is negligible rotational velocity
-  trans_stopped_vel: 0.1
+  trans_stopped_vel: 0.06
 
   # Warning!
   #   do not set min_vel_trans to 0.0 otherwise dwa will always think translational velocities
@@ -17,9 +17,9 @@ DWAPlanner:
 
   max_vel_theta: 5.0  # choose slightly less than the base's capability
   min_vel_theta: 0.4  # this is the min angular velocity when there is negligible translational velocity
-  theta_stopped_vel: 0.4
+  theta_stopped_vel: 0.08
 
-  acc_lim_x: 1.0 # maximum is theoretically 2.0, but we
+  acc_lim_x: 1.0      # maximum is theoretically 2.0, but we
   acc_lim_theta: 2.0
   acc_lim_y: 0.0      # diff drive robot
 
@@ -33,6 +33,7 @@ DWAPlanner:
   vx_samples: 6       # 3
   vy_samples: 1       # diff drive robot, there is only one sample
   vtheta_samples: 20  # 20
+  use_dwa: false      # true not working!
 
 # Trajectory Scoring Parameters
   path_distance_bias: 60.0      # 32.0   - weighting for how much it should stick to the global path plan
