@@ -377,9 +377,9 @@
             <input_port name="table" type="rail_manipulation_msgs::SegmentedObject_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Condition>
         <Condition ID="TargetReachable">
-            <input_port name="follow_feedback" type="thorp_msgs::FollowPoseFeedback_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="robot_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="max_angle" type="float"/>
+            <input_port name="target_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="max_dist" type="float"/>
         </Condition>
         <Action ID="TiltCannon">

@@ -2,7 +2,9 @@
 
 #include "thorp_bt_cpp/node_register.hpp"
 
-#include <thorp_msgs/FollowPoseFeedback.h>
+#include <thorp_toolkit/geometry.hpp>
+#include <thorp_toolkit/tf2.hpp>
+namespace ttk = thorp::toolkit;
 
 namespace thorp::bt::conditions
 {
@@ -19,7 +21,7 @@ public:
     return { BT::InputPort<float>("max_dist"),
              BT::InputPort<float>("max_angle"),
              BT::InputPort<geometry_msgs::PoseStamped>("robot_pose"),
-             BT::InputPort<thorp_msgs::FollowPoseFeedback>("follow_feedback") };
+             BT::InputPort<geometry_msgs::PoseStamped>("target_pose") };
   }
 
 private:
@@ -27,18 +29,26 @@ private:
   {
     float max_dist = *getInput<float>("max_dist");
     float max_angle = *getInput<float>("max_angle");
-    geometry_msgs::PoseStamped robot_pose = *getInput<geometry_msgs::PoseStamped>("robot_pose");
-    auto follow_feedback = getInput<thorp_msgs::FollowPoseFeedback>("follow_feedback");
-    if (!follow_feedback)
+    auto robot_pose = getInput<geometry_msgs::PoseStamped>("robot_pose");
+    auto target_pose = getInput<geometry_msgs::PoseStamped>("target_pose");
+    if (!robot_pose || !target_pose)
     {
-      ROS_INFO_THROTTLE_NAMED(1, name(), "Follow pose feedback not available");
+      ROS_INFO_THROTTLE_NAMED(1, name(), "Robot/target pose not available");
       return BT::NodeStatus::FAILURE;
     }
-    double dist_to_target = follow_feedback->dist_to_target;
-    double angle_to_target = follow_feedback->angle_to_target;
+
+    // Transform both poses into the same reference frame
+    if (!ttk::TF2::instance().transformPose(robot_pose->header.frame_id, *target_pose, *target_pose))
+    {
+      return BT::NodeStatus::FAILURE;
+    }
+
+    double dist_to_target = ttk::distance2D(*robot_pose, *target_pose);
+    double angle_to_target = ttk::heading(*robot_pose, *target_pose);
+    angle_to_target = ttk::anglesDiff(ttk::yaw(*robot_pose), angle_to_target); // make relative to robot yaw
     if (dist_to_target <= max_dist && std::abs(angle_to_target) <= max_angle)
     {
-      ROS_INFO_NAMED(name(), "Target at %.2f m and %.2f rad is reachable!", dist_to_target, angle_to_target);
+      ROS_INFO_NAMED(name(), "Target at %.2f m and %.2f rad reachable!", dist_to_target, angle_to_target);
       return BT::NodeStatus::SUCCESS;
     }
 
