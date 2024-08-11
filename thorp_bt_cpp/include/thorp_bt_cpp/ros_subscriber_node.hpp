@@ -15,8 +15,8 @@ namespace BT
 {
 
 /**
- * @brief A ROS subscriber action for BehaviorTree.CPP that subscribes to a topic until a message is received or a
- * timeout (sec).
+ * @brief A ROS subscriber action for BehaviorTree.CPP that subscribes to a topic until a message is received
+ * or a timeout occurs.
  */
 template <class SubscriberT>
 class RosSubscriberNode : public BT::StatefulActionNode
@@ -44,17 +44,21 @@ public:
   {
     start_time_ = ros::Time::now();
 
-    getInput("topic_name", topic_);
-    if (!topic_.empty())
+    auto topic_name = getInput<std::string>("topic_name");
+    if (!topic_name)
     {
-      onStarted();
-      sub_ = ros::NodeHandle().subscribe(topic_, 1, &RosSubscriberNode::callback, this);
-    }
-    else
-    {
-      ROS_ERROR_NAMED(LOGNAME, "topic_name is empty");
+      ROS_ERROR_NAMED(LOGNAME, "topic_name port is empty");
       return NodeStatus::FAILURE;
     }
+
+    if (topic_name_ != *topic_name)
+    {
+      topic_name_ = *topic_name;
+      sub_ = ros::NodeHandle().subscribe(topic_name_, 1, &RosSubscriberNode::callback, this);
+      ROS_DEBUG_STREAM_NAMED(LOGNAME, "Waiting for messages on topic " << topic_name_);
+    }
+
+    onStarted();
 
     double sec;
     getInput("timeout", sec);
@@ -84,9 +88,9 @@ public:
       {
         if (max_delay_ != ros::Duration(0) && ros::Time::now() - msg_.header.stamp > max_delay_)
         {
-          ROS_DEBUG_STREAM_NAMED(LOGNAME, "Message received from topic "
-                                              << topic_ << " is too old: " << ros::Time::now() - msg_.header.stamp
-                                              << " > " << max_delay_);
+          ROS_DEBUG_STREAM_NAMED(LOGNAME, "Message received from topic " << topic_name_ << " is too old: "
+                                                                         << ros::Time::now() - msg_.header.stamp
+                                                                         << " > " << max_delay_);
           status = onMaxDelay();
         }
         else
@@ -102,16 +106,14 @@ public:
     }
     else
     {
-      const auto action_elapsed_time = ros::Time::now() - start_time_;
-      if (!timeout_.isZero() && action_elapsed_time > timeout_)
+      const auto elapsed_time = ros::Time::now() - start_time_;
+      if (!timeout_.isZero() && elapsed_time > timeout_)
       {
-        ROS_ERROR_STREAM_NAMED(LOGNAME, "No message received in topic " << topic_ << " after " << action_elapsed_time);
+        ROS_WARN_STREAM_NAMED(LOGNAME, "No message received in topic " << topic_name_ << " after " << elapsed_time);
         status = onTimeout();
       }
       else
       {
-        ROS_DEBUG_STREAM_THROTTLE_NAMED(
-            1.0, LOGNAME, "Waiting for message from topic " << topic_ << "; elapsed time: " << action_elapsed_time);
         return NodeStatus::RUNNING;
       }
     }
@@ -126,6 +128,7 @@ public:
       std::lock_guard lock(async_spin_mtx_);
       nmsg_.reset();
     }
+    topic_name_.clear();
     sub_.shutdown();
   }
 
@@ -152,7 +155,7 @@ protected:
   virtual void onHalt()
   {
   }
-  std::string topic_;
+  std::string topic_name_;
   ros::Duration timeout_;
   ros::Duration max_delay_;
 
@@ -202,6 +205,7 @@ private:
     {
       std::lock_guard lock(async_spin_mtx_);
       nmsg_ = msg;
+      emitWakeUpSignal();  // trigger immediate reaction
     }
   }
 };
