@@ -122,12 +122,11 @@ public:
 
   void FireRocket(int number)
   {
-    std::string model_name = this->rocket_models_base_name + std::to_string(number);
-    ROS_DEBUG("Loading rocket %d model: %s", number, model_name.c_str());
-    auto rocket_model = this->world->ModelByName(model_name);
+    ROS_DEBUG_STREAM("Loading rocket model: " << this->rocket_models_base_name);
+    auto rocket_model = this->world->ModelByName(this->rocket_models_base_name);
     if (!rocket_model)
     {
-      ROS_ERROR_STREAM("Got nullptr for rocket model " << model_name << "; firing aborted");
+      ROS_ERROR_STREAM("Got nullptr for " << this->rocket_models_base_name << " model; firing aborted");
       return;
     }
 

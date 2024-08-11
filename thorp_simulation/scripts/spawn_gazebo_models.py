@@ -331,17 +331,14 @@ def spawn_cats(use_preferred_locs=False):
             cat_index += 1
 
 
-def spawn_rockets():
-    # spawn 10 x 10 rockets
-    rocket_index = 1
-    for i, j in product(range(10), range(10)):
-        spawn_model(
-            name='rocket' + str(rocket_index),
-            model=models['rocket'],
-            pose=create_2d_pose(i/10 - 40, j/10 - 40, 0),
-            frame='ground_plane::link'
-        )
-        rocket_index += 1
+def spawn_rocket():
+    # spawn a rocket somewhere not visible
+    spawn_model(
+        name='rocket',
+        model=models['rocket'],
+        pose=create_2d_pose(-40, -40, 0),
+        frame='ground_plane::link'
+    )
 
 
 def delete_all():
@@ -403,7 +400,7 @@ if __name__ == "__main__":
         rospy.loginfo("Spawned objects:\n  " + '\n  '.join(f'{k}: {v}' for k, v in spawned.items()))
     elif sys.argv[1] == 'cats':
         spawn_cats(use_preferred_locs)
-        spawn_rockets()
+        spawn_rocket()
     elif sys.argv[1] == 'playground_random':  # random objects over a random table
         surface = random.choice(surfaces)
         surf_name = surface['name']
