@@ -75,7 +75,7 @@ target_link_libraries(semantic_layer
                       ${catkin_LIBRARIES}
 )
 
-add_dependencies(semantic_layer ${PROJECT_NAME}_gencfg)
+add_dependencies(semantic_layer ${PROJECT_NAME}_gencfg  ${PROJECT_NAME}_generate_messages_cpp)
 
 if (catkin_EXPORTED_LIBRARIES)
     add_dependencies(semantic_layer ${catkin_EXPORTED_LIBS})
