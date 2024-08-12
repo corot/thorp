@@ -671,6 +671,18 @@ inline double minAngle(const tf::Transform& a, const tf::Transform& b)
   return angles::shortest_angular_distance(yaw(a), yaw(b));
 }
 
+/**
+ * Shortest angular difference between two angles.
+ * Just a wrapper around shortest_angular_distance to avoid depending on angles package.
+ * @param a angle a
+ * @param b angle b
+ * @return shortest angular difference
+ */
+inline double anglesDiff(double a, double b)
+{
+  return angles::shortest_angular_distance(a, b);
+}
+
 
 /**
  * Compares two poses to be (nearly) the same within tolerance margins.
