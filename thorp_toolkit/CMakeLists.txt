@@ -18,6 +18,7 @@ find_package(catkin
         angles
         geometry_msgs
         geometric_shapes
+        kobuki_msgs
         moveit_msgs
         moveit_ros_planning_interface
         eigen_conversions
@@ -45,6 +46,7 @@ catkin_package(
         angles
         geometry_msgs
         geometric_shapes
+        kobuki_msgs
         moveit_msgs
         moveit_ros_planning_interface
         eigen_conversions
