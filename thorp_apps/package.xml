@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>thorp_apps</name>
   <version>0.1.0</version>
   <description>Launch files and resources for Thorp apps</description>
@@ -14,11 +14,11 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <run_depend>thorp_bringup</run_depend>
-  <run_depend>thorp_bt_cpp</run_depend>
-  <run_depend>thorp_smach</run_depend>
-  <run_depend>thorp_simulation</run_depend>
-  <run_depend>thorp_navigation</run_depend>
-  <run_depend>thorp_perception</run_depend>
-  <run_depend>thorp_manipulation</run_depend>
+  <exec_depend>thorp_bringup</exec_depend>
+  <exec_depend>thorp_bt_cpp</exec_depend>
+  <exec_depend>thorp_smach</exec_depend>
+  <exec_depend>thorp_simulation</exec_depend>
+  <exec_depend>thorp_navigation</exec_depend>
+  <exec_depend>thorp_perception</exec_depend>
+  <exec_depend>thorp_manipulation</exec_depend>
 </package>

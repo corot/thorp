@@ -9,8 +9,8 @@ include_directories(include
                     SYSTEM
                     ${catkin_INCLUDE_DIRS})
 
-catkin_package(DEPENDS roscpp actionlib geometry_msgs moveit_msgs moveit_core visualization_msgs
-                       interactive_markers gazebo_grasp_plugin_ros thorp_msgs thorp_toolkit)
+catkin_package(CATKIN_DEPENDS roscpp actionlib geometry_msgs moveit_msgs moveit_core visualization_msgs
+                              interactive_markers gazebo_grasp_plugin_ros thorp_msgs thorp_toolkit)
 
 
 # nodes

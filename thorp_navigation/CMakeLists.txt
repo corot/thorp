@@ -12,7 +12,7 @@ generate_dynamic_reconfigure_options(cfg/Follower.cfg)
 
 catkin_package(
     INCLUDE_DIRS include
-    DEPENDS roscpp actionlib geometry_msgs mbf_msgs thorp_msgs thorp_toolkit
+    CATKIN_DEPENDS roscpp actionlib geometry_msgs mbf_msgs thorp_msgs thorp_toolkit
             dynamic_reconfigure visualization_msgs)
 
 # nodes

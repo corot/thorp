@@ -13,6 +13,7 @@ find_package(catkin
         tf
         tf2
         tf2_ros
+        tf2_eigen
         tf2_geometry_msgs
         roscpp
         angles
@@ -21,6 +22,7 @@ find_package(catkin
         kobuki_msgs
         moveit_msgs
         moveit_ros_planning_interface
+        dynamic_reconfigure
         eigen_conversions
         thorp_msgs
 )
@@ -98,3 +100,5 @@ install(TARGETS ${PROJECT_NAME}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
         )
+
+install(DIRECTORY include DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION})

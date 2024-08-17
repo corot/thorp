@@ -18,7 +18,7 @@ link_directories(${catkin_LIBRARY_DIRS})
 include_directories(${catkin_INCLUDE_DIRS} include)
 
 catkin_package(INCLUDE_DIRS include
-               DEPENDS tf roscpp pcl_ros actionlib
+               CATKIN_DEPENDS tf roscpp pcl_ros actionlib
                        moveit_ros_planning_interface
                        thorp_msgs thorp_toolkit
                        object_recognition_msgs
@@ -44,3 +44,6 @@ install(TARGETS ork_object_detection_server rail_object_detection_server
 
 install(DIRECTORY config launch meshes
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+
+install(DIRECTORY include
+        DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION})

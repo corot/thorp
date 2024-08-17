@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>thorp_description</name>
   <version>0.1.0</version>
   <description>Robot description files and meshes for Thorp robot</description>
@@ -14,17 +14,15 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>urdf</build_depend>
-  <build_depend>xacro</build_depend>
+  <depend>urdf</depend>
+  <depend>xacro</depend>
 
-  <run_depend>urdf</run_depend>
-  <run_depend>xacro</run_depend>
-  <run_depend>gazebo_plugins</run_depend>
-  <run_depend>gazebo_grasp_plugin</run_depend>
-  <run_depend>hector_gazebo_plugins</run_depend>
-  <run_depend>thorp_cannon</run_depend>
-  <run_depend>kobuki_description</run_depend>
-  <run_depend>turtlebot_description</run_depend>
-  <run_depend>turtlebot_arm_description</run_depend>
-  <run_depend>hector_sensors_description</run_depend>
+  <exec_depend>gazebo_plugins</exec_depend>
+  <exec_depend>gazebo_grasp_plugin</exec_depend>
+  <exec_depend>hector_gazebo_plugins</exec_depend>
+  <exec_depend>thorp_cannon</exec_depend>
+  <exec_depend>kobuki_description</exec_depend>
+  <exec_depend>turtlebot_description</exec_depend>
+  <exec_depend>turtlebot_arm_description</exec_depend>
+  <exec_depend>hector_sensors_description</exec_depend>
 </package>

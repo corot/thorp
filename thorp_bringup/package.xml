@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>thorp_bringup</name>
   <version>0.1.0</version>
   <description>Basic configuration and launch files for Thorp robot</description>
@@ -14,33 +14,33 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <run_depend>python3-tk</run_depend>
-  <run_depend>tf2_ros</run_depend>
-  <run_depend>actionlib</run_depend>
-  <run_depend>openni2_launch</run_depend>
-  <run_depend>freenect_launch</run_depend>
-  <run_depend>depthimage_to_laserscan</run_depend>
-  <run_depend>pointcloud_to_laserscan</run_depend>
-  <run_depend>sensor_msgs</run_depend>
-  <run_depend>kobuki_auto_docking</run_depend>
-  <run_depend>kobuki_safety_controller</run_depend>
-  <run_depend>turtlebot_bringup</run_depend>
-  <run_depend>turtlebot_dashboard</run_depend>
-  <run_depend>yocs_cmd_vel_mux</run_depend>
-  <run_depend>yocs_velocity_smoother</run_depend>
-  <run_depend>rviz_textured_quads</run_depend>
-  <run_depend>jsk_rviz_plugins</run_depend>
-  <run_depend>ipa_building_navigation</run_depend>
-  <run_depend>ipa_room_segmentation</run_depend>
-  <run_depend>ipa_room_exploration</run_depend>
+  <exec_depend>python3-tk</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>actionlib</exec_depend>
+  <exec_depend>openni2_launch</exec_depend>
+  <exec_depend>freenect_launch</exec_depend>
+  <exec_depend>depthimage_to_laserscan</exec_depend>
+  <exec_depend>pointcloud_to_laserscan</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>kobuki_auto_docking</exec_depend>
+  <exec_depend>kobuki_safety_controller</exec_depend>
+  <exec_depend>turtlebot_bringup</exec_depend>
+  <exec_depend>turtlebot_dashboard</exec_depend>
+  <exec_depend>yocs_cmd_vel_mux</exec_depend>
+  <exec_depend>yocs_velocity_smoother</exec_depend>
+  <exec_depend>rviz_textured_quads</exec_depend>
+  <exec_depend>jsk_rviz_plugins</exec_depend>
+  <exec_depend>ipa_building_navigation</exec_depend>
+  <exec_depend>ipa_room_segmentation</exec_depend>
+  <exec_depend>ipa_room_exploration</exec_depend>
 
-  <run_depend>thorp_msgs</run_depend>
-  <run_depend>thorp_boards</run_depend>
-  <run_depend>thorp_toolkit</run_depend>
-  <run_depend>thorp_description</run_depend>
-  <run_depend>thorp_moveit_config</run_depend>
-  <run_depend>thorp_navigation</run_depend>
-  <run_depend>thorp_perception</run_depend>
-  <run_depend>thorp_manipulation</run_depend>
-  <run_depend>thorp_rviz_plugins</run_depend>
+  <exec_depend>thorp_msgs</exec_depend>
+  <exec_depend>thorp_boards</exec_depend>
+  <exec_depend>thorp_toolkit</exec_depend>
+  <exec_depend>thorp_description</exec_depend>
+  <exec_depend>thorp_moveit_config</exec_depend>
+  <exec_depend>thorp_navigation</exec_depend>
+  <exec_depend>thorp_perception</exec_depend>
+  <exec_depend>thorp_manipulation</exec_depend>
+  <exec_depend>thorp_rviz_plugins</exec_depend>
 </package>

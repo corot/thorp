@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>thorp_boards</name>
   <version>0.1.0</version>
   <description>Software that interfaces with Thorp's boards</description>
@@ -14,11 +14,7 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   
-  <build_depend>roscpp</build_depend>
-  <build_depend>serial</build_depend>
-  <build_depend>sensor_msgs</build_depend>
-
-  <run_depend>roscpp</run_depend>
-  <run_depend>serial</run_depend>
-  <run_depend>sensor_msgs</run_depend>
+  <depend>roscpp</depend>
+  <depend>serial</depend>
+  <depend>sensor_msgs</depend>
 </package>

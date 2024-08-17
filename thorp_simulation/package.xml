@@ -1,4 +1,4 @@
-<package>
+<package format="2">
   <name>thorp_simulation</name>
   <version>0.1.0</version>
   <description>STDR, Stage and Gazebo launchers and worlds for Thorp simulation</description>
@@ -13,32 +13,31 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>roscpp</build_depend>
-  <build_depend>gazebo_msgs</build_depend>
-  <build_depend>geometry_msgs</build_depend>
-  <build_depend>thorp_toolkit</build_depend>
+  <depend>roscpp</depend>
+  <depend>gazebo_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>thorp_toolkit</depend>
 
-  <run_depend>thorp_bringup</run_depend>
-  <run_depend>thorp_toolkit</run_depend>
+  <exec_depend>xacro</exec_depend>
+  <exec_depend>stdr_server</exec_depend>
+  <exec_depend>stdr_robot</exec_depend>
+  <exec_depend>stdr_gui</exec_depend>
+  <exec_depend>stage_ros</exec_depend>
+  <exec_depend>gazebo_ros</exec_depend>
+  <exec_depend>gazebo_ros_control</exec_depend>
+  <exec_depend>gazebo_plugins</exec_depend>
+  <exec_depend>hector_gazebo_plugins</exec_depend>
+  <exec_depend>kobuki_gazebo_plugins</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>turtlebot_description</exec_depend>
+  <exec_depend>diagnostic_aggregator</exec_depend>
+  <exec_depend>controller_manager</exec_depend>
+  <exec_depend>effort_controllers</exec_depend>
+  <exec_depend>position_controllers</exec_depend>
+  <exec_depend>joint_state_controller</exec_depend>
+  <exec_depend>joint_trajectory_controller</exec_depend>
 
-  <run_depend>xacro</run_depend>
-  <run_depend>stdr_server</run_depend>
-  <run_depend>stdr_robot</run_depend>
-  <run_depend>stdr_gui</run_depend>
-  <run_depend>stage_ros</run_depend>
-  <run_depend>gazebo_ros</run_depend>
-  <run_depend>gazebo_ros_control</run_depend>
-  <run_depend>gazebo_plugins</run_depend>
-  <run_depend>hector_gazebo_plugins</run_depend>
-  <run_depend>kobuki_gazebo_plugins</run_depend>
-  <run_depend>robot_state_publisher</run_depend>
-  <run_depend>turtlebot_description</run_depend>
-  <run_depend>diagnostic_aggregator</run_depend>
-  <run_depend>controller_manager</run_depend>
-  <run_depend>effort_controllers</run_depend>
-  <run_depend>position_controllers</run_depend>
-  <run_depend>joint_state_controller</run_depend>
-  <run_depend>joint_trajectory_controller</run_depend>
+  <exec_depend>thorp_bringup</exec_depend>
 
   <export>
     <gazebo_ros gazebo_model_path="${prefix}/worlds/gazebo/models"/>

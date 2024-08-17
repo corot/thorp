@@ -6,7 +6,8 @@ link_directories(${GAZEBO_LIBRARY_DIRS})
 list(APPEND CMAKE_CXX_FLAGS "${GAZEBO_CXX_FLAGS}")
 
 find_package(catkin REQUIRED roscpp gazebo_msgs geometry_msgs thorp_toolkit)
-catkin_package()
+
+catkin_package(CATKIN_DEPENDS roscpp gazebo_msgs geometry_msgs thorp_toolkit)
 
 include_directories(${GAZEBO_INCLUDE_DIRS}
                     ${catkin_INCLUDE_DIRS})

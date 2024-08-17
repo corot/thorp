@@ -14,7 +14,7 @@ find_package(gazebo REQUIRED)
 catkin_package(
     LIBRARIES
         particle_shooter_plugin
-    DEPENDS
+    CATKIN_DEPENDS
         roscpp
         gazebo_ros
         arbotix_msgs
