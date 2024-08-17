@@ -2138,11 +2138,11 @@ Visualization Manager:
       Foreground Alpha: 0.800000011920929
       Foreground Color: 25; 255; 240
       Invert Shadow: false
-      Name: SMACH State
+      Name: Executive
       Overtake BG Color Properties: false
       Overtake FG Color Properties: false
       Overtake Position Properties: false
-      Topic: /rviz/smach_state_overlay
+      Topic: /rviz/executive_progress_overlay
       Value: true
       font: DejaVu Sans Mono
       height: 128

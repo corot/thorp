@@ -70,6 +70,10 @@
     </include>
 
     <group if="$(arg viz_executive)">
+      <node pkg="thorp_bt_cpp" type="show_bt_node_on_rviz.py" name="$(arg app_name)_show_state" output="screen" respawn="true">
+        <param name="app_name" value="$(arg app_name)"/>
+      </node>
+
       <!--<node pkg="groot" type="Groot" name="groot" args="&#45;&#45;mode monitor &#45;&#45;autoconnect" output="screen" respawn="true"/>
       todo start groot2 maybe with https://github.com/acschaefer/aliencontrol
 

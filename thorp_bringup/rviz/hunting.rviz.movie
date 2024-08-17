@@ -4,15 +4,12 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
+        - /Grid1/Offset1
         - /TF1/Frames1
         - /TF1/Tree1
-        - /Local Costmap1/Semantic Layer1/Namespaces1
         - /Local Planners1/DWA1/Trajectories1
-        - /Global Costmap1/Semantic Layer1
-        - /Global Costmap1/Semantic Layer1/Namespaces1
-        - /Semantic map1/MarkerArray (tables)1
-      Splitter Ratio: 0.6358839273452759
-    Tree Height: 464
+      Splitter Ratio: 0.8345499038696289
+    Tree Height: 470
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -20,8 +17,6 @@ Panels:
       - /2D Pose Estimate1
       - /2D Nav Goal1
       - /Publish Point1
-      - /Cancel Navigation1
-      - /Clear Costmaps1
     Name: Tool Properties
     Splitter Ratio: 0.5886790156364441
   - Class: rviz/Views
@@ -30,9 +25,10 @@ Panels:
     Name: Views
     Splitter Ratio: 0.5
   - Class: rviz/Time
+    Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: LaserScan (kinect)
+    SyncSource: Camera
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -51,11 +47,11 @@ Visualization Manager:
       Name: Grid
       Normal Cell Count: 0
       Offset:
-        X: 0
-        Y: 0
+        X: 7.5
+        Y: 5.5
         Z: 0
       Plane: XY
-      Plane Cell Count: 10
+      Plane Cell Count: 15
       Reference Frame: <Fixed Frame>
       Value: true
     - Alpha: 1
@@ -633,454 +629,52 @@ Visualization Manager:
       Color: 25; 255; 0
       Enabled: true
       Name: Footprint
-      Queue Size: 10
       Topic: /move_base_flex/local_costmap/footprint
       Unreliable: false
       Value: true
     - Class: rviz/TF
-      Enabled: true
-      Filter (blacklist): ""
-      Filter (whitelist): ""
+      Enabled: false
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        arm_base_link:
-          Value: false
-        arm_elbow_F10_0_link:
-          Value: false
-        arm_elbow_F10_1_link:
-          Value: false
-        arm_elbow_F10_2_link:
-          Value: false
-        arm_elbow_F3_0_link:
-          Value: false
-        arm_elbow_flex_link:
-          Value: false
-        arm_elbow_flex_servo_link:
-          Value: false
-        arm_mount_link:
-          Value: false
-        arm_shoulder_F10_0_link:
-          Value: false
-        arm_shoulder_F10_1_link:
-          Value: false
-        arm_shoulder_F10_2_link:
-          Value: false
-        arm_shoulder_F3_0_link:
-          Value: false
-        arm_shoulder_lift_link:
-          Value: false
-        arm_shoulder_lift_servo_link:
-          Value: false
-        arm_shoulder_pan_link:
-          Value: false
-        arm_shoulder_pan_servo_link:
-          Value: false
-        arm_wrist_F3_0_link:
-          Value: false
-        arm_wrist_flex_link:
-          Value: false
-        arm_wrist_flex_servo_link:
-          Value: false
-        base_footprint:
-          Value: false
-        base_laser_link:
-          Value: true
-        base_link:
-          Value: false
-        cannon_link:
-          Value: false
-        cannon_servo_link:
-          Value: false
-        cannon_shaft_link:
-          Value: false
-        cannon_tube1_hollow_link:
-          Value: false
-        cannon_tube1_link:
-          Value: false
-        cannon_tube2_hollow_link:
-          Value: false
-        cannon_tube2_link:
-          Value: false
-        cannon_tube3_hollow_link:
-          Value: false
-        cannon_tube3_link:
-          Value: false
-        cannon_tube4_hollow_link:
-          Value: false
-        cannon_tube4_link:
-          Value: false
-        cannon_tube5_hollow_link:
-          Value: false
-        cannon_tube5_link:
-          Value: false
-        cannon_tube6_hollow_link:
-          Value: false
-        cannon_tube6_link:
-          Value: false
-        caster_back_link:
-          Value: false
-        caster_front_link:
-          Value: false
-        cliff_sensor_front_link:
-          Value: false
-        cliff_sensor_left_link:
-          Value: false
-        cliff_sensor_right_link:
-          Value: false
-        gripper_active_finger_link:
-          Value: false
-        gripper_active_link:
-          Value: false
-        gripper_servo_link:
-          Value: false
-        gripper_static_finger_link:
-          Value: false
-        gripper_static_link:
-          Value: false
-        gyro_link:
-          Value: false
-        ir_arm_link:
-          Value: false
-        ir_cannon_link:
-          Value: true
-        ir_l155_link:
-          Value: false
-        ir_l180_link:
-          Value: false
-        ir_r155_link:
-          Value: false
-        ir_r180_link:
-          Value: false
-        kinect_depth_frame:
-          Value: false
-        kinect_depth_optical_frame:
-          Value: false
-        kinect_link:
-          Value: false
-        kinect_rgb_frame:
-          Value: false
-        kinect_rgb_optical_frame:
-          Value: false
-        map:
-          Value: true
-        odom:
-          Value: false
-        opencm_link:
-          Value: false
-        plate_bottom_link:
-          Value: false
-        plate_middle_link:
-          Value: false
-        plate_top_link:
-          Value: false
-        pole_bottom_0_link:
-          Value: false
-        pole_bottom_10_link:
-          Value: false
-        pole_bottom_11_link:
-          Value: false
-        pole_bottom_12_link:
-          Value: false
-        pole_bottom_13_link:
-          Value: false
-        pole_bottom_14_link:
-          Value: false
-        pole_bottom_15_link:
-          Value: false
-        pole_bottom_1_link:
-          Value: false
-        pole_bottom_2_link:
-          Value: false
-        pole_bottom_3_link:
-          Value: false
-        pole_bottom_4_link:
-          Value: false
-        pole_bottom_5_link:
-          Value: false
-        pole_kinect_0_link:
-          Value: false
-        pole_kinect_1_link:
-          Value: false
-        pole_middle_0_link:
-          Value: false
-        pole_middle_11_link:
-          Value: false
-        pole_middle_16_link:
-          Value: true
-        pole_middle_17_link:
-          Value: true
-        pole_middle_1_link:
-          Value: false
-        pole_middle_21_link:
-          Value: false
-        pole_middle_2_link:
-          Value: false
-        pole_middle_3_link:
-          Value: false
-        pole_top_0_link:
-          Value: false
-        pole_top_10_link:
-          Value: false
-        pole_top_12_link:
-          Value: false
-        pole_top_1_link:
-          Value: false
-        pole_top_20_link:
-          Value: false
-        pole_top_22_link:
-          Value: false
-        pole_top_2_link:
-          Value: false
-        pole_top_3_link:
-          Value: false
-        s_0_link:
-          Value: false
-        s_m18_link:
-          Value: false
-        s_m36_link:
-          Value: false
-        s_m54_link:
-          Value: false
-        s_m72_link:
-          Value: false
-        s_m90_link:
-          Value: false
-        s_p18_link:
-          Value: false
-        s_p36_link:
-          Value: false
-        s_p54_link:
-          Value: false
-        s_p72_link:
-          Value: false
-        s_p90_link:
-          Value: false
-        senz3d_mount_link:
-          Value: false
-        sonars_mount_link:
-          Value: false
-        tray_link:
-          Value: true
-        xtion_depth_frame:
-          Value: false
-        xtion_depth_optical_frame:
-          Value: false
-        xtion_link:
-          Value: false
-        xtion_mount_link:
-          Value: false
-        xtion_rgb_frame:
-          Value: false
-        xtion_rgb_optical_frame:
-          Value: false
-      Marker Alpha: 1
       Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        arm_elbow_flex_link:
-          arm_elbow_F10_0_link:
-            arm_elbow_F10_1_link:
-              arm_elbow_F10_2_link:
-                arm_elbow_F3_0_link:
-                  arm_wrist_flex_servo_link:
-                    {}
-        arm_shoulder_lift_link:
-          arm_shoulder_F10_0_link:
-            arm_shoulder_F10_1_link:
-              arm_shoulder_F10_2_link:
-                arm_shoulder_F3_0_link:
-                  arm_elbow_flex_servo_link:
-                    {}
-        arm_shoulder_pan_link:
-          arm_shoulder_lift_servo_link:
-            {}
-        arm_wrist_flex_link:
-          arm_wrist_F3_0_link:
-            gripper_servo_link:
-              {}
-        cannon_link:
-          cannon_tube1_hollow_link:
-            {}
-          cannon_tube1_link:
-            {}
-          cannon_tube2_hollow_link:
-            {}
-          cannon_tube2_link:
-            {}
-          cannon_tube3_hollow_link:
-            {}
-          cannon_tube3_link:
-            {}
-          cannon_tube4_hollow_link:
-            {}
-          cannon_tube4_link:
-            {}
-          cannon_tube5_hollow_link:
-            {}
-          cannon_tube5_link:
-            {}
-          cannon_tube6_hollow_link:
-            {}
-          cannon_tube6_link:
-            {}
-          ir_cannon_link:
-            {}
-        gripper_active_link:
-          gripper_active_finger_link:
-            {}
-        gripper_static_link:
-          gripper_static_finger_link:
-            {}
-        map:
-          odom:
-            base_footprint:
-              base_link:
-                base_laser_link:
-                  {}
-                caster_back_link:
-                  {}
-                caster_front_link:
-                  {}
-                cliff_sensor_front_link:
-                  {}
-                cliff_sensor_left_link:
-                  {}
-                cliff_sensor_right_link:
-                  {}
-                gyro_link:
-                  {}
-                ir_l155_link:
-                  {}
-                ir_l180_link:
-                  {}
-                ir_r155_link:
-                  {}
-                ir_r180_link:
-                  {}
-                kinect_rgb_frame:
-                  kinect_depth_frame:
-                    kinect_depth_optical_frame:
-                      {}
-                  kinect_link:
-                    {}
-                  kinect_rgb_optical_frame:
-                    {}
-                plate_bottom_link:
-                  {}
-                plate_middle_link:
-                  {}
-                plate_top_link:
-                  arm_base_link:
-                    arm_shoulder_pan_servo_link:
-                      {}
-                    ir_arm_link:
-                      {}
-                    pole_bottom_10_link:
-                      {}
-                    pole_bottom_11_link:
-                      {}
-                    pole_bottom_12_link:
-                      {}
-                    pole_bottom_13_link:
-                      {}
-                    pole_bottom_14_link:
-                      {}
-                    pole_bottom_15_link:
-                      {}
-                  arm_mount_link:
-                    cannon_servo_link:
-                      cannon_shaft_link:
-                        {}
-                  opencm_link:
-                    {}
-                  pole_middle_16_link:
-                    {}
-                  pole_middle_17_link:
-                    {}
-                  pole_top_10_link:
-                    {}
-                  pole_top_20_link:
-                    {}
-                  senz3d_mount_link:
-                    pole_middle_11_link:
-                      {}
-                    pole_middle_21_link:
-                      {}
-                    pole_top_12_link:
-                      {}
-                    pole_top_22_link:
-                      {}
-                    xtion_mount_link:
-                      xtion_rgb_frame:
-                        xtion_depth_frame:
-                          xtion_depth_optical_frame:
-                            {}
-                        xtion_link:
-                          {}
-                        xtion_rgb_optical_frame:
-                          {}
-                  tray_link:
-                    {}
-                pole_bottom_0_link:
-                  {}
-                pole_bottom_1_link:
-                  {}
-                pole_bottom_2_link:
-                  {}
-                pole_bottom_3_link:
-                  {}
-                pole_bottom_4_link:
-                  {}
-                pole_bottom_5_link:
-                  {}
-                pole_kinect_0_link:
-                  {}
-                pole_kinect_1_link:
-                  {}
-                pole_middle_0_link:
-                  {}
-                pole_middle_1_link:
-                  {}
-                pole_middle_2_link:
-                  {}
-                pole_middle_3_link:
-                  {}
-                pole_top_0_link:
-                  {}
-                pole_top_1_link:
-                  {}
-                pole_top_2_link:
-                  {}
-                pole_top_3_link:
-                  {}
-                sonars_mount_link:
-                  s_0_link:
-                    {}
-                  s_m18_link:
-                    {}
-                  s_m36_link:
-                    {}
-                  s_m54_link:
-                    {}
-                  s_m72_link:
-                    {}
-                  s_m90_link:
-                    {}
-                  s_p18_link:
-                    {}
-                  s_p36_link:
-                    {}
-                  s_p54_link:
-                    {}
-                  s_p72_link:
-                    {}
-                  s_p90_link:
-                    {}
+        {}
       Update Interval: 0
+      Value: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/LaserScan
+      Color: 255; 255; 255
+      Color Transformer: Intensity
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 1
+      Min Color: 0; 0; 0
+      Min Intensity: 1
+      Name: LaserScan (kinect)
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Squares
+      Topic: /scan
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
       Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
@@ -1097,15 +691,17 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
+      Max Intensity: 4096
       Min Color: 0; 0; 0
-      Name: LaserScan (kinect)
+      Min Intensity: 0
+      Name: LaserScan (virtual sensor)
       Position Transformer: XYZ
       Queue Size: 10
       Selectable: true
       Size (Pixels): 3
-      Size (m): 0.009999999776482582
-      Style: Squares
-      Topic: /kinect/scan
+      Size (m): 0.019999999552965164
+      Style: Flat Squares
+      Topic: /virtual
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -1125,7 +721,9 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
+      Max Intensity: 4096
       Min Color: 0; 0; 0
+      Min Intensity: 0
       Name: PointCloud (bumpers)
       Position Transformer: XYZ
       Queue Size: 10
@@ -1306,86 +904,6 @@ Visualization Manager:
           Value: true
       Enabled: false
       Name: IR sensors
-    - Class: rviz/Group
-      Displays:
-        - Align Bottom: false
-          Background Alpha: 0.800000011920929
-          Background Color: 0; 0; 0
-          Class: jsk_rviz_plugin/OverlayText
-          Enabled: true
-          Foreground Alpha: 0.800000011920929
-          Foreground Color: 25; 255; 240
-          Invert Shadow: false
-          Name: Millage
-          Overtake BG Color Properties: false
-          Overtake FG Color Properties: false
-          Overtake Position Properties: false
-          Topic: /rviz/millage_overlay
-          Value: true
-          font: DejaVu Sans Mono
-          height: 128
-          left: 0
-          line width: 2
-          text size: 12
-          top: 0
-          width: 128
-        - Align Bottom: false
-          Background Alpha: 0.800000011920929
-          Background Color: 0; 0; 0
-          Class: jsk_rviz_plugin/OverlayText
-          Enabled: true
-          Foreground Alpha: 0.800000011920929
-          Foreground Color: 25; 255; 240
-          Invert Shadow: false
-          Name: Executive
-          Overtake BG Color Properties: false
-          Overtake FG Color Properties: false
-          Overtake Position Properties: false
-          Topic: /rviz/executive_progress_overlay
-          Value: true
-          font: DejaVu Sans Mono
-          height: 128
-          left: 0
-          line width: 2
-          text size: 12
-          top: 0
-          width: 128
-        - Class: jsk_rviz_plugin/TwistStamped
-          Enabled: true
-          Name: Velocity
-          Queue Size: 10
-          Topic: /rviz/twist_stamped
-          Unreliable: false
-          Value: true
-          angular color: 255; 0; 0
-          angular scale: 1
-          linear color: 0; 255; 0
-          linear scale: 1
-        - Class: jsk_rviz_plugin/PieChart
-          Enabled: true
-          Name: Speed
-          Topic: /rviz/linear_speed
-          Value: true
-          auto color change: false
-          background color: 0; 0; 0
-          backround alpha: 0
-          clockwise rotate direction: true
-          foreground alpha: 0.699999988079071
-          foreground alpha 2: 0.4000000059604645
-          foreground color: 25; 255; 240
-          left: 128
-          max color: 255; 0; 0
-          max color change threthold: 0
-          max value: 0.5
-          med color: 255; 0; 0
-          med color change threthold: 0
-          min value: 0
-          show caption: false
-          size: 128
-          text size: 14
-          top: 128
-      Enabled: true
-      Name: Dashboard
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
       Covariance:
@@ -1403,11 +921,10 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: false
+      Enabled: true
       Keep: 100
       Name: Odometry
       Position Tolerance: 0.10000000149011612
-      Queue Size: 10
       Shape:
         Alpha: 1
         Axes Length: 1
@@ -1418,9 +935,24 @@ Visualization Manager:
         Shaft Length: 1
         Shaft Radius: 0.05000000074505806
         Value: Arrow
-      Topic: /odom
+      Topic: /icp_odom
       Unreliable: false
-      Value: false
+      Value: true
+    - Alpha: 1
+      Axes Length: 1
+      Axes Radius: 0.10000000149011612
+      Class: rviz/Pose
+      Color: 255; 255; 0
+      Enabled: true
+      Head Length: 0.30000001192092896
+      Head Radius: 0.10000000149011612
+      Name: ScanMatcherPose
+      Shaft Length: 1
+      Shaft Radius: 0.05000000074505806
+      Shape: Arrow
+      Topic: /scan_matcher_pose
+      Unreliable: false
+      Value: true
     - Alpha: 1
       Arrow Length: 0.20000000298023224
       Axes Length: 0.30000001192092896
@@ -1431,7 +963,6 @@ Visualization Manager:
       Head Length: 0.07000000029802322
       Head Radius: 0.029999999329447746
       Name: AMCL Particles
-      Queue Size: 10
       Shaft Length: 0.23000000417232513
       Shaft Radius: 0.009999999776482582
       Shape: Arrow (Flat)
@@ -1447,11 +978,10 @@ Visualization Manager:
       Head Length: 0.20000000298023224
       Head Radius: 0.10000000149011612
       Name: Current Goal
-      Queue Size: 10
       Shaft Length: 1
       Shaft Radius: 0.05000000074505806
       Shape: Arrow
-      Topic: /move_base_flex/controller_goal
+      Topic: /move_base_flex/current_goal
       Unreliable: false
       Value: true
     - Alpha: 0.699999988079071
@@ -1464,29 +994,16 @@ Visualization Manager:
       Unreliable: false
       Use Timestamp: false
       Value: true
-    - Class: rviz/Group
-      Displays:
-        - Alpha: 0.800000011920929
-          Class: rviz/Map
-          Color Scheme: costmap
-          Draw Behind: false
-          Enabled: true
-          Name: Local Costmap
-          Topic: /move_base_flex/local_costmap/costmap
-          Unreliable: false
-          Use Timestamp: false
-          Value: true
-        - Class: rviz/Marker
-          Enabled: true
-          Marker Topic: /move_base_flex/local_costmap/semantic_layer/visual_markers
-          Name: Semantic Layer
-          Namespaces:
-            previous bounds: true
-            updated bounds: true
-          Queue Size: 100
-          Value: true
+    - Alpha: 0.800000011920929
+      Class: rviz/Map
+      Color Scheme: costmap
+      Draw Behind: false
       Enabled: true
       Name: Local Costmap
+      Topic: /move_base_flex/local_costmap/costmap
+      Unreliable: false
+      Use Timestamp: false
+      Value: true
     - Class: rviz/Group
       Displays:
         - Class: rviz/MarkerArray
@@ -1516,7 +1033,6 @@ Visualization Manager:
                 Z: 0
               Pose Color: 255; 85; 255
               Pose Style: None
-              Queue Size: 10
               Radius: 0.029999999329447746
               Shaft Diameter: 0.10000000149011612
               Shaft Length: 0.10000000149011612
@@ -1544,7 +1060,6 @@ Visualization Manager:
                 Z: 0
               Pose Color: 255; 85; 255
               Pose Style: None
-              Queue Size: 10
               Radius: 0.029999999329447746
               Shaft Diameter: 0.10000000149011612
               Shaft Length: 0.10000000149011612
@@ -1566,7 +1081,9 @@ Visualization Manager:
               Enabled: false
               Invert Rainbow: false
               Max Color: 255; 255; 255
+              Max Intensity: 363
               Min Color: 0; 0; 0
+              Min Intensity: 0
               Name: Costs Cloud
               Position Transformer: XYZ
               Queue Size: 10
@@ -1598,7 +1115,9 @@ Visualization Manager:
               Enabled: true
               Invert Rainbow: false
               Max Color: 255; 255; 255
+              Max Intensity: 8.606754302978516
               Min Color: 0; 0; 0
+              Min Intensity: 8.140351295471191
               Name: Trajectories
               Position Transformer: XYZ
               Queue Size: 10
@@ -1626,7 +1145,9 @@ Visualization Manager:
               Enabled: true
               Invert Rainbow: false
               Max Color: 255; 255; 255
+              Max Intensity: 325.20001220703125
               Min Color: 0; 0; 0
+              Min Intensity: 0
               Name: Costs Cloud
               Position Transformer: XYZ
               Queue Size: 10
@@ -1656,7 +1177,6 @@ Visualization Manager:
                 Z: 0
               Pose Color: 255; 85; 255
               Pose Style: None
-              Queue Size: 10
               Radius: 0.029999999329447746
               Shaft Diameter: 0.10000000149011612
               Shaft Length: 0.10000000149011612
@@ -1684,7 +1204,6 @@ Visualization Manager:
                 Z: 0
               Pose Color: 255; 85; 255
               Pose Style: None
-              Queue Size: 10
               Radius: 0.029999999329447746
               Shaft Diameter: 0.10000000149011612
               Shaft Length: 0.10000000149011612
@@ -1708,7 +1227,6 @@ Visualization Manager:
                 Z: 0
               Pose Color: 255; 85; 255
               Pose Style: None
-              Queue Size: 10
               Radius: 0.029999999329447746
               Shaft Diameter: 0.10000000149011612
               Shaft Length: 0.10000000149011612
@@ -1725,7 +1243,6 @@ Visualization Manager:
               Head Length: 0.07000000029802322
               Head Radius: 0.029999999329447746
               Name: Poses
-              Queue Size: 10
               Shaft Length: 0.23000000417232513
               Shaft Radius: 0.009999999776482582
               Shape: Arrow (Flat)
@@ -1737,9 +1254,8 @@ Visualization Manager:
               Marker Topic: /move_base_flex/TEBPlanner/teb_markers
               Name: Markers
               Namespaces:
-                LineObstacles: true
-                PolyObstacles: true
-                RobotFootprintModel: true
+                PointObstacles: true
+                TebContainer: true
                 ViaPoints: true
               Queue Size: 100
               Value: true
@@ -1747,29 +1263,16 @@ Visualization Manager:
           Name: TEB
       Enabled: true
       Name: Local Planners
-    - Class: rviz/Group
-      Displays:
-        - Alpha: 0.4000000059604645
-          Class: rviz/Map
-          Color Scheme: costmap
-          Draw Behind: true
-          Enabled: true
-          Name: Global Costmap
-          Topic: /move_base_flex/global_costmap/costmap
-          Unreliable: false
-          Use Timestamp: false
-          Value: true
-        - Class: rviz/Marker
-          Enabled: true
-          Marker Topic: /move_base_flex/global_costmap/semantic_layer/visual_markers
-          Name: Semantic Layer
-          Namespaces:
-            previous bounds: true
-            updated bounds: true
-          Queue Size: 100
-          Value: true
+    - Alpha: 0.4000000059604645
+      Class: rviz/Map
+      Color Scheme: costmap
+      Draw Behind: true
       Enabled: true
       Name: Global Costmap
+      Topic: /move_base_flex/global_costmap/costmap
+      Unreliable: false
+      Use Timestamp: false
+      Value: true
     - Class: rviz/Group
       Displays:
         - Alpha: 1
@@ -1789,7 +1292,6 @@ Visualization Manager:
             Z: 0
           Pose Color: 255; 85; 255
           Pose Style: None
-          Queue Size: 10
           Radius: 0.029999999329447746
           Shaft Diameter: 0.10000000149011612
           Shaft Length: 0.10000000149011612
@@ -1813,7 +1315,6 @@ Visualization Manager:
             Z: 0
           Pose Color: 255; 85; 255
           Pose Style: None
-          Queue Size: 10
           Radius: 0.029999999329447746
           Shaft Diameter: 0.10000000149011612
           Shaft Length: 0.10000000149011612
@@ -1824,111 +1325,9 @@ Visualization Manager:
       Name: Global Planners
     - Class: rviz/Group
       Displays:
-        - Alpha: 1
-          Buffer Length: 1
-          Class: rviz/Path
-          Color: 117; 80; 123
-          Enabled: true
-          Head Diameter: 0.30000001192092896
-          Head Length: 0.20000000298023224
-          Length: 0.30000001192092896
-          Line Style: Billboards
-          Line Width: 0.029999999329447746
-          Name: Coverage Path
-          Offset:
-            X: 0
-            Y: 0
-            Z: 0
-          Pose Color: 255; 85; 255
-          Pose Style: None
-          Queue Size: 10
-          Radius: 0.029999999329447746
-          Shaft Diameter: 0.10000000149011612
-          Shaft Length: 0.10000000149011612
-          Topic: /exploration/room_exploration/coverage_path
-          Unreliable: false
-          Value: true
-        - Alpha: 1
-          Class: rviz/PointStamped
-          Color: 204; 41; 204
-          Enabled: true
-          History Length: 1
-          Name: Starting Point
-          Queue Size: 10
-          Radius: 0.20000000298023224
-          Topic: /exploration/starting_point
-          Unreliable: false
-          Value: true
-        - Alpha: 1
-          Class: rviz/Polygon
-          Color: 25; 255; 0
-          Enabled: true
-          Name: Camera FOV
-          Queue Size: 10
-          Topic: /exploration/camera_fov
-          Unreliable: false
-          Value: true
-        - Alpha: 0.699999988079071
-          Class: rviz/Map
-          Color Scheme: map
-          Draw Behind: false
-          Enabled: true
-          Name: Room Segmentation
-          Topic: /exploration/room_segmentation/segmented_map
-          Unreliable: false
-          Use Timestamp: false
-          Value: true
-        - Class: rviz/Image
-          Enabled: false
-          Image Topic: /exploration/room_segmentation_img
-          Max Value: 1
-          Median window: 5
-          Min Value: 0
-          Name: Room Segmentation
-          Normalize Range: true
-          Queue Size: 2
-          Transport Hint: raw
-          Unreliable: false
-          Value: false
-        - Class: rviz/Image
-          Enabled: false
-          Image Topic: /exploration/room_sequence_img
-          Max Value: 1
-          Median window: 5
-          Min Value: 0
-          Name: Room Sequence
-          Normalize Range: true
-          Queue Size: 2
-          Transport Hint: raw
-          Unreliable: false
-          Value: false
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /exploration/room_sequence_planning/room_sequence_marker
-          Name: Room Sequence Plan
-          Namespaces:
-            {}
-          Queue Size: 100
-          Value: true
-        - Class: rviz/Image
-          Enabled: false
-          Image Topic: /exploration/img
-          Max Value: 1
-          Median window: 5
-          Min Value: 0
-          Name: Image
-          Normalize Range: true
-          Queue Size: 2
-          Transport Hint: raw
-          Unreliable: false
-          Value: false
-      Enabled: true
-      Name: Exploration
-    - Class: rviz/Group
-      Displays:
-        - Class: rviz/MarkerArray
-          Enabled: true
-          Marker Topic: /semantic_map/markers
+          Marker Topic: /table_marker
           Name: MarkerArray (tables)
           Namespaces:
             {}
@@ -1950,6 +1349,141 @@ Visualization Manager:
             {}
           Queue Size: 100
           Value: true
+      Enabled: true
+      Name: Semantic map
+    - Class: rviz/Group
+      Displays:
+        - Alpha: 1
+          Buffer Length: 1
+          Class: rviz/Path
+          Color: 117; 80; 123
+          Enabled: true
+          Head Diameter: 0.30000001192092896
+          Head Length: 0.20000000298023224
+          Length: 0.30000001192092896
+          Line Style: Billboards
+          Line Width: 0.029999999329447746
+          Name: Coverage Path
+          Offset:
+            X: 0
+            Y: 0
+            Z: 0
+          Pose Color: 255; 85; 255
+          Pose Style: None
+          Radius: 0.029999999329447746
+          Shaft Diameter: 0.10000000149011612
+          Shaft Length: 0.10000000149011612
+          Topic: /exploration/room_exploration/coverage_path
+          Unreliable: false
+          Value: true
+        - Alpha: 1
+          Class: rviz/PointStamped
+          Color: 204; 41; 204
+          Enabled: true
+          History Length: 1
+          Name: Starting Point
+          Radius: 0.20000000298023224
+          Topic: /exploration/starting_point
+          Unreliable: false
+          Value: true
+        - Alpha: 1
+          Class: rviz/Polygon
+          Color: 25; 255; 0
+          Enabled: true
+          Name: Camera FOV
+          Topic: /exploration/camera_fov
+          Unreliable: false
+          Value: true
+        - Alpha: 0.699999988079071
+          Class: rviz/Map
+          Color Scheme: map
+          Draw Behind: false
+          Enabled: true
+          Name: Room Segmentation
+          Topic: /exploration/room_segmentation/segmented_map
+          Unreliable: false
+          Use Timestamp: false
+          Value: true
+        - Class: rviz/MarkerArray
+          Enabled: true
+          Marker Topic: /exploration/room_sequence_planning/room_sequence_marker
+          Name: Room Sequence Plan
+          Namespaces:
+            room_sequence_checkpoints: true
+            room_sequence_rooms: true
+          Queue Size: 100
+          Value: true
+      Enabled: true
+      Name: Exploration
+    - Class: rviz/Group
+      Displays:
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /object_detection/detections_image
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: Camera
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: raw
+          Unreliable: false
+          Value: true
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /tracked_objects_images
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: Tracked Objects
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: raw
+          Unreliable: false
+          Value: true
+        - Class: rviz_textured_quads/MeshDisplayCustom
+          Enabled: false
+          Image Topic: /tracked_objects_images
+          Image Topic Selector: ""
+          Meters per pixel: 0.0020000000949949026
+          Name: Tracked Objects
+          Quad Frame: cat_17
+          Value: false
+        - Class: rviz/MarkerArray
+          Enabled: true
+          Marker Topic: /tracked_objects_markers
+          Name: Tracked Objects
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: true
+      Enabled: true
+      Name: COB
+    - Class: rviz/Group
+      Displays:
+        - Alpha: 1
+          Axes Length: 1
+          Axes Radius: 0.10000000149011612
+          Class: rviz/Pose
+          Color: 255; 25; 0
+          Enabled: true
+          Head Length: 0.30000001192092896
+          Head Radius: 0.10000000149011612
+          Name: Target Object
+          Shaft Length: 1
+          Shaft Radius: 0.05000000074505806
+          Shape: Axes
+          Topic: /target_object_pose
+          Unreliable: false
+          Value: true
+        - Class: rviz/Marker
+          Enabled: true
+          Marker Topic: /attack_target
+          Name: Attack Target
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: true
         - Class: rviz/InteractiveMarkers
           Enable Transparency: true
           Enabled: true
@@ -1960,28 +1494,7 @@ Visualization Manager:
           Update Topic: /model_markers/update
           Value: true
       Enabled: true
-      Name: Semantic map
-    - Align Bottom: false
-      Background Alpha: 0.800000011920929
-      Background Color: 0; 0; 0
-      Class: jsk_rviz_plugin/OverlayText
-      Enabled: true
-      Foreground Alpha: 0.800000011920929
-      Foreground Color: 25; 255; 240
-      Invert Shadow: false
-      Name: Executive
-      Overtake BG Color Properties: false
-      Overtake FG Color Properties: false
-      Overtake Position Properties: false
-      Topic: /rviz/executive_progress_overlay
-      Value: true
-      font: DejaVu Sans Mono
-      height: 128
-      left: 0
-      line width: 2
-      text size: 12
-      top: 0
-      width: 128
+      Name: Hunting
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -2003,51 +1516,60 @@ Visualization Manager:
     - Class: rviz/SetGoal
       Topic: /move_base_simple/goal
     - Class: rviz/PublishPoint
-      Single click: false
+      Single click: true
       Topic: /clicked_point
-    - Class: thorp::rviz_plugins/CancelNavigationTool
-      Topic: /move_base_flex/move_base/cancel
-    - Class: thorp::rviz_plugins/ClearCostmapTool
-      Service: /move_base_flex/clear_costmaps
   Value: true
   Views:
     Current:
-      Angle: 0
-      Class: rviz/TopDownOrtho
+      Class: rviz_animated_view_controller/Animated
+      Control Mode: Orbit
+      Distance: 18.00027847290039
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
+      Eye:
+        X: 8
+        Y: 5.400000095367432
+        Z: 18
+      Focus:
+        X: 8
+        Y: 5.5
+        Z: 0
       Invert Z Axis: false
+      Maintain Vertical Axis: true
+      Mouse Enabled: true
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 115.85070037841797
-      Target Frame: <Fixed Frame>
-      X: 5.891995906829834
-      Y: 4.3430256843566895
+      Placement Topic: /rviz/camera_placement
+      Target Frame: map
+      Transition Time: 0.5
+      Up:
+        X: 0
+        Y: 0
+        Z: 1
+      Value: Animated (rviz_animated_view_controller)
     Saved: ~
 Window Geometry:
+  Camera:
+    collapsed: false
   Displays:
-    collapsed: false
-  Height: 1016
-  Hide Left Dock: false
+    collapsed: true
+  Height: 1025
+  Hide Left Dock: true
   Hide Right Dock: false
-  Image:
-    collapsed: false
-  QMainWindow State: 000000ff00000000fd00000003000000000000017d0000039efc0200000008fb0000001200530065006c0065006300740069006f006e000000003d0000009b0000005c00fffffffb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d0000025b000000c900fffffffc0000029e0000013d000000c10100001cfa000000000100000002fb0000000a0056006900650077007301000000000000017d0000010000fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000000ffffffff0000009d00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000008600000023c00000185000000a3fb000000220052006f006f006d0020005300650067006d0065006e0074006100740069006f006e00000001840000008a0000001600fffffffb0000001a0052006f006f006d002000530065007100750065006e0063006500000001e9000000b50000001600ffffff000000010000010f00000261fc0200000002fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000030000073d00000140fc0100000007fb0000000a0049006d00610067006500000000000000073d0000005e00fffffffb0000000a005600690065007700730100000000000002620000000000000000fb000000220052006f006f006d0020005300650067006d0065006e0074006100740069006f006e010000027e000001910000000000000000fb0000001a0052006f006f006d002000530065007100750065006e0063006501000004150000018a0000000000000000fb0000000a0049006d0061006700650000000361000003dc0000000000000000fb0000000800540069006d00650000000000000004a00000041800fffffffb0000000800540069006d00650100000000000004500000000000000000000005b50000039e00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
-  Room Segmentation:
-    collapsed: false
-  Room Sequence:
-    collapsed: false
+  QMainWindow State: 000000ff00000000fd000000030000000000000156000003a7fc020000000dfb0000001200530065006c0065006300740069006f006e000000003d0000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000005fb0000023c00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073000000003d00000261000000c900fffffffb0000000a0056006900650077007300000002a400000140000000a400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000008600000023c00000185000000a3fb000000160049006d00610067006500200043006f006c006f00720000000000ffffffff0000000000000000fb000000160049006d0061006700650020004400650070007400680000000000ffffffff0000000000000000fb00000010004400650074006500630074006500640000000000ffffffff0000000000000000fb0000001000440065007400650063007400650064010000026c000000160000000000000000fb0000000e0054007200610063006b006500640100000288000000160000000000000000fb0000000a0049006d0061006700650000000000ffffffff00000000000000000000000100000259000003a7fc0200000005fb0000001e0054007200610063006b006500640020004f0062006a0065006300740073010000003d000001c60000001600fffffffb0000000c00430061006d0065007200610100000209000001db0000001600fffffffb0000000c00430061006d0065007200610100000219000001cb0000000000000000fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000030000073d00000140fc0100000005fb0000000a005600690065007700730100000000000002620000000000000000fb00000016004b0069006e00650063007400200056006900650077010000054a000001f30000000000000000fb0000000a0049006d00610067006501000005a5000001980000000000000000fb0000000800540069006d00650000000000000004a0000004f300fffffffb0000000800540069006d00650100000000000004500000000000000000000004de000003a700000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
     collapsed: false
   Tool Properties:
     collapsed: false
-  Views:
+  Tracked Objects:
     collapsed: false
-  Width: 1848
-  X: 72
+  Views:
+    collapsed: true
+  Width: 1853
+  X: 67
   Y: 27

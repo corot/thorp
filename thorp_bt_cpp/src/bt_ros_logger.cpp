@@ -20,16 +20,18 @@ RosLogger::~RosLogger()
 
 void RosLogger::callback(Duration timestamp, const TreeNode& node, NodeStatus prev_status, NodeStatus status)
 {
-//  using namespace std::chrono;
-//
-//  double since_epoch = duration<double>(timestamp).count();
-//  std_msgs::String msg;
-//  std::stringstream ss;
-//  ss << "[" << since_epoch << "]: " << node.name() << " " << toStr(prev_status, true) << " -> " << toStr(status, true);
-//  msg.data = ss.str();
-  std_msgs::String msg;
-  if (prev_status == NodeStatus::IDLE && status == NodeStatus::RUNNING)
+  //  using namespace std::chrono;
+  //
+  //  double since_epoch = duration<double>(timestamp).count();
+  //  std_msgs::String msg;
+  //  std::stringstream ss;
+  //  ss << "[" << since_epoch << "]: " << node.name() << " " << toStr(prev_status, true) << " -> " << toStr(status,
+  //  true); msg.data = ss.str();
+  // Publish only actions the first tick they start running
+  if (dynamic_cast<const BT::ActionNodeBase*>(&node) != nullptr && prev_status == NodeStatus::IDLE &&
+      status == NodeStatus::RUNNING)
   {
+    std_msgs::String msg;
     msg.data = node.name();
     pub_.publish(msg);
   }

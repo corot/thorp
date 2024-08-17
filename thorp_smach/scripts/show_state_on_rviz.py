@@ -27,13 +27,13 @@ def smach_status_cb(msg):
     current_state = match.group(1)
     overlay_text = Visualization.create_overlay_text(60, (1.0, 1.0, 1.0), current_state, 12)
 
-    state_pub.publish(overlay_text)
+    status_pub.publish(overlay_text)
 
 
 if __name__ == "__main__":
     rospy.init_node("show_smach_state_on_rviz")
 
-    state_pub = rospy.Publisher('rviz/smach_state_overlay', OverlayText, queue_size=1)
+    status_pub = rospy.Publisher('rviz/executive_progress_overlay', OverlayText, queue_size=1)
 
     server_name = rospy.get_param('~app_name')
     status_topic = server_name + introspection.STATUS_TOPIC
