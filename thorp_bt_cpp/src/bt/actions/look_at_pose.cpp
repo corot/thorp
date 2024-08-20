@@ -11,7 +11,8 @@ namespace ttk = thorp::toolkit;
 namespace thorp::bt::actions
 {
 /**
- * Turn toward a given pose
+ * Turn toward a given pose.
+ * Allows updating the goal while running.
  */
 class LookAtPose : public BT::RosActionNode<mbf_msgs::ExePathAction>
 {
@@ -35,7 +36,12 @@ public:
 private:
   std::optional<GoalType> current_goal_;
 
-  std::optional<GoalType> getGoal() override
+  GoalType getGoal() override
+  {
+    return *current_goal_;
+  }
+
+  void onTick() override
   {
     GoalType new_goal;
     new_goal.controller = *getInput<std::string>("controller");
@@ -49,9 +55,8 @@ private:
     if (!current_goal_ || *current_goal_ != new_goal)
     {
       current_goal_ = new_goal;
-      return current_goal_;
+      goal_updated_ = true;
     }
-    return std::nullopt;
   }
 
   void onFeedback(const FeedbackConstPtr& feedback) override

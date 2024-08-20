@@ -32,11 +32,8 @@ public:
   }
 
 private:
-  std::optional<GoalType> getGoal() override
+  GoalType getGoal() override
   {
-    if (status() == BT::NodeStatus::RUNNING)
-      return std::nullopt;
-
     GoalType goal;
     goal.only_surface = true;
     goal.surface_min_side = ros::NodeHandle("~").param("table_min_side", 0.3);

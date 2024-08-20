@@ -34,11 +34,8 @@ public:
   }
 
 private:
-  std::optional<GoalType> getGoal() override
+  GoalType getGoal() override
   {
-    if (status() == BT::NodeStatus::RUNNING)
-      return std::nullopt;
-
     ros::NodeHandle pnh("~");
 
     GoalType goal;

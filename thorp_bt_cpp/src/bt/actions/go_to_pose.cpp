@@ -11,6 +11,10 @@ namespace ttk = thorp::toolkit;
 
 namespace thorp::bt::actions
 {
+/**
+ * Go to a given pose using MBF's move_base action.
+ * Allows updating the goal while running.
+ */
 class GoToPose : public BT::RosActionNode<mbf_msgs::MoveBaseAction>
 {
 public:
@@ -39,38 +43,40 @@ private:
   std::optional<ttk::Reconfigure> reconf_;
   std::optional<GoalType> current_goal_;
 
-  std::optional<GoalType> getGoal() override
+  GoalType getGoal() override
+  {
+    if (reconf_)
+    {
+      auto dist_tolerance = getInput<double>("dist_tolerance");
+      if (dist_tolerance)
+        reconf_->addParam("xy_goal_tolerance", *dist_tolerance);
+      auto angle_tolerance = getInput<double>("angle_tolerance");
+      if (angle_tolerance)
+        reconf_->addParam("yaw_goal_tolerance", *angle_tolerance);
+      if ((dist_tolerance || angle_tolerance) && !reconf_->apply())
+        ROS_WARN_NAMED(name(), "Reconfigure goal tolerances failed");
+    }
+
+    return *current_goal_;
+  }
+
+  void onTick() override
   {
     GoalType new_goal;
     auto target_pose = getInput<geometry_msgs::PoseStamped>("pose");
     if (!target_pose)
       throw BT::RuntimeError(name(), ": pose not provided");
     new_goal.target_pose = *target_pose;
-    auto planner = getInput<std::string>("planner");
-    if (planner)
+    if (auto planner = getInput<std::string>("planner"); planner)
       new_goal.planner = *planner;
-    auto controller = getInput<std::string>("controller");
-    if (controller)
+    if (auto controller = getInput<std::string>("controller"); controller)
       new_goal.controller = *controller;
 
     if (!current_goal_ || *current_goal_ != new_goal)
     {
-      if (reconf_)
-      {
-        auto dist_tolerance = getInput<double>("dist_tolerance");
-        if (dist_tolerance)
-          reconf_->addParam("xy_goal_tolerance", *dist_tolerance);
-        auto angle_tolerance = getInput<double>("angle_tolerance");
-        if (angle_tolerance)
-          reconf_->addParam("yaw_goal_tolerance", *angle_tolerance);
-        if ((dist_tolerance || angle_tolerance) && !reconf_->apply())
-          ROS_WARN_NAMED(name(), "Reconfigure goal tolerances failed");
-      }
-
       current_goal_ = new_goal;
-      return current_goal_;
+      goal_updated_ = true;
     }
-    return std::nullopt;
   }
 
   void onFeedback(const FeedbackConstPtr& feedback) override

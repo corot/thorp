@@ -18,6 +18,10 @@
             <input_port name="dist_tolerance" type="double"/>
         </Condition>
         <Condition ID="BumperPressed"/>
+        <Condition ID="CameraFOVClear">
+            <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
+            <input_port name="service_name" type="std::string" default="xtion_fov_analyzer/check_clear">name of the ROS service</input_port>
+        </Condition>
         <Condition ID="CannonHasAmmo"/>
         <Action ID="ClearCostmaps">
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
@@ -352,7 +356,11 @@
             <output_port name="output" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="input" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
-        <Action ID="SetUnsignedInt">
+        <Action ID="SetString">
+            <output_port name="output" type="std::string"/>
+            <input_port name="input" type="std::string"/>
+        </Action>
+        <Action ID="SetUInt">
             <output_port name="output" type="unsigned int"/>
             <input_port name="input" type="unsigned int"/>
         </Action>

@@ -10,6 +10,10 @@ namespace ttk = thorp::toolkit;
 
 namespace thorp::bt::actions
 {
+/**
+ * Execute a given path using MBF's exe_path action.
+ * Allows updating the goal while running.
+ */
 class ExePath : public BT::RosActionNode<mbf_msgs::ExePathAction>
 {
 public:
@@ -31,18 +35,21 @@ public:
 private:
   std::optional<GoalType> current_goal_;
 
-  std::optional<GoalType> getGoal() override
+  GoalType getGoal() override
+  {
+    return *current_goal_;
+  }
+
+  void onTick() override
   {
     GoalType new_goal;
     new_goal.controller = *getInput<std::string>("controller");
     new_goal.path = *getInput<nav_msgs::Path>("path");
-
     if (!current_goal_ || *current_goal_ != new_goal)
     {
       current_goal_ = new_goal;
-      return current_goal_;
+      goal_updated_ = true;
     }
-    return std::nullopt;
   }
 
   void onFeedback(const FeedbackConstPtr& feedback) override

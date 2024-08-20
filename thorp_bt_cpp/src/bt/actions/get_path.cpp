@@ -27,11 +27,8 @@ public:
   }
 
 private:
-  std::optional<GoalType> getGoal() override
+  GoalType getGoal() override
   {
-    if (status() == BT::NodeStatus::RUNNING)
-      return std::nullopt;
-
     GoalType goal;
     goal.planner = *getInput<std::string>("planner");
     goal.target_pose = *getInput<geometry_msgs::PoseStamped>("target_pose");

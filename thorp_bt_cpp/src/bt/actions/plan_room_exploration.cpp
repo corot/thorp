@@ -38,11 +38,8 @@ public:
   }
 
 private:
-  std::optional<GoalType> getGoal() override
+  GoalType getGoal() override
   {
-    if (status() == BT::NodeStatus::RUNNING)
-      return std::nullopt;
-
     // We need an image containing only the room to explore, so we copy the original map and
     // set to black all pixels not belonging to the given room number in the segmented map
     uint32_t room_number = *getInput<uint32_t>("room_number");

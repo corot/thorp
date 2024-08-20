@@ -182,7 +182,7 @@ bool HouseKeepingServer::gripperBusyCB(std_srvs::TriggerRequest &request, std_sr
     // Virtual check based on events for simulation
     if (last_grasp_event_.object.empty())
     {
-      ROS_WARN("No gazebo grasp events received");
+      ROS_WARN("[house keeping] No gazebo grasp events received");
       response.success = false;
     }
     else if (!last_grasp_event_.attached)
@@ -192,7 +192,8 @@ bool HouseKeepingServer::gripperBusyCB(std_srvs::TriggerRequest &request, std_sr
     }
     else
     {
-      ROS_INFO("Object %s attached to %s", last_grasp_event_.object.c_str(), last_grasp_event_.arm.c_str());
+      ROS_INFO("[house keeping] Object %s attached to %s", last_grasp_event_.object.c_str(),
+               last_grasp_event_.arm.c_str());
       response.success = true;
       response.message = last_grasp_event_.object;
     }

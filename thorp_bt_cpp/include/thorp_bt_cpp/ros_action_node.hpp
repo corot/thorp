@@ -35,23 +35,25 @@ protected:
 private:
   static constexpr char LOGNAME[] = "RosActionNode";
 
-  inline bool createActionClient(double timeout)
+  inline NodeStatus waitForServer(ros::Time created_time, ros::Duration timeout)
   {
-    action_client_ = std::make_unique<actionlib::SimpleActionClient<ActionT>>(action_name_, true);
-    ROS_INFO_STREAM(LOGNAME << ": Waiting for action server " << action_name_);
-
-    // TODO refactor this to not block the tree (e.g. change status to running while waiting)
-    // while support infinite waiting (e.g. when timeout < 0)
-    if (action_client_->waitForServer(ros::Duration(timeout)))
+    // Return RUNNING until the server comes alive (return SUCCESS) or timeout occurs (return FAILURE)
+    if (action_client_->waitForServer(ros::Duration(1e-3)))
     {
       ROS_INFO_STREAM(LOGNAME << ": Action server " << action_name_ << " found");
-      return true;
+      server_connected_ = true;
+      return NodeStatus::SUCCESS;
+    }
+    else if (timeout.isZero() || ros::Time::now() - created_time < timeout)
+    {
+      ROS_INFO_STREAM_THROTTLE(1.0, LOGNAME << ": Waiting for action server " << action_name_);
+      return NodeStatus::RUNNING;
     }
     else
     {
       ROS_ERROR_STREAM(LOGNAME << ": Action server " << action_name_ << " not found");
-      this->onServerUnavailable();
-      return false;
+      onServerUnavailable();
+      return NodeStatus::FAILURE;
     }
   }
 
@@ -162,16 +164,19 @@ public:
   }
 
 protected:
+  bool server_connected_ = false;
+  ros::Duration server_timeout_;
   std::string action_name_;
   typename std::unique_ptr<actionlib::SimpleActionClient<ActionT>> action_client_;
 
+  bool goal_updated_ = false;
+
   /**
-   * @brief To implement by the child class to provide a goal
-   * It will be called on every tick, so children should return std::nullopt
-   * after the first call unless they want to preempt the currently running goal
-   * @return Optional new goal
+   * @brief To implement by the child class to provide a goal.
+   * It will be called either if the action is idle or the child sets the flag goal_updated_ to true.
+   * @return A new goal
    */
-  virtual std::optional<GoalType> getGoal() = 0;
+  virtual GoalType getGoal() = 0;
 
   /**
    * @brief The main override required by a BT action
@@ -181,69 +186,65 @@ protected:
   {
     onTick();
 
+    static ros::Time created_time;  // persistent through executions to control if we hit server_timeout_
+
     if (!action_client_)
     {
+      if (double timeout; getInput<double>("server_timeout", timeout))
+      {
+        server_timeout_.fromSec(timeout);
+      }
       if (!getInput("action_name", action_name_))
       {
         ROS_ERROR_NAMED(LOGNAME, "action_name is not defined");
         return NodeStatus::FAILURE;
       }
-
-      double server_timeout;
-      getInput("server_timeout", server_timeout);
-      if (!createActionClient(server_timeout))
-      {
-        return NodeStatus::FAILURE;
-      }
+      action_client_ = std::make_unique<actionlib::SimpleActionClient<ActionT>>(action_name_, true);
+      created_time = ros::Time::now();
     }
 
-    if (auto goal = getGoal(); goal)
+    if (!server_connected_)
     {
+      if (NodeStatus status = waitForServer(created_time, server_timeout_); status != NodeStatus::SUCCESS)
+      {
+        return status;
+      }
+      resetStatus();  // trigger sending the first goal for children not setting goal_updated_
+    }
+
+    if (status() == NodeStatus::IDLE || goal_updated_)
+    {
+      goal_updated_ = false;
       if (!action_client_->isServerConnected())
       {
         ROS_ERROR_STREAM(LOGNAME << ": Action server " << action_name_ << " not connected");
         onServerUnavailable();
         return NodeStatus::FAILURE;
       }
-
-      setStatus(NodeStatus::RUNNING);
-      action_client_->sendGoal(*goal, {}, {}, boost::bind(&RosActionNode::feedbackCb, this, _1));
-    }
-    else if (status() == NodeStatus::IDLE)
-    {
-      ROS_ERROR_NAMED(LOGNAME, "No goal provided. Exiting with failure.");
-      return NodeStatus::FAILURE;
+      auto goal = getGoal();
+      action_client_->sendGoal(goal, {}, {}, boost::bind(&RosActionNode::feedbackCb, this, _1));
     }
 
     auto action_state = action_client_->getState();
-    if (action_state == actionlib::SimpleClientGoalState::PENDING ||
-        action_state == actionlib::SimpleClientGoalState::ACTIVE)
+    switch (action_state.state_)
     {
-      return NodeStatus::RUNNING;
-    }
-    else if (action_state == actionlib::SimpleClientGoalState::SUCCEEDED)
-    {
-      onFinished();
-      return onSucceeded(action_client_->getResult());
-    }
-    else if (action_state == actionlib::SimpleClientGoalState::ABORTED)
-    {
-      onFinished();
-      return onAborted(action_client_->getResult());
-    }
-    else if (action_state == actionlib::SimpleClientGoalState::PREEMPTED)
-    {
-      onFinished();
-      return onCanceled();
-    }
-    else if (action_state == actionlib::SimpleClientGoalState::REJECTED)
-    {
-      return onRejected();
-    }
-    else
-    {
-      ROS_ERROR_STREAM(LOGNAME << ": Action server " << action_name_ << " returned unknown state");
-      return NodeStatus::FAILURE;
+      case actionlib::SimpleClientGoalState::PENDING:
+      case actionlib::SimpleClientGoalState::ACTIVE:
+        return NodeStatus::RUNNING;
+      case actionlib::SimpleClientGoalState::SUCCEEDED:
+        onFinished();
+        return onSucceeded(action_client_->getResult());
+      case actionlib::SimpleClientGoalState::ABORTED:
+        onFinished();
+        return onAborted(action_client_->getResult());
+      case actionlib::SimpleClientGoalState::PREEMPTED:
+        onFinished();
+        return onCanceled();
+      case actionlib::SimpleClientGoalState::REJECTED:
+        return onRejected();
+      default:
+        ROS_ERROR_STREAM(LOGNAME << ": Unexpected " << action_name_ << " action state: " << action_state.toString());
+        return NodeStatus::FAILURE;
     }
   }
 };

@@ -30,11 +30,8 @@ public:
   }
 
 private:
-  std::optional<GoalType> getGoal() override
+  GoalType getGoal() override
   {
-    if (status() == BT::NodeStatus::RUNNING)
-      return std::nullopt;
-
     GoalType goal;
     goal.robot_start_coordinate = getInput<geometry_msgs::PoseStamped>("robot_pose")->pose;
     goal.robot_radius = *getInput<float>("robot_radius");

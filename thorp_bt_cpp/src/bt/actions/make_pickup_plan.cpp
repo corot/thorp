@@ -31,11 +31,8 @@ public:
   }
 
 private:
-  std::optional<GoalType> getGoal() override
+  GoalType getGoal() override
   {
-    if (status() == BT::NodeStatus::RUNNING)
-      return std::nullopt;
-
     GoalType goal;
     goal.robot_pose = *getInput<geometry_msgs::PoseStamped>("robot_pose");
     goal.pickup_poses = *getInput<std::vector<geometry_msgs::PoseStamped>>("pickup_poses");

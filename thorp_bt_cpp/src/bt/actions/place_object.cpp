@@ -30,11 +30,8 @@ public:
   }
 
 private:
-  std::optional<GoalType> getGoal() override
+  GoalType getGoal() override
   {
-    if (status() == BT::NodeStatus::RUNNING)
-      return std::nullopt;
-
     GoalType goal;
     goal.object_name = *getInput<std::string>("object_name");
     goal.support_surf = *getInput<std::string>("support_surf");

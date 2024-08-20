@@ -33,16 +33,12 @@ public:
   }
 
 private:
-  std::optional<GoalType> getGoal() override
+  GoalType getGoal() override
   {
-    if (status() == BT::NodeStatus::RUNNING)
-      return std::nullopt;
-
     auto map = ttk::waitForMessage<nav_msgs::OccupancyGrid>("map");
     if (!map)
     {
-      ROS_ERROR_NAMED(name(), "Unable to retrieve map");
-      return std::nullopt;
+      throw BT::RuntimeError(name(), ": Unable to retrieve map");
     }
     GoalType goal;
     goal.input_map.header = map->header;
@@ -65,7 +61,7 @@ private:
     goal.map_resolution = map->info.resolution;
     goal.return_format_in_meter = true;
     goal.return_format_in_pixel = true;
-    goal.robot_radius = ros::NodeHandle().param<double>("move_base_flex/global_costmap/robot_radius", 0.18);
+    goal.robot_radius = ros::NodeHandle().param<float>("move_base_flex/global_costmap/robot_radius", 0.18);
 
     // those values are also needed by PlanRoomSequence and PlanRoomExploration, so share them on output ports
     // the segmented map comes with its own origin and resolution, but both are the same as for the input map

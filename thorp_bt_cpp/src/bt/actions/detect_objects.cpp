@@ -40,11 +40,8 @@ public:
   }
 
 private:
-  std::optional<GoalType> getGoal() override
+  GoalType getGoal() override
   {
-    if (status() == BT::NodeStatus::RUNNING)
-      return std::nullopt;
-
     GoalType goal;
     goal.clear_scene = false;
     ////TODO min side,,,, pasar de alguna forma    but not really needed, as perception will call the srv, not the action

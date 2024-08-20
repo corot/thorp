@@ -40,6 +40,7 @@ private:
 // Register a builder for each templated version this class
 BT_REGISTER_TEMPLATE_NODE(SetBlackboard<bool>, "SetBool");
 BT_REGISTER_TEMPLATE_NODE(SetBlackboard<double>, "SetDouble");
-BT_REGISTER_TEMPLATE_NODE(SetBlackboard<uint32_t>, "SetUnsignedInt");
+BT_REGISTER_TEMPLATE_NODE(SetBlackboard<uint32_t>, "SetUInt");
+BT_REGISTER_TEMPLATE_NODE(SetBlackboard<std::string>, "SetString");
 BT_REGISTER_TEMPLATE_NODE(SetBlackboard<geometry_msgs::PoseStamped>, "SetPose");
 }  // namespace thorp::bt::actions

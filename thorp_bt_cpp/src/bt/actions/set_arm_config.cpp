@@ -9,6 +9,7 @@ namespace thorp::bt::actions
 {
 /**
  * Move arm into one of the stored configuration (resting, right_up, etc.)
+ * Allows updating the goal while running.
  */
 class SetArmConfig : public BT::RosActionNode<thorp_msgs::MoveToTargetAction>
 {
@@ -30,7 +31,12 @@ public:
 private:
   std::optional<GoalType> current_goal_;
 
-  std::optional<GoalType> getGoal() override
+  GoalType getGoal() override
+  {
+    return *current_goal_;
+  }
+
+  void onTick() override
   {
     GoalType new_goal;
     new_goal.target_type = GoalType::NAMED_TARGET;
@@ -38,9 +44,8 @@ private:
     if (!current_goal_ || *current_goal_ != new_goal)
     {
       current_goal_ = new_goal;
-      return current_goal_;
+      goal_updated_ = true;
     }
-    return std::nullopt;
   }
 
   void onFinished() override

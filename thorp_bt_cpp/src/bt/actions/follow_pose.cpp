@@ -27,11 +27,8 @@ public:
   }
 
 private:
-  std::optional<GoalType> getGoal() override
+  GoalType getGoal() override
   {
-    if (status() == BT::NodeStatus::RUNNING)
-      return std::nullopt;
-
     GoalType goal;
     goal.time_limit.fromSec(*getInput<float>("time_limit"));
     goal.distance = *getInput<float>("distance");
