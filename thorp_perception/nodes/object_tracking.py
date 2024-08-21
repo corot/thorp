@@ -74,7 +74,6 @@ class ObjectTrackingNode(object):
                 position_2d = pose_wrt_map.pose.position.x, pose_wrt_map.pose.position.y
                 if detection.id not in self._trackers:
                     self._trackers[detection.id] = PointTracker(position_2d)
-                    print(position_2d)
                 else:
                     self._trackers[detection.id].update(position_2d)
 

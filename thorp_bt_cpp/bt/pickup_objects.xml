@@ -4,53 +4,77 @@
 
   <BehaviorTree ID="pickup_objects">
     <Fallback>
-      <KeepRunningUntilFailure>
-        <RecoverAndRetry>
-          <Sequence>
-            <Inverter>
-              <TrayFull service_name="manipulation/tray/get_capacity"
-                        timeout="100"/>
-            </Inverter>
-            <DetectObjects action_name="object_detection"
-                           object_types=""
-                           server_timeout="5.000000"
-                           objects="{objects}"
-                           surface="{surface}"/>
-            <ObjectsDetected given_up_count=""
-                             ignore_given_up=""
-                             objects="{objects}"/>
-            <SelectNextTarget failures="{failures}"
-                              objects="{objects}"
-                              target_name="{object_name}"
-                              tightening="{tightening}"/>
-            <IfThenElse>
-              <SubTree ID="pickup_object"
-                       object_name="{object_name}"
-                       tightening="{tightening}"
-                       error="{error}"/>
-              <SubTree ID="place_on_tray"
-                       object_name="{object_name}"
-                       error="{error}"/>
-              <RecordPickupFailure target_name="{object_name}"
-                                   failures="{failures}"
-                                   given_up_count="{given_up_count}"/>
-            </IfThenElse>
-          </Sequence>
-          <SetArmConfig action_name="manipulation/move_to_target"
-                        configuration="resting"
-                        server_timeout="5.000000"
-                        error="{error}"
-                        feedback=""/>
-        </RecoverAndRetry>
-      </KeepRunningUntilFailure>
+      <Sequence>
+        <Script code="already_detected:=false"/>
+        <KeepRunningUntilFailure>
+          <RecoverAndRetry>
+            <Sequence>
+              <Inverter>
+                <TrayFull timeout="100"
+                          service_name="manipulation/tray/get_capacity"/>
+              </Inverter>
+              <DetectObjects surface="{surface}"
+                             objects="{objects}"
+                             object_types=""
+                             action_name="object_detection"
+                             server_timeout="5.000000"
+                             _skipIf="already_detected"/>
+              <ObjectsDetected ignore_given_up=""
+                               given_up_count=""
+                               objects="{objects}"/>
+              <SelectNextTarget tightening="{tightening}"
+                                failures="{failures}"
+                                target_name="{object_name}"
+                                objects="{objects}"/>
+              <IfThenElse>
+                <SubTree ID="pickup_object"
+                         object_name="{object_name}"
+                         tightening="{tightening}"
+                         error="{error}"
+                         _post="already_detected=false"/>
+                <Parallel failure_count="1"
+                          success_count="2">
+                  <SubTree ID="place_on_tray"
+                           object_name="{object_name}"
+                           error="{error}"/>
+                  <RetryUntilSuccessful num_attempts="-1"
+                                        _skipIf="already_detected">
+                    <Sequence>
+                      <Fallback>
+                        <CameraFOVClear timeout="100"
+                                        service_name="xtion_fov_analyzer/check_clear"/>
+                        <Sleep msec="100"/>
+                      </Fallback>
+                      <DetectObjects surface="{surface}"
+                                     objects="{objects}"
+                                     object_types=""
+                                     action_name="object_detection"
+                                     server_timeout="5.000000"
+                                     _onSuccess="already_detected=true"/>
+                    </Sequence>
+                  </RetryUntilSuccessful>
+                </Parallel>
+                <RecordPickupFailure given_up_count="{given_up_count}"
+                                     failures="{failures}"
+                                     target_name="{object_name}"/>
+              </IfThenElse>
+            </Sequence>
+            <SetArmConfig feedback=""
+                          error="{error}"
+                          configuration="resting"
+                          action_name="manipulation/move_to_target"
+                          server_timeout="5.000000"/>
+          </RecoverAndRetry>
+        </KeepRunningUntilFailure>
+      </Sequence>
       <Inverter _description="To report FAILURE only if we still have reachable targets or tray is full">
         <Sequence>
-          <SelectNextTarget failures="{failures}"
-                            objects="{objects}"
+          <SelectNextTarget tightening="{tightening}"
+                            failures="{failures}"
                             target_name="{object_name}"
-                            tightening="{tightening}"/>
-          <TrayFull service_name="manipulation/tray/get_capacity"
-                    timeout="100"/>
+                            objects="{objects}"/>
+          <TrayFull timeout="100"
+                    service_name="manipulation/tray/get_capacity"/>
         </Sequence>
       </Inverter>
     </Fallback>

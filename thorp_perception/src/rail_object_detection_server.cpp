@@ -189,6 +189,10 @@ public:
 
     // Required to avoid repeating existing object names on planning scene
     std::vector<std::string> extant_objs = std::move(planning_scene_interface_.getKnownObjectNames());
+    for (const auto& ao: planning_scene_interface_.getAttachedObjects())
+    {
+      extant_objs.push_back(ao.first);
+    }
 
     visualization_msgs::MarkerArray markers;
 
@@ -400,9 +404,10 @@ private:
 
   std::string getObjName(rail_manipulation_msgs::SegmentedObject& obj, const std::vector<std::string>& extant_objs)
   {
-    // obj.name contains the best matching template; to complete an object name, we append an index to avoid repetitions
-    // if there's already an object of the same type in approximately the same location, we just copy the name (with the
-    // expectation that both are the same, detected on successive calls to segmentation), or...
+    // obj.name contains the best matching template; to complete the object name, we append an index to avoid
+    // repetitions.
+    // If there's already an object of the same type in approximately the same location, we just copy its name
+    // (with the expectation that both are the same, detected on successive calls to segmentation), or...
     std::set<std::string> overlapping_objs = std::move(getObjsInVolume(obj.bounding_volume));
     const std::string& template_name = obj.name;
     for (const auto& obj_name : overlapping_objs)

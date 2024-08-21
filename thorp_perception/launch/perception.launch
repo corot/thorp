@@ -72,4 +72,7 @@
 
     <include file="$(find thorp_perception)/launch/includes/template_matcher.launch.xml"/>
   </group>
+
+  <!--  *************** Auxiliary nodes ***************  -->
+  <node pkg="thorp_perception" type="xtion_fov_analyzer.py" name="xtion_fov_analyzer" output="screen" respawn="true"/>
 </launch>
