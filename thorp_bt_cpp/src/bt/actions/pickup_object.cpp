@@ -23,8 +23,8 @@ public:
     ports["action_name"].setDefaultValue("manipulation/pickup_object");
     ports.insert({ BT::InputPort<std::string>("object_name"),   //
                    BT::InputPort<std::string>("support_surf"),  //
-                   BT::InputPort<double>("max_effort"),         //
-                   BT::InputPort<double>("tightening"),         //
+                   BT::InputPort<float>("max_effort"),          //
+                   BT::InputPort<float>("tightening"),          //
                    BT::OutputPort<int>("error"),                //
                    BT::OutputPort<std::optional<FeedbackType>>("feedback") });
     return ports;
@@ -36,10 +36,8 @@ private:
     GoalType goal;
     goal.object_name = *getInput<std::string>("object_name");
     goal.support_surf = *getInput<std::string>("support_surf");
-    goal.max_effort = *getInput<double>("max_effort");
-    goal.tightening = *getInput<double>("tightening");
-    // TODO param gripper_max_effort = 0.5
-    // TODO param gripper_tightening = 0.002
+    goal.max_effort = *getInput<float>("max_effort");
+    goal.tightening = *getInput<float>("tightening");
     return goal;
   }
 

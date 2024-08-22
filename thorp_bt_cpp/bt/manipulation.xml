@@ -16,9 +16,11 @@
                         timeout="100"/>
         </Sequence>
       </ForceSuccess>
+      <ReadFloatParam param_name="gripper_max_effort"
+                      output_key="{max_effort}"/>
       <RecoverAndRetry>
         <PickupObject action_name="manipulation/pickup_object"
-                      max_effort="0.5"
+                      max_effort="{max_effort}"
                       object_name="{object_name}"
                       server_timeout="5.000000"
                       support_surf="table"

@@ -8,9 +8,8 @@
 
   <BehaviorTree ID="cleanup_table">
     <Sequence>
-      <ReadDoubleParam key="pickup_dist_to_table"
-                       negate=""
-                       value="{pickup_dist_to_table}"/>
+      <ReadDoubleParam param_name="pickup_dist_to_table"
+                       output_key="{pickup_dist_to_table}"/>
       <GetPosesAroundTable distance="{pickup_dist_to_table}"
                            split_long_sides="true"
                            table="{table}"
@@ -133,9 +132,8 @@
                     server_timeout="5"
                     table="{table}"
                     table_pose="{table_pose}"/>
-      <ReadDoubleParam key="approach_dist_to_table"
-                       negate=""
-                       value="{approach_dist_to_table}"/>
+      <ReadDoubleParam param_name="approach_dist_to_table"
+                       output_key="{approach_dist_to_table}"/>
       <GetPosesAroundTable distance="{approach_dist_to_table}"
                            table="{table}"
                            table_pose="{table_pose}"

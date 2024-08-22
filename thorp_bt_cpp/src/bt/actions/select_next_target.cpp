@@ -35,13 +35,13 @@ public:
     return { BT::InputPort<std::vector<Object>>("objects"),               //
              BT::InputPort<std::map<std::string, uint32_t>>("failures"),  //
              BT::OutputPort<std::string>("target_name"),                  //
-             BT::OutputPort<double>("tightening") };
+             BT::OutputPort<float>("tightening") };
   }
 
 private:
-  double max_arm_reach_;
   uint32_t max_failures_;
-  double tightening_;
+  float max_arm_reach_;
+  float tightening_;
   geometry_msgs::PoseStamped arm_pose_on_bfp_rf_;
 
   BT::NodeStatus tick() override
@@ -93,7 +93,7 @@ private:
         if (fc)
         {
           static std::default_random_engine generator;
-          std::uniform_real_distribution<double> uniform(0.0, tightening_ * 2.0 * fc);
+          std::uniform_real_distribution<float> uniform(0.0, tightening_ * 2.0 * fc);
           auto extra_tightening = uniform(generator);
           ROS_INFO_NAMED(name(), "Retrying target '%s' (%d previous failures; %.1f mm of extra tightening)",
                          target.c_str(), fc, extra_tightening * 1000);

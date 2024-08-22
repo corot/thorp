@@ -219,10 +219,10 @@
         <Action ID="PickupObject">
             <output_port name="feedback" type="std::optional&lt;thorp_msgs::PickupObjectFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
             <output_port name="error" type="int"/>
-            <input_port name="max_effort" type="double"/>
+            <input_port name="max_effort" type="float"/>
             <input_port name="support_surf" type="std::string"/>
             <input_port name="object_name" type="std::string"/>
-            <input_port name="tightening" type="double"/>
+            <input_port name="tightening" type="float"/>
             <input_port name="action_name" type="std::string" default="manipulation/pickup_object">name of the ROS action client</input_port>
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
         </Action>
@@ -288,19 +288,24 @@
             <inout_port name="list" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
         </Action>
         <Action ID="ReadBoolParam">
-            <output_port name="value" type="bool"/>
-            <input_port name="negate" type="bool"/>
-            <input_port name="key" type="std::string"/>
+            <output_port name="output_key" type="bool"/>
+            <input_port name="param_name" type="std::string"/>
         </Action>
         <Action ID="ReadDoubleParam">
-            <output_port name="value" type="double"/>
-            <input_port name="negate" type="bool"/>
-            <input_port name="key" type="std::string"/>
+            <output_port name="output_key" type="double"/>
+            <input_port name="param_name" type="std::string"/>
+        </Action>
+        <Action ID="ReadFloatParam">
+            <output_port name="output_key" type="float"/>
+            <input_port name="param_name" type="std::string"/>
         </Action>
         <Action ID="ReadIntParam">
-            <output_port name="value" type="int"/>
-            <input_port name="negate" type="bool"/>
-            <input_port name="key" type="std::string"/>
+            <output_port name="output_key" type="int"/>
+            <input_port name="param_name" type="std::string"/>
+        </Action>
+        <Action ID="ReadStringParam">
+            <output_port name="output_key" type="std::string"/>
+            <input_port name="param_name" type="std::string"/>
         </Action>
         <Action ID="ReadUserCommands">
             <output_port name="user_command" type="std::string"/>
@@ -332,7 +337,7 @@
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
         </Action>
         <Action ID="SelectNextTarget">
-            <output_port name="tightening" type="double"/>
+            <output_port name="tightening" type="float"/>
             <input_port name="failures" type="std::map&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;, unsigned int, std::less&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; &gt;, std::allocator&lt;std::pair&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; const, unsigned int&gt; &gt; &gt;"/>
             <output_port name="target_name" type="std::string"/>
             <input_port name="objects" type="std::vector&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>

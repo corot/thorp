@@ -27,9 +27,8 @@
                            object_name="{object_name}"
                            pickup_pose="{pickup_pose}"
                            place_pose="{place_pose}"/>
-              <ReadDoubleParam key="gripper_tightening"
-                               negate=""
-                               value="{tightening}"/>
+              <ReadFloatParam param_name="gripper_tightening"
+                              output_key="{tightening}"/>
               <SubTree ID="pickup_object"
                        object_name="{object_name}"
                        tightening="{tightening}"
