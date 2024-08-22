@@ -5,5 +5,3 @@ vertical_backlash_delta: 0.0
 fall_short_distance_delta: 0.0
 gripper_asymmetry_yaw_delta: 0.01
 placing_height_on_tray: 0.03  # well above the tray to avoid colliding with (or ejecting) previously placed objects
-###place_support_surf_clearance: 0.005  # distance to the support surface on placing (avoids crushing the object against the surface)  TODO I'm relaying on having a corrected placing pose
-###gripper_tightening_closing: 0.0035    # additional gripper closing to tighten grasped objects

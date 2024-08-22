@@ -24,11 +24,10 @@ def handle_user_command(request):
 
     if request.command == 'exit':
         # Force exit; if this node required, that will shut down the whole app
-        global exit_requested
-        exit_requested = True
         exit_msg = "Shutting down app"
         rospy.logwarn(exit_msg)
         cmd_pub.publish(Visualization.create_overlay_text(20, (1.0, 0.65, 0.0), exit_msg, 12))
+        rospy.signal_shutdown(exit_msg)
     else:
         # Send user command goal and wait for server response; all commands will require executing several
         # actions, so if the server answers very fast, probably the app doesn't support the selected command
@@ -46,14 +45,12 @@ def handle_user_command(request):
 if __name__ == '__main__':
     rospy.init_node('user_commands')
 
-    # Creates action client to execute user commands
+    # Creates an action client to execute user commands
     client = SimpleActionClient('user_commands_action_server', thorp_msgs.UserCommandAction)
     client.wait_for_server()
 
-    # Handle user commands coming from RViz and show current one as an overly
+    # Handle user commands coming from RViz and show the current one as an overly
     cmd_pub = rospy.Publisher('rviz/user_command', OverlayText, queue_size=1)
     cmd_srv = rospy.Service('eus_command', EusCommand, handle_user_command)
 
-    exit_requested = False
-    while not exit_requested and not rospy.is_shutdown():
-        rospy.sleep(0.1)
+    rospy.spin()
