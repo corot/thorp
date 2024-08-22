@@ -106,11 +106,11 @@ PLAYGROUND_OBJS = [('square',    'square',    (-0.22,  0.15,  0.5, 0.0, 0.0, 0.4
                    ('rectangle', 'rectangle', (-0.16, -0.16,  0.5, 0.0, 0.0, 1.1))]
 
 # cubes at reachable locations, ready to stack
-PLAYGROUND_CUBES = [('cube 1', 'cube', (-0.14, -0.16, 0.5, 0.0, 0.0, 1.1)),
-                    ('cube 2', 'cube', (-0.11, -0.10, 0.5, 0.0, 0.0, 0.15)),
-                    ('cube 3', 'cube', (-0.15,  0.02, 0.5, 0.0, 0.0, 0.2)),
-                    ('cube 4', 'cube', (-0.11,  0.10, 0.5, 0.0, 0.0, 0.85)),
-                    ('cube 5', 'cube', (-0.12,  0.15, 0.5, 0.0, 0.0, 0.4))]
+PLAYGROUND_CUBES = [('cube 1', 'wood_cube_2_5cm', (-0.14, -0.16, 0.5, 0.0, 0.0, 1.1)),
+                    ('cube 2', 'wood_cube_2_5cm', (-0.11, -0.10, 0.5, 0.0, 0.0, 0.15)),
+                    ('cube 3', 'wood_cube_2_5cm', (-0.15,  0.02, 0.5, 0.0, 0.0, 0.2)),
+                    ('cube 4', 'wood_cube_2_5cm', (-0.11,  0.10, 0.5, 0.0, 0.0, 0.85)),
+                    ('cube 5', 'wood_cube_2_5cm', (-0.12,  0.15, 0.5, 0.0, 0.0, 0.4))]
 
 # 5 rows of 8 cubes tightly spaced; tailored for lack table
 N_ROWS_OF_CUBES = [('cube ' + str(i), 'cube',

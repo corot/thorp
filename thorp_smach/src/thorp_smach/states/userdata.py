@@ -4,7 +4,8 @@ import smach
 
 class UDHasKey(smach.State):
     """
-    Check if our ud contains a given key. Returns
+    Check if our ud contains a given key.
+    Returns
     - 'true' if present
     - 'false' otherwise
     """
@@ -20,7 +21,8 @@ class UDHasKey(smach.State):
 
 class UDIfKey(smach.State):
     """
-    Check if our ud contains a given key and its content evaluates to True. Returns
+    Check if our ud contains a given key and its content evaluates to True.
+    Returns
     - 'true' if present and True
     - 'false' otherwise
     """
@@ -34,9 +36,33 @@ class UDIfKey(smach.State):
         return 'true' if self.key in ud and ud[self.key] else 'false'
 
 
+class UDCopy(smach.State):
+    """
+    Copy the content of key1 into key2.
+    Returns
+    - 'succeeded' if key1 exists
+    - 'aborted' otherwise
+    """
+
+    def __init__(self, key1, key2):
+        super(UDCopy, self).__init__(outcomes=['succeeded', 'aborted'],
+                                     input_keys=[key1],
+                                     output_keys=[key2])
+        self.key1 = key1
+        self.key2 = key2
+
+    def execute(self, ud):
+        if self.key1 in ud:
+            ud[self.key2] = ud[self.key1]
+            return 'succeeded'
+        rospy.logerr("Trying to copy unavailable key '%s'", self.key1)
+        return 'aborted'
+
+
 class UDSetTo(smach.State):
     """
-    Set an ud key to a given value, if it exists. Returns
+    Set an ud key to a given value, if it exists.
+    Returns
     - 'succeeded' if the key exists
     - 'aborted' otherwise
     """
@@ -59,7 +85,8 @@ class UDSetTo(smach.State):
 class UDInsertInList(smach.State):
     """
     Insert an element in a list at a given position.
-    Both 'list' and 'element' are provided as ud keys. Returns
+    Both 'list' and 'element' are provided as ud keys.
+    Returns
     - 'succeeded' if succeeded
     - 'aborted' otherwise
     """
@@ -81,7 +108,8 @@ class UDInsertInList(smach.State):
 
 class UDApplyFn(smach.State):
     """
-    Apply a function to an ud key. Returns
+    Apply a function to an ud key.
+    Returns
     - 'succeeded' if the key exists and the passed function is callable
     - 'aborted' otherwise
     """
@@ -106,7 +134,8 @@ class UDApplyFn(smach.State):
 
 class UDExtractAttr(smach.State):
     """
-    Extract an attribute from an input ud key into an output key, if the former exists. Returns
+    Extract an attribute from an input ud key into an output key, if the former exists.
+    Returns
     - 'succeeded' if the input key exists and contains the attribute
     - 'aborted' otherwise
     """
@@ -132,7 +161,8 @@ class UDExtractAttr(smach.State):
 
 class UDListSlicing(smach.State):
     """
-    Apply list slicing over the given list. Returns 'succeeded' in any case.
+    Apply list slicing over the given list.
+    Returns 'succeeded' in any case.
     """
 
     def __init__(self, start=None, stop=None, step=None):

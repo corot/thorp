@@ -11,6 +11,7 @@ import thorp_msgs.msg as thorp_msgs
 
 from thorp_toolkit.geometry import TF2, get_size_from_co, distance_2d, heading
 
+from thorp_smach.states.userdata import UDCopy
 from thorp_smach.states.common import ExecuteUserCommand
 from thorp_smach.states.geometry import TranslatePose
 from thorp_smach.states.perception import DetectObjects
@@ -25,7 +26,7 @@ class GetDetectedCubes(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded', 'retry'],
                              input_keys=['objects', 'arm_ref_frame'],
-                             output_keys=['place_pose', 'other_cubes'])
+                             output_keys=['place_pose', 'surface', 'other_cubes'])
 
     def execute(self, ud):
         # Compose a list containing id, pose, distance and heading for all cubes within arm reach
@@ -52,6 +53,7 @@ class GetDetectedCubes(smach.State):
         place_pose = objects[0][1]
         place_pose.pose.position.z += get_size_from_co(objects[0][0])[2] + rospy.get_param('~placing_height_on_table')
         ud.place_pose = place_pose
+        ud.surface = objects[0][0]
         ud.other_cubes = [obj[0] for obj in objects[1:]]
         return 'succeeded'
 
@@ -99,7 +101,8 @@ with sm:
                            transitions={'succeeded': 'STACK_CUBES',
                                         'retry': 'DETECT_OBJECTS'})
 
-    # Stack cubes sub state machine; iterates over the detected cubes and stack them over the one most in front of the arm
+    # Stack cubes sub state machine;
+    # iterates over the detected cubes and stack them over the one most in front of the arm
     sc_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted'],
                            input_keys=['place_pose', 'other_cubes', 'surface'],
                            output_keys=[],
@@ -111,7 +114,7 @@ with sm:
                                    input_keys=['place_pose', 'object', 'surface'],
                                    output_keys=[])
         sc_sm.userdata.max_effort = rospy.get_param('~gripper_max_effort')
-        sc_sm.userdata.tightening = sc_sm.userdata.max_effort / 2.0
+        sc_sm.userdata.tightening = rospy.get_param('~gripper_tightening')
         with sc_sm:
             smach.StateMachine.add('PICKUP_OBJECT',
                                    PickupObject(),
@@ -132,7 +135,9 @@ with sm:
                                    transitions={'succeeded': 'INC_PLACE_HEIGHT'})
             smach.StateMachine.add('INC_PLACE_HEIGHT',
                                    IncreasePlaceHeight(),
-                                   transitions={'succeeded': 'continue'})
+                                   transitions={'succeeded': 'OBJECT_AS_SURFACE'})
+            smach.StateMachine.add('OBJECT_AS_SURFACE', UDCopy('object', 'surface'),
+                                   transitions={'succeeded': 'continue'})  # last-placed object will be the new surface
 
         smach.Iterator.set_contained_state('', sc_sm, loop_outcomes=['continue'])
 
