@@ -38,24 +38,24 @@ class UDIfKey(smach.State):
 
 class UDCopy(smach.State):
     """
-    Copy the content of key1 into key2.
+    Copy the content of in_key into out_key.
     Returns
-    - 'succeeded' if key1 exists
+    - 'succeeded' if in_key exists
     - 'aborted' otherwise
     """
 
-    def __init__(self, key1, key2):
+    def __init__(self, in_key, out_key):
         super(UDCopy, self).__init__(outcomes=['succeeded', 'aborted'],
-                                     input_keys=[key1],
-                                     output_keys=[key2])
-        self.key1 = key1
-        self.key2 = key2
+                                     input_keys=[in_key],
+                                     output_keys=[out_key])
+        self.in_key = in_key
+        self.out_key = out_key
 
     def execute(self, ud):
-        if self.key1 in ud:
-            ud[self.key2] = ud[self.key1]
+        if self.in_key in ud:
+            ud[self.out_key] = ud[self.in_key]
             return 'succeeded'
-        rospy.logerr("Trying to copy unavailable key '%s'", self.key1)
+        rospy.logerr("Trying to copy unavailable key '%s'", self.in_key)
         return 'aborted'
 
 

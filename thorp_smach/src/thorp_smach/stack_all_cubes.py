@@ -26,19 +26,19 @@ class GetDetectedCubes(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded', 'retry'],
                              input_keys=['objects', 'arm_ref_frame'],
-                             output_keys=['place_pose', 'surface', 'other_cubes'])
+                             output_keys=['place_pose', 'base_cube', 'other_cubes'])
 
     def execute(self, ud):
         # Compose a list containing id, pose, distance and heading for all cubes within arm reach
         max_arm_reach = rospy.get_param('~max_arm_reach')
         objects = []
-        for obj in ud.objects:
+        for obj in ud['objects']:
             if not obj.id.startswith('cube'):
                 continue
             # Object's timestamp is irrelevant, and can trigger a TransformException if very recent; zero it!
             obj_pose = geometry_msgs.PoseStamped(obj.header, obj.pose)
             obj_pose.header.stamp = rospy.Time(0)
-            obj_pose = TF2().transform_pose(obj_pose, None, ud.arm_ref_frame)
+            obj_pose = TF2().transform_pose(obj_pose, None, ud['arm_ref_frame'])
             distance = distance_2d(obj_pose.pose)
             if distance > max_arm_reach:
                 rospy.logdebug("'%s' is out of reach (%d > %d)", obj.id, distance, max_arm_reach)
@@ -52,9 +52,9 @@ class GetDetectedCubes(smach.State):
         objects = sorted(objects, key=lambda x: abs(x[-1]))
         place_pose = objects[0][1]
         place_pose.pose.position.z += get_size_from_co(objects[0][0])[2] + rospy.get_param('~placing_height_on_table')
-        ud.place_pose = place_pose
-        ud.surface = objects[0][0]
-        ud.other_cubes = [obj[0] for obj in objects[1:]]
+        ud['place_pose'] = place_pose
+        ud['base_cube'] = objects[0][0]
+        ud['other_cubes'] = [obj[0] for obj in objects[1:]]
         return 'succeeded'
 
 
@@ -67,7 +67,8 @@ class IncreasePlaceHeight(smach.State):
                              output_keys=['place_pose'])
 
     def execute(self, ud):
-        ud.place_pose.pose.position.z += get_size_from_co(ud.object)[2] + rospy.get_param('~placing_height_on_table')
+        obj_height = get_size_from_co(ud['object'])[2]
+        ud['place_pose'].pose.position.z += obj_height + rospy.get_param('~placing_height_on_table')
         return 'succeeded'
 
 
@@ -104,15 +105,15 @@ with sm:
     # Stack cubes sub state machine;
     # iterates over the detected cubes and stack them over the one most in front of the arm
     sc_it = smach.Iterator(outcomes=['succeeded', 'preempted', 'aborted'],
-                           input_keys=['place_pose', 'other_cubes', 'surface'],
+                           input_keys=['place_pose', 'base_cube', 'other_cubes', 'surface'],
                            output_keys=[],
                            it=lambda: sm.userdata.other_cubes,  # must be a lambda because we destroy the list
                            it_label='object',
                            exhausted_outcome='succeeded')
     with sc_it:
         sc_sm = smach.StateMachine(outcomes=['succeeded', 'preempted', 'aborted', 'continue'],
-                                   input_keys=['place_pose', 'object', 'surface'],
-                                   output_keys=[])
+                                   input_keys=['place_pose', 'base_cube', 'object', 'surface'],
+                                   output_keys=['base_cube'])
         sc_sm.userdata.max_effort = rospy.get_param('~gripper_max_effort')
         sc_sm.userdata.tightening = rospy.get_param('~gripper_tightening')
         with sc_sm:
@@ -123,6 +124,7 @@ with sm:
                                                 'aborted': 'continue'})
             smach.StateMachine.add('PLACE_OBJECT',
                                    PlaceObject(),
+                                   remapping={'surface': 'base_cube'},
                                    transitions={'succeeded': 'AT_STACK_LEVEL',
                                                 'preempted': 'preempted',
                                                 'aborted': 'aborted'})
@@ -135,8 +137,8 @@ with sm:
                                    transitions={'succeeded': 'INC_PLACE_HEIGHT'})
             smach.StateMachine.add('INC_PLACE_HEIGHT',
                                    IncreasePlaceHeight(),
-                                   transitions={'succeeded': 'OBJECT_AS_SURFACE'})
-            smach.StateMachine.add('OBJECT_AS_SURFACE', UDCopy('object', 'surface'),
+                                   transitions={'succeeded': 'UPDATE_BASE_OBJ'})
+            smach.StateMachine.add('UPDATE_BASE_OBJ', UDCopy('object', 'base_cube'),
                                    transitions={'succeeded': 'continue'})  # last-placed object will be the new surface
 
         smach.Iterator.set_contained_state('', sc_sm, loop_outcomes=['continue'])
