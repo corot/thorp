@@ -44,8 +44,9 @@
     <node pkg="thorp_simulation" type="spawn_gazebo_models.py" name="objects_spawner" output="screen" args="cats"/>
     <node pkg="thorp_simulation" type="cats_controller.py" name="cats_controller" output="screen" respawn="true">
       <param name="target_models" value="$(arg cat_models)"/>
-      <param name="prowling_step" value="0.02"/>
-      <!-- update period is hardcoded to 0.25 seconds, so this is the only way to change cats speed -->
+      <param name="prowling_step" value="0.01"/>
+      <!-- update period is hardcoded to 0.1 seconds, so this is the only way to change cats speed -->
+      <param name="hit_sock_duration" value="0.5"/>
 
       <!-- send deceased cats outside the house -->
       <param name="outside_x" value="4.0" if="$(eval world_name == 'fun_house')"/>
@@ -79,7 +80,7 @@
   </include>
 
   <!--  ****** IPA coverage planning using kinect *****  -->
-  <include file="$(find thorp_bringup)/launch/includes/exploration.launch.xml">
+  <include file="$(find thorp_exploration)/launch/exploration.launch">
     <arg name="camera" value="kinect"/>
   </include>
 

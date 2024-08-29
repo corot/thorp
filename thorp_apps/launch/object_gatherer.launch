@@ -67,7 +67,7 @@
   </include>
 
   <!--  ****** IPA coverage planning using xtion ******  -->
-  <include file="$(find thorp_bringup)/launch/includes/exploration.launch.xml">
+  <include file="$(find thorp_exploration)/launch/exploration.launch">
     <arg name="camera" value="xtion"/>
   </include>
 
