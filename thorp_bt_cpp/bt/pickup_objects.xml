@@ -63,7 +63,8 @@
                           error="{error}"
                           configuration="resting"
                           action_name="manipulation/move_to_target"
-                          server_timeout="5.000000"/>
+                          server_timeout="5.000000"
+                          _post="already_detected=false"/>
           </RecoverAndRetry>
         </KeepRunningUntilFailure>
       </Sequence>
