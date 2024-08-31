@@ -2,7 +2,7 @@
 
 """
 Control simulated cats in gazebo:
- - make them slowly hang around the house
+ - make them slowly go around the house
  - send out if they tumble (normally hit by the robot)
 Author:
     Jorge Santos
@@ -28,10 +28,10 @@ class CatsController:
         self.alive_cats = {}  # dictionary to store relevant events for still-alive cats
         self.killed_cats = []  # casualties record
 
-        # update period is hardcoded to 0.25 cause the throttling decorator is created before starting the node,
-        # and so I cannot read if from the parameter server  TODO: find a better solution
+        # update period is hardcoded to 0.1 s cause the throttling decorator is created before starting the node,
+        # and so I cannot read if from the parameter server; hence I use prowling_step to tune cat's speed
         self.prowling_step = rospy.get_param('~prowling_step', 0.01)
-        self.hit_sock_duration = rospy.get_param('~hit_sock_duration', 2.0)
+        self.hit_sock_duration = rospy.get_param('~hit_sock_duration', 1.5)
         self.outside_location_x = rospy.get_param('~outside_x', 0.0)
         self.outside_location_y = rospy.get_param('~outside_y', 0.0)
         self.hit_roll_threshold = rospy.get_param('~hit_roll_threshold', math.pi / 3.0)
@@ -59,14 +59,14 @@ class CatsController:
             self.handle_contact(involved1, involved2, contact)
             self.handle_contact(involved2, involved1, contact)
 
-    @ratelimit.limits(calls=1, period=0.25, raise_on_limit=False)
+    @ratelimit.limits(calls=1, period=0.1, raise_on_limit=False)
     def model_states_cb(self, msg):
         if self.killed_cats and not self.alive_cats:
             # all cats toppled; we can stop listening for model states
             rospy.loginfo("All cats toppled; stop listening for model states")
             self.model_states_sub.unregister()
             return
-        # TODO  maybe pause/resume myself (so once)?  looks like not needed with current throttling
+
         for index, model_name in enumerate(msg.name):
             if model_name in self.alive_cats:
                 if abs(roll(msg.pose[index])) > self.hit_roll_threshold:
@@ -81,10 +81,11 @@ class CatsController:
                     self.killed_cats.append(model_name)
                     del self.alive_cats[model_name]
                 elif rospy.get_time() - self.alive_cats[model_name]['last_hit'] < self.hit_sock_duration:
-                    # hit, so stop moving; admittedly, not the most realistic for a cat
+                    # hit, so stop moving; admittedly, not the most realistic for a cat,
+                    # but I don't let physics work to topple the cats otherwise
                     pass
                 elif self.prowling_step > 0.0:
-                    # hanging around: perform small steps but changing directions whenever we touch anything
+                    # going around: perform small steps but changing directions whenever we touch anything
                     new_pose = copy.deepcopy(msg.pose[index])
                     contact = self.alive_cats[model_name]['contact']
                     if contact:

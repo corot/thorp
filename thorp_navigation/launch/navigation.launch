@@ -57,7 +57,7 @@
     <rosparam file="$(find thorp_navigation)/param/pose_follower.yaml" command="load"/>
 
     <remap from="cmd_vel" to="follow_smoother/raw_cmd_vel"/>
-    <remap from="target_pose" to="target_object_pose"/>
+    <remap from="target_pose" to="target_object_predicted_pose"/>
   </node>
 
   <!--  ****** Geometric and semantic map servers *****  -->
