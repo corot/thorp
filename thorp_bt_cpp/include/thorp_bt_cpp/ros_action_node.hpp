@@ -212,7 +212,7 @@ protected:
       resetStatus();  // trigger sending the first goal for children not setting goal_updated_
     }
 
-    if (status() == NodeStatus::IDLE || goal_updated_)
+    if (status() != NodeStatus::RUNNING || goal_updated_)
     {
       goal_updated_ = false;
       if (!action_client_->isServerConnected())
