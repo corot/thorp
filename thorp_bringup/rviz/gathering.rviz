@@ -1145,7 +1145,7 @@ Visualization Manager:
           Axes Length: 0.30000001192092896
           Axes Radius: 0.009999999776482582
           Class: rviz/PoseArray
-          Color: 237; 212; 0
+          Color: 0; 200; 0
           Enabled: true
           Head Length: 0.07000000029802322
           Head Radius: 0.029999999329447746

@@ -17,6 +17,21 @@
 namespace thorp::toolkit
 {
 
+std::string getIDs(const std::vector<moveit_msgs::CollisionObject>& objects)
+{
+  if (objects.empty())
+  {
+    return "";
+  }
+
+  std::ostringstream oss;
+  std::transform(objects.begin(), objects.end() - 1, std::ostream_iterator<std::string>(oss, ", "),
+                 [](const auto& obj) { return obj.id; });
+  oss << objects.back().id;
+
+  return oss.str();
+}
+
 PlanningScene& PlanningScene::instance()
 {
   static PlanningScene instance;

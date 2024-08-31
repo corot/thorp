@@ -8,6 +8,7 @@
 #include <moveit_msgs/CollisionObject.h>
 #include <thorp_msgs/DetectObjectsAction.h>
 
+#include <thorp_toolkit/planning_scene.hpp>
 #include <thorp_toolkit/common.hpp>
 namespace ttk = thorp::toolkit;
 
@@ -78,7 +79,7 @@ private:
         objects.emplace_back(object);
       }
     }
-    ROS_INFO_NAMED(name(), "%lu objects detected", objects.size());
+    ROS_INFO_STREAM_NAMED(name(), objects.size() << " object(s) detected: " << ttk::getIDs(objects));
     setOutput("objects", objects);
     setOutput("surface", res->surface);
 

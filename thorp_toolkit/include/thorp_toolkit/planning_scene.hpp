@@ -16,6 +16,7 @@
 
 namespace thorp::toolkit
 {
+std::string getIDs(const std::vector<moveit_msgs::CollisionObject>& objects);
 
 class PlanningScene : public moveit::planning_interface::PlanningSceneInterface
 {

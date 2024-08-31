@@ -100,12 +100,13 @@ private:
     std::vector<geometry_msgs::PoseStamped> removed_poses;
     std::copy_if(poses.begin(), poses.end(), std::back_inserter(removed_poses),
                  [this](const geometry_msgs::PoseStamped& pose) { return isBlocked(pose); });
-    ROS_ERROR_COND_NAMED(!removed_poses.empty(), name(), "%lu poses out of %lu discarded as blocked",
-                         removed_poses.size(), poses.size());
+    ROS_INFO_COND_NAMED(!removed_poses.empty(), name(), "%lu poses out of %lu discarded as blocked",
+                        removed_poses.size(), poses.size());
 
     poses.erase(std::remove_if(poses.begin(), poses.end(), [&](const geometry_msgs::PoseStamped& pose)
                        { return std::find(removed_poses.begin(), removed_poses.end(), pose) != removed_poses.end(); }),
                 poses.end());
+    ROS_WARN_COND_NAMED(poses.empty(), name(), "No reachable poses! we default to the four side centers");
 
     valid_poses_pub_.publish(ttk::toPoseArray(poses, 0.01, table_tf.header.frame_id));
     blocked_poses_pub_.publish(ttk::toPoseArray(removed_poses, 0.01, table_tf.header.frame_id));
@@ -134,8 +135,8 @@ private:
     }
     if (srv.response.state >= mbf_msgs::CheckPoseResponse::LETHAL)
     {
-      ROS_ERROR_NAMED(name(), "Blocked pose %s: %d; cost: %u", ttk::toCStr2D(pose), (int)srv.response.state,
-                      srv.response.cost);
+      ROS_INFO_NAMED(name(), "Blocked pose %s: %d; cost: %u", ttk::toCStr2D(pose), (int)srv.response.state,
+                     srv.response.cost);
       return true;
     }
     ROS_DEBUG_NAMED(name(), "Reachable pose %s: %d; cost: %u", ttk::toCStr2D(pose), (int)srv.response.state,

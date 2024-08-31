@@ -3,6 +3,8 @@
 #include "thorp_bt_cpp/node_register.hpp"
 
 #include <moveit_msgs/CollisionObject.h>
+#include <thorp_toolkit/planning_scene.hpp>
+namespace ttk = thorp::toolkit;
 
 namespace thorp::bt::conditions
 {
@@ -42,7 +44,7 @@ private:
       ROS_INFO_STREAM_COND_NAMED(given_up_count && *given_up_count, name(), *given_up_count << " given up objects");
     }
 
-    ROS_INFO_STREAM_NAMED(name(), objects->size() << " objects available");
+    ROS_INFO_STREAM_NAMED(name(), objects->size() << " object(s) available: " << ttk::getIDs(*objects));
     return BT::NodeStatus::SUCCESS;
   }
 
