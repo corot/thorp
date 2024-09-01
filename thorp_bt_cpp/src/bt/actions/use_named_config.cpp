@@ -14,10 +14,6 @@ public:
   UseNamedConfig(const std::string& name, const BT::NodeConfig& config)
     : BT::StatefulActionNode(name, config)
   {
-    config_name_ = *getInput<std::string>("config_name");
-    auto source_ns = *getInput<std::string>("source_ns") + "/" + config_name_;
-    auto target_ns = *getInput<std::string>("target_ns");
-    config_ = std::make_unique<ttk::AlternativeConfig>(source_ns, target_ns, "default", config_name_);
   }
 
   static BT::PortsList providedPorts()
@@ -30,7 +26,15 @@ public:
 private:
   BT::NodeStatus onStart() override
   {
-    if (config_ && !config_->setConfig(config_name_))
+    if (!config_)
+    {
+      config_name_ = *getInput<std::string>("config_name");
+      auto source_ns = *getInput<std::string>("source_ns") + "/" + config_name_;
+      auto target_ns = *getInput<std::string>("target_ns");
+      config_ = std::make_unique<ttk::AlternativeConfig>(source_ns, target_ns, "default", config_name_);
+    }
+
+    if (!config_->setConfig(config_name_))
     {
       ROS_ERROR_STREAM_NAMED(name(), "Set " << config_name_ << " named configuration failed");
       return BT::NodeStatus::FAILURE;
