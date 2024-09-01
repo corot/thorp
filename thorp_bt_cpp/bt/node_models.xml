@@ -122,6 +122,7 @@
         <Action ID="GetPath">
             <output_port name="feedback" type="std::optional&lt;mbf_msgs::GetPathFeedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
             <output_port name="error" type="int"/>
+            <output_port name="poses" type="std::vector&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
             <output_port name="path" type="nav_msgs::Path_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="target_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="planner" type="std::string"/>

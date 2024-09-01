@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="4">
+  <include path="navigation.xml"/>
+  <BehaviorTree ID="per_room_coverage">
+    <Sequence>
+      <Fallback>
+        <Inverter>
+          <IsUIntListEmpty list="{room_sequence}"/>
+        </Inverter>
+        <Sequence>
+          <SegmentRooms room_information_in_pixel="{room_information_in_pixel}"
+                        robot_radius="{robot_radius}"
+                        map_resolution="{map_resolution}"
+                        segmented_map="{segmented_map}"
+                        map_origin="{map_origin}"
+                        map_image="{map_image}"
+                        room_information_in_meter="{room_information_in_meter}"
+                        action_name="exploration/room_segmentation"
+                        server_timeout="5.000000"/>
+          <GetRobotPose robot_pose="{robot_pose}"
+                        error="{error}"
+                        timeout="10.0"/>
+          <PlanRoomSequence map_resolution="{map_resolution}"
+                            map_origin="{map_origin}"
+                            map_image="{map_image}"
+                            room_sequence="{room_sequence}"
+                            room_information_in_pixel="{room_information_in_pixel}"
+                            robot_radius="{robot_radius}"
+                            robot_pose="{robot_pose}"
+                            action_name="exploration/room_sequence_planning"
+                            server_timeout="5.000000"/>
+        </Sequence>
+      </Fallback>
+      <RetryUntilSuccessful num_attempts="-1">
+        <Sequence>
+          <Fallback>
+            <Inverter>
+              <IsPoseListEmpty list="{coverage_waypoints}"/>
+            </Inverter>
+            <Sequence>
+              <GetUIntFromList element="{room_number}"
+                               list="{room_sequence}"
+                               index="0"
+                               pop="false"/>
+              <PlanRoomExploration coverage_waypoints="{coverage_waypoints}"
+                                   room_number="{room_number}"
+                                   map_origin="{map_origin}"
+                                   room_information_in_meter="{room_information_in_meter}"
+                                   map_resolution="{map_resolution}"
+                                   map_image="{map_image}"
+                                   robot_radius="{robot_radius}"
+                                   robot_pose="{robot_pose}"
+                                   segmented_map="{segmented_map}"
+                                   action_name="exploration/room_exploration"
+                                   start_pose="{start_pose}"
+                                   server_timeout="5.000000"/>
+              <PushPoseToList element="{start_pose}"
+                              list="{coverage_waypoints}"/>
+            </Sequence>
+          </Fallback>
+          <Sequence>
+            <SubTree ID="reach_first_pose"
+                     poses="{coverage_waypoints}"/>
+            <RetryUntilSuccessful num_attempts="-1">
+              <Fallback>
+                <SubTree ID="follow_waypoints"
+                         waypoints="{coverage_waypoints}"/>
+                <Sequence>
+                  <SubTree ID="reach_first_pose"
+                           poses="{coverage_waypoints}"/>
+                  <IsPoseListEmpty list="{coverage_waypoints}"/>
+                </Sequence>
+              </Fallback>
+            </RetryUntilSuccessful>
+            <ClearPoseList list="{coverage_waypoints}"/>
+            <PopUIntFromList element="{room_number}"
+                             list="{room_sequence}"/>
+            <IsUIntListEmpty list="{room_sequence}"/>
+          </Sequence>
+        </Sequence>
+      </RetryUntilSuccessful>
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="full_coverage_planner">
+    <Sequence>
+      <CreatePoseStamped pose="{dummy_pose}"
+                         frame="map"
+                         yaw="0"
+                         y="0"
+                         x="0"/>
+      <GetPath feedback="{get_path_feedback}"
+               error="{error}"
+               poses="{coverage_waypoints}"
+               path=""
+               target_pose="{dummy_pose}"
+               planner="CoveragePlanner"
+               action_name="move_base_flex/get_path"
+               server_timeout="5.000000"/>
+      <SubTree ID="follow_waypoints"
+               waypoints="{coverage_waypoints}"/>
+    </Sequence>
+  </BehaviorTree>
+</root>

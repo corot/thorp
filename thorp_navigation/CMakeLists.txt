@@ -23,7 +23,7 @@ catkin_package(
 
 add_executable(pose_follower src/pose_follower.cpp)
 target_link_libraries(pose_follower ${catkin_LIBRARIES})
-add_dependencies(pose_follower thorp_msgs_generate_messages_cpp)
+add_dependencies(pose_follower thorp_msgs_generate_messages_cpp ${PROJECT_NAME}_gencfg)
 
 add_executable(waypoints_path src/waypoints_path.cpp)
 target_link_libraries(waypoints_path ${catkin_LIBRARIES})

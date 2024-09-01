@@ -31,6 +31,7 @@
   <exec_depend>teb_local_planner</exec_depend>
   <exec_depend>pose_follower</exec_depend>
   <exec_depend>global_planner</exec_depend>
+  <exec_depend>full_coverage_path_planner</exec_depend>
   <exec_depend>map_server</exec_depend>
   <exec_depend>clear_costmap_recovery</exec_depend>
   <exec_depend>move_slow_and_clear</exec_depend>

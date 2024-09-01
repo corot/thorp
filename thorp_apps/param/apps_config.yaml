@@ -1,3 +1,7 @@
+# exploration
+exploration_method: full_coverage_planner
+wp_reached_threshold: 1.0  # we consider a waypoint reached when we pass by at least this distance
+
 # navigation
 default_planner: 'GlobalPlanner'
 default_controller: 'TEBPlanner'
@@ -11,7 +15,6 @@ tight_angle_tolerance: 0.05  # ~3 deg
 loose_dist_tolerance: 0.25
 loose_angle_tolerance: 0.5  # ~30 deg
 inf_angle_tolerance: +Inf
-wp_reached_threshold: 1.0  # we consider a waypoint reached when we pass by at least this distance
 
 # manipulation
 table_min_side: 0.2  # to include also shelves; for reference, doll table side is 45 cm

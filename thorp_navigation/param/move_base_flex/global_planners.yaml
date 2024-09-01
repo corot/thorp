@@ -22,3 +22,7 @@ NavfnPlanner:
   
   default_tolerance: 0.0        # If the goal is in an obstacle, the planer will plan to the nearest point in the radius of default_tolerance, default 0.0
                                 # The area is always searched, so could be slow for big values
+
+CoveragePlanner:
+  tool_radius: &tool_radius 0.42
+  robot_radius: *tool_radius    # ignores obstacles if smaller than tool_radius!

@@ -18,11 +18,13 @@ public:
   {
     BT::PortsList ports = BT::RosActionNode<ActionType>::providedPorts();
     ports["action_name"].setDefaultValue("move_base_flex/get_path");
-    ports.insert({ BT::InputPort<std::string>("planner"),                     //
-                   BT::InputPort<geometry_msgs::PoseStamped>("target_pose"),  //
-                   BT::OutputPort<nav_msgs::Path>("path"),                    //
-                   BT::OutputPort<int>("error"),                              //
+    ports.insert({ BT::InputPort<std::string>("planner"),                             //
+                   BT::InputPort<geometry_msgs::PoseStamped>("target_pose"),          //
+                   BT::OutputPort<nav_msgs::Path>("path"),                            //
+                   BT::OutputPort<std::vector<geometry_msgs::PoseStamped>>("poses"),  //
+                   BT::OutputPort<int>("error"),                                      //
                    BT::OutputPort<std::optional<FeedbackType>>("feedback") });
+
     return ports;
   }
 
@@ -38,6 +40,7 @@ private:
   BT::NodeStatus onSucceeded(const ResultConstPtr& res) override
   {
     setOutput("path", res->path);
+    setOutput("poses", res->path.poses);
 
     return BT::NodeStatus::SUCCESS;
   }

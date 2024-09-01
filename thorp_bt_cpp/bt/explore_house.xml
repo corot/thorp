@@ -1,85 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root BTCPP_format="4">
-  <include path="navigation.xml"/>
+  <include path="exploration.xml"/>
 
   <BehaviorTree ID="explore_house">
     <Sequence>
-      <Fallback>
-        <Inverter>
-          <IsUIntListEmpty list="{room_sequence}"/>
-        </Inverter>
-        <Sequence>
-          <SegmentRooms action_name="exploration/room_segmentation"
-                        server_timeout="5.000000"
-                        map_image="{map_image}"
-                        map_origin="{map_origin}"
-                        map_resolution="{map_resolution}"
-                        robot_radius="{robot_radius}"
-                        room_information_in_meter="{room_information_in_meter}"
-                        room_information_in_pixel="{room_information_in_pixel}"
-                        segmented_map="{segmented_map}"/>
-          <GetRobotPose timeout="10.0"
-                        error="{error}"
-                        robot_pose="{robot_pose}"/>
-          <PlanRoomSequence action_name="exploration/room_sequence_planning"
-                            map_image="{map_image}"
-                            map_origin="{map_origin}"
-                            map_resolution="{map_resolution}"
-                            robot_pose="{robot_pose}"
-                            robot_radius="{robot_radius}"
-                            room_information_in_pixel="{room_information_in_pixel}"
-                            server_timeout="5.000000"
-                            room_sequence="{room_sequence}"/>
-        </Sequence>
-      </Fallback>
-      <RetryUntilSuccessful num_attempts="-1">
-        <Sequence>
-          <Fallback>
-            <Inverter>
-              <IsPoseListEmpty list="{coverage_waypoints}"/>
-            </Inverter>
-            <Sequence>
-              <GetUIntFromList index="0"
-                               pop="false"
-                               element="{room_number}"
-                               list="{room_sequence}"/>
-              <PlanRoomExploration action_name="exploration/room_exploration"
-                                   map_image="{map_image}"
-                                   map_origin="{map_origin}"
-                                   map_resolution="{map_resolution}"
-                                   robot_pose="{robot_pose}"
-                                   robot_radius="{robot_radius}"
-                                   room_information_in_meter="{room_information_in_meter}"
-                                   room_number="{room_number}"
-                                   segmented_map="{segmented_map}"
-                                   server_timeout="5.000000"
-                                   coverage_waypoints="{coverage_waypoints}"
-                                   start_pose="{start_pose}"/>
-              <PushPoseToList element="{start_pose}"
-                              list="{coverage_waypoints}"/>
-            </Sequence>
-          </Fallback>
-          <Sequence>
-            <SubTree ID="reach_first_pose"
-                     poses="{coverage_waypoints}"/>
-            <RetryUntilSuccessful num_attempts="-1">
-              <Fallback>
-                <SubTree ID="follow_waypoints"
-                         waypoints="{coverage_waypoints}"/>
-                <Sequence>
-                  <SubTree ID="reach_first_pose"
-                           poses="{coverage_waypoints}"/>
-                  <IsPoseListEmpty list="{coverage_waypoints}"/>
-                </Sequence>
-              </Fallback>
-            </RetryUntilSuccessful>
-            <ClearPoseList list="{coverage_waypoints}"/>
-            <PopUIntFromList element="{room_number}"
-                             list="{room_sequence}"/>
-            <IsUIntListEmpty list="{room_sequence}"/>
-          </Sequence>
-        </Sequence>
-      </RetryUntilSuccessful>
+      <ReadStringParam output_key="{exploration_method}"
+                       param_name="exploration_method"/>
+      <SubTree ID="full_coverage_planner"
+               _skipIf="exploration_method != 'full_coverage_planner'"/>
+      <SubTree ID="per_room_coverage"
+               _skipIf="exploration_method != 'per_room_coverage'"/>
     </Sequence>
   </BehaviorTree>
+
+  <!-- Description of Node Models (used by Groot) -->
+  <TreeNodesModel>
+    <Action ID="ReadStringParam">
+      <output_port name="output_key"
+                   type="std::string"/>
+      <input_port name="param_name"
+                  type="std::string"/>
+    </Action>
+  </TreeNodesModel>
+
 </root>
