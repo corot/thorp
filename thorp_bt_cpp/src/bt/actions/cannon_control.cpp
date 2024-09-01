@@ -15,7 +15,8 @@ namespace thorp::bt::actions
 class AimCannon : public BT::SyncActionNode
 {
 public:
-  AimCannon(const std::string& name, const BT::NodeConfig& config) : BT::SyncActionNode(name, config)
+  AimCannon(const std::string& name, const BT::NodeConfig& config)
+    : BT::SyncActionNode(name, config), tf2_(ttk::TF2::instance())
   {
   }
 
@@ -31,7 +32,7 @@ private:
     geometry_msgs::PoseStamped robot_pose = *getInput<geometry_msgs::PoseStamped>("robot_pose");
     geometry_msgs::PoseStamped target_pose = *getInput<geometry_msgs::PoseStamped>("target_pose");
     geometry_msgs::PoseStamped target_pose_cannon_rf;
-    if (ttk::TF2::instance().transformPose("cannon_shaft_link", target_pose, target_pose_cannon_rf, ros::Duration(0.1)))
+    if (tf2_.transformPose("cannon_shaft_link", target_pose, target_pose_cannon_rf, ros::Duration(0.1)))
     {
       double adjacent = target_pose_cannon_rf.pose.position.x;
       double opposite = target_pose_cannon_rf.pose.position.z;
@@ -44,6 +45,8 @@ private:
     ROS_ERROR_STREAM_NAMED(name(), "Unable to transform target pose into 'cannon_shaft_link' frame");
     return BT::NodeStatus::FAILURE;
   }
+
+  ttk::TF2& tf2_;
 
   BT_REGISTER_NODE(AimCannon);
 };

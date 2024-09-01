@@ -13,7 +13,7 @@ class GetRobotPose : public BT::StatefulActionNode
 {
 public:
   GetRobotPose(const std::string& name, const BT::NodeConfig& config)
-    : StatefulActionNode(name, config), timeout_()
+    : StatefulActionNode(name, config), tf2_(ttk::TF2::instance())
   {
   }
 
@@ -36,7 +36,7 @@ private:
     geometry_msgs::PoseStamped robot_pose;
     robot_pose.header.frame_id = "base_footprint";
     robot_pose.pose.orientation.w = 1.0;
-    if (ttk::TF2::instance().transformPose("map", robot_pose, robot_pose, timeout_))
+    if (tf2_.transformPose("map", robot_pose, robot_pose, timeout_))
     {
       setOutput("robot_pose", robot_pose);
       return BT::NodeStatus::SUCCESS;
@@ -52,6 +52,7 @@ private:
   {
   }
 
+  ttk::TF2& tf2_;
   ros::Duration timeout_;
 
   BT_REGISTER_NODE(GetRobotPose);

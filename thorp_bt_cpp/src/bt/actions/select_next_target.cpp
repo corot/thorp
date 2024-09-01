@@ -17,7 +17,8 @@ class SelectNextTarget : public BT::SyncActionNode
 public:
   using Object = moveit_msgs::CollisionObject;
 
-  SelectNextTarget(const std::string& name, const BT::NodeConfig& config) : BT::SyncActionNode(name, config)
+  SelectNextTarget(const std::string& name, const BT::NodeConfig& config)
+    : BT::SyncActionNode(name, config), tf2_(ttk::TF2::instance())
   {
     ros::NodeHandle pnh("~");
     max_arm_reach_ = pnh.param("max_arm_reach", 0.3);
@@ -25,8 +26,7 @@ public:
     tightening_ = pnh.param("gripper_tightening", 0.002);
     std::string manip_frame = pnh.param("pickup_planning_frame", std::string("arm_base_link"));
     arm_pose_on_bfp_rf_.header.frame_id = manip_frame;
-    if (!ttk::TF2::instance().transformPose("base_footprint", arm_pose_on_bfp_rf_, arm_pose_on_bfp_rf_,
-                                            ros::Duration(10)))
+    if (!tf2_.transformPose("base_footprint", arm_pose_on_bfp_rf_, arm_pose_on_bfp_rf_, ros::Duration(10)))
       throw tf2::TransformException("Unable to get arm base pose on base_footprint reference frame");
   }
 
@@ -39,6 +39,7 @@ public:
   }
 
 private:
+  ttk::TF2& tf2_;
   uint32_t max_failures_;
   float max_arm_reach_;
   float tightening_;

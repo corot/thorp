@@ -12,7 +12,7 @@ class TargetReachable : public BT::ConditionNode
 {
 public:
   TargetReachable(const std::string& name, const BT::NodeConfig& config)
-    : BT::ConditionNode(name, config)
+    : BT::ConditionNode(name, config), tf2_(ttk::TF2::instance())
   {
   }
 
@@ -38,7 +38,7 @@ private:
     }
 
     // Transform both poses into the same reference frame
-    if (!ttk::TF2::instance().transformPose(robot_pose->header.frame_id, *target_pose, *target_pose))
+    if (!tf2_.transformPose(robot_pose->header.frame_id, *target_pose, *target_pose))
     {
       return BT::NodeStatus::FAILURE;
     }
@@ -55,6 +55,8 @@ private:
     ROS_INFO_NAMED(name(), "Target at %.2f m and %.2f rad not reachable", dist_to_target, angle_to_target);
     return BT::NodeStatus::FAILURE;
   }
+
+  ttk::TF2& tf2_;
 
   BT_REGISTER_NODE(TargetReachable);
 };

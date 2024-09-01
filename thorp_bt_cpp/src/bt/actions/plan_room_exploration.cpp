@@ -16,7 +16,8 @@ namespace thorp::bt::actions
 class PlanRoomExploration : public BT::RosActionNode<ipa_building_msgs::RoomExplorationAction>
 {
 public:
-  PlanRoomExploration(const std::string& name, const BT::NodeConfig& config) : RosActionNode(name, config)
+  PlanRoomExploration(const std::string& name, const BT::NodeConfig& config)
+    : RosActionNode(name, config), tf2_(ttk::TF2::instance())
   {
   }
 
@@ -57,7 +58,7 @@ private:
     }
     geometry_msgs::Pose robot_pose = getInput<geometry_msgs::PoseStamped>("robot_pose")->pose;
     geometry_msgs::TransformStamped bfp_cam_tf;
-    ttk::TF2::instance().lookupTransform("kinect_rgb_frame", "base_footprint", bfp_cam_tf);
+    tf2_.lookupTransform("kinect_rgb_frame", "base_footprint", bfp_cam_tf);
 
     GoalType goal;
     goal.robot_radius = *getInput<float>("robot_radius");
@@ -148,6 +149,7 @@ ros::Timer fov_pub_timer = nh.createTimer(ros::Duration(0.1),
     return fov_points;
   }
 
+  ttk::TF2& tf2_;
   geometry_msgs::Point room_center_;
 
   BT_REGISTER_NODE(PlanRoomExploration);

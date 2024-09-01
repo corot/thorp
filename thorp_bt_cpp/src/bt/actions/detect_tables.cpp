@@ -18,7 +18,7 @@ class DetectTables : public BT::RosActionNode<rail_manipulation_msgs::SegmentObj
 {
 public:
   DetectTables(const std::string& name, const BT::NodeConfig& conf)
-    : RosActionNode<ActionType>(name, conf)
+    : RosActionNode<ActionType>(name, conf), tf2_(ttk::TF2::instance())
   {
   }
 
@@ -72,6 +72,8 @@ private:
 
     return BT::NodeStatus::FAILURE;
   }
+
+  ttk::TF2& tf2_;
 
   BT_REGISTER_NODE(DetectTables);
 };

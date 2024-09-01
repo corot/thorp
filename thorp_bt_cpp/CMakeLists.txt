@@ -44,13 +44,13 @@ file(GLOB_RECURSE BT_NODES
         src/bt/controls/*.cpp
         src/bt/decorators/*.cpp)
 
-add_library(bt_runner src/bt_runner.cpp src/bt_ros_logger.cpp)
+add_library(bt_runner src/bt_runner.cpp src/bt_ros_logger.cpp ${BT_NODES})
 target_link_libraries(bt_runner
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
 )
 
-add_executable(bt_runner_node src/bt_runner_node.cpp ${BT_NODES})
+add_executable(bt_runner_node src/bt_runner_node.cpp)
 add_dependencies(bt_runner_node bt_runner)
 target_link_libraries(bt_runner_node bt_runner
   ${catkin_LIBRARIES}

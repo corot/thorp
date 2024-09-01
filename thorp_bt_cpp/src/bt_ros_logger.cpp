@@ -27,9 +27,11 @@ void RosLogger::callback(Duration timestamp, const TreeNode& node, NodeStatus pr
   //  std::stringstream ss;
   //  ss << "[" << since_epoch << "]: " << node.name() << " " << toStr(prev_status, true) << " -> " << toStr(status,
   //  true); msg.data = ss.str();
-  // Publish only actions the first tick they start running
-  if (dynamic_cast<const BT::ActionNodeBase*>(&node) != nullptr && prev_status == NodeStatus::IDLE &&
-      status == NodeStatus::RUNNING)
+  // Publish only subtrees and actions the first tick they start running
+  // TODO decent and filter in the RViz viz
+  if ((dynamic_cast<const BT::SubTreeNode*>(&node) != nullptr ||
+       dynamic_cast<const BT::ActionNodeBase*>(&node) != nullptr) &&
+      (prev_status == NodeStatus::IDLE && status == NodeStatus::RUNNING))
   {
     std_msgs::String msg;
     msg.data = node.name();
