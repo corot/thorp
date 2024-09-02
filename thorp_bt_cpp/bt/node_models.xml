@@ -51,13 +51,6 @@
             <input_port name="table_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="table" type="rail_manipulation_msgs::SegmentedObject_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
-        <Action ID="CreatePoseStamped">
-            <output_port name="pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <input_port name="frame" type="std::string"/>
-            <input_port name="yaw" type="double"/>
-            <input_port name="y" type="double"/>
-            <input_port name="x" type="double"/>
-        </Action>
         <Action ID="DetectObjects">
             <output_port name="surface" type="moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="objects" type="std::vector&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;moveit_msgs::CollisionObject_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>

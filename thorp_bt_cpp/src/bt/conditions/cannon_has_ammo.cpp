@@ -16,14 +16,14 @@ class CannonHasAmmo : public BT::ConditionNode
 public:
   CannonHasAmmo(const std::string& name, const BT::NodeConfig& config) : BT::ConditionNode(name, config)
   {
-    sub_ = ros::NodeHandle().subscribe("cannon_ctrl/shots_left", 1, &CannonHasAmmo::callback);
+    sub_ = ros::NodeHandle().subscribe("cannon_ctrl/shots_left", 1, &CannonHasAmmo::callback, this);
   }
 
 private:
-  inline static bool has_ammo_ = true;
-  inline static ros::Subscriber sub_;
+  bool has_ammo_ = true;
+  ros::Subscriber sub_;
 
-  inline static void callback(const std_msgs::UInt8& msg)
+  void callback(const std_msgs::UInt8& msg)
   {
     if (has_ammo_ = msg.data; !has_ammo_)
     {

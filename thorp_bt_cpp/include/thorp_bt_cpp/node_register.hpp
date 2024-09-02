@@ -1,13 +1,11 @@
 #pragma once
 
-#include <type_traits>
-
 #include <ros/ros.h>
 #include <behaviortree_cpp/tree_node.h>
+#include <behaviortree_cpp/bt_factory.h>
 
 #include "thorp_bt_cpp/bt_runner.hpp"
-
-#include <behaviortree_cpp/bt_factory.h>
+#include "thorp_bt_cpp/type_converters.hpp"
 
 namespace thorp::bt
 {
@@ -20,7 +18,7 @@ namespace thorp::bt
 template <typename T, typename... Args>
 struct NodeRegister
 {
-  NodeRegister(const std::string& name, Args&&... args)
+  explicit NodeRegister(const std::string& name, Args&&... args)
   {
     ROS_DEBUG_STREAM_NAMED("NodeRegister", name << " node registered");
 

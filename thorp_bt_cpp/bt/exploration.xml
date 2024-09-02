@@ -84,16 +84,11 @@
 
   <BehaviorTree ID="full_coverage_planner">
     <Sequence>
-      <CreatePoseStamped pose="{dummy_pose}"
-                         frame="map"
-                         yaw="0"
-                         y="0"
-                         x="0"/>
       <GetPath feedback="{get_path_feedback}"
                error="{error}"
                poses="{coverage_waypoints}"
                path=""
-               target_pose="{dummy_pose}"
+               target_pose="0;0;0;map"
                planner="CoveragePlanner"
                action_name="move_base_flex/get_path"
                server_timeout="5.000000"/>

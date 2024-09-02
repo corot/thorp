@@ -1,39 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root BTCPP_format="4">
   <BehaviorTree ID="patrol_2_points">
-    <Sequence>
-      <CreatePoseStamped frame="map"
-                         x="2"
-                         y="5.000000"
-                         yaw="1.57"
-                         pose="{pose_a}"/>
-      <CreatePoseStamped frame="map"
-                         x="2"
-                         y="1"
-                         yaw="-1.57"
-                         pose="{pose_b}"/>
-      <Repeat num_cycles="10">
-        <Sequence>
-          <GoToPose action_name="move_base_flex/move_base"
-                    angle_tolerance=""
-                    controller=""
-                    dist_tolerance=""
-                    planner=""
-                    pose="{pose_a}"
-                    server_timeout="5.000000"
-                    error="{goto_pose_error}"
-                    feedback="{goto_pose_feedback}"/>
-          <GoToPose action_name="move_base_flex/move_base"
-                    angle_tolerance=""
-                    controller=""
-                    dist_tolerance=""
-                    planner=""
-                    pose="{pose_b}"
-                    server_timeout="5.000000"
-                    error="{goto_pose_error}"
-                    feedback="{goto_pose_feedback}"/>
-        </Sequence>
-      </Repeat>
-    </Sequence>
+    <Repeat num_cycles="10">
+      <Sequence>
+        <GoToPose action_name="move_base_flex/move_base"
+                  angle_tolerance=""
+                  controller="TEBPlanner"
+                  dist_tolerance=""
+                  planner=""
+                  pose="2.0;5.0;1.57;map"
+                  server_timeout="5.000000"
+                  error="{goto_pose_error}"
+                  feedback="{goto_pose_feedback}"/>
+        <GoToPose action_name="move_base_flex/move_base"
+                  angle_tolerance=""
+                  controller="TEBPlanner"
+                  dist_tolerance=""
+                  planner=""
+                  pose="2.0;1.0;-1.57;map"
+                  server_timeout="5.000000"
+                  error="{goto_pose_error}"
+                  feedback="{goto_pose_feedback}"/>
+      </Sequence>
+    </Repeat>
   </BehaviorTree>
 </root>
