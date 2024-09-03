@@ -29,7 +29,7 @@ sonars_layer:
   no_readings_timeout:  2.0
   clear_on_max_reading: true
   ns:     /mobile_base/sensors/sonars
-  topics: [m90, m72, m54, m36, m18, 0, p18, p36, p54, p72, p90]
+  topics: [m90, m72, m54, m36, m18, '0', p18, p36, p54, p72, p90]
 
 infrared_layer:
   clear_threshold:      0.4
