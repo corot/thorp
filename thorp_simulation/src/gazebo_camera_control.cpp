@@ -37,6 +37,10 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "gazebo_camera_control");
 
+  // Wait until gazebo starts publishing the clock; otherwise sometimes the subscriber gets nothing
+  ros::NodeHandle nh;
+  ros::Time::waitForValid();
+
   // Gazebo camera interface
   gazebo::client::setup(argc, argv);
   gazebo::transport::NodePtr gz_node(new gazebo::transport::Node());
@@ -48,7 +52,6 @@ int main(int argc, char **argv)
   gz_cam_pub = gz_node->Advertise<gazebo::msgs::Pose>("~/user_camera/joy_pose");
 
   // RViz camera interface
-  ros::NodeHandle nh;
   ros::Subscriber sub = nh.subscribe("rviz/camera_pose", 1, poseCallback);
 
   ros::spin();

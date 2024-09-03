@@ -55,18 +55,18 @@
   <include file="$(find thorp_bringup)/launch/includes/model.launch.xml"/>
 
   <!--  ************* Common functionality ************  -->
-  <include file="$(find thorp_simulation)/launch/includes/thorp_common.launch.xml">
+  <include file="$(find thorp_simulation)/launch/includes/sim_common.launch.xml">
     <arg name="map_file"        value="$(arg map_file)"/>
     <arg name="initial_pose_x"  value="$(arg initial_pose_x)"/>
     <arg name="initial_pose_y"  value="$(arg initial_pose_y)"/>
     <arg name="initial_pose_a"  value="$(arg initial_pose_a)"/>
   </include>
 
-  <!-- we cannot simulate sonars on stage_ros, so disable sonar layer -->
-  <param name="move_base/global_costmap/range_sensor_layer/enabled" value="false"/>
-  <param name="move_base/local_costmap/range_sensor_layer/enabled" value="false"/>
-  <param name="move_base_flex/global_costmap/range_sensor_layer/enabled" value="false"/>
-  <param name="move_base_flex/local_costmap/range_sensor_layer/enabled" value="false"/>
+  <!-- we cannot simulate range sensors on stage_ros, so disable the layers -->
+  <param name="move_base_flex/global_costmap/sonars_layer/enabled" value="false"/>
+  <param name="move_base_flex/global_costmap/infrared_layer/enabled" value="false"/>
+  <param name="move_base_flex/local_costmap/sonars_layer/enabled" value="false"/>
+  <param name="move_base_flex/local_costmap/infrared_layer/enabled" value="false"/>
 
   <!--  **************** Visualization ****************  -->
   <node if="$(arg visualization)"
