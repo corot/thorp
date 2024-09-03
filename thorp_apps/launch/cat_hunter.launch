@@ -46,7 +46,8 @@
       <param name="target_models" value="$(arg cat_models)"/>
       <param name="prowling_step" value="0.01"/>
       <!-- update period is hardcoded to 0.1 seconds, so this is the only way to change cats speed -->
-      <param name="hit_sock_duration" value="0.5"/>
+
+      <param name="hit_sock_duration" value="1.0"/>
 
       <!-- send deceased cats outside the house -->
       <param name="outside_x" value="4.0" if="$(eval world_name == 'fun_house')"/>
@@ -86,5 +87,5 @@
 
   <!-- Run RViz showing exploration, object recognition displays and cat interactive markers -->
   <node pkg="rviz" type="rviz" name="rviz" output="screen" respawn="true"
-        args="-d $(find thorp_bringup)/rviz/hunting.rviz"/>
+        args="$(eval '-d' + find('thorp_bringup') + '/rviz/hunting' + ('.movie' if record_video else '') + '.rviz')"/>
 </launch>
