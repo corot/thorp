@@ -3,7 +3,7 @@
 import rospy
 
 from math import atan, degrees, radians
-from std_msgs.msg import Float64, UInt8
+from std_msgs.msg import Float64, UInt16
 from thorp_msgs.srv import CannonCommand, CannonCommandRequest
 from thorp_msgs.msg import ThorpError
 from arbotix_msgs.msg import Digital, Analog
@@ -20,12 +20,12 @@ class CannonCtrlNode:
 
         if self._simulation:
             self._tilt_cannon_pub = rospy.Publisher('cannon_joint/command', Float64, queue_size=5, latch=True)
-            self._shots_left = 100
+            self._shots_left = 1000
         else:
             self._tilt_cannon_pub = rospy.Publisher('arbotix/cannon_servo', Analog, queue_size=5, latch=True)
             self._shots_left = 6
         self._fire_cannon_pub = rospy.Publisher('arbotix/cannon_trigger', Digital, queue_size=5, latch=True)
-        self._shots_left_pub = rospy.Publisher('~shots_left', UInt8, latch=True, queue_size=1)
+        self._shots_left_pub = rospy.Publisher('~shots_left', UInt16, latch=True, queue_size=1)
         self._shots_left_pub.publish(self._shots_left)
 
         # Subscribe to a target pose to aim to

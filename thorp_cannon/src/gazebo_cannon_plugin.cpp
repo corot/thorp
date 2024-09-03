@@ -43,8 +43,6 @@ public:
       this->rate_of_fire = _sdf->Get<double>("rate_of_fire");
     if (_sdf->HasElement("shoot_force"))
       this->shoot_force = _sdf->Get<double>("shoot_force");
-    if (_sdf->HasElement("rocket_count"))
-      this->rocket_count = _sdf->Get<double>("rocket_count");
 
     auto cannon_link_name = _sdf->HasElement("cannon_link") ? _sdf->Get<std::string>("cannon_link") : "cannon_link";
     ROS_DEBUG("Get link %s for model %s", cannon_link_name.c_str(), this->model->GetName().c_str());
@@ -98,7 +96,7 @@ public:
       return;
     }
 
-    if (this->firing && this->next_rocket <= this->rocket_count)
+    if (this->firing)
     {
       // Trigger pressed and still have rockets; fire if we meet our rate of fire
       double new_secs = this->world->SimTime().Float();
@@ -173,8 +171,7 @@ public:
 
   // Shooting configuration
   bool firing = false;
-  uint8_t next_rocket = 1;
-  uint8_t rocket_count = 6;
+  uint16_t next_rocket = 1;
   double shoot_force = 100;
   double rate_of_fire = 18.18;  // Hz, or 0.055s between shots
   double last_shot_time = -1.0;
