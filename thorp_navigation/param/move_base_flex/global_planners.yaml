@@ -25,4 +25,4 @@ NavfnPlanner:
 
 CoveragePlanner:
   tool_radius: &tool_radius 0.42
-  robot_radius: *tool_radius    # ignores obstacles if smaller than tool_radius!
+  robot_radius: *tool_radius    # not expected to be smaller than tool_radius

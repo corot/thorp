@@ -1,6 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root BTCPP_format="4">
   <include path="navigation.xml"/>
+
+  <BehaviorTree ID="full_coverage_planner">
+    <Sequence>
+      <Fallback>
+        <Inverter>
+          <IsPoseListEmpty list="{coverage_waypoints}"/>
+        </Inverter>
+        <GetPath feedback="{get_path_feedback}"
+                 error="{error}"
+                 poses="{coverage_waypoints}"
+                 path=""
+                 target_pose="0;0;0;map"
+                 planner="CoveragePlanner"
+                 action_name="move_base_flex/get_path"
+                 server_timeout="5.000000"/>
+      </Fallback>
+      <SubTree ID="follow_waypoints"
+               waypoints="{coverage_waypoints}"/>
+    </Sequence>
+  </BehaviorTree>
+
   <BehaviorTree ID="per_room_coverage">
     <Sequence>
       <Fallback>
@@ -58,42 +79,13 @@
                               list="{coverage_waypoints}"/>
             </Sequence>
           </Fallback>
-          <Sequence>
-            <SubTree ID="reach_first_pose"
-                     poses="{coverage_waypoints}"/>
-            <RetryUntilSuccessful num_attempts="-1">
-              <Fallback>
-                <SubTree ID="follow_waypoints"
-                         waypoints="{coverage_waypoints}"/>
-                <Sequence>
-                  <SubTree ID="reach_first_pose"
-                           poses="{coverage_waypoints}"/>
-                  <IsPoseListEmpty list="{coverage_waypoints}"/>
-                </Sequence>
-              </Fallback>
-            </RetryUntilSuccessful>
-            <ClearPoseList list="{coverage_waypoints}"/>
-            <PopUIntFromList element="{room_number}"
-                             list="{room_sequence}"/>
-            <IsUIntListEmpty list="{room_sequence}"/>
-          </Sequence>
+          <SubTree ID="follow_waypoints"
+                   waypoints="{coverage_waypoints}"/>
+          <PopUIntFromList element="{room_number}"
+                           list="{room_sequence}"/>
+          <IsUIntListEmpty list="{room_sequence}"/>
         </Sequence>
       </RetryUntilSuccessful>
-    </Sequence>
-  </BehaviorTree>
-
-  <BehaviorTree ID="full_coverage_planner">
-    <Sequence>
-      <GetPath feedback="{get_path_feedback}"
-               error="{error}"
-               poses="{coverage_waypoints}"
-               path=""
-               target_pose="0;0;0;map"
-               planner="CoveragePlanner"
-               action_name="move_base_flex/get_path"
-               server_timeout="5.000000"/>
-      <SubTree ID="follow_waypoints"
-               waypoints="{coverage_waypoints}"/>
     </Sequence>
   </BehaviorTree>
 </root>
