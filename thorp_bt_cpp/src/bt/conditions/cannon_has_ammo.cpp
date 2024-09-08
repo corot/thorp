@@ -2,7 +2,7 @@
 
 #include "thorp_bt_cpp/node_register.hpp"
 
-#include <std_msgs/UInt8.h>
+#include <std_msgs/UInt16.h>
 
 namespace thorp::bt::conditions
 {
@@ -23,7 +23,7 @@ private:
   bool has_ammo_ = true;
   ros::Subscriber sub_;
 
-  void callback(const std_msgs::UInt8& msg)
+  void callback(const std_msgs::UInt16& msg)
   {
     if (has_ammo_ = msg.data; !has_ammo_)
     {

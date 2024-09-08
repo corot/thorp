@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<sdf version="1.5">
+  <model name="camera_control">
+    <link name="camera_control_link">
+      <visual name="visual">
+        <geometry>
+          <empty/>
+        </geometry>
+        <plugin name="CameraPosePlugin" filename="libgazebo_camera_control_plugin.so"/>
+      </visual>
+    </link>
+  </model>
+</sdf>

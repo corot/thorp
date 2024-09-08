@@ -14,8 +14,17 @@ include_directories(${GAZEBO_INCLUDE_DIRS}
 
 add_executable(gazebo_ground_truth src/gazebo_ground_truth.cpp)
 target_link_libraries(gazebo_ground_truth ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+
 add_executable(gazebo_camera_control src/gazebo_camera_control.cpp)
 target_link_libraries(gazebo_camera_control ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+
+add_library(gazebo_camera_control_plugin src/gazebo_camera_control_plugin.cpp)
+target_link_libraries(gazebo_camera_control_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+
+install(TARGETS gazebo_ground_truth gazebo_camera_control gazebo_camera_control_plugin
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
 
 catkin_install_python(PROGRAMS scripts/gazebo_link_state.py
                                scripts/spawn_gazebo_models.py
