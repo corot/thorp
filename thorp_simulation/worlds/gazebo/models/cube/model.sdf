@@ -4,9 +4,9 @@
       <link name='link'>
         <visual name='visual'>
           <geometry>
-            <mesh>
-              <uri>model://cube/model.stl</uri>
-            </mesh>
+            <box>
+              <size>0.025 0.025 0.025</size>
+            </box>
           </geometry>
           <material>
             <script>
@@ -17,9 +17,9 @@
         </visual>
         <collision name='collision'>
           <geometry>
-            <mesh>
-              <uri>model://cube/model.stl</uri>
-            </mesh>
+            <box>
+              <size>0.026 0.026 0.026 </size>
+            </box>
           </geometry>
           <max_contacts>10</max_contacts>
           <surface>
