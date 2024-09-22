@@ -44,6 +44,9 @@
   <!--  ************* Common functionality ************  -->
   <include file="$(find thorp_simulation)/launch/includes/sim_common.launch.xml"/>
 
+  <!-- Provide a state for all joints, as stage doesn't load any controller -->
+  <node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher" output="screen" respawn="true"/>
+
   <!-- we cannot simulate range sensors on stage_ros, so disable the layers -->
   <param name="move_base_flex/global_costmap/sonars_layer/enabled" value="false"/>
   <param name="move_base_flex/global_costmap/infrared_layer/enabled" value="false"/>
