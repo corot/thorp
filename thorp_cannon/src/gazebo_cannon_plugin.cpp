@@ -77,33 +77,32 @@ public:
 
   void Reset()
   {
-    this->reseting_plugin = true;
-    ROS_ERROR("Reseted the simulation world, we restart firing variables");
+    this->resetting_plugin = true;
+    ROS_ERROR("Reset the simulation world, we restart firing variables");
 
     this->firing = false;
-    this->next_rocket = 1;
     this->last_shot_time = -1.0;
 
-    this->reseting_plugin = false;
+    this->resetting_plugin = false;
   }
 
   // Called by the world update start event
   public: void OnUpdate()
   {
-    if (this->reseting_plugin)
+    if (this->resetting_plugin)
     {
-      ROS_ERROR("Reseting in process, please wait...");
+      ROS_ERROR("Resetting in process, please wait...");
       return;
     }
 
     if (this->firing)
     {
-      // Trigger pressed and still have rockets; fire if we meet our rate of fire
+      // Trigger pressed; fire if we meet our rate of fire
       double new_secs = this->world->SimTime().Float();
       double delta = new_secs - this->last_shot_time;
       if (delta >= 1.0/this->rate_of_fire)
       {
-        FireRocket(this->next_rocket++);
+        FireRocket();
         this->last_shot_time = new_secs;
       }
     }
@@ -118,15 +117,16 @@ public:
     ROS_DEBUG("Done waiting...");
   }
 
-  void FireRocket(int number)
+  void FireRocket()
   {
     ROS_DEBUG_STREAM("Loading rocket model: " << this->rocket_models_base_name);
     auto rocket_model = this->world->ModelByName(this->rocket_models_base_name);
     if (!rocket_model)
     {
-      ROS_ERROR_STREAM("Got nullptr for " << this->rocket_models_base_name << " model; firing aborted");
+      ROS_ERROR_STREAM(this->rocket_models_base_name << " model not loaded; firing aborted");
       return;
     }
+    rocket_model->Reset();
 
     auto cannon_pose = this->cannon_link->WorldPose();
 
@@ -171,15 +171,13 @@ public:
 
   // Shooting configuration
   bool firing = false;
-  uint16_t next_rocket = 1;
   double shoot_force = 100;
   double rate_of_fire = 18.18;  // Hz, or 0.055s between shots
   double last_shot_time = -1.0;
   ignition::math::Vector3d direction_of_fire;
   std::string axis_of_fire = "x";
 
-  // Reseting Flag
-  bool reseting_plugin = false;
+  bool resetting_plugin = false;
   
   std::string rocket_models_base_name = "rocket";
 };
