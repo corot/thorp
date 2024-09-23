@@ -15,7 +15,7 @@ import rospy
 import pickle
 import base64
 
-from std_msgs.msg import String
+from thorp_msgs.msg import BTNodeStatus
 from smach_ros.introspection import STATUS_TOPIC
 from smach_msgs.msg import SmachContainerStatus
 from geometry_msgs.msg import Point, Vector3, PoseStamped
@@ -107,12 +107,13 @@ def smach_status_cb(msg):
 
 def bt_status_cb(msg):
     try:
-        current_state = msg.data
+        current_state = msg.name
         camera_instructions = script[current_state]
         rospy.loginfo("Placing camera for state %s", current_state)
         place_camera(*parse_state(current_state, camera_instructions))
     except KeyError as ke:
-        rospy.logdebug("State %s not found in script", str(ke))  # normal; most states won't be listed in the script!
+        pass
+        # rospy.logdebug("State %s not found in script", str(ke))  # normal; most states won't be listed in the script!
 
 def get_value_from_path(msg, path):
     keys = path.split('.')
@@ -180,6 +181,6 @@ if __name__ == "__main__":
 
     server_name = rospy.get_param('~app_name')
     rospy.Subscriber(server_name + STATUS_TOPIC, SmachContainerStatus, smach_status_cb, queue_size=5)
-    rospy.Subscriber(server_name + '/bt_status', String, bt_status_cb, queue_size=5)
+    rospy.Subscriber(server_name + '/bt_status', BTNodeStatus, bt_status_cb, queue_size=50)
 
     rospy.spin()

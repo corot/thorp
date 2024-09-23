@@ -27,6 +27,7 @@
     <depend>rail_manipulation_msgs</depend>
     <depend>behaviortree_cpp</depend>
 
+    <depend>thorp_msgs</depend>
     <depend>thorp_costmap_layers</depend>
     <depend>thorp_toolkit</depend>
 </package>

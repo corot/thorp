@@ -7,18 +7,15 @@
 #    - ROS topic providing a stamped pose
 #  - eye must be a 3D point relative to focus location
 
-PlanRoomExploration:
+PlanFullCoverage:
   frame: map
   focus: [0, 0, 0]
   eye: [0, -0.1, 14]
 follow_waypoints:
-  frame: map
-  focus:
-    topic: move_base_flex/controller_goal
-    type: ''
-    path: ''
-  eye: [0, -0.1, 9.5]
-hunt_cat:
+  frame: base_footprint
+  focus: [1.0, 0, 0]
+  eye: [-2.0, 0, 4]
+AimCannon:
   frame: kinect_rgb_frame
   focus: [1, 0, 0]
   eye: [-0.98, 0, 0]

@@ -8,7 +8,8 @@
         <Inverter>
           <IsPoseListEmpty list="{coverage_waypoints}"/>
         </Inverter>
-        <GetPath feedback="{get_path_feedback}"
+        <GetPath name="PlanFullCoverage"
+                 feedback="{get_path_feedback}"
                  error="{error}"
                  poses="{coverage_waypoints}"
                  path=""

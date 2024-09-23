@@ -1,5 +1,7 @@
 #include "thorp_bt_cpp/bt_ros_logger.hpp"
 
+#include <thorp_msgs/BTNodeStatus.h>
+
 namespace BT
 {
 
@@ -10,7 +12,7 @@ RosLogger::RosLogger(const BT::Tree& tree) : StatusChangeLogger(tree.rootNode())
   {
     throw LogicError("Only one instance of RosLogger shall be created");
   }
-  pub_ = pnh_.advertise<std_msgs::String>("bt_status", 10);
+  pub_ = pnh_.advertise<thorp_msgs::BTNodeStatus>("bt_status", 10);
 }
 
 RosLogger::~RosLogger()
@@ -20,23 +22,13 @@ RosLogger::~RosLogger()
 
 void RosLogger::callback(Duration timestamp, const TreeNode& node, NodeStatus prev_status, NodeStatus status)
 {
-  //  using namespace std::chrono;
-  //
-  //  double since_epoch = duration<double>(timestamp).count();
-  //  std_msgs::String msg;
-  //  std::stringstream ss;
-  //  ss << "[" << since_epoch << "]: " << node.name() << " " << toStr(prev_status, true) << " -> " << toStr(status,
-  //  true); msg.data = ss.str();
-  // Publish only subtrees and actions the first tick they start running
-  // TODO decent and filter in the RViz viz
-  if ((dynamic_cast<const BT::SubTreeNode*>(&node) != nullptr ||
-       dynamic_cast<const BT::ActionNodeBase*>(&node) != nullptr) &&
-      (prev_status == NodeStatus::IDLE && status == NodeStatus::RUNNING))
-  {
-    std_msgs::String msg;
-    msg.data = node.name();
-    pub_.publish(msg);
-  }
+  thorp_msgs::BTNodeStatus msg;
+  msg.stamp = ros::Time(0, timestamp.count());
+  msg.name = node.name();
+  msg.type = static_cast<uint8_t>(node.type());
+  msg.status = static_cast<unsigned char>(status);
+  msg.prev_status = static_cast<unsigned char>(prev_status);
+  pub_.publish(msg);
 }
 
 void RosLogger::flush()
