@@ -51,7 +51,7 @@ private:
 
   void onHalted() override
   {
-    if (config_ && !config_->setConfig("default"))
+    if (config_ && ros::ok() && !config_->setConfig("default"))
     {
       ROS_ERROR_STREAM_NAMED(name(), "Restore default configuration failed");
     }

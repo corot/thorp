@@ -7,7 +7,6 @@ Author:
     Jorge Santos
 """
 
-import sys
 import copy
 import math
 import rospy
@@ -117,6 +116,9 @@ def make_interactive_marker(pose, model):
 
 
 def model_states_cb(msg):
+    if rospy.is_shutdown():
+        return
+
     for index, model_name in enumerate(msg.name):
         if model_name in target_models or '_'.join(model_name.split('_')[:-1]) in target_models:
             if server.get(model_name) is None:

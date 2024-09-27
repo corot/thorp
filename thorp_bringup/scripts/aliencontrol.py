@@ -129,5 +129,8 @@ if __name__ == '__main__':
 
     # Poll the external process to see if it is still active. If not, exit.
     rate = rospy.Rate(10)
-    while (not rospy.is_shutdown()) and (alien.poll() == None):
-        rate.sleep()
+    while not rospy.is_shutdown() and alien.poll() is None:
+        try:
+            rate.sleep()
+        except rospy.exceptions.ROSInterruptException:
+            pass

@@ -95,7 +95,7 @@ class CatsController:
                         new_yaw_bound2 = norm_angle(contact_inv_dir + math.pi / 3.0)
                         new_yaw = random.uniform(new_yaw_bound1, new_yaw_bound2)
                         new_pose.orientation = quaternion_msg_from_yaw(new_yaw)
-                        rospy.loginfo("%s: contact from %f; new direction to %f", model_name, contact_inv_dir, new_yaw)
+                        rospy.logdebug("%s: contact from %f; new direction to %f", model_name, contact_inv_dir, new_yaw)
                         self.alive_cats[model_name]['contact'] = None
                     translate_pose(new_pose, self.prowling_step, 'x')
                     self.set_model_state_srv(ModelState(model_name, new_pose, Twist(), 'map'))
