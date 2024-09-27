@@ -52,7 +52,7 @@ private:
       return BT::NodeStatus::SUCCESS;
     }
 
-    ROS_INFO_NAMED(name(), "Target at %.2f m and %.2f rad not reachable", dist_to_target, angle_to_target);
+    ROS_DEBUG_NAMED(name(), "Target at %.2f m and %.2f rad not reachable", dist_to_target, angle_to_target);
     return BT::NodeStatus::FAILURE;
   }
 

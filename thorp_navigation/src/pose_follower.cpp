@@ -16,7 +16,6 @@ namespace ttk = thorp::toolkit;
 
 #include "thorp_navigation/FollowerConfig.h"
 
-
 namespace thorp::navigation
 {
 
@@ -31,8 +30,13 @@ public:
    * @brief The constructor for the follower.
    */
   PoseFollower()
-      : d_target_(1.0), v_scale_(1.0), w_scale_(1.0), frequency_(10.0), robot_frame_("base_footprint"),
-        pnh_("~"), follow_as_(pnh_, "follow", boost::bind(&PoseFollower::executeCB, this, _1), false)
+    : d_target_(1.0)
+    , v_scale_(1.0)
+    , w_scale_(1.0)
+    , frequency_(10.0)
+    , robot_frame_("base_footprint")
+    , pnh_("~")
+    , follow_as_(pnh_, "follow", boost::bind(&PoseFollower::executeCB, this, _1), false)
   {
   }
 
@@ -48,18 +52,15 @@ public:
   {
     ros::NodeHandle nh;
 
-    double no_pose_timeout;
     pnh_.param("frequency", frequency_, frequency_);
     pnh_.param("robot_frame", robot_frame_, robot_frame_);
-    pnh_.param("no_pose_timeout", no_pose_timeout, 1.0);
-    no_pose_timeout_.fromSec(no_pose_timeout);
 
     twist_pub_ = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
     pose_sub_ = nh.subscribe("target_pose", 1, &PoseFollower::poseCallback, this);
 
     config_srv_ = new dynamic_reconfigure::Server<thorp_navigation::FollowerConfig>(pnh_);
     dynamic_reconfigure::Server<thorp_navigation::FollowerConfig>::CallbackType f =
-      boost::bind(&PoseFollower::reconfigure, this, _1, _2);
+        boost::bind(&PoseFollower::reconfigure, this, _1, _2);
     config_srv_->setCallback(f);
 
     follow_as_.start();
@@ -70,7 +71,7 @@ private:
   double v_scale_;  /**< The scaling factor for translational robot speed */
   double w_scale_;  /**< The scaling factor for rotational robot speed */
   double frequency_;
-  bool enabled_;    /**< Enable/disable following; just prevents motor commands */
+  bool enabled_;            /**< Enable/disable following; just prevents motor commands */
   std::string robot_frame_; /**< Reference frame, used to calculate distance and heading errors */
 
   ros::NodeHandle pnh_;
@@ -78,8 +79,7 @@ private:
   ros::Subscriber pose_sub_;
   ros::Publisher twist_pub_;
 
-  ros::Time last_pose_time_;         /**< Last received pose messages time */
-  ros::Duration no_pose_timeout_;    /**< No pose messages received timeout */
+  ros::Time last_pose_time_; /**< Last received pose messages time */
   geometry_msgs::PoseStamped target_pose_;
   std::mutex target_pose_mutex_;
 
@@ -103,18 +103,18 @@ private:
    * Publishes cmd_vel messages to reach the pose up to a preset distance.
    * @param msg The target pose message.
    */
-  void poseCallback(const geometry_msgs::PoseStamped &msg)
+  void poseCallback(const geometry_msgs::PoseStamped& msg)
   {
     std::lock_guard<std::mutex> lg(target_pose_mutex_);
     last_pose_time_ = ros::Time::now();  // so we don't relay on pose's stamp
     target_pose_ = msg;
   }
 
-  void executeCB(const thorp_msgs::FollowPoseGoal::ConstPtr &goal)
+  void executeCB(const thorp_msgs::FollowPoseGoal::ConstPtr& goal)
   {
     thorp_msgs::FollowPoseResult result;
 
-    double follow_distance = goal->distance > 0.0 ? goal->distance : d_target_;
+    double follow_distance = goal->target_distance > 0.0 ? goal->target_distance : d_target_;
     ROS_INFO("Following target pose at %g m", follow_distance);
     ros::Rate rate(frequency_);
     ros::Time start_time = ros::Time::now();
@@ -130,11 +130,11 @@ private:
         break;
       }
 
-      if (!goal->time_limit.isZero() && ros::Time::now() - start_time > goal->time_limit)
+      if (!goal->exec_time_limit.isZero() && ros::Time::now() - start_time > goal->exec_time_limit)
       {
         result.outcome = thorp_msgs::FollowPoseResult::RUN_OUT_OF_TIME;
         follow_as_.setSucceeded(result);
-        ROS_INFO("Following time limit of %g seconds reached", goal->time_limit.toSec());
+        ROS_INFO("Following time limit of %g seconds reached", goal->exec_time_limit.toSec());
         break;
       }
 
@@ -142,19 +142,19 @@ private:
       {
         std::lock_guard<std::mutex> lg(target_pose_mutex_);
 
-        if (ros::Time::now() - start_time >= no_pose_timeout_ &&      // ensure we wait for the first pose
-            ros::Time::now() - last_pose_time_ >= no_pose_timeout_)   // wait since the last pose received
+        if (ros::Time::now() - start_time >= goal->no_pose_timeout &&     // ensure we wait for the first pose
+            ros::Time::now() - last_pose_time_ >= goal->no_pose_timeout)  // wait since the last pose received
         {
           result.outcome = thorp_msgs::FollowPoseResult::NO_POSE_TIMEOUT;
           follow_as_.setAborted(result);
-          ROS_WARN("Following stopped: no pose received for %g seconds", no_pose_timeout_.toSec());
+          ROS_WARN("Following stopped: no pose received for %g seconds", goal->no_pose_timeout.toSec());
           break;
         }
 
         if (last_pose_time_.isZero())
         {
           ROS_WARN_THROTTLE(0.5, "Following waiting of the first pose to come (%g/%g seconds)",
-                            (ros::Time::now() - start_time).toSec(), no_pose_timeout_.toSec());
+                            (ros::Time::now() - start_time).toSec(), goal->no_pose_timeout.toSec());
         }
         else
         {
@@ -180,7 +180,7 @@ private:
         }
 
         const geometry_msgs::Point& target_loc = target_pose_in_robot_frame.pose.position;
-        if (std::abs(heading) > M_PI/2.0)
+        if (std::abs(heading) > M_PI / 2.0)
         {
           feedback_.cmd.angular.z = heading * w_scale_;
           ROS_INFO_THROTTLE(1, "Rotating at %.2f rad/s toward target %s, distance: %.2f m, heading: %.2f rad",
@@ -191,8 +191,8 @@ private:
           feedback_.cmd.linear.x = v_scale_ * (distance - follow_distance);
           feedback_.cmd.angular.z = w_scale_ * heading;
           ROS_INFO_THROTTLE(1, "Following at %.2f m/s, %.2f rad/s target %s, distance: %.2f m, heading: %.2f rad",
-                            feedback_.cmd.linear.x, feedback_.cmd.angular.z, ttk::toCStr3D(target_loc),
-                            distance, heading);
+                            feedback_.cmd.linear.x, feedback_.cmd.angular.z, ttk::toCStr3D(target_loc), distance,
+                            heading);
         }
         feedback_.dist_to_target = (float)distance;
         feedback_.angle_to_target = (float)heading;
@@ -212,10 +212,9 @@ private:
   }
 };
 
-}  // thorp_navigation namespace
+}  // namespace thorp::navigation
 
-
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "pose_follower");
 

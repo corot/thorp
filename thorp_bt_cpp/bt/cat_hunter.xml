@@ -2,56 +2,6 @@
 <root BTCPP_format="4">
   <include path="explore_house.xml"/>
 
-  <BehaviorTree ID="hunt_cat">
-    <Parallel failure_count="1"
-              success_count="1">
-      <ForceSuccess>
-        <FollowPose action_name="pose_follower/follow"
-                    distance="0.8"
-                    server_timeout="5.000000"
-                    stop_at_distance="false"
-                    time_limit="25"
-                    error="{follow_error}"
-                    feedback="{follow_feedback}"/>
-      </ForceSuccess>
-      <RetryUntilSuccessful num_attempts="-1">
-        <IfThenElse>
-          <Sequence>
-            <CannonHasAmmo/>
-            <MonitorObjects name="TargetVisible"
-                            max_delay="0.0"
-                            target_objects="cat, dog, horse"
-                            timeout="0.2"
-                            topic_name="tracked_objects"
-                            tracked_object="{tracked_object}"
-                            tracked_object_pose="{tracked_object_pose}"/>
-          </Sequence>
-          <Sequence>
-            <GetRobotPose timeout="1"
-                          error="{error}"
-                          robot_pose="{robot_pose}"/>
-            <TargetReachable max_angle="0.2"
-                             max_dist="1.0"
-                             robot_pose="{robot_pose}"
-                             target_pose="{tracked_object_pose}"/>
-            <AimCannon robot_pose="{robot_pose}"
-                       target_pose="{tracked_object_pose}"
-                       angle="{cannon_tilt_angle}"/>
-            <TiltCannon angle="{cannon_tilt_angle}"
-                        service_name="cannon_command"
-                        timeout="1"/>
-            <FireCannon service_name="cannon_command"
-                        shots="1"
-                        timeout="1"/>
-            <Sleep msec="1000"/>
-            <AlwaysFailure _description="Replace with failing on exhausted ammo"/>
-          </Sequence>
-          <AlwaysSuccess/>
-        </IfThenElse>
-      </RetryUntilSuccessful>
-    </Parallel>
-  </BehaviorTree>
-
   <BehaviorTree ID="cat_hunter">
     <KeepRunningUntilFailure>
       <Sequence>
@@ -61,15 +11,92 @@
           <ForceFailure>
             <SubTree ID="explore_house"/>
           </ForceFailure>
-          <MonitorObjects max_delay="0.0"
+          <MonitorObjects tracked_object_pose="{tracked_object_pose}"
+                          tracked_object="{tracked_object}"
+                          topic_name="tracked_objects"
                           target_objects="cat, dog, horse"
                           timeout="0.0"
-                          topic_name="tracked_objects"
-                          tracked_object="{tracked_object}"
-                          tracked_object_pose="{tracked_object_pose}"/>
+                          max_delay="0.0"/>
         </Parallel>
-        <SubTree ID="hunt_cat"/>
+        <IfThenElse>
+          <WhileDoElse>
+            <Sequence>
+              <GetRobotPose robot_pose="{robot_pose}"
+                            error="{error}"
+                            timeout="1"/>
+              <Inverter>
+                <TargetReachable robot_pose="{robot_pose}"
+                                 max_angle="1.5"
+                                 target_pose="{tracked_object_pose}"
+                                 max_dist="1.5"/>
+              </Inverter>
+            </Sequence>
+            <FollowPose name="ApporachTarget"
+                        error="{follow_error}"
+                        stop_at_distance="true"
+                        feedback="{follow_feedback}"
+                        target_distance="1.0"
+                        exec_time_limit="25"
+                        no_pose_timeout="5.0"
+                        action_name="pose_follower/follow"
+                        server_timeout="5.0"/>
+            <AlwaysSuccess/>
+          </WhileDoElse>
+          <SubTree ID="hunt_cat"/>
+          <AlwaysSuccess/>
+        </IfThenElse>
       </Sequence>
     </KeepRunningUntilFailure>
+  </BehaviorTree>
+
+  <BehaviorTree ID="hunt_cat">
+    <Parallel failure_count="1"
+              success_count="1">
+      <ForceSuccess>
+        <FollowPose error="{follow_error}"
+                    stop_at_distance="false"
+                    feedback="{follow_feedback}"
+                    target_distance="0.8"
+                    exec_time_limit="25"
+                    no_pose_timeout="1.0"
+                    action_name="pose_follower/follow"
+                    server_timeout="5.000000"/>
+      </ForceSuccess>
+      <RetryUntilSuccessful num_attempts="-1">
+        <IfThenElse>
+          <Sequence>
+            <CannonHasAmmo/>
+            <MonitorObjects name="TargetVisible"
+                            tracked_object_pose="{tracked_object_pose}"
+                            tracked_object="{tracked_object}"
+                            topic_name="tracked_objects"
+                            target_objects="cat, dog, horse"
+                            timeout="0.2"
+                            max_delay="0.0"/>
+          </Sequence>
+          <Sequence>
+            <GetRobotPose robot_pose="{robot_pose}"
+                          error="{error}"
+                          timeout="1"/>
+            <TargetReachable robot_pose="{robot_pose}"
+                             max_angle="0.2"
+                             target_pose="{tracked_object_pose}"
+                             max_dist="1.0"/>
+            <AimCannon angle="{cannon_tilt_angle}"
+                       target_pose="{tracked_object_pose}"
+                       robot_pose="{robot_pose}"/>
+            <TiltCannon angle="{cannon_tilt_angle}"
+                        service_name="cannon_command"
+                        timeout="1"/>
+            <FireCannon shots="1"
+                        service_name="cannon_command"
+                        timeout="1"/>
+            <Sleep msec="1000"/>
+            <AlwaysFailure _description="Replace with failing on exhausted ammo"/>
+          </Sequence>
+          <AlwaysSuccess/>
+        </IfThenElse>
+      </RetryUntilSuccessful>
+    </Parallel>
   </BehaviorTree>
 </root>

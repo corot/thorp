@@ -1,12 +1,15 @@
-# Follow pose: try to follow poses received on 'target_pose' topic
-# Aborted if no poses are received for 'no_pose_timeout' parameter
-# Otherwise, runs until preempted if neither stop_at_distance and time_limit are set
+# Follow pose: try to follow poses received on 'target_pose' topic at target_distance.
+# Goal succeeds upon reaching target_distance if stop_at_distance is true, or after
+# exec_time_limit seconds pass, if it's not set to 0.
+# Aborted if no poses are received for 'no_pose_timeout' seconds.
+# Otherwise, runs until preempted.
 
 # goal definition
 
-float32 distance       # following desired distance; use the configured value if <= 0
-bool stop_at_distance  # stop action upon reaching the desired following distance
-duration time_limit    # stop action after this time; ignored if 0
+float32 target_distance     # following desired distance; use the configured value if <= 0
+bool stop_at_distance       # stop action upon reaching the desired following distance
+duration exec_time_limit    # stop action after this time, whatever happens; ignored if 0
+duration no_pose_timeout    # stop action after this time without receiving poses
 
 ---
 

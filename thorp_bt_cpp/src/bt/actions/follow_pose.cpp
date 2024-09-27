@@ -18,8 +18,9 @@ public:
   {
     BT::PortsList ports = BT::RosActionNode<ActionType>::providedPorts();
     ports["action_name"].setDefaultValue("pose_follower/follow");
-    ports.insert({ BT::InputPort<float>("time_limit"),       //
-                   BT::InputPort<float>("distance"),         //
+    ports.insert({ BT::InputPort<float>("no_pose_timeout"),  //
+                   BT::InputPort<float>("exec_time_limit"),  //
+                   BT::InputPort<float>("target_distance"),  //
                    BT::InputPort<bool>("stop_at_distance"),  //
                    BT::OutputPort<int>("error"),             //
                    BT::OutputPort<FeedbackType>("feedback") });
@@ -30,8 +31,9 @@ private:
   GoalType getGoal() override
   {
     GoalType goal;
-    goal.time_limit.fromSec(*getInput<float>("time_limit"));
-    goal.distance = *getInput<float>("distance");
+    goal.no_pose_timeout.fromSec(*getInput<float>("no_pose_timeout"));
+    goal.exec_time_limit.fromSec(*getInput<float>("exec_time_limit"));
+    goal.target_distance = *getInput<float>("target_distance");
     goal.stop_at_distance = *getInput<bool>("stop_at_distance");
     return goal;
   }
