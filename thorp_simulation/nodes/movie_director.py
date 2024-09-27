@@ -102,18 +102,18 @@ def smach_status_cb(msg):
         #   roslib.load_manifest(packagename)
         #   self._local_data._data = pickle.loads(msg.local_data)
     except KeyError as ke:
-        rospy.logdebug("State %s not found in script", str(ke))  # normal; most states won't be listed in the script!
+        pass  # normal; most states won't be listed in the script
 
 
 def bt_status_cb(msg):
     try:
-        current_state = msg.name
-        camera_instructions = script[current_state]
-        rospy.loginfo("Placing camera for state %s", current_state)
-        place_camera(*parse_state(current_state, camera_instructions))
+        if msg.prev_status == BTNodeStatus.IDLE and msg.status == BTNodeStatus.RUNNING:
+            current_state = msg.name
+            camera_instructions = script[current_state]
+            rospy.loginfo("Placing camera for state %s", current_state)
+            place_camera(*parse_state(current_state, camera_instructions))
     except KeyError as ke:
-        pass
-        # rospy.logdebug("State %s not found in script", str(ke))  # normal; most states won't be listed in the script!
+        pass  # normal; most states won't be listed in the script
 
 def get_value_from_path(msg, path):
     keys = path.split('.')
