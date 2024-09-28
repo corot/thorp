@@ -12,20 +12,20 @@ class FOVAnalyzer:
     def __init__(self):
         self.bridge = CvBridge()
         self.min_distance = rospy.get_param('~min_distance', 0.4)
-        self.crop_percentage = rospy.get_param('~crop_percentage', 0.24)  # crop 24 % bottom
+        self.crop_percentage = rospy.get_param('~crop_percentage', 0.20)  # crop 20 % bottom
 
         # Subscriber to the depth image topic
         rospy.Subscriber("xtion/depth_registered/image_raw", Image, self.depth_callback)
 
         # Service to check if there is anything closer than the specified distance blocking the fov
-        self.service = rospy.Service("~check_clear", Trigger, self.check_blocked_cb)
+        self.service = rospy.Service("~check_clear", Trigger, self.check_clear_cb)
 
         self.depth_image = None
 
     def depth_callback(self, msg):
         self.depth_image = msg
 
-    def check_blocked_cb(self, req):
+    def check_clear_cb(self, req):
         if self.depth_image is None:
             rospy.logwarn("No depth image received yet; considering fov as blocked")
             return TriggerResponse(True, "No depth image received yet")
@@ -45,8 +45,8 @@ class FOVAnalyzer:
         # Check if any value in the depth image is less than the minimum distance
         if np.any((cv_img > 0) & (cv_img < self.min_distance)):
             return TriggerResponse(False, f"Object detected within {self.min_distance} m")
-        else:
-            return TriggerResponse(True, f"No objects detected within {self.min_distance} m")
+
+        return TriggerResponse(True, f"No objects detected within {self.min_distance} m")
 
 
 if __name__ == "__main__":

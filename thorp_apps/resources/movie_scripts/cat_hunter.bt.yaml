@@ -15,7 +15,7 @@ follow_waypoints:
   frame: base_footprint
   focus: [1.0, 0, 0]
   eye: [-2.0, 0, 4]
-AimCannon:
+hunt_cat:
   frame: kinect_rgb_frame
   focus: [1, 0, 0]
   eye: [-0.98, 0, 0]

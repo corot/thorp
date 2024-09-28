@@ -7,12 +7,9 @@ Panels:
         - /TF1/Frames1
         - /TF1/Tree1
         - /Local Planners1/DWA1/Trajectories1
-        - /Hunting1
-        - /Hunting1/Model Markers1
         - /YOLO1/Camera1
-        - /COB1
-      Splitter Ratio: 0.8345499038696289
-    Tree Height: 463
+      Splitter Ratio: 0.4176470637321472
+    Tree Height: 481
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -32,7 +29,7 @@ Panels:
   - Class: rviz/Time
     Name: Time
     SyncMode: 0
-    SyncSource: Kinect Image
+    SyncSource: Object Detection
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -993,7 +990,7 @@ Visualization Manager:
     - Alpha: 0.699999988079071
       Class: rviz/Map
       Color Scheme: map
-      Draw Behind: false
+      Draw Behind: true
       Enabled: true
       Name: Map
       Topic: /map
@@ -1003,7 +1000,7 @@ Visualization Manager:
     - Alpha: 0.800000011920929
       Class: rviz/Map
       Color Scheme: costmap
-      Draw Behind: false
+      Draw Behind: true
       Enabled: true
       Name: Local Costmap
       Topic: /move_base_flex/local_costmap/costmap
@@ -1445,18 +1442,18 @@ Visualization Manager:
           Axes Length: 1
           Axes Radius: 0.10000000149011612
           Class: rviz/Pose
-          Color: 255; 25; 0
-          Enabled: false
-          Head Length: 0.30000001192092896
-          Head Radius: 0.10000000149011612
+          Color: 245; 121; 0
+          Enabled: true
+          Head Length: 0.15000000596046448
+          Head Radius: 0.05999999865889549
           Name: Predicted Pose
           Queue Size: 10
-          Shaft Length: 1
-          Shaft Radius: 0.05000000074505806
-          Shape: Axes
+          Shaft Length: 0.30000001192092896
+          Shaft Radius: 0.019999999552965164
+          Shape: Arrow
           Topic: /target_object_predicted_pose
           Unreliable: false
-          Value: false
+          Value: true
         - Class: rviz/Marker
           Enabled: false
           Marker Topic: /attack_target
@@ -1496,26 +1493,51 @@ Visualization Manager:
             Current Goal: true
             Executive: true
             Exploration:
-              "": true
+              Camera FOV: true
+              Coverage Path: true
+              Room Segmentation: true
+              Room Sequence Plan: true
+              Starting Point: true
               Value: true
             Footprint: true
             Global Costmap: true
             Global Planners:
-              "": true
+              GlobalPlanner: true
+              NavfnPlanner: true
               Value: true
             Grid: true
             Hunting:
               "": true
               Value: true
             IR sensors:
-              "": true
+              155 left: true
+              155 right: true
+              180 left: true
+              180 right: true
               Value: true
+              arm: true
             LaserScan (kinect): true
             LaserScan (virtual sensor): true
             Local Costmap: true
             Local Planners:
-              "":
-                "": true
+              DWA:
+                Costs Cloud: true
+                Path: true
+                Trajectories: true
+                Value: true
+              EBand boubles: true
+              Follower:
+                Path: true
+                Value: true
+              TEB:
+                Global Path: true
+                Local Path: true
+                Markers: true
+                Poses: true
+                Value: true
+              TRO:
+                Costs Cloud: true
+                Path: true
                 Value: true
               Value: true
             Map: true
@@ -1524,11 +1546,23 @@ Visualization Manager:
             RobotModel: true
             ScanMatcherPose: true
             Semantic map:
-              "": true
+              MarkerArray (columns): true
+              MarkerArray (tables): true
+              MarkerArray (walls): true
               Value: true
             Sonars:
-              "": true
+              0: true
               Value: true
+              m18: true
+              m36: true
+              m54: true
+              m72: true
+              m90: true
+              p18: true
+              p36: true
+              p54: true
+              p72: true
+              p90: true
             TF: true
             Value: true
             YOLO:
@@ -1589,7 +1623,7 @@ Visualization Manager:
     - Class: rviz/Group
       Displays:
         - Class: rviz/Image
-          Enabled: true
+          Enabled: false
           Image Topic: /kinect/rgb/image_raw
           Max Value: 1
           Median window: 5
@@ -1599,7 +1633,7 @@ Visualization Manager:
           Queue Size: 2
           Transport Hint: raw
           Unreliable: false
-          Value: true
+          Value: false
         - Class: rviz/Image
           Enabled: true
           Image Topic: /object_detection/detections_image
@@ -1695,40 +1729,44 @@ Visualization Manager:
     Current:
       Class: rviz_animated_view_controller/Animated
       Control Mode: Orbit
-      Distance: 18.385541915893555
+      Distance: 249.13148498535156
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Eye:
-        X: 1.789137940022556e-07
-        Y: -0.36763784289360046
-        Z: 18.381866455078125
+        X: -1.000029444694519
+        Y: -0.00804885197430849
+        Z: 249.13047790527344
       Focus:
-        X: 0
-        Y: 0
-        Z: 0
+        X: -0.9999996423721313
+        Y: -1.1920928955078125e-07
+        Z: -0.001007080078125
       Invert Z Axis: false
       Maintain Vertical Axis: true
       Mouse Enabled: true
       Name: Current View
       Near Clip Distance: 0.009999999776482582
       Placement Topic: /rviz/camera_placement
+      Publish View Images During Animation: false
       Target Frame: base_footprint
+      Trajectory Topic: /rviz/camera_trajectory
       Transition Time: 0.5
       Up:
         X: 0
         Y: 0
         Z: 1
+      Window Height: 953
+      Window Width: 1458
     Saved: ~
 Window Geometry:
   Camera:
     collapsed: false
   Displays:
-    collapsed: false
-  Height: 1016
-  Hide Left Dock: false
+    collapsed: true
+  Height: 1043
+  Hide Left Dock: true
   Hide Right Dock: false
   Image:
     collapsed: false
@@ -1736,7 +1774,7 @@ Window Geometry:
     collapsed: false
   Object Detection:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000300000000000001560000039efc020000000efb0000001200530065006c0065006300740069006f006e000000003d0000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000004bb0000023c00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d0000025a000000c900fffffffb0000000a00560069006500770073010000029d0000013e000000a400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000008600000023c00000185000000a3fb000000160049006d00610067006500200043006f006c006f00720000000000ffffffff0000000000000000fb000000160049006d0061006700650020004400650070007400680000000000ffffffff0000000000000000fb00000010004400650074006500630074006500640000000000ffffffff0000000000000000fb0000001000440065007400650063007400650064010000026c000000160000000000000000fb0000000e0054007200610063006b006500640100000288000000160000000000000000fb0000000a0049006d0061006700650000000000ffffffff0000001600fffffffb0000000a0049006d0061006700650100000311000000ca0000000000000000000000010000011e0000039efc0200000007fb0000000c00430061006d006500720061000000003d000001a40000001600fffffffb00000018004b0069006e00650063007400200049006d006100670065010000003d000000ef0000001600fffffffb00000020004f0062006a00650063007400200044006500740065006300740069006f006e0100000132000000f20000001600fffffffb0000001e0054007200610063006b006500640020004f0062006a0065006300740073010000022a000001b10000001600fffffffb0000000c00430061006d0065007200610100000219000001cb0000000000000000fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000030000073800000140fc0100000008fb0000000a005600690065007700730100000000000002620000000000000000fb00000016004b0069006e00650063007400200056006900650077010000054a000001f30000000000000000fb0000000a0049006d00610067006501000005a5000001980000000000000000fb0000000800540069006d00650000000000000004a00000041800fffffffb0000000800540069006d00650100000000000004500000000000000000fb0000001800430075007200720065006e007400200052006f006f006d0000000000000007380000000000000000fb0000001a0052006f006f006d002000530065007100750065006e006300650000000000ffffffff0000000000000000fb000000220052006f006f006d0020005300650067006d0065006e0074006100740069006f006e0000000000ffffffff0000000000000000000004b80000039e00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd000000030000000000000156000003b9fc020000000efb0000001200530065006c0065006300740069006f006e000000003d0000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000004bb0000023c00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073000000003d0000026c000000c900fffffffb0000000a0056006900650077007300000002af00000147000000a400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000008600000023c00000185000000a3fb000000160049006d00610067006500200043006f006c006f00720000000000ffffffff0000000000000000fb000000160049006d0061006700650020004400650070007400680000000000ffffffff0000000000000000fb00000010004400650074006500630074006500640000000000ffffffff0000000000000000fb0000001000440065007400650063007400650064010000026c000000160000000000000000fb0000000e0054007200610063006b006500640100000288000000160000000000000000fb0000000a0049006d0061006700650000000000ffffffff0000001600fffffffb0000000a0049006d0061006700650100000311000000ca000000000000000000000001000001a9000003b9fc0200000007fb0000000c00430061006d006500720061000000003d000001a40000001600fffffffb00000018004b0069006e00650063007400200049006d006100670065000000003d000000ef0000001600fffffffb00000020004f0062006a00650063007400200044006500740065006300740069006f006e010000003d000001540000001600fffffffb0000001e0054007200610063006b006500640020004f0062006a006500630074007301000001970000025f0000001600fffffffb0000000c00430061006d0065007200610100000219000001cb0000000000000000fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000030000073800000140fc0100000008fb0000000a005600690065007700730100000000000002620000000000000000fb00000016004b0069006e00650063007400200056006900650077010000054a000001f30000000000000000fb0000000a0049006d00610067006501000005a5000001980000000000000000fb0000000800540069006d00650000000000000004a00000041800fffffffb0000000800540069006d00650100000000000004500000000000000000fb0000001800430075007200720065006e007400200052006f006f006d0000000000000007380000000000000000fb0000001a0052006f006f006d002000530065007100750065006e006300650000000000ffffffff0000000000000000fb000000220052006f006f006d0020005300650067006d0065006e0074006100740069006f006e0000000000ffffffff0000000000000000000005d1000003b900000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -1746,7 +1784,7 @@ Window Geometry:
   Tracked Objects:
     collapsed: false
   Views:
-    collapsed: false
-  Width: 1848
-  X: 72
-  Y: 27
+    collapsed: true
+  Width: 1920
+  X: 1920
+  Y: 0

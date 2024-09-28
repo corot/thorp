@@ -122,7 +122,7 @@ class ObjectTrackingNode(object):
                 self._target_pub.publish(target.pose)
                 ma.markers.append(self.make_target_marker(target.pose))
 
-                dt = 5 # TODO:  pred speed kk   should be 0.01 x gazebo freq,  I guess 0.1    and its 0.005
+                dt = 2.0  # project estimated direction and speed 2 seconds into the future
                 tracker = self._trackers[target.id]
                 predicted_state = tracker.predict()
                 predicted_x = predicted_state[0] + predicted_state[2] * dt

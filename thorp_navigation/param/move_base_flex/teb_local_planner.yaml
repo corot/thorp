@@ -19,7 +19,7 @@ TEBPlanner:
 
 # Robot
 
-  max_vel_x: 0.5
+  max_vel_x: 0.7
   max_vel_x_backwards: 0.1  # conservative, as we only have four IR sensors pointing backward
   max_vel_y: 0.0
   max_vel_theta: 5.0

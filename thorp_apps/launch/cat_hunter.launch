@@ -15,11 +15,11 @@
   <arg name="viz_executive"  default="false"/>
   <arg name="start_delay"    default="0.0"/>
   <arg name="record_video"   default="false"/>
-  <arg name="world_name"     default="fun_house"/>
+  <arg name="world_name"     default="small_house"/>
   <arg name="localization"   default="gazebo" if="$(eval simulator == 'gazebo')"/>
   <arg name="localization"   default="amcl" if="$(eval simulator != 'gazebo')"/>
-  <arg name="initial_pose_x" default="8.5"/>
-  <arg name="initial_pose_y" default="6.0"/>
+  <arg name="initial_pose_x" default="0.0"/>
+  <arg name="initial_pose_y" default="0.0"/>
   <arg name="initial_pose_a" default="0.0"/>
 
   <!-- App-specific parameters -->
@@ -44,7 +44,7 @@
     <node pkg="thorp_simulation" type="spawn_gazebo_models.py" name="objects_spawner" output="screen" args="cats"/>
     <node pkg="thorp_simulation" type="cats_controller.py" name="cats_controller" output="screen" respawn="true">
       <param name="target_models" value="$(arg cat_models)"/>
-      <param name="prowling_step" value="0.01"/>
+      <param name="prowling_step" value="0.02"/>
       <!-- update period is hardcoded to 0.1 seconds, so this is the only way to change cats speed -->
 
       <param name="hit_sock_duration" value="1.0"/>
@@ -53,7 +53,7 @@
       <param name="outside_x" value="4.0" if="$(eval world_name == 'fun_house')"/>
       <param name="outside_y" value="1.0" if="$(eval world_name == 'fun_house')"/>
 
-      <param name="outside_x" value="-7.5" if="$(eval world_name == 'small_house')"/>
+      <param name="outside_x" value="-8.5" if="$(eval world_name == 'small_house')"/>
       <param name="outside_y" value="4.5" if="$(eval world_name == 'small_house')"/>
     </node>
 
