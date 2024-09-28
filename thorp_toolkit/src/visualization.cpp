@@ -263,4 +263,4 @@ jsk_rviz_plugins::OverlayText Visualization::createOverlayText(int offsetFromTop
   return msg;
 }
 
-} /* namespace thorp::toolkit */
+};  // namespace thorp::toolkit

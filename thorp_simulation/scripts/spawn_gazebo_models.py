@@ -118,7 +118,7 @@ N_ROWS_OF_CUBES = [('cube ' + str(i), 'cube',
 
 SURFS_MIN_DIST = 1.5
 OBJS_MIN_DIST = 0.08
-CATS_MIN_DIST = 5.0
+CATS_MIN_DIST = 4.0
 
 PREFERRED_LOCATIONS = [(12.5, 7.5),
                        (8.4, 9.6),
@@ -167,7 +167,7 @@ def close_to_prev_pose(pose, added_poses, min_dist):
     pose_coords = [[p.position.x, p.position.y] for p in added_poses]
     kdtree = KDTree(pose_coords)
 
-    # Query the KDTree for the nearest neighbors and check if there is any one within the min_dist
+    # Query the KDTree for the nearest neighbors and check if there is anyone within the min_dist
     dist, _ = kdtree.query([pose.position.x, pose.position.y], distance_upper_bound=min_dist)
 
     return dist < min_dist
@@ -215,7 +215,7 @@ def spawn_objects(surf, surf_index, preferred_obj=None):
             continue
 
         if surf['dist'] == 'diagonal':
-            # half surface by diagonal
+            # half-surface by diagonal
             if x + y < 0:
                 x = -x
                 y = -y

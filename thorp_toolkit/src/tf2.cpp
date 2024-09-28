@@ -184,4 +184,4 @@ void TF2::sendTransform(const geometry_msgs::Pose& pose, const std::string& from
   sbcaster_.sendTransform(tfs);
 }
 
-} /* namespace thorp::toolkit */
+};  // namespace thorp::toolkit

@@ -4,6 +4,7 @@
 #include <behaviortree_cpp/xml_parsing.h>
 
 #include <thorp_toolkit/common.hpp>
+#include <thorp_toolkit/simulation.hpp>
 namespace ttk = thorp::toolkit;
 
 namespace thorp::bt
@@ -81,7 +82,9 @@ void Runner::run()
     return;
   }
 
-  ros::Duration(pnh_.param("start_delay", 0.0)).sleep();
+  // Wait start_delay seconds and on simulation for objects spawning to complete
+  ros::Duration(pnh_.param("start_delay", 1.0)).sleep();
+  ttk::waitForObjectsSpawning(ros::Duration(60));
 
   ros::Time time_start = ros::Time::now();
 
