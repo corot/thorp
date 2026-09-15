@@ -20,7 +20,6 @@ controller_lock_costmap: true   # lock costmap as in move_base, or let planner t
 # Global planner parameters
 planners:
   - {name: GlobalPlanner,   type: global_planner/GlobalPlanner}
-  - {name: CarrotPlanner,   type: carrot_planner/CarrotPlanner}
   - {name: NavfnPlanner,    type: navfn/NavfnROS}
   - {name: CoveragePlanner, type: full_coverage_path_planner/SpiralSTC}
 planner_frequency:  1.0         # replan every second to adapt to changing conditions

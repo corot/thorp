@@ -29,6 +29,11 @@
     uri: https://github.com/corot/gazebo-pkgs.git
     version: thorp
 
+- git:
+    local-name: small_house_world
+    uri: https://github.com/corot/aws-robomaker-small-warehouse-world.git
+    version: thorp
+
 # Kobuki / Yujin stacks
 
 - git:
@@ -119,6 +124,11 @@
     local-name: ipa_coverage_planning
     uri: https://github.com/corot/ipa_coverage_planning
     version: thorp
+
+- git:
+    local-name: full_coverage_path_planner
+    uri: https://github.com/nobleo/full_coverage_path_planner.git
+    version: master
 
 # Perception stacks
 

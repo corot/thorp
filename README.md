@@ -89,18 +89,21 @@ cd ~/thorp/thorp_bringup/docker
 docker build -t thorp:noetic .
 ```
 
-Run with rocker:
+Run the local image:
 
 ```
-pip install rocker
-rocker --privileged --pulse --nvidia --x11 thorp:noetic
+docker run --rm -it \
+    --gpus all \
+    --privileged \
+    --net=host \
+    -e DISPLAY=:1 \
+    -e XAUTHORITY=/tmp/.Xauthority \
+    -v /run/user/1000/gdm/Xauthority:/tmp/.Xauthority:ro \
+    -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+    thorp:noetic
 ```
 
-or the pulled image:
-
-```
-rocker --privileged --pulse --nvidia --x11 corot/thorp:noetic
-```
+prepend `corot/` to run the pulled image
 
 Once inside the docker, you can run any of the apps in simulation, e.g.:
 

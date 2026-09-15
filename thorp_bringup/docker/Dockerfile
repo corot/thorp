@@ -114,7 +114,9 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
 
 RUN apt clean
 
-RUN pip install --upgrade pip ratelimit matplotlib tensorflow
+COPY requirements.txt .
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
 # build catkin workspace and remove build to reduce image size
 WORKDIR /catkin_ws
@@ -127,7 +129,18 @@ RUN echo "source /catkin_ws/devel/setup.bash" >> ~/.bashrc
 ENV ROSCONSOLE_FORMAT='[${node} ${severity} ${time}]: ${message}'
 
 # path to gazebo models
-ENV GAZEBO_MODEL_PATH=/catkin_ws/src/thorp/thorp_simulation/worlds/gazebo/models
+ENV GAZEBO_MODEL_PATH=/catkin_ws/src/thorp/thorp_simulation/worlds/gazebo/models:/catkin_ws/src/small_house_world/models
+
+# remake symbolic links for the small house world
+RUN ln -sfnT \
+    /catkin_ws/src/small_house_world/maps/turtlebot3_waffle_pi/small_house.png \
+    /catkin_ws/src/thorp/thorp_navigation/maps/small_house.png && \
+    ln -sfnT \
+    /catkin_ws/src/small_house_world/maps/turtlebot3_waffle_pi/small_house.yaml \
+    /catkin_ws/src/thorp/thorp_navigation/maps/small_house.yaml && \
+    ln -sfnT \
+    /catkin_ws/src/small_house_world/worlds/small_house.world \
+    /catkin_ws/src/thorp/thorp_simulation/worlds/small_house.world
 
 # ENV APP_NAME=$APP_NAME
 # ENV ARGUMENTS=$ARGUMENTS
