@@ -1,0 +1,15 @@
+ratelimit
+filterpy
+
+tensorflow==2.10.1
+protobuf==3.20.3
+
+numpy==1.23.5
+scipy==1.10.1
+matplotlib==3.7.5
+Pillow==8.4.0
+
+requests==2.31.0
+urllib3==1.26.18
+cryptography==41.0.7
+pyOpenSSL==23.3.0

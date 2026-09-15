@@ -20,7 +20,7 @@ Call pose follower to reach a moving target pose provided by 2D nav goal RViz to
 def nav_goal_cb(msg):
     global target_pose
     target_pose = msg
-    goal = FollowPoseGoal(stop_at_distance=True, time_limit=rospy.Time(10))
+    goal = FollowPoseGoal(stop_at_distance=True, exec_time_limit=rospy.Time(10))
     follow_ac.send_goal(goal, done_cb=follow_done_cb)
     axis = choice(['x', 'y'])
     delta = choice([-0.1, 0.1])

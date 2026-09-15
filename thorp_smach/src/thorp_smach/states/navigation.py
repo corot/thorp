@@ -391,9 +391,9 @@ class FollowPose(smach_ros.SimpleActionState):
         self.follow_distance = distance
 
     def make_goal(self, ud, goal):
-        goal.time_limit = rospy.Duration(25)  # TODO
-        goal.distance = self.follow_distance
-        goal.stop_at_distance = False  # TODO
+        goal.exec_time_limit = rospy.Duration(25)
+        goal.target_distance = self.follow_distance
+        goal.stop_at_distance = False
 
     def result_cb(self, ud, status, result):
         pass
