@@ -2,7 +2,7 @@ ratelimit
 filterpy
 
 tensorflow==2.10.1
-protobuf==3.20.3
+protobuf==5.29.6
 
 numpy==1.23.5
 scipy==1.10.1
