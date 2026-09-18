@@ -28,6 +28,7 @@ add_action_files(DIRECTORY action
                            MoveToTarget.action
                            PickupObject.action
                            PlaceObject.action
+                           RunSubtree.action
                            UserCommand.action
                 )
 

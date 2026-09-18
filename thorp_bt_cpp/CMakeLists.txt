@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
 project(thorp_bt_cpp)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 set(PKG_DEPS
       tf2
       roscpp
@@ -26,6 +29,9 @@ find_package(catkin REQUIRED
 )
 
 find_package(Boost COMPONENTS thread chrono exception REQUIRED)
+# No nlohmann_json here on purpose: we use the copy vendored by behaviortree_cpp (see the
+# note in blackboard_json.hpp), because two nlohmann versions in one build silently fail to
+# link against each other.
 
 catkin_package(
   INCLUDE_DIRS include
@@ -58,13 +64,31 @@ target_link_libraries(bt_runner_node bt_runner
   ${Boost_LIBRARIES}
 )
 
-install(TARGETS bt_runner
+# bt_server: loads every tree under bt/ and runs whichever one is requested through the
+# RunSubtree action. Links against bt_runner to reuse its statically-registered node
+# factory (Runner::bt_factory_), so every custom node stays available without duplicating
+# their registration.
+add_library(bt_server src/bt_server.cpp src/blackboard_json.cpp)
+target_link_libraries(bt_server
+  bt_runner
+  ${catkin_LIBRARIES}
+  ${Boost_LIBRARIES}
+)
+
+add_executable(bt_server_node src/bt_server_node.cpp)
+add_dependencies(bt_server_node bt_server)
+target_link_libraries(bt_server_node bt_server
+  ${catkin_LIBRARIES}
+  ${Boost_LIBRARIES}
+)
+
+install(TARGETS bt_runner bt_server
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-install(TARGETS bt_runner_node
+install(TARGETS bt_runner_node bt_server_node
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

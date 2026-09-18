@@ -1,0 +1,17 @@
+# Tree to run, named by a <BehaviorTree ID="..."> declared under thorp_bt_cpp/bt
+string subtree
+# Inputs seeded into the tree's blackboard before running it, as a flat json object
+string json
+# Blackboard keys to report back on completion. Leave empty to instead get every key the
+# run added, which is handy while figuring out what a tree produces, but gives a payload
+# whose shape depends on the branches the tree happened to take
+string[] output_keys
+---
+# Whether the tree completed with SUCCESS (a tree reporting FAILURE is still a well-served
+# goal; the action is only aborted when the request itself is bad, e.g. an unknown subtree)
+bool success
+# Values of the requested output keys, as a json object keyed by them. Scalars map onto json
+# scalars and poses onto {x, y, z, roll, pitch, yaw, frame} objects; keys left without a value
+# are omitted, so the caller can tell which are missing by comparing against output_keys
+string json
+---
