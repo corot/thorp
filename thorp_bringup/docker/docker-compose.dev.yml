@@ -1,0 +1,48 @@
+# Dev workflow:
+#   cd thorp_bringup/docker
+#   docker compose -f docker-compose.dev.yml up -d        # start it once; it stays up
+#   docker compose -f docker-compose.dev.yml exec thorp-dev bash   # a shell, as often as you like
+#   # inside:
+#   catkin build thorp_msgs thorp_bt_cpp
+#   catkin build thorp_apps          # the full stack, once you want it
+#   ...
+#   docker compose -f docker-compose.dev.yml down         # when you're done for the day
+#
+# Prefer `up -d` + `exec` over `run --rm`: `exec` opens as many shells into the *same*
+# container as you need (roscore in one, a node in another, a test script in a third), and
+# nothing is thrown away between them. Each `run` instead creates a fresh container, and
+# with --rm anything written outside the named volumes below dies with it.
+#
+# `run`/`up` rebuilds the image when it's missing, since this service declares `build:`;
+# pass --no-build to use whatever image is already there.
+#
+# No --cmake-args needed when building: the image runs `catkin config` at image build time
+# with the same flags the deployment Dockerfile passes (Release, C++17), and those live in
+# the workspace profile.
+#
+# Edit files on your host as usual; the container always sees the live checkout. build/
+# and devel/ live in a named volume so they persist across `run`s without touching your
+# checkout or requiring a rebuild of the image.
+services:
+  thorp-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: thorp:noetic-dev
+    stdin_open: true
+    tty: true
+    network_mode: host
+    privileged: true
+    environment:
+      - DISPLAY=${DISPLAY}
+    volumes:
+      - ../..:/catkin_ws/src/thorp            # your local `thorp` checkout (repo root, two levels up from here)
+      - thorp-dev-build:/catkin_ws/build
+      - thorp-dev-devel:/catkin_ws/devel
+      - thorp-dev-logs:/catkin_ws/logs
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw     # for rviz/gazebo from inside the container
+
+volumes:
+  thorp-dev-build:
+  thorp-dev-devel:
+  thorp-dev-logs:

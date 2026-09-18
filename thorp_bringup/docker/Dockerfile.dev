@@ -1,0 +1,156 @@
+# Development image: same OS/apt/rosdep/pip dependency stack as the deployment Dockerfile,
+# but WITHOUT cloning `thorp` itself. Instead, bind-mount your local checkout at
+# /catkin_ws/src/thorp when you run the container (see docker-compose.dev.yml) and build
+# interactively -- no image rebuild needed to pick up source changes.
+#
+# thorp.rosinstall stays the single source of truth for the ~30 dependency repos: this
+# Dockerfile strips just the "thorp" entry out of it at build time, so there's nothing
+# extra to keep in sync when Dockerfile (deployment) changes that file.
+ARG ROS_DISTRO=noetic
+
+FROM ros:$ROS_DISTRO
+
+SHELL ["/bin/bash", "-c"]
+
+# install ROS base and minimal build dependencies
+RUN apt-get update && apt-get install -y ros-$ROS_DISTRO-ros-base \
+    python-is-python3 python3-pip python3-catkin-tools build-essential wget nano git python3-yaml
+
+# add packages.osrfoundation.org APT to install the latest gazebo version
+RUN sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable `lsb_release -cs` main" \
+    > /etc/apt/sources.list.d/gazebo-stable.list' && \
+    wget https://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add - && apt update
+
+# reduce log verbosity (RAIL segmentation is called continuously for some apps)
+RUN echo 'log4j.logger.ros.rail_mesh_icp=WARN' >> /opt/ros/$ROS_DISTRO/share/ros/config/rosconsole.config && \
+    echo 'log4j.logger.ros.rail_segmentation=ERROR' >> /opt/ros/$ROS_DISTRO/share/ros/config/rosconsole.config
+
+# create catkin workspace
+RUN mkdir -p /catkin_ws/src
+WORKDIR /catkin_ws/src
+COPY thorp.rosinstall .
+
+# every dependency repo EXCEPT thorp itself -- that one is bind-mounted at `docker run`
+RUN python3 -c "\
+import yaml; \
+entries = yaml.safe_load(open('thorp.rosinstall')); \
+deps = [e for e in entries if e.get('git', {}).get('local-name') != 'thorp']; \
+yaml.safe_dump(deps, open('thorp-deps.rosinstall', 'w'))" && \
+    wstool init -j10 . thorp-deps.rosinstall
+
+# cleanup git history to reduce image size  (got from https://gist.github.com/facelordgists/80e868ff5e315878ecd6)
+RUN find . \( -name ".git" -o -name ".gitignore" -o -name ".gitmodules" -o -name ".gitattributes" \) -exec rm -rf -- {} +
+
+# delete non-relevant pkgs from cloned repositories
+RUN rm -rf navigation/amcl \
+           navigation/fake_localization \
+           navigation/map_server \
+           navigation/move_slow_and_clear \
+           navigation/navfn \
+           navigation/voxel_grid \
+           navigation/base_local_planner \
+           navigation/clear_costmap_recovery \
+           navigation/dwa_local_planner \
+           navigation/global_planner \
+           navigation/move_base \
+           navigation/nav_core \
+           navigation/navigation \
+           navigation/rotate_recovery \
+           navigation_experimental/assisted_teleop \
+           navigation_experimental/goal_passer \
+           navigation_experimental/navigation_experimental \
+           navigation_experimental/pose_base_controller \
+           navigation_experimental/sbpl_recovery \
+           navigation_experimental/sbpl_lattice_planner \
+           navigation_experimental/twist_recovery \
+           navigation_layers/navigation_layers \
+           navigation_layers/social_navigation_layers \
+           gazebo-pkgs/gazebo_state_plugins \
+           gazebo-pkgs/gazebo_test_tools \
+           gazebo_ros_pkgs/docs \
+           gazebo_ros_pkgs/gazebo_dev \
+           gazebo_ros_pkgs/gazebo_msgs \
+           gazebo_ros_pkgs/gazebo_ros \
+           gazebo_ros_pkgs/gazebo_ros_control \
+           gazebo_ros_pkgs/gazebo_ros_pkgs \
+           kobuki/kobuki \
+           kobuki/kobuki_controller_tutorial \
+           kobuki/kobuki_random_walker \
+           kobuki/kobuki_testsuite \
+           kobuki/kobuki_capabilities \
+           kobuki/kobuki_rapps \
+           kobuki_desktop/kobuki_desktop \
+           kobuki_desktop/kobuki_gazebo \
+           kobuki_desktop/kobuki_qtestsuite \
+           kobuki_desktop/kobuki_rviz_launchers \
+           turtlebot/turtlebot \
+           turtlebot/turtlebot_capabilities \
+           turtlebot_apps/turtlebot_apps \
+           turtlebot_apps/turtlebot_actions \
+           turtlebot_apps/turtlebot_calibration \
+           turtlebot_apps/turtlebot_follower \
+           turtlebot_apps/turtlebot_rapps \
+           turtlebot_interactions/turtlebot_interactions \
+           turtlebot_interactions/turtlebot_interactive_markers \
+           turtlebot_interactions/turtlebot_rviz_launchers \
+           turtlebot_arm/turtlebot_arm \
+           turtlebot_arm/turtlebot_arm_block_manipulation \
+           turtlebot_arm/turtlebot_arm_kinect_calibration \
+           turtlebot_arm/turtlebot_arm_moveit_demos \
+           turtlebot_arm/turtlebot_arm_object_manipulation \
+           yujin_ocs/yujin_ocs \
+           yujin_ocs/yocs_ar_pair_tracking \
+           yujin_ocs/yocs_diff_drive_pose_controller \
+           yujin_ocs/yocs_localization_manager \
+           yujin_ocs/yocs_navi_toolkit \
+           yujin_ocs/yocs_waypoints_navi \
+           yujin_ocs/yocs_ar_marker_tracking \
+           yujin_ocs/yocs_joyop \
+           yujin_ocs/yocs_rapps \
+           yujin_ocs/yocs_virtual_sensor \
+           yujin_ocs/yujin_ocs \
+           yujin_ocs/yocs_ar_pair_approach \
+           yujin_ocs/yocs_keyop \
+           yujin_ocs/yocs_navigator \
+           yujin_ocs/yocs_waypoint_provider
+
+# thorp isn't present yet at build time (it's bind-mounted at `docker run`), so this only
+# resolves the dependencies of the OTHER cloned repos. The entrypoint runs rosdep again once
+# thorp is actually mounted, to pick up whatever thorp's own package.xml files need (e.g.
+# nlohmann-json-dev, behaviortree_cpp, cob_perception_msgs) without having to hand-maintain
+# that list here too.
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    rosdep update --rosdistro=$ROS_DISTRO && \
+    rosdep install -y -r --rosdistro=$ROS_DISTRO --from-paths . --ignore-src \
+                   --skip-keys='create_node create_dashboard create_description \
+                                rocon_app_manager kobuki_rapps kobuki_capabilities turtlebot_capabilities \
+                                stdr_gui stdr_robot stdr_server astra_launch realsense_camera zeroconf_avahi'
+
+RUN apt clean
+
+COPY requirements.txt .
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+WORKDIR /catkin_ws
+
+# Record the deployment build's compiler settings in the workspace profile, so that a plain
+# `catkin build` in here carries them and the dev and deployment builds can't drift apart.
+# These aren't optional extras: thorp_toolkit's common.hpp uses std::optional, so without
+# -DCMAKE_CXX_STANDARD=17 the workspace doesn't compile at all (gcc 9 defaults to gnu++14).
+RUN source /opt/ros/$ROS_DISTRO/setup.bash && \
+    catkin config --init --extend /opt/ros/$ROS_DISTRO \
+                  --cmake-args -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=17
+
+# setup runtime environment
+RUN echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> ~/.bashrc && \
+    echo '[ -f /catkin_ws/devel/setup.bash ] && source /catkin_ws/devel/setup.bash' >> ~/.bashrc
+ENV ROSCONSOLE_FORMAT='[${node} ${severity} ${time}]: ${message}'
+
+# path to gazebo models (only resolves once thorp is mounted, harmless otherwise)
+ENV GAZEBO_MODEL_PATH=/catkin_ws/src/thorp/thorp_simulation/worlds/gazebo/models:/catkin_ws/src/small_house_world/models
+
+COPY docker-entrypoint-dev.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint-dev.sh
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint-dev.sh"]
+CMD ["/bin/bash"]
