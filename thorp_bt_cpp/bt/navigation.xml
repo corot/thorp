@@ -93,6 +93,81 @@
     </Sequence>
   </BehaviorTree>
 
+  <!--
+    Drive to one pose, with no list and no retrying: the single pose counterpart of
+    reach_first_pose, for a caller that has already decided where it wants to be. Empty
+    tolerances mean "leave the controller's own alone", so unlike reach_first_pose (which
+    passes 3.15 rad and so ignores the final heading) this one stops facing the given yaw.
+  -->
+  <BehaviorTree ID="goto_pose">
+    <GoToPose action_name="move_base_flex/move_base"
+              angle_tolerance=""
+              controller="TEBPlanner"
+              dist_tolerance=""
+              planner=""
+              pose="{pose}"
+              server_timeout="5.000000"
+              error="{error}"
+              feedback="{goto_pose_feedback}"/>
+  </BehaviorTree>
+
+  <!--
+    Where to stand to work at a table: one pose per side, each `distance` out from it and
+    facing it. This is the step between detecting a table and approaching it, and it is here
+    rather than with the perception trees because what it produces is somewhere to drive to.
+
+    cleanup_table does this internally with the pickup_dist_to_table parameter; exposed on its
+    own, the caller chooses the distance, so the same node serves approaching to manipulate
+    (approach_dist_to_table) and getting close enough to pick (pickup_dist_to_table).
+  -->
+  <BehaviorTree ID="poses_around_table">
+    <GetPosesAroundTable distance="{distance}"
+                         split_long_sides="false"
+                         table="{table}"
+                         table_pose="{table_pose}"
+                         table_side_poses="{table_side_poses}"/>
+  </BehaviorTree>
+
+  <!--
+    Which of these poses is nearest the robot, and where the robot is while we are at it.
+
+    poses_around_table hands back one pose per side in a fixed geometric order, not sorted by
+    anything, so "the first one" is whichever side the table's own frame calls +x. A caller
+    that wants the near side has to compare against the robot, and until now nothing exposed
+    the robot's pose to compare with: validate_table does this internally and an agent could
+    not. Taking the first pose instead drove the robot to the far side of the table, where the
+    objects were out of arm reach.
+  -->
+  <BehaviorTree ID="closest_pose">
+    <Sequence>
+      <GetRobotPose timeout="1"
+                    robot_pose="{robot_pose}"
+                    error="{error}"/>
+      <GetClosestPose poses="{poses}"
+                      target_pose="{robot_pose}"
+                      closest_pose="{closest_pose}"/>
+    </Sequence>
+  </BehaviorTree>
+
+  <!--
+    Turn on the spot to face a pose, without translating: exe_path with a rotation, rather than
+    move_base as goto_pose uses. Use it to point the camera, which is fixed to the base.
+  -->
+  <BehaviorTree ID="look_at_pose">
+    <Sequence>
+      <GetRobotPose timeout="1"
+                    robot_pose="{robot_pose}"
+                    error="{error}"/>
+      <LookAtPose action_name="move_base_flex/exe_path"
+                  controller="TEBPlanner"
+                  robot_pose="{robot_pose}"
+                  target_pose="{pose}"
+                  server_timeout="5.000000"
+                  error="{error}"
+                  feedback="{look_at_feedback}"/>
+    </Sequence>
+  </BehaviorTree>
+
   <BehaviorTree ID="reach_first_pose">
     <RetryUntilSuccessful num_attempts="-1">
       <Fallback>

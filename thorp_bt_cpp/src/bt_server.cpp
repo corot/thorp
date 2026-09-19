@@ -83,7 +83,7 @@ std::set<std::string> requiredInputs(const BT::Tree& tree)
 }
 }  // namespace
 
-Server::Server() : pnh_("~"), as_(nh_, "run_subtree", boost::bind(&Server::executeCB, this, _1), false)
+Server::Server() : pnh_("~"), as_(pnh_, "run_subtree", boost::bind(&Server::executeCB, this, _1), false)
 {
 }
 
@@ -155,7 +155,7 @@ bool Server::loadTrees()
 void Server::run()
 {
   as_.start();
-  ROS_INFO_NAMED("bt_server", "Ready to run subtrees on action '%s'", nh_.resolveName("run_subtree").c_str());
+  ROS_INFO_NAMED("bt_server", "Ready to run subtrees on action '%s'", pnh_.resolveName("run_subtree").c_str());
   ros::spin();
 }
 
@@ -192,7 +192,23 @@ void Server::executeCB(const thorp_msgs::RunSubtreeGoalConstPtr& goal)
   }
 
   auto blackboard = tree->rootBlackboard();
-  blackboardFromJson(input_json, *blackboard);
+  try
+  {
+    blackboardFromJson(input_json, *blackboard);
+  }
+  catch (const std::exception& e)
+  {
+    // Seeding turns json into real typed values, and a value of the wrong shape throws from
+    // inside nlohmann or a BT converter rather than returning an error. Uncaught, that ends
+    // the process: one badly shaped argument and every later goal dies with it, which for a
+    // server whose callers are LLMs writing json is not a question of if. A refusal names the
+    // problem and leaves the server standing.
+    ROS_ERROR_STREAM_NAMED("bt_server", "Cannot seed inputs for subtree '" << goal->subtree << "': " << e.what());
+    result.success = false;
+    result.json = nlohmann::json{ { "error", std::string("cannot seed inputs: ") + e.what() } }.dump();
+    as_.setAborted(result);
+    return;
+  }
 
   // Refuse to tick a tree whose inputs we can't satisfy. Most nodes read a port as
   // *getInput<T>(...), and dereferencing that when the key was never set isn't an exception

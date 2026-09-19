@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <map>
+#include <optional>
 #include <typeindex>
 #include <typeinfo>
 #include <vector>
@@ -10,6 +11,7 @@
 
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <moveit_msgs/CollisionObject.h>
 #include <rail_manipulation_msgs/SegmentedObject.h>
 
 #include <behaviortree_cpp/utils/demangle_util.h>
@@ -148,7 +150,50 @@ nlohmann::json anyToJson(const BT::Any& any)
     }
     return poses;
   }
+  if (any.type() == typeid(std::vector<moveit_msgs::CollisionObject>))
+  {
+    // Names only, on purpose. Detection puts the objects themselves into the MoveIt planning
+    // scene, which is where their geometry belongs and where it survives from one goal to the
+    // next; serialising it here would duplicate that, and go stale the moment anything moves.
+    // What the caller genuinely can't get anywhere else is what the detector decided to call
+    // them, and a name is all pickup_object, place_object and place_on_tray ever take.
+    nlohmann::json names = nlohmann::json::array();
+    for (const auto& object : any.cast<std::vector<moveit_msgs::CollisionObject>>())
+    {
+      names.push_back(object.id);
+    }
+    return names;
+  }
+  if (any.type() == typeid(moveit_msgs::CollisionObject))
+  {
+    return any.cast<moveit_msgs::CollisionObject>().id;
+  }
   return "<unsupported type: " + BT::demangle(any.type()) + ">";
+}
+
+// A pose as json: either the "x;y;yaw;frame" string a literal xml attribute would use, or the
+// nested object this file emits (x, y, z, roll, pitch, yaw, frame).
+//
+// Both forms are here because both occur. A caller writing a goal by hand reaches for the
+// string; a caller feeding back a pose that came out of an earlier run has the object, because
+// that is what we gave them. Accepting only the string made every pose we emit unusable as an
+// input, which breaks the one thing capabilities are for: detect_table's table_pose could not
+// be handed to poses_around_table, and its table could not be handed to anything at all.
+//
+// Returns nullopt for a shape that is neither, so the caller can report it rather than throw.
+std::optional<geometry_msgs::PoseStamped> poseFromJson(const nlohmann::json& json)
+{
+  if (json.is_string())
+  {
+    return BT::convertFromString<geometry_msgs::PoseStamped>(json.get<std::string>());
+  }
+  if (!json.is_object())
+  {
+    return std::nullopt;
+  }
+  return ttk::createPose(json.value("x", 0.0), json.value("y", 0.0), json.value("z", 0.0),
+                         json.value("roll", 0.0), json.value("pitch", 0.0), json.value("yaw", 0.0),
+                         json.value("frame", std::string("map")));
 }
 
 // A table as the trees actually use it. They read width/depth (to judge whether the table is
@@ -166,10 +211,12 @@ rail_manipulation_msgs::SegmentedObject segmentedObjectFromJson(const nlohmann::
 
   if (json.contains("pose"))
   {
-    const auto pose = BT::convertFromString<geometry_msgs::PoseStamped>(json["pose"].get<std::string>());
-    object.center = pose.pose.position;
-    object.orientation = pose.pose.orientation;
-    object.bounding_volume.pose = pose;
+    if (auto pose = poseFromJson(json["pose"]))
+    {
+      object.center = pose->pose.position;
+      object.orientation = pose->pose.orientation;
+      object.bounding_volume.pose = *pose;
+    }
   }
 
   // the same numbers again, in the form table_visited reads them; deriving it saves the
@@ -186,6 +233,17 @@ rail_manipulation_msgs::SegmentedObject segmentedObjectFromJson(const nlohmann::
 bool setStructured(BT::Blackboard& blackboard, const std::string& key, const nlohmann::json& value,
                    const std::type_index& type)
 {
+  if (type == typeid(geometry_msgs::PoseStamped))
+  {
+    auto pose = poseFromJson(value);
+    if (!pose)
+    {
+      return false;
+    }
+    blackboard.set(key, *pose);
+    return true;
+  }
+
   if (type == typeid(std::vector<geometry_msgs::PoseStamped>))
   {
     if (!value.is_array())
@@ -195,11 +253,12 @@ bool setStructured(BT::Blackboard& blackboard, const std::string& key, const nlo
     std::vector<geometry_msgs::PoseStamped> poses;
     for (const auto& element : value)
     {
-      if (!element.is_string())
+      auto pose = poseFromJson(element);  // a string as a literal attribute writes one, or an object as we emit one
+      if (!pose)
       {
-        return false;  // each pose is written the way a literal attribute writes one
+        return false;
       }
-      poses.push_back(BT::convertFromString<geometry_msgs::PoseStamped>(element.get<std::string>()));
+      poses.push_back(*pose);
     }
     blackboard.set(key, poses);
     return true;

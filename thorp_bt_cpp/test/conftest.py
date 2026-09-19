@@ -28,7 +28,10 @@ import actionlib
 import rospy
 from actionlib_msgs.msg import GoalStatus
 
+from std_srvs.srv import Empty
+
 from thorp_msgs.msg import RunSubtreeAction, RunSubtreeGoal
+from thorp_msgs.srv import ClearPlanningScene
 
 STATUS_NAMES = {
     GoalStatus.PENDING: "PENDING",
@@ -47,7 +50,9 @@ def status_name(state):
 
 
 def pytest_addoption(parser):
-    parser.addoption("--action", default="/run_subtree", help="RunSubtree action name")
+    parser.addoption("--action", default="/bt_server/run_subtree",
+                     help="RunSubtree action name; bt_server advertises it in its own "
+                          "private namespace, so this follows the node's name")
     parser.addoption("--param-ns", default="/bt_server",
                      help="bt_server's private namespace, where trees read parameters from")
     parser.addoption("--stack", default="none",
@@ -55,6 +60,66 @@ def pytest_addoption(parser):
                           "(none,navigation,manipulation,perception). Capabilities needing "
                           "anything not listed here are skipped rather than failed.")
     parser.addoption("--capabilities", default=None, help="path to capabilities.yaml")
+    parser.addoption("--apps", action="store_true",
+                     help="also exercise the entries marked `kind: app`. They are skipped by "
+                          "default: an app drives the robot until something stops it, or waits "
+                          "for a person at the keyboard, so running one inside a test suite "
+                          "means a cancel-and-hope rather than a result.")
+
+
+def _try_service(name, srv_type, **kwargs):
+    """
+    Call a service if it's there, and shrug if it isn't.
+
+    The same fixture runs whether you brought up a simulator, a real robot or neither, and a
+    reset that isn't available is not a reason to fail a test -- it just means there is
+    nothing to put back. Anything worse than absence (the call itself failing) is worth
+    seeing, so it's printed rather than swallowed.
+    """
+    try:
+        rospy.wait_for_service(name, timeout=2.0)
+    except rospy.ROSException:
+        return False
+    try:
+        rospy.ServiceProxy(name, srv_type)(**kwargs)
+        return True
+    except rospy.ServiceException as e:
+        print("--> {} failed: {}".format(name, e))
+        return False
+
+
+def reset_scene():
+    """
+    Put the world back to how it started.
+
+    Three parts, because none of them is enough alone. /gazebo/reset_world returns every model to
+    its spawn pose, so the cubes are back on the table -- but MoveIt doesn't watch gazebo, so
+    its planning scene still holds the objects where they used to be, and possibly one still
+    attached to the gripper. manipulation/clear_planning_scene empties that, and the next
+    detect_objects refills it from what the camera can actually see.
+
+    The sleep is for physics: models dropped back onto the table need a moment to settle
+    before a detection of them means anything.
+
+    Caveat worth knowing: reset_world yanks the robot's own model back too, arm joints
+    included, while the controllers are running. That's the part of this to keep an eye on.
+
+    A plain function rather than a fixture, deliberately: a fixture runs before the test body,
+    which means before the body has decided whether it is going to skip. Resetting the world
+    for a test that is about to say "needs navigation running" costs a second and a confusing
+    pile of gazebo log lines. The caller resets once it knows it will use the robot.
+    """
+    # The gripper goes first, and it is the one that matters. An object attached to the gripper
+    # in MoveIt's scene survives both of the calls below AND a restart of the test process,
+    # since the stack keeps running: the next pickup then reports OBJECT_NOT_FOUND (-200) for
+    # an object it believes it is already holding, and says so while writing that object's name
+    # into attached_object. This is the service pickup_object's own tree uses to get out of it.
+    if not _try_service("/clear_gripper", Empty):
+        _try_service("/manipulation/clear_gripper", Empty)
+    reset = _try_service("/gazebo/reset_world", Empty)
+    _try_service("/manipulation/clear_planning_scene", ClearPlanningScene, keep_tray=False)
+    if reset:
+        rospy.sleep(1.0)
 
 
 @pytest.fixture(scope="session")

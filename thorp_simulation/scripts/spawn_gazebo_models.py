@@ -6,6 +6,7 @@ Populate gazebo world with randomly spawn models:
  - tables and objects for gatherer
  - cubes at known locations on playground world
  - objects at known locations on playground world
+ - one static cat at a known location on playground world
 Author:
     Jorge Santos
 """
@@ -111,6 +112,11 @@ PLAYGROUND_CUBES = [('cube 1', 'cube', (-0.14, -0.16, 0.5, 0.0, 0.0, 1.1)),
                     ('cube 3', 'cube', (-0.15,  0.02, 0.5, 0.0, 0.0, 0.2)),
                     ('cube 4', 'cube', (-0.11,  0.10, 0.5, 0.0, 0.0, 0.85)),
                     ('cube 5', 'cube', (-0.12,  0.15, 0.5, 0.0, 0.0, 0.4))]
+
+# One cat for hunt_cat, 2 m to the left of the robot's start pose, seen side-on. Not in front:
+# the kinect sits ~0.30 m up, below the 0.475 m table top, so nothing behind the table is visible.
+# Static, as cats_controller (the prowling) is only launched by cat_hunter.
+PLAYGROUND_CAT = ('cat_orange', (-0.5, 1.5, 0.0))
 
 # 5 rows of 8 cubes tightly spaced; tailored for lack table
 N_ROWS_OF_CUBES = [('cube ' + str(i), 'cube',
@@ -363,7 +369,7 @@ if __name__ == "__main__":
     rospy.init_node("spawn_gazebo_models")
 
     if len(sys.argv) == 1:
-        rospy.logerr("Usage: spawn_gazebo_models.py objects | cats | playground_ + fixed | cubes | random [-d] [-l]")
+        rospy.logerr("Usage: spawn_gazebo_models.py objects | cats | playground_ + fixed | cubes | random | cat [-d] [-l]")
         sys.exit(-1)
 
     ros_pack = rospkg.RosPack()
@@ -418,6 +424,10 @@ if __name__ == "__main__":
         spawn_model('lack_table', models['lack_table'], create_2d_pose(0.45, 0.0, 0.0), 'ground_plane::link')
         for obj in N_ROWS_OF_CUBES:
             spawn_model(obj[0], models[obj[1]], create_3d_pose(*obj[2]), 'lack_table::link')
+    elif sys.argv[1] == 'playground_cat':  # one static cat beside the robot, for hunt_cat
+        model, pose = PLAYGROUND_CAT
+        spawn_model(model, models[model], create_2d_pose(*pose), 'ground_plane::link')
+        spawn_rocket()  # the cannon plugin reuses an existing 'rocket' model; it spawns none
     else:
         rospy.logerr("Unrecognized objects type %s", str(sys.argv[1]))
 

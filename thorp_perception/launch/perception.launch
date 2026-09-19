@@ -3,11 +3,14 @@
  -->
 
 <launch>
-  <arg name="pipeline"/>  <!-- ORK / COB / YOLO / RAIL -->
+  <!-- One or more of ORK / COB / YOLO / RAIL, space separated, e.g. "RAIL COB" (COB reads the
+       kinect, RAIL the xtion). ORK and RAIL clash, as both name a node object_detection.
+       Don't include this file twice: the auxiliary nodes below are outside every group. -->
+  <arg name="pipeline"/>
   <arg name="target_objects" default="[]"/>
 
   <!--  **************** ORK pipeline *****************  -->
-  <group if="$(eval pipeline == 'ORK')">
+  <group if="$(eval 'ORK' in pipeline)">
     <arg name="external_camera" default="false"/>
 
     <node pkg="thorp_perception" type="object_detection_server" name="object_detection" output="screen" respawn="true">
@@ -35,7 +38,7 @@
   </group>
 
   <!--  ************ COB Object Detection *************  -->
-  <group if="$(eval pipeline == 'COB')">
+  <group if="$(eval 'COB' in pipeline)">
     <node name="cob_object_detection" pkg="cob_people_object_detection_tensorflow" type="cob_people_object_detection_tensorflow.py" output="screen" respawn="true">
       <rosparam command="load" file="$(find thorp_perception)/config/cob/object_detection.yaml"/>
     </node>
@@ -50,14 +53,14 @@
   </group>
 
   <!--  ************ YOLO Object Detection ************  -->
-  <group if="$(eval pipeline == 'YOLO')">
+  <group if="$(eval 'YOLO' in pipeline)">
     <include file="$(find darknet_ros)/launch/darknet_ros.launch">
       <arg name="image" value="/kinect/rgb/image_raw"/>
     </include>
   </group>
 
   <!--  ************ RAIL Object Detection ************  -->
-  <group if="$(eval pipeline == 'RAIL')">
+  <group if="$(eval 'RAIL' in pipeline)">
     <node pkg="thorp_perception" type="rail_object_detection_server" name="object_detection" output="screen" respawn="true">
       <param name="publish_static_tf" value="false"/>
       <param name="max_matching_error" value="0.000004"/>

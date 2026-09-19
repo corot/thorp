@@ -26,12 +26,22 @@ Trees needing a stack you haven't declared with --stack are skipped, as are thos
     cd /catkin_ws/src/thorp/thorp_bt_cpp && python3 -m pytest test/test_capabilities.py -v -k pickup_object
 """
 
+import warnings
+
 import pytest
 from actionlib_msgs.msg import GoalStatus
 
-from conftest import status_name
+from conftest import reset_scene, status_name
 
 POSE_FIELDS = {"x", "y", "z", "roll", "pitch", "yaw", "frame"}
+
+# How many times a setup step may be attempted. The scene on this bench is fixed, but MoveIt's
+# planner is sampling-based, so the same pick from the same pose fails to plan perhaps one time
+# in three: in one run pickup_object succeeded as its own test, failed as place_object's
+# precondition, and succeeded again as place_on_tray's. Retrying a precondition hides nothing,
+# because the capability being retried is not the one under test -- that one gets a single
+# attempt, so flakiness in the thing being measured still shows.
+SETUP_ATTEMPTS = 2
 
 # what each declared type should look like once it has been through bt_server's serializer.
 # Anything not listed is a type we can't serialize, and comes back as an "<unsupported ...>"
@@ -47,6 +57,12 @@ SERIALIZED_AS = {
     "double": float,
     "geometry_msgs::PoseStamped": dict,
     "std::vector<geometry_msgs::PoseStamped>": list,
+    # collision objects come back as the names the detector gave them, not as geometry: the
+    # geometry lives in the planning scene, and a name is what the manipulation capabilities take
+    "moveit_msgs::CollisionObject": str,
+    "std::vector<moveit_msgs::CollisionObject>": list,
+    # a table comes back as the fields the trees actually read: name, width, depth, height, pose
+    "rail_manipulation_msgs::SegmentedObject": dict,
 }
 
 
@@ -64,6 +80,10 @@ def pytest_generate_tests(metafunc):
     with open(path) as f:
         caps = yaml.safe_load(f)["capabilities"]
 
+    # Plain alphabetical. pickup_objects used to be forced last, because it clears the table
+    # and everything after it found nothing to work with; clean_scene now puts the cubes back
+    # before every test, so the order carries no meaning and saying it does would be a claim
+    # nobody can check.
     metafunc.parametrize("capability", sorted(caps.items()), ids=lambda item: item[0])
 
 
@@ -89,17 +109,127 @@ def check_value(name, value, declared_type):
         assert set(value) == POSE_FIELDS, "pose {} has fields {}".format(name, sorted(value))
 
 
-def test_capability(runner, capability, available_stacks):
+def step_label(step):
+    """What a step's results are filed under: its `as` name, or the capability's own name."""
+    return step.get("as") or step["subtree"]
+
+
+def setup_steps(spec, capabilities):
+    """(name, its spec, the step as written) for each step of a capability's setup."""
+    for step in (spec.get("test") or {}).get("setup") or []:
+        yield step["subtree"], capabilities.get(step["subtree"], {}), step
+
+
+def resolve_inputs(block, produced):
+    """
+    The inputs for one call: the literals in `inputs`, plus whatever `inputs_from` pulls out
+    of the results of earlier setup steps.
+
+    `inputs_from` is what lets a chain run on real values instead of numbers someone typed in.
+    `{table: [detect_table, table]}` means "the table detect_table found", and a third element
+    indexes into a list, so `[poses_around_table, table_side_poses, 0]` is the first of the
+    poses computed around it. This is exactly the threading an agent does by hand -- take a
+    field out of one result, put it in the next goal -- so a chain that works here is one ROSA
+    can follow, and one that can't be expressed here probably can't be asked of ROSA either.
+
+    Raises LookupError naming what was missing, so the caller can report it as a precondition
+    that wasn't met rather than as a mysterious type error inside bt_server.
+    """
+    inputs = dict(block.get("inputs") or {})
+    for key, ref in (block.get("inputs_from") or {}).items():
+        step_name, out_key = ref[0], ref[1]
+        if step_name not in produced:
+            raise LookupError("{} has not run yet".format(step_name))
+        if out_key not in produced[step_name]:
+            raise LookupError("{} did not return {} (it returned {})".format(
+                step_name, out_key, sorted(produced[step_name]) or "nothing"))
+        value = produced[step_name][out_key]
+        if len(ref) > 2:
+            index = ref[2]
+            if not isinstance(value, list) or len(value) <= index:
+                raise LookupError("{}.{} has no element {} (it is {!r})".format(
+                    step_name, out_key, index, value))
+            value = value[index]
+        inputs[key] = value
+    return inputs
+
+
+@pytest.fixture(autouse=True)
+def runnable(capability, available_stacks, capabilities, request):
+    """
+    Whether this capability can be exercised at all, decided before anything touches the robot.
+
+    A fixture rather than the first few lines of the test, so that the world reset below can
+    depend on it: a skip raised here stops `clean_scene` from ever running, which is what keeps
+    a suite of mostly-skipped tests from resetting gazebo once per skip.
+    """
     name, spec = capability
+
+    if spec.get("kind") == "app" and not request.config.getoption("--apps"):
+        pytest.skip("app, not a capability: the agent is never offered it, and running one "
+                    "here means cancelling it and guessing (pass --apps to try anyway)")
 
     if spec.get("status") == "blocked":
         pytest.skip("blocked: {}".format(" ".join(spec.get("blocked", "no reason given").split())))
 
-    needed = set(spec.get("stack", ["none"])) - {"none"}
+    # The setup steps are capabilities too, so whatever they need has to be running as well:
+    # pickup_object is manipulation, but the detect_objects that gives it something to pick is
+    # perception. Rolling them together means an incomplete --stack skips with a reason rather
+    # than failing halfway through the precondition.
+    needed = set(spec.get("stack", ["none"]))
+    for _, step_spec, _ in setup_steps(spec, capabilities):
+        needed |= set(step_spec.get("stack", ["none"]))
+    needed -= {"none"}
     missing = needed - available_stacks
     if missing:
         pytest.skip("needs {} running (pass --stack {})".format(
             ",".join(sorted(missing)), ",".join(sorted(needed))))
+
+
+@pytest.fixture(autouse=True)
+def clean_scene(runnable):
+    """
+    The same starting world for every test that is actually going to run one.
+
+    Depends on `runnable` purely for the ordering: pytest builds fixtures in dependency order,
+    so a capability that skips never gets here. Without it the suite is order-dependent in
+    effect even though each test establishes its own setup, since pickup_objects clears the
+    table and whatever ran after it found nothing to work with.
+    """
+    reset_scene()
+
+
+def test_capability(runner, capability, capabilities):
+    name, spec = capability
+
+    # Put the robot in the state this capability assumes. These calls go through the same
+    # action as the capability under test, which is the point: the precondition is written in
+    # the same vocabulary the agent will use to reach it, not staged behind the robot's back.
+    #
+    # A step that fails SKIPS rather than fails. "pickup_object is broken" and "nothing was
+    # detected for it to pick up" are different findings, and a red test that means the second
+    # one teaches you to ignore red tests.
+    produced = {}
+    for step_name, step_spec, step in setup_steps(spec, capabilities):
+        try:
+            step_inputs = resolve_inputs(step, produced)
+        except LookupError as e:
+            pytest.skip("precondition not established: {} needs {}".format(step_name, e))
+        for attempt in range(1, SETUP_ATTEMPTS + 1):
+            # every documented output, since a later step may want any of them
+            step_state, step_out, step_result = runner.run(
+                step_name, inputs=step_inputs,
+                output_keys=sorted(step_spec.get("outputs") or {}),
+                timeout=(step_spec.get("test") or {}).get("timeout", 120))
+            if step_state == GoalStatus.SUCCEEDED and step_result.success:
+                break
+            print("--> setup step {} failed on attempt {} of {}: {}".format(
+                step_name, attempt, SETUP_ATTEMPTS, step_out or "no detail"))
+        else:
+            pytest.skip("precondition not established in {} attempts: {} ended as {}{}".format(
+                SETUP_ATTEMPTS, step_name, status_name(step_state),
+                "; {}".format(step_out) if step_out else ""))
+        produced[step_label(step)] = step_out
 
     test = spec.get("test", {})
     declared = spec.get("outputs") or {}
@@ -108,8 +238,12 @@ def test_capability(runner, capability, available_stacks):
     # request instead would just hide the outputs that are hard to predict, which are the ones
     # worth watching. A test block can still override this where a key is genuinely unwanted.
     output_keys = test.get("output_keys", sorted(declared))
+    try:
+        inputs = resolve_inputs(test, produced)
+    except LookupError as e:
+        pytest.skip("precondition not established: this capability needs {}".format(e))
     state, out, result = runner.run(name,
-                                    inputs=test.get("inputs", {}),
+                                    inputs=inputs,
                                     output_keys=output_keys,
                                     timeout=test.get("timeout", 60),
                                     cancel_after=test.get("cancel_after"))
@@ -134,6 +268,13 @@ def test_capability(runner, capability, available_stacks):
         assert state == GoalStatus.PREEMPTED, \
             "expected to still be running at the cancel, but ended as {}".format(status_name(state))
         assert out, "ran for {}s without producing any of {}".format(test.get("cancel_after"), output_keys)
+    elif not result.success:
+        # `expect: any` means the outcome isn't asserted, not that nobody should hear about it.
+        # A tree that fails here still reports PASSED, and that is how pickup_object came back
+        # INVALID_TARGET_POSE for a whole run while the two tests depending on it skipped and
+        # nothing anywhere was red. A warning lands in pytest's summary: visible, not fatal.
+        warnings.warn("{} returned FAILURE; not asserted because expect: any. outputs: {}".format(
+            name, out or "none"), UserWarning)
     else:
         print("outcome not asserted (expect: any): success={}".format(result.success))
 
@@ -146,9 +287,11 @@ def test_capability(runner, capability, available_stacks):
     # succeeds -- and only that. An output marked `when: failure` is an error report written in
     # an action's onAborted, so a run that succeeded is *right* not to have one, and demanding
     # it would make the good outcome the failing case. `when: maybe` is written from a callback
-    # that may never fire. Neither is asserted in either direction: a fallback that recovered
-    # from an aborted action legitimately leaves an error code behind on an otherwise
-    # successful run. A run that was cancelled, or failed partway, is exempt from all of this.
+    # that may never fire, or by a node a successful run can walk straight past -- the untaken
+    # half of a Fallback, a switch case, an empty loop. Neither is asserted in either direction:
+    # a fallback that recovered from an aborted action legitimately leaves an error code behind
+    # on an otherwise successful run. A run that was cancelled, or failed partway, is exempt
+    # from all of this.
     if result.success:
         guaranteed = {k for k in output_keys
                       if k in declared and declared[k].get("when", "success") == "success"}

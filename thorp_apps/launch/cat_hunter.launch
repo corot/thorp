@@ -41,7 +41,7 @@
 
   <group if="$(eval simulator != 'none')">
     <!-- Spawn some cute cats randomly around the house and make them move around -->
-    <node pkg="thorp_simulation" type="spawn_gazebo_models.py" name="objects_spawner" output="screen" args="cats"/>
+    <node pkg="thorp_simulation" type="spawn_gazebo_models.py" name="cats_spawner" output="screen" args="cats"/>
     <node pkg="thorp_simulation" type="cats_controller.py" name="cats_controller" output="screen" respawn="true">
       <param name="target_models" value="$(arg cat_models)"/>
       <param name="prowling_step" value="0.02"/>

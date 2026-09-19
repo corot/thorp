@@ -33,6 +33,7 @@ services:
     network_mode: host
     privileged: true
     environment:
+      - DISABLE_ROS1_EOL_WARNINGS=1
       # gazebo and rviz need an X display and the cookie to open it. DISPLAY comes from your
       # shell, falling back to the :1 the deployment container assumes.
       - DISPLAY=${DISPLAY:-:1}

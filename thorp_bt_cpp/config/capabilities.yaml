@@ -29,6 +29,16 @@
 # The test suite asks for every documented output and insists only on the `success` ones, so a
 # clean run isn't failed for the absence of an error it never had.
 #
+# kind:
+#   capability - a step an agent can ask for. The default, so it is left off.
+#   app        - a whole session's behaviour rather than a step: it drives the robot until
+#                something stops it, or it waits for a person at the keyboard. These stay
+#                described here because the drift test insists every tree is accounted for
+#                and because their interfaces are still worth checking, but the agent side
+#                must not offer them, and the test suite skips them unless --apps is passed.
+#                A tree that cannot finish on its own (KeepRunningUntilFailure at the root,
+#                or Repeat with no cycle limit) HAS to be one; the drift test checks that.
+#
 # status:
 #   ok       - callable through RunSubtree today
 #   blocked  - the tree needs an input bt_server can't put on a blackboard yet; see `blocked`.
@@ -39,6 +49,19 @@
 #   none | navigation | manipulation | perception
 #
 # test: read only by the test suite; the agent side ignores this block.
+#   inputs_from: where an input comes from, when it should be a real value rather than one
+#     someone typed in: {table: [detect_table, table]} takes the table detect_table found, and
+#     a third element indexes a list, so [poses_around_table, table_side_poses, 0] is the first
+#     pose around it. Usable on the test's own inputs and on any setup step's. This is the same
+#     threading an agent does by hand between two goals, so a chain expressible here is one ROSA
+#     can be asked to follow.
+#   setup: capabilities to call first, in order, to put the robot in the state this one
+#     assumes. pickup_object needs something detected to pick; place_object needs the gripper
+#     holding it. Written as capability calls rather than staged behind the robot's back, so
+#     the precondition is stated in the same vocabulary the agent would reach it with, and a
+#     step that fails SKIPS the test instead of failing it -- "this capability is broken" and
+#     "the world wasn't ready for it" are different findings and shouldn't look alike. The
+#     stacks a setup step needs count towards the ones this capability needs.
 #   expect: succeeded | failed | any | runs
 #     `any` means the physical outcome depends on the scene and isn't asserted -- the contract
 #     (goal served, requested outputs returned, types right) is still checked either way.
@@ -48,29 +71,6 @@
 #     just hit their timeout and be reported as failures.
 
 capabilities:
-
-  # ---------------------------------------------------------------- no stack needed --------
-
-  test_server:
-    description: >
-      Exercises bt_server's own json/blackboard plumbing. Not a robot capability; it takes a
-      pose and an offset, transforms one by the other, and reads a few parameters back.
-    status: ok
-    stack: [none]
-    inputs:
-      start_pose: {type: geometry_msgs::PoseStamped, description: "pose to transform, as 'x;y;yaw;frame'"}
-      offset_x: {type: double, description: "metres to shift the pose along x"}
-    outputs:
-      moved_pose: {type: geometry_msgs::PoseStamped, description: "start_pose shifted by offset_x"}
-      a_float: {type: float, description: "value of the test_float parameter"}
-      an_int: {type: int, description: "value of the test_int parameter"}
-      a_string: {type: string, description: "value of the test_string parameter"}
-      a_bool: {type: bool, description: "value of the test_bool parameter"}
-      a_path: {type: nav_msgs::Path, description: "unserializable on purpose; comes back as a type tag"}
-    test:
-      inputs: {start_pose: "1.0;2.0;0.0;map", offset_x: 0.5}
-      expect: succeeded
-      timeout: 15
 
   # ------------------------------------------------------------------- manipulation --------
 
@@ -88,8 +88,25 @@ capabilities:
       attached_object: {type: string, description: "object now attached to the gripper, if any"}
       max_effort: {type: float, description: "gripper effort used, read from the gripper_max_effort parameter"}
     test:
-      inputs: {object_name: "cube1", tightening: 0.002}
-      expect: any          # whether a real pickup succeeds depends on the scene
+      inputs: {object_name: "cube 1", tightening: 0.002}
+      setup:
+        - {subtree: detect_table}
+        - subtree: poses_around_table
+          # pickup_dist_to_table, not approach_dist_to_table: apps_config calls 0.35 "close
+          # enough to properly detect tabletop objects but not for picking up", and it isn't.
+          # The near-side pose at 0.35 leaves the robot 0.167 m behind the table edge, putting
+          # the cubes ~0.5 m from a 0.3 m arm, which is INVALID_TARGET_POSE (-210).
+          inputs: {distance: 0.15}
+          inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
+        - subtree: closest_pose
+          inputs_from: {poses: [poses_around_table, table_side_poses]}
+        - subtree: attach_to_table
+          inputs_from: {table: [detect_table, table], pose: [closest_pose, closest_pose]}
+        - {subtree: detect_objects}
+      # On this bench the scene is fixed, so "did the pickup work" has a right answer and
+      # leaving it unasserted only hid that it didn't: pickup_object reported PASSED while
+      # returning INVALID_TARGET_POSE, and the tests that depend on it skipped instead.
+      expect: succeeded
       timeout: 120
 
   place_object:
@@ -99,11 +116,35 @@ capabilities:
     stack: [manipulation]
     inputs:
       object_name: {type: string, description: "name of the object being placed"}
-      place_pose: {type: geometry_msgs::PoseStamped, description: "where to place it, as 'x;y;yaw;frame'"}
+      place_pose: {type: geometry_msgs::PoseStamped, description: "where to place it, as 'x;y;yaw;frame' or 'x;y;z;roll;pitch;yaw;frame'; the short form leaves z at 0, which is the floor"}
     outputs:
       error: {type: int, when: failure, description: "error code from the place action; 0 when it worked"}
     test:
-      inputs: {object_name: "cube1", place_pose: "0.2;0.0;0.0;base_footprint"}
+      # A clear spot on the near edge of the table: x just inside the edge at 0.176, centred
+      # on y, and clear of the cubes, which sit at x between 0.30 and 0.34. The height is the
+      # table top at 0.475 plus half of a 2.5 cm cube.
+      #
+      # In the MAP frame, and that part matters. The first version of this was in
+      # base_footprint, computed when the robot still started at the origin; once the chain
+      # began driving to the table the same numbers pointed somewhere else in the world,
+      # about 2 cm from cube 3, and MoveIt refused to plan into a cube (PLANNING_FAILED, -1).
+      # A pose that moves with the robot is only meaningful if you know where the robot is.
+      inputs: {object_name: "cube 1", place_pose: "0.2;0.0;0.4875;0.0;0.0;0.0;map"}
+      setup:
+        - {subtree: detect_table}
+        - subtree: poses_around_table
+          # pickup_dist_to_table, not approach_dist_to_table: apps_config calls 0.35 "close
+          # enough to properly detect tabletop objects but not for picking up", and it isn't.
+          # The near-side pose at 0.35 leaves the robot 0.167 m behind the table edge, putting
+          # the cubes ~0.5 m from a 0.3 m arm, which is INVALID_TARGET_POSE (-210).
+          inputs: {distance: 0.15}
+          inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
+        - subtree: closest_pose
+          inputs_from: {poses: [poses_around_table, table_side_poses]}
+        - subtree: attach_to_table
+          inputs_from: {table: [detect_table, table], pose: [closest_pose, closest_pose]}
+        - {subtree: detect_objects}
+        - {subtree: pickup_object, inputs: {object_name: "cube 1", tightening: 0.002}}
       expect: any
       timeout: 120
 
@@ -119,9 +160,153 @@ capabilities:
       error: {type: int, when: failure, description: "error code from the place action; 0 when it worked"}
       pose_on_tray: {type: geometry_msgs::PoseStamped, description: "slot the object was placed in"}
     test:
-      inputs: {object_name: "cube1"}
+      inputs: {object_name: "cube 1"}
+      setup:
+        - {subtree: detect_table}
+        - subtree: poses_around_table
+          # pickup_dist_to_table, not approach_dist_to_table: apps_config calls 0.35 "close
+          # enough to properly detect tabletop objects but not for picking up", and it isn't.
+          # The near-side pose at 0.35 leaves the robot 0.167 m behind the table edge, putting
+          # the cubes ~0.5 m from a 0.3 m arm, which is INVALID_TARGET_POSE (-210).
+          inputs: {distance: 0.15}
+          inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
+        - subtree: closest_pose
+          inputs_from: {poses: [poses_around_table, table_side_poses]}
+        - subtree: attach_to_table
+          inputs_from: {table: [detect_table, table], pose: [closest_pose, closest_pose]}
+        - {subtree: detect_objects}
+        - {subtree: pickup_object, inputs: {object_name: "cube 1", tightening: 0.002}}
       expect: any
       timeout: 120
+
+  # ---------------------------------------------------------------------- perception -------
+
+  detect_objects:
+    description: >
+      Segment the surface in front of the robot and classify the objects on it, adding every
+      one to the MoveIt planning scene and returning the names the detector gave them. Those
+      names are what pickup_object, place_object and place_on_tray take as object_name, so
+      this is the step that tells you what there is to manipulate. It doesn't move the robot:
+      it looks at whatever is in front of the camera now, so drive to the table first.
+    status: ok
+    stack: [perception]
+    inputs: {}
+    outputs:
+      objects: {type: std::vector<moveit_msgs::CollisionObject>, description: "names of the objects found on the surface; empty when there are none"}
+      surface: {type: moveit_msgs::CollisionObject, description: "name of the support surface they were found on"}
+    test:
+      inputs: {}
+      expect: any          # needs a table in view; whether there is one is the scene's business
+      timeout: 60
+
+  detect_table:
+    description: >
+      Find the table in front of the robot and report its size and where it is on the map.
+      Only the nearest surface is reported, however many are in view, and it always comes
+      back named "table" -- the name carries no information here, unlike detect_objects. This
+      is the step that tells you a table is there and where to stand relative to it; it does
+      not move the robot, and it fails when nothing in view is a large enough surface.
+    status: ok
+    stack: [perception]
+    inputs: {}
+    outputs:
+      table: {type: rail_manipulation_msgs::SegmentedObject, description: "the table: name, width, depth, height and centre pose"}
+      table_pose: {type: geometry_msgs::PoseStamped, description: "where that table is, in the map frame"}
+    test:
+      inputs: {}
+      expect: any          # needs a surface in view; whether there is one is the scene's business
+      timeout: 60
+
+  # ---------------------------------------------------------------------- navigation -------
+
+  goto_pose:
+    description: >
+      Drive to one pose on the map, planning and controlling the whole way, and stop there
+      facing the yaw that was asked for. It tries once: if the pose turns out to be
+      unreachable the tree fails and error says why, so the caller can choose somewhere else
+      rather than leave the robot grinding away at it. Use reach_first_pose instead when you
+      have several candidate poses and only care that one of them works.
+    status: ok
+    stack: [navigation]
+    inputs:
+      pose: {type: geometry_msgs::PoseStamped, description: "where to drive to, as 'x;y;yaw;frame'"}
+    outputs:
+      error: {type: int, when: failure, description: "move_base error code; only set when the drive failed"}
+    test:
+      inputs: {pose: '2.0;5.0;1.57;map'}
+      expect: any
+      timeout: 300
+
+  poses_around_table:
+    description: >
+      Work out where to stand to work at a table: one pose per side, each `distance` out from
+      it and facing it. Takes the table and its pose as detect_table reports them, so the two
+      compose directly. Nothing moves; this is arithmetic on a table you have already found,
+      and the poses are what attach_to_table and goto_pose take.
+
+      The order is geometric, not nearest first: the table's own +x side, then -x, then +y,
+      then -y, with sides too narrow to work at and poses blocked on the costmap left out. So
+      the first pose is not the near one, and picking it blind will send the robot around the
+      table. Pass the list to closest_pose to get the one nearest the robot.
+    status: ok
+    stack: [none]
+    inputs:
+      table: {type: rail_manipulation_msgs::SegmentedObject, description: "the table, as detect_table returned it"}
+      table_pose: {type: geometry_msgs::PoseStamped, description: "that table's pose, as detect_table returned it"}
+      distance: {type: double, description: "how far out from the table each pose should be, in metres"}
+    outputs:
+      table_side_poses: {type: std::vector<geometry_msgs::PoseStamped>, description: "one pose per usable side, nearest first"}
+    test:
+      inputs: {distance: 0.35}
+      setup:
+        - {subtree: detect_table}
+      inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
+      expect: succeeded    # pure geometry on a table we just found; nothing to blame the scene for
+      timeout: 30
+
+  closest_pose:
+    description: >
+      Of a list of poses, the one nearest the robot, and the robot's own pose with it. Use it
+      on what poses_around_table returns: that list is in a fixed geometric order, so choosing
+      a side without comparing to where the robot is means driving around the table for no
+      reason. Nothing moves.
+    status: ok
+    stack: [none]
+    inputs:
+      poses: {type: std::vector<geometry_msgs::PoseStamped>, description: "the poses to choose between"}
+    outputs:
+      closest_pose: {type: geometry_msgs::PoseStamped, description: "whichever of them is nearest the robot"}
+      robot_pose: {type: geometry_msgs::PoseStamped, description: "where the robot is now"}
+      error: {type: int, when: failure, description: "error code from reading the robot pose"}
+    test:
+      setup:
+        - {subtree: detect_table}
+        - subtree: poses_around_table
+          inputs: {distance: 0.35}
+          inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
+      inputs_from: {poses: [poses_around_table, table_side_poses]}
+      expect: succeeded    # picking the nearest of a list we just computed
+      timeout: 30
+
+  look_at_pose:
+    description: >
+      Turn on the spot until the robot is facing a given pose, without going anywhere. Use it
+      before looking for something that is not already in front of the robot: the camera has
+      about a 57 degree field of view and cannot move independently of the base, so anything to
+      the side or behind has to be turned towards before any perception capability can see it.
+      Prefer it over goto_pose when the robot is already where it should be and only the heading
+      is wrong.
+    status: ok
+    stack: [navigation]
+    inputs:
+      pose: {type: geometry_msgs::PoseStamped, description: "what to face; only its position matters"}
+    outputs:
+      robot_pose: {type: geometry_msgs::PoseStamped, description: "where the robot was before turning"}
+      error: {type: int, when: failure, description: "error code from reading the robot pose or from the controller"}
+    test:
+      inputs: {pose: "-0.5;2.0;0.0;map"}    # the cat llm_playground spawns
+      expect: succeeded
+      timeout: 60
 
   # ------------------------------------------------- app-level trees, no caller inputs -----
 
@@ -129,6 +314,7 @@ capabilities:
     description: >
       Drive back and forth between two hardcoded map poses, ten times. Mostly a navigation
       smoke test.
+    kind: app
     status: ok
     stack: [navigation]
     inputs: {}
@@ -157,6 +343,7 @@ capabilities:
     description: >
       Explore the house looking for cats, and when one is seen, approach and fire the cannon
       at it until the ammo runs out.
+    kind: app
     status: ok
     stack: [navigation, perception]
     inputs: {}
@@ -174,6 +361,7 @@ capabilities:
     description: >
       Explore the house, and for every table found, validate it and clear the objects from it
       onto the tray.
+    kind: app
     status: ok
     stack: [navigation, manipulation, perception]
     inputs: {}
@@ -189,6 +377,7 @@ capabilities:
     description: >
       Interactive tabletop loop: waits for a user command, then detects objects and drags,
       picks and places whichever one was chosen.
+    kind: app
     status: ok
     stack: [manipulation, perception]
     inputs: {}
@@ -229,8 +418,14 @@ capabilities:
       tracked_object_pose: {type: geometry_msgs::PoseStamped, when: maybe, description: "where the target was last seen"}
     test:
       inputs: {}
+      setup:
+        - subtree: look_at_pose    # the cat is to the left, and the camera is fixed to the base
+          inputs: {pose: "-0.5;2.0;0.0;map"}
       # terminates on its own, unlike cat_hunter around it: the Parallel needs only one child
       # to finish, and the FollowPose under it has exec_time_limit="25"
+      #
+      # 'any' because the FollowPose sits under a ForceSuccess, so the tree succeeds even having
+      # seen nothing; only the cannon_tilt_angle output tells the two apart.
       expect: any
       timeout: 300
 
@@ -316,7 +511,14 @@ capabilities:
     outputs:
       error: {type: int, when: failure, description: "error code from path execution"}
     test:
-      inputs: {table: {name: table1, pose: '1.0;2.0;0.0;map', width: 1.0, depth: 0.8, height: 0.75}, pose: '1.0;1.0;0.0;map'}
+      setup:
+        - {subtree: detect_table}
+        - subtree: poses_around_table
+          inputs: {distance: 0.15}    # pickup_dist_to_table: attaching means getting to the table
+          inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
+        - subtree: closest_pose
+          inputs_from: {poses: [poses_around_table, table_side_poses]}
+      inputs_from: {table: [detect_table, table], pose: [closest_pose, closest_pose]}
       expect: any
       timeout: 180
 
@@ -331,7 +533,29 @@ capabilities:
     outputs:
       error: {type: int, when: failure, description: "error code from path execution"}
     test:
-      inputs: {table: {name: table1, pose: '1.0;2.0;0.0;map', width: 1.0, depth: 0.8, height: 0.75}, pose: '1.0;1.0;0.0;map'}
+      # You can only detach from a table you are attached to, so this drives in and then backs
+      # out again. poses_around_table is called twice at different radii, which is what `as`
+      # is for: without it the second call's results would file over the first's.
+      inputs: {}
+      setup:
+        - {subtree: detect_table}
+        - subtree: poses_around_table
+          as: approach
+          inputs: {distance: 0.15}
+          inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
+        - subtree: closest_pose
+          as: near_side
+          inputs_from: {poses: [approach, table_side_poses]}
+        - subtree: attach_to_table
+          inputs_from: {table: [detect_table, table], pose: [near_side, closest_pose]}
+        - subtree: poses_around_table
+          as: retreat
+          inputs: {distance: 0.8}
+          inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
+        - subtree: closest_pose
+          as: retreat_side
+          inputs_from: {poses: [retreat, table_side_poses]}
+      inputs_from: {table: [detect_table, table], pose: [retreat_side, closest_pose]}
       expect: any
       timeout: 180
 
@@ -349,7 +573,10 @@ capabilities:
       pickup_pose: {type: geometry_msgs::PoseStamped, when: maybe, description: "pose the last pickup was attempted from"}
       error: {type: int, when: maybe, description: "error code from the last action"}
     test:
-      inputs: {table: {name: table1, pose: '1.0;2.0;0.0;map', width: 1.0, depth: 0.8, height: 0.75}, table_pose: '1.0;2.0;0.0;map', given_up_count: 0}
+      inputs: {given_up_count: 0}
+      setup:
+        - {subtree: detect_table}
+      inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
       expect: any
       timeout: 900
 
@@ -367,6 +594,20 @@ capabilities:
       error: {type: int, when: failure, description: "error code from the last action"}
     test:
       inputs: {failures: {}, given_up_count: 0}
+      setup:
+        - {subtree: detect_table}
+        - subtree: poses_around_table
+          # pickup_dist_to_table, not approach_dist_to_table: apps_config calls 0.35 "close
+          # enough to properly detect tabletop objects but not for picking up", and it isn't.
+          # The near-side pose at 0.35 leaves the robot 0.167 m behind the table edge, putting
+          # the cubes ~0.5 m from a 0.3 m arm, which is INVALID_TARGET_POSE (-210).
+          inputs: {distance: 0.15}
+          inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
+        - subtree: closest_pose
+          inputs_from: {poses: [poses_around_table, table_side_poses]}
+        - subtree: attach_to_table
+          inputs_from: {table: [detect_table, table], pose: [closest_pose, closest_pose]}
+        - {subtree: detect_objects}
       expect: any
       timeout: 600
 
@@ -375,6 +616,11 @@ capabilities:
 # either describe it above or say here why an agent shouldn't see it. Silence would otherwise
 # mean a capability nobody ever told the agent about.
 not_capabilities:
+  test_server: >
+    Test fixture: transforms a pose and reads back four parameters, exercising bt_server's
+    json/blackboard plumbing end to end. Not a robot capability, and not runnable from the
+    capability suite either -- the parameters it reads are seeded by test_bt_server.py, which
+    is where it is tested.
   test_server_slow: >
     Test fixture: sleeps long enough that a goal can be cancelled mid-run, for checking
     preemption returns the outputs produced so far.

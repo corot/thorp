@@ -82,10 +82,24 @@ def port_directions():
     return directions
 
 
-def remapped_key(value):
-    """The blackboard key a port attribute binds to, or None when it's a literal."""
+def remapped_key(port, value):
+    """
+    The blackboard key a port attribute binds to, or None when it's a literal.
+
+    These are BT.CPP's own rules, from TreeNode::getRemappedKey, which bt_server calls at
+    runtime: "{=}" -- or a bare "=" -- is shorthand for a key named after the port, spaces
+    around the whole value are ignored while spaces inside the braces belong to the key, and
+    "{}" is too short to be a pointer at all. Nothing under bt/ is spelled any of those ways
+    today, so this is about the day something is: resolving a spelling differently from the
+    server would leave this test checking an interface nobody enforces, which is the one
+    failure it has no way to report.
+    """
     value = value.strip()
-    return value[1:-1].strip() if value.startswith("{") and value.endswith("}") else None
+    if value in ("{=}", "="):
+        return port
+    if len(value) >= 3 and value.startswith("{") and value.endswith("}"):
+        return value[1:-1]
+    return None
 
 
 def derive_interfaces():
@@ -103,7 +117,7 @@ def derive_interfaces():
                     continue
                 node_reads, node_writes = set(), set()
                 for port, value in node.attrib.items():
-                    key = remapped_key(value)
+                    key = remapped_key(port, value)
                     if not key:
                         continue
                     # a <SubTree> remapping carries no direction here; treat it as a read, so
@@ -211,3 +225,94 @@ def test_declared_types_match_the_ports(capability_name, declared, derived):
             assert normalize_type(entry.get("type", "")) == expected, (
                 "{}.{}.{}: yaml says {!r}, the port is {!r}".format(
                     capability_name, section, key, entry.get("type"), expected))
+
+
+def test_setup_steps_are_callable_capabilities(capability_name, declared):
+    """
+    A `setup` step is a real goal the test suite will send, and `inputs_from` is a real lookup
+    into an earlier step's result. Both fail quietly: an unknown subtree is refused by
+    bt_server and a bad reference raises before the goal is sent, and either way the test
+    skips with "precondition not established" -- which reads exactly like the robot not
+    cooperating. Checking it here, where nothing needs to be running, keeps that from going
+    unnoticed for weeks.
+    """
+    caps = declared["capabilities"]
+    spec = caps[capability_name]
+    test = spec.get("test") or {}
+    steps = test.get("setup") or []
+
+    seen = {}   # label -> the outputs that step will have produced by the time it is done
+    for step in steps:
+        target = step.get("subtree")
+        assert target in caps, (
+            "{}: setup calls '{}', which is not a capability".format(capability_name, target))
+        check_call(capability_name, caps[target], step, seen,
+                   "setup step '{}'".format(step.get("as") or target))
+        seen[step.get("as") or target] = set(caps[target].get("outputs") or {})
+
+    check_call(capability_name, spec, test, seen, "the capability itself")
+
+
+def check_call(capability_name, target_spec, block, available, what):
+    """One call's inputs: every input supplied exactly once, and every reference resolvable."""
+    literal = set(block.get("inputs") or {})
+    threaded = set(block.get("inputs_from") or {})
+
+    overlap = literal & threaded
+    assert not overlap, "{}: {} gives {} both literally and via inputs_from".format(
+        capability_name, what, sorted(overlap))
+
+    required = set(target_spec.get("inputs") or {})
+    assert literal | threaded == required, (
+        "{}: {} passes {} but that capability takes {}".format(
+            capability_name, what, sorted(literal | threaded), sorted(required)))
+
+    for key, ref in (block.get("inputs_from") or {}).items():
+        assert isinstance(ref, list) and len(ref) in (2, 3), (
+            "{}: {} has a malformed inputs_from for {}: {!r}".format(
+                capability_name, what, key, ref))
+        step_label, out_key = ref[0], ref[1]
+        assert step_label in available, (
+            "{}: {} takes {} from '{}', which is not an earlier setup step (have: {})".format(
+                capability_name, what, key, step_label, sorted(available) or "none"))
+        assert out_key in available[step_label], (
+            "{}: {} takes {} from {}.{}, which that capability doesn't declare as an "
+            "output".format(capability_name, what, key, step_label, out_key))
+
+
+def root_never_finishes(tree):
+    """
+    True when a tree's root can't report success on its own: KeepRunningUntilFailure returns
+    RUNNING or FAILURE and never SUCCESS, and Repeat with no cycle limit (absent, or -1)
+    repeats forever. Asking one of these to "run and tell me how it went" has no answer.
+    """
+    root = list(tree)[0]
+    if root.tag == "KeepRunningUntilFailure":
+        return True
+    return root.tag == "Repeat" and root.get("num_cycles", "-1") == "-1"
+
+
+def test_endless_trees_are_marked_as_apps(declared):
+    """
+    The one half of `kind` that can be derived rather than trusted.
+
+    Whether a terminating tree is a capability or an app is a judgement -- patrol_2_points
+    finishes, and is still not something to offer an agent. But a tree that can never finish
+    is never a capability: the agent would call it, get nothing back, and be holding a robot
+    that has stopped listening. Marking one `kind: capability`, or forgetting to mark it at
+    all, is the mistake that matters, so it is checked here instead of remembered.
+    """
+    endless = set()
+    for path in sorted(glob(os.path.join(BT_DIR, "*.xml"))):
+        if os.path.basename(path) == "node_models.xml":
+            continue
+        for tree in ET.parse(path).getroot().findall("BehaviorTree"):
+            if root_never_finishes(tree):
+                endless.add(tree.get("ID"))
+
+    exposed = {name for name, spec in declared["capabilities"].items()
+               if (spec.get("kind") or "capability") != "app"}
+    wrongly_offered = endless & exposed
+    assert not wrongly_offered, (
+        "these trees can never finish, so they can't be capabilities -- mark them `kind: app`: "
+        "{}".format(sorted(wrongly_offered)))

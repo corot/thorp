@@ -205,6 +205,46 @@ def test_structured_input_for_an_unknown_key_is_reported(runner):
     assert "first_pose" in out, "the key that is used should still have worked"
 
 
+def test_a_pose_we_emitted_can_be_seeded_back(runner):
+    """
+    The round trip that makes capabilities composable: take a pose out of one result and hand
+    it to the next goal as-is.
+
+    We emit poses as an object (x, y, z, roll, pitch, yaw, frame) and used to accept them only
+    as the "x;y;yaw;frame" string, so every pose a capability returned was unusable as an
+    input to another one. detect_table -> poses_around_table died on exactly this.
+    """
+    _, out, _ = runner.run("test_server", inputs=INPUTS, output_keys=["moved_pose"])
+    emitted = out["moved_pose"]
+    assert isinstance(emitted, dict)
+
+    # hand it straight back, unedited, as the input pose this time
+    state, out, result = runner.run("test_server",
+                                    inputs={"start_pose": emitted, "offset_x": 0.0},
+                                    output_keys=["moved_pose"])
+    assert state == GoalStatus.SUCCEEDED, status_name(state)
+    assert result.success
+    for field in ("x", "y", "z", "frame"):
+        assert out["moved_pose"][field] == emitted[field], \
+            "{} changed on the way round: {} -> {}".format(field, emitted[field], out["moved_pose"][field])
+
+
+def test_a_badly_shaped_input_aborts_rather_than_killing_the_server(runner):
+    """
+    Seeding builds typed values out of json, and the wrong shape throws from inside nlohmann
+    rather than returning an error. Uncaught, that took the whole process down: one malformed
+    goal and every later one was gone too. Since the callers here are LLMs writing json, that
+    is a when rather than an if.
+
+    The test after this one is the real assertion: the server is still answering.
+    """
+    state, out, result = runner.run("test_server",
+                                    inputs={"start_pose": {"x": "not a number"}, "offset_x": 0.5})
+    assert state in (GoalStatus.SUCCEEDED, GoalStatus.ABORTED), status_name(state)
+    if state == GoalStatus.ABORTED:
+        assert "error" in out, out
+
+
 def test_server_survives_a_rejected_goal(runner):
     """Whatever the previous cases threw at it, the server is still serving."""
     state, out, result = runner.run("test_server", inputs=INPUTS, output_keys=["a_string"])
