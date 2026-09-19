@@ -26,9 +26,16 @@ namespace thorp::bt
  * a BT::convertFromString<T> specialization (as already done for geometry_msgs::PoseStamped
  * in type_converters.hpp), with nothing to change here or in bt_server.
  *
- * `json` must be a flat object (no nested objects/arrays as values); any entry that isn't
- * a plain scalar is skipped with a ROS_WARN, since there isn't yet an agreed textual
- * convention for it.
+ * Scalars go through that string path. A structured value -- a json array or object -- can't,
+ * since there's no sensible way to flatten one into the textual form a port expects, so those
+ * are built as the real type and written to the blackboard directly. That needs to know what
+ * type the key is supposed to be, which BT.CPP can tell us: building a tree pre-creates an
+ * entry per remapped port carrying its declared type, so the port itself says what to build.
+ * Supported today are std::vector<geometry_msgs::PoseStamped> (an array of pose strings),
+ * std::map<std::string, unsigned> (an object of counts), and
+ * rail_manipulation_msgs::SegmentedObject (an object of the fields the trees actually read).
+ * A structured value for any other type is skipped with a ROS_WARN naming the type, which is
+ * the cue to add a case in blackboard_json.cpp.
  */
 void blackboardFromJson(const nlohmann::json& json, BT::Blackboard& blackboard);
 

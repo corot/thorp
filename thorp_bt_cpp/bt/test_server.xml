@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Trees for exercising bt_server's json <-> blackboard plumbing, used by
+  scripts/test_bt_server.py. Deliberately built out of nodes that need nothing outside the
+  process: no action server, no service, no tf, no simulation. Every other tree under bt/
+  bottoms out in a RosActionNode that fails once its server_timeout expires unless the whole
+  robot stack is up, which makes them useless for testing the server itself.
+
+  Between them these cover every branch of the value conversion: a pose and a number seeded
+  as inputs and read back through BT::convertFromString, typed float/int/string/bool outputs
+  straight from the param server, a PoseStamped output, and a nav_msgs::Path output that
+  bt_server has no serializer for (so it should come back tagged, not silently dropped).
+-->
+<root BTCPP_format="4">
+
+  <BehaviorTree ID="test_server">
+    <Sequence>
+      <!-- inputs: {start_pose} as "x;y;yaw;frame", {offset_x} as a plain number -->
+      <TransformPose in_pose="{start_pose}"
+                     x="{offset_x}"
+                     y="0"
+                     z="0"
+                     roll="0"
+                     pitch="0"
+                     yaw="0"
+                     out_pose="{moved_pose}"/>
+
+      <!-- outputs that are genuinely typed, not strings the caller happened to seed.
+           Parameters are read from bt_server's private namespace, i.e. /bt_server/<name> -->
+      <ReadFloatParam param_name="test_float"
+                      output_key="{a_float}"/>
+      <ReadIntParam param_name="test_int"
+                    output_key="{an_int}"/>
+      <ReadStringParam param_name="test_string"
+                       output_key="{a_string}"/>
+      <ReadBoolParam param_name="test_bool"
+                     output_key="{a_bool}"/>
+
+      <!-- nav_msgs::Path has no serializer, so {a_path} should come back as an
+           "<unsupported type: ...>" tag rather than being dropped from the result -->
+      <PoseAsPath pose="{moved_pose}"
+                  path="{a_path}"/>
+    </Sequence>
+  </BehaviorTree>
+
+  <!--
+    Mirrors how reach_first_pose uses a list, without needing navigation, to pin down a bug
+    that the rest of these trees can't reach: PopPoseFromList declares `list` as a
+    BidirectionalPort and then reads it as *getInput<...>("list"), an unchecked dereference.
+    Because the key appears among the node's output ports, a naive reads-minus-writes rule
+    counts {poses} as something the tree produces, lets a goal through without it, and the
+    first tick dereferences a blackboard entry that was never set. Asking for this tree with
+    no inputs must be refused, naming `poses`.
+  -->
+  <BehaviorTree ID="test_server_needs_list">
+    <Sequence>
+      <GetPoseListFront list="{poses}"
+                        element="{first_pose}"/>
+      <PopPoseFromList list="{poses}"
+                       element="{popped_pose}"/>
+    </Sequence>
+  </BehaviorTree>
+
+  <!--
+    The structured input types, each exercised by a node that needs nothing external.
+
+    TableValidSize reads only table.width and table.depth, comparing them against the
+    table_min_side / table_max_side parameters, so whether it succeeds says whether those two
+    fields really arrived. RecordPickupFailure bumps a count in the failures map and writes it
+    back, so the map has to survive the round trip to come out incremented.
+  -->
+  <BehaviorTree ID="test_server_table">
+    <TableValidSize table="{table}"/>
+  </BehaviorTree>
+
+  <BehaviorTree ID="test_server_counts">
+    <RecordPickupFailure target_name="{target_name}"
+                         failures="{failures}"
+                         given_up_count="{given_up_count}"/>
+  </BehaviorTree>
+
+  <!-- Long enough to cancel mid-run, for testing preemption and the partial outputs that
+       come back with it: {moved_pose} is set before the sleep, {late_value} only after. -->
+  <BehaviorTree ID="test_server_slow">
+    <Sequence>
+      <TransformPose in_pose="{start_pose}"
+                     x="{offset_x}"
+                     y="0"
+                     z="0"
+                     roll="0"
+                     pitch="0"
+                     yaw="0"
+                     out_pose="{moved_pose}"/>
+      <Sleep msec="10000"/>
+      <ReadStringParam param_name="test_string"
+                       output_key="{late_value}"/>
+    </Sequence>
+  </BehaviorTree>
+
+</root>

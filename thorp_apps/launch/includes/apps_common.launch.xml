@@ -13,7 +13,7 @@
   <arg name="initial_pose_x" default="0.0"/>
   <arg name="initial_pose_y" default="0.0"/>
   <arg name="initial_pose_a" default="0.0"/>
-  <arg name="executive"      default="smach"/>  <!-- smach | bt -->
+  <arg name="executive"      default="smach"/>  <!-- smach | bt | llm -->
   <arg name="viz_executive"  default="false"/>
   <arg name="start_delay"    default="0.0"/>
   <arg name="record_video"   default="false"/>
@@ -35,6 +35,10 @@
 
   <!--  ************* Apps configuration **************  -->
   <rosparam file="$(find thorp_apps)/param/apps_config.yaml" command="load" ns="$(arg app_name)"/>
+
+  <!-- With LLM executive, BT nodes run under bt_server namespace -->
+  <rosparam if="$(eval executive == 'llm')"
+            file="$(find thorp_apps)/param/apps_config.yaml" command="load" ns="bt_server"/>
 
   <!--  ************ Named configurations *************  -->
   <!-- Python reconfigure helper reads all yaml files inside this path -->
@@ -60,6 +64,14 @@
 
       <node pkg="smach_viewer" type="smach_viewer.py" name="$(arg app_name)_smach_viewer" output="screen" respawn="true"/>
     </group>
+  </group>
+
+  <!-- Everything the app needs, but with no tree running: bt_server sits waiting instead,
+       offering each tree under bt/ as a capability over the RunSubtree action, for an LLM
+       agent (ROSA, RAI) or the capability tests to call one at a time. Use this rather than
+       'bt', so bt_runner isn't also ticking a whole app and fighting over the robot. -->
+  <group if="$(eval executive == 'llm')">
+    <include file="$(find thorp_bt_cpp)/launch/bt_server.launch"/>
   </group>
 
   <group if="$(eval executive == 'bt')">

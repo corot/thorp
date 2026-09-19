@@ -41,20 +41,40 @@ std::set<std::string> requiredInputs(const BT::Tree& tree)
 
   for (const auto& node : tree.subtrees.front()->nodes)
   {
-    for (const auto& [port, remapping] : node->config().input_ports)
+    // through a const reference on purpose: TreeNode's non-const config() is protected, and
+    // a TreeNode::Ptr would select exactly that one
+    const BT::TreeNode& tree_node = *node;
+
+    std::set<std::string> node_reads, node_writes;
+    // getRemappedKey gives the blackboard key a port is bound to: "{key}", or the port's own
+    // name for the "{=}" shorthand. A literal attribute is bound to no key and yields an
+    // error, since it asks nothing of the caller. Asking BT.CPP rather than reading the
+    // braces ourselves is what keeps this from quietly disagreeing with the parser that
+    // built the tree -- it also accepts a bare "=" and tolerates surrounding spaces, and a
+    // spelling we resolved differently would put the wrong key in the required set.
+    for (const auto& [port, remapping] : tree_node.config().input_ports)
     {
       if (auto key = BT::TreeNode::getRemappedKey(port, remapping))
       {
-        read.insert(std::string(*key));
+        node_reads.emplace(key->data(), key->size());
       }
     }
-    for (const auto& [port, remapping] : node->config().output_ports)
+    for (const auto& [port, remapping] : tree_node.config().output_ports)
     {
       if (auto key = BT::TreeNode::getRemappedKey(port, remapping))
       {
-        written.insert(std::string(*key));
+        node_writes.emplace(key->data(), key->size());
       }
     }
+
+    read.insert(node_reads.begin(), node_reads.end());
+    // Only a *pure* write counts as the tree producing a key. A bidirectional port reads the
+    // key before it writes it back, so it doesn't produce anything: GetPoseListFront pops
+    // from {poses} and PopPoseFromList writes the shortened list back, but the caller still
+    // has to supply that list in the first place. Counting those as produced would let a
+    // goal missing its list through, which is exactly the case that crashes.
+    std::set_difference(node_writes.begin(), node_writes.end(), node_reads.begin(), node_reads.end(),
+                        std::inserter(written, written.end()));
   }
 
   std::set_difference(read.begin(), read.end(), written.begin(), written.end(),

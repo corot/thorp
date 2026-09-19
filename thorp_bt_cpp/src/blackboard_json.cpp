@@ -1,6 +1,8 @@
 #include "thorp_bt_cpp/blackboard_json.hpp"
 
 #include <cstdint>
+#include <map>
+#include <typeindex>
 #include <typeinfo>
 #include <vector>
 
@@ -8,8 +10,14 @@
 
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <rail_manipulation_msgs/SegmentedObject.h>
 
 #include <behaviortree_cpp/utils/demangle_util.h>
+
+// for convertFromString<PoseStamped>: a pose arrives in exactly the same "x;y;yaw;frame" form
+// whether it came from a literal xml attribute or from a goal's json, and parsing it in one
+// place is what keeps those two from drifting
+#include "thorp_bt_cpp/type_converters.hpp"
 
 #include <thorp_toolkit/geometry.hpp>
 namespace ttk = thorp::toolkit;
@@ -106,6 +114,31 @@ nlohmann::json anyToJson(const BT::Any& any)
   {
     return poseToJson(any.cast<geometry_msgs::Pose>());
   }
+  if (any.type() == typeid(std::map<std::string, uint32_t>))
+  {
+    nlohmann::json json = nlohmann::json::object();
+    for (const auto& [key, count] : any.cast<std::map<std::string, uint32_t>>())
+    {
+      json[key] = count;
+    }
+    return json;
+  }
+  if (any.type() == typeid(rail_manipulation_msgs::SegmentedObject))
+  {
+    // the same fields seeding accepts, so a table can round-trip
+    const auto object = any.cast<rail_manipulation_msgs::SegmentedObject>();
+    geometry_msgs::Pose pose;
+    pose.position = object.center;
+    pose.orientation = object.orientation;
+
+    nlohmann::json json;
+    json["name"] = object.name;
+    json["width"] = object.width;
+    json["depth"] = object.depth;
+    json["height"] = object.height;
+    json["pose"] = poseToJson(pose);
+    return json;
+  }
   if (any.type() == typeid(std::vector<geometry_msgs::PoseStamped>))
   {
     nlohmann::json poses = nlohmann::json::array();
@@ -116,6 +149,92 @@ nlohmann::json anyToJson(const BT::Any& any)
     return poses;
   }
   return "<unsupported type: " + BT::demangle(any.type()) + ">";
+}
+
+// A table as the trees actually use it. They read width/depth (to judge whether the table is
+// a usable size, and to work out poses around it), name, and the bounding volume's dimensions;
+// detect_tables builds the table's pose out of center and orientation, so one pose input fills
+// both of those. Everything else on the message -- the point cloud, image, grasps, colours --
+// is left default: an agent has none of it, and nothing in the trees reads it.
+rail_manipulation_msgs::SegmentedObject segmentedObjectFromJson(const nlohmann::json& json)
+{
+  rail_manipulation_msgs::SegmentedObject object;
+  object.name = json.value("name", std::string());
+  object.width = json.value("width", 0.0);
+  object.depth = json.value("depth", 0.0);
+  object.height = json.value("height", 0.0);
+
+  if (json.contains("pose"))
+  {
+    const auto pose = BT::convertFromString<geometry_msgs::PoseStamped>(json["pose"].get<std::string>());
+    object.center = pose.pose.position;
+    object.orientation = pose.pose.orientation;
+    object.bounding_volume.pose = pose;
+  }
+
+  // the same numbers again, in the form table_visited reads them; deriving it saves the
+  // caller from stating the table's size twice and getting the two copies out of step
+  object.bounding_volume.dimensions.x = object.width;
+  object.bounding_volume.dimensions.y = object.depth;
+  object.bounding_volume.dimensions.z = object.height;
+  return object;
+}
+
+// Builds a structured json value as whatever type the port declared, and writes it to the
+// blackboard. Returns false if we have no case for that type, or the json is the wrong shape
+// for it. `type` comes from the entry BT.CPP created when the tree was built.
+bool setStructured(BT::Blackboard& blackboard, const std::string& key, const nlohmann::json& value,
+                   const std::type_index& type)
+{
+  if (type == typeid(std::vector<geometry_msgs::PoseStamped>))
+  {
+    if (!value.is_array())
+    {
+      return false;
+    }
+    std::vector<geometry_msgs::PoseStamped> poses;
+    for (const auto& element : value)
+    {
+      if (!element.is_string())
+      {
+        return false;  // each pose is written the way a literal attribute writes one
+      }
+      poses.push_back(BT::convertFromString<geometry_msgs::PoseStamped>(element.get<std::string>()));
+    }
+    blackboard.set(key, poses);
+    return true;
+  }
+
+  if (type == typeid(std::map<std::string, uint32_t>))
+  {
+    if (!value.is_object())
+    {
+      return false;
+    }
+    std::map<std::string, uint32_t> counts;
+    for (auto it = value.begin(); it != value.end(); ++it)
+    {
+      if (!it.value().is_number_unsigned())
+      {
+        return false;
+      }
+      counts[it.key()] = it.value().get<uint32_t>();
+    }
+    blackboard.set(key, counts);
+    return true;
+  }
+
+  if (type == typeid(rail_manipulation_msgs::SegmentedObject))
+  {
+    if (!value.is_object())
+    {
+      return false;
+    }
+    blackboard.set(key, segmentedObjectFromJson(value));
+    return true;
+  }
+
+  return false;
 }
 
 // Adds `key` to `json` if the blackboard holds a value for it. False means there is no such
@@ -158,10 +277,26 @@ void blackboardFromJson(const nlohmann::json& json, BT::Blackboard& blackboard)
   {
     const std::string& key = it.key();
     const nlohmann::json& value = it.value();
+
     if (value.is_object() || value.is_array())
     {
-      ROS_WARN_STREAM_NAMED("blackboard_json",
-                            "Skipping input key '" << key << "': nested objects/arrays are not supported yet");
+      // A structured value has to be built as its real type, which means knowing what that
+      // type is. Ask the entry BT.CPP created for the port when it built the tree: no entry
+      // means no port uses this key, so there's nothing to build it as.
+      const BT::TypeInfo* info = blackboard.entryInfo(key);
+      if (!info)
+      {
+        ROS_WARN_STREAM_NAMED("blackboard_json", "Skipping input key '"
+                                                     << key
+                                                     << "': it is an object or array, and no port in this tree "
+                                                        "uses that key, so there's no type to build it as");
+      }
+      else if (!setStructured(blackboard, key, value, info->type()))
+      {
+        ROS_WARN_STREAM_NAMED("blackboard_json", "Skipping input key '" << key << "': can't build a "
+                                                                        << BT::demangle(info->type()) << " out of "
+                                                                        << value.dump());
+      }
       continue;
     }
 
