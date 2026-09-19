@@ -1,12 +1,11 @@
 # Dev workflow:
-#   cd thorp_bringup/docker
-#   docker compose -f docker-compose.dev.yml up -d        # start it once; it stays up
-#   docker compose -f docker-compose.dev.yml exec thorp-dev bash   # a shell, as often as you like
-#   # inside:
-#   catkin build thorp_msgs thorp_bt_cpp
-#   catkin build thorp_apps          # the full stack, once you want it
-#   ...
-#   docker compose -f docker-compose.dev.yml down         # when you're done for the day
+# On the host:
+#   cd ~/catkin_ws/src/thorp/thorp_bringup/docker && docker compose -f docker-compose.dev.yml up -d
+#   cd ~/catkin_ws/src/thorp/thorp_bringup/docker && docker compose -f docker-compose.dev.yml exec thorp-dev bash
+#   cd ~/catkin_ws/src/thorp/thorp_bringup/docker && docker compose -f docker-compose.dev.yml down
+# Inside the container (note /catkin_ws there, not ~/catkin_ws):
+#   cd /catkin_ws && catkin build thorp_msgs thorp_bt_cpp
+#   cd /catkin_ws && catkin build thorp_apps          # the full stack, once you want it
 #
 # Prefer `up -d` + `exec` over `run --rm`: `exec` opens as many shells into the *same*
 # container as you need (roscore in one, a node in another, a test script in a third), and
@@ -34,13 +33,32 @@ services:
     network_mode: host
     privileged: true
     environment:
-      - DISPLAY=${DISPLAY}
+      # gazebo and rviz need an X display and the cookie to open it. DISPLAY comes from your
+      # shell, falling back to the :1 the deployment container assumes.
+      - DISPLAY=${DISPLAY:-:1}
+      - XAUTHORITY=/tmp/.Xauthority
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    # GPU passthrough, the equivalent of `docker run --gpus all`. Needs nvidia-container-toolkit
+    # on the host; on a machine without it, `up` fails with "could not select device driver" --
+    # comment this block out there, or run the GUI nodes on the host instead.
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
     volumes:
       - ../..:/catkin_ws/src/thorp            # your local `thorp` checkout (repo root, two levels up from here)
       - thorp-dev-build:/catkin_ws/build
       - thorp-dev-devel:/catkin_ws/devel
       - thorp-dev-logs:/catkin_ws/logs
-      - /tmp/.X11-unix:/tmp/.X11-unix:rw     # for rviz/gazebo from inside the container
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw     # the X socket
+      # The X cookie. That default is where gdm puts it for uid 1000; if yours lives elsewhere
+      # (`echo $XAUTHORITY`, or ~/.Xauthority on a non-gdm session), set XAUTHORITY_HOST
+      # instead of editing this file.
+      - ${XAUTHORITY_HOST:-/run/user/1000/gdm/Xauthority}:/tmp/.Xauthority:ro
 
 volumes:
   thorp-dev-build:
