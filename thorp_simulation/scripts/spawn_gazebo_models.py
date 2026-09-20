@@ -113,9 +113,8 @@ PLAYGROUND_CUBES = [('cube 1', 'cube', (-0.14, -0.16, 0.5, 0.0, 0.0, 1.1)),
                     ('cube 4', 'cube', (-0.11,  0.10, 0.5, 0.0, 0.0, 0.85)),
                     ('cube 5', 'cube', (-0.12,  0.15, 0.5, 0.0, 0.0, 0.4))]
 
-# One cat for hunt_cat, 2 m to the left of the robot's start pose, seen side-on. Not in front:
-# the kinect sits ~0.30 m up, below the 0.475 m table top, so nothing behind the table is visible.
-# Static, as cats_controller (the prowling) is only launched by cat_hunter.
+# One cat for hunt_cat, to the left of the robot's start pose, seen side-on. Not in front: the
+# kinect sits ~0.30 m up, below the table top, so nothing behind the table is visible
 PLAYGROUND_CAT = ('cat_orange', (-0.5, 1.5, 0.0))
 
 # 5 rows of 8 cubes tightly spaced; tailored for lack table

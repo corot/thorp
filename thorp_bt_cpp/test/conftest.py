@@ -176,7 +176,7 @@ class SubtreeRunner:
 
         if cancel_after is not None:
             rospy.sleep(cancel_after)
-            print("--> cancelling after {}s".format(cancel_after))
+            print("--> canceling after {}s".format(cancel_after))
             self.client.cancel_goal()
 
         if not self.client.wait_for_result(rospy.Duration(timeout)):

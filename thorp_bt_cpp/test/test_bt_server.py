@@ -109,7 +109,7 @@ def test_malformed_input_json_aborts(runner):
 def test_missing_required_input_aborts_rather_than_crashing(runner):
     """
     The reason bt_server validates inputs at all: nodes read ports as *getInput<T>(), and
-    dereferencing that when the key was never set is undefined behaviour in a release build,
+    dereferencing that when the key was never set is undefined behavior in a release build,
     not a catchable error. An agent that forgets an argument should get a refusal, and the
     server should still be alive for the next goal -- which the test after this one checks.
     """
@@ -158,7 +158,7 @@ def test_pose_list_seeds_from_a_json_array(runner):
 def test_segmented_object_seeds_from_a_json_object(runner):
     """
     A table is passed as an object rather than a flattened string, and the proof that its
-    fields land is behavioural: TableValidSize reads width and depth, and nothing else, to
+    fields land is behavioral: TableValidSize reads width and depth, and nothing else, to
     decide whether a table is a usable size. So a table inside the configured range has to
     pass and one outside it has to fail -- which can only happen if those two numbers made it
     onto the blackboard.
@@ -253,7 +253,7 @@ def test_server_survives_a_rejected_goal(runner):
 
 
 def test_preemption_returns_partial_outputs(runner):
-    """Cancelling mid-run gives back whatever had been produced by that point."""
+    """Canceling mid-run gives back whatever had been produced by that point."""
     state, out, result = runner.run("test_server_slow", inputs=INPUTS,
                                     output_keys=["moved_pose", "late_value"],
                                     cancel_after=1.0, timeout=30.0)

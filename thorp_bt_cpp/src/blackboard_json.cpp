@@ -66,10 +66,8 @@ nlohmann::json poseToJson(const geometry_msgs::Pose& pose)
   return json;
 }
 
-// Everything the caller sees is in the map frame. A pose in a sensor frame is unusable to an
-// agent that wasn't there when it was read: MonitorObjects reports in kinect_rgb_optical_frame,
-// and by the time the answer arrives the robot has moved. Only the outgoing json is converted;
-// the blackboard keeps whatever frame the tree put there.
+// Everything the caller sees is in the map frame; a pose in a sensor frame means nothing to
+// it. Only the outgoing json is converted, not the blackboard.
 geometry_msgs::PoseStamped inMapFrame(const geometry_msgs::PoseStamped& pose)
 {
   if (pose.header.frame_id.empty() || pose.header.frame_id == "map")
@@ -176,7 +174,7 @@ nlohmann::json anyToJson(const BT::Any& any)
   {
     // Names only, on purpose. Detection puts the objects themselves into the MoveIt planning
     // scene, which is where their geometry belongs and where it survives from one goal to the
-    // next; serialising it here would duplicate that, and go stale the moment anything moves.
+    // next; serializing it here would duplicate that, and go stale the moment anything moves.
     // What the caller genuinely can't get anywhere else is what the detector decided to call
     // them, and a name is all pickup_object, place_object and place_on_tray ever take.
     nlohmann::json names = nlohmann::json::array();
@@ -221,7 +219,7 @@ std::optional<geometry_msgs::PoseStamped> poseFromJson(const nlohmann::json& jso
 // A table as the trees actually use it. They read width/depth (to judge whether the table is
 // a usable size, and to work out poses around it), name, and the bounding volume's dimensions;
 // detect_tables builds the table's pose out of center and orientation, so one pose input fills
-// both of those. Everything else on the message -- the point cloud, image, grasps, colours --
+// both of those. Everything else on the message -- the point cloud, image, grasps, colors --
 // is left default: an agent has none of it, and nothing in the trees reads it.
 rail_manipulation_msgs::SegmentedObject segmentedObjectFromJson(const nlohmann::json& json)
 {

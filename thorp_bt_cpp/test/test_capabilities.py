@@ -34,12 +34,9 @@ from conftest import reset_scene, status_name
 
 POSE_FIELDS = {"x", "y", "z", "roll", "pitch", "yaw", "frame"}
 
-# How many times a setup step may be attempted. The scene on this bench is fixed, but MoveIt's
-# planner is sampling-based, so the same pick from the same pose fails to plan perhaps one time
-# in three: in one run pickup_object succeeded as its own test, failed as place_object's
-# precondition, and succeeded again as place_on_tray's. Retrying a precondition hides nothing,
-# because the capability being retried is not the one under test -- that one gets a single
-# attempt, so flakiness in the thing being measured still shows.
+# How many times a setup step may be attempted: MoveIt's planner is sampling-based, so the
+# same pick from the same pose fails to plan now and then. Retrying hides nothing, since the
+# capability under test still gets a single attempt.
 SETUP_ATTEMPTS = 2
 
 # what each declared type should look like once it has been through bt_server's serializer.
@@ -164,7 +161,7 @@ def runnable(capability, available_stacks, capabilities, request):
 
     if spec.get("kind") == "app" and not request.config.getoption("--apps"):
         pytest.skip("app, not a capability: the agent is never offered it, and running one "
-                    "here means cancelling it and guessing (pass --apps to try anyway)")
+                    "here means canceling it and guessing (pass --apps to try anyway)")
 
     if spec.get("status") == "blocked":
         pytest.skip("blocked: {}".format(" ".join(spec.get("blocked", "no reason given").split())))
@@ -273,7 +270,7 @@ def test_capability(runner, capability, capabilities):
         # An app-level tree that runs until told to stop -- KeepRunningUntilFailure, or a
         # Repeat with no cycle count. "Did it finish" is meaningless for one of those; what
         # can be checked is that it accepted the goal, got far enough to put something on the
-        # blackboard, and stopped cleanly when cancelled.
+        # blackboard, and stopped cleanly when canceled.
         assert state == GoalStatus.PREEMPTED, \
             "expected to still be running at the cancel, but ended as {}".format(status_name(state))
         assert out, "ran for {}s without producing any of {}".format(test.get("cancel_after"), output_keys)
@@ -298,7 +295,7 @@ def test_capability(runner, capability, capabilities):
     # that may never fire, or by a node a successful run can walk straight past -- the untaken
     # half of a Fallback, a switch case, an empty loop. Neither is asserted in either direction:
     # a fallback that recovered from an aborted action legitimately leaves an error code behind
-    # on an otherwise successful run. A run that was cancelled, or failed partway, is exempt
+    # on an otherwise successful run. A run that was canceled, or failed partway, is exempt
     # from all of this.
     if result.success:
         guaranteed = {k for k in output_keys

@@ -5,7 +5,7 @@
 
     The other files here hold trees written for an app: each one does a whole job, and the
     perception inside it is a node halfway down a sequence, reachable only by running that
-    job. An agent composing its own behaviour needs the step on its own (look at the table,
+    job. An agent composing its own behavior needs the step on its own (look at the table,
     then decide what to do about what it saw), so this file wraps such nodes as trees the
     RunSubtree action can call directly. Nothing else runs them.
   -->

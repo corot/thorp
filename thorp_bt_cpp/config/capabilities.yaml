@@ -31,7 +31,7 @@
 #
 # kind:
 #   capability - a step an agent can ask for. The default, so it is left off.
-#   app        - a whole session's behaviour rather than a step: it drives the robot until
+#   app        - a whole session's behavior rather than a step: it drives the robot until
 #                something stops it, or it waits for a person at the keyboard. These stay
 #                described here because the drift test insists every tree is accounted for
 #                and because their interfaces are still worth checking, but the agent side
@@ -61,7 +61,7 @@
 #     the precondition is stated in the same vocabulary the agent would reach it with, and a
 #     step that fails SKIPS the test instead of failing it -- "this capability is broken" and
 #     "the world wasn't ready for it" are different findings and shouldn't look alike. The
-#     stacks a setup step needs count towards the ones this capability needs.
+#     stacks a setup step needs count toward the ones this capability needs.
 #   expect: succeeded | failed | any | runs
 #     `any` means the physical outcome depends on the scene and isn't asserted -- the contract
 #     (goal served, requested outputs returned, types right) is still checked either way.
@@ -82,7 +82,7 @@ capabilities:
     stack: [manipulation]
     inputs:
       object_name: {type: string, description: "name of the object to pick, as the detector named it"}
-      tightening: {type: float, description: "extra gripper closure past contact, in metres"}
+      tightening: {type: float, description: "extra gripper closure past contact, in meters"}
     outputs:
       error: {type: int, when: failure, description: "error code from the pickup action; 0 when it worked"}
       attached_object: {type: string, description: "object now attached to the gripper, if any"}
@@ -92,10 +92,7 @@ capabilities:
       setup:
         - {subtree: detect_table}
         - subtree: poses_around_table
-          # pickup_dist_to_table, not approach_dist_to_table: apps_config calls 0.35 "close
-          # enough to properly detect tabletop objects but not for picking up", and it isn't.
-          # The near-side pose at 0.35 leaves the robot 0.167 m behind the table edge, putting
-          # the cubes ~0.5 m from a 0.3 m arm, which is INVALID_TARGET_POSE (-210).
+          # pickup_dist_to_table; at approach_dist_to_table the cubes are out of arm reach
           inputs: {distance: 0.15}
           inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
         - subtree: closest_pose
@@ -118,10 +115,8 @@ capabilities:
     outputs:
       error: {type: int, when: failure, description: "error code from the place action; 0 when it worked"}
     test:
-      # A clear spot on the near edge of the table: x just inside the edge at 0.176, centred
-      # on y, clear of the cubes at x 0.30 to 0.34, at the table top 0.475 plus half a cube.
-      # In the map frame, so it stays put while the setup chain drives the robot to the table;
-      # in base_footprint the same numbers would follow the robot and land in a cube.
+      # A clear spot on the near edge of the table, clear of the cubes at x 0.30 to 0.34.
+      # In the map frame, so it stays put while the setup chain drives the robot to the table.
       inputs: {object_name: "cube 1", place_pose: "0.2;0.0;0.4875;0.0;0.0;0.0;map"}
       setup:
         - {subtree: detect_table}
@@ -203,7 +198,7 @@ capabilities:
     stack: [perception]
     inputs: {}
     outputs:
-      table: {type: rail_manipulation_msgs::SegmentedObject, description: "the table: name, width, depth, height and centre pose"}
+      table: {type: rail_manipulation_msgs::SegmentedObject, description: "the table: name, width, depth, height and center pose"}
       table_pose: {type: geometry_msgs::PoseStamped, description: "where that table is, in the map frame"}
     test:
       inputs: {}
@@ -246,7 +241,7 @@ capabilities:
     inputs:
       table: {type: rail_manipulation_msgs::SegmentedObject, description: "the table, as detect_table returned it"}
       table_pose: {type: geometry_msgs::PoseStamped, description: "that table's pose, as detect_table returned it"}
-      distance: {type: double, description: "how far out from the table each pose should be, in metres"}
+      distance: {type: double, description: "how far out from the table each pose should be, in meters"}
     outputs:
       table_side_poses: {type: std::vector<geometry_msgs::PoseStamped>, description: "one pose per usable side, nearest first"}
     test:
@@ -283,12 +278,10 @@ capabilities:
 
   look_at_pose:
     description: >
-      Turn on the spot until the robot is facing a given pose, without going anywhere. Use it
-      before looking for something that is not already in front of the robot: the camera has
-      about a 57 degree field of view and cannot move independently of the base, so anything to
-      the side or behind has to be turned towards before any perception capability can see it.
-      Prefer it over goto_pose when the robot is already where it should be and only the heading
-      is wrong.
+      Turn on the spot until the robot is facing a given pose, without going anywhere. The
+      camera has about a 57 degree field of view and is fixed to the base, so anything to the
+      side or behind has to be turned toward before a perception capability can see it. Prefer
+      it over goto_pose when only the heading is wrong.
     status: ok
     stack: [navigation]
     inputs:
@@ -297,7 +290,7 @@ capabilities:
       robot_pose: {type: geometry_msgs::PoseStamped, description: "where the robot was before turning"}
       error: {type: int, when: failure, description: "error code from reading the robot pose or from the controller"}
     test:
-      inputs: {pose: "-0.5;2.0;0.0;map"}    # the cat llm_playground spawns
+      inputs: {pose: "-0.5;1.5;0.0;map"}    # the cat llm_playground spawns
       expect: succeeded
       timeout: 60
 
@@ -382,7 +375,7 @@ capabilities:
       inputs: {}
       expect: runs
       cancel_after: 30
-      timeout: 300   # runs until commanded to exit; expected to be cancelled
+      timeout: 300   # runs until commanded to exit; expected to be canceled
 
   validate_table:
     description: >
@@ -412,13 +405,10 @@ capabilities:
     test:
       inputs: {}
       setup:
-        - subtree: look_at_pose    # the cat is to the left, and the camera is fixed to the base
-          inputs: {pose: "-0.5;2.0;0.0;map"}
-      # terminates on its own, unlike cat_hunter around it: the Parallel needs only one child
-      # to finish, and the FollowPose under it has exec_time_limit="25"
-      #
-      # 'any' because the FollowPose sits under a ForceSuccess, so the tree succeeds even having
-      # seen nothing; cannon_tilt_angle, written by AimCannon, is what tells the two apart.
+        - subtree: look_at_pose    # the cat is to the left, and the camera is fixed
+          inputs: {pose: "-0.5;1.5;0.0;map"}
+      # 'any' because the FollowPose sits under a ForceSuccess: the tree succeeds having seen
+      # nothing, and only cannon_tilt_angle tells the two apart
       expect: any
       expect_outputs: [cannon_tilt_angle]
       timeout: 300
@@ -616,7 +606,7 @@ not_capabilities:
     capability suite either -- the parameters it reads are seeded by test_bt_server.py, which
     is where it is tested.
   test_server_slow: >
-    Test fixture: sleeps long enough that a goal can be cancelled mid-run, for checking
+    Test fixture: sleeps long enough that a goal can be canceled mid-run, for checking
     preemption returns the outputs produced so far.
   test_server_needs_list: >
     Test fixture: pops from a list, so a goal that omits it must be refused. Pins down the

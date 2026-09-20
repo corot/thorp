@@ -3,7 +3,7 @@
   RunSubtree action: an LLM agent driving the robot, or the capability test suite.
 
   Deliberately a tabletop bench rather than a house. A lack_table sits at (0.45, 0) with five
-  cubes at known poses on it, named 'cube 1' to 'cube 5', and the robot starts half a metre
+  cubes at known poses on it, named 'cube 1' to 'cube 5', and the robot starts half a meter
   short of it. Same table, same cubes, same names, same poses, every run.
 
   The robot starts back from the table rather than at it, because the capabilities that work
@@ -28,7 +28,7 @@
   <arg name="localization"   default="gazebo" if="$(eval simulator == 'gazebo')"/>
   <arg name="localization"   default="amcl" unless="$(eval simulator == 'gazebo')"/>
 
-  <!-- Half a metre back from the table, facing it. Not arbitrary: the capabilities that work
+  <!-- Half a meter back from the table, facing it. Not arbitrary: the capabilities that work
        AT the table say so in capabilities.yaml and drive in themselves (detect_table ->
        poses_around_table -> attach_to_table), so the start pose is the one the approach
        capabilities need, and /gazebo/reset_world returns the robot here between tests. Any
@@ -75,7 +75,7 @@
     <node pkg="thorp_simulation" type="spawn_gazebo_models.py" name="objects_spawner" output="screen"
           args="playground_$(arg object_type)"/>
 
-    <!-- A static cat 2 m to the robot's left, plus the rocket the cannon needs, for hunt_cat -->
+    <!-- A static cat to the robot's left, plus the rocket the cannon needs, for hunt_cat -->
     <node pkg="thorp_simulation" type="spawn_gazebo_models.py" name="cat_spawner" output="screen"
           args="playground_cat"/>
 
@@ -102,8 +102,6 @@
     <arg name="debug" value="false"/>
   </include>
 
-  <!-- No user_commands node: here the commands come over RunSubtree, from an agent or a test,
-       rather than from someone typing. Rviz stays, so you can watch what the agent is doing. -->
   <node pkg="rviz" type="rviz" name="rviz" output="screen" respawn="true"
-        args="-d $(find thorp_bringup)/rviz/manipulation.rviz"/>
+        args="-d $(find thorp_bringup)/rviz/gathering.rviz"/>
 </launch>

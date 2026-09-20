@@ -302,7 +302,7 @@ def test_endless_trees_are_marked_as_apps(declared):
     """
     The one half of `kind` that can be derived rather than trusted.
 
-    Whether a terminating tree is a capability or an app is a judgement -- patrol_2_points
+    Whether a terminating tree is a capability or an app is a judgment -- patrol_2_points
     finishes, and is still not something to offer an agent. But a tree that can never finish
     is never a capability: the agent would call it, get nothing back, and be holding a robot
     that has stopped listening. Marking one `kind: capability`, or forgetting to mark it at

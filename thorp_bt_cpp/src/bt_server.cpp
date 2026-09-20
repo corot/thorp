@@ -212,7 +212,7 @@ void Server::executeCB(const thorp_msgs::RunSubtreeGoalConstPtr& goal)
 
   // Refuse to tick a tree whose inputs we can't satisfy. Most nodes read a port as
   // *getInput<T>(...), and dereferencing that when the key was never set isn't an exception
-  // we could catch below -- in a release build it's undefined behaviour that tends to take
+  // we could catch below -- in a release build it's undefined behavior that tends to take
   // the whole server down, which for an agent that merely forgot an argument is a poor
   // trade. Note this can be stricter than the tree really needs: a node that treats a port
   // as optional (checking the Expected rather than dereferencing it) still shows up here as
