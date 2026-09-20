@@ -22,6 +22,7 @@
 #include "thorp_bt_cpp/type_converters.hpp"
 
 #include <thorp_toolkit/geometry.hpp>
+#include <thorp_toolkit/tf2.hpp>
 namespace ttk = thorp::toolkit;
 
 namespace thorp::bt
@@ -65,10 +66,31 @@ nlohmann::json poseToJson(const geometry_msgs::Pose& pose)
   return json;
 }
 
+// Everything the caller sees is in the map frame. A pose in a sensor frame is unusable to an
+// agent that wasn't there when it was read: MonitorObjects reports in kinect_rgb_optical_frame,
+// and by the time the answer arrives the robot has moved. Only the outgoing json is converted;
+// the blackboard keeps whatever frame the tree put there.
+geometry_msgs::PoseStamped inMapFrame(const geometry_msgs::PoseStamped& pose)
+{
+  if (pose.header.frame_id.empty() || pose.header.frame_id == "map")
+  {
+    return pose;
+  }
+
+  geometry_msgs::PoseStamped in_map;
+  if (!ttk::TF2::instance().transformPose("map", pose, in_map))
+  {
+    ROS_WARN_STREAM("Cannot transform pose from " << pose.header.frame_id << " to map; reporting as is");
+    return pose;
+  }
+  return in_map;
+}
+
 nlohmann::json poseToJson(const geometry_msgs::PoseStamped& pose)
 {
-  nlohmann::json json = poseToJson(pose.pose);
-  json["frame"] = pose.header.frame_id;
+  const geometry_msgs::PoseStamped in_map = inMapFrame(pose);
+  nlohmann::json json = poseToJson(in_map.pose);
+  json["frame"] = in_map.header.frame_id;
   return json;
 }
 

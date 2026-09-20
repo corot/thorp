@@ -210,9 +210,9 @@ def test_a_pose_we_emitted_can_be_seeded_back(runner):
     The round trip that makes capabilities composable: take a pose out of one result and hand
     it to the next goal as-is.
 
-    We emit poses as an object (x, y, z, roll, pitch, yaw, frame) and used to accept them only
-    as the "x;y;yaw;frame" string, so every pose a capability returned was unusable as an
-    input to another one. detect_table -> poses_around_table died on exactly this.
+    Poses go out as an object (x, y, z, roll, pitch, yaw, frame) and seeding accepts both that
+    and the "x;y;yaw;frame" string, so a pose one capability returns is a valid input to the
+    next. detect_table -> poses_around_table is the chain that needs it.
     """
     _, out, _ = runner.run("test_server", inputs=INPUTS, output_keys=["moved_pose"])
     emitted = out["moved_pose"]

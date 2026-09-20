@@ -15,8 +15,7 @@ held to it.
 Asking for an output and insisting on one are kept apart, because they answer to different
 things. Every documented output is requested; only those the yaml marks `when: success` are
 insisted on. An error code written in an action's onAborted is absent from a run that went
-well, and a test that read that absence as a broken promise would be failing on the good
-outcome -- which is exactly what it did before `when` existed.
+well, and reading that absence as a broken promise would fail on the good outcome.
 
 Trees needing a stack you haven't declared with --stack are skipped, as are those marked
 `status: blocked`, so the suite reports the gaps instead of hiding them:
@@ -80,10 +79,8 @@ def pytest_generate_tests(metafunc):
     with open(path) as f:
         caps = yaml.safe_load(f)["capabilities"]
 
-    # Plain alphabetical. pickup_objects used to be forced last, because it clears the table
-    # and everything after it found nothing to work with; clean_scene now puts the cubes back
-    # before every test, so the order carries no meaning and saying it does would be a claim
-    # nobody can check.
+    # Plain alphabetical, and the order carries no meaning: clean_scene resets the world
+    # before every test, so nothing a test does reaches the next one.
     metafunc.parametrize("capability", sorted(caps.items()), ids=lambda item: item[0])
 
 
@@ -226,8 +223,12 @@ def test_capability(runner, capability, capabilities):
             print("--> setup step {} failed on attempt {} of {}: {}".format(
                 step_name, attempt, SETUP_ATTEMPTS, step_out or "no detail"))
         else:
-            pytest.skip("precondition not established in {} attempts: {} ended as {}{}".format(
-                SETUP_ATTEMPTS, step_name, status_name(step_state),
+            # Which of the two failed: the action completing and the tree succeeding are
+            # different things, and the action state alone reads as a success either way.
+            outcome = ("the tree returned FAILURE" if step_state == GoalStatus.SUCCEEDED
+                       else "the goal ended as {}".format(status_name(step_state)))
+            pytest.skip("precondition not established in {} attempts: {} {}{}".format(
+                SETUP_ATTEMPTS, step_name, outcome,
                 "; {}".format(step_out) if step_out else ""))
         produced[step_label(step)] = step_out
 
@@ -255,6 +256,14 @@ def test_capability(runner, capability, capabilities):
         "goal was refused: {}".format(out.get("error", out))
     assert state in (GoalStatus.SUCCEEDED, GoalStatus.PREEMPTED), status_name(state)
 
+    # Outputs a real run has to produce, asserted whatever `expect` says. For a tree whose
+    # status carries no information this is the only thing that separates a run that did the
+    # job from one that didn't: hunt_cat reports SUCCESS through a ForceSuccess having seen no
+    # cat at all, and only cannon_tilt_angle, written by AimCannon, tells the two apart.
+    absent = [key for key in test.get("expect_outputs") or [] if key not in out]
+    assert not absent, "{} produced none of {}; outputs were {}".format(
+        name, absent, out or "none")
+
     expect = test.get("expect", "any")
     if expect == "succeeded":
         assert result.success, "tree reported FAILURE; outputs were {}".format(out)
@@ -269,10 +278,9 @@ def test_capability(runner, capability, capabilities):
             "expected to still be running at the cancel, but ended as {}".format(status_name(state))
         assert out, "ran for {}s without producing any of {}".format(test.get("cancel_after"), output_keys)
     elif not result.success:
-        # `expect: any` means the outcome isn't asserted, not that nobody should hear about it.
-        # A tree that fails here still reports PASSED, and that is how pickup_object came back
-        # INVALID_TARGET_POSE for a whole run while the two tests depending on it skipped and
-        # nothing anywhere was red. A warning lands in pytest's summary: visible, not fatal.
+        # `expect: any` means the outcome isn't asserted, not that nobody should hear about
+        # it: the test passes, and a tree failing every run would otherwise leave nothing red
+        # anywhere. A warning lands in pytest's summary -- visible, not fatal.
         warnings.warn("{} returned FAILURE; not asserted because expect: any. outputs: {}".format(
             name, out or "none"), UserWarning)
     else:

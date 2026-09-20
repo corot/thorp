@@ -103,9 +103,7 @@ capabilities:
         - subtree: attach_to_table
           inputs_from: {table: [detect_table, table], pose: [closest_pose, closest_pose]}
         - {subtree: detect_objects}
-      # On this bench the scene is fixed, so "did the pickup work" has a right answer and
-      # leaving it unasserted only hid that it didn't: pickup_object reported PASSED while
-      # returning INVALID_TARGET_POSE, and the tests that depend on it skipped instead.
+      # The scene on this bench is fixed, so "did the pickup work" has a right answer.
       expect: succeeded
       timeout: 120
 
@@ -121,14 +119,9 @@ capabilities:
       error: {type: int, when: failure, description: "error code from the place action; 0 when it worked"}
     test:
       # A clear spot on the near edge of the table: x just inside the edge at 0.176, centred
-      # on y, and clear of the cubes, which sit at x between 0.30 and 0.34. The height is the
-      # table top at 0.475 plus half of a 2.5 cm cube.
-      #
-      # In the MAP frame, and that part matters. The first version of this was in
-      # base_footprint, computed when the robot still started at the origin; once the chain
-      # began driving to the table the same numbers pointed somewhere else in the world,
-      # about 2 cm from cube 3, and MoveIt refused to plan into a cube (PLANNING_FAILED, -1).
-      # A pose that moves with the robot is only meaningful if you know where the robot is.
+      # on y, clear of the cubes at x 0.30 to 0.34, at the table top 0.475 plus half a cube.
+      # In the map frame, so it stays put while the setup chain drives the robot to the table;
+      # in base_footprint the same numbers would follow the robot and land in a cube.
       inputs: {object_name: "cube 1", place_pose: "0.2;0.0;0.4875;0.0;0.0;0.0;map"}
       setup:
         - {subtree: detect_table}
@@ -233,7 +226,7 @@ capabilities:
     outputs:
       error: {type: int, when: failure, description: "move_base error code; only set when the drive failed"}
     test:
-      inputs: {pose: '2.0;5.0;1.57;map'}
+      inputs: {pose: '2.0;3.0;1.57;map'}
       expect: any
       timeout: 300
 
@@ -425,8 +418,9 @@ capabilities:
       # to finish, and the FollowPose under it has exec_time_limit="25"
       #
       # 'any' because the FollowPose sits under a ForceSuccess, so the tree succeeds even having
-      # seen nothing; only the cannon_tilt_angle output tells the two apart.
+      # seen nothing; cannon_tilt_angle, written by AimCannon, is what tells the two apart.
       expect: any
+      expect_outputs: [cannon_tilt_angle]
       timeout: 300
 
   full_coverage_planner:

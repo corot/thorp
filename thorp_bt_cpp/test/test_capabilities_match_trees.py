@@ -252,6 +252,12 @@ def test_setup_steps_are_callable_capabilities(capability_name, declared):
 
     check_call(capability_name, spec, test, seen, "the capability itself")
 
+    declared_outputs = set(spec.get("outputs") or {})
+    for key in test.get("expect_outputs") or []:
+        assert key in declared_outputs, (
+            "{}: expect_outputs names {}, which isn't a declared output".format(
+                capability_name, key))
+
 
 def check_call(capability_name, target_spec, block, available, what):
     """One call's inputs: every input supplied exactly once, and every reference resolvable."""

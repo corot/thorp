@@ -20,8 +20,6 @@
 
   Launch it with `roslaunch thorp_apps llm_playground.launch simulator:=gazebo`, then run the
   capability suite from thorp_bt_cpp with the stack list navigation,manipulation,perception.
-  (Commands are described rather than written out because a double hyphen is not allowed
-  inside an XML comment, which is how this file failed to parse the first time.)
  -->
 
 <launch>
@@ -62,16 +60,6 @@
   </include>
 
   <!--  ***************** Navigation ******************  -->
-  <!-- Over a blank map: there are no walls here, only the table, and the local costmap sees
-       that from the laser. Enough to approach and back off, which is all this bench asks of
-       navigation. Localisation is gazebo ground truth in simulation, so there is no AMCL to
-       converge and reset_world puts the robot back without anything getting confused.
-
-       playground rather than empty, and the difference matters: empty.yaml has its origin at
-       (0, 0) so its 10 x 10 m is all positive, and this robot starts at x = -0.5, off the map.
-       A sensor origin out of map bounds stops the costmap raytracing, its update loop stalls
-       for minutes, and check_pose_cost blocks behind the costmap lock, which presents as
-       poses_around_table hanging with nothing pointing at the map. -->
   <include file="$(find thorp_navigation)/launch/navigation.launch">
     <arg name="smooth_velocity" value="$(eval simulator == 'none')"/>
     <arg name="save_robot_pose" value="$(eval simulator == 'none')"/>
@@ -83,13 +71,11 @@
   </include>
 
   <group if="$(eval simulator != 'none')">
-    <!-- The table and its objects, at the poses hardcoded in the spawner: that hardcoding is
-         the whole point here, so don't switch this to a randomising mode and expect the tests
-         to keep passing. -->
+    <!-- The table and its objects, at the poses hardcoded in the spawner -->
     <node pkg="thorp_simulation" type="spawn_gazebo_models.py" name="objects_spawner" output="screen"
           args="playground_$(arg object_type)"/>
 
-    <!-- A static cat 2 m to the robot's left, plus the rocket the cannon needs, for hunt_cat. -->
+    <!-- A static cat 2 m to the robot's left, plus the rocket the cannon needs, for hunt_cat -->
     <node pkg="thorp_simulation" type="spawn_gazebo_models.py" name="cat_spawner" output="screen"
           args="playground_cat"/>
 

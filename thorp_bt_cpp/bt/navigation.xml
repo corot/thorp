@@ -132,11 +132,9 @@
     Which of these poses is nearest the robot, and where the robot is while we are at it.
 
     poses_around_table hands back one pose per side in a fixed geometric order, not sorted by
-    anything, so "the first one" is whichever side the table's own frame calls +x. A caller
-    that wants the near side has to compare against the robot, and until now nothing exposed
-    the robot's pose to compare with: validate_table does this internally and an agent could
-    not. Taking the first pose instead drove the robot to the far side of the table, where the
-    objects were out of arm reach.
+    anything, so "the first one" is whichever side the table's own frame calls +x. Use this to
+    pick the near side; taking the first pose sends the robot round to the far one, where the
+    objects are out of arm reach.
   -->
   <BehaviorTree ID="closest_pose">
     <Sequence>
