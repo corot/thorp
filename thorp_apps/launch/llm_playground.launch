@@ -103,5 +103,5 @@
   </include>
 
   <node pkg="rviz" type="rviz" name="rviz" output="screen" respawn="true"
-        args="-d $(find thorp_bringup)/rviz/gathering.rviz"/>
+        args="-d $(find thorp_bringup)/rviz/bt_server.rviz"/>
 </launch>

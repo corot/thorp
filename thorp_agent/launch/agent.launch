@@ -1,0 +1,12 @@
+<launch>
+  <arg name="dry_run" default="false"/>  <!-- print the goals instead of sending them -->
+  <arg name="verbose" default="false"/>
+  <arg name="ask"     default=""/>       <!-- one question, then exit -->
+
+  <!-- for one-shot questions (ask:=...); roslaunch gives a node no stdin, so talk to it with rosrun -->
+  <node pkg="thorp_agent" type="agent.py" name="thorp_agent" output="screen">
+    <param name="dry_run" value="$(arg dry_run)"/>
+    <param name="verbose" value="$(arg verbose)"/>
+    <param name="ask"     value="$(arg ask)"/>
+  </node>
+</launch>

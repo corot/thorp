@@ -132,6 +132,16 @@ COPY requirements.txt .
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
+# thorp_agent runs on ROSA, which needs python 3.9+ where ROS runs on 3.8, so the agent gets a venv
+# on focal's own python3.9. ROS's pure-python packages still come from setup.bash's PYTHONPATH; the
+# second pip line is what they import but apt installs for 3.8 only.
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    apt-get update && apt-get install -y python3.9 python3.9-venv && apt clean && \
+    python3.9 -m venv /opt/thorp-agent && \
+    /opt/thorp-agent/bin/pip install --no-cache-dir --upgrade pip && \
+    /opt/thorp-agent/bin/pip install --no-cache-dir jpl-rosa langchain-openai && \
+    /opt/thorp-agent/bin/pip install --no-cache-dir rospkg catkin_pkg defusedxml pycryptodomex python-gnupg
+
 WORKDIR /catkin_ws
 
 # Record the deployment build's compiler settings in the workspace profile, so that a plain

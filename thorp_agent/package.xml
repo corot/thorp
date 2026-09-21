@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>thorp_agent</name>
+  <version>0.1.0</version>
+  <description>
+    An LLM agent driving Thorp: reads capabilities.yaml, offers each behavior tree as a
+    tool, and turns the agent's calls into RunSubtree goals.
+  </description>
+
+  <maintainer email="jsantossimon@gmail.com">Jorge Santos</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>rospkg</exec_depend>
+  <exec_depend>actionlib</exec_depend>
+  <exec_depend>actionlib_msgs</exec_depend>
+  <exec_depend>thorp_msgs</exec_depend>
+  <!-- jpl-rosa, langchain and a provider package come from pip; see README -->
+</package>
