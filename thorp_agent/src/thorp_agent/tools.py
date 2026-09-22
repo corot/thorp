@@ -71,9 +71,12 @@ def _args_model(spec: Dict[str, Any]):
     fields = {}
     for field, meta in spec["args"].items():
         kind, _ = TYPES.get(meta["type"], ("string", None))
-        fields[field] = (PY_TYPES.get(kind, str), Field(description=meta["description"]))
-    # Every declared input is required: bt_server refuses a goal missing one, and a model that
-    # is allowed to omit it gets a refusal instead of an answer.
+        if meta.get("optional"):
+            fields[field] = (Optional[PY_TYPES.get(kind, str)],
+                             Field(default=None, description=meta["description"]))
+        else:
+            # bt_server refuses a goal missing a required input
+            fields[field] = (PY_TYPES.get(kind, str), Field(description=meta["description"]))
     return create_model(spec["name"] + "_args", **fields) if fields else None
 
 
@@ -98,7 +101,9 @@ def _one(spec: Dict[str, Any], call, timeout: float) -> StructuredTool:
     outputs = sorted(spec.get("outputs") or [])
 
     def invoke(**kwargs):
-        result = call(name, inputs=plain(kwargs), output_keys=outputs, timeout=timeout)
+        # an optional input left out stays out, so the tree falls back to its own value
+        inputs = {k: v for k, v in plain(kwargs).items() if v is not None}
+        result = call(name, inputs=inputs, output_keys=outputs, timeout=timeout)
         # json rather than a python repr: the model reads this back and has to be able to
         # quote values out of it verbatim into the next call.
         return json.dumps(result, sort_keys=True)

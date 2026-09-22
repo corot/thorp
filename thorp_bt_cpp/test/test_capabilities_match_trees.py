@@ -136,6 +136,7 @@ def derive_interfaces():
             interfaces[tree.get("ID")] = {
                 "inputs": {k: v for k, v in read.items() if k not in produced},
                 "outputs": produced,
+                "reads": read,
                 "file": os.path.basename(path),
             }
     return interfaces
@@ -190,12 +191,20 @@ def test_declared_inputs_match_the_tree(capability_name, declared, derived):
     """
     spec = declared["capabilities"][capability_name]
     assert capability_name in derived, "no such tree"
+    interface = derived[capability_name]
 
-    declared_inputs = set(spec.get("inputs") or {})
-    derived_inputs = set(derived[capability_name]["inputs"])
-    assert declared_inputs == derived_inputs, (
+    inputs = spec.get("inputs") or {}
+    required = {k for k, v in inputs.items() if not (v or {}).get("optional")}
+    derived_inputs = set(interface["inputs"])
+    assert required == derived_inputs, (
         "{}: yaml says inputs {} but the tree needs {}".format(
-            capability_name, sorted(declared_inputs), sorted(derived_inputs)))
+            capability_name, sorted(required), sorted(derived_inputs)))
+
+    # optional: the tree reads it when given, and produces it itself otherwise
+    for key in set(inputs) - required:
+        assert key in interface["reads"] and key in interface["outputs"], (
+            "{}: {} is marked optional, but the tree doesn't both read it and produce a "
+            "fallback for it".format(capability_name, key))
 
 
 def test_declared_outputs_exist_in_the_tree(capability_name, declared, derived):
@@ -219,7 +228,8 @@ def test_declared_types_match_the_ports(capability_name, declared, derived):
 
     for section in ("inputs", "outputs"):
         for key, entry in (spec.get(section) or {}).items():
-            expected = interface[section].get(key, "")
+            expected = interface[section].get(key) or interface["reads"].get(key, "") \
+                if section == "inputs" else interface[section].get(key, "")
             if not expected:
                 continue  # port has no declared type in node_models.xml; nothing to compare
             assert normalize_type(entry.get("type", "")) == expected, (
@@ -268,10 +278,12 @@ def check_call(capability_name, target_spec, block, available, what):
     assert not overlap, "{}: {} gives {} both literally and via inputs_from".format(
         capability_name, what, sorted(overlap))
 
-    required = set(target_spec.get("inputs") or {})
-    assert literal | threaded == required, (
-        "{}: {} passes {} but that capability takes {}".format(
-            capability_name, what, sorted(literal | threaded), sorted(required)))
+    inputs = target_spec.get("inputs") or {}
+    required = {k for k, v in inputs.items() if not (v or {}).get("optional")}
+    given = literal | threaded
+    assert required <= given <= set(inputs), (
+        "{}: {} passes {} but that capability takes {} (optional: {})".format(
+            capability_name, what, sorted(given), sorted(required), sorted(set(inputs) - required)))
 
     for key, ref in (block.get("inputs_from") or {}).items():
         assert isinstance(ref, list) and len(ref) in (2, 3), (

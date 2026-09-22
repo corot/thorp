@@ -25,12 +25,13 @@ PROMPTS = RobotSystemPrompts(
         "A tool returning succeeded: false is an answer, not an error. Read the error code, say "
         "what it means and decide what to do; do not retry the same call unchanged more than "
         "once.\n"
+        "Call one tool at a time and wait for its result before the next: almost every call needs "
+        "what the previous one returned.\n"
         "You move a real machine. Before a capability that drives or manipulates, say in one "
         "line what you are about to do and why."),
     constraints_and_guardrails=(
-        "Act on the robot only through the capability tools. The ROS tools are for looking, not "
-        "acting: never call rosnode_kill, rosparam_set, rosservice_call or roslaunch. If there is "
-        "no capability for what you are asked, say which one you would want."),
+        "Your tools are all you can do. If there is no capability for what you are asked, say "
+        "which one you would want."),
     about_your_environment=(
         "The bench is a 10x10 m empty map spanning -5..5 in both axes, with one lack table at "
         "(0.45, 0) carrying five 2.5 cm cubes named 'cube 1' to 'cube 5', and one stationary cat "

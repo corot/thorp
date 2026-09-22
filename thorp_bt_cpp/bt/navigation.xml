@@ -111,30 +111,39 @@
               feedback="{goto_pose_feedback}"/>
   </BehaviorTree>
 
-  <!--
-    Where to stand to work at a table: one pose per side, each `distance` out from it and
-    facing it. This is the step between detecting a table and approaching it, and it is here
-    rather than with the perception trees because what it produces is somewhere to drive to.
+  <!-- Where to stand to look at a table: one pose per side, approach_dist_to_table out, facing it -->
+  <BehaviorTree ID="table_approach_poses">
+    <Sequence>
+      <ReadDoubleParam param_name="approach_dist_to_table"
+                       output_key="{distance}"/>
+      <GetPosesAroundTable distance="{distance}"
+                           split_long_sides="false"
+                           table="{table}"
+                           table_pose="{table_pose}"
+                           table_side_poses="{approach_poses}"/>
+    </Sequence>
+  </BehaviorTree>
 
-    cleanup_table does this internally with the pickup_dist_to_table parameter; exposed on its
-    own, the caller chooses the distance, so the same node serves approaching to manipulate
-    (approach_dist_to_table) and getting close enough to pick (pickup_dist_to_table).
-  -->
-  <BehaviorTree ID="poses_around_table">
-    <GetPosesAroundTable distance="{distance}"
-                         split_long_sides="false"
-                         table="{table}"
-                         table_pose="{table_pose}"
-                         table_side_poses="{table_side_poses}"/>
+  <!-- Where to stand to pick from a table: pickup_dist_to_table out, long sides split so more of
+       the table is in arm reach -->
+  <BehaviorTree ID="table_pickup_poses">
+    <Sequence>
+      <ReadDoubleParam param_name="pickup_dist_to_table"
+                       output_key="{distance}"/>
+      <GetPosesAroundTable distance="{distance}"
+                           split_long_sides="true"
+                           table="{table}"
+                           table_pose="{table_pose}"
+                           table_side_poses="{pickup_poses}"/>
+    </Sequence>
   </BehaviorTree>
 
   <!--
     Which of these poses is nearest the robot, and where the robot is while we are at it.
 
-    poses_around_table hands back one pose per side in a fixed geometric order, not sorted by
-    anything, so "the first one" is whichever side the table's own frame calls +x. Use this to
-    pick the near side; taking the first pose sends the robot round to the far one, where the
-    objects are out of arm reach.
+    table_approach_poses and table_pickup_poses hand back one pose per side in a fixed geometric
+    order, not sorted by anything, so "the first one" is whichever side the table's own frame
+    calls +x. Use this to pick the near side.
   -->
   <BehaviorTree ID="closest_pose">
     <Sequence>

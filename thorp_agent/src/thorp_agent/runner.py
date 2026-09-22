@@ -10,6 +10,8 @@ from actionlib_msgs.msg import GoalStatus
 
 from thorp_msgs.msg import RunSubtreeAction, RunSubtreeGoal
 
+from . import errors
+
 DEFAULT_ACTION = "/bt_server/run_subtree"
 
 
@@ -17,6 +19,7 @@ class SubtreeRunner(object):
     def __init__(self, action_name=DEFAULT_ACTION, connect_timeout=30.0, dry_run=False):
         self.dry_run = dry_run
         self.action_name = action_name
+        self.error_names = errors.ros_table()
         if dry_run:
             self.client = None
             return
@@ -59,7 +62,8 @@ class SubtreeRunner(object):
             return {"succeeded": False, "refused": True,
                     "error": detail.get("error", "the goal was refused")}
 
-        outputs = json.loads(result.json) if result and result.json else {}
+        outputs = errors.annotate(json.loads(result.json) if result and result.json else {},
+                                  self.error_names)
         return {"succeeded": bool(result and result.success),
                 "state": _STATE_NAMES.get(state, str(state)),
                 "outputs": outputs}

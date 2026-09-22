@@ -95,6 +95,7 @@ def tool_spec(name: str, spec: Dict[str, Any]) -> Dict[str, Any]:
     args = {}
     for field, meta in (spec.get("inputs") or {}).items():
         args[field] = {"type": meta.get("type", ""),
+                       "optional": bool(meta.get("optional")),
                        "description": _describe(field, meta)}
     return {"name": name, "description": text, "args": args,
             "outputs": sorted(outputs), "stack": spec.get("stack", [])}

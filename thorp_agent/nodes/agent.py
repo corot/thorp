@@ -40,19 +40,19 @@ def main():
     timeouts = {name: (spec.get("test") or {}).get("timeout", 300)
                 for name, spec in capabilities.offered(document).items()}
 
-    from rosa import ROSA
+    from thorp_agent.agent import ThorpAgent
     from thorp_agent.prompts import PROMPTS
 
-    agent = ROSA(ros_version=1,
-                 llm=llm.make(),
-                 tools=tools.build(specs, runner.run, timeouts),
-                 prompts=PROMPTS,
-                 # ROSA sets the model's streaming itself, and reports token usage only without it
-                 streaming=False,
-                 show_token_usage=True,
-                 # a runaway loop is where the money goes; a whole chain is under ten calls
-                 max_iterations=20,
-                 verbose=rospy.get_param("~verbose", False))
+    agent = ThorpAgent(ros_version=1,
+                       llm=llm.make(),
+                       tools=tools.build(specs, runner.run, timeouts),
+                       prompts=PROMPTS,
+                       # ROSA sets the model's streaming itself, and reports token usage only without it
+                       streaming=False,
+                       show_token_usage=True,
+                       # a runaway loop is where the money goes; a whole chain is under ten calls
+                       max_iterations=20,
+                       verbose=rospy.get_param("~verbose", False))
 
     question = rospy.get_param("~ask", "")
     if question:

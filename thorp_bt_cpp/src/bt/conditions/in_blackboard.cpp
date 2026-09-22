@@ -32,4 +32,5 @@ private:
 
 // Register a builder for each templated version this class
 BT_REGISTER_TEMPLATE_NODE(InBlackboard<geometry_msgs::PoseStamped>, "PoseInBlackboard");
+BT_REGISTER_TEMPLATE_NODE(InBlackboard<float>, "FloatInBlackboard");
 }  // namespace thorp::bt::conditions 

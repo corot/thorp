@@ -29,6 +29,9 @@
 # The test suite asks for every documented output and insists only on the `success` ones, so a
 # clean run isn't failed for the absence of an error it never had.
 #
+# An input marked `optional: true` may be left out: the tree reads it when given and otherwise
+# produces it itself, typically from a parameter. The drift test holds it to exactly that.
+#
 # kind:
 #   capability - a step an agent can ask for. The default, so it is left off.
 #   app        - a whole session's behavior rather than a step: it drives the robot until
@@ -51,7 +54,7 @@
 # test: read only by the test suite; the agent side ignores this block.
 #   inputs_from: where an input comes from, when it should be a real value rather than one
 #     someone typed in: {table: [detect_table, table]} takes the table detect_table found, and
-#     a third element indexes a list, so [poses_around_table, table_side_poses, 0] is the first
+#     a third element indexes a list, so [table_approach_poses, approach_poses, 0] is the first
 #     pose around it. Usable on the test's own inputs and on any setup step's. This is the same
 #     threading an agent does by hand between two goals, so a chain expressible here is one ROSA
 #     can be asked to follow.
@@ -82,21 +85,19 @@ capabilities:
     stack: [manipulation]
     inputs:
       object_name: {type: string, description: "name of the object to pick, as the detector named it"}
-      tightening: {type: float, description: "extra gripper closure past contact, in meters"}
+      tightening: {type: float, optional: true, description: "extra gripper closure past contact, in meters; leave it out to use the gripper's configured value"}
     outputs:
       error: {type: int, when: failure, description: "error code from the pickup action; 0 when it worked"}
       attached_object: {type: string, description: "object now attached to the gripper, if any"}
       max_effort: {type: float, description: "gripper effort used, read from the gripper_max_effort parameter"}
     test:
-      inputs: {object_name: "cube 1", tightening: 0.002}
+      inputs: {object_name: "cube 1"}
       setup:
         - {subtree: detect_table}
-        - subtree: poses_around_table
-          # pickup_dist_to_table; at approach_dist_to_table the cubes are out of arm reach
-          inputs: {distance: 0.15}
+        - subtree: table_pickup_poses
           inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
         - subtree: closest_pose
-          inputs_from: {poses: [poses_around_table, table_side_poses]}
+          inputs_from: {poses: [table_pickup_poses, pickup_poses]}
         - subtree: attach_to_table
           inputs_from: {table: [detect_table, table], pose: [closest_pose, closest_pose]}
         - {subtree: detect_objects}
@@ -120,19 +121,14 @@ capabilities:
       inputs: {object_name: "cube 1", place_pose: "0.2;0.0;0.4875;0.0;0.0;0.0;map"}
       setup:
         - {subtree: detect_table}
-        - subtree: poses_around_table
-          # pickup_dist_to_table, not approach_dist_to_table: apps_config calls 0.35 "close
-          # enough to properly detect tabletop objects but not for picking up", and it isn't.
-          # The near-side pose at 0.35 leaves the robot 0.167 m behind the table edge, putting
-          # the cubes ~0.5 m from a 0.3 m arm, which is INVALID_TARGET_POSE (-210).
-          inputs: {distance: 0.15}
+        - subtree: table_pickup_poses
           inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
         - subtree: closest_pose
-          inputs_from: {poses: [poses_around_table, table_side_poses]}
+          inputs_from: {poses: [table_pickup_poses, pickup_poses]}
         - subtree: attach_to_table
           inputs_from: {table: [detect_table, table], pose: [closest_pose, closest_pose]}
         - {subtree: detect_objects}
-        - {subtree: pickup_object, inputs: {object_name: "cube 1", tightening: 0.002}}
+        - {subtree: pickup_object, inputs: {object_name: "cube 1"}}
       expect: any
       timeout: 120
 
@@ -151,19 +147,14 @@ capabilities:
       inputs: {object_name: "cube 1"}
       setup:
         - {subtree: detect_table}
-        - subtree: poses_around_table
-          # pickup_dist_to_table, not approach_dist_to_table: apps_config calls 0.35 "close
-          # enough to properly detect tabletop objects but not for picking up", and it isn't.
-          # The near-side pose at 0.35 leaves the robot 0.167 m behind the table edge, putting
-          # the cubes ~0.5 m from a 0.3 m arm, which is INVALID_TARGET_POSE (-210).
-          inputs: {distance: 0.15}
+        - subtree: table_pickup_poses
           inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
         - subtree: closest_pose
-          inputs_from: {poses: [poses_around_table, table_side_poses]}
+          inputs_from: {poses: [table_pickup_poses, pickup_poses]}
         - subtree: attach_to_table
           inputs_from: {table: [detect_table, table], pose: [closest_pose, closest_pose]}
         - {subtree: detect_objects}
-        - {subtree: pickup_object, inputs: {object_name: "cube 1", tightening: 0.002}}
+        - {subtree: pickup_object, inputs: {object_name: "cube 1"}}
       expect: any
       timeout: 120
 
@@ -225,39 +216,54 @@ capabilities:
       expect: any
       timeout: 300
 
-  poses_around_table:
+  table_approach_poses:
     description: >
-      Work out where to stand to work at a table: one pose per side, each `distance` out from
-      it and facing it. Takes the table and its pose as detect_table reports them, so the two
-      compose directly. Nothing moves; this is arithmetic on a table you have already found,
-      and the poses are what attach_to_table and goto_pose take.
-
-      The order is geometric, not nearest first: the table's own +x side, then -x, then +y,
-      then -y, with sides too narrow to work at and poses blocked on the costmap left out. So
-      the first pose is not the near one, and picking it blind will send the robot around the
-      table. Pass the list to closest_pose to get the one nearest the robot.
+      Where to stand to look at a table: one pose per side, far enough out to see the whole
+      tabletop, each facing the table. Drive there with goto_pose, then detect_objects. Too far
+      to reach anything with the arm. Nothing moves; this is arithmetic on a table you have
+      already found. The poses come in a fixed geometric order, not nearest first: pass them
+      to closest_pose to get the near side.
     status: ok
     stack: [none]
     inputs:
       table: {type: rail_manipulation_msgs::SegmentedObject, description: "the table, as detect_table returned it"}
       table_pose: {type: geometry_msgs::PoseStamped, description: "that table's pose, as detect_table returned it"}
-      distance: {type: double, description: "how far out from the table each pose should be, in meters"}
     outputs:
-      table_side_poses: {type: std::vector<geometry_msgs::PoseStamped>, description: "one pose per usable side, nearest first"}
+      approach_poses: {type: std::vector<geometry_msgs::PoseStamped>, description: "one pose per usable side"}
     test:
-      inputs: {distance: 0.35}
       setup:
         - {subtree: detect_table}
       inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
       expect: succeeded    # pure geometry on a table we just found; nothing to blame the scene for
       timeout: 30
 
+  table_pickup_poses:
+    description: >
+      Where to stand to pick objects from a table, or place them on it: poses close enough for
+      the arm to reach, along every usable side. Get to one with attach_to_table, never
+      goto_pose: they are inside the table's costmap margin, which only attach_to_table clears.
+      Nothing moves; this is arithmetic on a table you have already found. The poses come in a
+      fixed geometric order, not nearest first: pass them to closest_pose to get the near side.
+    status: ok
+    stack: [none]
+    inputs:
+      table: {type: rail_manipulation_msgs::SegmentedObject, description: "the table, as detect_table returned it"}
+      table_pose: {type: geometry_msgs::PoseStamped, description: "that table's pose, as detect_table returned it"}
+    outputs:
+      pickup_poses: {type: std::vector<geometry_msgs::PoseStamped>, description: "poses along every usable side"}
+    test:
+      setup:
+        - {subtree: detect_table}
+      inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
+      expect: succeeded
+      timeout: 30
+
   closest_pose:
     description: >
       Of a list of poses, the one nearest the robot, and the robot's own pose with it. Use it
-      on what poses_around_table returns: that list is in a fixed geometric order, so choosing
-      a side without comparing to where the robot is means driving around the table for no
-      reason. Nothing moves.
+      on what table_approach_poses or table_pickup_poses return: those lists are in a fixed
+      geometric order, so choosing a side without comparing to where the robot is means driving
+      around the table for no reason. Nothing moves.
     status: ok
     stack: [none]
     inputs:
@@ -269,10 +275,9 @@ capabilities:
     test:
       setup:
         - {subtree: detect_table}
-        - subtree: poses_around_table
-          inputs: {distance: 0.35}
+        - subtree: table_approach_poses
           inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
-      inputs_from: {poses: [poses_around_table, table_side_poses]}
+      inputs_from: {poses: [table_approach_poses, approach_poses]}
       expect: succeeded    # picking the nearest of a list we just computed
       timeout: 30
 
@@ -486,7 +491,8 @@ capabilities:
 
   attach_to_table:
     description: >
-      Approach a table head-on under precise control until the bumper touches it.
+      Approach a table head-on under precise control until the bumper touches it, from a pose
+      table_pickup_poses gave. The last step before picking from or placing on a table.
     status: ok
     stack: [navigation, perception]
     inputs:
@@ -497,11 +503,10 @@ capabilities:
     test:
       setup:
         - {subtree: detect_table}
-        - subtree: poses_around_table
-          inputs: {distance: 0.15}    # pickup_dist_to_table: attaching means getting to the table
+        - subtree: table_pickup_poses
           inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
         - subtree: closest_pose
-          inputs_from: {poses: [poses_around_table, table_side_poses]}
+          inputs_from: {poses: [table_pickup_poses, pickup_poses]}
       inputs_from: {table: [detect_table, table], pose: [closest_pose, closest_pose]}
       expect: any
       timeout: 180
@@ -518,27 +523,23 @@ capabilities:
       error: {type: int, when: failure, description: "error code from path execution"}
     test:
       # You can only detach from a table you are attached to, so this drives in and then backs
-      # out again. poses_around_table is called twice at different radii, which is what `as`
-      # is for: without it the second call's results would file over the first's.
+      # out again, to the approach distance. closest_pose runs twice, which is what `as` is for:
+      # without it the second call's results would file over the first's.
       inputs: {}
       setup:
         - {subtree: detect_table}
-        - subtree: poses_around_table
-          as: approach
-          inputs: {distance: 0.15}
+        - subtree: table_pickup_poses
           inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
         - subtree: closest_pose
           as: near_side
-          inputs_from: {poses: [approach, table_side_poses]}
+          inputs_from: {poses: [table_pickup_poses, pickup_poses]}
         - subtree: attach_to_table
           inputs_from: {table: [detect_table, table], pose: [near_side, closest_pose]}
-        - subtree: poses_around_table
-          as: retreat
-          inputs: {distance: 0.8}
+        - subtree: table_approach_poses
           inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
         - subtree: closest_pose
           as: retreat_side
-          inputs_from: {poses: [retreat, table_side_poses]}
+          inputs_from: {poses: [table_approach_poses, approach_poses]}
       inputs_from: {table: [detect_table, table], pose: [retreat_side, closest_pose]}
       expect: any
       timeout: 180
@@ -580,15 +581,10 @@ capabilities:
       inputs: {failures: {}, given_up_count: 0}
       setup:
         - {subtree: detect_table}
-        - subtree: poses_around_table
-          # pickup_dist_to_table, not approach_dist_to_table: apps_config calls 0.35 "close
-          # enough to properly detect tabletop objects but not for picking up", and it isn't.
-          # The near-side pose at 0.35 leaves the robot 0.167 m behind the table edge, putting
-          # the cubes ~0.5 m from a 0.3 m arm, which is INVALID_TARGET_POSE (-210).
-          inputs: {distance: 0.15}
+        - subtree: table_pickup_poses
           inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
         - subtree: closest_pose
-          inputs_from: {poses: [poses_around_table, table_side_poses]}
+          inputs_from: {poses: [table_pickup_poses, pickup_poses]}
         - subtree: attach_to_table
           inputs_from: {table: [detect_table, table], pose: [closest_pose, closest_pose]}
         - {subtree: detect_objects}

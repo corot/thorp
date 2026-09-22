@@ -8,7 +8,7 @@
 
   The robot starts back from the table rather than at it, because the capabilities that work
   at a table say so themselves: capabilities.yaml gives them a setup chain of detect_table,
-  poses_around_table and attach_to_table, so they drive in on real detected values instead of
+  table_pickup_poses and attach_to_table, so they drive in on real detected values instead of
   on a pose someone typed. /gazebo/reset_world puts the robot back here between tests, so the
   approach capabilities always have an approach to make and the manipulation ones always
   arrive the same way.
@@ -30,7 +30,7 @@
 
   <!-- Half a meter back from the table, facing it. Not arbitrary: the capabilities that work
        AT the table say so in capabilities.yaml and drive in themselves (detect_table ->
-       poses_around_table -> attach_to_table), so the start pose is the one the approach
+       table_pickup_poses -> attach_to_table), so the start pose is the one the approach
        capabilities need, and /gazebo/reset_world returns the robot here between tests. Any
        further back and detect_table stops seeing a 55 cm table. -->
   <arg name="initial_pose_x" default="-0.5"/>

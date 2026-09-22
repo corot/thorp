@@ -194,11 +194,8 @@ nlohmann::json anyToJson(const BT::Any& any)
 // A pose as json: either the "x;y;yaw;frame" string a literal xml attribute would use, or the
 // nested object this file emits (x, y, z, roll, pitch, yaw, frame).
 //
-// Both forms are here because both occur. A caller writing a goal by hand reaches for the
-// string; a caller feeding back a pose that came out of an earlier run has the object, because
-// that is what we gave them. Accepting only the string made every pose we emit unusable as an
-// input, which breaks the one thing capabilities are for: detect_table's table_pose could not
-// be handed to poses_around_table, and its table could not be handed to anything at all.
+// Both forms occur: a caller writing a goal by hand reaches for the string, and one feeding back
+// a pose from an earlier result has the object, which is what lets capabilities compose.
 //
 // Returns nullopt for a shape that is neither, so the caller can report it rather than throw.
 std::optional<geometry_msgs::PoseStamped> poseFromJson(const nlohmann::json& json)

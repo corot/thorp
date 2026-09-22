@@ -116,3 +116,44 @@ def test_a_capability_taking_a_pose_says_how_to_write_one(specs):
         for field, meta in spec["args"].items():
             if meta["type"] == capabilities.POSE:
                 assert "x;y;yaw;frame" in meta["description"], "{}.{}".format(spec["name"], field)
+
+
+def test_optional_inputs_are_marked_and_the_rest_are_not(document, specs):
+    offered = capabilities.offered(document)
+    for spec in specs:
+        for field, meta in spec["args"].items():
+            declared = offered[spec["name"]]["inputs"][field]
+            assert meta["optional"] == bool(declared.get("optional")), "{}.{}".format(spec["name"], field)
+
+
+def test_optional_inputs_can_be_left_out_and_are_not_sent():
+    """Left out, an optional input must not reach bt_server at all, not even as null."""
+    pytest.importorskip("langchain_core")
+    from thorp_agent import tools
+    spec = {"name": "t", "description": "a test tool with one required and one optional input",
+            "outputs": [],
+            "args": {"a": {"type": "std::string", "optional": False, "description": "a"},
+                     "b": {"type": "float", "optional": True, "description": "b"}}}
+    sent = {}
+    tool = tools.build([spec], lambda name, inputs, **_: sent.update(inputs) or {})[0]
+    assert tool.args_schema.model_json_schema()["required"] == ["a"]
+    tool.invoke({"a": "x"})
+    assert sent == {"a": "x"}
+
+
+def test_error_codes_get_their_names():
+    from thorp_agent import errors
+
+    class ThorpError(object):
+        SUCCESS = 1
+        INVALID_TARGET_POSE = -210
+
+    class MoveBaseResult(object):
+        SUCCESS = 0
+        PLAN_FAILURE = 50
+
+    names = errors.table(ThorpError, MoveBaseResult)
+    out = errors.annotate({"error": -210, "exe_path_error": 50, "count": 50, "error_x": 3}, names)
+    assert out["error_name"] == "INVALID_TARGET_POSE"
+    assert out["exe_path_error_name"] == "PLAN_FAILURE"
+    assert "count_name" not in out and "error_x_name" not in out
