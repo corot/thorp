@@ -10,6 +10,11 @@ import os
 
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 
+# How hard a reasoning model thinks before each answer, which is most of the wait on a step:
+# minimal, low, medium or high, or empty to leave the model its own default. Lower is faster,
+# and too low starts getting tool arguments wrong, which costs a retry and the time with it.
+REASONING_EFFORT = "low"
+
 DEFAULTS = {
     "openrouter": "openai/gpt-5-mini",
     "anthropic": "claude-sonnet-4-5",
@@ -32,7 +37,8 @@ def make(provider=None, model=None, temperature=0.0):
             base_url=OPENROUTER_BASE_URL,
             temperature=_temperature(model, temperature),
             timeout=120,
-            default_headers={"X-Title": "thorp_agent"})
+            default_headers={"X-Title": "thorp_agent"},
+            **_reasoning(model))
 
     if provider == "anthropic":
         # console.anthropic.com; billed separately from a Claude.ai subscription
@@ -53,15 +59,29 @@ def make(provider=None, model=None, temperature=0.0):
     raise ValueError("unknown provider {!r}: try {}".format(provider, ", ".join(DEFAULTS)))
 
 
+def _reasoning(model):
+    """
+    OpenRouter's reasoning effort, as extra_body rather than langchain's own `reasoning` field:
+    that one switches langchain to the Responses API, which is not what OpenRouter serves.
+    """
+    effort = os.getenv("THORP_AGENT_REASONING", REASONING_EFFORT)
+    if not effort or not _thinks(model):
+        return {}
+    return {"extra_body": {"reasoning": {"effort": effort}}}
+
+
+def _thinks(model):
+    """Whether this is a reasoning model: it thinks before answering, and fixes its temperature"""
+    name = model.split("/")[-1]
+    return name.startswith(("gpt-5", "o1", "o3", "o4")) and "chat" not in name
+
+
 def _temperature(model, temperature):
     """
     None for a reasoning model, which accepts only its default. langchain drops it itself for
     a bare "gpt-5..." name, but not behind OpenRouter's "openai/" prefix, nor for o3 and o4.
     """
-    name = model.split("/")[-1]
-    if name.startswith(("gpt-5", "o1", "o3", "o4")) and "chat" not in name:
-        return None
-    return temperature
+    return None if _thinks(model) else temperature
 
 
 def _env(variable, provider):

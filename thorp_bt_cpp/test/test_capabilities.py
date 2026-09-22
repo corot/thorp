@@ -53,11 +53,11 @@ SERIALIZED_AS = {
     "double": float,
     "geometry_msgs::PoseStamped": dict,
     "std::vector<geometry_msgs::PoseStamped>": list,
-    # collision objects come back as the names the detector gave them, not as geometry: the
-    # geometry lives in the planning scene, and a name is what the manipulation capabilities take
-    "moveit_msgs::CollisionObject": str,
+    # collision objects come back as name and color, not as geometry: the geometry lives in the
+    # planning scene, and a name is what the manipulation capabilities take
+    "moveit_msgs::CollisionObject": dict,
     "std::vector<moveit_msgs::CollisionObject>": list,
-    # a table comes back as the fields the trees actually read: name, width, depth, height, pose
+    # a table comes back as the fields the trees actually read, plus its color
     "rail_manipulation_msgs::SegmentedObject": dict,
 }
 

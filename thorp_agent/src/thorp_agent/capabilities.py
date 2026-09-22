@@ -28,8 +28,8 @@ TYPES = {
     POSE: ("string", "a pose as 'x;y;yaw;frame' or 'x;y;z;roll;pitch;yaw;frame', "
                      "e.g. '1.5;0.0;1.57;map'. Frames other than map are rarely what you want"),
     "std::vector<" + POSE + ">": ("array-of-string", "poses, each as 'x;y;yaw;frame'"),
-    "moveit_msgs::CollisionObject": ("string", "the object's name, as detection reported it"),
-    "std::vector<moveit_msgs::CollisionObject>": ("array-of-string", "object names"),
+    "moveit_msgs::CollisionObject": ("object", "the object's name and color, as detection reported them"),
+    "std::vector<moveit_msgs::CollisionObject>": ("array-of-object", "one name and color per object"),
     "rail_manipulation_msgs::SegmentedObject": (
         "table", "as returned by an earlier call: pass the whole value back unchanged"),
     "std::map<std::string, unsigned int>": ("counts", None),
@@ -40,7 +40,7 @@ TYPES = {
 # Every kind TYPES can name. tools.py has to render each one, and a kind with no rendering
 # would silently become a string, which the model then sends where an object was wanted.
 KINDS = {"boolean", "integer", "number", "string", "object",
-         "array-of-string", "array-of-integer", "table", "counts"}
+         "array-of-string", "array-of-integer", "array-of-object", "table", "counts"}
 
 
 def load(path: str) -> Dict[str, Any]:

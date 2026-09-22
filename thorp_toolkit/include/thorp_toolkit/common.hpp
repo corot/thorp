@@ -38,6 +38,15 @@ std_msgs::ColorRGBA randomColor(unsigned int seed = 0, float alpha = 1.0f);
 std_msgs::ColorRGBA namedColor(const std::string& color_name, float alpha = 1.0f);
 
 /**
+ * @brief Name the color of a CIELAB value, as one of the names namedColor knows
+ * @param lightness L*
+ * @param a a*, green to red
+ * @param b b*, blue to yellow
+ * @return color name, e.g. "red" or "light gray"
+ */
+std::string colorName(float lightness, float a, float b);
+
+/**
  * @brief Split a comma-separated string into a vector of strings
  * @param csv Comma-separated values string
  * @return elements as a vector of strings

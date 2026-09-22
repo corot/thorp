@@ -164,6 +164,7 @@ public:
     result.surface.primitives.resize(1);
     result.surface.primitives.front().type = shape_msgs::SolidPrimitive::BOX;
     result.surface.primitives.front().dimensions = {table.depth, table.width, 0.001};
+    result.surface.type.db = metadata(table);
     ROS_INFO("[object detection] Adding table at %s as a collision object",
              ttk::toCStr3D(result.surface.pose.position));
     std::vector<moveit_msgs::CollisionObject> new_scene_objs(1, result.surface);
@@ -222,11 +223,7 @@ public:
         continue;
       }
 
-      // Our convention is that x-dimension is the longest one
-      double length = std::max(rail_obj.depth, rail_obj.width);
-      double width = std::min(rail_obj.depth, rail_obj.width);
-      json metadata = {"size", {length, width, rail_obj.height}, "color", rail_obj.rgb};
-      co.type.db = std::move(metadata.dump());
+      co.type.db = metadata(rail_obj);
 
       // Load mesh from the identified object type and convert to mesh msg
       shapes::Mesh* mesh = shapes::createMeshFromResource("package://thorp_perception/meshes/" + rail_obj.name + ".stl");
@@ -291,6 +288,17 @@ public:
   }
 
 private:
+  /// What a collision object carries beyond its geometry: the segmentation knows the color, and
+  /// type.db is the only field on the message free to hold it. A name rather than the rgb triple,
+  /// because the consumer is an agent choosing between "the red cube" and "the blue one".
+  std::string metadata(const rail_manipulation_msgs::SegmentedObject& obj)
+  {
+    // our convention is that x-dimension is the longest one
+    json data = { { "size", { std::max(obj.depth, obj.width), std::min(obj.depth, obj.width), obj.height } },
+                  { "color", ttk::colorName(obj.cielab[0], obj.cielab[1], obj.cielab[2]) } };
+    return data.dump();
+  }
+
   bool validateObject(const rail_manipulation_msgs::SegmentedObject& obj,
                       const rail_manipulation_msgs::SegmentedObject& table)
   {

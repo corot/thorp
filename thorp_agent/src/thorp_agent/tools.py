@@ -51,6 +51,7 @@ PY_TYPES = {
     "object": Dict[str, Any],
     "array-of-string": List[str],
     "array-of-integer": List[int],
+    "array-of-object": List[Dict[str, Any]],
     "table": Table,
     "counts": Dict[str, int],
 }

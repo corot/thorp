@@ -21,6 +21,7 @@
 // place is what keeps those two from drifting
 #include "thorp_bt_cpp/type_converters.hpp"
 
+#include <thorp_toolkit/common.hpp>
 #include <thorp_toolkit/geometry.hpp>
 #include <thorp_toolkit/tf2.hpp>
 namespace ttk = thorp::toolkit;
@@ -92,6 +93,25 @@ nlohmann::json poseToJson(const geometry_msgs::PoseStamped& pose)
   return json;
 }
 
+// A collision object as its name plus whatever the detector recorded in type.db, which today
+// is the object's color. The geometry stays out: detection puts the objects themselves into the
+// MoveIt planning scene, which is where it belongs and where it survives from one goal to the
+// next, and repeating it here would go stale the moment anything moves. What the caller can't
+// get anywhere else is what the detector decided to call them, and a name is all pickup_object,
+// place_object and place_on_tray ever take.
+nlohmann::json collisionObjectToJson(const moveit_msgs::CollisionObject& object)
+{
+  nlohmann::json json;
+  json["name"] = object.id;
+
+  const nlohmann::json metadata = nlohmann::json::parse(object.type.db, nullptr, false);
+  if (metadata.is_object() && metadata.contains("color"))
+  {
+    json["color"] = metadata["color"];
+  }
+  return json;
+}
+
 // Serializes a single blackboard value, or a "<unsupported type: ...>" tag if we have no
 // case for its type. Assumes the entry is not empty (callers only walk entries with a value).
 nlohmann::json anyToJson(const BT::Any& any)
@@ -158,6 +178,7 @@ nlohmann::json anyToJson(const BT::Any& any)
     json["width"] = object.width;
     json["depth"] = object.depth;
     json["height"] = object.height;
+    json["color"] = ttk::colorName(object.cielab[0], object.cielab[1], object.cielab[2]);
     json["pose"] = poseToJson(pose);
     return json;
   }
@@ -172,21 +193,16 @@ nlohmann::json anyToJson(const BT::Any& any)
   }
   if (any.type() == typeid(std::vector<moveit_msgs::CollisionObject>))
   {
-    // Names only, on purpose. Detection puts the objects themselves into the MoveIt planning
-    // scene, which is where their geometry belongs and where it survives from one goal to the
-    // next; serializing it here would duplicate that, and go stale the moment anything moves.
-    // What the caller genuinely can't get anywhere else is what the detector decided to call
-    // them, and a name is all pickup_object, place_object and place_on_tray ever take.
-    nlohmann::json names = nlohmann::json::array();
+    nlohmann::json objects = nlohmann::json::array();
     for (const auto& object : any.cast<std::vector<moveit_msgs::CollisionObject>>())
     {
-      names.push_back(object.id);
+      objects.push_back(collisionObjectToJson(object));
     }
-    return names;
+    return objects;
   }
   if (any.type() == typeid(moveit_msgs::CollisionObject))
   {
-    return any.cast<moveit_msgs::CollisionObject>().id;
+    return collisionObjectToJson(any.cast<moveit_msgs::CollisionObject>());
   }
   return "<unsupported type: " + BT::demangle(any.type()) + ">";
 }

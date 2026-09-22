@@ -163,7 +163,7 @@ capabilities:
   detect_objects:
     description: >
       Segment the surface in front of the robot and classify the objects on it, adding every
-      one to the MoveIt planning scene and returning the names the detector gave them. Those
+      one to the MoveIt planning scene and returning a name and a color for each. Those
       names are what pickup_object, place_object and place_on_tray take as object_name, so
       this is the step that tells you what there is to manipulate. It doesn't move the robot:
       it looks at whatever is in front of the camera now, so drive to the table first.
@@ -171,8 +171,8 @@ capabilities:
     stack: [perception]
     inputs: {}
     outputs:
-      objects: {type: std::vector<moveit_msgs::CollisionObject>, description: "names of the objects found on the surface; empty when there are none"}
-      surface: {type: moveit_msgs::CollisionObject, description: "name of the support surface they were found on"}
+      objects: {type: std::vector<moveit_msgs::CollisionObject>, description: "the objects found on the surface, each as name and color; empty when there are none"}
+      surface: {type: moveit_msgs::CollisionObject, description: "the support surface they were found on, as name and color"}
     test:
       inputs: {}
       expect: any          # needs a table in view; whether there is one is the scene's business
@@ -189,7 +189,7 @@ capabilities:
     stack: [perception]
     inputs: {}
     outputs:
-      table: {type: rail_manipulation_msgs::SegmentedObject, description: "the table: name, width, depth, height and center pose"}
+      table: {type: rail_manipulation_msgs::SegmentedObject, description: "the table: name, width, depth, height, color and center pose"}
       table_pose: {type: geometry_msgs::PoseStamped, description: "where that table is, in the map frame"}
     test:
       inputs: {}

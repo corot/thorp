@@ -36,15 +36,12 @@
   <arg name="initial_pose_x" default="-0.5"/>
   <arg name="initial_pose_y" default="0.0"/>
   <arg name="initial_pose_a" default="0.0"/>
-  <arg name="executive"      default="llm"/>     <!-- llm, unless you want to watch an app run instead -->
+  <arg name="executive"      default="llm"/>
   <arg name="viz_executive"  default="false"/>
   <arg name="start_delay"    default="0.0"/>
   <arg name="record_video"   default="false"/>
 
-  <!-- What sits on the table. 'cubes' is the one to keep for testing: five identical cubes at
-       fixed poses, so object names and positions are the same every run. 'fixed' gives a
-       sample of assorted shapes, also at fixed poses; 'random' scatters them. -->
-  <arg name="object_type"    default="cubes"/>  <!-- cubes | fixed | random -->
+  <arg name="object_type"    default="fixed"/>  <!-- cubes | fixed | random -->
 
   <!--  ******* Components common for all apps ********  -->
   <include file="$(find thorp_apps)/launch/includes/apps_common.launch.xml">
