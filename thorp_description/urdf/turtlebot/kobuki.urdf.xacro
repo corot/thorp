@@ -1,0 +1,214 @@
+<?xml version="1.0" ?>
+<!--
+  This is not a standalone urdf for kobuki. It simply defines the 'kobuki' tag that can
+  be incorporated by other urdf files (e.g. turtlebot).
+ -->
+<robot name="kobuki" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:include filename="$(find thorp_description)/urdf/turtlebot/common_properties.urdf.xacro"/>
+
+
+  <!-- Inertia tensor of a cylinder with homogeneous mass distribution. From
+       https://en.wikipedia.org/wiki/List_of_moments_of_inertia#List_of_3D_inertia_tensors-->
+  <xacro:macro name="cylinder_inertia" params="radius height mass x=0 y=0 z=0 R=0 P=0 Y=0">
+    <inertial>
+      <mass value="${mass}"/>
+      <origin xyz="${x} ${y} ${z}" rpy="${R} ${P} ${Y}"/>
+      <inertia ixx="${1/12 * mass * (3 * radius**2 + height**2)}" ixy="0" ixz="0"
+               iyy="${1/12 * mass * (3 * radius**2 + height**2)}" iyz="0"
+               izz="${1/2 * mass * radius**2}"/>
+    </inertial>
+  </xacro:macro>
+
+  <!-- Kobuki -->
+  <xacro:macro name="kobuki">
+    <link name="base_footprint"/>
+    <!--
+       Base link is set at the bottom of the base mould.
+       This is done to be compatible with the way base link
+       was configured for turtlebot 1. Refer to
+
+       https://github.com/turtlebot/turtlebot/issues/40
+
+       To put the base link at the more oft used wheel
+       axis, set the z-distance from the base_footprint
+       to 0.352.
+      -->
+    <joint name="base_joint" type="fixed">
+      <origin xyz="0 0 0.0102" rpy="0 0 0" />
+      <parent link="base_footprint"/>
+      <child link="base_link" />
+    </joint>
+    <link name="base_link">
+      <visual>
+        <geometry>
+          <mesh filename="package://thorp_description/meshes/kobuki/main_body.dae" />
+        </geometry>
+        <origin xyz="0.001 0 0.05199" rpy="0 0 0"/>
+      </visual>
+      <collision name="base">
+        <geometry>
+          <cylinder length="0.10938" radius="0.178"/>
+        </geometry>
+        <origin xyz="0.0 0 0.05949" rpy="0 0 0"/>
+      </collision>
+        <!-- Kobuki's inertia tensor is approximated by a cylinder with homogeneous mass distribution
+             m = 2.4 kg (2.6 kg for big battery pack); h = 0.09 m; r = 0.175 m; COM experimentally determined
+             ixx = 1/12 * m * (3 * r^2 + h^2) = 0.019995
+             iyy = 1/12 * m * (3 * r^2 + h^2) = 0.019995
+             izz = 1/2 * m * r^2 = 0.03675
+          -->
+      <xacro:cylinder_inertia radius="0.175" height="0.09" mass="2.4" x="0.01" z="0.03"/>
+    </link>
+
+    <joint name="wheel_left_joint" type="continuous">
+      <parent link="base_link"/>
+      <child link="wheel_left_link"/>
+      <origin xyz="0.00 ${0.23/2} 0.0250" rpy="${-M_PI/2} 0 0"/>
+      <axis xyz="0 0 1"/>
+    </joint>
+    <link name="wheel_left_link">
+      <visual>
+        <geometry>
+          <mesh filename="package://thorp_description/meshes/kobuki/wheel.dae"/>
+        </geometry>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+      </visual>
+      <collision>
+        <geometry>
+          <cylinder length="0.0206" radius="0.035"/>
+        </geometry>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+      </collision>
+      <inertial>
+        <mass value="0.15" />
+        <origin xyz="0 0 0" />
+        <!-- We cannot use cylinder_inertia macro cause we need huge inertia to make the model
+             work, hence the unrealistic mass of 5 (mass = 5.0, radius = 0.035, height = 0.0206) -->
+        <inertia ixx="${1/12 * 5.0 * (3 * 0.035**2 + 0.0206**2)}" ixy="0" ixz="0"
+                 iyy="${1/12 * 5.0 * (3 * 0.035**2 + 0.0206**2)}" iyz="0"
+                 izz="${1/2 * 5.0 * 0.035**2}"/>
+      </inertial>
+    </link>
+
+    <joint name="wheel_right_joint" type="continuous">
+      <parent link="base_link"/>
+      <child link="wheel_right_link"/>
+      <origin xyz="0.00 -${0.23/2} 0.0250" rpy="${-M_PI/2} 0 0"/>
+      <axis xyz="0 0 1"/>
+    </joint>
+    <link name="wheel_right_link">
+      <visual>
+        <geometry>
+          <mesh filename="package://thorp_description/meshes/kobuki/wheel.dae"/>
+        </geometry>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+      </visual>
+      <collision>
+        <geometry>
+          <cylinder length="0.0206" radius="0.035"/>
+        </geometry>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+      </collision>
+      <inertial>
+        <mass value="0.15" />
+        <origin xyz="0 0 0" />
+        <!-- same as left wheel -->
+        <inertia ixx="${1/12 * 5.0 * (3 * 0.035**2 + 0.0206**2)}" ixy="0" ixz="0"
+                 iyy="${1/12 * 5.0 * (3 * 0.035**2 + 0.0206**2)}" iyz="0"
+                 izz="${1/2 * 5.0 * 0.035**2}"/>
+      </inertial>
+    </link>
+
+    <joint name="caster_front_joint" type="fixed">
+      <parent link="base_link"/>
+      <child link="caster_front_link"/>
+      <origin xyz="0.115 0.0 0.007" rpy="${-M_PI/2} 0 0"/>
+    </joint>
+    <link name="caster_front_link">
+      <collision>
+        <geometry>
+          <cylinder length="0.0176" radius="0.017"/>
+        </geometry>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+      </collision>
+      <xacro:cylinder_inertia radius="0.017" height="0.0176" mass="0.005"/>
+    </link>
+
+    <joint name="caster_back_joint" type="fixed">
+      <parent link="base_link"/>
+      <child link="caster_back_link"/>
+      <origin xyz="-0.135 0.0 0.009" rpy="${-M_PI/2} 0 0"/>
+    </joint>
+    <link name="caster_back_link">
+      <collision>
+        <geometry>
+          <cylinder length="0.0176" radius="0.017"/>
+        </geometry>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+      </collision>
+      <xacro:cylinder_inertia radius="0.017" height="0.0176" mass="0.005"/>
+    </link>
+
+    <!-- Kobuki's sensors -->
+    <joint name="gyro_joint" type="fixed">
+      <axis xyz="0 1 0"/>
+      <origin xyz="0.056 0.062 0.0202" rpy="0 0 0"/>
+      <parent link="base_link"/>
+      <child link="gyro_link"/>
+    </joint>
+    <link name="gyro_link">
+      <inertial>
+        <mass value="0.001"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <inertia ixx="0.0001" ixy="0" ixz="0"
+                 iyy="0.000001" iyz="0"
+                 izz="0.0001"/>
+      </inertial>
+    </link>
+
+    <joint name="cliff_sensor_left_joint" type="fixed">
+      <origin xyz="0.08734 0.13601 0.0214" rpy="0 ${M_PI/2} 0" />
+      <parent link="base_link"/>
+      <child link="cliff_sensor_left_link" />
+    </joint>
+    <link name="cliff_sensor_left_link">
+      <inertial>
+        <mass value="0.0001" />
+        <origin xyz="0 0 0" />
+        <inertia ixx="0.0001" ixy="0.0" ixz="0.0"
+                 iyy="0.0001" iyz="0.0"
+                 izz="0.0001" />
+      </inertial>
+    </link>
+
+    <joint name="cliff_sensor_right_joint" type="fixed">
+      <origin xyz="0.085 -0.13601 0.0214" rpy="0 ${M_PI/2} 0" />
+      <parent link="base_link"/>
+      <child link="cliff_sensor_right_link" />
+    </joint>
+    <link name="cliff_sensor_right_link">
+      <inertial>
+        <mass value="0.0001" />
+        <origin xyz="0 0 0" />
+        <inertia ixx="0.0001" ixy="0.0" ixz="0.0"
+                 iyy="0.0001" iyz="0.0"
+                 izz="0.0001" />
+      </inertial>
+    </link>
+
+    <joint name="cliff_sensor_front_joint" type="fixed">
+      <origin xyz="0.156 0.00 0.0214" rpy="0 ${M_PI/2} 0" />
+      <parent link="base_link"/>
+      <child link="cliff_sensor_front_link" />
+    </joint>
+    <link name="cliff_sensor_front_link">
+      <inertial>
+        <mass value="0.0001" />
+        <origin xyz="0 0 0" />
+        <inertia ixx="0.0001" ixy="0.0" ixz="0.0"
+                 iyy="0.0001" iyz="0.0"
+                 izz="0.0001" />
+      </inertial>
+    </link>
+  </xacro:macro>
+</robot>

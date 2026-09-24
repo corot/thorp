@@ -109,4 +109,12 @@
   <xacro:cannon_tube parent="cannon_link" number="4" y_loc="-0.004400" z_loc=" 0.000000"/>
   <xacro:cannon_tube parent="cannon_link" number="5" y_loc="-0.002200" z_loc="-0.003811"/>
   <xacro:cannon_tube parent="cannon_link" number="6" y_loc=" 0.002200" z_loc="-0.003811"/>
+
+  <!-- Frame for a fake range sensor used to see where the cannon is pointing to -->
+  <joint name="ir_cannon_joint" type="fixed">
+    <origin xyz="0.035 0.0 0.0"/>
+    <parent link="cannon_link"/>
+    <child link="ir_cannon_link"/>
+  </joint>
+  <link name="ir_cannon_link"/>
 </robot>

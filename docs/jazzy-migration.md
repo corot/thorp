@@ -40,8 +40,8 @@ source install/setup.bash
 | # | Block | Status |
 |---|-------|--------|
 | 1 | Workspace bootstrap: branch, `COLCON_IGNORE` on every ROS 1 package, this document | done |
-| 2 | `thorp_description`: robot model identical to Noetic's, RViz viewer | next |
-| 3 | Gazebo Harmonic: spawn Thorp, diff drive, joint states, Kinect, Xtion, sonars and IR sensors | |
+| 2 | `thorp_description`: robot model identical to Noetic's, RViz viewer | done |
+| 3 | Gazebo Harmonic: spawn Thorp, diff drive, joint states, Kinect, Xtion, sonars and IR sensors | next |
 | 4 | Arm in simulation: `ros2_control`, trajectory and gripper controllers | |
 | 5 | `thorp_msgs`, `thorp_toolkit` | |
 | 6 | Navigation: Nav2 configuration, semantic costmap layer, MBF-specific behaviors | |
@@ -55,4 +55,5 @@ Block 3 onwards will be refined as we get there.
 
 | Package | Status |
 |---------|--------|
-| thorp_apps, thorp_boards, thorp_bringup, thorp_bt_cpp, thorp_cannon, thorp_costmap_layers, thorp_description, thorp_exploration, thorp_manipulation, thorp_mbf_plugins, thorp_moveit_config, thorp_msgs, thorp_navigation, thorp_perception, thorp_rviz_plugins, thorp_simulation, thorp_smach, thorp_toolkit | ROS 1 (ignored) |
+| thorp_description | migrated |
+| thorp_apps, thorp_boards, thorp_bringup, thorp_bt_cpp, thorp_cannon, thorp_costmap_layers, thorp_exploration, thorp_manipulation, thorp_mbf_plugins, thorp_moveit_config, thorp_msgs, thorp_navigation, thorp_perception, thorp_rviz_plugins, thorp_simulation, thorp_smach, thorp_toolkit | ROS 1 (ignored) |

@@ -16,11 +16,9 @@
 
 <robot name="Thorp" xmlns:xacro="http://ros.org/wiki/xacro">
 
-  <xacro:include filename="$(find turtlebot_description)/urdf/turtlebot_common_library.urdf.xacro"/>
-  <xacro:include filename="$(find turtlebot_description)/urdf/stacks/hexagons.urdf.xacro"/>
-  <xacro:include filename="$(find turtlebot_arm_description)/urdf/turtlebot_arm.xacro"/>
-  <xacro:include filename="$(find kobuki_description)/urdf/kobuki.urdf.xacro"/>
-  <xacro:include filename="$(find thorp_description)/urdf/thorp_gazebo.urdf.xacro"/>
+  <xacro:include filename="$(find thorp_description)/urdf/turtlebot/kobuki.urdf.xacro"/>
+  <xacro:include filename="$(find thorp_description)/urdf/turtlebot/hexagons.urdf.xacro"/>
+  <xacro:include filename="$(find thorp_description)/urdf/turtlebot_arm/turtlebot_arm.xacro"/>
   <xacro:include filename="$(find thorp_description)/urdf/cannon.urdf.xacro"/>
   <xacro:include filename="$(find thorp_description)/urdf/kinect.urdf.xacro"/>
   <xacro:include filename="$(find thorp_description)/urdf/xtion.urdf.xacro"/>
@@ -289,7 +287,7 @@
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0" />
         <geometry>
-          <mesh filename="package://hector_sensors_description/meshes/sonar_sensor/max_sonar_ez4.dae" scale="1.1 1.1 1.1"/>/>
+          <mesh filename="package://thorp_description/meshes/sensors/max_sonar_ez4.dae" scale="1.1 1.1 1.1"/>
         </geometry>
       </visual>
     </link>

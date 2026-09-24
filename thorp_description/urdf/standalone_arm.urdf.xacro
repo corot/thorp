@@ -6,7 +6,7 @@
     xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface">
 
     <!-- Included URDF Files -->
-    <xacro:include filename="$(find turtlebot_arm_description)/urdf/turtlebot_arm.xacro" />
+    <xacro:include filename="$(find thorp_description)/urdf/turtlebot_arm/turtlebot_arm.xacro" />
 
       <!-- Used for fixing robot to Gazebo 'base_link' -->
   <link name="world"/>
