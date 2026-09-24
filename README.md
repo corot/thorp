@@ -1,6 +1,9 @@
 THORP
 =====
 
+> **`jazzy` branch:** ROS 2 Jazzy port in progress; see [docs/jazzy-migration.md](docs/jazzy-migration.md).
+> The rest of this README describes the ROS 1 version, kept on the `noetic` branch.
+
 Software for a low-cost mobile manipulation: a TurtleBot2 with an arm, a second 3D camera, and some extra junk.
 
 Example apps
