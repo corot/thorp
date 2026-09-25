@@ -13,7 +13,7 @@ FROM ros:$ROS_DISTRO
 SHELL ["/bin/bash", "-c"]
 
 # install ROS base and minimal build dependencies
-RUN apt-get update && apt-get install -y ros-$ROS_DISTRO-ros-base \
+RUN apt-get update && apt-get install -y ros-$ROS_DISTRO-ros-base ros-noetic-actionlib-tools \
     python-is-python3 python3-pip python3-catkin-tools build-essential wget nano git python3-yaml
 
 # add packages.osrfoundation.org APT to install the latest gazebo version
@@ -141,6 +141,15 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     /opt/thorp-agent/bin/pip install --no-cache-dir --upgrade pip && \
     /opt/thorp-agent/bin/pip install --no-cache-dir jpl-rosa langchain-openai && \
     /opt/thorp-agent/bin/pip install --no-cache-dir rospkg catkin_pkg defusedxml pycryptodomex python-gnupg
+
+# Claude Code, so the workspace can be worked on from in here, where catkin, ROS and the simulator
+# are. The installer leaves a self-contained binary in ~/.local/bin, which is not on root's PATH.
+# Its state lives in ~/.claude; docker-compose.dev.yml keeps that on a volume so a rebuild doesn't
+# cost a re-login.
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    apt-get update && apt-get install -y curl && apt clean && \
+    curl -fsSL https://claude.ai/install.sh | bash
+ENV PATH="/root/.local/bin:$PATH"
 
 WORKDIR /catkin_ws
 

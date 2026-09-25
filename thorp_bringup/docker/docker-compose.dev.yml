@@ -56,6 +56,7 @@ services:
       - thorp-dev-build:/catkin_ws/build
       - thorp-dev-devel:/catkin_ws/devel
       - thorp-dev-logs:/catkin_ws/logs
+      - thorp-dev-claude:/root/.claude        # Claude Code's login and session history
       - /tmp/.X11-unix:/tmp/.X11-unix:rw     # the X socket
       # The X cookie. That default is where gdm puts it for uid 1000; if yours lives elsewhere
       # (`echo $XAUTHORITY`, or ~/.Xauthority on a non-gdm session), set XAUTHORITY_HOST
@@ -66,3 +67,4 @@ volumes:
   thorp-dev-build:
   thorp-dev-devel:
   thorp-dev-logs:
+  thorp-dev-claude:
