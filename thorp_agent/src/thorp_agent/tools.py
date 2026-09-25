@@ -97,6 +97,29 @@ def build(specs: List[Dict[str, Any]],
     return tools
 
 
+OBSERVE = ("What is true of the robot right now: what the gripper holds, what the planning "
+           "scene contains, whether a target is in view. Reads the robot and changes nothing, "
+           "so it is safe at any time. The same reading comes back on every other tool's "
+           "result, so this is for before the first one, or after somebody has been at the "
+           "robot by hand.")
+
+
+def observer(observe: Callable[[], Dict[str, Any]], name: str = "robot_status") -> StructuredTool:
+    """
+    The one tool that is not a behavior tree.
+
+    Every capability is a subtree bt_server runs, held to capabilities.yaml by the drift test.
+    An observation runs nothing and changes nothing, so it has no tree to be held to, and
+    putting one in that file would mean describing an interface that doesn't exist.
+    """
+
+    def invoke():
+        return json.dumps(observe(), sort_keys=True)
+
+    invoke.__name__ = name
+    return StructuredTool.from_function(func=invoke, name=name, description=OBSERVE)
+
+
 def _one(spec: Dict[str, Any], call, timeout: float) -> StructuredTool:
     name = spec["name"]
     outputs = sorted(spec.get("outputs") or [])

@@ -66,10 +66,43 @@ def _describe(field: str, meta: Dict[str, Any]) -> str:
     parts = [meta.get("description", field), "({})".format(kind)]
     if hint:
         parts.append("-- " + hint)
+    sources = meta.get("from") or []
+    if sources:
+        parts.append("[from {}]".format(", ".join(sources)))
     return " ".join(parts)
 
 
-def tool_spec(name: str, spec: Dict[str, Any]) -> Dict[str, Any]:
+def establishers(document: Dict[str, Any]) -> Dict[str, List[str]]:
+    """
+    state -> the capabilities that establish it.
+
+    Inverted from every `needs` rather than declared, so a state has one place saying who can
+    reach it and the yaml can't disagree with itself about it.
+    """
+    by_state = {}  # type: Dict[str, List[str]]
+    for _, spec in sorted((document.get("capabilities") or {}).items()):
+        for state, capability in (spec.get("needs") or {}).items():
+            if capability not in by_state.setdefault(state, []):
+                by_state[state].append(capability)
+    return by_state
+
+
+def _world(spec: Dict[str, Any], establishes: List[str]) -> str:
+    """The states this capability assumes, leaves behind and breaks, as one line or nothing."""
+    said = []
+    needs = spec.get("needs") or {}
+    if needs:
+        said.append("Needs " + ", ".join("{} (from {})".format(state, by)
+                                         for state, by in sorted(needs.items())) + ".")
+    if establishes:
+        said.append("Establishes " + ", ".join(sorted(establishes)) + ".")
+    invalidates = spec.get("invalidates") or []
+    if invalidates:
+        said.append("Invalidates " + ", ".join(sorted(invalidates)) + ".")
+    return " " + " ".join(said) if said else ""
+
+
+def tool_spec(name: str, spec: Dict[str, Any], establishes: List[str] = None) -> Dict[str, Any]:
     """
     One capability as {name, description, args}, with args keyed by input name.
 
@@ -89,8 +122,8 @@ def tool_spec(name: str, spec: Dict[str, Any]) -> Dict[str, Any]:
             qualifier = {"failure": " (only when it fails)", "maybe": " (not always)"}.get(when, "")
             listed.append("{}: {}{}".format(key, meta.get("description", ""), qualifier))
         text += " Returns " + "; ".join(listed) + "."
-        text += (" These values are yours to pass back into later calls -- each call starts "
-                 "from an empty blackboard and remembers nothing.")
+        text += " These values are yours to pass back into later calls."
+    text += _world(spec, establishes or [])
 
     args = {}
     for field, meta in (spec.get("inputs") or {}).items():
@@ -101,6 +134,12 @@ def tool_spec(name: str, spec: Dict[str, Any]) -> Dict[str, Any]:
             "outputs": sorted(outputs), "stack": spec.get("stack", [])}
 
 
+def specs_from(document: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Every capability an agent may call, as a tool spec. One place, so nothing renders twice."""
+    by_state = establishers(document)
+    return [tool_spec(name, spec, [s for s, by in by_state.items() if name in by])
+            for name, spec in sorted(offered(document).items())]
+
+
 def tool_specs(path: str) -> List[Dict[str, Any]]:
-    document = load(path)
-    return [tool_spec(name, spec) for name, spec in sorted(offered(document).items())]
+    return specs_from(load(path))

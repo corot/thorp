@@ -31,8 +31,7 @@ def document():
 
 @pytest.fixture(scope="module")
 def specs(document):
-    return [capabilities.tool_spec(name, spec)
-            for name, spec in sorted(capabilities.offered(document).items())]
+    return capabilities.specs_from(document)
 
 
 def test_apps_are_not_offered(document):
@@ -139,6 +138,53 @@ def test_optional_inputs_can_be_left_out_and_are_not_sent():
     assert tool.args_schema.model_json_schema()["required"] == ["a"]
     tool.invoke({"a": "x"})
     assert sent == {"a": "x"}
+
+
+def test_states_reach_the_agent(document, specs):
+    """
+    The point of declaring states: an agent that cannot read what a capability needs, what it
+    leaves behind and what it breaks has no way to tell a precondition it has already met from
+    one it still has to.
+    """
+    offered = capabilities.offered(document)
+    by_state = capabilities.establishers(document)
+    assert by_state, "no capability establishes any state -- has `needs` gone away?"
+
+    for spec in specs:
+        declared = offered[spec["name"]]
+        for state in declared.get("needs") or {}:
+            assert state in spec["description"], "{} doesn't say it needs {}".format(
+                spec["name"], state)
+        for state in declared.get("invalidates") or []:
+            assert state in spec["description"], "{} doesn't say it breaks {}".format(
+                spec["name"], state)
+        for state, by in by_state.items():
+            if spec["name"] in by:
+                assert state in spec["description"], "{} establishes {} and doesn't say so".format(
+                    spec["name"], state)
+
+
+def test_where_an_argument_comes_from_is_shown(document, specs):
+    offered = capabilities.offered(document)
+    sourced = 0
+    for spec in specs:
+        for field, meta in (offered[spec["name"]].get("inputs") or {}).items():
+            for ref in (meta or {}).get("from") or []:
+                sourced += 1
+                assert ref in spec["args"][field]["description"], (
+                    "{}.{} doesn't say it comes from {}".format(spec["name"], field, ref))
+    assert sourced, "no input declares where it comes from"
+
+
+def test_observation_is_offered_as_a_tool():
+    """Not a capability: it runs no tree, so capabilities.yaml has nothing to say about it."""
+    pytest.importorskip("langchain_core")
+    import json
+    from thorp_agent import tools
+
+    tool = tools.observer(lambda: {"holding": "cube 1", "target_in_view": False})
+    assert tool.name == "robot_status"
+    assert json.loads(tool.invoke({})) == {"holding": "cube 1", "target_in_view": False}
 
 
 def test_error_codes_get_their_names():

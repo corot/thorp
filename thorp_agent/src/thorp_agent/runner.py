@@ -16,10 +16,14 @@ DEFAULT_ACTION = "/bt_server/run_subtree"
 
 
 class SubtreeRunner(object):
-    def __init__(self, action_name=DEFAULT_ACTION, connect_timeout=30.0, dry_run=False):
+    def __init__(self, action_name=DEFAULT_ACTION, connect_timeout=30.0, dry_run=False,
+                 world=None):
         self.dry_run = dry_run
         self.action_name = action_name
         self.error_names = errors.ros_table()
+        # read after every run, so the agent is told where things stand rather than inferring it
+        # from what it has done, and without spending a call to ask
+        self.world = world
         if dry_run:
             self.client = None
             return
@@ -49,8 +53,8 @@ class SubtreeRunner(object):
         self.client.send_goal(goal)
         if not self.client.wait_for_result(rospy.Duration(timeout)):
             self.client.cancel_goal()
-            return {"succeeded": False,
-                    "error": "no result after {}s; the goal was canceled".format(timeout)}
+            return self.observed({"succeeded": False,
+                                  "error": "no result after {}s; the goal was canceled".format(timeout)})
 
         state = self.client.get_state()
         result = self.client.get_result()
@@ -59,14 +63,20 @@ class SubtreeRunner(object):
             # bt_server refused the goal: unknown tree, malformed json, a missing input. The
             # agent's mistake to fix, and its json says which, so hand that straight back.
             detail = json.loads(result.json) if result and result.json else {}
-            return {"succeeded": False, "refused": True,
-                    "error": detail.get("error", "the goal was refused")}
+            return self.observed({"succeeded": False, "refused": True,
+                                  "error": detail.get("error", "the goal was refused")})
 
         outputs = errors.annotate(json.loads(result.json) if result and result.json else {},
                                   self.error_names)
-        return {"succeeded": bool(result and result.success),
-                "state": _STATE_NAMES.get(state, str(state)),
-                "outputs": outputs}
+        return self.observed({"succeeded": bool(result and result.success),
+                              "state": _STATE_NAMES.get(state, str(state)),
+                              "outputs": outputs})
+
+    def observed(self, result):
+        """Adds what the robot looks like now. A failed run is when it matters most."""
+        if self.world:
+            result["observed"] = self.world.observe()
+        return result
 
 
 _STATE_NAMES = {GoalStatus.SUCCEEDED: "SUCCEEDED", GoalStatus.PREEMPTED: "PREEMPTED",

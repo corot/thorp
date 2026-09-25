@@ -32,6 +32,17 @@
 # An input marked `optional: true` may be left out: the tree reads it when given and otherwise
 # produces it itself, typically from a parameter. The drift test holds it to exactly that.
 #
+# An input's `from` lists the capability outputs that can supply it, as capability.output. More
+# than one means the choice is the caller's: closest_pose works on either list of table poses,
+# and which one it is decides whether the robot ends up in arm's reach or a meter back.
+#
+# `needs` and `invalidates` are the other half of that, for what a capability assumes about the
+# world rather than about its arguments. `needs` maps a state to the capability that establishes
+# it; which capability establishes a state is read off by inverting that, so nothing declares it
+# twice. `invalidates` lists the states this capability breaks. Between them an agent can work
+# out what a run left standing instead of redoing everything, which is the difference between
+# picking a second cube in two calls and in six.
+#
 # kind:
 #   capability - a step an agent can ask for. The default, so it is left off.
 #   app        - a whole session's behavior rather than a step: it drives the robot until
@@ -73,6 +84,27 @@
 #     cancels and checks it was still going and had produced something. Without this they'd
 #     just hit their timeout and be reported as failures.
 
+# Facts about the world that capabilities depend on and change. `observed` says how the agent
+# can tell whether one holds right now: a state the agent cannot check is one it can only assume
+# from what it has already done, which survives a sequence of capability calls and does not
+# survive anybody touching the robot. Only declare a state some capability genuinely requires --
+# pickup_object clears the gripper itself, so an empty gripper is not one of these.
+states:
+  at_a_table:
+    means: the robot is parked against a table, close enough for the arm to reach what is on it
+    observed: no
+  objects_detected:
+    means: >
+      the objects on the surface in front of the robot are in the planning scene, under the
+      names detect_objects gave them
+    observed: the planning scene
+  holding_object:
+    means: the gripper holds an object
+    observed: the planning scene, and the gripper itself
+  target_in_view:
+    means: the tracker is publishing a pose for something to chase
+    observed: the target tracker
+
 capabilities:
 
   # ------------------------------------------------------------------- manipulation --------
@@ -83,8 +115,10 @@ capabilities:
       holding something, and retrying with a cleared octomap if the first attempt fails.
     status: ok
     stack: [manipulation]
+    needs: {at_a_table: attach_to_table, objects_detected: detect_objects}
+    invalidates: [objects_detected]
     inputs:
-      object_name: {type: string, description: "name of the object to pick, as the detector named it"}
+      object_name: {type: string, from: [detect_objects.objects], description: "name of the object to pick, as the detector named it"}
       tightening: {type: float, optional: true, description: "extra gripper closure past contact, in meters; leave it out to use the gripper's configured value"}
     outputs:
       error: {type: int, when: failure, description: "error code from the pickup action; 0 when it worked"}
@@ -110,8 +144,10 @@ capabilities:
       Place the object currently held by the gripper at a given pose on the support surface.
     status: ok
     stack: [manipulation]
+    needs: {holding_object: pickup_object, at_a_table: attach_to_table}
+    invalidates: [holding_object, objects_detected]
     inputs:
-      object_name: {type: string, description: "name of the object being placed"}
+      object_name: {type: string, from: [pickup_object.attached_object], description: "name of the object being placed"}
       place_pose: {type: geometry_msgs::PoseStamped, description: "where to place it, as 'x;y;yaw;frame' or 'x;y;z;roll;pitch;yaw;frame'; the short form leaves z at 0, which is the floor"}
     outputs:
       error: {type: int, when: failure, description: "error code from the place action; 0 when it worked"}
@@ -138,8 +174,10 @@ capabilities:
       free slot is, and recording the object as stored there.
     status: ok
     stack: [manipulation]
+    needs: {holding_object: pickup_object}
+    invalidates: [holding_object]
     inputs:
-      object_name: {type: string, description: "name of the object to stow on the tray"}
+      object_name: {type: string, from: [pickup_object.attached_object], description: "name of the object to stow on the tray"}
     outputs:
       error: {type: int, when: failure, description: "error code from the place action; 0 when it worked"}
       pose_on_tray: {type: geometry_msgs::PoseStamped, description: "slot the object was placed in"}
@@ -207,8 +245,9 @@ capabilities:
       have several candidate poses and only care that one of them works.
     status: ok
     stack: [navigation]
+    invalidates: [at_a_table, objects_detected]
     inputs:
-      pose: {type: geometry_msgs::PoseStamped, description: "where to drive to, as 'x;y;yaw;frame'"}
+      pose: {type: geometry_msgs::PoseStamped, from: [closest_pose.closest_pose], description: "where to drive to, as 'x;y;yaw;frame'"}
     outputs:
       error: {type: int, when: failure, description: "move_base error code; only set when the drive failed"}
     test:
@@ -226,8 +265,8 @@ capabilities:
     status: ok
     stack: [none]
     inputs:
-      table: {type: rail_manipulation_msgs::SegmentedObject, description: "the table, as detect_table returned it"}
-      table_pose: {type: geometry_msgs::PoseStamped, description: "that table's pose, as detect_table returned it"}
+      table: {type: rail_manipulation_msgs::SegmentedObject, from: [detect_table.table], description: "the table, as detect_table returned it"}
+      table_pose: {type: geometry_msgs::PoseStamped, from: [detect_table.table_pose], description: "that table's pose, as detect_table returned it"}
     outputs:
       approach_poses: {type: std::vector<geometry_msgs::PoseStamped>, description: "one pose per usable side"}
     test:
@@ -247,8 +286,8 @@ capabilities:
     status: ok
     stack: [none]
     inputs:
-      table: {type: rail_manipulation_msgs::SegmentedObject, description: "the table, as detect_table returned it"}
-      table_pose: {type: geometry_msgs::PoseStamped, description: "that table's pose, as detect_table returned it"}
+      table: {type: rail_manipulation_msgs::SegmentedObject, from: [detect_table.table], description: "the table, as detect_table returned it"}
+      table_pose: {type: geometry_msgs::PoseStamped, from: [detect_table.table_pose], description: "that table's pose, as detect_table returned it"}
     outputs:
       pickup_poses: {type: std::vector<geometry_msgs::PoseStamped>, description: "poses along every usable side"}
     test:
@@ -267,7 +306,7 @@ capabilities:
     status: ok
     stack: [none]
     inputs:
-      poses: {type: std::vector<geometry_msgs::PoseStamped>, description: "the poses to choose between"}
+      poses: {type: std::vector<geometry_msgs::PoseStamped>, from: [table_pickup_poses.pickup_poses, table_approach_poses.approach_poses], description: "the poses to choose between"}
     outputs:
       closest_pose: {type: geometry_msgs::PoseStamped, description: "whichever of them is nearest the robot"}
       robot_pose: {type: geometry_msgs::PoseStamped, description: "where the robot is now"}
@@ -289,6 +328,7 @@ capabilities:
       it over goto_pose when only the heading is wrong.
     status: ok
     stack: [navigation]
+    invalidates: [at_a_table, objects_detected]
     inputs:
       pose: {type: geometry_msgs::PoseStamped, description: "what to face; only its position matters"}
     outputs:
@@ -322,6 +362,7 @@ capabilities:
       (full_coverage_planner or per_room_coverage).
     status: ok
     stack: [navigation]
+    invalidates: [at_a_table, objects_detected]
     inputs: {}
     outputs:
       exploration_method: {type: string, description: "strategy actually used, from the parameter"}
@@ -387,6 +428,7 @@ capabilities:
       Look a detected table over from a viewpoint and decide whether it is a usable size.
     status: ok
     stack: [navigation, perception]
+    invalidates: [at_a_table, objects_detected]
     inputs: {}
     outputs:
       table: {type: rail_manipulation_msgs::SegmentedObject, description: "the validated table (not serializable yet)"}
@@ -403,6 +445,8 @@ capabilities:
       visible and there is ammo left.
     status: ok
     stack: [navigation, perception]
+    needs: {target_in_view: look_at_pose}
+    invalidates: [at_a_table, objects_detected]
     inputs: {}
     outputs:
       cannon_tilt_angle: {type: float, when: maybe, description: "angle the cannon was tilted to"}
@@ -423,6 +467,7 @@ capabilities:
       Plan one coverage path over the whole map and follow it.
     status: ok
     stack: [navigation]
+    invalidates: [at_a_table, objects_detected]
     inputs: {}
     outputs:
       coverage_waypoints: {type: std::vector<geometry_msgs::PoseStamped>, description: "the waypoints planned"}
@@ -437,6 +482,7 @@ capabilities:
       Segment the map into rooms, order them, and cover each one in turn.
     status: ok
     stack: [navigation]
+    invalidates: [at_a_table, objects_detected]
     inputs: {}
     outputs:
       room_sequence: {type: std::vector<unsigned int>, description: "order the rooms are visited in"}
@@ -462,8 +508,9 @@ capabilities:
       one works.
     status: ok
     stack: [navigation]
+    invalidates: [at_a_table, objects_detected]
     inputs:
-      poses: {type: std::vector<geometry_msgs::PoseStamped>, description: "candidate poses, tried in order, each as 'x;y;yaw;frame'"}
+      poses: {type: std::vector<geometry_msgs::PoseStamped>, from: [table_approach_poses.approach_poses], description: "candidate poses, tried in order, each as 'x;y;yaw;frame'"}
     outputs:
       next_pose: {type: geometry_msgs::PoseStamped, description: "the pose actually reached"}
       goto_pose_error: {type: int, when: failure, description: "error code from the navigation goal"}
@@ -478,8 +525,9 @@ capabilities:
       waypoint whenever following fails.
     status: ok
     stack: [navigation]
+    invalidates: [at_a_table, objects_detected]
     inputs:
-      waypoints: {type: std::vector<geometry_msgs::PoseStamped>, description: "waypoints to follow in order, each as 'x;y;yaw;frame'"}
+      waypoints: {type: std::vector<geometry_msgs::PoseStamped>, from: [full_coverage_planner.coverage_waypoints, per_room_coverage.coverage_waypoints], description: "waypoints to follow in order, each as 'x;y;yaw;frame'"}
     outputs:
       next_waypoint: {type: unsigned long, when: maybe, description: "index of the waypoint being driven to"}
       robot_pose: {type: geometry_msgs::PoseStamped, when: maybe, description: "robot pose while following"}
@@ -495,9 +543,10 @@ capabilities:
       table_pickup_poses gave. The last step before picking from or placing on a table.
     status: ok
     stack: [navigation, perception]
+    invalidates: [objects_detected]
     inputs:
-      table: {type: rail_manipulation_msgs::SegmentedObject, description: "table to approach; name, pose and size"}
-      pose: {type: geometry_msgs::PoseStamped, description: "pose to approach it from"}
+      table: {type: rail_manipulation_msgs::SegmentedObject, from: [detect_table.table], description: "table to approach; name, pose and size"}
+      pose: {type: geometry_msgs::PoseStamped, from: [closest_pose.closest_pose], description: "pose to approach it from"}
     outputs:
       error: {type: int, when: failure, description: "error code from path execution"}
     test:
@@ -516,9 +565,11 @@ capabilities:
       Back away from a table under precise control and restore its costmap footprint.
     status: ok
     stack: [navigation]
+    needs: {at_a_table: attach_to_table}
+    invalidates: [at_a_table, objects_detected]
     inputs:
-      table: {type: rail_manipulation_msgs::SegmentedObject, description: "table to back away from"}
-      pose: {type: geometry_msgs::PoseStamped, description: "pose to retreat to"}
+      table: {type: rail_manipulation_msgs::SegmentedObject, from: [detect_table.table], description: "table to back away from"}
+      pose: {type: geometry_msgs::PoseStamped, from: [closest_pose.closest_pose], description: "pose to retreat to"}
     outputs:
       error: {type: int, when: failure, description: "error code from path execution"}
     test:
@@ -550,9 +601,10 @@ capabilities:
       sequence of pickup locations.
     status: ok
     stack: [navigation, manipulation, perception]
+    invalidates: [at_a_table, objects_detected, holding_object]
     inputs:
-      table: {type: rail_manipulation_msgs::SegmentedObject, description: "table to clear"}
-      table_pose: {type: geometry_msgs::PoseStamped, description: "pose of that table"}
+      table: {type: rail_manipulation_msgs::SegmentedObject, from: [detect_table.table], description: "table to clear"}
+      table_pose: {type: geometry_msgs::PoseStamped, from: [detect_table.table_pose], description: "pose of that table"}
       given_up_count: {type: unsigned int, description: "objects abandoned so far; 0 to start"}
     outputs:
       pickup_pose: {type: geometry_msgs::PoseStamped, when: maybe, description: "pose the last pickup was attempted from"}
@@ -571,6 +623,8 @@ capabilities:
       recording the ones that keep failing.
     status: ok
     stack: [manipulation, perception]
+    needs: {at_a_table: attach_to_table, objects_detected: detect_objects}
+    invalidates: [objects_detected, holding_object]
     inputs:
       failures: {type: "std::map<std::string, uint32_t>", description: "per-object failure counts so far; {} to start"}
       given_up_count: {type: unsigned int, description: "objects abandoned so far; 0 to start"}

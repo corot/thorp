@@ -17,6 +17,7 @@ import rospy
 
 from thorp_agent import capabilities, llm, tools
 from thorp_agent.runner import SubtreeRunner, DEFAULT_ACTION
+from thorp_agent.world import World
 
 
 def main():
@@ -32,8 +33,9 @@ def main():
     rospy.loginfo("Offering %d capabilities: %s",
                   len(specs), ", ".join(spec["name"] for spec in specs))
 
+    world = None if dry_run else World()
     runner = SubtreeRunner(action_name=rospy.get_param("~action", DEFAULT_ACTION),
-                           dry_run=dry_run)
+                           dry_run=dry_run, world=world)
     # Each capability's own test timeout is what the suite found it needs, so reuse it rather
     # than inventing a number: per_room_coverage wants 900 s and detect_table wants 30.
     document = capabilities.load(path)
@@ -45,7 +47,8 @@ def main():
 
     agent = ThorpAgent(ros_version=1,
                        llm=llm.make(),
-                       tools=tools.build(specs, runner.run, timeouts),
+                       tools=(tools.build(specs, runner.run, timeouts) +
+                              ([tools.observer(world.observe)] if world else [])),
                        prompts=PROMPTS,
                        # ROSA sets the model's streaming itself, and reports token usage only without it
                        streaming=False,

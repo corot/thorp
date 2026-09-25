@@ -269,6 +269,109 @@ def test_setup_steps_are_callable_capabilities(capability_name, declared):
                 capability_name, key))
 
 
+def establishers(caps):
+    """state -> the capabilities that establish it, read off by inverting every `needs`."""
+    by_state = {}
+    for spec in caps.values():
+        for state, capability in (spec.get("needs") or {}).items():
+            by_state.setdefault(state, set()).add(capability)
+    return by_state
+
+
+def test_states_are_declared_and_reachable(declared):
+    """
+    A state is a promise that some capability can put the robot into it. One that nothing
+    establishes is a precondition the agent can read and never satisfy, and a name missing from
+    the glossary means nothing to it at all.
+    """
+    caps, states = declared["capabilities"], declared.get("states") or {}
+
+    for name, spec in caps.items():
+        for state, by in (spec.get("needs") or {}).items():
+            assert state in states, "{} needs '{}', which no state declares".format(name, state)
+            assert by in caps, "{} says '{}' comes from '{}', which is not a capability".format(
+                name, state, by)
+        for state in spec.get("invalidates") or []:
+            assert state in states, "{} invalidates '{}', which no state declares".format(name, state)
+
+    unreachable = set(states) - set(establishers(caps))
+    assert not unreachable, (
+        "states nothing establishes, so nothing can satisfy them: {}".format(sorted(unreachable)))
+
+
+def test_input_sources_name_real_outputs(capability_name, declared):
+    """`from` is what tells the agent where a value comes from; a stale one sends it nowhere."""
+    caps = declared["capabilities"]
+    for key, entry in (caps[capability_name].get("inputs") or {}).items():
+        for ref in (entry or {}).get("from") or []:
+            source, _, output = ref.partition(".")
+            assert source in caps, "{}.{}: '{}' is not a capability".format(
+                capability_name, key, source)
+            assert output in (caps[source].get("outputs") or {}), (
+                "{}.{}: {} declares no output '{}'".format(capability_name, key, source, output))
+
+
+def test_declarations_account_for_the_setup_chain(capability_name, declared):
+    """
+    The setup chains were written by hand against the real robot and they pass, so they are the
+    evidence that `needs` and `from` are right. The two are held against each other here rather
+    than generated from each other: two accounts of the same knowledge only cross-check while
+    both are written down.
+
+    A setup step earns its place one of two ways -- it produces a value a later step consumes,
+    or it leaves the robot in a state this capability needs, directly or through one of the
+    capabilities that establish those states. place_on_tray needs only a held object, but
+    getting one held means a table to pick from. Any other step is one the agent will never
+    know to take.
+    """
+    caps = declared["capabilities"]
+    spec = caps[capability_name]
+    test = spec.get("test") or {}
+    steps = test.get("setup") or []
+    if not steps:
+        return
+
+    subtree_of = {(step.get("as") or step["subtree"]): step["subtree"] for step in steps}
+    needs = spec.get("needs") or {}
+    consumed = set()
+
+    for block in steps + [test]:
+        # whose inputs this block is filling: a setup step's own, or the capability's
+        target = caps[subtree_of.get(block.get("subtree"), capability_name)] \
+            if block is not test else spec
+        for key, ref in (block.get("inputs_from") or {}).items():
+            consumed.add(ref[0])
+            sources = ((target.get("inputs") or {}).get(key) or {}).get("from")
+            if sources is None:
+                continue
+            supplied = "{}.{}".format(subtree_of.get(ref[0], ref[0]), ref[1])
+            assert supplied in sources, (
+                "{}: the test fills {} from {}, which that input's `from` doesn't list "
+                "({})".format(capability_name, key, supplied, sources))
+
+    staging = set()
+    pending = list(needs.values())
+    while pending:
+        capability = pending.pop()
+        if capability in staging:
+            continue
+        staging.add(capability)
+        pending += list((caps[capability].get("needs") or {}).values())
+
+    for step in steps:
+        if (step.get("as") or step["subtree"]) in consumed:
+            continue
+        assert step["subtree"] in staging, (
+            "{}: setup runs '{}' and nothing uses what it returns, so it is there for the state "
+            "it leaves behind -- say which, in `needs`".format(capability_name, step["subtree"]))
+
+    staged = {step["subtree"] for step in steps}
+    for state, by in needs.items():
+        assert by in staged, (
+            "{}: needs '{}' from {}, but the setup chain never runs it".format(
+                capability_name, state, by))
+
+
 def check_call(capability_name, target_spec, block, available, what):
     """One call's inputs: every input supplied exactly once, and every reference resolvable."""
     literal = set(block.get("inputs") or {})
