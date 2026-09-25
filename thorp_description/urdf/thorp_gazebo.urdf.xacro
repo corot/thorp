@@ -1,12 +1,67 @@
 <?xml version="1.0"?>
 <robot name="thorp_gazebo" xmlns:xacro="http://ros.org/wiki/xacro">
 
-  <!-- Simulated Microsoft Kinect / ASUS Xtion PRO Live macros; included on their respective xacro files -->
-  <xacro:macro name="thorp_sim_3dsensor" params="name depth_registration">  
+  <!-- Gazebo Harmonic configuration: sensors, systems and surface properties.
+       Gazebo topics are named as the ROS topics they are bridged to by thorp_simulation. -->
+
+  <!-- Kobuki base: diff drive, odometry, joint states and IMU, on the same topics as the kobuki_gazebo plugin -->
+  <gazebo>
+    <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive">
+      <left_joint>wheel_left_joint</left_joint>
+      <right_joint>wheel_right_joint</right_joint>
+      <wheel_separation>0.230</wheel_separation>
+      <wheel_radius>0.035</wheel_radius>
+      <topic>/mobile_base/commands/velocity</topic>
+      <odom_topic>/odom</odom_topic>
+      <tf_topic>/tf</tf_topic>
+      <frame_id>odom</frame_id>
+      <child_frame_id>base_footprint</child_frame_id>
+      <odom_publisher_frequency>50</odom_publisher_frequency>
+    </plugin>
+    <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher">
+      <topic>/joint_states</topic>
+    </plugin>
+  </gazebo>
+
+  <gazebo reference="gyro_link">
+    <sensor type="imu" name="imu">
+      <always_on>true</always_on>
+      <update_rate>50</update_rate>
+      <topic>/mobile_base/sensors/imu_data</topic>
+      <gz_frame_id>gyro_link</gz_frame_id>
+    </sensor>
+  </gazebo>
+
+  <xacro:macro name="kobuki_surface" params="link mu">
+    <gazebo reference="${link}">
+      <mu1>${mu}</mu1>
+      <mu2>${mu}</mu2>
+      <kp>1000000.0</kp>
+      <kd>100.0</kd>
+      <minDepth>0.001</minDepth>
+      <maxVel>1.0</maxVel>
+    </gazebo>
+  </xacro:macro>
+
+  <xacro:kobuki_surface link="wheel_left_link" mu="10.0"/>
+  <xacro:kobuki_surface link="wheel_right_link" mu="10.0"/>
+  <xacro:kobuki_surface link="caster_front_link" mu="0.1"/>
+  <xacro:kobuki_surface link="caster_back_link" mu="0.1"/>
+  <gazebo reference="base_link">
+    <mu1>0.3</mu1>
+    <mu2>0.3</mu2>
+  </gazebo>
+
+  <!-- Simulated Microsoft Kinect / ASUS Xtion PRO Live macros; included on their respective xacro files.
+       Gazebo cameras look along the x axis of the link they are attached to, so we attach them to the camera
+       link, that matches the RGB frame, and stamp their images with the RGB optical frame -->
+  <xacro:macro name="thorp_sim_3dsensor" params="name">
     <gazebo reference="${name}_link">
-      <sensor type="depth" name="${name}">
+      <sensor type="rgbd_camera" name="${name}">
         <always_on>true</always_on>
         <update_rate>10.0</update_rate>
+        <topic>/${name}</topic>
+        <gz_frame_id>${name}_rgb_optical_frame</gz_frame_id>
         <camera>
           <horizontal_fov>${58.0*M_PI/180.0}</horizontal_fov>  <!-- kinect: 57, xtion: 58 -->
           <image>
@@ -18,80 +73,69 @@
             <near>0.05</near>
             <far>8.0</far>
           </clip>
+          <depth_camera>
+            <clip>
+              <near>0.35</near>  <!-- actual value is 0.45, hacked to detect upper shelves -->
+              <far>6.0</far>
+            </clip>
+          </depth_camera>
         </camera>
-        <plugin name="depth_camera_controller" filename="libgazebo_ros_depth_camera.so">
-          <cameraName>${name}</cameraName>
-          <alwaysOn>true</alwaysOn>
-          <updateRate>0.0</updateRate>
-          <imageTopicName>rgb/image_raw</imageTopicName>
-          <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>
-          <xacro:if value="${depth_registration}">  <!-- Normally for manipulation camera (Xtion) -->
-            <depthImageTopicName>depth_registered/image_raw</depthImageTopicName>
-            <pointCloudTopicName>depth_registered/points</pointCloudTopicName>
-            <depthImageCameraInfoTopicName>depth_registered/camera_info</depthImageCameraInfoTopicName>
-          </xacro:if>
-          <xacro:unless value="${depth_registration}">  <!-- Normally for navigation camera (Kinect) -->
-            <depthImageTopicName>depth/image_raw</depthImageTopicName>
-            <pointCloudTopicName>depth/points</pointCloudTopicName>
-            <depthImageCameraInfoTopicName>depth/camera_info</depthImageCameraInfoTopicName>
-          </xacro:unless>
-          <frameName>${name}_rgb_optical_frame</frameName>
-          <baseline>0.1</baseline>
-          <distortion_k1>0.0</distortion_k1>
-          <distortion_k2>0.0</distortion_k2>
-          <distortion_k3>0.0</distortion_k3>
-          <distortion_t1>0.0</distortion_t1>
-          <distortion_t2>0.0</distortion_t2>
-          <pointCloudCutoff>0.35</pointCloudCutoff>  <!-- actual value is 0.45, hacked to detect upper shelves -->
-          <pointCloudCutoffMax>6.0</pointCloudCutoffMax>
-        </plugin>
+      </sensor>
+    </gazebo>
+  </xacro:macro>
+
+  <!-- Single or multi-ray range sensor; ros_gz_bridge converts its laser scans into range messages,
+       with the closest reading and the rays spread as field of view -->
+  <xacro:macro name="thorp_sim_ranger" params="name link topic h_samples h_fov v_samples v_min v_max
+                                               min_range max_range noise visualize">
+    <gazebo reference="${link}">
+      <sensor type="gpu_lidar" name="${name}">
+        <always_on>true</always_on>
+        <update_rate>20</update_rate>
+        <visualize>${visualize}</visualize>
+        <topic>${topic}</topic>
+        <gz_frame_id>${link}</gz_frame_id>
+        <lidar>
+          <scan>
+            <horizontal>
+              <samples>${h_samples}</samples>
+              <resolution>1</resolution>
+              <min_angle>${-h_fov/2}</min_angle>
+              <max_angle>${+h_fov/2}</max_angle>
+            </horizontal>
+            <vertical>
+              <samples>${v_samples}</samples>
+              <resolution>1</resolution>
+              <min_angle>${v_min}</min_angle>
+              <max_angle>${v_max}</max_angle>
+            </vertical>
+          </scan>
+          <range>
+            <min>${min_range}</min>
+            <max>${max_range}</max>
+            <resolution>0.01</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>${noise}</stddev>
+          </noise>
+        </lidar>
       </sensor>
     </gazebo>
   </xacro:macro>
 
   <!-- LV-MaxSonar-EZ2 ultrasound sensors
-       Use Hector sonar plugin to emulate the wide fov of the EZ2
+       Emulate the wide fov of the EZ2 with a 7x7 rays lidar, taking the closest reading.
        Specifications are fov: 0.6 rad and max. range: 6 m, but we clipped that radically in the real robot to
        0.3 and 0.8 respectively to avoid polluting the costmaps, while still providing safety against collisions
    -->
-  <xacro:macro name="LV_MaxSonar_EZ2_sim" params="name">  
-    <gazebo reference="s_${name}_link">
-      <sensor type="ray" name="s_${name}">
-        <always_on>true</always_on>
-        <update_rate>20</update_rate>
-        <visualize>false</visualize>
-        <ray>
-          <scan>
-            <horizontal>
-              <samples>7</samples>
-              <resolution>1</resolution>
-              <min_angle>-0.15</min_angle>
-              <max_angle>+0.15</max_angle>
-            </horizontal>
-            <vertical>
-              <samples>7</samples>
-              <resolution>1</resolution>
-              <min_angle>-0.10</min_angle>  <!-- almost parallel to the ground to avoid detecting it -->
-              <max_angle>+0.20</max_angle>  <!-- TODO: I need to point upward to keep the fov in the range msgs! would be better to set the ground as not reflective, somehow -->
-            </vertical>
-          </scan>
-          <range>
-            <min>0.1</min>
-            <max>0.8</max>
-            <resolution>0.01</resolution>
-          </range>
-        </ray>
-        <plugin name="gazebo_ros_s_${name}_controller" filename="libhector_gazebo_ros_sonar.so">
-          <updateRate>20</updateRate>
-          <gaussianNoise>0.05</gaussianNoise>
-          <topicName>mobile_base/sensors/sonars/${name}</topicName>
-          <frameId>s_${name}_link</frameId>
-        </plugin>
-      </sensor>
-
-      <selfCollide>true</selfCollide>
-      <gravity>true</gravity>
-    </gazebo>
+  <xacro:macro name="LV_MaxSonar_EZ2_sim" params="name topic:=''">
+    <!-- Vertical fov is almost parallel to the ground to avoid detecting it -->
+    <xacro:thorp_sim_ranger name="s_${name}" link="s_${name}_link"
+                            topic="/mobile_base/sensors/sonars/${topic if topic else name}"
+                            h_samples="7" h_fov="0.3" v_samples="7" v_min="-0.10" v_max="+0.20"
+                            min_range="0.1" max_range="0.8" noise="0.0" visualize="false"/>
   </xacro:macro>
 
   <xacro:LV_MaxSonar_EZ2_sim name="m90"/>
@@ -99,7 +143,7 @@
   <xacro:LV_MaxSonar_EZ2_sim name="m54"/>
   <xacro:LV_MaxSonar_EZ2_sim name="m36"/>
   <xacro:LV_MaxSonar_EZ2_sim name="m18"/>
-  <xacro:LV_MaxSonar_EZ2_sim name="0"/>
+  <xacro:LV_MaxSonar_EZ2_sim name="0" topic="p0"/>  <!-- ROS 2 names can't start with a digit -->
   <xacro:LV_MaxSonar_EZ2_sim name="p18"/>
   <xacro:LV_MaxSonar_EZ2_sim name="p36"/>
   <xacro:LV_MaxSonar_EZ2_sim name="p54"/>
@@ -107,39 +151,12 @@
   <xacro:LV_MaxSonar_EZ2_sim name="p90"/>
 
   <!-- Sharp GP2Y0A21 IR sensors
-       Its fov is narrow enough (0.08 rad) to be simulated with a single beam sensor
+       Its fov is narrow enough (0.08 rad) to be simulated with a single row of three rays
    -->
-  <xacro:macro name="Sharp_GP2Y0A21_IR_sim" params="name">  
-    <gazebo reference="ir_${name}_link">
-      <sensor type="ray" name="ir_${name}">
-        <always_on>true</always_on>
-        <update_rate>20</update_rate>
-        <visualize>false</visualize>
-        <ray>
-          <range>
-            <min>0.01</min>
-            <max>0.90</max>
-            <resolution>0.01</resolution>
-          </range>
-          <noise>
-            <type>gaussian</type>
-            <mean>0.0</mean>
-            <stddev>0.01</stddev>
-          </noise>
-        </ray>
-        <plugin name="gazebo_ros_ir_${name}_controller" filename="libgazebo_ros_range.so">
-          <updateRate>20</updateRate>
-          <gaussianNoise>0.01</gaussianNoise>
-          <topicName>mobile_base/sensors/infrared/${name}</topicName>
-          <frameName>ir_${name}_link</frameName>
-          <radiation>infrared</radiation>
-          <fov>0.08</fov>
-        </plugin>
-      </sensor>
-
-      <selfCollide>true</selfCollide>
-      <gravity>true</gravity>
-    </gazebo>
+  <xacro:macro name="Sharp_GP2Y0A21_IR_sim" params="name">
+    <xacro:thorp_sim_ranger name="ir_${name}" link="ir_${name}_link" topic="/mobile_base/sensors/infrared/${name}"
+                            h_samples="3" h_fov="0.08" v_samples="1" v_min="0.0" v_max="0.0"
+                            min_range="0.01" max_range="0.90" noise="0.01" visualize="false"/>
   </xacro:macro>
 
   <xacro:Sharp_GP2Y0A21_IR_sim name="arm"/>
@@ -148,97 +165,15 @@
   <xacro:Sharp_GP2Y0A21_IR_sim name="r180"/>
   <xacro:Sharp_GP2Y0A21_IR_sim name="r155"/>
 
-  <!-- Gazebo configuration for faking grasping -->
-  <gazebo>
-    <plugin name="gazebo_grasp_fix" filename="libgazebo_grasp_fix.so">
-      <arm>
-        <arm_name>arm</arm_name>
-        <palm_link>arm_wrist_flex_link</palm_link>
-        <gripper_link>gripper_static_link</gripper_link>
-        <gripper_link>gripper_active_link</gripper_link>
-      </arm>
-      <forces_angle_tolerance>100</forces_angle_tolerance>
-      <update_rate>40</update_rate>
-      <grip_count_threshold>1</grip_count_threshold>
-      <max_grip_count>4</max_grip_count>
-      <release_tolerance>0.005</release_tolerance>
-      <disable_collisions_on_attach>true</disable_collisions_on_attach>
-      <contact_topic>__default_topic__</contact_topic>
-    </plugin>
-  </gazebo>
-
-  <!-- Gazebo configuration for arm and cannon servos control -->
-  <gazebo>
-    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
-      <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
-      <legacyModeNS>false</legacyModeNS>
-    </plugin>
-  </gazebo>
-
-  <xacro:macro name="servo_transmission" params="name">
-    <transmission name="${name}_trans">
-      <type>transmission_interface/SimpleTransmission</type>
-      <joint name="${name}_joint">
-        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-      </joint>
-      <actuator name="${name}_motor">
-        <mechanicalReduction>1</mechanicalReduction>
-      </actuator>
-    </transmission>
-  </xacro:macro>
-
-  <xacro:servo_transmission name="arm_shoulder_pan"/>
-  <xacro:servo_transmission name="arm_shoulder_lift"/>
-  <xacro:servo_transmission name="arm_elbow_flex"/>
-  <xacro:servo_transmission name="arm_wrist_flex"/>
-  <xacro:servo_transmission name="gripper"/>
-  <xacro:servo_transmission name="cannon"/>
-
-  <!-- Gazebo configuration for the cannon plugin, used to simulate cannon firing -->
-  <gazebo>
-    <plugin name="gazebo_cannon_plugin" filename="libgazebo_cannon_plugin.so">
-      <cannon_link>cannon_link</cannon_link>
-      <axis_of_fire>x</axis_of_fire>
-      <rate_of_fire>18.18</rate_of_fire>
-      <shoot_force>2200</shoot_force>
-    </plugin>
-  </gazebo>
-
-  <!-- Add and visualize a fake range sensor to see where the cannon is pointing to -->
-  <gazebo reference="ir_cannon_link">
-    <sensor type="ray" name="ir_cannon">
-      <always_on>true</always_on>
-      <update_rate>20</update_rate>
-      <visualize>true</visualize>
-      <ray>
-        <range>
-          <min>0.1</min>
-          <max>5.0</max>
-          <resolution>0.01</resolution>
-        </range>
-      </ray>
-      <plugin name="gazebo_ros_ir_cannon_controller" filename="libgazebo_ros_range.so">
-        <updateRate>20</updateRate>
-        <topicName>mobile_base/sensors/infrared/cannon</topicName>
-        <frameName>ir_cannon_link</frameName>
-        <radiation>infrared</radiation>
-        <fov>0.001</fov>
-      </plugin>
-    </sensor>
-  </gazebo>
-  <joint name="ir_cannon_joint" type="fixed">
-    <origin xyz="0.035 0.0 0.0"/>
-    <parent link="cannon_link"/>
-    <child link="ir_cannon_link"/>
-  </joint>
-  <link name="ir_cannon_link"/>
+  <!-- Fake range sensor to see where the cannon is pointing to -->
+  <xacro:thorp_sim_ranger name="ir_cannon" link="ir_cannon_link" topic="/mobile_base/sensors/infrared/cannon"
+                          h_samples="3" h_fov="0.001" v_samples="1" v_min="0.0" v_max="0.0"
+                          min_range="0.1" max_range="5.0" noise="0.0" visualize="true"/>
 
   <!-- Gazebo configuration for other structural parts -->
   <xacro:macro name="structural_part" params="name color">
     <gazebo reference="${name}_link">
       <material>Gazebo/${color}</material>
-      <selfCollide>false</selfCollide>
-      <gravity>true</gravity>
     </gazebo>
   </xacro:macro>
 

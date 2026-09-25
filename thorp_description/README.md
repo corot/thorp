@@ -25,9 +25,14 @@ used on Noetic, with package paths changed to `thorp_description`. All are BSD l
 | `urdf/turtlebot_arm/`, `meshes/turtlebot_arm/` | `turtlebot_arm_description` from [corot/turtlebot_arm](https://github.com/corot/turtlebot_arm), `thorp` branch, commit `d73b53a` | `M_PI` set to full precision (was 3.14159) |
 | `meshes/sensors/max_sonar_ez4.dae` | `hector_sensors_description` from [tu-darmstadt-ros-pkg/hector_models](https://github.com/tu-darmstadt-ros-pkg/hector_models), `melodic-devel` branch, commit `ebc07c1` | none |
 
+Simulation
+----------
+
+`urdf/thorp_gazebo.urdf.xacro` holds the Gazebo Harmonic sensors, systems and surface properties; `thorp_simulation`
+spawns the model and bridges its topics. The Kobuki base part replaces the `kobuki_sim` macro from the
+`kobuki_gazebo.urdf.xacro` of the same `corot/kobuki` commit, using Gazebo's own systems.
+
 Legacy files
 ------------
 
-- `urdf/thorp_gazebo.urdf.xacro`: Gazebo Classic sensors, plugins and transmissions. No longer included; it will be
-  replaced by Gazebo Harmonic equivalents when migrating the simulation.
 - `urdf/senz3d.urdf.xacro` and `urdf/thorp.urdf.xacro.senz3d`: old Senz3D camera variant, not maintained.

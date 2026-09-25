@@ -66,5 +66,8 @@
       <child link="${name}_depth_optical_frame"/>
     </joint>
     <link name="${name}_depth_optical_frame"/>
+
+    <!-- RGBD sensor for simulation -->
+    <xacro:thorp_sim_3dsensor name="${name}"/>
   </xacro:macro>
 </robot>

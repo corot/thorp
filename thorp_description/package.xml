@@ -24,5 +24,7 @@
 
   <export>
     <build_type>ament_cmake</build_type>
+    <!-- Let Gazebo resolve package://thorp_description URIs -->
+    <gazebo_ros gazebo_model_path="${prefix}/.."/>
   </export>
 </package>
