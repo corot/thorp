@@ -22,19 +22,6 @@ public:
   {
     ttk::getParam("max_arm_reach", max_arm_reach_);
     ttk::getParam("table_min_pickup_side", min_pickup_side_);
-
-    ros::NodeHandle pnh("~");
-    valid_poses_pub_ = pnh.advertise<geometry_msgs::PoseArray>("valid_poses_around_table", 1);
-    blocked_poses_pub_ = pnh.advertise<geometry_msgs::PoseArray>("blocked_poses_around_table", 1);
-
-    if (ros::service::waitForService("move_base_flex/check_pose_cost", ros::Duration(30)))
-    {
-      check_pose_srv_ = ros::NodeHandle().serviceClient<mbf_msgs::CheckPose>("move_base_flex/check_pose_cost", true);
-    }
-    else
-    {
-      ROS_WARN_NAMED(name, "Unable to connect to MBF's check_pose_cost service; we won't filter blocked poses");
-    }
   }
 
   static BT::PortsList providedPorts()
@@ -49,9 +36,40 @@ public:
 private:
   double max_arm_reach_;
   double min_pickup_side_;
-  ros::Publisher valid_poses_pub_;
-  ros::Publisher blocked_poses_pub_;
-  ros::ServiceClient check_pose_srv_;
+
+  // bt_server builds a tree per goal, so anything a node owns dies with the goal. A publisher
+  // advertised and used inside one tick has no time for a subscriber to connect, and the service
+  // wait would run again on every call. These outlive the tree instead.
+  static ros::Publisher& validPosesPub()
+  {
+    static ros::Publisher pub =
+        ros::NodeHandle("~").advertise<geometry_msgs::PoseArray>("valid_poses_around_table", 1, true);
+    return pub;
+  }
+
+  static ros::Publisher& blockedPosesPub()
+  {
+    static ros::Publisher pub =
+        ros::NodeHandle("~").advertise<geometry_msgs::PoseArray>("blocked_poses_around_table", 1, true);
+    return pub;
+  }
+
+  /// Not persistent: this one is held for the life of the process, and a persistent handle that
+  /// went stale would silently fail every call, leaving every pose looking reachable
+  static ros::ServiceClient& checkPoseSrv()
+  {
+    static ros::ServiceClient srv = []
+    {
+      if (ros::service::waitForService("move_base_flex/check_pose_cost", ros::Duration(30)))
+      {
+        return ros::NodeHandle().serviceClient<mbf_msgs::CheckPose>("move_base_flex/check_pose_cost");
+      }
+      ROS_WARN_NAMED("GetPosesAroundTable",
+                     "Unable to connect to MBF's check_pose_cost service; we won't filter blocked poses");
+      return ros::ServiceClient();
+    }();
+    return srv;
+  }
 
   BT::NodeStatus tick() override
   {
@@ -106,10 +124,10 @@ private:
     poses.erase(std::remove_if(poses.begin(), poses.end(), [&](const geometry_msgs::PoseStamped& pose)
                        { return std::find(removed_poses.begin(), removed_poses.end(), pose) != removed_poses.end(); }),
                 poses.end());
-    ROS_WARN_COND_NAMED(poses.empty(), name(), "No reachable poses! we default to the four side centers");
+    ROS_WARN_COND_NAMED(poses.empty(), name(), "Every pose around the table is blocked; returning none");
 
-    valid_poses_pub_.publish(ttk::toPoseArray(poses, 0.01, table_tf.header.frame_id));
-    blocked_poses_pub_.publish(ttk::toPoseArray(removed_poses, 0.01, table_tf.header.frame_id));
+    validPosesPub().publish(ttk::toPoseArray(poses, 0.01, table_tf.header.frame_id));
+    blockedPosesPub().publish(ttk::toPoseArray(removed_poses, 0.01, table_tf.header.frame_id));
 
     setOutput("table_side_poses", poses);
 
@@ -118,9 +136,9 @@ private:
 
   bool isBlocked(const geometry_msgs::PoseStamped& pose)
   {
-    if (!check_pose_srv_)
+    if (!checkPoseSrv())
     {
-      return false;  // no check service available; we already warned on the constructor
+      return false;  // no check service available; we already warned when we first looked
     }
 
     // Evaluate cost of the footprint at the given pose
@@ -128,7 +146,7 @@ private:
     srv.request.pose = pose;
     srv.request.costmap = mbf_msgs::CheckPoseRequest::GLOBAL_COSTMAP;
     srv.request.safety_dist = -0.1;  // pickup poses can be within the table, and so in collision
-    if (!check_pose_srv_.call(srv))
+    if (!checkPoseSrv().call(srv))
     {
       ROS_WARN_NAMED(name(), "MBF check pose service failed; assume pose is not blocked");
       return false;
