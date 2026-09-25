@@ -20,11 +20,13 @@
   <xacro:include filename="$(find thorp_description)/urdf/turtlebot/hexagons.urdf.xacro"/>
   <xacro:include filename="$(find thorp_description)/urdf/turtlebot_arm/turtlebot_arm.xacro"/>
   <xacro:include filename="$(find thorp_description)/urdf/thorp_gazebo.urdf.xacro"/>
+  <xacro:include filename="$(find thorp_description)/urdf/thorp_ros2_control.urdf.xacro"/>
   <xacro:include filename="$(find thorp_description)/urdf/cannon.urdf.xacro"/>
   <xacro:include filename="$(find thorp_description)/urdf/kinect.urdf.xacro"/>
   <xacro:include filename="$(find thorp_description)/urdf/xtion.urdf.xacro"/>
 
   <xacro:arg name="simulation" default="false"/>
+  <xacro:arg name="ros2_control_params" default=""/>
 
 
   <!-- Plain Turtlebot 2 -->
@@ -334,4 +336,9 @@
     <child link="ir_r155_link"/>
   </joint>
   <link name="ir_r155_link"/>
+
+  <!-- Arm, gripper and cannon servos control on simulation -->
+  <xacro:if value="$(arg simulation)">
+    <xacro:thorp_ros2_control ros2_control_params="$(arg ros2_control_params)"/>
+  </xacro:if>
 </robot>

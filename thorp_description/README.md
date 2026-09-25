@@ -29,7 +29,9 @@ Simulation
 ----------
 
 `urdf/thorp_gazebo.urdf.xacro` holds the Gazebo Harmonic sensors, systems and surface properties; `thorp_simulation`
-spawns the model and bridges its topics. The Kobuki base part replaces the `kobuki_sim` macro from the
+spawns the model and bridges its topics. With `simulation:=true`, `urdf/thorp_ros2_control.urdf.xacro` adds the
+`ros2_control` interfaces of the arm, gripper and cannon servos, simulated by `gz_ros2_control` with the controllers
+configuration file given as `ros2_control_params`. The Kobuki base part replaces the `kobuki_sim` macro from the
 `kobuki_gazebo.urdf.xacro` of the same `corot/kobuki` commit, using Gazebo's own systems.
 
 Legacy files

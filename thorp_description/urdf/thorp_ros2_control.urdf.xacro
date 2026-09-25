@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<robot name="thorp_ros2_control" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <!-- ros2_control interfaces for the arm, gripper and cannon servos, simulated on Gazebo Harmonic.
+       Initial values put the arm on its resting pose. ros2_control_params is the controllers configuration
+       file passed to Gazebo's controller manager -->
+  <xacro:macro name="thorp_ros2_control" params="ros2_control_params">
+    <ros2_control name="thorp_servos" type="system">
+      <hardware>
+        <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+      </hardware>
+      <xacro:servo_joint name="arm_shoulder_pan_joint" initial_value="0.0"/>
+      <xacro:servo_joint name="arm_shoulder_lift_joint" initial_value="-1.9"/>
+      <xacro:servo_joint name="arm_elbow_flex_joint" initial_value="2.2"/>
+      <xacro:servo_joint name="arm_wrist_flex_joint" initial_value="1.4"/>
+      <xacro:servo_joint name="gripper_joint" initial_value="0.0"/>
+      <xacro:servo_joint name="cannon_joint" initial_value="0.0"/>
+    </ros2_control>
+
+    <gazebo>
+      <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+        <parameters>${ros2_control_params}</parameters>
+      </plugin>
+    </gazebo>
+  </xacro:macro>
+
+  <xacro:macro name="servo_joint" params="name initial_value">
+    <joint name="${name}">
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">${initial_value}</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
+    </joint>
+  </xacro:macro>
+</robot>
