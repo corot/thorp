@@ -22,7 +22,13 @@
   <exec_depend>ros_gz_bridge</exec_depend>
   <exec_depend>rclcpp_components</exec_depend>
   <exec_depend>depth_image_proc</exec_depend>
+  <exec_depend>gz_ros2_control</exec_depend>
+  <exec_depend>controller_manager</exec_depend>
+  <exec_depend>joint_state_broadcaster</exec_depend>
+  <exec_depend>joint_trajectory_controller</exec_depend>
+  <exec_depend>position_controllers</exec_depend>
   <exec_depend>thorp_description</exec_depend>
+  <exec_depend>thorp_manipulation</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

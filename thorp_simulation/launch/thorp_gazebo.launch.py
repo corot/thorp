@@ -5,10 +5,12 @@ Thorp simulation on Gazebo Harmonic:
 - robot state publisher
 - bridge between Gazebo and ROS topics
 - point clouds from the RGBD cameras
+- arm, gripper and cannon controllers, and the gripper command action server
 """
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.conditions import IfCondition, UnlessCondition
 from launch.substitutions import Command, LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import ComposableNodeContainer, Node
@@ -24,7 +26,9 @@ def generate_launch_description():
 
     sim_share = FindPackageShare('thorp_simulation')
     xacro_file = PathJoinSubstitution([FindPackageShare('thorp_description'), 'urdf', 'thorp.urdf.xacro'])
-    robot_description = ParameterValue(Command(['xacro ', xacro_file, ' simulation:=true']), value_type=str)
+    controllers_file = PathJoinSubstitution([sim_share, 'param', 'controllers.yaml'])
+    robot_description = ParameterValue(Command(['xacro ', xacro_file, ' simulation:=true',
+                                                ' ros2_control_params:=', controllers_file]), value_type=str)
     sim_time = {'use_sim_time': True}
 
     def gz_sim(server_only, condition):
@@ -71,6 +75,19 @@ def generate_launch_description():
 
         Node(package='ros_gz_bridge', executable='parameter_bridge', name='gz_bridge',
              parameters=[{'config_file': PathJoinSubstitution([sim_share, 'param', 'gz_bridge.yaml'])}, sim_time]),
+
+        # Controllers run on Gazebo's controller manager, available once Thorp is spawned
+        Node(package='controller_manager', executable='spawner', output='screen',
+             arguments=['joint_state_broadcaster', 'arm_controller', 'gripper_joint_controller',
+                        'cannon_joint_controller',
+                        '--controller-manager-timeout', '60'],
+             parameters=[sim_time]),
+
+        # We provide GripperCommand action as on real robot, taking openings in meters
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(PathJoinSubstitution([FindPackageShare('thorp_manipulation'), 'launch',
+                                                                'includes', 'arm.launch.py'])),
+            launch_arguments={'simulation': 'true'}.items()),
 
         ComposableNodeContainer(package='rclcpp_components', executable='component_container',
                                 name='cameras_container', namespace='', parameters=[sim_time],

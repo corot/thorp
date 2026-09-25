@@ -7,7 +7,7 @@ install(FILES launch/thorp_gazebo.launch.py
         DESTINATION share/${PROJECT_NAME}/launch
 )
 
-install(FILES param/gz_bridge.yaml
+install(FILES param/gz_bridge.yaml param/controllers.yaml
         DESTINATION share/${PROJECT_NAME}/param
 )
 
