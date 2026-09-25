@@ -1,0 +1,13 @@
+# Gripper controller parameters:
+# more than the physical properties of the gripper, these values are an ad-hoc configuration
+# that works with the one-sided gripper model
+gripper_controller:
+  ros__parameters:
+    model: singlesided
+    invert: true
+    center: 0.07
+    pad_width: 0.025
+    finger_length: 0.03
+    min_opening: 0.0025
+    max_opening: 0.05
+    stalled_time: 0.5

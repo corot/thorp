@@ -1,30 +1,19 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.8)
 project(thorp_manipulation)
 
-find_package(catkin REQUIRED roscpp actionlib geometry_msgs moveit_msgs moveit_core visualization_msgs
-                             interactive_markers gazebo_grasp_plugin_ros thorp_msgs thorp_toolkit)
+find_package(ament_cmake REQUIRED)
 
-link_directories(${catkin_LIBRARY_DIRS})
-include_directories(include
-                    SYSTEM
-                    ${catkin_INCLUDE_DIRS})
+install(PROGRAMS nodes/gripper_controller.py
+                 nodes/fake_joint_pub.py
+        DESTINATION lib/${PROJECT_NAME}
+)
 
-catkin_package(CATKIN_DEPENDS roscpp actionlib geometry_msgs moveit_msgs moveit_core visualization_msgs
-                              interactive_markers gazebo_grasp_plugin_ros thorp_msgs thorp_toolkit)
+install(FILES launch/includes/arm.launch.py
+        DESTINATION share/${PROJECT_NAME}/launch/includes
+)
 
+install(FILES param/gripper_controller.yaml
+        DESTINATION share/${PROJECT_NAME}/param
+)
 
-# nodes
-add_executable(manipulation_server src/thorp_arm_controller.cpp
-                                   src/pickup_object_server.cpp
-                                   src/place_object_server.cpp
-                                   src/move_to_target_server.cpp
-                                   src/house_keeping_server.cpp
-                                   src/joint_state_watchdog.cpp
-                                   src/tray_manager_server.cpp
-                                   src/manipulation_server.cpp)
-target_link_libraries(manipulation_server ${catkin_LIBRARIES})
-add_dependencies(manipulation_server thorp_msgs_generate_messages_cpp)
-
-add_executable(scene_interaction_server src/interactive_manip_server.cpp)
-target_link_libraries(scene_interaction_server ${catkin_LIBRARIES})
-add_dependencies(scene_interaction_server thorp_msgs_generate_messages_cpp)
+ament_package()
