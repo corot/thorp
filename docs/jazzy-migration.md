@@ -10,6 +10,9 @@ The `jazzy` branch is the ROS 2 port of Thorp. The `noetic` branch keeps the ROS
   and topics stay compatible with the real robot, so it can come back later.
 - A package that is not migrated yet has a `COLCON_IGNORE` file; colcon and rosdep skip it. Migrating a package means
   porting it completely and deleting that file. Its ROS 1 code stays in place until then, for reference.
+- A package whose parts depend on later blocks is migrated in stages: its `COLCON_IGNORE` goes with the first stage,
+  it builds and installs only the ported parts, and the unported ROS 1 files stay in place, uninstalled, listed below
+  with their target block.
 - Dependencies: Jazzy binary packages first. A dependency with no Jazzy release goes into `thorp-jazzy.repos`
   (created when the first one is needed), pinned to a commit SHA. If it needs patches, use a fork and note the
   upstream URL and the reason next to its entry.
@@ -41,8 +44,8 @@ source install/setup.bash
 |---|-------|--------|
 | 1 | Workspace bootstrap: branch, `COLCON_IGNORE` on every ROS 1 package, this document | done |
 | 2 | `thorp_description`: robot model identical to Noetic's, RViz viewer | done |
-| 3 | Gazebo Harmonic: spawn Thorp, diff drive, joint states, Kinect, Xtion, sonars and IR sensors | next |
-| 4 | Arm in simulation: `ros2_control`, trajectory and gripper controllers | |
+| 3 | Gazebo Harmonic: spawn Thorp, diff drive, joint states, Kinect, Xtion, sonars and IR sensors | done |
+| 4 | Arm in simulation: `ros2_control`, trajectory and gripper controllers | next |
 | 5 | `thorp_msgs`, `thorp_toolkit` | |
 | 6 | Navigation: Nav2 configuration, semantic costmap layer, MBF-specific behaviors | |
 | 7 | Manipulation: MoveIt 2 configuration, pick and place servers | |
@@ -56,4 +59,41 @@ Block 3 onwards will be refined as we get there.
 | Package | Status |
 |---------|--------|
 | thorp_description | migrated |
-| thorp_apps, thorp_boards, thorp_bringup, thorp_bt_cpp, thorp_cannon, thorp_costmap_layers, thorp_exploration, thorp_manipulation, thorp_mbf_plugins, thorp_moveit_config, thorp_msgs, thorp_navigation, thorp_perception, thorp_rviz_plugins, thorp_simulation, thorp_smach, thorp_toolkit | ROS 1 (ignored) |
+| thorp_simulation | partial: Gazebo Harmonic launch and worlds (see below) |
+| thorp_apps, thorp_boards, thorp_bringup, thorp_bt_cpp, thorp_cannon, thorp_costmap_layers, thorp_exploration, thorp_manipulation, thorp_mbf_plugins, thorp_moveit_config, thorp_msgs, thorp_navigation, thorp_perception, thorp_rviz_plugins, thorp_smach, thorp_toolkit | ROS 1 (ignored) |
+
+### thorp_simulation
+
+Ported: `thorp_gazebo.launch.py`, the `empty` and `playground` worlds, the Gazebo models and the ROS / Gazebo bridge
+configuration. Pending ROS 1 files:
+
+| Files | Block |
+|-------|-------|
+| `param/controllers.yaml`; arm, gripper and cannon controllers, grasp-fix and cannon plugins in `thorp_gazebo.launch.xml` | 4 |
+| `src/gazebo_ground_truth.cpp`, `scripts/gazebo_link_state.py` | 5 |
+| `launch/navigation.launch`, `launch/includes/sim_common.launch.xml` (cmd_vel mux); depth image and point cloud to laser scan, and bumper / cliff point clouds in `thorp_gazebo.launch.xml` | 6 |
+| `scripts/spawn_gazebo_models.py` | 7 |
+| `src/gazebo_camera_control*.cpp`, `nodes/` (cats controller, model markers, movie director) | 9 |
+| `fun_house` and `small_house` Gazebo worlds | when needed |
+| Stage and STDR launch files, worlds and robot configurations (no Jazzy release of either simulator) | undecided |
+
+## Simulation on Gazebo Harmonic
+
+```bash
+ros2 launch thorp_simulation thorp_gazebo.launch.py [world_name:=empty] [gui:=false]
+```
+
+Differences with the Noetic simulation:
+
+- The Kobuki base uses Gazebo's `DiffDrive`, `JointStatePublisher` and `Imu` systems instead of the `kobuki_gazebo`
+  plugin, on the same topics. It has no command timeout, and no bumpers, cliff or wheel drop sensors; bumpers and
+  cliff sensors come with Block 6, where navigation needs them.
+- Gazebo Harmonic has no sonar sensor. Sonars and IR sensors are GPU lidars, whose scans `ros_gz_bridge` converts
+  into range messages with the closest reading of all rays. It reports `INFRARED` radiation for the sonars too, and
+  `max_range + 1` when nothing is in range. IR sensors use three rays, to report their field of view.
+- The center sonar publishes on `mobile_base/sensors/sonars/p0`, as ROS 2 names can't start with a digit.
+- Point clouds are created from the depth images by `depth_image_proc`, as Gazebo's use the camera link axes.
+- Until Block 4, the arm and cannon joints have no controllers; the arm stands upright instead of in its resting pose.
+- Gazebo prints `gz_frame_id` warnings when spawning Thorp: SDFormat 14 doesn't know this element yet, but Gazebo
+  uses it to stamp sensor messages with the URDF frames. It also warns that `gripper_link` has no inertia, so
+  `gripper_link_joint` is dropped from the simulated model, as it was on Noetic.
