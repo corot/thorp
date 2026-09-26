@@ -33,6 +33,8 @@ arm_controller:
     # start from the measured joint positions, not from the command interfaces, that start at 0 instead of the
     # initial resting pose
     set_last_command_interface_value_as_state_on_activation: false
+    # Cartesian paths planned by MoveIt Task Constructor can end with tiny velocities, as -5e-4 rad/s
+    allow_nonzero_velocity_at_trajectory_end: true
     action_monitor_rate: 10.0
     constraints:
       goal_time: 10.0
