@@ -53,8 +53,8 @@ source install/setup.bash
 | 6b | Thorp navigation nodes: pose follower, waypoints path, velocity display, robot pose saving | done |
 | 6c | Semantic costmap layer | deferred to 9 |
 | 6d | Bumpers and cliff sensors, on simulation and costmaps | deferred to real robot |
-| 6e | Coverage planning | next |
-| 7 | Manipulation: MoveIt 2 configuration, pick and place servers, grasping on simulation | |
+| 6e | Coverage planning | deferred to 9 |
+| 7 | Manipulation: MoveIt 2 configuration, pick and place servers, grasping on simulation | next |
 | 8 | Perception | |
 | 9 | Executive: behavior trees and apps | |
 
@@ -74,7 +74,13 @@ with `clear_around_pose`); porting the layer as a Nav2 plugin keeps the Noetic b
 
 Bumpers and cliff sensors are deferred to the real robot: it needs `kobuki_ros` from source anyway (the Kobuki driver,
 `kobuki_bumper2pc` and `kobuki_safety_controller` have no Jazzy release), and simulated bumper and cliff events, from
-Gazebo contact sensors and downward rays, can then match the real driver's topics. Coverage planning is the only navigation code Thorp may need
+Gazebo contact sensors and downward rays, can then match the real driver's topics.
+
+Coverage planning is deferred to Block 9, with the exploration apps, its only users. No option is a Jazzy release:
+`ipa_coverage_planning` (room segmentation, room sequence planning and room exploration) has no ROS 2 port;
+`full_coverage_path_planner`'s `ros2` branch is an unfinished migration, untouched since 2023; and `opennav_coverage`
+(Nav2 coverage server, source only) needs Fields2Cover 1.2.1, while Jazzy releases 2.0.0, and plans coverage of
+polygons, without room segmentation nor sequencing. Coverage planning is the only navigation code Thorp may need
 beyond Nav2: on Noetic, `ipa_coverage_planning` (room segmentation, room sequence planning and room exploration, from
 Thorp's fork) and `full_coverage_path_planner`'s Spiral-STC planner, as an MBF global planner.
 
