@@ -206,4 +206,5 @@ Differences with the Noetic simulation:
   persist until an in-range reading clears them, or the costmaps are cleared. The range layers' `no_readings_timeout`
   is disabled; otherwise, without valid readings, they make the costmaps not current, blocking the planner and
   controller. A proper fix would be an option in `ros_gz_bridge` to report `max_range` instead
-  (https://github.com/gazebosim/ros_gz/blob/jazzy/ros_gz_bridge/src/convert/sensor_msgs.cpp#L556).
+  (https://github.com/gazebosim/ros_gz/blob/jazzy/ros_gz_bridge/src/convert/sensor_msgs.cpp#L556); reported upstream
+  in https://github.com/gazebosim/ros_gz/issues/959.
