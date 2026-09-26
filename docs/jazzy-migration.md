@@ -76,7 +76,7 @@ Thorp's fork) and `full_coverage_path_planner`'s Spiral-STC planner, as an MBF g
 | thorp_description | migrated |
 | thorp_msgs | migrated |
 | thorp_cannon | migrated; simulation only, the real cannon waits for the boards (see below) |
-| thorp_manipulation | partial: gripper controller (see below) |
+| thorp_manipulation | partial: fake gripper joint states (see below) |
 | thorp_navigation | partial: Nav2 configuration and launch, maps (see below) |
 | thorp_simulation | partial: Gazebo Harmonic launch, worlds, controllers and navigation (see below) |
 | thorp_toolkit | partial: core C++ and Python modules (see below) |
