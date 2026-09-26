@@ -47,12 +47,17 @@ source install/setup.bash
 | 3 | Gazebo Harmonic: spawn Thorp, diff drive, joint states, Kinect, Xtion, sonars and IR sensors | done |
 | 4 | Arm in simulation: `ros2_control`, trajectory and gripper controllers | done |
 | 5 | `thorp_msgs`, `thorp_toolkit`; `thorp_cannon`, with a Gazebo Harmonic firing system | next |
-| 6 | Navigation: Nav2 configuration, semantic costmap layer, MBF-specific behaviors | |
+| 6 | Navigation: Nav2 configuration, semantic costmap layer, coverage planning | |
 | 7 | Manipulation: MoveIt 2 configuration, pick and place servers, grasping on simulation | |
 | 8 | Perception | |
 | 9 | Executive: behavior trees and apps | |
 
 Block 3 onwards will be refined as we get there.
+
+Navigation uses Nav2 only; Move Base Flex is dropped, with whatever depends on it (`thorp_mbf_plugins`, MBF actions
+and plugins configuration in `thorp_navigation`). Coverage planning is the only navigation code Thorp may need
+beyond Nav2: on Noetic, `ipa_coverage_planning` (room segmentation, room sequence planning and room exploration, from
+Thorp's fork) and `full_coverage_path_planner`'s Spiral-STC planner, as an MBF global planner.
 
 ## Package status
 
