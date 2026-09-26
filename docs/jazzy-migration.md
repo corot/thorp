@@ -226,8 +226,11 @@ Differences with the Noetic simulation:
 - The center sonar publishes on `mobile_base/sensors/sonars/p0`, as ROS 2 names can't start with a digit.
 - Point clouds are created from the depth images by `depth_image_proc`, as Gazebo's use the camera link axes.
 - Arm, gripper and cannon servos use `ros2_control` on Gazebo (`gz_ros2_control`), starting on the resting pose.
-  `gz_ros2_control` turns position commands into joint velocities proportional to the error; its gain is raised to 0.5,
-  as with the default 0.1 the arm lags MoveIt trajectories beyond the controller tolerances.
+  `gz_ros2_control` turns position commands into joint velocities proportional to the error; its gain is raised to 1.0,
+  as with the default 0.1 the arm lags MoveIt trajectories beyond the controller tolerances. Even so, under load the
+  shoulder lift occasionally lags more than Noetic's 0.1 rad path tolerance, so `arm_controller` has no path tolerance
+  in simulation; goals must still be reached within 0.1 rad. It starts from the measured joint positions, as its
+  command interfaces start at 0 instead of the resting pose.
   `arm_controller` provides the same `arm_controller/follow_joint_trajectory` action; `gripper_controller` provides
   `gripper_controller/gripper_cmd`, taking `gripper_joint` angles; the cannon position controller is
   `cannon_joint_controller`, as ros2_control controllers can't be named as their joints. Simulated servos report no
@@ -250,3 +253,8 @@ Differences with the Noetic simulation:
   The raw depth images are right (the gripper is closer than the near clipping distance, so it's not in them) and the
   self-filter renders the robot in place, so the voxels come from elsewhere; the octomap sensor is disabled until it's
   investigated with the manipulation servers or perception.
+- In Gazebo, the arm sometimes stalls on some poses that MoveIt finds collision free (about 1 in 40 random arm goals in
+  testing, e.g. `[0.16, 1.14, 1.57, 1.47]`, with the gripper 0.39 m above the floor): the shoulder lift lags up to 0.9 rad
+  and MoveIt stops the execution as timed out, leaving the arm off its path, sometimes in collision for the next plan.
+  Maybe a physical contact MoveIt doesn't model (the arm links have `selfCollide`); to check with the manipulation
+  servers.
