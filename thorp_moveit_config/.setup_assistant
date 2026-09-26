@@ -1,11 +1,11 @@
 moveit_setup_assistant_config:
-  URDF:
+  urdf:
     package: thorp_description
     relative_path: urdf/thorp.urdf.xacro
     xacro_args: ""
-  SRDF:
+  srdf:
     relative_path: config/Thorp.srdf
-  CONFIG:
+  package_settings:
     author_name: Jorge Santos Simón
     author_email: jsantossimon@gmail.com
     generated_timestamp: 1621523821

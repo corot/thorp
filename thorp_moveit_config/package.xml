@@ -1,37 +1,31 @@
-<package format="2">
-
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>thorp_moveit_config</name>
   <version>0.3.0</version>
-  <description>
-     An automatically generated package with all the configuration and launch files for using the Thorp with the MoveIt Motion Planning Framework
-  </description>
-  <author email="jsantossimon@gmail.com">Jorge Santos Simón</author>
+  <description>MoveIt configuration and launch files for Thorp's arm</description>
   <maintainer email="jsantossimon@gmail.com">Jorge Santos Simón</maintainer>
+  <author email="jsantossimon@gmail.com">Jorge Santos Simón</author>
 
   <license>BSD</license>
 
-  <url type="website">http://moveit.ros.org/</url>
-  <url type="bugtracker">https://github.com/ros-planning/moveit/issues</url>
-  <url type="repository">https://github.com/ros-planning/moveit</url>
+  <url type="bugtracker">https://github.com/corot/thorp/issues</url>
+  <url type="repository">https://github.com/corot/thorp</url>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <exec_depend>moveit_configs_utils</exec_depend>
   <exec_depend>moveit_ros_move_group</exec_depend>
-  <exec_depend>moveit_fake_controller_manager</exec_depend>
-  <exec_depend>moveit_kinematics</exec_depend>
+  <exec_depend>pick_ik</exec_depend>
   <exec_depend>moveit_planners_ompl</exec_depend>
-  <exec_depend>moveit_ros_visualization</exec_depend>
-  <exec_depend>moveit_setup_assistant</exec_depend>
+  <exec_depend>moveit_ros_perception</exec_depend>
   <exec_depend>moveit_simple_controller_manager</exec_depend>
-  <exec_depend>joint_state_publisher</exec_depend>
-  <exec_depend>joint_state_publisher_gui</exec_depend>
-  <exec_depend>robot_state_publisher</exec_depend>
-  <exec_depend>rviz</exec_depend>
-  <exec_depend>tf2_ros</exec_depend>
-  <exec_depend>xacro</exec_depend>
-  <!-- This package is referenced in the warehouse launch files, but does not build out of the box at the moment. Commented the dependency until this works. -->
-  <!-- <run_depend>warehouse_ros_mongo</run_depend> -->
-
-  <exec_depend>turtlebot_arm_ikfast_plugin</exec_depend>
+  <exec_depend>moveit_ros_visualization</exec_depend>
+  <exec_depend>rviz2</exec_depend>
   <exec_depend>thorp_description</exec_depend>
+  <exec_depend>xacro</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
 </package>
