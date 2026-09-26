@@ -54,8 +54,8 @@ source install/setup.bash
 | 6c | Semantic costmap layer | deferred to 9 |
 | 6d | Bumpers and cliff sensors, on simulation and costmaps | deferred to real robot |
 | 6e | Coverage planning | deferred to 9 |
-| 7a | MoveIt 2 configuration: move group, controllers, octomap from the Xtion, RViz; LMA kinematics replaces the IKFast plugin | next |
-| 7b | Manipulation servers and pickup planner, with `thorp_toolkit`'s planning scene | |
+| 7a | MoveIt 2 configuration: move group, controllers, octomap from the Xtion, RViz; pick_ik replaces the IKFast plugin | done |
+| 7b | Manipulation servers and pickup planner, with `thorp_toolkit`'s planning scene | next |
 | 7c | Grasping in simulation and object spawning | |
 | 8 | Perception | |
 | 9 | Executive: behavior trees and apps | |
@@ -92,13 +92,23 @@ Thorp's fork) and `full_coverage_path_planner`'s Spiral-STC planner, as an MBF g
 |---------|--------|
 | thorp_bringup | partial: velocity multiplexer and depth to scan parameters, navigation RViz config (see below) |
 | thorp_description | migrated |
+| thorp_moveit_config | migrated (see below) |
 | thorp_msgs | migrated |
 | thorp_cannon | migrated; simulation only, the real cannon waits for the boards (see below) |
 | thorp_manipulation | partial: fake gripper joint states (see below) |
 | thorp_navigation | partial: Nav2 configuration and launch, maps, velocity display (see below) |
 | thorp_simulation | partial: Gazebo Harmonic launch, worlds, controllers and navigation (see below) |
 | thorp_toolkit | partial: core C++ and Python modules (see below) |
-| thorp_apps, thorp_boards, thorp_bt_cpp, thorp_costmap_layers, thorp_exploration, thorp_mbf_plugins, thorp_moveit_config, thorp_perception, thorp_rviz_plugins, thorp_smach | ROS 1 (ignored) |
+| thorp_apps, thorp_boards, thorp_bt_cpp, thorp_costmap_layers, thorp_exploration, thorp_mbf_plugins, thorp_perception, thorp_rviz_plugins, thorp_smach | ROS 1 (ignored) |
+
+### thorp_moveit_config
+
+MoveIt 2 configuration built with `moveit_configs_utils`, launched with `move_group.launch.py` and
+`moveit_rviz.launch.py` (both take `simulation` and `use_sim_time`). It keeps Noetic's SRDF, joint velocity limits
+(plus the 1.0 rad/s² accelerations MoveIt assumed), trajectory execution tolerances and OMPL, and drives
+`arm_controller` and `gripper_controller` (`gripper_cmd`). `pick_ik` replaces the IKFast (TranslationDirection5D)
+plugin generated for the TurtleBot arm; LMA, what ROS 2 configurations for similar arms use, is no longer in MoveIt on
+Jazzy. The unused CHOMP and Pilz pipelines aren't ported. The Xtion octomap is disabled (see the known issues).
 
 ### thorp_msgs
 
@@ -216,6 +226,8 @@ Differences with the Noetic simulation:
 - The center sonar publishes on `mobile_base/sensors/sonars/p0`, as ROS 2 names can't start with a digit.
 - Point clouds are created from the depth images by `depth_image_proc`, as Gazebo's use the camera link axes.
 - Arm, gripper and cannon servos use `ros2_control` on Gazebo (`gz_ros2_control`), starting on the resting pose.
+  `gz_ros2_control` turns position commands into joint velocities proportional to the error; its gain is raised to 0.5,
+  as with the default 0.1 the arm lags MoveIt trajectories beyond the controller tolerances.
   `arm_controller` provides the same `arm_controller/follow_joint_trajectory` action; `gripper_controller` provides
   `gripper_controller/gripper_cmd`, taking `gripper_joint` angles; the cannon position controller is
   `cannon_joint_controller`, as ros2_control controllers can't be named as their joints. Simulated servos report no
@@ -234,3 +246,7 @@ Differences with the Noetic simulation:
   controller. A proper fix would be an option in `ros_gz_bridge` to report `max_range` instead
   (https://github.com/gazebosim/ros_gz/blob/jazzy/ros_gz_bridge/src/convert/sensor_msgs.cpp#L556); reported upstream
   in https://github.com/gazebosim/ros_gz/issues/959.
+- MoveIt's Xtion octomap gets voxels in contact with the resting gripper, so every planning request starts in collision.
+  The raw depth images are right (the gripper is closer than the near clipping distance, so it's not in them) and the
+  self-filter renders the robot in place, so the voxels come from elsewhere; the octomap sensor is disabled until it's
+  investigated with the manipulation servers or perception.
