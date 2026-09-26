@@ -12,7 +12,7 @@ uint8 SUCCESS   = 2
 uint8 FAILURE   = 3
 uint8 SKIPPED   = 4
 
-time stamp
+builtin_interfaces/Time stamp
 string name
 uint8 type
 uint8 status

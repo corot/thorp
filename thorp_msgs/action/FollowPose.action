@@ -8,8 +8,8 @@
 
 float32 target_distance     # following desired distance; use the configured value if <= 0
 bool stop_at_distance       # stop action upon reaching the desired following distance
-duration exec_time_limit    # stop action after this time, whatever happens; ignored if 0
-duration no_pose_timeout    # stop action after this time without receiving poses
+builtin_interfaces/Duration exec_time_limit    # stop action after this time, whatever happens; ignored if 0
+builtin_interfaces/Duration no_pose_timeout    # stop action after this time without receiving poses
 
 ---
 
