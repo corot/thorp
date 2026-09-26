@@ -15,6 +15,8 @@ Visualization Manager:
       Value: true
     - Class: moveit_rviz_plugin/MotionPlanning
       Name: MotionPlanning
+      Velocity_Scaling_Factor: 1.0  # RViz can't read joint_limits.yaml defaults, and starts at 0.1 otherwise
+      Acceleration_Scaling_Factor: 1.0
       Planned Path:
         Loop Animation: true
         State Display Time: 0.05 s
