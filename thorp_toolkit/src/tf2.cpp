@@ -2,23 +2,23 @@
  * Author: Jorge Santos
  */
 
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
+#include "thorp_toolkit/common.hpp"
 #include "thorp_toolkit/tf2.hpp"
-
 
 namespace thorp::toolkit
 {
 
-void tf2pose(const tf::Transform& tf, geometry_msgs::Pose& pose)
+void tf2pose(const tf2::Transform& tf, geometry_msgs::msg::Pose& pose)
 {
   pose.position.x = tf.getOrigin().x();
   pose.position.y = tf.getOrigin().y();
   pose.position.z = tf.getOrigin().z();
-  tf::quaternionTFToMsg(tf.getRotation(), pose.orientation);
+  pose.orientation = tf2::toMsg(tf.getRotation());
 }
 
-void tf2pose(const geometry_msgs::Transform& tf, geometry_msgs::Pose& pose)
+void tf2pose(const geometry_msgs::msg::Transform& tf, geometry_msgs::msg::Pose& pose)
 {
   pose.position.x = tf.translation.x;
   pose.position.y = tf.translation.y;
@@ -26,16 +26,16 @@ void tf2pose(const geometry_msgs::Transform& tf, geometry_msgs::Pose& pose)
   pose.orientation = tf.rotation;
 }
 
-void tf2pose(const tf::StampedTransform& tf, geometry_msgs::PoseStamped& pose)
+void tf2pose(const tf2::Stamped<tf2::Transform>& tf, geometry_msgs::msg::PoseStamped& pose)
 {
-  pose.header.stamp    = tf.stamp_;
+  pose.header.stamp = tf2_ros::toMsg(tf.stamp_);
   pose.header.frame_id = tf.frame_id_;
   tf2pose(tf, pose.pose);
 }
 
-void tf2pose(const geometry_msgs::TransformStamped& tf, geometry_msgs::PoseStamped& pose)
+void tf2pose(const geometry_msgs::msg::TransformStamped& tf, geometry_msgs::msg::PoseStamped& pose)
 {
-  pose.header.stamp    = tf.header.stamp;
+  pose.header.stamp = tf.header.stamp;
   pose.header.frame_id = tf.header.frame_id;
   pose.pose.position.x = tf.transform.translation.x;
   pose.pose.position.y = tf.transform.translation.y;
@@ -43,15 +43,15 @@ void tf2pose(const geometry_msgs::TransformStamped& tf, geometry_msgs::PoseStamp
   pose.pose.orientation = tf.transform.rotation;
 }
 
-void pose2tf(const geometry_msgs::Pose& pose, tf::Transform& tf)
+void pose2tf(const geometry_msgs::msg::Pose& pose, tf2::Transform& tf)
 {
-  tf.setOrigin(tf::Vector3(pose.position.x, pose.position.y, pose.position.z));
-  tf::Quaternion q;
-  tf::quaternionMsgToTF(pose.orientation, q);
+  tf.setOrigin(tf2::Vector3(pose.position.x, pose.position.y, pose.position.z));
+  tf2::Quaternion q;
+  tf2::fromMsg(pose.orientation, q);
   tf.setRotation(q);
 }
 
-void pose2tf(const geometry_msgs::Pose& pose, geometry_msgs::Transform& tf)
+void pose2tf(const geometry_msgs::msg::Pose& pose, geometry_msgs::msg::Transform& tf)
 {
   tf.translation.x = pose.position.x;
   tf.translation.y = pose.position.y;
@@ -59,12 +59,19 @@ void pose2tf(const geometry_msgs::Pose& pose, geometry_msgs::Transform& tf)
   tf.rotation = pose.orientation;
 }
 
-
 // TF2 class implementation
 
 // Static attributes
 std::unique_ptr<TF2> TF2::inst_ptr_;
 std::mutex TF2::mutex_;
+
+TF2::TF2()
+  : buffer_(node()->get_clock())
+  , listener_(buffer_, node())
+  , bcaster_(node())
+  , sbcaster_(node())
+{
+}
 
 /**
  * The first time we call instance we will lock the storage location and create the single instance.
@@ -80,14 +87,20 @@ TF2& TF2::instance()
   return *inst_ptr_;
 }
 
+void TF2::destroy()
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  inst_ptr_.reset();
+}
+
 tf2_ros::Buffer& TF2::buffer()
 {
   return buffer_;
 }
 
 bool TF2::lookupTransform(const std::string& target_frame, const std::string& source_frame,
-                          geometry_msgs::TransformStamped& transform,
-                          const ros::Time& time, const ros::Duration& timeout)
+                          geometry_msgs::msg::TransformStamped& transform, const tf2::TimePoint& time,
+                          const tf2::Duration& timeout)
 {
   try
   {
@@ -96,25 +109,25 @@ bool TF2::lookupTransform(const std::string& target_frame, const std::string& so
   }
   catch (tf2::LookupException& e)
   {
-    ROS_ERROR("Lookup error: %s", e.what());
+    RCLCPP_ERROR(logger(), "Lookup error: %s", e.what());
   }
   catch (tf2::ConnectivityException& e)
   {
-    ROS_ERROR("Unconnected frames: %s", e.what());
+    RCLCPP_ERROR(logger(), "Unconnected frames: %s", e.what());
   }
   catch (tf2::ExtrapolationException& e)
   {
-    ROS_ERROR("Extrapolation error: %s", e.what());
+    RCLCPP_ERROR(logger(), "Extrapolation error: %s", e.what());
   }
   catch (tf2::InvalidArgumentException& e)
   {
-    ROS_ERROR("Invalid input pose: %s", e.what());
+    RCLCPP_ERROR(logger(), "Invalid input pose: %s", e.what());
   }
   return false;
 }
 
-bool TF2::transformPose(const std::string& target_frame, const geometry_msgs::PoseStamped& in_pose,
-                        geometry_msgs::PoseStamped& out_pose, const ros::Duration& timeout)
+bool TF2::transformPose(const std::string& target_frame, const geometry_msgs::msg::PoseStamped& in_pose,
+                        geometry_msgs::msg::PoseStamped& out_pose, const tf2::Duration& timeout)
 {
   try
   {
@@ -123,65 +136,63 @@ bool TF2::transformPose(const std::string& target_frame, const geometry_msgs::Po
   }
   catch (tf2::LookupException& e)
   {
-    ROS_ERROR("Lookup error: %s", e.what());
+    RCLCPP_ERROR(logger(), "Lookup error: %s", e.what());
   }
   catch (tf2::ConnectivityException& e)
   {
-    ROS_ERROR("Unconnected frames: %s", e.what());
+    RCLCPP_ERROR(logger(), "Unconnected frames: %s", e.what());
   }
   catch (tf2::ExtrapolationException& e)
   {
-    ROS_ERROR("Extrapolation error: %s", e.what());
+    RCLCPP_ERROR(logger(), "Extrapolation error: %s", e.what());
   }
   catch (tf2::InvalidArgumentException& e)
   {
-    ROS_ERROR("Invalid input pose: %s", e.what());
+    RCLCPP_ERROR(logger(), "Invalid input pose: %s", e.what());
   }
   return false;
 }
 
 bool TF2::transformPose(const std::string& target_frame, const std::string& source_frame,
-                        const geometry_msgs::Pose& in_pose, geometry_msgs::Pose& out_pose,
-                        const ros::Time& time, const ros::Duration& timeout)
+                        const geometry_msgs::msg::Pose& in_pose, geometry_msgs::msg::Pose& out_pose,
+                        const tf2::TimePoint& time, const tf2::Duration& timeout)
 {
-  geometry_msgs::PoseStamped in_stamped;
-  geometry_msgs::PoseStamped out_stamped;
-
+  geometry_msgs::msg::PoseStamped in_stamped;
+  geometry_msgs::msg::PoseStamped out_stamped;
   in_stamped.header.frame_id = source_frame;
-  in_stamped.header.stamp = time;
+  in_stamped.header.stamp = tf2_ros::toMsg(time);
   in_stamped.pose = in_pose;
   if (transformPose(target_frame, in_stamped, out_stamped, timeout))
   {
     out_pose = out_stamped.pose;
     return true;
   }
-
   return false;
 }
 
-void TF2::sendTransform(const geometry_msgs::TransformStamped& tf)
+void TF2::sendTransform(const geometry_msgs::msg::TransformStamped& tf)
 {
   sbcaster_.sendTransform(tf);
 }
 
-void TF2::sendTransform(const geometry_msgs::Transform& tf, const std::string& from, const std::string& to)
+void TF2::sendTransform(const geometry_msgs::msg::Transform& tf, const std::string& from, const std::string& to)
 {
-  geometry_msgs::TransformStamped tfs;
-  tfs.header.stamp = ros::Time::now();
+  geometry_msgs::msg::TransformStamped tfs;
+  tfs.header.stamp = node()->now();
   tfs.header.frame_id = from;
   tfs.child_frame_id = to;
   tfs.transform = tf;
   sbcaster_.sendTransform(tfs);
 }
 
-void TF2::sendTransform(const geometry_msgs::Pose& pose, const std::string& from, const std::string& to)
+void TF2::sendTransform(const geometry_msgs::msg::Pose& pose, const std::string& from, const std::string& to)
 {
-  geometry_msgs::TransformStamped tfs;
-  tfs.header.stamp = ros::Time::now();
+  geometry_msgs::msg::TransformStamped tfs;
+  tfs.header.stamp = node()->now();
   tfs.header.frame_id = from;
   tfs.child_frame_id = to;
   pose2tf(pose, tfs.transform);
   sbcaster_.sendTransform(tfs);
 }
 
-};  // namespace thorp::toolkit
+}  // namespace thorp::toolkit

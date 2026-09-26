@@ -4,23 +4,26 @@
 
 #pragma once
 
+#include <memory>
 #include <mutex>
 
-#include <tf/tf.h>
-#include <tf2_ros/buffer.h>
-#include <tf2_ros/transform_listener.h>
-#include <tf2_ros/transform_broadcaster.h>
-#include <tf2_ros/static_transform_broadcaster.h>
+#include <tf2/transform_datatypes.h>
+#include <tf2/LinearMath/Transform.h>
+#include <tf2_ros/buffer.hpp>
+#include <tf2_ros/transform_listener.hpp>
+#include <tf2_ros/transform_broadcaster.hpp>
+#include <tf2_ros/static_transform_broadcaster.hpp>
 
-#include <geometry_msgs/Pose.h>
-#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/msg/pose.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <geometry_msgs/msg/transform_stamped.hpp>
 
 
 namespace thorp::toolkit
 {
 
 /**
- * Singleton encapsulating a tf2 stuff
+ * Singleton encapsulating a tf2 stuff, using the node given to thorp::toolkit::init
  */
 class TF2
 {
@@ -33,7 +36,7 @@ private:
   tf2_ros::TransformBroadcaster bcaster_;
   tf2_ros::StaticTransformBroadcaster sbcaster_;
 
-  TF2() : listener_(buffer_) {}
+  TF2();
 
 public:
   ~TF2() = default;
@@ -56,6 +59,12 @@ public:
   static TF2& instance();
 
   /**
+   * Destroy the singleton instance, if any; the next call to instance will create a new one.
+   * thorp::toolkit::init makes the context call it on shutdown.
+   */
+  static void destroy();
+
+  /**
    * Provide access to the TF2 buffer.
    * @return Reference to TF2 buffer.
    */
@@ -71,8 +80,9 @@ public:
    * @return true if transformation succeeded.
    */
   bool lookupTransform(const std::string& target_frame, const std::string& source_frame,
-                       geometry_msgs::TransformStamped& transform,
-                       const ros::Time& time = ros::Time(), const ros::Duration& timeout = ros::Duration(2));
+                       geometry_msgs::msg::TransformStamped& transform,
+                       const tf2::TimePoint& time = tf2::TimePointZero,
+                       const tf2::Duration& timeout = tf2::durationFromSec(2.0));
 
   /**
    * Transform in_pose to the target frame
@@ -84,8 +94,8 @@ public:
    * @return true if transformation succeeded.
    */
   bool transformPose(const std::string& target_frame,
-                     const geometry_msgs::PoseStamped& in_pose, geometry_msgs::PoseStamped& out_pose,
-                     const ros::Duration& timeout = ros::Duration(2));
+                     const geometry_msgs::msg::PoseStamped& in_pose, geometry_msgs::msg::PoseStamped& out_pose,
+                     const tf2::Duration& timeout = tf2::durationFromSec(2.0));
 
   /**
    * Get the transform between two frames by frame ID.
@@ -99,14 +109,15 @@ public:
    * @return true if transformation succeeded.
    */
   bool transformPose(const std::string& target_frame, const std::string& source_frame,
-                     const geometry_msgs::Pose& in_pose, geometry_msgs::Pose& out_pose,
-                     const ros::Time& time = ros::Time(), const ros::Duration& timeout = ros::Duration(2));
+                     const geometry_msgs::msg::Pose& in_pose, geometry_msgs::msg::Pose& out_pose,
+                     const tf2::TimePoint& time = tf2::TimePointZero,
+                     const tf2::Duration& timeout = tf2::durationFromSec(2.0));
 
-  void sendTransform(const geometry_msgs::TransformStamped& tf);
+  void sendTransform(const geometry_msgs::msg::TransformStamped& tf);
 
-  void sendTransform(const geometry_msgs::Transform& tf, const std::string& from, const std::string& to);
+  void sendTransform(const geometry_msgs::msg::Transform& tf, const std::string& from, const std::string& to);
 
-  void sendTransform(const geometry_msgs::Pose& pose, const std::string& from, const std::string& to);
+  void sendTransform(const geometry_msgs::msg::Pose& pose, const std::string& from, const std::string& to);
 };
 
 /**
@@ -114,42 +125,42 @@ public:
  * @param tf input
  * @param pose output
  */
-void tf2pose(const tf::Transform& tf, geometry_msgs::Pose& pose);
+void tf2pose(const tf2::Transform& tf, geometry_msgs::msg::Pose& pose);
 
 /**
  * Convert a transform msg into a pose msg
  * @param tf input
  * @param pose output
  */
-void tf2pose(const geometry_msgs::Transform& tf, geometry_msgs::Pose& pose);
+void tf2pose(const geometry_msgs::msg::Transform& tf, geometry_msgs::msg::Pose& pose);
 
 /**
  * Convert a stamped transform into a stamped pose msg
  * @param tf input
  * @param pose output
  */
-void tf2pose(const tf::StampedTransform& tf, geometry_msgs::PoseStamped& pose);
+void tf2pose(const tf2::Stamped<tf2::Transform>& tf, geometry_msgs::msg::PoseStamped& pose);
 
 /**
  * Convert a stamped transform msg into a stamped pose msg
  * @param tf input
  * @param pose output
  */
- void tf2pose(const geometry_msgs::TransformStamped& tf, geometry_msgs::PoseStamped& pose);
+void tf2pose(const geometry_msgs::msg::TransformStamped& tf, geometry_msgs::msg::PoseStamped& pose);
 
 /**
  * Convert a pose msg into a transform
  * @param pose input
  * @param tf output
  */
-void pose2tf(const geometry_msgs::Pose& pose, tf::Transform& tf);
+void pose2tf(const geometry_msgs::msg::Pose& pose, tf2::Transform& tf);
 
 /**
- * Convert a stamped pose msg into a stamped transform
+ * Convert a pose msg into a transform msg
  * @param pose input
  * @param tf output
  */
- void pose2tf(const geometry_msgs::PoseStamped& pose, tf::StampedTransform& tf);
+void pose2tf(const geometry_msgs::msg::Pose& pose, geometry_msgs::msg::Transform& tf);
 
 
 } /* namespace thorp::toolkit */

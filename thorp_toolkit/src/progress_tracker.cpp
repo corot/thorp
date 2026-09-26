@@ -1,5 +1,8 @@
 #include "thorp_toolkit/progress_tracker.hpp"
 
+#include <limits>
+#include <stdexcept>
+
 #include <thorp_toolkit/geometry.hpp>
 
 namespace thorp::toolkit
@@ -9,7 +12,7 @@ ProgressTracker::ProgressTracker() : viz_("waypoints")
 {
 }
 
-void ProgressTracker::init(const std::vector<geometry_msgs::PoseStamped>& waypoints, double reached_threshold)
+void ProgressTracker::init(const std::vector<geometry_msgs::msg::PoseStamped>& waypoints, double reached_threshold)
 {
   if (waypoints.empty())
   {
@@ -39,7 +42,7 @@ void ProgressTracker::reset()
   viz_.reset();
 }
 
-void ProgressTracker::updatePose(const geometry_msgs::PoseStamped& robot_pose)
+void ProgressTracker::updatePose(const geometry_msgs::msg::PoseStamped& robot_pose)
 {
   if (waypoints_.empty())
   {

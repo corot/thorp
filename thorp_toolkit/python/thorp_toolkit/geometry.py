@@ -2,14 +2,19 @@ import numpy as np
 from numpy import pi
 from numbers import Number
 
-import rospy
+import time
+
+import rclpy
 import tf2_ros
 import tf2_geometry_msgs
-from tf.transformations import quaternion_from_euler, euler_from_quaternion
+from rclpy.duration import Duration
+from rclpy.time import Time
+from tf_transformations import quaternion_from_euler, euler_from_quaternion
 
 import std_msgs.msg as std_msgs
 import geometry_msgs.msg as geometry_msgs
 
+from .common import node
 from .singleton import Singleton
 
 
@@ -24,13 +29,13 @@ def __get_naked_pose(pose):
     elif isinstance(pose, geometry_msgs.Pose):
         return pose
     else:
-        raise rospy.ROSException("Input parameter is not a geometry_msgs pose!")
+        raise ValueError("Input parameter is not a geometry_msgs pose!")
 
 
 def __set_naked_pose(pose, naked_pose):
     """ Return input pose placing position and rotation with those on naked_pose """
     if not isinstance(naked_pose, geometry_msgs.Pose):
-        raise rospy.ROSException("Input parameter naked_pose is not a geometry_msgs.Pose!")
+        raise ValueError("Input parameter naked_pose is not a geometry_msgs.Pose!")
     if isinstance(pose, geometry_msgs.PoseWithCovarianceStamped):
         pose.pose.pose = naked_pose
     elif isinstance(pose, geometry_msgs.PoseWithCovariance):
@@ -40,7 +45,7 @@ def __set_naked_pose(pose, naked_pose):
     elif isinstance(pose, geometry_msgs.Pose):
         pose = naked_pose
     else:
-        raise rospy.ROSException("Input parameter pose is not any of geometry_msgs' poses!")
+        raise ValueError("Input parameter pose is not any of geometry_msgs' poses!")
     return pose
 
 
@@ -118,7 +123,7 @@ def get_euler(pose_or_quat):
     elif isinstance(pose_or_quat, geometry_msgs.Pose):
         q = pose_or_quat.orientation
     else:
-        raise rospy.ROSException("Input parameter pose_or_quat is not a valid geometry_msgs object")
+        raise ValueError("Input parameter pose_or_quat is not a valid geometry_msgs object")
 
     return euler_from_quaternion((q.x, q.y, q.z, q.w))
 
@@ -140,12 +145,14 @@ def yaw(pose_or_quat):
 
 def quaternion_msg_from_yaw(theta):
     """ Create a geometry_msgs/Quaternion from heading """
-    return geometry_msgs.Quaternion(*quaternion_from_euler(0, 0, theta))
+    x, y, z, w = quaternion_from_euler(0.0, 0.0, theta)
+    return geometry_msgs.Quaternion(x=x, y=y, z=z, w=w)
 
 
 def quaternion_msg_from_rpy(roll, pitch, yaw):
     """ Create a geometry_msgs/Quaternion from roll, pitch, yaw """
-    return geometry_msgs.Quaternion(*quaternion_from_euler(roll, pitch, yaw))
+    x, y, z, w = quaternion_from_euler(roll, pitch, yaw)
+    return geometry_msgs.Quaternion(x=x, y=y, z=z, w=w)
 
 
 def normalize_quaternion(q):
@@ -162,9 +169,9 @@ def create_3d_point(x, y, z, frame=None):
     """ Create a geometry_msgs/Point or geometry_msgs/PointStamped
         (if frame is provided) from 3D coordinates """
     point = geometry_msgs.PointStamped()
-    point.point.x = x
-    point.point.y = y
-    point.point.z = z
+    point.point.x = float(x)
+    point.point.y = float(y)
+    point.point.z = float(z)
     if frame:
         point.header.frame_id = frame
         return point
@@ -176,8 +183,8 @@ def create_2d_pose(x, y, theta, frame=None):
     """ Create a geometry_msgs/Pose or geometry_msgs/PoseStamped
         (if frame is provided) from 2D coordinates and heading """
     pose = geometry_msgs.PoseStamped()
-    pose.pose.position.x = x
-    pose.pose.position.y = y
+    pose.pose.position.x = float(x)
+    pose.pose.position.y = float(y)
     pose.pose.orientation = quaternion_msg_from_yaw(theta)
     if frame:
         pose.header.frame_id = frame
@@ -190,9 +197,9 @@ def create_3d_pose(x, y, z, roll, pitch, yaw, frame=None):
     """ Create a geometry_msgs/Pose or geometry_msgs/PoseStamped
         (if frame is provided) from 3D coordinates and Euler angles """
     pose = geometry_msgs.PoseStamped()
-    pose.pose.position.x = x
-    pose.pose.position.y = y
-    pose.pose.position.z = z
+    pose.pose.position.x = float(x)
+    pose.pose.position.y = float(y)
+    pose.pose.position.z = float(z)
     pose.pose.orientation = quaternion_msg_from_rpy(roll, pitch, yaw)
     if frame:
         pose.header.frame_id = frame
@@ -227,31 +234,40 @@ def to_pose2d(pose):
     elif isinstance(pose, geometry_msgs.Pose):
         p = pose
     else:
-        raise rospy.ROSException("Input parameter pose is not a valid geometry_msgs pose object")
-    return geometry_msgs.Pose2D(p.position.x, p.position.y, yaw(p))
+        raise ValueError("Input parameter pose is not a valid geometry_msgs pose object")
+    return geometry_msgs.Pose2D(x=p.position.x, y=p.position.y, theta=yaw(p))
 
 
-def to_pose3d(pose, timestamp=rospy.Time(), frame=None):
+def to_pose3d(pose, timestamp=None, frame=None):
+    """ timestamp is a builtin_interfaces/Time msg; zero if not provided """
     if isinstance(pose, geometry_msgs.Pose2D):
-        p = geometry_msgs.Pose(geometry_msgs.Point(pose.x, pose.y, 0.0), quaternion_msg_from_yaw(pose.theta))
+        p = geometry_msgs.Pose(position=geometry_msgs.Point(x=pose.x, y=pose.y, z=0.0),
+                               orientation=quaternion_msg_from_yaw(pose.theta))
         if not frame:
             return p
-        return geometry_msgs.PoseStamped(std_msgs.Header(0, timestamp, frame), p)
-    raise rospy.ROSException("Input parameter pose is not a geometry_msgs.Pose2D object")
+        header = std_msgs.Header(frame_id=frame)
+        if timestamp:
+            header.stamp = timestamp
+        return geometry_msgs.PoseStamped(header=header, pose=p)
+    raise ValueError("Input parameter pose is not a geometry_msgs.Pose2D object")
 
 
 def to_transform(pose, child_frame=None):
     if isinstance(pose, geometry_msgs.Pose2D):
-        return geometry_msgs.Transform(geometry_msgs.Vector3(pose.x, pose.y, 0.0), quaternion_msg_from_yaw(pose.theta))
+        return geometry_msgs.Transform(translation=geometry_msgs.Vector3(x=pose.x, y=pose.y, z=0.0),
+                                       rotation=quaternion_msg_from_yaw(pose.theta))
     elif isinstance(pose, geometry_msgs.Pose):
-        return geometry_msgs.Transform(geometry_msgs.Vector3(pose.position.x, pose.position.y, pose.position.z),
-                                       pose.orientation)
+        return geometry_msgs.Transform(translation=geometry_msgs.Vector3(x=pose.position.x, y=pose.position.y,
+                                                                         z=pose.position.z),
+                                       rotation=pose.orientation)
     elif isinstance(pose, geometry_msgs.PoseStamped):
         p = pose.pose
-        tf = geometry_msgs.Transform(geometry_msgs.Vector3(p.position.x, p.position.y, p.position.z), p.orientation)
-        return geometry_msgs.TransformStamped(pose.header, child_frame, tf)
+        tf = geometry_msgs.Transform(translation=geometry_msgs.Vector3(x=p.position.x, y=p.position.y,
+                                                                       z=p.position.z),
+                                     rotation=p.orientation)
+        return geometry_msgs.TransformStamped(header=pose.header, child_frame_id=child_frame or '', transform=tf)
 
-    raise rospy.ROSException("Input parameter pose is not a valid geometry_msgs pose object")
+    raise ValueError("Input parameter pose is not a valid geometry_msgs pose object")
 
 
 def point2d2str(point):
@@ -263,7 +279,7 @@ def point2d2str(point):
         p = point.point
         f = ', ' + point.header.frame_id
     else:
-        raise rospy.ROSException("Input parameter point is not a valid geometry_msgs point object")
+        raise ValueError("Input parameter point is not a valid geometry_msgs point object")
     return "[x: {:.2f}, y: {:.2f}{}]".format(p.x, p.y, f)
 
 
@@ -276,7 +292,7 @@ def point3d2str(point):
         p = point.point
         f = ', ' + point.header.frame_id
     else:
-        raise rospy.ROSException("Input parameter point is not a valid geometry_msgs point object")
+        raise ValueError("Input parameter point is not a valid geometry_msgs point object")
     return "[x: {:.2f}, y: {:.2f}, z: {:.2f}{}]".format(p.x, p.y, p.z, f)
 
 
@@ -289,7 +305,7 @@ def pose2d2str(pose):
         p = pose.pose
         f = ', ' + pose.header.frame_id
     else:
-        raise rospy.ROSException("Input parameter pose is not a valid geometry_msgs pose object")
+        raise ValueError("Input parameter pose is not a valid geometry_msgs pose object")
     return "[x: {:.2f}, y: {:.2f}, yaw: {:.2f}{}]".format(p.position.x, p.position.y, yaw(p), f)
 
 
@@ -302,7 +318,7 @@ def pose3d2str(pose):
         p = pose.pose
         f = ', ' + pose.header.frame_id
     else:
-        raise rospy.ROSException("Input parameter pose is not a valid geometry_msgs pose object")
+        raise ValueError("Input parameter pose is not a valid geometry_msgs pose object")
     return "[x: {:.2f}, y: {:.2f}, z: {:.2f}, roll: {:.2f}, pitch: {:.2f}, yaw: {:.2f}{}]" \
            .format(p.position.x, p.position.y, p.position.z, roll(p), pitch(p), yaw(p), f)
 
@@ -322,7 +338,7 @@ def translate_pose(pose, delta, axis_or_theta, relative=True):
         p.position.z += delta
         return __set_naked_pose(pose, p)
     else:
-        raise rospy.ROSException(axis_or_theta + " is neither a number nor a valid axis ('x', 'y' or 'z')")
+        raise ValueError(axis_or_theta + " is neither a number nor a valid axis ('x', 'y' or 'z')")
     if relative:
         theta = norm_angle(theta + yaw(p))
     p.position.x += np.cos(theta) * delta
@@ -343,7 +359,7 @@ def rotate_pose(pose, theta, euler):
         new_yaw = norm_angle(yaw(p) + theta)
         p.orientation.x, p.orientation.y, p.orientation.z, p.orientation.w = quaternion_from_euler(0, 0, new_yaw)
     else:
-        raise rospy.ROSException(euler + " is not a valid euler angle (roll, pitch or yaw)")
+        raise ValueError(euler + " is not a valid euler angle (roll, pitch or yaw)")
     return pose
 
 
@@ -353,24 +369,24 @@ def transform_pose(pose, tf):
     if isinstance(pose, geometry_msgs.Pose2D):
         p = to_pose3d(pose, frame='dummy')  # just force to_pose3d return a stamped pose
     elif isinstance(pose, geometry_msgs.Pose):
-        p = geometry_msgs.PoseStamped(None, pose)
+        p = geometry_msgs.PoseStamped(pose=pose)
     elif isinstance(pose, geometry_msgs.PoseStamped):
         p = pose
     else:
-        raise rospy.ROSException("Input parameter pose is not a valid geometry_msgs pose object")
+        raise ValueError("Input parameter pose is not a valid geometry_msgs pose object")
 
-    return tf2_geometry_msgs.do_transform_pose(p, tf)
+    return tf2_geometry_msgs.do_transform_pose_stamped(p, tf)
 
 
 def transform_point(point, tf):
     """ Transform the given point with the given transform """
     # do_transform_point expects a stamped point, but it ignores the header
     if isinstance(point, geometry_msgs.Point):
-        p = geometry_msgs.PointStamped(None, point)
+        p = geometry_msgs.PointStamped(point=point)
     elif isinstance(point, geometry_msgs.PointStamped):
         p = point
     else:
-        raise rospy.ROSException("Input parameter point is not a valid geometry_msgs point object")
+        raise ValueError("Input parameter point is not a valid geometry_msgs point object")
 
     return tf2_geometry_msgs.do_transform_point(p, tf)
 
@@ -393,7 +409,8 @@ def calculate_velocity(points):
     """
     velocities = []
     for i in range(1, len(points)):
-        delta_time = (points[i].header.stamp - points[i - 1].header.stamp).to_sec()
+        delta_time = (Time.from_msg(points[i].header.stamp)
+                      - Time.from_msg(points[i - 1].header.stamp)).nanoseconds * 1e-9
         if delta_time == 0:
             continue
         dx = points[i].point.x - points[i - 1].point.x
@@ -433,19 +450,15 @@ def project_future_pose(points, future_time):
 
 class TF2(metaclass=Singleton):
     def __init__(self):
-        """ Singleton encapsulating a tf2 listener and a broadcaster """
-        try:
-            self.__buff__ = tf2_ros.Buffer()
-            self.__list__ = tf2_ros.TransformListener(self.__buff__)
-            self.__stbc__ = tf2_ros.StaticTransformBroadcaster()
-            # wait until we get the first tf msg
-            while not rospy.is_shutdown() and not self.__buff__.all_frames_as_string():
-                rospy.sleep(0.001)
-        except rospy.ROSException as err:
-            rospy.logerr("Could not start tf buffer client: " + str(err))
-            raise err
+        """ Singleton encapsulating a tf2 listener and a broadcaster, using the node given to thorp_toolkit.init """
+        self.__buff__ = tf2_ros.Buffer(node=node())
+        self.__list__ = tf2_ros.TransformListener(self.__buff__, node(), spin_thread=True)
+        self.__stbc__ = tf2_ros.StaticTransformBroadcaster(node())
+        # wait until we get the first tf msg
+        while rclpy.ok() and not self.__buff__.all_frames_as_string():
+            time.sleep(0.001)
 
-    def transform_pose(self, pose_in, frame_from, frame_to, timeout=rospy.Duration(2.0)):
+    def transform_pose(self, pose_in, frame_from, frame_to, timeout=Duration(seconds=2.0)):
         """
         Transform pose_in from one frame to another, or create
         the corresponding pose if None is provided on pose_in
@@ -455,22 +468,17 @@ class TF2(metaclass=Singleton):
         else:
             pose_in = geometry_msgs.PoseStamped()
             pose_in.header.frame_id = frame_from
-            pose_in.header.stamp = rospy.Time(0.0)
             pose_in.pose.orientation.w = 1.0
         try:
             return self.__buff__.transform(pose_in, frame_to, timeout)
         except tf2_ros.TransformException as err:
-            raise rospy.ROSException(f"Could not transform pose from {frame_from} to {frame_to}: {err}")
-        except rospy.exceptions.ROSInterruptException:
-            pass
+            raise RuntimeError(f"Could not transform pose from {frame_from} to {frame_to}: {err}")
 
-    def lookup_transform(self, frame_from, frame_to, timestamp=rospy.Time(0.0), timeout=rospy.Duration(1.0)):
+    def lookup_transform(self, frame_from, frame_to, timestamp=Time(), timeout=Duration(seconds=1.0)):
         try:
             return self.__buff__.lookup_transform(frame_to, frame_from, timestamp, timeout)
         except tf2_ros.TransformException as err:
-            raise rospy.ROSException(f"Could not lookup transform from {frame_from} to {frame_to}: {err}")
-        except rospy.exceptions.ROSInterruptException:
-            pass
+            raise RuntimeError(f"Could not lookup transform from {frame_from} to {frame_to}: {err}")
 
     def publish_transform(self, transform):
         self.__stbc__.sendTransform(transform)

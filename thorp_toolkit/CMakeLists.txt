@@ -1,105 +1,88 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.8)
 project(thorp_toolkit)
 
-##############################################################################
-# Find Packages
-##############################################################################
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17)
+endif()
 
-find_package(Boost REQUIRED COMPONENTS thread)
- 
-find_package(catkin
-    REQUIRED
-    COMPONENTS
-        tf
-        tf2
-        tf2_ros
-        tf2_eigen
-        tf2_geometry_msgs
-        roscpp
-        angles
-        geometry_msgs
-        geometric_shapes
-        kobuki_msgs
-        moveit_msgs
-        moveit_ros_planning_interface
-        dynamic_reconfigure
-        eigen_conversions
-        thorp_msgs
+find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_python REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(angles REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
+find_package(rviz_2d_overlay_msgs REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(tf2_eigen REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(Boost REQUIRED)
+
+add_library(${PROJECT_NAME} SHARED
+  src/common.cpp
+  src/geometry.cpp
+  src/progress_tracker.cpp
+  src/tf2.cpp
+  src/visualization.cpp
 )
-
-
-
-##############################################################################
-# Exports
-##############################################################################
-
-catkin_python_setup()
-
-catkin_package(
-    INCLUDE_DIRS include
-    LIBRARIES ${PROJECT_NAME}
-    CATKIN_DEPENDS
-        tf
-        tf2
-        tf2_ros
-        tf2_eigen
-        tf2_geometry_msgs
-        roscpp
-        angles
-        geometry_msgs
-        geometric_shapes
-        kobuki_msgs
-        moveit_msgs
-        moveit_ros_planning_interface
-        eigen_conversions
-        dynamic_reconfigure
-        thorp_msgs
+target_include_directories(${PROJECT_NAME} PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
 )
-
-
-##############################################################################
-# Project Configuration
-##############################################################################
-
-add_definitions(${catkin_DEFINITIONS})
-include_directories(include ${catkin_INCLUDE_DIRS})    
-
-
-##############################################################################
-# Build
-##############################################################################
-
-## Nodes
-add_executable(save_pose_node nodes/save_pose_node.cpp)
-
-## Specify libraries to link a library or executable target against
-target_link_libraries(save_pose_node ${catkin_LIBRARIES})
-
-## Libraries
-add_library(${PROJECT_NAME}
-        src/alternative_config.cpp
-        src/common.cpp
-        src/geometry.cpp
-        src/kobuki_base.cpp
-        src/planning_scene.cpp
-        src/progress_tracker.cpp
-        src/reconfigure.cpp
-        src/simulation.cpp
-        src/tf2.cpp
-        src/visualization.cpp)
-add_dependencies(${PROJECT_NAME} thorp_msgs_generate_messages_cpp)
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} )
-
-
-##############################################################################
-# Installs
-##############################################################################
+target_link_libraries(${PROJECT_NAME} PUBLIC
+  rclcpp::rclcpp
+  angles::angles
+  ${std_msgs_TARGETS}
+  ${geometry_msgs_TARGETS}
+  ${visualization_msgs_TARGETS}
+  ${rviz_2d_overlay_msgs_TARGETS}
+  tf2::tf2
+  tf2_ros::tf2_ros
+  tf2_eigen::tf2_eigen
+  tf2_geometry_msgs::tf2_geometry_msgs
+  Eigen3::Eigen
+  Boost::boost
+)
 
 install(TARGETS ${PROJECT_NAME}
-        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-        )
+        EXPORT export_${PROJECT_NAME}
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin
+)
+install(FILES include/thorp_toolkit/common.hpp
+              include/thorp_toolkit/geometry.hpp
+              include/thorp_toolkit/math.hpp
+              include/thorp_toolkit/parameters.hpp
+              include/thorp_toolkit/progress_tracker.hpp
+              include/thorp_toolkit/tf2.hpp
+              include/thorp_toolkit/visualization.hpp
+        DESTINATION include/${PROJECT_NAME}/${PROJECT_NAME}
+)
 
-install(DIRECTORY include DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION})
+# Python modules; listed one by one, as the package is only partially ported
+_ament_cmake_python_get_python_install_dir()
+install(FILES python/thorp_toolkit/__init__.py
+              python/thorp_toolkit/common.py
+              python/thorp_toolkit/decorators.py
+              python/thorp_toolkit/geometry.py
+              python/thorp_toolkit/progress_tracker.py
+              python/thorp_toolkit/singleton.py
+              python/thorp_toolkit/spatial_hash.py
+              python/thorp_toolkit/tachometer.py
+              python/thorp_toolkit/transform.py
+              python/thorp_toolkit/visualization.py
+        DESTINATION ${PYTHON_INSTALL_DIR}/${PROJECT_NAME}
+)
+
+if(BUILD_TESTING)
+  find_package(ament_cmake_pytest REQUIRED)
+  ament_add_pytest_test(test_progress_tracker test/test_progress_tracker.py)
+endif()
+
+ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
+ament_export_dependencies(rclcpp angles std_msgs geometry_msgs visualization_msgs rviz_2d_overlay_msgs
+                          tf2 tf2_ros tf2_eigen tf2_geometry_msgs Eigen3 Boost)
+ament_package()

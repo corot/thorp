@@ -1,29 +1,32 @@
-import rospy
+import time
 
 from random import random
+from rclpy.duration import Duration
 from std_msgs.msg import ColorRGBA
 from geometry_msgs.msg import PoseStamped
-from jsk_rviz_plugins.msg import OverlayText
+from rviz_2d_overlay_msgs.msg import OverlayText
 from visualization_msgs.msg import Marker, MarkerArray
 
+from .common import node
 from .singleton import Singleton
 
 
 class Visualization(metaclass=Singleton):
-    """ Singleton providing assistance to create and publish visual markers """
+    """ Singleton providing assistance to create and publish visual markers, using the node given to
+        thorp_toolkit.init """
 
-    def __init__(self, topic='~visual_markers', lifetime=60):
-        self._marker_pub = rospy.Publisher(topic, MarkerArray, queue_size=1)
+    def __init__(self, topic='~/visual_markers', lifetime=60):
+        self._marker_pub = node().create_publisher(MarkerArray, topic, 1)
         self._lifetime = lifetime
         self._markers_array = []
         self._active_markers = []  # published markers
-        rospy.sleep(0.25)  # wait a moment until the publisher is ready
+        time.sleep(0.25)  # wait a moment until the publisher is ready
 
     def publish_markers(self, start_id=1):
         """ Publish marker_array and write lifetime and id """
         if not self._markers_array:
             return
-        duration = rospy.Duration(self._lifetime)
+        duration = Duration(seconds=self._lifetime).to_msg()
         for i, marker in enumerate(self._markers_array):
             marker.lifetime = duration
             marker.id = start_id + i
@@ -32,9 +35,9 @@ class Visualization(metaclass=Singleton):
             offset = len(self._active_markers) - len(self._markers_array)
             for marker in self._active_markers[offset:]:
                 marker.action = marker.DELETE
-            self._marker_pub.publish(self._markers_array + self._active_markers[offset:])
+            self._marker_pub.publish(MarkerArray(markers=self._markers_array + self._active_markers[offset:]))
         else:
-            self._marker_pub.publish(self._markers_array)
+            self._marker_pub.publish(MarkerArray(markers=self._markers_array))
         self._active_markers = self._markers_array
 
     def reset(self):
@@ -46,7 +49,7 @@ class Visualization(metaclass=Singleton):
         """ Delete all markers """
         for marker in self._active_markers:
             marker.action = marker.DELETE
-        self._marker_pub.publish(self._active_markers)
+        self._marker_pub.publish(MarkerArray(markers=self._active_markers))
         self._active_markers = []
 
     def clear_markers(self):
@@ -86,19 +89,19 @@ class Visualization(metaclass=Singleton):
     @classmethod
     def rand_color(cls, alpha=1.0):
         """ Create color msg from random RGB values. Alpha defaults to 1.0 """
-        return ColorRGBA(random(), random(), random(), alpha)
+        return ColorRGBA(r=random(), g=random(), b=random(), a=float(alpha))
 
     @classmethod
     def make_color(cls, rgba: tuple):
         """ Create color msg from a tuple containing RGB[A] values. Alpha defaults to 1.0 """
         if not rgba:  # default to non invasive blue
-            return ColorRGBA(0, 0, 1, 0.9)
+            return ColorRGBA(r=0.0, g=0.0, b=1.0, a=0.9)
         if isinstance(rgba, ColorRGBA):
             return rgba
         if len(rgba) == 3:
-            return ColorRGBA(*rgba, 1.0)
+            return ColorRGBA(r=float(rgba[0]), g=float(rgba[1]), b=float(rgba[2]), a=1.0)
         if len(rgba) == 4:
-            return ColorRGBA(*rgba)
+            return ColorRGBA(r=float(rgba[0]), g=float(rgba[1]), b=float(rgba[2]), a=float(rgba[3]))
         raise ValueError("Color tuple has to be of len 3 or 4!")
 
     @classmethod
@@ -106,15 +109,15 @@ class Visualization(metaclass=Singleton):
         """ Create color msg for some basic color names. Alpha defaults to 1.0 """
         if not hasattr(cls, 'color_map'):
             cls.color_map = {
-                "red": ColorRGBA(r=1.0, g=0.0, b=0.0, a=alpha),
-                "blue": ColorRGBA(r=0.0, g=0.0, b=1.0, a=alpha),
-                "green": ColorRGBA(r=0.0, g=1.0, b=0.0, a=alpha),
-                "yellow": ColorRGBA(r=1.0, g=1.0, b=0.0, a=alpha),
-                "orange": ColorRGBA(r=1.0, g=0.65, b=0.0, a=alpha),
-                "white": ColorRGBA(r=1.0, g=1.0, b=1.0, a=alpha),
-                "gray": ColorRGBA(r=0.5, g=0.5, b=0.5, a=alpha),
-                "beige": ColorRGBA(r=0.96, g=0.96, b=0.86, a=alpha),
-                "cyan": ColorRGBA(r=0.0, g=1.0, b=1.0, a=alpha),
+                "red": ColorRGBA(r=1.0, g=0.0, b=0.0, a=float(alpha)),
+                "blue": ColorRGBA(r=0.0, g=0.0, b=1.0, a=float(alpha)),
+                "green": ColorRGBA(r=0.0, g=1.0, b=0.0, a=float(alpha)),
+                "yellow": ColorRGBA(r=1.0, g=1.0, b=0.0, a=float(alpha)),
+                "orange": ColorRGBA(r=1.0, g=0.65, b=0.0, a=float(alpha)),
+                "white": ColorRGBA(r=1.0, g=1.0, b=1.0, a=float(alpha)),
+                "gray": ColorRGBA(r=0.5, g=0.5, b=0.5, a=float(alpha)),
+                "beige": ColorRGBA(r=0.96, g=0.96, b=0.86, a=float(alpha)),
+                "cyan": ColorRGBA(r=0.0, g=1.0, b=1.0, a=float(alpha)),
             }
 
         return cls.color_map[color_name]
@@ -143,9 +146,9 @@ class Visualization(metaclass=Singleton):
         marker.ns = namespace
         while len(dimensions) < 3:
             dimensions.append(0)
-        marker.scale.x = max(dimensions[0], 0.001)
-        marker.scale.y = max(dimensions[1], 0.001)
-        marker.scale.z = max(dimensions[2], 0.001)
+        marker.scale.x = float(max(dimensions[0], 0.001))
+        marker.scale.y = float(max(dimensions[1], 0.001))
+        marker.scale.z = float(max(dimensions[2], 0.001))
         marker.color = cls.make_color(color)
         marker.action = Marker.ADD
         marker.header = pose.header
@@ -159,7 +162,7 @@ class Visualization(metaclass=Singleton):
         marker.type = Marker.LINE_STRIP
         marker.ns = namespace
         marker.pose.orientation.w = 1.0
-        marker.scale.x = size
+        marker.scale.x = float(size)
         marker.color = cls.make_color(color)
         marker.points = points
         marker.action = Marker.ADD
@@ -174,9 +177,9 @@ class Visualization(metaclass=Singleton):
         marker.type = Marker.SPHERE
         marker.header = pose.header
         marker.pose = pose.pose
-        marker.scale.x = size
-        marker.scale.y = size
-        marker.scale.z = size
+        marker.scale.x = float(size)
+        marker.scale.y = float(size)
+        marker.scale.z = float(size)
         marker.color = cls.make_color(color)
         marker.action = Marker.ADD
         return marker
@@ -199,7 +202,7 @@ class Visualization(metaclass=Singleton):
         marker.ns = namespace
         marker.text = text
         marker.color = cls.make_color(color)
-        marker.scale.z = size
+        marker.scale.z = float(size)
         return marker
 
     @classmethod
@@ -238,9 +241,9 @@ class Visualization(metaclass=Singleton):
             marker.type = Marker.SPHERE
             marker.header = pose.header
             marker.pose = pose.pose
-            marker.scale.x = size
-            marker.scale.y = size
-            marker.scale.z = size
+            marker.scale.x = float(size)
+            marker.scale.y = float(size)
+            marker.scale.z = float(size)
             marker.color = color
             marker.action = Marker.ADD
             markers.append(marker)
@@ -263,9 +266,9 @@ class Visualization(metaclass=Singleton):
         marker.header = ref_pose.header
         marker.pose = ref_pose.pose
         marker.points = poses
-        marker.scale.x = size
-        marker.scale.y = size
-        marker.scale.z = size
+        marker.scale.x = float(size)
+        marker.scale.y = float(size)
+        marker.scale.z = float(size)
         if isinstance(colors[0], list):
             # colors defined for every element
             marker.colors = [cls.make_color(color) for color in colors]
@@ -289,8 +292,8 @@ class Visualization(metaclass=Singleton):
         marker.pose = ref_pose.pose
         marker.ns = namespace
         marker.action = Marker.ADD
-        marker.scale.x = size
-        marker.scale.y = size
+        marker.scale.x = float(size)
+        marker.scale.y = float(size)
         if isinstance(colors[0], list):
             # colors defined for every element
             marker.colors = [cls.make_color(color) for color in colors]
@@ -305,9 +308,11 @@ class Visualization(metaclass=Singleton):
         msg.action = OverlayText.ADD
         msg.width = 1000
         msg.height = 25
-        msg.left = 5
-        msg.top = offset_from_top
+        msg.horizontal_alignment = OverlayText.LEFT
+        msg.vertical_alignment = OverlayText.TOP
+        msg.horizontal_distance = 5
+        msg.vertical_distance = offset_from_top
         msg.fg_color = cls.make_color(color)
         msg.text = text
-        msg.text_size = text_size
+        msg.text_size = float(text_size)
         return msg

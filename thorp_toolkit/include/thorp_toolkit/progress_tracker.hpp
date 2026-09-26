@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/msg/pose_stamped.hpp>
 
 #include <thorp_toolkit/visualization.hpp>
 
@@ -18,18 +18,18 @@ class ProgressTracker
 public:
   ProgressTracker();
 
-  void init(const std::vector<geometry_msgs::PoseStamped>& waypoints, double reached_threshold);
+  void init(const std::vector<geometry_msgs::msg::PoseStamped>& waypoints, double reached_threshold);
 
   void reset();
 
-  void updatePose(const geometry_msgs::PoseStamped& robot_pose);
+  void updatePose(const geometry_msgs::msg::PoseStamped& robot_pose);
 
   size_t nextWaypoint() const;
 
   size_t reachedWaypoint() const;
 
 private:
-  std::vector<geometry_msgs::PoseStamped> waypoints_;
+  std::vector<geometry_msgs::msg::PoseStamped> waypoints_;
   double reached_threshold_;
   size_t next_wp_;
   bool reached_;

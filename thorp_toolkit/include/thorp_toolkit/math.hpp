@@ -4,10 +4,12 @@
 
 #pragma once
 
+#include <algorithm>
+#include <cmath>
 #include <memory>  // for std::allocator
-#include <numeric> // for std::accumulate in 18.04
+#include <numeric>  // for std::accumulate
 
-#include <geometry_msgs/Vector3.h>
+#include <geometry_msgs/msg/vector3.hpp>
 
 namespace thorp::toolkit
 {
@@ -17,7 +19,7 @@ namespace thorp::toolkit
  * @param v vector
  * @return minimum value
  */
-inline double minValue(const geometry_msgs::Vector3& v)
+inline double minValue(const geometry_msgs::msg::Vector3& v)
 {
   return std::min(std::min(v.x, v.y), v.z);
 }
@@ -27,7 +29,7 @@ inline double minValue(const geometry_msgs::Vector3& v)
  * @param v vector
  * @return maximum value
  */
-inline double maxValue(const geometry_msgs::Vector3& v)
+inline double maxValue(const geometry_msgs::msg::Vector3& v)
 {
   return std::max(std::max(v.x, v.y), v.z);
 }

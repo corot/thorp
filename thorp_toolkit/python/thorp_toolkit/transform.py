@@ -1,12 +1,12 @@
-#!/usr/bin/env python
-
 import copy
 import numpy.linalg
 
-import rospy
+import rclpy.logging
 import std_msgs.msg
 import geometry_msgs.msg
-import tf.transformations
+import tf_transformations
+
+logger = rclpy.logging.get_logger('thorp_toolkit')
 
 
 class Transform(object):
@@ -154,7 +154,7 @@ class Transform(object):
         :param yaw:
         :return:
         """
-        self.q = tf.transformations.quaternion_from_euler(roll, pitch, yaw).tolist()
+        self.q = list(tf_transformations.quaternion_from_euler(roll, pitch, yaw))
         return self
 
     def scale_translation(self, factor):
@@ -191,13 +191,13 @@ class Transform(object):
             return rotation, rotation.inverse() * translation
 
     def to_matrix(self):
-        matrix = tf.transformations.quaternion_matrix(self.q)
+        matrix = tf_transformations.quaternion_matrix(self.q)
         matrix[:3, 3] = self.translation[:3]
         return matrix
 
     def from_matrix(self, matrix):
         self.translation = matrix[:3, 3]
-        self.q = tf.transformations.quaternion_from_matrix(matrix).tolist()
+        self.q = list(tf_transformations.quaternion_from_matrix(matrix))
         return self
 
     def inverse(self):
@@ -213,10 +213,10 @@ class Transform(object):
         """
         quaternion = geometry_msgs.msg.Quaternion()
         assert self._is_q_normalized()
-        quaternion.x = self.q[0]
-        quaternion.y = self.q[1]
-        quaternion.z = self.q[2]
-        quaternion.w = self.q[3]
+        quaternion.x = float(self.q[0])
+        quaternion.y = float(self.q[1])
+        quaternion.z = float(self.q[2])
+        quaternion.w = float(self.q[3])
         return quaternion
 
     def _is_q_normalized(self):
@@ -226,7 +226,7 @@ class Transform(object):
         """
         :return: [r,p,y]
         """
-        return tf.transformations.euler_from_quaternion(self.q)
+        return tf_transformations.euler_from_quaternion(self.q)
 
     def norm_translation(self):
         return self.length()
@@ -236,9 +236,9 @@ class Transform(object):
         :return: geometry_msgs.msg.Vector3
         """
         vector3 = geometry_msgs.msg.Vector3()
-        vector3.x = self.translation[0]
-        vector3.y = self.translation[1]
-        vector3.z = self.translation[2]
+        vector3.x = float(self.translation[0])
+        vector3.y = float(self.translation[1])
+        vector3.z = float(self.translation[2])
         return vector3
 
     def to_geometry_msg_transform(self):
@@ -246,13 +246,13 @@ class Transform(object):
         :return: geometry_msgs.msg.Transform
         """
         msg = geometry_msgs.msg.Transform()
-        msg.translation.x = self.translation[0]
-        msg.translation.y = self.translation[1]
-        msg.translation.z = self.translation[2]
-        msg.rotation.x = self.q[0]
-        msg.rotation.y = self.q[1]
-        msg.rotation.z = self.q[2]
-        msg.rotation.w = self.q[3]
+        msg.translation.x = float(self.translation[0])
+        msg.translation.y = float(self.translation[1])
+        msg.translation.z = float(self.translation[2])
+        msg.rotation.x = float(self.q[0])
+        msg.rotation.y = float(self.q[1])
+        msg.rotation.z = float(self.q[2])
+        msg.rotation.w = float(self.q[3])
         return msg
 
     def to_geometry_msg_transform_stamped(self):
@@ -282,13 +282,13 @@ class Transform(object):
         :return:  geometry_msgs.msg.Pose
         """
         msg = geometry_msgs.msg.Pose()
-        msg.position.x = self.translation[0]
-        msg.position.y = self.translation[1]
-        msg.position.z = self.translation[2]
-        msg.orientation.x = self.q[0]
-        msg.orientation.y = self.q[1]
-        msg.orientation.z = self.q[2]
-        msg.orientation.w = self.q[3]
+        msg.position.x = float(self.translation[0])
+        msg.position.y = float(self.translation[1])
+        msg.position.z = float(self.translation[2])
+        msg.orientation.x = float(self.q[0])
+        msg.orientation.y = float(self.q[1])
+        msg.orientation.z = float(self.q[2])
+        msg.orientation.w = float(self.q[3])
         return msg
 
     def to_geometry_msg_pose_stamped(self):
@@ -341,7 +341,7 @@ class Transform(object):
             t_foo.rotation_from_euler(q_d['r'], q_d['p'], q_d['y'])
             q = list(t_foo.q)
         except KeyError:
-            rospy.logerr("Could not parse '%s' into Transformation" % str(d))
+            logger.error("Could not parse '%s' into Transformation" % str(d))
             return None
 
         new_trafo = Transform(*(t + q + [frame_id]))
@@ -363,17 +363,17 @@ class Transform(object):
         l = self.to_matrix()
         r = other.to_matrix()
         result = Transform()
-        result.from_matrix(tf.transformations.concatenate_matrices(l, r))
+        result.from_matrix(tf_transformations.concatenate_matrices(l, r))
         result.header = copy.deepcopy(self.header)
         if self.child_frame_id and other.header.frame_id  and self.child_frame_id != other.header.frame_id:
-            rospy.logwarn("Inconsistency in your transform chain: concatenated "
+            logger.warning("Inconsistency in your transform chain: concatenated "
                            "a frame in %s to a frame which specifies %s",
                            other.header.frame_id, self.child_frame_id)
         result.child_frame_id = other.child_frame_id
         return result
 
     def __unicode__(self):
-        euler = tf.transformations.euler_from_quaternion(self.q)
+        euler = tf_transformations.euler_from_quaternion(self.q)
         if self.header.frame_id and self.child_frame_id:
             return "%f, %f, %f - %f, %f, %f in '%s ->%s'" % (self.translation[0], self.translation[1], self.translation[2],
                                                              euler[0], euler[1], euler[2], self.header.frame_id, self.child_frame_id)
@@ -399,14 +399,14 @@ class Transform(object):
 
         if self.header.frame_id and other.header.frame_id:
             if self.header.frame_id != other.header.frame_id:
-                rospy.logerr("Header frames of Transformation objects do not fit (%s and %s), comparison"
-                               "will fail in future version" % (self.header.frame_id, other.header.frame_id))
+                logger.error("Header frames of Transformation objects do not fit (%s and %s), comparison"
+                             "will fail in future version" % (self.header.frame_id, other.header.frame_id))
                 # return False
 
         if self.child_frame_id and other.child_frame_id:
             if self.child_frame_id != other.child_frame_id:
-                rospy.logerr("Child frames of Transformation objects do not fit (%s and %s), comparison" 
-                               "will fail in future version" % (self.child_frame_id, other.child_frame_id))
+                logger.error("Child frames of Transformation objects do not fit (%s and %s), comparison"
+                             "will fail in future version" % (self.child_frame_id, other.child_frame_id))
                 # return False
 
         for (a, b) in zip(list(self.translation) + list(self.q), list(other.translation) + list(other.q)):

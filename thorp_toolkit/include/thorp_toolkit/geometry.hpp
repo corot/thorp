@@ -4,20 +4,29 @@
 
 #pragma once
 
+#include <array>
+#include <cmath>
 #include <numeric>
-
-#include <tf/tf.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <string>
+#include <vector>
 
 #include <angles/angles.h>
+#include <tf2/utils.h>
+#include <tf2/transform_datatypes.h>
+#include <tf2/LinearMath/Transform.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
-#include <geometry_msgs/Pose.h>
-#include <geometry_msgs/Pose2D.h>
-#include <geometry_msgs/Point.h>
-#include <geometry_msgs/Point32.h>
-#include <geometry_msgs/PoseArray.h>
-#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/msg/pose.hpp>
+#include <geometry_msgs/msg/pose2_d.hpp>
+#include <geometry_msgs/msg/point.hpp>
+#include <geometry_msgs/msg/point32.hpp>
+#include <geometry_msgs/msg/point_stamped.hpp>
+#include <geometry_msgs/msg/pose_array.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <geometry_msgs/msg/transform_stamped.hpp>
+#include <geometry_msgs/msg/vector3_stamped.hpp>
 
+#include "thorp_toolkit/common.hpp"
 
 namespace thorp::toolkit
 {
@@ -58,10 +67,10 @@ inline double normAngle(double a)
  * @param tf the transform
  * @return transform's roll
  */
-inline double roll(const tf::Transform& tf)
+inline double roll(const tf2::Transform& tf)
 {
   double roll, pitch, yaw;
-  tf::Matrix3x3(tf.getRotation()).getRPY(roll, pitch, yaw);
+  tf2::Matrix3x3(tf.getRotation()).getRPY(roll, pitch, yaw);
   return roll;
 }
 
@@ -70,12 +79,12 @@ inline double roll(const tf::Transform& tf)
  * @param the pose
  * @return pose's roll
  */
-inline double roll(const geometry_msgs::Pose& pose)
+inline double roll(const geometry_msgs::msg::Pose& pose)
 {
-  tf::Quaternion q;
-  tf::quaternionMsgToTF(pose.orientation, q);
+  tf2::Quaternion q;
+  tf2::fromMsg(pose.orientation, q);
   double roll, pitch, yaw;
-  tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
+  tf2::Matrix3x3(q).getRPY(roll, pitch, yaw);
   return roll;
 }
 
@@ -84,12 +93,12 @@ inline double roll(const geometry_msgs::Pose& pose)
  * @param pose the pose
  * @return pose roll
  */
-inline double roll(const geometry_msgs::PoseStamped& pose)
+inline double roll(const geometry_msgs::msg::PoseStamped& pose)
 {
-  tf::Quaternion q;
-  tf::quaternionMsgToTF(pose.pose.orientation, q);
+  tf2::Quaternion q;
+  tf2::fromMsg(pose.pose.orientation, q);
   double roll, pitch, yaw;
-  tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
+  tf2::Matrix3x3(q).getRPY(roll, pitch, yaw);
   return roll;
 }
 
@@ -98,12 +107,12 @@ inline double roll(const geometry_msgs::PoseStamped& pose)
  * @param tf the transform
  * @return transform's roll
  */
-inline double roll(const geometry_msgs::TransformStamped& tf)
+inline double roll(const geometry_msgs::msg::TransformStamped& tf)
 {
-  tf::Quaternion q;
-  tf::quaternionMsgToTF(tf.transform.rotation, q);
+  tf2::Quaternion q;
+  tf2::fromMsg(tf.transform.rotation, q);
   double roll, pitch, yaw;
-  tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
+  tf2::Matrix3x3(q).getRPY(roll, pitch, yaw);
   return roll;
 }
 
@@ -112,10 +121,10 @@ inline double roll(const geometry_msgs::TransformStamped& tf)
  * @param tf the transform
  * @return transform's pitch
  */
-inline double pitch(const tf::Transform& tf)
+inline double pitch(const tf2::Transform& tf)
 {
   double roll, pitch, yaw;
-  tf::Matrix3x3(tf.getRotation()).getRPY(roll, pitch, yaw);
+  tf2::Matrix3x3(tf.getRotation()).getRPY(roll, pitch, yaw);
   return pitch;
 }
 
@@ -124,12 +133,12 @@ inline double pitch(const tf::Transform& tf)
  * @param the pose
  * @return pose's pitch
  */
-inline double pitch(const geometry_msgs::Pose& pose)
+inline double pitch(const geometry_msgs::msg::Pose& pose)
 {
-  tf::Quaternion q;
-  tf::quaternionMsgToTF(pose.orientation, q);
+  tf2::Quaternion q;
+  tf2::fromMsg(pose.orientation, q);
   double roll, pitch, yaw;
-  tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
+  tf2::Matrix3x3(q).getRPY(roll, pitch, yaw);
   return pitch;
 }
 
@@ -138,12 +147,12 @@ inline double pitch(const geometry_msgs::Pose& pose)
  * @param the pose
  * @return pose's pitch
  */
-inline double pitch(const geometry_msgs::PoseStamped& pose)
+inline double pitch(const geometry_msgs::msg::PoseStamped& pose)
 {
-  tf::Quaternion q;
-  tf::quaternionMsgToTF(pose.pose.orientation, q);
+  tf2::Quaternion q;
+  tf2::fromMsg(pose.pose.orientation, q);
   double roll, pitch, yaw;
-  tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
+  tf2::Matrix3x3(q).getRPY(roll, pitch, yaw);
   return pitch;
 }
 
@@ -152,12 +161,12 @@ inline double pitch(const geometry_msgs::PoseStamped& pose)
  * @param tf the transform
  * @return transform's pitch
  */
-inline double pitch(const geometry_msgs::TransformStamped& tf)
+inline double pitch(const geometry_msgs::msg::TransformStamped& tf)
 {
-  tf::Quaternion q;
-  tf::quaternionMsgToTF(tf.transform.rotation, q);
+  tf2::Quaternion q;
+  tf2::fromMsg(tf.transform.rotation, q);
   double roll, pitch, yaw;
-  tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
+  tf2::Matrix3x3(q).getRPY(roll, pitch, yaw);
   return pitch;
 }
 
@@ -166,9 +175,9 @@ inline double pitch(const geometry_msgs::TransformStamped& tf)
  * @param tf the transform
  * @return transform's yaw
  */
-inline double yaw(const tf::Transform& tf)
+inline double yaw(const tf2::Transform& tf)
 {
-  return tf::getYaw(tf.getRotation());
+  return tf2::getYaw(tf.getRotation());
 }
 
 /**
@@ -176,29 +185,29 @@ inline double yaw(const tf::Transform& tf)
  * @param q quaternion q
  * @return quaternion's yaw
  */
-inline double yaw(const tf::Quaternion& q)
+inline double yaw(const tf2::Quaternion& q)
 {
-  return tf::getYaw(q);
+  return tf2::getYaw(q);
 }
 
 /**
- * Alias of tf::getYaw(quaternion)
+ * Alias of tf2::getYaw(quaternion)
  * @param q quaternion q
  * @return quaternion's yaw
  */
-inline double yaw(const geometry_msgs::Quaternion& q)
+inline double yaw(const geometry_msgs::msg::Quaternion& q)
 {
-  return tf::getYaw(q);
+  return tf2::getYaw(q);
 }
 
 /**
- * Alias of tf::getYaw(quaternion)
+ * Alias of tf2::getYaw(quaternion)
  * @param pose the pose
  * @return pose's yaw
  */
-inline double yaw(const geometry_msgs::Pose& pose)
+inline double yaw(const geometry_msgs::msg::Pose& pose)
 {
-  return tf::getYaw(pose.orientation);
+  return tf2::getYaw(pose.orientation);
 }
 
 /**
@@ -206,9 +215,9 @@ inline double yaw(const geometry_msgs::Pose& pose)
  * @param pose the pose
  * @return pose's yaw
  */
-inline double yaw(const geometry_msgs::PoseStamped& pose)
+inline double yaw(const geometry_msgs::msg::PoseStamped& pose)
 {
-  return tf::getYaw(pose.pose.orientation);
+  return tf2::getYaw(pose.pose.orientation);
 }
 
 /**
@@ -216,9 +225,9 @@ inline double yaw(const geometry_msgs::PoseStamped& pose)
  * @param tf the transform
  * @return transform's yaw
  */
-inline double yaw(const geometry_msgs::TransformStamped& tf)
+inline double yaw(const geometry_msgs::msg::TransformStamped& tf)
 {
-  return tf::getYaw(tf.transform.rotation);
+  return tf2::getYaw(tf.transform.rotation);
 }
 
 /**
@@ -226,7 +235,7 @@ inline double yaw(const geometry_msgs::TransformStamped& tf)
  * @warning This is only intended for 2D poses, as it will discard pitch and roll.
  * @param pose Pose
  */
-inline void setYaw(geometry_msgs::Pose& pose, double new_yaw)
+inline void setYaw(geometry_msgs::msg::Pose& pose, double new_yaw)
 {
   tf2::Quaternion quat_tf;
   quat_tf.setRPY(0, 0, new_yaw);
@@ -238,7 +247,7 @@ inline void setYaw(geometry_msgs::Pose& pose, double new_yaw)
  * @warning This is only intended for 2D poses, as it will discard pitch and roll.
  * @param pose Stamped pose
  */
-inline void setYaw(geometry_msgs::PoseStamped& pose, double new_yaw)
+inline void setYaw(geometry_msgs::msg::PoseStamped& pose, double new_yaw)
 {
   setYaw(pose.pose, new_yaw);
 }
@@ -248,9 +257,9 @@ inline void setYaw(geometry_msgs::PoseStamped& pose, double new_yaw)
  * @param pose the pose
  * @return true if pointing more along x axis, false if along y
  */
-inline bool xAligned(const geometry_msgs::Pose& pose)
+inline bool xAligned(const geometry_msgs::msg::Pose& pose)
 {
-  double abs_yaw = std::abs(tf::getYaw(pose.orientation));
+  double abs_yaw = std::abs(tf2::getYaw(pose.orientation));
   return abs_yaw < M_PI/4.0 || abs_yaw > M_PI*3.0/4.0;
 }
 
@@ -264,13 +273,13 @@ inline bool sameFrame(const std::string& frame_a, const std::string& frame_b)
 {
   if (frame_a.length() == 0 && frame_b.length() == 0)
   {
-    ROS_WARN("Comparing two empty frame ids (considered as the same frame)");
+    RCLCPP_WARN(logger(), "Comparing two empty frame ids (considered as the same frame)");
     return true;
   }
 
   if (frame_a.length() == 0 || frame_b.length() == 0)
   {
-    ROS_WARN("Comparing %s%s with an empty frame id (considered as different frames)",
+    RCLCPP_WARN(logger(), "Comparing %s%s with an empty frame id (considered as different frames)",
              frame_a.c_str(), frame_b.c_str());
     return false;
   }
@@ -287,7 +296,7 @@ inline bool sameFrame(const std::string& frame_a, const std::string& frame_b)
  * @param b pose b
  * @return true if poses' frame ids match regardless leading /
  */
-inline bool sameFrame(const geometry_msgs::PoseStamped& a, const geometry_msgs::PoseStamped& b)
+inline bool sameFrame(const geometry_msgs::msg::PoseStamped& a, const geometry_msgs::msg::PoseStamped& b)
 {
   return sameFrame(a.header.frame_id, b.header.frame_id);
 }
@@ -298,7 +307,7 @@ inline bool sameFrame(const geometry_msgs::PoseStamped& a, const geometry_msgs::
  * @param b pose b
  * @return true if poses' frame ids match regardless leading /
  */
-inline bool sameFrame(const tf::Stamped<tf::Pose>& a, const tf::Stamped<tf::Pose>& b)
+inline bool sameFrame(const tf2::Stamped<tf2::Transform>& a, const tf2::Stamped<tf2::Transform>& b)
 {
   return sameFrame(a.frame_id_, b.frame_id_);
 }
@@ -321,7 +330,7 @@ inline double distance2D(double ax, double ay, double bx = 0.0, double by = 0.0)
  * @param b point b
  * @return distance
  */
-inline double distance2D(const tf::Point& a, const tf::Point& b = tf::Point())
+inline double distance2D(const tf2::Vector3& a, const tf2::Vector3& b = tf2::Vector3(0.0, 0.0, 0.0))
 {
   return std::sqrt(std::pow(b.x() - a.x(), 2) + std::pow(b.y() - a.y(), 2));
 }
@@ -332,7 +341,7 @@ inline double distance2D(const tf::Point& a, const tf::Point& b = tf::Point())
  * @param b point b
  * @return distance
  */
-inline double distance2D(const geometry_msgs::Point& a, const geometry_msgs::Point& b = geometry_msgs::Point())
+inline double distance2D(const geometry_msgs::msg::Point& a, const geometry_msgs::msg::Point& b = geometry_msgs::msg::Point())
 {
   return std::sqrt(std::pow(b.x - a.x, 2) + std::pow(b.y - a.y, 2));
 }
@@ -343,7 +352,7 @@ inline double distance2D(const geometry_msgs::Point& a, const geometry_msgs::Poi
  * @param b pose b
  * @return distance
  */
-inline double distance2D(const geometry_msgs::Pose& a, const geometry_msgs::Pose& b = geometry_msgs::Pose())
+inline double distance2D(const geometry_msgs::msg::Pose& a, const geometry_msgs::msg::Pose& b = geometry_msgs::msg::Pose())
 {
   return std::sqrt(std::pow(b.position.x - a.position.x, 2) + std::pow(b.position.y - a.position.y, 2));
 }
@@ -355,7 +364,7 @@ inline double distance2D(const geometry_msgs::Pose& a, const geometry_msgs::Pose
  * @param b pose b
  * @return distance
  */
-inline double distance2D(const geometry_msgs::PoseStamped& a, const geometry_msgs::PoseStamped& b = geometry_msgs::PoseStamped())
+inline double distance2D(const geometry_msgs::msg::PoseStamped& a, const geometry_msgs::msg::PoseStamped& b = geometry_msgs::msg::PoseStamped())
 {
   return std::sqrt(std::pow(b.pose.position.x - a.pose.position.x, 2)
                  + std::pow(b.pose.position.y - a.pose.position.y, 2));
@@ -368,7 +377,7 @@ inline double distance2D(const geometry_msgs::PoseStamped& a, const geometry_msg
  * @param b pose b
  * @return distance
  */
-inline double distance2D(const tf::Stamped<tf::Pose>& a, const tf::Stamped<tf::Pose>& b = tf::Stamped<tf::Pose>())
+inline double distance2D(const tf2::Stamped<tf2::Transform>& a, const tf2::Stamped<tf2::Transform>& b = tf2::Stamped<tf2::Transform>(tf2::Transform::getIdentity(), tf2::TimePointZero, ""))
 {
   return std::sqrt(std::pow(b.getOrigin().x() - a.getOrigin().x(), 2)
                  + std::pow(b.getOrigin().y() - a.getOrigin().y(), 2));
@@ -380,7 +389,7 @@ inline double distance2D(const tf::Stamped<tf::Pose>& a, const tf::Stamped<tf::P
  * @param b transform b
  * @return distance
  */
-inline double distance2D(const tf::Transform& a, const tf::Transform& b = tf::Transform())
+inline double distance2D(const tf2::Transform& a, const tf2::Transform& b = tf2::Transform::getIdentity())
 {
   return std::sqrt(std::pow(b.getOrigin().x() - a.getOrigin().x(), 2)
                  + std::pow(b.getOrigin().y() - a.getOrigin().y(), 2));
@@ -392,7 +401,7 @@ inline double distance2D(const tf::Transform& a, const tf::Transform& b = tf::Tr
  * @param v2 Vector CD {from C, to D}
  * @return AB.CD
  */
-double dot(const std::array<geometry_msgs::Point, 2>& v1, const std::array<geometry_msgs::Point, 2>& v2);
+double dot(const std::array<geometry_msgs::msg::Point, 2>& v1, const std::array<geometry_msgs::msg::Point, 2>& v2);
 
 /**
  * Euclidean distance between a point and a line segment.
@@ -400,7 +409,7 @@ double dot(const std::array<geometry_msgs::Point, 2>& v1, const std::array<geome
  * @param point point to which distance needs to be calculated from
  * @return distance from point to line segment
  */
-double distance2D(const std::array<geometry_msgs::Point, 2>& line, const geometry_msgs::Point& point);
+double distance2D(const std::array<geometry_msgs::msg::Point, 2>& line, const geometry_msgs::msg::Point& point);
 
 
 /**
@@ -420,7 +429,7 @@ inline double distance3D(double ax, double ay, double az, double bx = 0.0, doubl
  * @param b point b
  * @return distance
  */
-inline double distance3D(const tf::Point& a, const tf::Point& b = tf::Point())
+inline double distance3D(const tf2::Vector3& a, const tf2::Vector3& b = tf2::Vector3(0.0, 0.0, 0.0))
 {
   return std::sqrt(std::pow(b.x() - a.x(), 2) + std::pow(b.y() - a.y(), 2) + std::pow(b.z() - a.z(), 2));
 }
@@ -431,7 +440,7 @@ inline double distance3D(const tf::Point& a, const tf::Point& b = tf::Point())
  * @param b point b
  * @return distance
  */
-inline double distance3D(const geometry_msgs::Point& a, const geometry_msgs::Point& b = geometry_msgs::Point())
+inline double distance3D(const geometry_msgs::msg::Point& a, const geometry_msgs::msg::Point& b = geometry_msgs::msg::Point())
 {
   return std::sqrt(std::pow(b.x - a.x, 2) + std::pow(b.y - a.y, 2) + std::pow(b.z - a.z, 2));
 }
@@ -442,7 +451,7 @@ inline double distance3D(const geometry_msgs::Point& a, const geometry_msgs::Poi
  * @param b pose b
  * @return distance
  */
-inline double distance3D(const geometry_msgs::Pose& a, const geometry_msgs::Pose& b = geometry_msgs::Pose())
+inline double distance3D(const geometry_msgs::msg::Pose& a, const geometry_msgs::msg::Pose& b = geometry_msgs::msg::Pose())
 {
   return std::sqrt(std::pow(b.position.x - a.position.x, 2)
                  + std::pow(b.position.y - a.position.y, 2)
@@ -456,7 +465,7 @@ inline double distance3D(const geometry_msgs::Pose& a, const geometry_msgs::Pose
  * @param b pose b
  * @return distance
  */
-inline double distance3D(const geometry_msgs::PoseStamped& a, const geometry_msgs::PoseStamped& b = geometry_msgs::PoseStamped())
+inline double distance3D(const geometry_msgs::msg::PoseStamped& a, const geometry_msgs::msg::PoseStamped& b = geometry_msgs::msg::PoseStamped())
 {
   return std::sqrt(std::pow(b.pose.position.x - a.pose.position.x, 2)
                  + std::pow(b.pose.position.y - a.pose.position.y, 2)
@@ -470,7 +479,7 @@ inline double distance3D(const geometry_msgs::PoseStamped& a, const geometry_msg
  * @param b pose b
  * @return distance
  */
-inline double distance3D(const tf::Stamped<tf::Pose>& a, const tf::Stamped<tf::Pose>& b = tf::Stamped<tf::Pose>())
+inline double distance3D(const tf2::Stamped<tf2::Transform>& a, const tf2::Stamped<tf2::Transform>& b = tf2::Stamped<tf2::Transform>(tf2::Transform::getIdentity(), tf2::TimePointZero, ""))
 {
   return std::sqrt(std::pow(b.getOrigin().x() - a.getOrigin().x(), 2)
                  + std::pow(b.getOrigin().y() - a.getOrigin().y(), 2)
@@ -483,7 +492,7 @@ inline double distance3D(const tf::Stamped<tf::Pose>& a, const tf::Stamped<tf::P
  * @param b transform b
  * @return distance
  */
-inline double distance3D(const tf::Transform& a, const tf::Transform& b = tf::Transform())
+inline double distance3D(const tf2::Transform& a, const tf2::Transform& b = tf2::Transform::getIdentity())
 {
   return std::sqrt(std::pow(b.getOrigin().x() - a.getOrigin().x(), 2)
                  + std::pow(b.getOrigin().y() - a.getOrigin().y(), 2)
@@ -495,7 +504,7 @@ inline double distance3D(const tf::Transform& a, const tf::Transform& b = tf::Tr
  * @param p the point
  * @return heading angle
  */
-inline double heading(const tf::Vector3& p)
+inline double heading(const tf2::Vector3& p)
 {
   return std::atan2(p.y(), p.x());
 }
@@ -505,7 +514,7 @@ inline double heading(const tf::Vector3& p)
  * @param p the point
  * @return heading angle
  */
-inline double heading(const geometry_msgs::Point& p)
+inline double heading(const geometry_msgs::msg::Point& p)
 {
   return std::atan2(p.y, p.x);
 }
@@ -515,7 +524,7 @@ inline double heading(const geometry_msgs::Point& p)
  * @param p the pose
  * @return heading angle
  */
-inline double heading(const geometry_msgs::Pose& p)
+inline double heading(const geometry_msgs::msg::Pose& p)
 {
   return std::atan2(p.position.y, p.position.x);
 }
@@ -525,7 +534,7 @@ inline double heading(const geometry_msgs::Pose& p)
  * @param p the pose
  * @return heading angle
  */
-inline double heading(const geometry_msgs::PoseStamped& p)
+inline double heading(const geometry_msgs::msg::PoseStamped& p)
 {
   return std::atan2(p.pose.position.y, p.pose.position.x);
 }
@@ -535,7 +544,7 @@ inline double heading(const geometry_msgs::PoseStamped& p)
  * @param t the transform
  * @return heading angle
  */
-inline double heading(const tf::Transform& t)
+inline double heading(const tf2::Transform& t)
 {
   return std::atan2(t.getOrigin().y(), t.getOrigin().x());
 }
@@ -548,7 +557,7 @@ inline double heading(const tf::Transform& t)
  * @param b point b
  * @return heading angle
  */
-inline double heading(const tf::Vector3& a, const tf::Vector3& b)
+inline double heading(const tf2::Vector3& a, const tf2::Vector3& b)
 {
   if (b.y() - a.y() == 0.0 && b.x() - a.x() == 0.0)
     return NAN;
@@ -563,7 +572,7 @@ inline double heading(const tf::Vector3& a, const tf::Vector3& b)
  * @param b point b
  * @return heading angle
  */
-inline double heading(const geometry_msgs::Point& a, const geometry_msgs::Point& b)
+inline double heading(const geometry_msgs::msg::Point& a, const geometry_msgs::msg::Point& b)
 {
   if (b.y - a.y == 0.0 && b.x - a.x == 0.0)
     return NAN;
@@ -578,7 +587,7 @@ inline double heading(const geometry_msgs::Point& a, const geometry_msgs::Point&
  * @param b pose b
  * @return heading angle
  */
-inline double heading(const geometry_msgs::Pose& a, const geometry_msgs::Pose& b)
+inline double heading(const geometry_msgs::msg::Pose& a, const geometry_msgs::msg::Pose& b)
 {
   if (b.position.y - a.position.y == 0.0 && b.position.x - a.position.x == 0.0)
     return NAN;
@@ -593,7 +602,7 @@ inline double heading(const geometry_msgs::Pose& a, const geometry_msgs::Pose& b
  * @param b pose b
  * @return heading angle
  */
-inline double heading(const geometry_msgs::PoseStamped& a, const geometry_msgs::PoseStamped& b)
+inline double heading(const geometry_msgs::msg::PoseStamped& a, const geometry_msgs::msg::PoseStamped& b)
 {
   if (b.pose.position.y - a.pose.position.y == 0.0 && b.pose.position.x - a.pose.position.x == 0.0)
     return NAN;
@@ -608,7 +617,7 @@ inline double heading(const geometry_msgs::PoseStamped& a, const geometry_msgs::
  * @param b transform b
  * @return heading angle
  */
-inline double heading(const tf::Transform& a, const tf::Transform& b)
+inline double heading(const tf2::Transform& a, const tf2::Transform& b)
 {
   if (b.getOrigin().y() - a.getOrigin().y() == 0.0 && b.getOrigin().x() - a.getOrigin().x() == 0.0)
     return NAN;
@@ -622,7 +631,7 @@ inline double heading(const tf::Transform& a, const tf::Transform& b)
  * @param b quaternion b
  * @return minimum angle
  */
-inline double minAngle(const tf::Quaternion& a, const tf::Quaternion& b)
+inline double minAngle(const tf2::Quaternion& a, const tf2::Quaternion& b)
 {
   return angles::shortest_angular_distance(yaw(a), yaw(b));
 }
@@ -633,7 +642,7 @@ inline double minAngle(const tf::Quaternion& a, const tf::Quaternion& b)
  * @param b quaternion b
  * @return minimum angle
  */
-inline double minAngle(const geometry_msgs::Quaternion& a, const geometry_msgs::Quaternion& b)
+inline double minAngle(const geometry_msgs::msg::Quaternion& a, const geometry_msgs::msg::Quaternion& b)
 {
   return angles::shortest_angular_distance(yaw(a), yaw(b));
 }
@@ -644,7 +653,7 @@ inline double minAngle(const geometry_msgs::Quaternion& a, const geometry_msgs::
  * @param b pose b
  * @return minimum angle
  */
-inline double minAngle(const geometry_msgs::Pose& a, const geometry_msgs::Pose& b)
+inline double minAngle(const geometry_msgs::msg::Pose& a, const geometry_msgs::msg::Pose& b)
 {
   return angles::shortest_angular_distance(yaw(a), yaw(b));
 }
@@ -655,7 +664,7 @@ inline double minAngle(const geometry_msgs::Pose& a, const geometry_msgs::Pose& 
  * @param b pose b
  * @return minimum angle
  */
-inline double minAngle(const geometry_msgs::PoseStamped& a, const geometry_msgs::PoseStamped& b)
+inline double minAngle(const geometry_msgs::msg::PoseStamped& a, const geometry_msgs::msg::PoseStamped& b)
 {
   return angles::shortest_angular_distance(yaw(a), yaw(b));
 }
@@ -666,7 +675,7 @@ inline double minAngle(const geometry_msgs::PoseStamped& a, const geometry_msgs:
  * @param b transform b
  * @return minimum angle
  */
-inline double minAngle(const tf::Transform& a, const tf::Transform& b)
+inline double minAngle(const tf2::Transform& a, const tf2::Transform& b)
 {
   return angles::shortest_angular_distance(yaw(a), yaw(b));
 }
@@ -692,7 +701,7 @@ inline double anglesDiff(double a, double b)
  * @param yaw_tolerance angular distance tolerance
  * @return true if both poses are the same within tolerance margins.
  */
-inline bool samePose(const geometry_msgs::Pose& a, const geometry_msgs::Pose& b,
+inline bool samePose(const geometry_msgs::msg::Pose& a, const geometry_msgs::msg::Pose& b,
                      double xy_tolerance = 0.0001, double yaw_tolerance = 0.0001)
 {
   return distance2D(a, b) <= xy_tolerance && std::abs(minAngle(a, b)) <= yaw_tolerance;
@@ -706,26 +715,26 @@ inline bool samePose(const geometry_msgs::Pose& a, const geometry_msgs::Pose& b,
  * @param yaw_tolerance angular distance tolerance
  * @return true if both poses are the same within tolerance margins.
  */
-inline bool samePose(const geometry_msgs::PoseStamped& a, const geometry_msgs::PoseStamped& b,
+inline bool samePose(const geometry_msgs::msg::PoseStamped& a, const geometry_msgs::msg::PoseStamped& b,
                      double xy_tolerance = 0.0001, double yaw_tolerance = 0.0001)
 {
   return sameFrame(a, b) && samePose(a.pose, b.pose, xy_tolerance, yaw_tolerance);
 }
 
-geometry_msgs::Pose createPose(double x, double y, double yaw);
+geometry_msgs::msg::Pose createPose(double x, double y, double yaw);
 
-geometry_msgs::Pose createPose(double x, double y, double z, double roll, double pitch, double yaw);
+geometry_msgs::msg::Pose createPose(double x, double y, double z, double roll, double pitch, double yaw);
 
-geometry_msgs::PoseStamped createPose(double x, double y, double yaw, const std::string& frame);
+geometry_msgs::msg::PoseStamped createPose(double x, double y, double yaw, const std::string& frame);
 
-geometry_msgs::PoseStamped createPose(double x, double y, double z, double roll, double pitch, double yaw,
+geometry_msgs::msg::PoseStamped createPose(double x, double y, double z, double roll, double pitch, double yaw,
                                       const std::string& frame);
 
-geometry_msgs::Transform toTransform(const geometry_msgs::Pose& pose);
+geometry_msgs::msg::Transform toTransform(const geometry_msgs::msg::Pose& pose);
 
-geometry_msgs::TransformStamped toTransform(const geometry_msgs::PoseStamped& pose);
+geometry_msgs::msg::TransformStamped toTransform(const geometry_msgs::msg::PoseStamped& pose);
 
-geometry_msgs::PoseArray toPoseArray(const std::vector<geometry_msgs::PoseStamped>& poses, double z_delta = 0.0,
+geometry_msgs::msg::PoseArray toPoseArray(const std::vector<geometry_msgs::msg::PoseStamped>& poses, double z_delta = 0.0,
                                      const std::string& default_frame_id = "map");
 
 /**
@@ -733,37 +742,37 @@ geometry_msgs::PoseArray toPoseArray(const std::vector<geometry_msgs::PoseStampe
  * @param pose 3D pose msg.
  * @return 2D pose msg.
  */
-geometry_msgs::Pose2D toPose2D(const geometry_msgs::Pose& pose);
-geometry_msgs::Pose toPose3D(const geometry_msgs::Pose2D& pose);
-geometry_msgs::Point32 toPoint(const geometry_msgs::Point& point);
-geometry_msgs::Point toPoint(const geometry_msgs::Point32& point);
+geometry_msgs::msg::Pose2D toPose2D(const geometry_msgs::msg::Pose& pose);
+geometry_msgs::msg::Pose toPose3D(const geometry_msgs::msg::Pose2D& pose);
+geometry_msgs::msg::Point32 toPoint(const geometry_msgs::msg::Point& point);
+geometry_msgs::msg::Point toPoint(const geometry_msgs::msg::Point32& point);
 
 
-std::string toStr3D(const geometry_msgs::Vector3& vector);
-std::string toStr3D(const geometry_msgs::Vector3Stamped& vector);
-std::string toStr2D(const geometry_msgs::Point& point);
-std::string toStr2D(const geometry_msgs::PointStamped& point);
-std::string toStr3D(const geometry_msgs::Point& point);
-std::string toStr3D(const geometry_msgs::PointStamped& point);
-std::string toStr2D(const geometry_msgs::Pose& pose);
-std::string toStr2D(const geometry_msgs::PoseStamped& pose);
-std::string toStr2D(const tf::Stamped<tf::Pose>& pose);
-std::string toStr3D(const geometry_msgs::Pose& pose);
-std::string toStr3D(const geometry_msgs::PoseStamped& pose);
-std::string toStr3D(const tf::Stamped<tf::Pose>& pose);
+std::string toStr3D(const geometry_msgs::msg::Vector3& vector);
+std::string toStr3D(const geometry_msgs::msg::Vector3Stamped& vector);
+std::string toStr2D(const geometry_msgs::msg::Point& point);
+std::string toStr2D(const geometry_msgs::msg::PointStamped& point);
+std::string toStr3D(const geometry_msgs::msg::Point& point);
+std::string toStr3D(const geometry_msgs::msg::PointStamped& point);
+std::string toStr2D(const geometry_msgs::msg::Pose& pose);
+std::string toStr2D(const geometry_msgs::msg::PoseStamped& pose);
+std::string toStr2D(const tf2::Stamped<tf2::Transform>& pose);
+std::string toStr3D(const geometry_msgs::msg::Pose& pose);
+std::string toStr3D(const geometry_msgs::msg::PoseStamped& pose);
+std::string toStr3D(const tf2::Stamped<tf2::Transform>& pose);
 
-const char* toCStr3D(const geometry_msgs::Vector3& vector);
-const char* toCStr3D(const geometry_msgs::Vector3Stamped& vector);
-const char* toCStr2D(const geometry_msgs::Point& point);
-const char* toCStr2D(const geometry_msgs::PointStamped& point);
-const char* toCStr3D(const geometry_msgs::Point& point);
-const char* toCStr3D(const geometry_msgs::PointStamped& point);
-const char* toCStr2D(const geometry_msgs::Pose& pose);
-const char* toCStr2D(const geometry_msgs::PoseStamped& pose);
-const char* toCStr2D(const tf::Stamped<tf::Pose>& pose);
-const char* toCStr3D(const geometry_msgs::Pose& pose);
-const char* toCStr3D(const geometry_msgs::PoseStamped& pose);
-const char* toCStr3D(const tf::Stamped<tf::Pose>& pose);
+const char* toCStr3D(const geometry_msgs::msg::Vector3& vector);
+const char* toCStr3D(const geometry_msgs::msg::Vector3Stamped& vector);
+const char* toCStr2D(const geometry_msgs::msg::Point& point);
+const char* toCStr2D(const geometry_msgs::msg::PointStamped& point);
+const char* toCStr3D(const geometry_msgs::msg::Point& point);
+const char* toCStr3D(const geometry_msgs::msg::PointStamped& point);
+const char* toCStr2D(const geometry_msgs::msg::Pose& pose);
+const char* toCStr2D(const geometry_msgs::msg::PoseStamped& pose);
+const char* toCStr2D(const tf2::Stamped<tf2::Transform>& pose);
+const char* toCStr3D(const geometry_msgs::msg::Pose& pose);
+const char* toCStr3D(const geometry_msgs::msg::PoseStamped& pose);
+const char* toCStr3D(const tf2::Stamped<tf2::Transform>& pose);
 
 /**
  * Clip line segment to fit within a bounding box using Liang-Barsky function by Daniel White
@@ -795,9 +804,9 @@ bool clipSegment(double edge_left, double edge_right, double edge_bottom, double
  * @param pose_c
  * @return area
  */
-double enclosedArea(const geometry_msgs::PoseStamped& pose_a,
-                    const geometry_msgs::PoseStamped& pose_b,
-                    const geometry_msgs::PoseStamped& pose_c);
+double enclosedArea(const geometry_msgs::msg::PoseStamped& pose_a,
+                    const geometry_msgs::msg::PoseStamped& pose_b,
+                    const geometry_msgs::msg::PoseStamped& pose_c);
 
 /**
  * Menger curvature using triple poses (see https://en.wikipedia.org/wiki/Menger_curvature)
@@ -806,8 +815,8 @@ double enclosedArea(const geometry_msgs::PoseStamped& pose_a,
  * @param pose_c
  * @return curvature
  */
-double curvature(const geometry_msgs::PoseStamped& pose_a,
-                 const geometry_msgs::PoseStamped& pose_b,
-                 const geometry_msgs::PoseStamped& pose_c);
+double curvature(const geometry_msgs::msg::PoseStamped& pose_a,
+                 const geometry_msgs::msg::PoseStamped& pose_b,
+                 const geometry_msgs::msg::PoseStamped& pose_c);
 
 } /* namespace thorp::toolkit */

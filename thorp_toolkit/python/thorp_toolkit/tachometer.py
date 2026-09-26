@@ -1,11 +1,17 @@
 import numpy as np
-import rospy
 import threading
+import time
 
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
 
+from .common import node
 from .geometry import distance_2d, yaw_diff
+
+
+def _now():
+    """ Current ROS time in seconds, from the node given to thorp_toolkit.init """
+    return node().get_clock().now().nanoseconds * 1e-9
 
 
 class Tachometer(object):
@@ -22,9 +28,9 @@ class Tachometer(object):
         self._prev_pose = None
         self._get_pose = get_robot_pose_fn
         self._global_frame = global_frame
-        self._cmd_vel_sub = rospy.Subscriber("cmd_vel", Twist, self._cmd_vel_cb)
+        self._cmd_vel_sub = node().create_subscription(Twist, 'cmd_vel', self._cmd_vel_cb, 10)
         self._cmd_vel_buff = np.empty((0, 2), float)
-        self._odometry_sub = rospy.Subscriber("odom", Odometry, self._odometry_cb)
+        self._odometry_sub = node().create_subscription(Odometry, 'odom', self._odometry_cb, 10)
         self._odometry_msg = None
         self._stop_start_t = None
         self._spin_start_t = None
@@ -44,11 +50,11 @@ class Tachometer(object):
             self._thread.join()
             if self._stop_start_t is not None:
                 # If robot is not moving, increment time stopped with the time since last stop started
-                self._time_stopped += rospy.get_time() - self._stop_start_t
+                self._time_stopped += _now() - self._stop_start_t
                 self._stop_start_t = None
             if self._spin_start_t is not None:
                 # If robot is spinning, increment time spinning with the time since last spin started
-                self._time_spinning += rospy.get_time() - self._spin_start_t
+                self._time_spinning += _now() - self._spin_start_t
                 self._spin_start_t = None
 
     def reset(self):
@@ -64,8 +70,7 @@ class Tachometer(object):
         self._lock.release()
 
     def update(self):
-        rate = rospy.Rate(1000)
-        while self._running and not rospy.is_shutdown():
+        while self._running:
             pose = self._get_pose(self._global_frame)
             self._lock.acquire()
             if self._prev_pose:
@@ -73,10 +78,7 @@ class Tachometer(object):
                 self.turning += abs(yaw_diff(self._prev_pose, pose))
             self._prev_pose = pose
             self._lock.release()
-            try:
-                rate.sleep()
-            except rospy.exceptions.ROSInterruptException:
-                pass
+            time.sleep(0.001)
 
     @property
     def max_speed(self):
@@ -113,16 +115,16 @@ class Tachometer(object):
 
             if self._stop_start_t is not None and moving:
                 # We start moving: increment time stopped with the time since last stop started
-                self._time_stopped += rospy.get_time() - self._stop_start_t
+                self._time_stopped += _now() - self._stop_start_t
                 self._stop_start_t = None
             if self._stop_start_t is None and not moving:
                 # We stop moving: register when the stop starts
-                self._stop_start_t = rospy.get_time()
+                self._stop_start_t = _now()
 
             if self._spin_start_t is not None and not spinning:
                 # We stop spinning: increment time spinning with the time since last spin started
-                self._time_spinning += rospy.get_time() - self._spin_start_t
+                self._time_spinning += _now() - self._spin_start_t
                 self._spin_start_t = None
             if self._spin_start_t is None and spinning:
                 # We start spinning: register when the spin starts
-                self._spin_start_t = rospy.get_time()
+                self._spin_start_t = _now()

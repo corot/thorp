@@ -1,24 +1,25 @@
-import rospy
-import actionlib
+from rclpy.node import Node
+from rclpy.wait_for_message import wait_for_message
 
 import rosgraph_msgs.msg as rosgraph_msgs
 
-import std_srvs.srv as std_srvs
-import mbf_msgs.msg as mbf_msgs
+_node = None
 
 
-def pause_gazebo():
-    if not hasattr(pause_gazebo, 'srv'):
-        pause_gazebo.srv = rospy.ServiceProxy('gazebo/pause_physics', std_srvs.Empty)
-        pause_gazebo.srv.wait_for_service(0.1)
-    pause_gazebo.srv()
+def init(node: Node):
+    """
+    Initialize the toolkit with the node its singletons and functions use to access ROS.
+    Call once, before using anything else that needs a node.
+    """
+    global _node
+    _node = node
 
 
-def resume_gazebo():
-    if not hasattr(resume_gazebo, 'srv'):
-        resume_gazebo.srv = rospy.ServiceProxy('gazebo/unpause_physics', std_srvs.Empty)
-        resume_gazebo.srv.wait_for_service(0.1)
-    resume_gazebo.srv()
+def node() -> Node:
+    """ The node given to init """
+    if _node is None:
+        raise RuntimeError("thorp_toolkit not initialized; call thorp_toolkit.common.init(node) first")
+    return _node
 
 
 def wait_for_sim_time():
@@ -26,20 +27,9 @@ def wait_for_sim_time():
     In sim, wait for clock to start (I start gazebo paused, so smach action clients start waiting at time 0,
     but first clock marks ~90s, after spawner unpauses physics)
     """
-    if rospy.get_param('/use_sim_time', False):
-        if not rospy.wait_for_message('/clock', rosgraph_msgs.Clock, rospy.Duration(60)):
-            rospy.logfatal("No clock msgs after 60 seconds, being use_sim_time true")
-            return False
-    return True
-
-
-def wait_for_mbf():
-    """
-    Wait for Move Base Flex's move_base action (the last to be started) getting available
-    """
-    if rospy.get_param('/move_base_flex', False):
-        mb_ac = actionlib.SimpleActionClient("/move_base_flex/move_base", mbf_msgs.MoveBaseAction)
-        if not mb_ac.wait_for_server(rospy.Duration(30)):
-            rospy.logwarn("Move Base Flex not available after 30 seconds")
+    if node().get_parameter('use_sim_time').value:
+        received, _ = wait_for_message(rosgraph_msgs.Clock, node(), '/clock', time_to_wait=60.0)
+        if not received:
+            node().get_logger().fatal("No clock msgs after 60 seconds, being use_sim_time true")
             return False
     return True

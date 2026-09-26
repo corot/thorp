@@ -4,11 +4,36 @@
 
 #pragma once
 
-#include <ros/ros.h>
-#include <std_msgs/ColorRGBA.h>
+#include <optional>
+#include <string>
+#include <vector>
+
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp/wait_for_message.hpp>
+#include <std_msgs/msg/color_rgba.hpp>
 
 namespace thorp::toolkit
 {
+
+/**
+ * @brief Initialize the toolkit with the node its singletons and functions use to access ROS.
+ * Call once, before using anything else that needs a node.
+ * @param node the application's node
+ */
+void init(const rclcpp::Node::SharedPtr& node);
+
+/**
+ * @brief The node given to init
+ * @return node shared pointer
+ * @throw  std::runtime_error  If init hasn't been called
+ */
+rclcpp::Node::SharedPtr node();
+
+/**
+ * @brief Logger for the toolkit functions
+ * @return the toolkit logger
+ */
+rclcpp::Logger logger();
 
 /**
  * @brief Make a RGBA color msg
@@ -18,7 +43,7 @@ namespace thorp::toolkit
  * @param a alpha
  * @return RGBA color msg
  */
-std_msgs::ColorRGBA makeColor(float r, float g, float b, float a = 1.0f);
+std_msgs::msg::ColorRGBA makeColor(float r, float g, float b, float a = 1.0f);
 
 /**
  * @brief Make a random RGBA color msg
@@ -26,7 +51,7 @@ std_msgs::ColorRGBA makeColor(float r, float g, float b, float a = 1.0f);
  * @param alpha transparency
  * @return RGBA color msg
  */
-std_msgs::ColorRGBA randomColor(unsigned int seed = 0, float alpha = 1.0f);
+std_msgs::msg::ColorRGBA randomColor(unsigned int seed = 0, float alpha = 1.0f);
 
 /**
  * @brief Make a RGBA color msg for a color name
@@ -35,7 +60,16 @@ std_msgs::ColorRGBA randomColor(unsigned int seed = 0, float alpha = 1.0f);
  * @return RGBA color msg
  * @throw  std::out_of_range  If color_name doesn't exist
  */
-std_msgs::ColorRGBA namedColor(const std::string& color_name, float alpha = 1.0f);
+std_msgs::msg::ColorRGBA namedColor(const std::string& color_name, float alpha = 1.0f);
+
+/**
+ * @brief Name the color of a CIELAB value, as one of the names namedColor knows
+ * @param lightness L*
+ * @param a a*, green to red
+ * @param b b*, blue to yellow
+ * @return color name, e.g. "red" or "light gray"
+ */
+std::string colorName(float lightness, float a, float b);
 
 /**
  * @brief Split a comma-separated string into a vector of strings
@@ -48,31 +82,19 @@ std::vector<std::string> tokenize(const std::string& csv);
  * @brief Receive one message from a topic.
  * This will create a new subscription to the topic, receive one message, then unsubscribe.
  * @param topic name of topic
- * @param timeout timeout as ROS Duration (defaults to wait forever)
+ * @param timeout timeout; negative (the default) waits forever
  * @return Optional message of type MessageType; std::nullopt on timeout or ROS shutdown
  */
 template <typename MessageType>
-std::optional<MessageType> waitForMessage(const std::string& topic, ros::Duration timeout = ros::Duration::ZERO)
+std::optional<MessageType> waitForMessage(const std::string& topic,
+                                          std::chrono::nanoseconds timeout = std::chrono::nanoseconds(-1))
 {
-  ros::spinOnce();
-  std::optional<MessageType> received_message;
-  ros::NodeHandle nh;
-  ros::Subscriber sub = nh.subscribe<MessageType>(topic, 1,
-                                                  [&](auto msg)
-                                                  {
-                                                    received_message = *msg;
-                                                    sub.shutdown();
-                                                  });
-  // Spin and wait for the message up to timeout
-  ros::Time time_start = ros::Time::now();
-  ros::Rate loop_rate(100);
-  while (ros::ok() && !received_message && (timeout.isZero() || (ros::Time::now() - time_start) < timeout))
+  MessageType received_message;
+  if (rclcpp::wait_for_message(received_message, node(), topic, timeout))
   {
-    ros::spinOnce();
-    loop_rate.sleep();
+    return received_message;
   }
-
-  return received_message;
+  return std::nullopt;
 }
 
 } /* namespace thorp::toolkit */

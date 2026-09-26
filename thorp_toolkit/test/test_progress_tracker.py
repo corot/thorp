@@ -1,10 +1,9 @@
-#!/usr/bin/env python
-
 import numpy as np
 
-import rospy
+import rclpy
 import pytest
 
+from thorp_toolkit.common import init
 from thorp_toolkit.geometry import create_2d_pose
 from thorp_toolkit.visualization import Visualization
 from thorp_toolkit.progress_tracker import ProgressTracker
@@ -12,7 +11,12 @@ from thorp_toolkit.progress_tracker import ProgressTracker
 
 @pytest.fixture
 def node():
-    rospy.init_node('test_progress_tracker')
+    rclpy.init()
+    node = rclpy.create_node('test_progress_tracker')
+    init(node)
+    yield node
+    node.destroy_node()
+    rclpy.shutdown()
 
 
 def test_progress_tracker(node):

@@ -1,34 +1,43 @@
 <?xml version="1.0"?>
-<package format="2">
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>thorp_toolkit</name>
   <version>0.1.0</version>
   <description>Package containing convenience nodes and libs for Thorp robot</description>
   <maintainer email="jsantossimon@gmail.com">Jorge Santos Simón</maintainer>
-  <author email="jsantossimon@gmail.com">Jorge Santos Simón</author> 
+  <author email="jsantossimon@gmail.com">Jorge Santos Simón</author>
 
   <license>BSD</license>
 
   <url type="bugtracker">https://github.com/corot/thorp/issues</url>
   <url type="repository">https://github.com/corot/thorp</url>
-  <url type="website">http://wiki.ros.org/thorp_toolkit</url> 
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
 
-  <depend>tf</depend>
+  <depend>rclcpp</depend>
+  <depend>angles</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>visualization_msgs</depend>
+  <depend>rviz_2d_overlay_msgs</depend>
   <depend>tf2</depend>
   <depend>tf2_ros</depend>
   <depend>tf2_eigen</depend>
   <depend>tf2_geometry_msgs</depend>
-  <depend>roscpp</depend>
-  <depend>angles</depend>
-  <depend>geometry_msgs</depend>
-  <depend>geometric_shapes</depend>
-  <depend>kobuki_msgs</depend>
-  <depend>moveit_msgs</depend>
-  <depend>moveit_ros_planning_interface</depend>
-  <depend>dynamic_reconfigure</depend>
-  <depend>eigen_conversions</depend>
-  <depend>thorp_msgs</depend>
+  <depend>eigen</depend>
+  <depend>boost</depend>
 
-  <exec_depend>jsk_rviz_plugins</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>tf2_ros_py</exec_depend>
+  <exec_depend>tf_transformations</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>rosgraph_msgs</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+
+  <test_depend>ament_cmake_pytest</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
 </package>
