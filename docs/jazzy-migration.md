@@ -47,7 +47,11 @@ source install/setup.bash
 | 3 | Gazebo Harmonic: spawn Thorp, diff drive, joint states, Kinect, Xtion, sonars and IR sensors | done |
 | 4 | Arm in simulation: `ros2_control`, trajectory and gripper controllers | done |
 | 5 | `thorp_msgs`, `thorp_toolkit`; `thorp_cannon`, with a Gazebo Harmonic firing system | done |
-| 6 | Navigation: Nav2 configuration, semantic costmap layer, coverage planning | next |
+| 6a | Nav2 core: map, localization (AMCL, static, Gazebo ground truth), depth cameras to laser scans, costmaps (static, voxel, sonar and IR range layers, inflation), planner, MPPI controller, behaviors, velocity smoother, velocity commands multiplexer, RViz goals | next |
+| 6b | Thorp navigation nodes: pose follower, waypoints path, velocity display, robot pose saving | |
+| 6c | Semantic costmap layer | |
+| 6d | Bumpers and cliff sensors, on simulation and costmaps | |
+| 6e | Coverage planning | |
 | 7 | Manipulation: MoveIt 2 configuration, pick and place servers, grasping on simulation | |
 | 8 | Perception | |
 | 9 | Executive: behavior trees and apps | |
@@ -55,7 +59,10 @@ source install/setup.bash
 Block 3 onwards will be refined as we get there.
 
 Navigation uses Nav2 only; Move Base Flex is dropped, with whatever depends on it (`thorp_mbf_plugins`, MBF actions
-and plugins configuration in `thorp_navigation`). Coverage planning is the only navigation code Thorp may need
+and plugins configuration in `thorp_navigation`). The executive will use Nav2's own interfaces (`navigate_to_pose`,
+`compute_path_to_pose`, `follow_path`, behaviors and the costmaps' `get_cost` service). MPPI replaces TEB, which has no
+Jazzy release, and Nav2's standard behaviors replace `SlowEscapeRecovery` until the executive shows whether they are
+enough. Coverage planning is the only navigation code Thorp may need
 beyond Nav2: on Noetic, `ipa_coverage_planning` (room segmentation, room sequence planning and room exploration, from
 Thorp's fork) and `full_coverage_path_planner`'s Spiral-STC planner, as an MBF global planner.
 
