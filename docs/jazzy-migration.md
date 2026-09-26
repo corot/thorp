@@ -55,8 +55,8 @@ source install/setup.bash
 | 6d | Bumpers and cliff sensors, on simulation and costmaps | deferred to real robot |
 | 6e | Coverage planning | deferred to 9 |
 | 7a | MoveIt 2 configuration: move group, controllers, octomap from the Xtion, RViz; pick_ik replaces the IKFast plugin | done |
-| 7b | Manipulation servers and pickup planner, with `thorp_toolkit`'s planning scene | next |
-| 7c | Grasping in simulation and object spawning | |
+| 7b | Pickup and place object action servers on MoveIt Task Constructor | done |
+| 7c | Grasping in simulation and object spawning | next |
 | 8 | Perception | |
 | 9 | Executive: behavior trees and apps | |
 
@@ -78,6 +78,14 @@ Bumpers and cliff sensors are deferred to the real robot: it needs `kobuki_ros` 
 `kobuki_bumper2pc` and `kobuki_safety_controller` have no Jazzy release), and simulated bumper and cliff events, from
 Gazebo contact sensors and downward rays, can then match the real driver's topics.
 
+MoveIt 2 has no pick and place capability (`moveit_msgs` keeps the `Pickup` and `Place` actions, but nothing serves
+them), so the pickup and place object servers build MoveIt Task Constructor tasks instead, keeping their `thorp_msgs`
+actions, now with the stage being executed as feedback. The rest of Noetic's manipulation servers go to the executive,
+in Block 9: `move_to_target` (the behavior trees only use named targets, that `move_group` takes directly), the house
+keeping services (clear gripper, force resting, object attached and gripper busy: planning scene queries and
+controller commands), the tray manager (slot poses, as executive state) and the drag and drop demo. So does the pickup
+planner, that groups objects on a table into pickup locations: app-level planning, with no MoveIt use.
+
 Coverage planning is deferred to Block 9, with the exploration apps, its only users. No option is a Jazzy release:
 `ipa_coverage_planning` (room segmentation, room sequence planning and room exploration) has no ROS 2 port;
 `full_coverage_path_planner`'s `ros2` branch is an unfinished migration, untouched since 2023; and `opennav_coverage`
@@ -95,7 +103,7 @@ Thorp's fork) and `full_coverage_path_planner`'s Spiral-STC planner, as an MBF g
 | thorp_moveit_config | migrated (see below) |
 | thorp_msgs | migrated |
 | thorp_cannon | migrated; simulation only, the real cannon waits for the boards (see below) |
-| thorp_manipulation | partial: fake gripper joint states (see below) |
+| thorp_manipulation | partial: pickup and place object servers, fake gripper joint states (see below) |
 | thorp_navigation | partial: Nav2 configuration and launch, maps, velocity display (see below) |
 | thorp_simulation | partial: Gazebo Harmonic launch, worlds, controllers and navigation (see below) |
 | thorp_toolkit | partial: core C++ and Python modules (see below) |
@@ -108,7 +116,7 @@ MoveIt 2 configuration built with `moveit_configs_utils`, launched with `move_gr
 (plus the 1.0 rad/s² accelerations MoveIt assumed), trajectory execution tolerances and OMPL, and drives
 `arm_controller` and `gripper_controller` (`gripper_cmd`). `pick_ik` replaces the IKFast (TranslationDirection5D)
 plugin generated for the TurtleBot arm; LMA, what ROS 2 configurations for similar arms use, is no longer in MoveIt on
-Jazzy. The unused CHOMP and Pilz pipelines aren't ported. The Xtion octomap is disabled (see the known issues).
+Jazzy. `move_group` loads MoveIt Task Constructor's ExecuteTaskSolution capability, for `thorp_manipulation`. The unused CHOMP and Pilz pipelines aren't ported. The Xtion octomap is disabled (see the known issues).
 
 ### thorp_msgs
 
@@ -131,7 +139,7 @@ Ported: C++ `common`, `geometry`, `math`, `parameters`, `progress_tracker`, `tf2
 |-------|----------------|-------|
 | `reconfigure`, `alternative_config` (C++ and Python), `test_reconfigure.py` | navigation | 6 |
 | `nodes/save_pose_node.cpp` | real robot navigation | real robot |
-| `planning_scene` (C++ and Python); `simulation` (`waitForObjectsSpawning`) | manipulation, BT runner | 7, 9 |
+| `planning_scene` (C++ and Python); `simulation` (`waitForObjectsSpawning`) | tray manager, BT runner | 9 |
 | `point_tracker.py` | object tracking | 8 |
 | `kobuki_base` (bumper names), `semantic_map.py`, `test_semantic_map.py` | BT conditions, smach states | 9 |
 | `spatial_hash.hpp` | none: an unused draft with a `main`; perception and costmap layers have their own | undecided |
@@ -150,15 +158,29 @@ named `rocket` in the world; `spawn_gazebo_models.py` and the cats controller sp
 
 ### thorp_manipulation
 
-Ported: the fake gripper joints state publisher (`fake_joint_pub.py`, from `turtlebot_arm_bringup`) and
-`launch/includes/arm.launch.py`, that runs it. The gripper command action comes from `ros2_controllers`'
-`GripperActionController` instead of Thorp's `arbotix_ros` gripper controller: goals are `gripper_joint` angles, not
-openings in meters, and the action is `gripper_controller/gripper_cmd`. Pending ROS 1 files:
+`manipulation.launch.py` runs `move_group` and `manipulation_node`, with the `manipulation/pickup_object` and
+`manipulation/place_object` action servers (`thorp_msgs`). Each goal becomes a MoveIt Task Constructor task, planned
+by the node on a snapshot of `move_group`'s planning scene and executed by `move_group`'s ExecuteTaskSolution
+capability; its feedback is the stage being executed (`planning`, `open gripper`, `move to pick`, `approach object`,
+`close gripper`, `retreat`...). Canceling a goal stops planning or execution. Objects to pick must be in the planning
+scene; they are attached to `gripper_link` on pickup, and detached on place. Grasp and place poses are Noetic's: yaw
+towards the target, pitch from the distance and height, with small pitch variations as alternatives, plus the real
+arm's compensations (backlash, gripper asymmetry, distance fall short) as parameters. The gripper closes to the object
+side across it minus `tightening`, converted into a `gripper_joint` angle with Noetic's one-sided gripper model;
+`max_effort` is ignored, as `move_group` sends its controller's fixed maximum effort. Place poses are gripper targets,
+as on Noetic, and need some clearance over the support surface: contacts with it are allowed only after the place pose
+IK. `scripts/test_pick_and_place.py` picks and places a cube on a table that exist only in the planning scene.
+
+The fake gripper joints state publisher (`fake_joint_pub.py`, from `turtlebot_arm_bringup`) and
+`launch/includes/arm.launch.py`, that runs it, are ported too. The gripper command action comes from
+`ros2_controllers`' `GripperActionController` instead of Thorp's `arbotix_ros` gripper controller: goals are
+`gripper_joint` angles, not openings in meters, and the action is `gripper_controller/gripper_cmd`. Pending ROS 1
+files:
 
 | Files | Block |
 |-------|-------|
 | Real robot servos: `param/controllers.yaml`, `launch/includes/controllers.launch.xml`, `nodes/dynamixel_*.py`, and their use in `launch/includes/arm.launch.xml`; `fake_servos_srv.py` from `thorp_bringup` on simulation | real robot |
-| Everything else: manipulation servers, `pickup_planner_server.py`, test scripts, `setup.py`, launch files and parameters | 7 |
+| `src/tray_manager_server.cpp`, `src/interactive_manip_server.cpp` (drag and drop), `nodes/pickup_planner_server.py`, `setup.py` | 9 |
 
 ### thorp_bringup
 
@@ -230,7 +252,8 @@ Differences with the Noetic simulation:
   as with the default 0.1 the arm lags MoveIt trajectories beyond the controller tolerances. Even so, under load the
   shoulder lift occasionally lags more than Noetic's 0.1 rad path tolerance, so `arm_controller` has no path tolerance
   in simulation; goals must still be reached within 0.1 rad. It starts from the measured joint positions, as its
-  command interfaces start at 0 instead of the resting pose.
+  command interfaces start at 0 instead of the resting pose, and accepts trajectories ending with tiny velocities, as
+  MoveIt Task Constructor's Cartesian paths do.
   `arm_controller` provides the same `arm_controller/follow_joint_trajectory` action; `gripper_controller` provides
   `gripper_controller/gripper_cmd`, taking `gripper_joint` angles; the cannon position controller is
   `cannon_joint_controller`, as ros2_control controllers can't be named as their joints. Simulated servos report no
@@ -258,3 +281,9 @@ Differences with the Noetic simulation:
   and MoveIt stops the execution as timed out, leaving the arm off its path, sometimes in collision for the next plan.
   Maybe a physical contact MoveIt doesn't model (the arm links have `selfCollide`); to check with the manipulation
   servers.
+- This machine also has NVIDIA's Isaac ROS apt repository, that offers `ros-jazzy-moveit-task-constructor-core`
+  99.99.0; apt prefers it over the ROS release (0.1.8), mismatching the other MoveIt Task Constructor packages.
+  The ROS versions are installed explicitly (`apt install ros-jazzy-moveit-task-constructor-core=0.1.8-...`); an apt
+  pin for packages.ros.org would keep upgrades and `rosdep install` from switching.
+- Once, of about 25 simulated place goals, planning failed with "open gripper: Start state is out of bounds!"; it
+  didn't happen again, so the joint out of bounds is unknown.
