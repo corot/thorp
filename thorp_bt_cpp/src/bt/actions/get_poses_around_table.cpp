@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 
 #include <mbf_msgs/CheckPose.h>
 #include <geometry_msgs/PoseArray.h>
@@ -73,10 +73,10 @@ private:
 
   BT::NodeStatus tick() override
   {
-    const auto table = *getInput<rail_manipulation_msgs::SegmentedObject>("table");
-    const auto table_pose = *getInput<geometry_msgs::PoseStamped>("table_pose");
-    const auto split_long = *getInput<bool>("split_long_sides");
-    const auto distance = *getInput<double>("distance");
+    const auto table = requireInput<rail_manipulation_msgs::SegmentedObject>(*this, "table");
+    const auto table_pose = requireInput<geometry_msgs::PoseStamped>(*this, "table_pose");
+    const auto split_long = requireInput<bool>(*this, "split_long_sides");
+    const auto distance = requireInput<double>(*this, "distance");
 
     // Create 0, 1 or 2 poses for each of the four sides around the table
     const double p_x = distance + table.depth / 2.0;

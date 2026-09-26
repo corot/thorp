@@ -3,15 +3,13 @@ Checks config/capabilities.yaml still describes the trees it claims to describe.
 
 That file is what the agent reasons from, and hand-written documentation rots quietly: rename
 a blackboard key and the yaml goes on promising the old one, so the agent builds goals that
-bt_server refuses, and nothing says why until it happens on the robot. So rather than trust
-it, this recomputes the same facts from bt/*.xml and fails when the two disagree.
-
-The rules used here are deliberately the ones bt_server applies at runtime:
+fail on a key it was never told about, and nothing says why until it happens on the robot. So
+rather than trust it, this recomputes the same facts from bt/*.xml and fails when the two
+disagree:
 
   an input   is a key some node reads and no node produces. Writing a key back after reading
              it (a bidirectional port, like the list PopPoseFromList pops from) is not
-             producing it -- see requiredInputs() in bt_server.cpp, which refuses a goal that
-             leaves any of these unset.
+             producing it: the caller still has to supply the list in the first place.
   an output  is a key some node writes without reading.
 
 Pure xml and yaml parsing: no roscore, no bt_server, no robot. Run it anywhere, any time.

@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 #include "thorp_bt_cpp/ros_action_node.hpp"
 
 #include <geometry_msgs/PolygonStamped.h>
@@ -43,9 +43,9 @@ private:
   {
     // We need an image containing only the room to explore, so we copy the original map and
     // set to black all pixels not belonging to the given room number in the segmented map
-    uint32_t room_number = *getInput<uint32_t>("room_number");
-    sensor_msgs::Image segmented_map = *getInput<sensor_msgs::Image>("segmented_map");
-    sensor_msgs::Image one_room_map = *getInput<sensor_msgs::Image>("map_image");
+    uint32_t room_number = requireInput<uint32_t>(*this, "room_number");
+    sensor_msgs::Image segmented_map = requireInput<sensor_msgs::Image>(*this, "segmented_map");
+    sensor_msgs::Image one_room_map = requireInput<sensor_msgs::Image>(*this, "map_image");
     std::set<int> r;
     for (int i = 0, j = 0; i < segmented_map.data.size();)
     {
@@ -61,9 +61,9 @@ private:
     tf2_.lookupTransform("kinect_rgb_frame", "base_footprint", bfp_cam_tf);
 
     GoalType goal;
-    goal.robot_radius = *getInput<float>("robot_radius");
-    goal.map_origin = *getInput<geometry_msgs::Pose>("map_origin");
-    goal.map_resolution = *getInput<float>("map_resolution");
+    goal.robot_radius = requireInput<float>(*this, "robot_radius");
+    goal.map_origin = requireInput<geometry_msgs::Pose>(*this, "map_origin");
+    goal.map_resolution = requireInput<float>(*this, "map_resolution");
     goal.input_map = one_room_map;
     goal.planning_mode = 2;  // plan a path for coverage with the robot's field of view
                              /////  goal.starting_position = ttk::toPose2D(robot_pose);

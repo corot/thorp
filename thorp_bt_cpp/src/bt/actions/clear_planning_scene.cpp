@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 #include "thorp_bt_cpp/ros_service_node.hpp"
 
 #include <thorp_msgs/ClearPlanningScene.h>
@@ -30,7 +30,7 @@ public:
 private:
   void sendRequest(RequestType& request) override
   {
-    request.keep_tray = *getInput<bool>("keep_tray");
+    request.keep_tray = requireInput<bool>(*this, "keep_tray");
     ROS_INFO_NAMED(name(), "Clearing planning scene %s", request.keep_tray ? "but keeping tray and its content" : "");
   }
 

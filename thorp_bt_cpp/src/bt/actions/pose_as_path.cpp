@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 
 #include <geometry_msgs/PoseStamped.h>
 #include <nav_msgs/Path.h>
@@ -30,7 +30,7 @@ private:
   BT::NodeStatus tick() override
   {
     nav_msgs::Path path;
-    path.poses.push_back(*getInput<geometry_msgs::PoseStamped>("pose"));
+    path.poses.push_back(requireInput<geometry_msgs::PoseStamped>(*this, "pose"));
     setOutput("path", path);
     return BT::NodeStatus::SUCCESS;
   }

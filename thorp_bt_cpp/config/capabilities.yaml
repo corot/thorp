@@ -7,10 +7,9 @@
 # fail and the agent's picture of the robot is wrong in the same stroke.
 #
 # `inputs` and `outputs` were derived from the trees, not written from memory: inputs are the
-# blackboard keys a tree reads but never produces, outputs the keys it writes. bt_server
-# applies that same rule at runtime (see requiredInputs in bt_server.cpp) and rejects a goal
-# that doesn't supply every input, so an entry claiming an input the tree doesn't need will
-# be noticed. The `description` fields are the part that ISN'T derived -- they're my reading
+# blackboard keys a tree reads but never produces, outputs the keys it writes.
+# test/test_capabilities_match_trees.py recomputes both from bt/*.xml and fails when this file
+# disagrees. The `description` fields are the part that ISN'T derived -- they're my reading
 # of each tree's structure and want a human pass, since they're what the agent reasons over.
 #
 # An output's `when` says whether it will be there once the tree is done -- "the tree can write
@@ -659,8 +658,8 @@ not_capabilities:
     Test fixture: sleeps long enough that a goal can be canceled mid-run, for checking
     preemption returns the outputs produced so far.
   test_server_needs_list: >
-    Test fixture: pops from a list, so a goal that omits it must be refused. Pins down the
-    rule that writing a key back after reading it doesn't count as producing it.
+    Test fixture: pops from a list, so a goal that omits it must abort naming the list rather
+    than crash the server, and one that supplies it checks a json array seeds a pose list.
   test_server_table: >
     Test fixture: TableValidSize reads only a table's width and depth, so whether it passes
     says whether those fields survived being seeded from json.

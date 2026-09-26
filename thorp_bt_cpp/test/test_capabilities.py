@@ -246,11 +246,11 @@ def test_capability(runner, capability, capabilities):
                                     timeout=test.get("timeout", 60),
                                     cancel_after=test.get("cancel_after"))
 
-    # the contract: the server accepted and served the goal. An aborted goal means bt_server
-    # refused it -- unknown tree, bad json, missing input -- which is our problem, not the
-    # robot's, so it fails regardless of `expect`.
+    # the contract: the server accepted and served the goal. An aborted goal means it couldn't
+    # -- unknown tree, bad json, a missing input, a node that threw -- which is our problem, not
+    # the robot's, so it fails regardless of `expect`.
     assert state != GoalStatus.ABORTED, \
-        "goal was refused: {}".format(out.get("error", out))
+        "goal was aborted: {}".format(out.get("error", out))
     assert state in (GoalStatus.SUCCEEDED, GoalStatus.PREEMPTED), status_name(state)
 
     # Outputs a real run has to produce, asserted whatever `expect` says. For a tree whose

@@ -2,7 +2,7 @@
 
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 #include "thorp_bt_cpp/ros_subscriber_node.hpp"
 
 #include <cob_perception_msgs/DetectionArray.h>

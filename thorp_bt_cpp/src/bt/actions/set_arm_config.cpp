@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 #include "thorp_bt_cpp/ros_action_node.hpp"
 
 #include <thorp_msgs/MoveToTargetAction.h>
@@ -40,7 +40,7 @@ private:
   {
     GoalType new_goal;
     new_goal.target_type = GoalType::NAMED_TARGET;
-    new_goal.named_target = *getInput<std::string>("configuration");
+    new_goal.named_target = requireInput<std::string>(*this, "configuration");
     if (!current_goal_ || *current_goal_ != new_goal)
     {
       current_goal_ = new_goal;

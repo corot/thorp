@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/condition_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 
 #include <rail_manipulation_msgs/SegmentedObject.h>
 
@@ -38,7 +38,7 @@ private:
       return BT::NodeStatus::SUCCESS;
     }
 
-    const auto table = *getInput<rail_manipulation_msgs::SegmentedObject>("table");
+    const auto table = requireInput<rail_manipulation_msgs::SegmentedObject>(*this, "table");
     if (std::min(table.width, table.depth) < table_min_side ||
         std::max(table.width, table.depth) > table_max_side)
     {

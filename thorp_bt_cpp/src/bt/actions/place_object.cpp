@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 #include "thorp_bt_cpp/ros_action_node.hpp"
 
 #include <thorp_msgs/PlaceObjectAction.h>
@@ -33,9 +33,9 @@ private:
   GoalType getGoal() override
   {
     GoalType goal;
-    goal.object_name = *getInput<std::string>("object_name");
-    goal.support_surf = *getInput<std::string>("support_surf");
-    goal.place_pose = *getInput<geometry_msgs::PoseStamped>("place_pose");
+    goal.object_name = requireInput<std::string>(*this, "object_name");
+    goal.support_surf = requireInput<std::string>(*this, "support_surf");
+    goal.place_pose = requireInput<geometry_msgs::PoseStamped>(*this, "place_pose");
     return goal;
   }
 

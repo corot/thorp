@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <chrono>
 #include <filesystem>
-#include <iterator>
 #include <optional>
 #include <set>
 #include <sstream>
@@ -18,71 +17,6 @@ namespace fs = std::filesystem;
 
 namespace thorp::bt
 {
-namespace
-{
-/**
- * @brief The blackboard keys a tree reads but never writes: what its caller has to provide.
- *
- * Derived rather than declared, because a <BehaviorTree> definition carries no interface of
- * its own -- ports are bound by whoever instantiates it with <SubTree>, and running one as a
- * root tree means nobody did. Whatever the tree writes itself (an output port, or a key one
- * node fills in for a later one) isn't the caller's to supply, hence the difference.
- *
- * Only the root subtree is walked: a nested subtree's ports are bound by its parent's
- * remapping rather than by our caller, and its keys live on its own blackboard.
- */
-std::set<std::string> requiredInputs(const BT::Tree& tree)
-{
-  std::set<std::string> read, written, required;
-  if (tree.subtrees.empty())
-  {
-    return required;
-  }
-
-  for (const auto& node : tree.subtrees.front()->nodes)
-  {
-    // through a const reference on purpose: TreeNode's non-const config() is protected, and
-    // a TreeNode::Ptr would select exactly that one
-    const BT::TreeNode& tree_node = *node;
-
-    std::set<std::string> node_reads, node_writes;
-    // getRemappedKey gives the blackboard key a port is bound to: "{key}", or the port's own
-    // name for the "{=}" shorthand. A literal attribute is bound to no key and yields an
-    // error, since it asks nothing of the caller. Asking BT.CPP rather than reading the
-    // braces ourselves is what keeps this from quietly disagreeing with the parser that
-    // built the tree -- it also accepts a bare "=" and tolerates surrounding spaces, and a
-    // spelling we resolved differently would put the wrong key in the required set.
-    for (const auto& [port, remapping] : tree_node.config().input_ports)
-    {
-      if (auto key = BT::TreeNode::getRemappedKey(port, remapping))
-      {
-        node_reads.emplace(key->data(), key->size());
-      }
-    }
-    for (const auto& [port, remapping] : tree_node.config().output_ports)
-    {
-      if (auto key = BT::TreeNode::getRemappedKey(port, remapping))
-      {
-        node_writes.emplace(key->data(), key->size());
-      }
-    }
-
-    read.insert(node_reads.begin(), node_reads.end());
-    // Only a *pure* write counts as the tree producing a key. A bidirectional port reads the
-    // key before it writes it back, so it doesn't produce anything: GetPoseListFront pops
-    // from {poses} and PopPoseFromList writes the shortened list back, but the caller still
-    // has to supply that list in the first place. Counting those as produced would let a
-    // goal missing its list through, which is exactly the case that crashes.
-    std::set_difference(node_writes.begin(), node_writes.end(), node_reads.begin(), node_reads.end(),
-                        std::inserter(written, written.end()));
-  }
-
-  std::set_difference(read.begin(), read.end(), written.begin(), written.end(),
-                      std::inserter(required, required.end()));
-  return required;
-}
-}  // namespace
-
 Server::Server() : pnh_("~"), as_(pnh_, "run_subtree", boost::bind(&Server::executeCB, this, _1), false)
 {
 }
@@ -94,7 +28,6 @@ bool Server::loadTrees()
     ROS_ERROR_STREAM_NAMED("bt_server", "Missing required parameter: bt_dir");
     return false;
   }
-  reject_missing_inputs_ = pnh_.param("reject_missing_inputs", true);
   tick_rate_ = pnh_.param("tick_rate", 10.0);
   if (tick_rate_ <= 0)
   {
@@ -210,38 +143,6 @@ void Server::executeCB(const thorp_msgs::RunSubtreeGoalConstPtr& goal)
     return;
   }
 
-  // Refuse to tick a tree whose inputs we can't satisfy. Most nodes read a port as
-  // *getInput<T>(...), and dereferencing that when the key was never set isn't an exception
-  // we could catch below -- in a release build it's undefined behavior that tends to take
-  // the whole server down, which for an agent that merely forgot an argument is a poor
-  // trade. Note this can be stricter than the tree really needs: a node that treats a port
-  // as optional (checking the Expected rather than dereferencing it) still shows up here as
-  // required. The error says exactly which keys are missing, so the caller can pass them; if
-  // it gets in the way, ~reject_missing_inputs turns it off.
-  if (reject_missing_inputs_)
-  {
-    std::vector<std::string> missing;
-    for (const auto& key : requiredInputs(*tree))
-    {
-      auto locked_any = blackboard->getAnyLocked(key);
-      if (!locked_any || locked_any->empty())
-      {
-        missing.push_back(key);
-      }
-    }
-    if (!missing.empty())
-    {
-      ROS_ERROR_STREAM_NAMED("bt_server", "Subtree '" << goal->subtree
-                                                      << "' needs input(s) the goal "
-                                                         "didn't provide: "
-                                                      << nlohmann::json(missing).dump());
-      result.success = false;
-      result.json = nlohmann::json{ { "error", "missing required input(s)" }, { "missing_inputs", missing } }.dump();
-      as_.setAborted(result);
-      return;
-    }
-  }
-
   // Normally the caller names the keys it wants back, and we just read those once the run is
   // over. Without them we fall back to reporting whatever the run added, which needs a
   // snapshot of what already holds a value now that the inputs are seeded. That snapshot
@@ -261,10 +162,9 @@ void Server::executeCB(const thorp_msgs::RunSubtreeGoalConstPtr& goal)
   using namespace std::chrono;
   const auto tick_period = duration_cast<system_clock::duration>(duration<double>(1.0 / tick_rate_));
   auto status = BT::NodeStatus::RUNNING;
-  // A node can throw for reasons the pre-flight check above can't anticipate: an input that
-  // is present but unparseable for the type the port wants, a scripting error, a node's own
-  // exception. None of those are worth killing the server over, so they abort this goal and
-  // leave it serving the next one.
+  // Inputs aren't checked before the run: a node finds a missing or unparseable one when it
+  // reads it, and requireInput throws. That, a scripting error or a node's own exception all
+  // abort this goal with the message and leave the server serving the next one.
   try
   {
     while (ros::ok() && !BT::isStatusCompleted(status))

@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 
 #include <rail_manipulation_msgs/SegmentedObject.h>
 
@@ -27,7 +27,7 @@ public:
 private:
   BT::NodeStatus tick() override
   {
-    const auto table = *getInput<rail_manipulation_msgs::SegmentedObject>("table");
+    const auto table = requireInput<rail_manipulation_msgs::SegmentedObject>(*this, "table");
     const auto table_name = table.name + " approach";
     tcl::ServiceClient::instance().removeObject(table_name, "free_space", "local");
     return BT::NodeStatus::SUCCESS;

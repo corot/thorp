@@ -1,6 +1,9 @@
 #pragma once
 
+#include <string>
+
 #include <ros/ros.h>
+#include <behaviortree_cpp/exceptions.h>
 #include <behaviortree_cpp/tree_node.h>
 #include <behaviortree_cpp/bt_factory.h>
 
@@ -43,5 +46,23 @@ struct NodeRegister
 #define BT_REGISTER_TEMPLATE_NODE(ClassName, ID)                                                                       \
   template <>                                                                                                          \
   NodeRegister<ClassName> ClassName::reg_{ ID };
+
+/**
+ * A port's value, or a BT::RuntimeError saying which port and key had none.
+ *
+ * Use it instead of *getInput<T>(...): Expected's operator* only asserts, so in a Release build
+ * an unset port is undefined behavior, where this is an exception bt_server turns into an
+ * aborted goal that names the missing key.
+ */
+template <typename T>
+T requireInput(const BT::TreeNode& node, const std::string& port)
+{
+  auto value = node.getInput<T>(port);
+  if (!value)
+  {
+    throw BT::RuntimeError(node.name(), ": ", value.error());
+  }
+  return std::move(value.value());
+}
 
 }  // namespace thorp::bt

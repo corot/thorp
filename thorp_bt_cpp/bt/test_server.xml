@@ -44,13 +44,8 @@
   </BehaviorTree>
 
   <!--
-    Mirrors how reach_first_pose uses a list, without needing navigation, to pin down a bug
-    that the rest of these trees can't reach: PopPoseFromList declares `list` as a
-    BidirectionalPort and then reads it as *getInput<...>("list"), an unchecked dereference.
-    Because the key appears among the node's output ports, a naive reads-minus-writes rule
-    counts {poses} as something the tree produces, lets a goal through without it, and the
-    first tick dereferences a blackboard entry that was never set. Asking for this tree with
-    no inputs must be refused, naming `poses`.
+    Mirrors how reach_first_pose uses a list, without needing navigation. Asked for with no
+    inputs, the first node to read {poses} must abort the goal naming it, not crash the server.
   -->
   <BehaviorTree ID="test_server_needs_list">
     <Sequence>

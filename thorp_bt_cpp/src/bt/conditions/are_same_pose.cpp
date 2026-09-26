@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/condition_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 
 #include <thorp_toolkit/geometry.hpp>
 namespace ttk = thorp::toolkit;
@@ -30,8 +30,8 @@ private:
   {
     const auto dist_tolerance = getInput<double>("dist_tolerance");
     const auto angle_tolerance = getInput<double>("angle_tolerance");
-    const auto pose1 = *getInput<geometry_msgs::PoseStamped>("pose1");
-    const auto pose2 = *getInput<geometry_msgs::PoseStamped>("pose2");
+    const auto pose1 = requireInput<geometry_msgs::PoseStamped>(*this, "pose1");
+    const auto pose2 = requireInput<geometry_msgs::PoseStamped>(*this, "pose2");
     const auto dist_t = dist_tolerance ? *dist_tolerance : 0.1;
     const auto angle_t = angle_tolerance ? *angle_tolerance : 0.1;
     if (ttk::samePose(pose1, pose2, dist_t, angle_t))

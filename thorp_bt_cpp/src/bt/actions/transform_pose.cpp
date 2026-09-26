@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
@@ -43,7 +43,7 @@ private:
     double roll = o_roll ? *o_roll : 0.0;
     double pitch = o_pitch ? *o_pitch : 0.0;
     double yaw = o_yaw ? *o_yaw : 0.0;
-    auto pose = *getInput<geometry_msgs::PoseStamped>("in_pose");
+    auto pose = requireInput<geometry_msgs::PoseStamped>(*this, "in_pose");
     geometry_msgs::TransformStamped tf =
         ttk::toTransform(ttk::createPose(x, y, z, roll, pitch, yaw, pose.header.frame_id));
     tf2::doTransform(pose, pose, tf);

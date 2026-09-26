@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 
 namespace thorp::bt::actions
 {
@@ -33,7 +33,7 @@ private:
 
   BT::NodeStatus tick() override
   {
-    const auto param_name = *getInput<std::string>("param_name");
+    const auto param_name = requireInput<std::string>(*this, "param_name");
     T param_value;
     if (!pnh_.getParam(param_name, param_value))
     {

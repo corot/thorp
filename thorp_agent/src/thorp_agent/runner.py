@@ -60,8 +60,8 @@ class SubtreeRunner(object):
         result = self.client.get_result()
 
         if state == GoalStatus.ABORTED:
-            # bt_server refused the goal: unknown tree, malformed json, a missing input. The
-            # agent's mistake to fix, and its json says which, so hand that straight back.
+            # bt_server aborted the goal: unknown tree, malformed json, a missing input or a node
+            # that threw. Its json says which, so hand that straight back.
             detail = json.loads(result.json) if result and result.json else {}
             return self.observed({"succeeded": False, "refused": True,
                                   "error": detail.get("error", "the goal was refused")})

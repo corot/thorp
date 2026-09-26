@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 
 namespace thorp::bt::actions
 {
@@ -26,7 +26,7 @@ public:
 private:
   BT::NodeStatus tick() override
   {
-    const auto target_name = *getInput<std::string>("target_name");
+    const auto target_name = requireInput<std::string>(*this, "target_name");
     auto failures = getInput<std::map<std::string, uint32_t>>("failures");
     if (!failures)
       failures = std::map<std::string, uint32_t>{ { target_name, 1 } };

@@ -106,35 +106,28 @@ def test_malformed_input_json_aborts(runner):
     assert "error" in out
 
 
-def test_missing_required_input_aborts_rather_than_crashing(runner):
+def test_missing_input_aborts_naming_the_key(runner):
     """
-    The reason bt_server validates inputs at all: nodes read ports as *getInput<T>(), and
-    dereferencing that when the key was never set is undefined behavior in a release build,
-    not a catchable error. An agent that forgets an argument should get a refusal, and the
-    server should still be alive for the next goal -- which the test after this one checks.
+    Nothing checks inputs before a run; the node that reads a missing one throws, and the
+    error names the key. An agent that forgets an argument gets that back, and the server
+    must still be alive for the next goal -- which the test after this one checks.
     """
     state, out, result = runner.run("test_server", inputs={"offset_x": OFFSET_X})  # no start_pose
     assert state == GoalStatus.ABORTED, status_name(state)
     assert not result.success
-    assert "start_pose" in out.get("missing_inputs", []), out
+    assert "start_pose" in out.get("error", ""), out
 
 
-def test_list_input_is_required_even_though_a_node_writes_it_back(runner):
+def test_missing_list_aborts_rather_than_crashing(runner):
     """
-    Regression test for how the required-input rule treats bidirectional ports.
-
-    PopPoseFromList declares `list` as a BidirectionalPort -- it pops an element and writes
-    the shortened list back -- so the key shows up among the node's *output* ports. Treating
-    that as "the tree produces this key" lets a goal through without the list, and the node
-    then reads it as *getInput<...>("list"), dereferencing an entry that was never set. Every
-    list-driven tree, reach_first_pose and follow_waypoints included, has this shape.
-
-    Writing a key back after reading it isn't producing it, so this must be refused.
+    GetPoseListFront and PopPoseFromList are what every list-driven tree is built from,
+    reach_first_pose and follow_waypoints included. Reading a list that was never set is the
+    case that took the server down when ports were dereferenced unchecked.
     """
     state, out, result = runner.run("test_server_needs_list", inputs={})
     assert state == GoalStatus.ABORTED, status_name(state)
     assert not result.success
-    assert "poses" in out.get("missing_inputs", []), out
+    assert "poses" in out.get("error", ""), out
 
 
 def test_pose_list_seeds_from_a_json_array(runner):
@@ -196,7 +189,7 @@ def test_structured_input_for_an_unknown_key_is_reported(runner):
     """
     Building a structured value needs to know the type, which comes from the port using that
     key. A key no port uses has no type to build it as, so it's skipped rather than guessed
-    at -- and since it's skipped, a tree that needed it still gets refused.
+    at -- and since it's skipped, a tree that needed it still fails for want of it.
     """
     state, out, result = runner.run("test_server_needs_list",
                                     inputs={"poses": ["1.0;2.0;0.0;map"], "mystery": [1, 2, 3]},

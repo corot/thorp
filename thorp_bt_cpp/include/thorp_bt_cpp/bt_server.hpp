@@ -52,10 +52,6 @@ private:
   /** Tick rate used while running a subtree. */
   double tick_rate_ = 10.0;
 
-  /** Refuse a goal that doesn't provide every input the requested tree needs, rather than
-   *  running it and letting some node dereference a port that was never set. See executeCB. */
-  bool reject_missing_inputs_ = true;
-
   actionlib::SimpleActionServer<thorp_msgs::RunSubtreeAction> as_;
 
   void executeCB(const thorp_msgs::RunSubtreeGoalConstPtr& goal);

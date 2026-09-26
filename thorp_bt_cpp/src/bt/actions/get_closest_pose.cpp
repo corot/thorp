@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 
 #include <thorp_toolkit/geometry.hpp>
 namespace ttk = thorp::toolkit;
@@ -28,7 +28,7 @@ public:
 private:
   BT::NodeStatus tick() override
   {
-    const auto poses = *getInput<std::vector<geometry_msgs::PoseStamped>>("poses");
+    const auto poses = requireInput<std::vector<geometry_msgs::PoseStamped>>(*this, "poses");
     if (poses.empty())
     {
       ROS_WARN_STREAM_NAMED(name(), "Pose list is empty");
@@ -36,7 +36,7 @@ private:
     }
 
     // Find the closest pose to the target one
-    const auto target_pose = *getInput<geometry_msgs::PoseStamped>("target_pose");
+    const auto target_pose = requireInput<geometry_msgs::PoseStamped>(*this, "target_pose");
     geometry_msgs::PoseStamped closest_pose;
     double closest_dist = std::numeric_limits<double>::infinity();
     for (auto& pose : poses)

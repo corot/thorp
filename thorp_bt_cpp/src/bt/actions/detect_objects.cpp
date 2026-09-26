@@ -2,7 +2,7 @@
 
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 #include "thorp_bt_cpp/ros_action_node.hpp"
 
 #include <moveit_msgs/CollisionObject.h>
@@ -46,7 +46,7 @@ private:
     GoalType goal;
     goal.clear_scene = false;
     ////TODO min side,,,, pasar de alguna forma    but not really needed, as perception will call the srv, not the action
-    // TODO goal.output_frame = *getInput<std::string>("support_surf");
+    // TODO goal.output_frame = requireInput<std::string>(*this, "support_surf");
     return goal;
   }
 
@@ -58,7 +58,7 @@ private:
   BT::NodeStatus onSucceeded(const ResultConstPtr& res) override
   {
     std::unordered_set<std::string> valid_targets;
-    auto object_types_csv = *getInput<std::string>("object_types");
+    auto object_types_csv = requireInput<std::string>(*this, "object_types");
     if (!object_types_csv.empty())
     {
       auto object_types = ttk::tokenize(object_types_csv);
