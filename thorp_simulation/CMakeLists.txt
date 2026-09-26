@@ -25,7 +25,7 @@ install(TARGETS gazebo_ground_truth
         DESTINATION lib/${PROJECT_NAME}
 )
 
-install(FILES launch/thorp_gazebo.launch.py
+install(FILES launch/thorp_gazebo.launch.py launch/navigation.launch.py
         DESTINATION share/${PROJECT_NAME}/launch
 )
 

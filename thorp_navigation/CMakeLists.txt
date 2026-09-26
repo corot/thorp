@@ -1,30 +1,21 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.8)
 project(thorp_navigation)
 
-find_package(catkin REQUIRED roscpp actionlib geometry_msgs mbf_msgs thorp_msgs thorp_toolkit
-                             dynamic_reconfigure visualization_msgs)
+find_package(ament_cmake REQUIRED)
 
-link_directories(${catkin_LIBRARY_DIRS})
-include_directories(include
-                    ${catkin_INCLUDE_DIRS})
+# Listed one by one, as the package is only partially ported
+install(FILES launch/navigation.launch.py
+        DESTINATION share/${PROJECT_NAME}/launch
+)
 
-generate_dynamic_reconfigure_options(cfg/Follower.cfg)
+install(FILES param/nav2.yaml
+        DESTINATION share/${PROJECT_NAME}/param
+)
 
-catkin_package(
-    INCLUDE_DIRS include
-    CATKIN_DEPENDS roscpp actionlib geometry_msgs mbf_msgs thorp_msgs thorp_toolkit
-            dynamic_reconfigure visualization_msgs)
+# small_house map files are symlinks to a small_house_world package checkout, not ported
+install(DIRECTORY maps
+        DESTINATION share/${PROJECT_NAME}
+        PATTERN "small_house.*" EXCLUDE
+)
 
-# nodes
-
-# add_executable(pose_servoing src/pose_servoing.cpp)  requires  visp_ros visp_bridge, so not that interesting
-# target_link_libraries(pose_servoing ${catkin_LIBRARIES})
-# add_dependencies(pose_servoing thorp_msgs_generate_messages_cpp)
-
-add_executable(pose_follower src/pose_follower.cpp)
-target_link_libraries(pose_follower ${catkin_LIBRARIES})
-add_dependencies(pose_follower thorp_msgs_generate_messages_cpp ${PROJECT_NAME}_gencfg)
-
-add_executable(waypoints_path src/waypoints_path.cpp)
-target_link_libraries(waypoints_path ${catkin_LIBRARIES})
-add_dependencies(waypoints_path thorp_msgs_generate_messages_cpp)
+ament_package()
