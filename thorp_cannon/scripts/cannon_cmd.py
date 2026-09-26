@@ -1,19 +1,20 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sys
-import rospy
+import rclpy
 
 from thorp_msgs.srv import CannonCommand
 
 
-def cannon_command(cmd, arg):
-    rospy.wait_for_service('cannon_command')
-    try:
-        srv = rospy.ServiceProxy('cannon_command', CannonCommand)
-        resp1 = srv(cmd, arg, arg)
-        print(resp1)
-    except rospy.ServiceException as e:
-        print("Service call failed: %s" % e)
+def cannon_command(node, cmd, arg):
+    srv = node.create_client(CannonCommand, 'cannon_command')
+    srv.wait_for_service()
+    future = srv.call_async(CannonCommand.Request(action=cmd, angle=float(arg), shots=arg))
+    rclpy.spin_until_future_complete(node, future)
+    if future.result() is not None:
+        print(future.result())
+    else:
+        print("Service call failed: %s" % future.exception())
 
 
 def usage():
@@ -28,6 +29,9 @@ if __name__ == "__main__":
         print(usage())
         sys.exit(1)
 
-    rospy.init_node('cannon_command')
+    rclpy.init()
+    node = rclpy.create_node('cannon_command')
     print("Requesting %d %d" % (cmd, arg))
-    cannon_command(cmd, arg)
+    cannon_command(node, cmd, arg)
+    node.destroy_node()
+    rclpy.shutdown()

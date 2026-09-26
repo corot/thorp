@@ -5,7 +5,7 @@ Thorp simulation on Gazebo Harmonic:
 - robot state publisher
 - bridge between Gazebo and ROS topics
 - point clouds from the RGBD cameras
-- arm, gripper and cannon controllers, and the gripper command action server
+- arm, gripper and cannon controllers, the gripper command action server and the cannon controller
 """
 
 from launch import LaunchDescription
@@ -87,6 +87,12 @@ def generate_launch_description():
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(PathJoinSubstitution([FindPackageShare('thorp_manipulation'), 'launch',
                                                                 'includes', 'arm.launch.py'])),
+            launch_arguments={'simulation': 'true'}.items()),
+
+        # Same for the cannon: on simulation it talks with the cannon joint controller and firing system
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(PathJoinSubstitution([FindPackageShare('thorp_cannon'), 'launch',
+                                                                'cannon.launch.py'])),
             launch_arguments={'simulation': 'true'}.items()),
 
         ComposableNodeContainer(package='rclcpp_components', executable='component_container',

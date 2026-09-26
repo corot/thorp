@@ -1,52 +1,52 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-import rospy
+import rclpy
+from rclpy.callback_groups import ReentrantCallbackGroup
+from rclpy.duration import Duration
+from rclpy.executors import MultiThreadedExecutor
+from rclpy.node import Node
+from rclpy.qos import QoSDurabilityPolicy, QoSProfile
 
 from math import atan, degrees, radians
-from std_msgs.msg import Float64, UInt16
-from thorp_msgs.srv import CannonCommand, CannonCommandRequest
+from std_msgs.msg import Bool, Float64MultiArray, UInt16
+from thorp_msgs.srv import CannonCommand
 from thorp_msgs.msg import ThorpError
-from arbotix_msgs.msg import Digital, Analog
-from sensor_msgs.msg import JointState
 from geometry_msgs.msg import PoseStamped
+from thorp_toolkit.common import init
 from thorp_toolkit.geometry import TF2
 
 
-class CannonCtrlNode:
+class CannonCtrlNode(Node):
     def __init__(self):
-        self._simulation = rospy.get_param('/use_sim_time', False)
+        super().__init__('cannon_ctrl')
+        init(self)
 
-        self._cannon_cmd_srv = rospy.Service('cannon_command', CannonCommand, self.handle_cannon_command)
+        self._simulation = self.get_parameter('use_sim_time').value
+        if not self._simulation:
+            # TODO: the real cannon is commanded through the arbotix board, not ported yet
+            raise RuntimeError("Real cannon not supported yet; only simulation")
 
-        if self._simulation:
-            self._tilt_cannon_pub = rospy.Publisher('cannon_joint/command', Float64, queue_size=5, latch=True)
-            self._shots_left = 1000
-        else:
-            self._tilt_cannon_pub = rospy.Publisher('arbotix/cannon_servo', Analog, queue_size=5, latch=True)
-            self._shots_left = 6
-        self._fire_cannon_pub = rospy.Publisher('arbotix/cannon_trigger', Digital, queue_size=5, latch=True)
-        self._shots_left_pub = rospy.Publisher('~shots_left', UInt16, latch=True, queue_size=1)
-        self._shots_left_pub.publish(self._shots_left)
+        # the service sleeps while firing, so it must not block the clock subscription
+        self._cannon_cmd_srv = self.create_service(CannonCommand, 'cannon_command', self.handle_cannon_command,
+                                                   callback_group=ReentrantCallbackGroup())
+
+        latched = QoSProfile(depth=1, durability=QoSDurabilityPolicy.TRANSIENT_LOCAL)
+        self._tilt_cannon_pub = self.create_publisher(Float64MultiArray, 'cannon_joint_controller/commands', 5)
+        self._shots_left = 1000
+        self._fire_cannon_pub = self.create_publisher(Bool, 'arbotix/cannon_trigger', latched)
+        self._shots_left_pub = self.create_publisher(UInt16, '~/shots_left', latched)
+        self._shots_left_pub.publish(UInt16(data=self._shots_left))
 
         # Subscribe to a target pose to aim to
         self._target_obj_pose = None
-        self._target_obj_sub = rospy.Subscriber('target_object_pose', PoseStamped, self.target_obj_cb, queue_size=5)
-
-        # Publish cannon joint state
-        self._cannon_tilt_angle = 0.0
-        self._joint_states_pub = rospy.Publisher('joint_states', JointState, queue_size=5)
-
-        self._js_msg = JointState()
-        self._js_msg.name = ["cannon_joint"]
-        self._js_msg.position = [0.0]
-        self._js_msg.velocity = [0.0]
+        self._target_obj_sub = self.create_subscription(PoseStamped, 'target_object_pose', self.target_obj_cb, 5)
 
     def target_obj_cb(self, pose):
         self._target_obj_pose = pose
 
     def aim_to_target(self):
         if not self._target_obj_pose:
-            rospy.logwarn("No target pose to aim to")
+            self.get_logger().warning("No target pose to aim to")
             return ThorpError(code=ThorpError.INVALID_TARGET_POSE, text="No target pose to aim to")
         pose_in_cannon_ref = TF2().transform_pose(self._target_obj_pose, None, 'cannon_shaft_link')
         adjacent = pose_in_cannon_ref.pose.position.x
@@ -59,63 +59,46 @@ class CannonCtrlNode:
     def tilt(self, angle):
         if abs(angle) > 18.0:
             err_msg = "Tilt angle %g out of bounds (-18, +18)" % angle
-            rospy.logwarn(err_msg)
+            self.get_logger().warning(err_msg)
             return ThorpError(code=ThorpError.JOINT_OUT_OF_BOUNDS, text=err_msg)
-        rospy.loginfo("Tilting cannon to %g degrees", angle)
-        if angle < 0.0 and not self._simulation:
-            # With real cannon I need to squeeze negative angles between 0 and -5, due to a strange effect on OpenCM
-            # Servo class; -6 puts the cannon almost in collision with the upper plate! TODO investigate what's going on
-            angle = (angle * 5.0) / 18.0
-
-        self._cannon_tilt_angle = radians(angle)
-        if self._simulation:
-            self._tilt_cannon_pub.publish(Float64(data=self._cannon_tilt_angle))
-        else:
-            # OpenCM servo is configured to operate between 150 and 210, being 180 the central position
-            self._tilt_cannon_pub.publish(Analog(value=int(round(angle + 180))))
+        self.get_logger().info("Tilting cannon to %g degrees" % angle)
+        self._tilt_cannon_pub.publish(Float64MultiArray(data=[radians(angle)]))
         return ThorpError(code=ThorpError.SUCCESS)
 
     def fire(self, shots):
         if shots > 0:
-            msg = Digital(value=1)
-            msg.header.stamp = rospy.get_rostime()
-            self._fire_cannon_pub.publish(msg)
-            rospy.sleep(rospy.Duration(shots * 0.055))
-            msg.value = 0
-            msg.header.stamp = rospy.get_rostime()
-            self._fire_cannon_pub.publish(msg)
+            self._fire_cannon_pub.publish(Bool(data=True))
+            self.get_clock().sleep_for(Duration(seconds=shots * 0.055))
+            self._fire_cannon_pub.publish(Bool(data=False))
             self._shots_left -= shots
-            self._shots_left_pub.publish(self._shots_left)
-            rospy.loginfo("Firing %d cannon shot%s! (%d left)", shots, 's' if shots > 1 else '', self._shots_left)
+            self._shots_left_pub.publish(UInt16(data=self._shots_left))
+            self.get_logger().info("Firing %d cannon shot%s! (%d left)"
+                                   % (shots, 's' if shots > 1 else '', self._shots_left))
         return ThorpError(code=ThorpError.SUCCESS)
 
-    def handle_cannon_command(self, request):
-        if request.action == CannonCommandRequest.AIM:
-            return self.aim_to_target()
+    def handle_cannon_command(self, request, response):
+        if request.action == CannonCommand.Request.AIM:
+            response.error = self.aim_to_target()
+        elif request.action == CannonCommand.Request.TILT:
+            response.error = self.tilt(request.angle)
+        elif request.action == CannonCommand.Request.FIRE:
+            response.error = self.fire(request.shots)
+        return response
 
-        if request.action == CannonCommandRequest.TILT:
-            return self.tilt(request.angle)
 
-        if request.action == CannonCommandRequest.FIRE:
-            return self.fire(request.shots)
-
-    def spin(self):
-        if self._simulation:
-            # the simulator already provides cannon joint state
-            rospy.spin()
-        else:
-            rate = rospy.Rate(20)
-            while not rospy.is_shutdown():
-                self._js_msg.position[0] = self._cannon_tilt_angle
-                self._js_msg.header.stamp = rospy.Time.now()
-                self._joint_states_pub.publish(self._js_msg)
-                try:
-                    rate.sleep()
-                except rospy.exceptions.ROSInterruptException:
-                    pass
+def main():
+    rclpy.init()
+    node = CannonCtrlNode()
+    executor = MultiThreadedExecutor()
+    executor.add_node(node)
+    try:
+        executor.spin()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.try_shutdown()
 
 
 if __name__ == '__main__':
-    rospy.init_node("cannon_ctrl")
-    node = CannonCtrlNode()
-    node.spin()
+    main()

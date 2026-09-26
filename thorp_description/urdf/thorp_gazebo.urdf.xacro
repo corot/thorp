@@ -169,6 +169,19 @@
   <xacro:Sharp_GP2Y0A21_IR_sim name="r180"/>
   <xacro:Sharp_GP2Y0A21_IR_sim name="r155"/>
 
+  <!-- Cannon firing: while the trigger is on, shoot the rocket model at the rate of fire; implemented by
+       thorp_cannon's Gazebo system -->
+  <gazebo>
+    <plugin filename="thorp_cannon_system" name="thorp::cannon::CannonSystem">
+      <cannon_link>cannon_link</cannon_link>
+      <axis_of_fire>x</axis_of_fire>
+      <rate_of_fire>18.18</rate_of_fire>
+      <shoot_force>2200</shoot_force>
+      <rocket_model>rocket</rocket_model>
+      <trigger_topic>/arbotix/cannon_trigger</trigger_topic>
+    </plugin>
+  </gazebo>
+
   <!-- Fake range sensor to see where the cannon is pointing to -->
   <xacro:thorp_sim_ranger name="ir_cannon" link="ir_cannon_link" topic="/mobile_base/sensors/infrared/cannon"
                           h_samples="3" h_fov="0.001" v_samples="1" v_min="0.0" v_max="0.0"
