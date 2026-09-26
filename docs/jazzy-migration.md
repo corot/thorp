@@ -50,8 +50,8 @@ source install/setup.bash
 | 4 | Arm in simulation: `ros2_control`, trajectory and gripper controllers | done |
 | 5 | `thorp_msgs`, `thorp_toolkit`; `thorp_cannon`, with a Gazebo Harmonic firing system | done |
 | 6a | Nav2 core: map, localization (AMCL, static, Gazebo ground truth), depth cameras to laser scans, costmaps (static, voxel, sonar and IR range layers, inflation), planner, MPPI controller, behaviors, velocity smoother, velocity commands multiplexer, RViz goals | done |
-| 6b | Thorp navigation nodes: pose follower, waypoints path, velocity display, robot pose saving | next |
-| 6c | Semantic costmap layer | |
+| 6b | Thorp navigation nodes: pose follower, waypoints path, velocity display, robot pose saving | done |
+| 6c | Semantic costmap layer | next |
 | 6d | Bumpers and cliff sensors, on simulation and costmaps | |
 | 6e | Coverage planning | |
 | 7 | Manipulation: MoveIt 2 configuration, pick and place servers, grasping on simulation | |
@@ -77,7 +77,7 @@ Thorp's fork) and `full_coverage_path_planner`'s Spiral-STC planner, as an MBF g
 | thorp_msgs | migrated |
 | thorp_cannon | migrated; simulation only, the real cannon waits for the boards (see below) |
 | thorp_manipulation | partial: fake gripper joint states (see below) |
-| thorp_navigation | partial: Nav2 configuration and launch, maps (see below) |
+| thorp_navigation | partial: Nav2 configuration and launch, maps, velocity display (see below) |
 | thorp_simulation | partial: Gazebo Harmonic launch, worlds, controllers and navigation (see below) |
 | thorp_toolkit | partial: core C++ and Python modules (see below) |
 | thorp_apps, thorp_boards, thorp_bt_cpp, thorp_costmap_layers, thorp_exploration, thorp_mbf_plugins, thorp_moveit_config, thorp_perception, thorp_rviz_plugins, thorp_smach | ROS 1 (ignored) |
@@ -101,7 +101,8 @@ Ported: C++ `common`, `geometry`, `math`, `parameters`, `progress_tracker`, `tf2
 
 | Files | First consumer | Block |
 |-------|----------------|-------|
-| `reconfigure`, `alternative_config` (C++ and Python), `test_reconfigure.py`; `nodes/save_pose_node.cpp` | navigation | 6 |
+| `reconfigure`, `alternative_config` (C++ and Python), `test_reconfigure.py` | navigation | 6 |
+| `nodes/save_pose_node.cpp` | real robot navigation | real robot |
 | `planning_scene` (C++ and Python); `simulation` (`waitForObjectsSpawning`) | manipulation, BT runner | 7, 9 |
 | `point_tracker.py` | object tracking | 8 |
 | `kobuki_base` (bumper names), `semantic_map.py`, `test_semantic_map.py` | BT conditions, smach states | 9 |
@@ -148,8 +149,15 @@ than its model step. Pending ROS 1 files:
 
 | Files | Block |
 |-------|-------|
-| `src/pose_follower.cpp`, `cfg/Follower.cfg`, `param/pose_follower.yaml`, `src/waypoints_path.cpp`, `param/waypoints_path.yaml`, `nodes/show_velocity.py`; robot pose saving (`thorp_toolkit`'s `save_pose_node`) | 6b |
+| Robot pose saving (`thorp_toolkit`'s `save_pose_node`): Nav2's AMCL doesn't keep its pose across restarts | real robot |
 | `src/pose_servoing.cpp`, `src/visual_servoing.cpp` (not built on Noetic either) | undecided |
+
+Replaced by Nav2 packages: the pose follower (`src/pose_follower.cpp`, `cfg/Follower.cfg`, `param/pose_follower.yaml`)
+by `opennav_following`'s `follow_object` action, with the desired distance and detection timeout as its parameters instead
+of per goal, and without stopping at the distance (goals end on `max_duration` or cancel); following commands go to
+`cmd_vel_mux/input/following`. The waypoints path (`src/waypoints_path.cpp`, `param/waypoints_path.yaml` and its
+`ConnectWaypoints` service) by the planner's `compute_path_through_poses` and the smoother server's `smooth_path`.
+`nodes/show_velocity.py` is ported, displayed by `navigation.rviz` with `rviz_2d_overlay_plugins`.
 
 Dropped with Move Base Flex: `param/move_base_flex/`, `launch/includes/move_base_flex.launch.xml`,
 `nodes/mbf_simple_goal_relay.py` (Nav2 takes RViz goals itself) and the MBF test scripts in `scripts/test/`. The
