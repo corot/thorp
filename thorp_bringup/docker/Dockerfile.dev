@@ -13,7 +13,9 @@ FROM ros:$ROS_DISTRO
 SHELL ["/bin/bash", "-c"]
 
 # install ROS base and minimal build dependencies
-RUN apt-get update && apt-get install -y ros-$ROS_DISTRO-ros-base ros-noetic-actionlib-tools \
+# No recommends: actionlib-tools' wxgtk recommends a full X server, which the host already provides
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    apt-get update && apt-get install -y --no-install-recommends ros-$ROS_DISTRO-ros-base ros-noetic-actionlib-tools \
     python-is-python3 python3-pip python3-catkin-tools build-essential wget nano git python3-yaml
 
 # add packages.osrfoundation.org APT to install the latest gazebo version
@@ -162,8 +164,10 @@ RUN source /opt/ros/$ROS_DISTRO/setup.bash && \
                   --cmake-args -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=17
 
 # setup runtime environment
+# roslaunch waits 15 s by default for each node that ignores SIGINT before escalating
 RUN echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> ~/.bashrc && \
-    echo '[ -f /catkin_ws/devel/setup.bash ] && source /catkin_ws/devel/setup.bash' >> ~/.bashrc
+    echo '[ -f /catkin_ws/devel/setup.bash ] && source /catkin_ws/devel/setup.bash' >> ~/.bashrc && \
+    echo 'roslaunch() { command roslaunch --sigint-timeout 4 "$@"; }' >> ~/.bashrc
 ENV ROSCONSOLE_FORMAT='[${node} ${severity} ${time}]: ${message}'
 
 # path to gazebo models (only resolves once thorp is mounted, harmless otherwise)
