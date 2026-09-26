@@ -200,11 +200,10 @@ Differences with the Noetic simulation:
 
 ## Known issues
 
-- Range messages from `ros_gz_bridge` report `max_range + 1` when nothing is in range, and Nav2's range layer discards
-  readings above `max_range`, before applying `clear_on_max_reading`. So in simulation, sonars and IR sensors never clear
-  the costmaps, and after `no_readings_timeout` (2 s) without valid readings the range layers make the costmaps not
-  current, blocking the planner and controller. Navigation on simulation needs a fix for this; options are a small
-  component that sets out of range readings to `max_range`, or disabling the timeout.
-- Gazebo prints `gz_frame_id` warnings when spawning Thorp: SDFormat 14 doesn't know this element yet, but Gazebo
-  uses it to stamp sensor messages with the URDF frames. It also warns that `gripper_link` has no inertia, so
-  `gripper_link_joint` is dropped from the simulated model, as it was on Noetic.
+- Range messages from `ros_gz_bridge` report `max_range + 1` when nothing is in range (hardcoded in its LaserScan to
+  Range conversion), and Nav2's range layer discards readings above `max_range`, before applying `clear_on_max_reading`.
+  So in simulation, sonars and IR sensors never clear the costmaps with "nothing in range" readings: their marks
+  persist until an in-range reading clears them, or the costmaps are cleared. The range layers' `no_readings_timeout`
+  is disabled; otherwise, without valid readings, they make the costmaps not current, blocking the planner and
+  controller. A proper fix would be an option in `ros_gz_bridge` to report `max_range` instead
+  (https://github.com/gazebosim/ros_gz/blob/jazzy/ros_gz_bridge/src/convert/sensor_msgs.cpp#L556).

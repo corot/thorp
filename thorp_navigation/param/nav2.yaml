@@ -172,7 +172,7 @@ local_costmap:
         plugin: nav2_costmap_2d::RangeSensorLayer
         clear_threshold: 0.46
         mark_threshold: 0.98
-        no_readings_timeout: 2.0
+        no_readings_timeout: 0.0  # disabled, see the range messages known issue in the migration doc
         clear_on_max_reading: true
         topics: [/mobile_base/sensors/sonars/m90, /mobile_base/sensors/sonars/m72, /mobile_base/sensors/sonars/m54,
                  /mobile_base/sensors/sonars/m36, /mobile_base/sensors/sonars/m18, /mobile_base/sensors/sonars/p0,
@@ -182,7 +182,7 @@ local_costmap:
         plugin: nav2_costmap_2d::RangeSensorLayer
         clear_threshold: 0.4
         mark_threshold: 0.9
-        no_readings_timeout: 2.0
+        no_readings_timeout: 0.0  # disabled, see the range messages known issue in the migration doc
         clear_on_max_reading: true
         topics: [/mobile_base/sensors/infrared/arm, /mobile_base/sensors/infrared/l155,
                  /mobile_base/sensors/infrared/l180, /mobile_base/sensors/infrared/r180,
@@ -238,7 +238,7 @@ global_costmap:
         plugin: nav2_costmap_2d::RangeSensorLayer
         clear_threshold: 0.46
         mark_threshold: 0.98
-        no_readings_timeout: 2.0
+        no_readings_timeout: 0.0  # disabled, see the range messages known issue in the migration doc
         clear_on_max_reading: true
         topics: [/mobile_base/sensors/sonars/m90, /mobile_base/sensors/sonars/m72, /mobile_base/sensors/sonars/m54,
                  /mobile_base/sensors/sonars/m36, /mobile_base/sensors/sonars/m18, /mobile_base/sensors/sonars/p0,
@@ -248,7 +248,7 @@ global_costmap:
         plugin: nav2_costmap_2d::RangeSensorLayer
         clear_threshold: 0.4
         mark_threshold: 0.9
-        no_readings_timeout: 2.0
+        no_readings_timeout: 0.0  # disabled, see the range messages known issue in the migration doc
         clear_on_max_reading: true
         topics: [/mobile_base/sensors/infrared/arm, /mobile_base/sensors/infrared/l155,
                  /mobile_base/sensors/infrared/l180, /mobile_base/sensors/infrared/r180,
