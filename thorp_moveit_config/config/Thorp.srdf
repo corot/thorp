@@ -48,6 +48,15 @@
         <joint name="arm_wrist_flex_joint" value="1.4" />
         <joint name="gripper_link_joint" value="0" />
     </group_state>
+    <!-- Gripper open and closed as Noetic's gripper controller maximum and minimum openings (5 cm and 2.5 mm) -->
+    <group_state name="open" group="gripper">
+        <joint name="gripper_joint" value="-0.36" />
+        <joint name="gripper_static_joint" value="0" />
+    </group_state>
+    <group_state name="closed" group="gripper">
+        <joint name="gripper_joint" value="0.45" />
+        <joint name="gripper_static_joint" value="0" />
+    </group_state>
     <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
     <end_effector name="gripper" parent_link="gripper_link" group="gripper" parent_group="arm" />
     <!--PASSIVE JOINT: Purpose: this element is used to mark joints that are not actuated-->
