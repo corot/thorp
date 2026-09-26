@@ -10,14 +10,12 @@ https://github.com/corot/arbotix_ros, thorp branch. BSD license, Copyright (c) 2
 """
 
 import collections
-import threading
 from math import asin, sin
 
 import rclpy
 from rclpy.action import ActionServer, CancelResponse, GoalResponse
-from rclpy.callback_groups import ReentrantCallbackGroup
-from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
+from rclpy.task import Future
 
 from control_msgs.action import GripperCommand
 from sensor_msgs.msg import JointState
@@ -82,7 +80,7 @@ class GripperActionController(Node):
     def __init__(self):
         super().__init__('gripper_controller')
 
-        self.state_cb_event = threading.Event()
+        self.state_waiters = []  # futures completed on the next joint state
         self.state_cb_times = collections.deque(maxlen=self.STATE_HZ_BUFFER_SIZE)
         self.current_position = 0.0
         self.current_effort = 0.0
@@ -98,15 +96,13 @@ class GripperActionController(Node):
             raise ValueError(f'Gripper Controller: unsupported model {model}')
         self.model = OneSideGripperModel(self)
 
-        callback_group = ReentrantCallbackGroup()
-
         # subscribe to joint_states topic
-        self.create_subscription(JointState, 'joint_states', self.state_cb, 10, callback_group=callback_group)
+        self.create_subscription(JointState, 'joint_states', self.state_cb, 10)
 
         # create gripper command action server; goals are rejected until we receive joint states
+        # the action callback is a coroutine, so a single-threaded executor can serve it while receiving joint states
         self.server = ActionServer(self, GripperCommand, '~/gripper_action', self.action_cb,
-                                   goal_callback=self.goal_cb, cancel_callback=lambda _: CancelResponse.ACCEPT,
-                                   callback_group=callback_group)
+                                   goal_callback=self.goal_cb, cancel_callback=lambda _: CancelResponse.ACCEPT)
 
     def goal_cb(self, goal):
         if len(self.state_cb_times) < self.state_cb_times.maxlen:
@@ -114,7 +110,13 @@ class GripperActionController(Node):
             return GoalResponse.REJECT
         return GoalResponse.ACCEPT
 
-    def action_cb(self, goal_handle):
+    def next_state(self):
+        """ Future completed when the next gripper joint state arrives """
+        future = Future()
+        self.state_waiters.append(future)
+        return future
+
+    async def action_cb(self, goal_handle):
         """ Take an input command of width to open gripper. """
         command = goal_handle.request.command
         result = GripperCommand.Result()
@@ -144,10 +146,8 @@ class GripperActionController(Node):
                 self.get_logger().info('Gripper Controller: Preempted.')
                 return result
 
-            # synchronize with the joints state callbacks; time out to check for cancellation
-            if not self.state_cb_event.wait(1.0):
-                continue
-            self.state_cb_event.clear()
+            # synchronize with the joints state callbacks
+            await self.next_state()
 
             # break when we have reached the goal position...
             diff = abs(command.position - self.current_position)
@@ -216,16 +216,16 @@ class GripperActionController(Node):
         self.state_cb_times.append(self.get_clock().now().nanoseconds * 1e-9)
 
         # notice the action server goal callback that new data is available
-        self.state_cb_event.set()
+        waiters, self.state_waiters = self.state_waiters, []
+        for future in waiters:
+            future.set_result(True)
 
 
 def main():
     rclpy.init()
     node = GripperActionController()
-    executor = MultiThreadedExecutor()
-    executor.add_node(node)
     try:
-        executor.spin()
+        rclpy.spin(node)
     except KeyboardInterrupt:
         pass
     finally:

@@ -19,6 +19,7 @@ controller_manager:
 # Publish servo joint states; wheel joint states come from Gazebo
 joint_state_broadcaster:
   ros__parameters:
+    update_rate: 50  # Hz
     joints: [arm_shoulder_pan_joint, arm_shoulder_lift_joint, arm_elbow_flex_joint, arm_wrist_flex_joint,
              gripper_joint, cannon_joint]
     interfaces: [position, velocity, effort]
