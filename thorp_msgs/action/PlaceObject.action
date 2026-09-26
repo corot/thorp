@@ -13,3 +13,4 @@ ThorpError error
 ---
 
 # feedback
+string stage  # "planning", or the task stage being executed, e.g. "approach object"
