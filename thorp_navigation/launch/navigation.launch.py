@@ -1,6 +1,8 @@
 """
 Thorp navigation:
-- Nav2: planner, controller, behaviors and BT navigator, taking goals from RViz
+- Nav2: planner, controller, smoother, behaviors and BT navigator, taking goals from RViz
+- object following
+- velocity and travelled distance display
 - velocity smoother
 - geometric map
 - localization: AMCL, static or Gazebo ground truth
@@ -26,7 +28,8 @@ def launch_setup(context):
     nav_cmd_vel = '/vel_smoother/raw_cmd_vel' if smooth_velocity else '/cmd_vel_mux/input/navigation'
     cmd_vel_remap = [('cmd_vel', nav_cmd_vel)]
 
-    navigation_nodes = ['controller_server', 'planner_server', 'behavior_server', 'bt_navigator']
+    navigation_nodes = ['controller_server', 'planner_server', 'smoother_server', 'behavior_server', 'bt_navigator',
+                        'following_server']
     if smooth_velocity:
         navigation_nodes.append('velocity_smoother')
     localization_nodes = ['map_server']
@@ -39,13 +42,22 @@ def launch_setup(context):
              respawn=True, parameters=common_params, remappings=cmd_vel_remap),
         Node(package='nav2_planner', executable='planner_server', name='planner_server', output='screen',
              respawn=True, parameters=common_params),
+        Node(package='nav2_smoother', executable='smoother_server', name='smoother_server', output='screen',
+             respawn=True, parameters=common_params),
         Node(package='nav2_behaviors', executable='behavior_server', name='behavior_server', output='screen',
              respawn=True, parameters=common_params, remappings=cmd_vel_remap),
         Node(package='nav2_bt_navigator', executable='bt_navigator', name='bt_navigator', output='screen',
              respawn=True, parameters=common_params),
+        # Following goes to its own multiplexer input, as Noetic's pose follower
+        Node(package='opennav_following', executable='opennav_following', name='following_server', output='screen',
+             respawn=True, parameters=common_params, remappings=[('cmd_vel', '/cmd_vel_mux/input/following')]),
         Node(package='nav2_lifecycle_manager', executable='lifecycle_manager', name='lifecycle_manager_navigation',
              output='screen', parameters=[{'use_sim_time': LaunchConfiguration('use_sim_time'),
                                            'autostart': True, 'node_names': navigation_nodes}]),
+
+        # ****************** Visual aids ******************
+        Node(package='thorp_navigation', executable='show_velocity.py', name='show_velocity', output='screen',
+             respawn=True, parameters=[{'use_sim_time': LaunchConfiguration('use_sim_time')}]),
 
         # ****************** Geometric map server ******************
         Node(package='nav2_map_server', executable='map_server', name='map_server', output='screen', respawn=True,

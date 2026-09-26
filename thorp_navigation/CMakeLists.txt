@@ -4,6 +4,10 @@ project(thorp_navigation)
 find_package(ament_cmake REQUIRED)
 
 # Listed one by one, as the package is only partially ported
+install(PROGRAMS nodes/show_velocity.py
+        DESTINATION lib/${PROJECT_NAME}
+)
+
 install(FILES launch/navigation.launch.py
         DESTINATION share/${PROJECT_NAME}/launch
 )

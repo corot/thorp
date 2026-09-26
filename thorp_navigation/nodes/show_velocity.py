@@ -1,53 +1,70 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
-Show current velocity and travelled distance on RViz at top-left corner, using jsk_rviz_plugins.
+Show current velocity and travelled distance on RViz at top-left corner, as an overlay text.
 We also republish current velocity as a TwistStamped and the linear as a Float32 msg
+
 Author:
     Jorge Santos
 """
 
-import rospy
+import rclpy
+from rclpy.node import Node
 
 from std_msgs.msg import Float32
 from geometry_msgs.msg import TwistStamped
-from jsk_rviz_plugins.msg import OverlayText
+from rviz_2d_overlay_msgs.msg import OverlayText
 
+from thorp_toolkit.common import init
 from thorp_toolkit.geometry import TF2
 from thorp_toolkit.tachometer import Tachometer
 from thorp_toolkit.visualization import Visualization
 
 
 def get_robot_pose(target_frame):
-    return TF2().transform_pose(None, 'base_footprint', target_frame)
+    try:
+        return TF2().transform_pose(None, 'base_footprint', target_frame)
+    except RuntimeError:
+        return None  # not localized yet
 
 
-if __name__ == "__main__":
-    rospy.init_node("show_velocity")
+class ShowVelocity(Node):
+    def __init__(self):
+        super().__init__('show_velocity')
+        init(self)
+        self.tachometer = Tachometer(get_robot_pose, 'map')
+        self.tachometer.start()
+        self.speed_pub = self.create_publisher(Float32, 'rviz/linear_speed', 1)
+        self.twist_pub = self.create_publisher(TwistStamped, 'rviz/twist_stamped', 1)
+        self.millage_pub = self.create_publisher(OverlayText, 'rviz/millage_overlay', 1)
+        self.twist = TwistStamped()
+        self.twist.header.frame_id = 'base_footprint'
+        self.create_timer(0.1, self.publish)
 
-    tachometer = Tachometer(get_robot_pose, 'map')
-    tachometer.start()
-    start_time = rospy.get_time()
+    def publish(self):
+        if self.tachometer.odometry:
+            self.twist.header.stamp = self.get_clock().now().to_msg()
+            self.twist.twist = self.tachometer.odometry.twist.twist
+            self.twist_pub.publish(self.twist)
+            self.speed_pub.publish(Float32(data=self.twist.twist.linear.x))
+            millage = f"v: {round(self.twist.twist.linear.x, 2)} m/s\t \
+                        w: {round(self.twist.twist.angular.z, 2)} rad/s\t \
+                        d: {round(self.tachometer.distance, 1)} m"
+            self.millage_pub.publish(Visualization.create_overlay_text(40, (0.1, 1.0, 0.9), millage, 12))
 
-    speed_pub = rospy.Publisher('rviz/linear_speed', Float32, queue_size=1)
-    twist_pub = rospy.Publisher('rviz/twist_stamped', TwistStamped, queue_size=1)
-    millage_pub = rospy.Publisher('rviz/millage_overlay', OverlayText, queue_size=1)
 
-    rate = rospy.Rate(10)
-    twist = TwistStamped()
-    twist.header.frame_id = 'base_footprint'
-    while not rospy.is_shutdown():
-        if tachometer.odometry:
-            twist.header.stamp = rospy.get_rostime()
-            twist.twist = tachometer.odometry.twist.twist
-            twist_pub.publish(twist)
-            speed_pub.publish(Float32(twist.twist.linear.x))
+def main():
+    rclpy.init()
+    node = ShowVelocity()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.tachometer.stop()
+        node.destroy_node()
+        rclpy.try_shutdown()
 
-            millage = f"v: {round(twist.twist.linear.x, 2)} m/s\t \
-                        w: {round(twist.twist.angular.z, 2)} rad/s\t \
-                        d: {round(tachometer.distance, 1)} m"
-            millage_pub.publish(Visualization.create_overlay_text(40, (0.1, 1.0, 0.9), millage, 12))
-        try:
-            rate.sleep()
-        except rospy.exceptions.ROSInterruptException:
-            pass
+
+if __name__ == '__main__':
+    main()
