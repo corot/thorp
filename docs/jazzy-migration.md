@@ -13,6 +13,8 @@ The `jazzy` branch is the ROS 2 port of Thorp. The `noetic` branch keeps the ROS
 - A package whose parts depend on later blocks is migrated in stages: its `COLCON_IGNORE` goes with the first stage,
   it builds and installs only the ported parts, and the unported ROS 1 files stay in place, uninstalled, listed below
   with their target block.
+- Prefer Jazzy solutions over Noetic's design: when a Jazzy binary package does the job of a Thorp node or plugin, use
+  it instead of porting or writing code. Interfaces (frames, joints, topics) still stay compatible.
 - Dependencies: Jazzy binary packages first. A dependency with no Jazzy release goes into `thorp-jazzy.repos`
   (created when the first one is needed), pinned to a commit SHA. If it needs patches, use a fork and note the
   upstream URL and the reason next to its entry.
