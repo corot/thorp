@@ -47,8 +47,8 @@ source install/setup.bash
 | 3 | Gazebo Harmonic: spawn Thorp, diff drive, joint states, Kinect, Xtion, sonars and IR sensors | done |
 | 4 | Arm in simulation: `ros2_control`, trajectory and gripper controllers | done |
 | 5 | `thorp_msgs`, `thorp_toolkit`; `thorp_cannon`, with a Gazebo Harmonic firing system | done |
-| 6a | Nav2 core: map, localization (AMCL, static, Gazebo ground truth), depth cameras to laser scans, costmaps (static, voxel, sonar and IR range layers, inflation), planner, MPPI controller, behaviors, velocity smoother, velocity commands multiplexer, RViz goals | next |
-| 6b | Thorp navigation nodes: pose follower, waypoints path, velocity display, robot pose saving | |
+| 6a | Nav2 core: map, localization (AMCL, static, Gazebo ground truth), depth cameras to laser scans, costmaps (static, voxel, sonar and IR range layers, inflation), planner, MPPI controller, behaviors, velocity smoother, velocity commands multiplexer, RViz goals | done |
+| 6b | Thorp navigation nodes: pose follower, waypoints path, velocity display, robot pose saving | next |
 | 6c | Semantic costmap layer | |
 | 6d | Bumpers and cliff sensors, on simulation and costmaps | |
 | 6e | Coverage planning | |
@@ -70,13 +70,15 @@ Thorp's fork) and `full_coverage_path_planner`'s Spiral-STC planner, as an MBF g
 
 | Package | Status |
 |---------|--------|
+| thorp_bringup | partial: velocity multiplexer and depth to scan parameters, navigation RViz config (see below) |
 | thorp_description | migrated |
 | thorp_msgs | migrated |
 | thorp_cannon | migrated; simulation only, the real cannon waits for the boards (see below) |
 | thorp_manipulation | partial: gripper controller (see below) |
-| thorp_simulation | partial: Gazebo Harmonic launch, worlds and controllers (see below) |
+| thorp_navigation | partial: Nav2 configuration and launch, maps (see below) |
+| thorp_simulation | partial: Gazebo Harmonic launch, worlds, controllers and navigation (see below) |
 | thorp_toolkit | partial: core C++ and Python modules (see below) |
-| thorp_apps, thorp_boards, thorp_bringup, thorp_bt_cpp, thorp_costmap_layers, thorp_exploration, thorp_mbf_plugins, thorp_moveit_config, thorp_navigation, thorp_perception, thorp_rviz_plugins, thorp_smach | ROS 1 (ignored) |
+| thorp_apps, thorp_boards, thorp_bt_cpp, thorp_costmap_layers, thorp_exploration, thorp_mbf_plugins, thorp_moveit_config, thorp_perception, thorp_rviz_plugins, thorp_smach | ROS 1 (ignored) |
 
 ### thorp_msgs
 
@@ -126,24 +128,52 @@ only), the fake gripper joints state publisher (`fake_joint_pub.py`, from `turtl
 | Real robot servos: `param/controllers.yaml`, `launch/includes/controllers.launch.xml`, `nodes/dynamixel_*.py`, and their use in `launch/includes/arm.launch.xml`; `fake_servos_srv.py` from `thorp_bringup` on simulation | real robot |
 | Everything else: manipulation servers, `pickup_planner_server.py`, test scripts, `setup.py`, launch files and parameters | 7 |
 
-### thorp_simulation
+### thorp_bringup
 
-Ported: `thorp_gazebo.launch.py`, the `empty` and `playground` worlds, the Gazebo models, the ROS / Gazebo bridge
-configuration and the controllers configuration. Pending ROS 1 files:
+Ported: `param/cmd_vel_mux.yaml` (was `vel_multiplexer.yaml`, now for `twist_mux`), the Kinect and Xtion depth to
+laser scan parameters and `rviz/navigation.rviz` (based on Nav2's default view). Everything else is pending: real robot
+launch files and drivers, other RViz configurations, scripts and the docker image.
+
+### thorp_navigation
+
+Ported: `navigation.launch.py`, with Nav2 in place of Move Base Flex and the Noetic arguments (localization `amcl`,
+`static` or `gazebo`, map, initial pose, velocity smoothing), `param/nav2.yaml` and the maps, except `small_house`
+(symlinks to a `small_house_world` package checkout). Velocity commands keep the Noetic topics: navigation, through
+the velocity smoother if enabled, into `cmd_vel_mux/input/navigation`; `twist_mux` uses unstamped velocities, as
+Nav2 and the Kobuki base. The controller runs at 20 Hz instead of Noetic's 15, as MPPI needs a control period no longer
+than its model step. Pending ROS 1 files:
 
 | Files | Block |
 |-------|-------|
-| `src/gazebo_ground_truth.cpp`, `scripts/gazebo_link_state.py` | 5 |
-| `launch/navigation.launch`, `launch/includes/sim_common.launch.xml` (cmd_vel mux); depth image and point cloud to laser scan, and bumper / cliff point clouds in `thorp_gazebo.launch.xml` | 6 |
+| `src/pose_follower.cpp`, `cfg/Follower.cfg`, `param/pose_follower.yaml`, `src/waypoints_path.cpp`, `param/waypoints_path.yaml`, `nodes/show_velocity.py`; robot pose saving (`thorp_toolkit`'s `save_pose_node`) | 6b |
+| `src/pose_servoing.cpp`, `src/visual_servoing.cpp` (not built on Noetic either) | undecided |
+
+Dropped with Move Base Flex: `param/move_base_flex/`, `launch/includes/move_base_flex.launch.xml`,
+`nodes/mbf_simple_goal_relay.py` (Nav2 takes RViz goals itself) and the MBF test scripts in `scripts/test/`. The
+`virtual` obstacle source is dropped too; nothing published it.
+
+### thorp_simulation
+
+Ported: `thorp_gazebo.launch.py` and `navigation.launch.py`, the `empty` and `playground` worlds, the Gazebo models, the
+ROS / Gazebo bridge configuration, the controllers configuration and `gazebo_ground_truth`, now fed by Gazebo's
+odometry publisher. `thorp_gazebo.launch.py` also runs what Noetic's `sim_common.launch.xml` and
+`thorp_gazebo.launch.xml` did: velocity commands multiplexer and depth image and point cloud to laser scan. Pending
+ROS 1 files:
+
+| Files | Block |
+|-------|-------|
+| Bumper and cliff point clouds in `thorp_gazebo.launch.xml` | 6d |
 | `scripts/spawn_gazebo_models.py`; grasp-fix plugin | 7 |
 | `src/gazebo_camera_control*.cpp`, `nodes/` (cats controller, model markers, movie director) | 9 |
 | `fun_house` and `small_house` Gazebo worlds | when needed |
 | Stage and STDR launch files, worlds and robot configurations (no Jazzy release of either simulator) | undecided |
+| `scripts/gazebo_link_state.py` (`gz model -m thorp -l <link> -p` shows the same) | undecided |
 
 ## Simulation on Gazebo Harmonic
 
 ```bash
 ros2 launch thorp_simulation thorp_gazebo.launch.py [world_name:=empty] [gui:=false]
+ros2 launch thorp_simulation navigation.launch.py [localization:=gazebo] [visualization:=false]
 ```
 
 Differences with the Noetic simulation:
@@ -162,6 +192,16 @@ Differences with the Noetic simulation:
   as their joints. `gripper_controller` provides `gripper_controller/gripper_action` on top of the gripper one, as on
   Noetic. Simulated servos report no effort, so the gripper detects stalls by its lack of progress.
 - No grasp-fix plugin yet: grasped objects are held only by friction.
+- Gazebo publishes the clock on every step (1 kHz); `thorp_gazebo.launch.py` throttles it to 100 Hz, as Noetic's
+  `gazebo_ros` did, as sim time Python nodes need a lot of CPU to process it at 1 kHz.
+
+## Known issues
+
+- Range messages from `ros_gz_bridge` report `max_range + 1` when nothing is in range, and Nav2's range layer discards
+  readings above `max_range`, before applying `clear_on_max_reading`. So in simulation, sonars and IR sensors never clear
+  the costmaps, and after `no_readings_timeout` (2 s) without valid readings the range layers make the costmaps not
+  current, blocking the planner and controller. Navigation on simulation needs a fix for this; options are a small
+  component that sets out of range readings to `max_range`, or disabling the timeout.
 - Gazebo prints `gz_frame_id` warnings when spawning Thorp: SDFormat 14 doesn't know this element yet, but Gazebo
   uses it to stamp sensor messages with the URDF frames. It also warns that `gripper_link` has no inertia, so
   `gripper_link_joint` is dropped from the simulated model, as it was on Noetic.
