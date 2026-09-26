@@ -2,10 +2,9 @@
 
 import rclpy
 from rclpy.callback_groups import ReentrantCallbackGroup
-from rclpy.duration import Duration
-from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from rclpy.qos import QoSDurabilityPolicy, QoSProfile
+from rclpy.task import Future
 
 from math import atan, degrees, radians
 from std_msgs.msg import Bool, Float64MultiArray, UInt16
@@ -26,7 +25,8 @@ class CannonCtrlNode(Node):
             # TODO: the real cannon is commanded through the arbotix board, not ported yet
             raise RuntimeError("Real cannon not supported yet; only simulation")
 
-        # the service sleeps while firing, so it must not block the clock subscription
+        # the service callback is a coroutine, as it waits while firing without blocking the executor; its own
+        # callback group lets the timer and the clock subscription run meanwhile
         self._cannon_cmd_srv = self.create_service(CannonCommand, 'cannon_command', self.handle_cannon_command,
                                                    callback_group=ReentrantCallbackGroup())
 
@@ -65,10 +65,17 @@ class CannonCtrlNode(Node):
         self._tilt_cannon_pub.publish(Float64MultiArray(data=[radians(angle)]))
         return ThorpError(code=ThorpError.SUCCESS)
 
-    def fire(self, shots):
+    async def sleep(self, seconds):
+        """ Wait for the given time, in ROS time, without blocking the executor """
+        future = Future()
+        timer = self.create_timer(seconds, lambda: future.done() or future.set_result(True))
+        await future
+        self.destroy_timer(timer)
+
+    async def fire(self, shots):
         if shots > 0:
             self._fire_cannon_pub.publish(Bool(data=True))
-            self.get_clock().sleep_for(Duration(seconds=shots * 0.055))
+            await self.sleep(shots * 0.055)
             self._fire_cannon_pub.publish(Bool(data=False))
             self._shots_left -= shots
             self._shots_left_pub.publish(UInt16(data=self._shots_left))
@@ -76,23 +83,21 @@ class CannonCtrlNode(Node):
                                    % (shots, 's' if shots > 1 else '', self._shots_left))
         return ThorpError(code=ThorpError.SUCCESS)
 
-    def handle_cannon_command(self, request, response):
+    async def handle_cannon_command(self, request, response):
         if request.action == CannonCommand.Request.AIM:
             response.error = self.aim_to_target()
         elif request.action == CannonCommand.Request.TILT:
             response.error = self.tilt(request.angle)
         elif request.action == CannonCommand.Request.FIRE:
-            response.error = self.fire(request.shots)
+            response.error = await self.fire(request.shots)
         return response
 
 
 def main():
     rclpy.init()
     node = CannonCtrlNode()
-    executor = MultiThreadedExecutor()
-    executor.add_node(node)
     try:
-        executor.spin()
+        rclpy.spin(node)
     except KeyboardInterrupt:
         pass
     finally:
