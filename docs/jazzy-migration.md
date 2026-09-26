@@ -52,8 +52,8 @@ source install/setup.bash
 | 6a | Nav2 core: map, localization (AMCL, static, Gazebo ground truth), depth cameras to laser scans, costmaps (static, voxel, sonar and IR range layers, inflation), planner, MPPI controller, behaviors, velocity smoother, velocity commands multiplexer, RViz goals | done |
 | 6b | Thorp navigation nodes: pose follower, waypoints path, velocity display, robot pose saving | done |
 | 6c | Semantic costmap layer | deferred to 9 |
-| 6d | Bumpers and cliff sensors, on simulation and costmaps | next |
-| 6e | Coverage planning | |
+| 6d | Bumpers and cliff sensors, on simulation and costmaps | deferred to real robot |
+| 6e | Coverage planning | next |
 | 7 | Manipulation: MoveIt 2 configuration, pick and place servers, grasping on simulation | |
 | 8 | Perception | |
 | 9 | Executive: behavior trees and apps | |
@@ -70,7 +70,11 @@ The semantic costmap layer (`thorp_costmap_layers`) is only used by the executiv
 costmaps (the scans can't see their eaves) and to clear an approach area in front of them in the local costmap. Its
 port is deferred to Block 9, where the executive shows what the table approach needs. Nav2 on Jazzy can mark regions
 with its keepout filter, fed with a mask of rectangles by a small node, but can't clear regions persistently (only once,
-with `clear_around_pose`); porting the layer as a Nav2 plugin keeps the Noetic behavior. Coverage planning is the only navigation code Thorp may need
+with `clear_around_pose`); porting the layer as a Nav2 plugin keeps the Noetic behavior.
+
+Bumpers and cliff sensors are deferred to the real robot: it needs `kobuki_ros` from source anyway (the Kobuki driver,
+`kobuki_bumper2pc` and `kobuki_safety_controller` have no Jazzy release), and simulated bumper and cliff events, from
+Gazebo contact sensors and downward rays, can then match the real driver's topics. Coverage planning is the only navigation code Thorp may need
 beyond Nav2: on Noetic, `ipa_coverage_planning` (room segmentation, room sequence planning and room exploration, from
 Thorp's fork) and `full_coverage_path_planner`'s Spiral-STC planner, as an MBF global planner.
 
@@ -179,7 +183,7 @@ ROS 1 files:
 
 | Files | Block |
 |-------|-------|
-| Bumper and cliff point clouds in `thorp_gazebo.launch.xml` | 6d |
+| Bumper and cliff point clouds in `thorp_gazebo.launch.xml` | real robot |
 | `scripts/spawn_gazebo_models.py`; grasp-fix plugin | 7 |
 | `src/gazebo_camera_control*.cpp`, `nodes/` (cats controller, model markers, movie director) | 9 |
 | `fun_house` and `small_house` Gazebo worlds | when needed |
