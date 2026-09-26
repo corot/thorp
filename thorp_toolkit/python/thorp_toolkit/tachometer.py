@@ -71,14 +71,15 @@ class Tachometer(object):
 
     def update(self):
         while self._running:
-            pose = self._get_pose(self._global_frame)
+            pose = self._get_pose(self._global_frame)  # None if not available
             self._lock.acquire()
-            if self._prev_pose:
+            if self._prev_pose and pose:
                 self.distance += distance_2d(self._prev_pose, pose)
                 self.turning += abs(yaw_diff(self._prev_pose, pose))
-            self._prev_pose = pose
+            if pose:
+                self._prev_pose = pose
             self._lock.release()
-            time.sleep(0.001)
+            time.sleep(0.05)  # robot poses change at the rate of TF updates, so 20 Hz is enough
 
     @property
     def max_speed(self):
