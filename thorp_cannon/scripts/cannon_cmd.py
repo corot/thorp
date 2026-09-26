@@ -9,7 +9,13 @@ from thorp_msgs.srv import CannonCommand
 def cannon_command(node, cmd, arg):
     srv = node.create_client(CannonCommand, 'cannon_command')
     srv.wait_for_service()
-    future = srv.call_async(CannonCommand.Request(action=cmd, angle=float(arg), shots=arg))
+    # arg is the angle for TILT and the number of shots for FIRE; shots is unsigned
+    request = CannonCommand.Request(action=cmd)
+    if cmd == CannonCommand.Request.TILT:
+        request.angle = float(arg)
+    elif cmd == CannonCommand.Request.FIRE:
+        request.shots = arg
+    future = srv.call_async(request)
     rclpy.spin_until_future_complete(node, future)
     if future.result() is not None:
         print(future.result())
