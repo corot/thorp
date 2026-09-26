@@ -452,7 +452,9 @@ class TF2(metaclass=Singleton):
     def __init__(self):
         """ Singleton encapsulating a tf2 listener and a broadcaster, using the node given to thorp_toolkit.init """
         self.__buff__ = tf2_ros.Buffer(node=node())
-        self.__list__ = tf2_ros.TransformListener(self.__buff__, node(), spin_thread=True)
+        # the listener gets its own node, spun on a dedicated thread; spinning ours there would take it
+        # from the application's executor
+        self.__list__ = tf2_ros.TransformListener(self.__buff__, None, spin_thread=True)
         self.__stbc__ = tf2_ros.StaticTransformBroadcaster(node())
         # wait until we get the first tf msg
         while rclpy.ok() and not self.__buff__.all_frames_as_string():
