@@ -34,11 +34,9 @@
   </group>
 
   <!--  ************* Apps configuration **************  -->
-  <rosparam file="$(find thorp_apps)/param/apps_config.yaml" command="load" ns="$(arg app_name)"/>
-
-  <!-- With LLM executive, BT nodes run under bt_server namespace -->
-  <rosparam if="$(eval executive == 'llm')"
-            file="$(find thorp_apps)/param/apps_config.yaml" command="load" ns="bt_server"/>
+  <!-- Into the private namespace of whichever node runs the app: bt_server for the LLM executive -->
+  <rosparam file="$(find thorp_apps)/param/apps_config.yaml" command="load"
+            ns="$(eval 'bt_server' if executive == 'llm' else app_name)"/>
 
   <!--  ************ Named configurations *************  -->
   <!-- Python reconfigure helper reads all yaml files inside this path -->
