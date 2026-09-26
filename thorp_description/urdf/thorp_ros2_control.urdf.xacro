@@ -22,7 +22,7 @@
         <parameters>${ros2_control_params}</parameters>
         <!-- Position commands become joint velocities proportional to the position error; the default gain, 0.1,
              lags too much to follow MoveIt trajectories within the controller tolerances -->
-        <position_proportional_gain>0.5</position_proportional_gain>
+        <position_proportional_gain>1.0</position_proportional_gain>
       </plugin>
     </gazebo>
   </xacro:macro>
