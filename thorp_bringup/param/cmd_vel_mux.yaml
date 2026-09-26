@@ -1,41 +1,39 @@
-# Created on: Oct 29, 2012
-#     Author: jorge
-# Configuration for subscribers to multiple cmd_vel sources.
+# Configuration for the velocity commands multiplexer (twist_mux) inputs, keeping the Noetic topics.
 #
-# Individual subscriber configuration:
-#   name:           Source name
+# Individual input configuration:
 #   topic:          The topic that provides cmd_vel messages
 #   timeout:        Time in seconds without incoming messages to consider this topic inactive
-#   priority:       Priority: an UNIQUE unsigned integer from 0 (lowest) to MAX_INT 
-#   short_desc:     Short description (optional)
+#   priority:       Priority: an UNIQUE unsigned integer from 0 (lowest) to 255
 
-subscribers:
-  - name:        "Safe reactive controller"
-    topic:       "input/safety_controller"
-    timeout:     0.2
-    priority:    10
-  - name:        "Teleoperation"
-    topic:       "input/teleoperation"
-    timeout:     1.0
-    priority:    8
-  - name:        "Thorp tasks control"
-    topic:       "input/special_task"
-    timeout:     1.0
-    priority:    6
-  - name:        "Auto-dock control"
-    topic:       "input/auto_docking"
-    timeout:     1.0
-    priority:    5
-  - name:        "Visual servoing"
-    topic:       "input/servoing"
-    timeout:     1.0
-    priority:    4
-  - name:        "Pose following"
-    topic:       "input/following"
-    timeout:     1.0
-    priority:    3
-  - name:        "Navigation"
-    topic:       "input/navigation"
-    timeout:     1.0
-    priority:    2
-publisher: "/mobile_base/commands/velocity"
+/**:
+  ros__parameters:
+    use_stamped: false  # Twist, as Nav2 and the Kobuki base use
+    topics:
+      safety_controller:  # Safe reactive controller
+        topic:    /cmd_vel_mux/input/safety_controller
+        timeout:  0.2
+        priority: 10
+      teleoperation:
+        topic:    /cmd_vel_mux/input/teleoperation
+        timeout:  1.0
+        priority: 8
+      special_task:  # Thorp tasks control
+        topic:    /cmd_vel_mux/input/special_task
+        timeout:  1.0
+        priority: 6
+      auto_docking:  # Auto-dock control
+        topic:    /cmd_vel_mux/input/auto_docking
+        timeout:  1.0
+        priority: 5
+      servoing:  # Visual servoing
+        topic:    /cmd_vel_mux/input/servoing
+        timeout:  1.0
+        priority: 4
+      following:  # Pose following
+        topic:    /cmd_vel_mux/input/following
+        timeout:  1.0
+        priority: 3
+      navigation:
+        topic:    /cmd_vel_mux/input/navigation
+        timeout:  1.0
+        priority: 2

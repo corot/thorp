@@ -14,6 +14,12 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <depend>rclcpp</depend>
+  <depend>nav_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>thorp_toolkit</depend>
+
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
   <exec_depend>xacro</exec_depend>
@@ -22,11 +28,16 @@
   <exec_depend>ros_gz_bridge</exec_depend>
   <exec_depend>rclcpp_components</exec_depend>
   <exec_depend>depth_image_proc</exec_depend>
+  <exec_depend>depthimage_to_laserscan</exec_depend>
+  <exec_depend>pointcloud_to_laserscan</exec_depend>
+  <exec_depend>twist_mux</exec_depend>
+  <exec_depend>topic_tools</exec_depend>
   <exec_depend>gz_ros2_control</exec_depend>
   <exec_depend>controller_manager</exec_depend>
   <exec_depend>joint_state_broadcaster</exec_depend>
   <exec_depend>joint_trajectory_controller</exec_depend>
   <exec_depend>position_controllers</exec_depend>
+  <exec_depend>thorp_bringup</exec_depend>
   <exec_depend>thorp_description</exec_depend>
   <exec_depend>thorp_manipulation</exec_depend>
   <exec_depend>thorp_cannon</exec_depend>

@@ -2,7 +2,8 @@
 # Gazebo topic names are set on thorp_description/urdf/thorp_gazebo.urdf.xacro
 
 # Clock, base, joint states and cannon trigger
-- ros_topic_name: /clock
+# Gazebo publishes the clock on every step; thorp_gazebo.launch.py throttles it into /clock
+- ros_topic_name: /clock_raw
   gz_topic_name: /clock
   ros_type_name: rosgraph_msgs/msg/Clock
   gz_type_name: gz.msgs.Clock
@@ -26,6 +27,11 @@
   gz_topic_name: /joint_states
   ros_type_name: sensor_msgs/msg/JointState
   gz_type_name: gz.msgs.Model
+  direction: GZ_TO_ROS
+- ros_topic_name: /ground_truth/odom
+  gz_topic_name: /ground_truth/odom
+  ros_type_name: nav_msgs/msg/Odometry
+  gz_type_name: gz.msgs.Odometry
   direction: GZ_TO_ROS
 - ros_topic_name: /mobile_base/sensors/imu_data
   gz_topic_name: /mobile_base/sensors/imu_data

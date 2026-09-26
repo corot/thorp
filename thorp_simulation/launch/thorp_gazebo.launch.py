@@ -4,7 +4,8 @@ Thorp simulation on Gazebo Harmonic:
 - Thorp model, spawned from robot_description
 - robot state publisher
 - bridge between Gazebo and ROS topics
-- point clouds from the RGBD cameras
+- point clouds and laser scans from the RGBD cameras
+- velocity commands multiplexer
 - arm, gripper and cannon controllers, the gripper command action server and the cannon controller
 """
 
@@ -47,6 +48,8 @@ def generate_launch_description():
                                           ('depth_registered/image_rect', 'depth_registered/image_raw'),
                                           ('points', 'depth_registered/points')])
 
+    bringup_share = FindPackageShare('thorp_bringup')
+
     return LaunchDescription([
         # To use a simulated world other than the default 'playground', provide either world_name
         # (without path nor extension), or the path to a world file. Optionally, provide also an initial pose
@@ -63,6 +66,11 @@ def generate_launch_description():
 
         gz_sim(False, IfCondition(gui)),
         gz_sim(True, UnlessCondition(gui)),
+
+        # Gazebo publishes the clock on every simulation step (1 kHz); as Noetic's gazebo_ros, publish it at 100 Hz,
+        # what sim time nodes can process cheaply
+        Node(package='topic_tools', executable='throttle', name='clock_throttle', output='screen',
+             arguments=['messages', '/clock_raw', '100.0', '/clock']),
 
         Node(package='robot_state_publisher', executable='robot_state_publisher',
              parameters=[{'robot_description': robot_description}, sim_time]),
@@ -97,5 +105,27 @@ def generate_launch_description():
 
         ComposableNodeContainer(package='rclcpp_components', executable='component_container',
                                 name='cameras_container', namespace='', parameters=[sim_time],
-                                composable_node_descriptions=[point_cloud('kinect'), point_cloud('xtion')]),
+                                composable_node_descriptions=[
+                                    point_cloud('kinect'), point_cloud('xtion'),
+                                    # Fake laser from Kinect (2D slice) and Xtion (3D projection)
+                                    ComposableNode(package='depthimage_to_laserscan',
+                                                   plugin='depthimage_to_laserscan::DepthImageToLaserScanROS',
+                                                   name='depthimage_to_laserscan', namespace='kinect',
+                                                   parameters=[PathJoinSubstitution([bringup_share, 'param', 'kinect',
+                                                                                     'depthimage_to_laserscan.yaml']),
+                                                               sim_time],
+                                                   remappings=[('depth', 'depth_registered/image_raw'),
+                                                               ('depth_camera_info', 'depth_registered/camera_info')]),
+                                    ComposableNode(package='pointcloud_to_laserscan',
+                                                   plugin='pointcloud_to_laserscan::PointCloudToLaserScanNode',
+                                                   name='pointcloud_to_laserscan', namespace='xtion',
+                                                   parameters=[PathJoinSubstitution([bringup_share, 'param', 'xtion',
+                                                                                     'pointcloud_to_laserscan.yaml']),
+                                                               sim_time],
+                                                   remappings=[('cloud_in', 'depth_registered/points')])]),
+
+        # Velocity commands multiplexer
+        Node(package='twist_mux', executable='twist_mux', name='cmd_vel_mux', output='screen',
+             parameters=[PathJoinSubstitution([bringup_share, 'param', 'cmd_vel_mux.yaml']), sim_time],
+             remappings=[('cmd_vel_out', '/mobile_base/commands/velocity')]),
     ])
