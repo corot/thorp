@@ -6,7 +6,7 @@ Thorp simulation on Gazebo Harmonic:
 - bridge between Gazebo and ROS topics
 - point clouds and laser scans from the RGBD cameras
 - velocity commands multiplexer
-- arm, gripper and cannon controllers, the gripper command action server and the cannon controller
+- arm, gripper and cannon controllers, and the cannon controller node
 """
 
 from launch import LaunchDescription
@@ -86,12 +86,12 @@ def generate_launch_description():
 
         # Controllers run on Gazebo's controller manager, available once Thorp is spawned
         Node(package='controller_manager', executable='spawner', output='screen',
-             arguments=['joint_state_broadcaster', 'arm_controller', 'gripper_joint_controller',
+             arguments=['joint_state_broadcaster', 'arm_controller', 'gripper_controller',
                         'cannon_joint_controller',
                         '--controller-manager-timeout', '60'],
              parameters=[sim_time]),
 
-        # We provide GripperCommand action as on real robot, taking openings in meters
+        # Arm support nodes, as on real robot
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(PathJoinSubstitution([FindPackageShare('thorp_manipulation'), 'launch',
                                                                 'includes', 'arm.launch.py'])),

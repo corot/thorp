@@ -37,6 +37,7 @@
   <exec_depend>joint_state_broadcaster</exec_depend>
   <exec_depend>joint_trajectory_controller</exec_depend>
   <exec_depend>position_controllers</exec_depend>
+  <exec_depend>gripper_controllers</exec_depend>
   <exec_depend>thorp_bringup</exec_depend>
   <exec_depend>thorp_description</exec_depend>
   <exec_depend>thorp_manipulation</exec_depend>

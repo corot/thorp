@@ -10,8 +10,8 @@ controller_manager:
     arm_controller:
       type: joint_trajectory_controller/JointTrajectoryController
 
-    gripper_joint_controller:
-      type: position_controllers/JointGroupPositionController
+    gripper_controller:
+      type: position_controllers/GripperActionController
 
     cannon_joint_controller:
       type: position_controllers/JointGroupPositionController
@@ -40,11 +40,17 @@ arm_controller:
       arm_elbow_flex_joint: {trajectory: 0.1, goal: 0.1}
       arm_wrist_flex_joint: {trajectory: 0.1, goal: 0.1}
 
-# Gripper and cannon position controllers; controllers can't be named as their joints
-gripper_joint_controller:
+# Gripper command action, on gripper_controller/gripper_cmd; goals are gripper_joint angles. Simulated servos report
+# no effort, so the gripper can only stop by reaching the goal or stalling (e.g. when grasping something)
+gripper_controller:
   ros__parameters:
-    joints: [gripper_joint]
+    joint: gripper_joint
+    goal_tolerance: 0.01
+    allow_stalling: true
+    stall_velocity_threshold: 0.001
+    stall_timeout: 0.5  # as Noetic's gripper controller stalled_time
 
+# Cannon position controller; controllers can't be named as their joints
 cannon_joint_controller:
   ros__parameters:
     joints: [cannon_joint]

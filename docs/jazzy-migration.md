@@ -121,9 +121,10 @@ named `rocket` in the world; `spawn_gazebo_models.py` and the cats controller sp
 
 ### thorp_manipulation
 
-Ported: the gripper command action server (`gripper_controller.py`, from Thorp's `arbotix_ros` fork, one-side model
-only), the fake gripper joints state publisher (`fake_joint_pub.py`, from `turtlebot_arm_bringup`) and
-`launch/includes/arm.launch.py`, that runs both. Pending ROS 1 files:
+Ported: the fake gripper joints state publisher (`fake_joint_pub.py`, from `turtlebot_arm_bringup`) and
+`launch/includes/arm.launch.py`, that runs it. The gripper command action comes from `ros2_controllers`'
+`GripperActionController` instead of Thorp's `arbotix_ros` gripper controller: goals are `gripper_joint` angles, not
+openings in meters, and the action is `gripper_controller/gripper_cmd`. Pending ROS 1 files:
 
 | Files | Block |
 |-------|-------|
@@ -189,10 +190,10 @@ Differences with the Noetic simulation:
 - The center sonar publishes on `mobile_base/sensors/sonars/p0`, as ROS 2 names can't start with a digit.
 - Point clouds are created from the depth images by `depth_image_proc`, as Gazebo's use the camera link axes.
 - Arm, gripper and cannon servos use `ros2_control` on Gazebo (`gz_ros2_control`), starting on the resting pose.
-  `arm_controller` provides the same `arm_controller/follow_joint_trajectory` action; the gripper and cannon position
-  controllers are `gripper_joint_controller` and `cannon_joint_controller`, as ros2_control controllers can't be named
-  as their joints. `gripper_controller` provides `gripper_controller/gripper_action` on top of the gripper one, as on
-  Noetic. Simulated servos report no effort, so the gripper detects stalls by its lack of progress.
+  `arm_controller` provides the same `arm_controller/follow_joint_trajectory` action; `gripper_controller` provides
+  `gripper_controller/gripper_cmd`, taking `gripper_joint` angles; the cannon position controller is
+  `cannon_joint_controller`, as ros2_control controllers can't be named as their joints. Simulated servos report no
+  effort, so the gripper only detects stalls by not moving.
 - No grasp-fix plugin yet: grasped objects are held only by friction.
 - Gazebo publishes the clock on every step (1 kHz); `thorp_gazebo.launch.py` throttles it to 100 Hz, as Noetic's
   `gazebo_ros` did, as sim time Python nodes need a lot of CPU to process it at 1 kHz.
