@@ -21,6 +21,8 @@ def launch_setup(context):
              parameters=[config.to_dict(),
                          {'use_sim_time': LaunchConfiguration('use_sim_time'),
                           'allow_trajectory_execution': True,
+                          # executes MoveIt Task Constructor solutions, as Thorp's pick and place tasks
+                          'capabilities': 'move_group/ExecuteTaskSolutionCapability',
                           'max_safe_path_cost': 1.0,
                           'jiggle_fraction': 0.05,
                           'publish_monitored_planning_scene': True,
