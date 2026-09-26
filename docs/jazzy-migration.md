@@ -46,8 +46,8 @@ source install/setup.bash
 | 2 | `thorp_description`: robot model identical to Noetic's, RViz viewer | done |
 | 3 | Gazebo Harmonic: spawn Thorp, diff drive, joint states, Kinect, Xtion, sonars and IR sensors | done |
 | 4 | Arm in simulation: `ros2_control`, trajectory and gripper controllers | done |
-| 5 | `thorp_msgs`, `thorp_toolkit`; `thorp_cannon`, with a Gazebo Harmonic firing system | next |
-| 6 | Navigation: Nav2 configuration, semantic costmap layer, coverage planning | |
+| 5 | `thorp_msgs`, `thorp_toolkit`; `thorp_cannon`, with a Gazebo Harmonic firing system | done |
+| 6 | Navigation: Nav2 configuration, semantic costmap layer, coverage planning | next |
 | 7 | Manipulation: MoveIt 2 configuration, pick and place servers, grasping on simulation | |
 | 8 | Perception | |
 | 9 | Executive: behavior trees and apps | |
@@ -64,9 +64,49 @@ Thorp's fork) and `full_coverage_path_planner`'s Spiral-STC planner, as an MBF g
 | Package | Status |
 |---------|--------|
 | thorp_description | migrated |
+| thorp_msgs | migrated |
+| thorp_cannon | migrated; simulation only, the real cannon waits for the boards (see below) |
 | thorp_manipulation | partial: gripper controller (see below) |
 | thorp_simulation | partial: Gazebo Harmonic launch, worlds and controllers (see below) |
-| thorp_apps, thorp_boards, thorp_bringup, thorp_bt_cpp, thorp_cannon, thorp_costmap_layers, thorp_exploration, thorp_mbf_plugins, thorp_moveit_config, thorp_msgs, thorp_navigation, thorp_perception, thorp_rviz_plugins, thorp_smach, thorp_toolkit | ROS 1 (ignored) |
+| thorp_toolkit | partial: core C++ and Python modules (see below) |
+| thorp_apps, thorp_boards, thorp_bringup, thorp_bt_cpp, thorp_costmap_layers, thorp_exploration, thorp_mbf_plugins, thorp_moveit_config, thorp_navigation, thorp_perception, thorp_rviz_plugins, thorp_smach | ROS 1 (ignored) |
+
+### thorp_msgs
+
+Ported from the `bt_server` branch, so it includes `RunSubtree.action`. The unused `KeyboardInput` message is
+dropped, as ROS 2 rejects its lowercase constants.
+
+### thorp_toolkit
+
+Applications must give the toolkit their node once, with `thorp::toolkit::init(node)` in C++ or
+`thorp_toolkit.common.init(node)` in Python; its singletons (`TF2`, Python's `Visualization`) and functions use it.
+`common` comes from the `bt_server` branch. `tf` types are replaced by their `tf2` equivalents, overlay texts use
+`rviz_2d_overlay_msgs`, and Python functions raise `ValueError` on invalid inputs and `RuntimeError` on TF failures,
+instead of `rospy.ROSException`.
+
+Ported: C++ `common`, `geometry`, `math`, `parameters`, `progress_tracker`, `tf2` and `visualization`; Python
+`common`, `decorators`, `geometry`, `progress_tracker`, `singleton`, `spatial_hash`, `tachometer`, `transform` and
+`visualization`, with `test_progress_tracker`. Pending ROS 1 files, ported with their first consumer:
+
+| Files | First consumer | Block |
+|-------|----------------|-------|
+| `reconfigure`, `alternative_config` (C++ and Python), `test_reconfigure.py`; `nodes/save_pose_node.cpp` | navigation | 6 |
+| `planning_scene` (C++ and Python); `simulation` (`waitForObjectsSpawning`) | manipulation, BT runner | 7, 9 |
+| `point_tracker.py` | object tracking | 8 |
+| `kobuki_base` (bumper names), `semantic_map.py`, `test_semantic_map.py` | BT conditions, smach states | 9 |
+| `spatial_hash.hpp` | none: an unused draft with a `main`; perception and costmap layers have their own | undecided |
+| Python `pause_gazebo` and `resume_gazebo` | none | undecided |
+
+`wait_for_mbf` is dropped with Move Base Flex, and `setup.py` goes when the package is complete.
+
+### thorp_cannon
+
+`cannon_ctrl.py` supports only simulation: the real cannon is commanded through the arbotix board, not ported yet. On
+simulation it tilts the cannon with `cannon_joint_controller`, and fires by publishing `std_msgs/Bool` on
+`arbotix/cannon_trigger` (it was an `arbotix_msgs/Digital`), bridged to Gazebo. `thorp_cannon_system`, a Gazebo
+Harmonic system, replaces the Gazebo Classic plugin: while the trigger is on, it places the `rocket` model at the
+cannon muzzle and launches it at the speed the configured force gives it in one simulation step. Firing needs a model
+named `rocket` in the world; `spawn_gazebo_models.py` and the cats controller spawn it.
 
 ### thorp_manipulation
 
@@ -87,7 +127,6 @@ configuration and the controllers configuration. Pending ROS 1 files:
 | Files | Block |
 |-------|-------|
 | `src/gazebo_ground_truth.cpp`, `scripts/gazebo_link_state.py` | 5 |
-| Cannon plugin (in `thorp_cannon`) | 5 |
 | `launch/navigation.launch`, `launch/includes/sim_common.launch.xml` (cmd_vel mux); depth image and point cloud to laser scan, and bumper / cliff point clouds in `thorp_gazebo.launch.xml` | 6 |
 | `scripts/spawn_gazebo_models.py`; grasp-fix plugin | 7 |
 | `src/gazebo_camera_control*.cpp`, `nodes/` (cats controller, model markers, movie director) | 9 |
