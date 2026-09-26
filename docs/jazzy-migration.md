@@ -54,7 +54,9 @@ source install/setup.bash
 | 6c | Semantic costmap layer | deferred to 9 |
 | 6d | Bumpers and cliff sensors, on simulation and costmaps | deferred to real robot |
 | 6e | Coverage planning | deferred to 9 |
-| 7 | Manipulation: MoveIt 2 configuration, pick and place servers, grasping on simulation | next |
+| 7a | MoveIt 2 configuration: move group, controllers, octomap from the Xtion, RViz; LMA kinematics replaces the IKFast plugin | next |
+| 7b | Manipulation servers and pickup planner, with `thorp_toolkit`'s planning scene | |
+| 7c | Grasping in simulation and object spawning | |
 | 8 | Perception | |
 | 9 | Executive: behavior trees and apps | |
 
