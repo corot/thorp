@@ -30,15 +30,20 @@ arm_controller:
     joints: [arm_shoulder_pan_joint, arm_shoulder_lift_joint, arm_elbow_flex_joint, arm_wrist_flex_joint]
     command_interfaces: [position]
     state_interfaces: [position, velocity]
+    # start from the measured joint positions, not from the command interfaces, that start at 0 instead of the
+    # initial resting pose
+    set_last_command_interface_value_as_state_on_activation: false
     action_monitor_rate: 10.0
     constraints:
       goal_time: 10.0
       stopped_velocity_tolerance: 0.3  # I need a very large number because the shoulder lift joint still has a
                                        # velocity even if stopped, aborting the execution as it never reaches the goal
-      arm_shoulder_pan_joint: {trajectory: 0.1, goal: 0.1}
-      arm_shoulder_lift_joint: {trajectory: 0.1, goal: 0.1}
-      arm_elbow_flex_joint: {trajectory: 0.1, goal: 0.1}
-      arm_wrist_flex_joint: {trajectory: 0.1, goal: 0.1}
+      # no path tolerance (0.0): Gazebo emulates position control with velocity commands, and under load the
+      # shoulder lift occasionally lags more than Noetic's 0.1 rad; goals must still be reached within 0.1 rad
+      arm_shoulder_pan_joint: {trajectory: 0.0, goal: 0.1}
+      arm_shoulder_lift_joint: {trajectory: 0.0, goal: 0.1}
+      arm_elbow_flex_joint: {trajectory: 0.0, goal: 0.1}
+      arm_wrist_flex_joint: {trajectory: 0.0, goal: 0.1}
 
 # Gripper command action, on gripper_controller/gripper_cmd; goals are gripper_joint angles. Simulated servos report
 # no effort, so the gripper can only stop by reaching the goal or stalling (e.g. when grasping something)
