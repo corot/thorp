@@ -1,12 +1,11 @@
 <?xml version="1.0"?>
-<package format="2">
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>thorp_perception</name>
   <version>0.1.0</version>
   <description>
-   Thorp perception includes:
-    - pipelines (RAIL, COB, ORK) configuration and launchers
-    - high-level object recognition action server
-    - target objects generation scripts
+   Thorp perception: tables and tabletop objects detection, adding them to the planning scene, and camera field of
+   view checks
   </description>
   <maintainer email="jsantossimon@gmail.com">Jorge Santos Simón</maintainer>
   <author email="jsantossimon@gmail.com">Jorge Santos Simón</author>
@@ -15,37 +14,36 @@
 
   <url type="bugtracker">https://github.com/corot/thorp/issues</url>
   <url type="repository">https://github.com/corot/thorp</url>
-  <url type="website">http://wiki.ros.org/thorp_perception</url>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <depend>tf</depend>
-  <depend>roscpp</depend>
-  <depend>pcl_ros</depend>
-  <depend>actionlib</depend>
-  <depend>shape_msgs</depend>
-  <depend>object_recognition_msgs</depend>
-  <depend>rail_manipulation_msgs</depend>
-  <depend>rail_mesh_icp</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_action</depend>
+  <depend>ament_index_cpp</depend>
+  <depend>geometric_shapes</depend>
   <depend>geometry_msgs</depend>
   <depend>moveit_msgs</depend>
   <depend>moveit_ros_planning_interface</depend>
-  <depend>cv_bridge</depend>
-  <depend>image_geometry</depend>
-  <depend>image_transport</depend>
+  <depend>sensor_msgs</depend>
+  <depend>shape_msgs</depend>
+  <depend>visualization_msgs</depend>
+  <depend>pcl_conversions</depend>
+  <depend>libpcl-all-dev</depend>
   <depend>nlohmann-json-dev</depend>
-  <depend>libomp-dev</depend>
-
+  <depend>tf2</depend>
+  <depend>tf2_eigen</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tf2_ros</depend>
   <depend>thorp_msgs</depend>
   <depend>thorp_toolkit</depend>
 
-  <exec_depend>rail_segmentation</exec_depend>
-  <exec_depend>cob_people_object_detection_tensorflow</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>std_srvs</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
 
-  <!-- optional meshes handling tools:
-  <exec_depend>admesh</run_depend>
-  <exec_depend>meshlab</run_depend>
-  <exec_depend>couchdb</run_depend>
-  <exec_depend>openscad</run_depend>
-   -->
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
 </package>

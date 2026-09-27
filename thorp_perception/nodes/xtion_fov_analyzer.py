@@ -1,55 +1,59 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-import rospy
 import numpy as np
+import rclpy
+from rclpy.node import Node
 
 from sensor_msgs.msg import Image
-from cv_bridge import CvBridge, CvBridgeError
-from std_srvs.srv import Trigger, TriggerResponse
+from std_srvs.srv import Trigger
 
 
-class FOVAnalyzer:
+class FOVAnalyzer(Node):
+    """ Check whether something closer than a minimum distance blocks the Xtion field of view """
+
     def __init__(self):
-        self.bridge = CvBridge()
-        self.min_distance = rospy.get_param('~min_distance', 0.4)
-        self.crop_percentage = rospy.get_param('~crop_percentage', 0.20)  # crop 20 % bottom
-
-        # Subscriber to the depth image topic
-        rospy.Subscriber("xtion/depth_registered/image_raw", Image, self.depth_callback)
-
-        # Service to check if there is anything closer than the specified distance blocking the fov
-        self.service = rospy.Service("~check_clear", Trigger, self.check_clear_cb)
-
+        super().__init__('xtion_fov_analyzer')
+        self.min_distance = self.declare_parameter('min_distance', 0.4).value
+        self.crop_percentage = self.declare_parameter('crop_percentage', 0.20).value  # crop 20 % bottom
         self.depth_image = None
+        self.create_subscription(Image, 'xtion/depth_registered/image_raw', self.depth_callback,
+                                 rclpy.qos.qos_profile_sensor_data)
+        self.create_service(Trigger, '~/check_clear', self.check_clear_cb)
 
     def depth_callback(self, msg):
         self.depth_image = msg
 
-    def check_clear_cb(self, req):
+    def check_clear_cb(self, request, response):
         if self.depth_image is None:
-            rospy.logwarn("No depth image received yet; considering fov as blocked")
-            return TriggerResponse(True, "No depth image received yet")
-
-        try:
-            cv_img = self.bridge.imgmsg_to_cv2(self.depth_image, "32FC1")
-
-            # Crop a percentage of pixels from the bottom
-            if self.crop_percentage > 0:
-                height = cv_img.shape[0]
-                pixels_to_crop = int(self.crop_percentage * height)
-                cv_img = cv_img[:-pixels_to_crop, :]
-        except CvBridgeError as e:
-            rospy.logerr(f"Could not convert depth image: {e}")
-            return TriggerResponse(True, "Could not convert depth image")
-
+            self.get_logger().warning("No depth image received yet; considering fov as clear")
+            response.success, response.message = True, "No depth image received yet"
+            return response
+        if self.depth_image.encoding != '32FC1':
+            self.get_logger().error(f"Unsupported depth image encoding {self.depth_image.encoding}")
+            response.success, response.message = True, "Unsupported depth image encoding"
+            return response
+        depth = np.frombuffer(self.depth_image.data, dtype=np.float32).reshape(self.depth_image.height, -1)
+        # Crop a percentage of pixels from the bottom
+        depth = depth[:self.depth_image.height - int(self.crop_percentage * self.depth_image.height), :]
         # Check if any value in the depth image is less than the minimum distance
-        if np.any((cv_img > 0) & (cv_img < self.min_distance)):
-            return TriggerResponse(False, f"Object detected within {self.min_distance} m")
+        if np.any((depth > 0) & (depth < self.min_distance)):
+            response.success, response.message = False, f"Object detected within {self.min_distance} m"
+        else:
+            response.success, response.message = True, f"No objects detected within {self.min_distance} m"
+        return response
 
-        return TriggerResponse(True, f"No objects detected within {self.min_distance} m")
+
+def main():
+    rclpy.init()
+    node = FOVAnalyzer()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.try_shutdown()
 
 
-if __name__ == "__main__":
-    rospy.init_node("xtion_fov_analyzer")
-    FOVAnalyzer()
-    rospy.spin()
+if __name__ == '__main__':
+    main()

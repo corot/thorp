@@ -1,0 +1,22 @@
+object_detection:
+  ros__parameters:
+    output_frame: base_footprint
+    # Region to segment, on the output frame: in front of the robot, at tables height
+    crop:
+      min: [0.15, -1.0, 0.3]
+      max: [2.5, 1.0, 0.6]
+    min_surface_size: 10000  # points
+    min_cluster_size: 200    # points
+    max_cluster_size: 10000  # points
+    cluster_tolerance: 0.005
+    # Template matching; objects matching no template below the maximum error are discarded
+    icp:
+      iterations: 50
+      max_distance: 0.01
+      transformation_epsilon: 1.0e-8
+      fitness_epsilon: 1.0e-8
+    max_matching_error: 4.0e-6
+    # Objects detected within this distance of an object of the same type keep its name
+    redetect_tolerance: 0.01
+    # Objects on the planning scene up to this height over the table and not detected anymore are removed
+    tabletop_volume_height: 0.2
