@@ -58,7 +58,11 @@ source install/setup.bash
 | 7b | Pickup and place object action servers on MoveIt Task Constructor | done |
 | 7c | Grasping in simulation and object spawning | done |
 | 8 | Perception: tables and tabletop objects detection | done |
-| 9 | Executive: behavior trees and apps | |
+| 9a | Behavior trees framework on BehaviorTree.CPP 4 (runner, `bt_server`, JSON blackboard), manipulation and perception capabilities; `object_manip` and `pickup_objects` apps | next |
+| 9b | Navigation capabilities on Nav2, semantic costmap layer, pickup planner; `patrol_2_points` and `cleanup_table` apps | |
+| 9c | Exploration: coverage planning and room segmentation; `explore_house` and `object_gatherer` apps | |
+| 9d | Cat hunter: object detection replacing COB, cats models and controller | |
+| 9e | LLM agent (`thorp_agent`) | |
 
 Block 3 onwards will be refined as we get there.
 
@@ -77,6 +81,12 @@ with `clear_around_pose`); porting the layer as a Nav2 plugin keeps the Noetic b
 Bumpers and cliff sensors are deferred to the real robot: it needs `kobuki_ros` from source anyway (the Kobuki driver,
 `kobuki_bumper2pc` and `kobuki_safety_controller` have no Jazzy release), and simulated bumper and cliff events, from
 Gazebo contact sensors and downward rays, can then match the real driver's topics.
+
+The executive is ported from the `bt_server` branch, the latest: its behavior trees cover all the apps but
+`stack_all_cubes`, and `bt_server` and the LLM agent build on them. Only the behavior trees are ported, on
+BehaviorTree.CPP 4, as Nav2's, so the trees can use `nav2_behavior_tree`'s Nav2 nodes and ROS action and service node
+templates instead of Thorp's ROS 1 ones. SMACH state machines are dropped, although `executive_smach` has a Jazzy
+release; `stack_all_cubes` becomes a behavior tree.
 
 MoveIt 2 has no pick and place capability (`moveit_msgs` keeps the `Pickup` and `Place` actions, but nothing serves
 them), so the pickup and place object servers build MoveIt Task Constructor tasks instead, keeping their `thorp_msgs`
