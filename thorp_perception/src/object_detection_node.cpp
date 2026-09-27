@@ -147,8 +147,9 @@ public:
     RCLCPP_INFO(node_->get_logger(), "Loaded %zu object templates", matcher_->size());
 
     markers_pub_ = node_->create_publisher<visualization_msgs::msg::MarkerArray>("~/markers", 1);
+    // Reliable, as the cloud publisher; with Cyclone DDS, a best effort subscription gets none of these ~10 MB clouds
     cloud_sub_ = node_->create_subscription<sensor_msgs::msg::PointCloud2>(
-        "cloud", rclcpp::SensorDataQoS(), [this](sensor_msgs::msg::PointCloud2::ConstSharedPtr msg) {
+        "cloud", rclcpp::QoS(1), [this](sensor_msgs::msg::PointCloud2::ConstSharedPtr msg) {
           std::lock_guard<std::mutex> lock(cloud_mutex_);
           cloud_ = msg;
           cloud_receipt_ = std::chrono::steady_clock::now();
