@@ -23,6 +23,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   srv/TrayCapacity.srv
   srv/TrayNextPose.srv
   action/DetectObjects.action
+  action/DetectTables.action
   action/DragAndDrop.action
   action/FollowPose.action
   action/MakePickupPlan.action

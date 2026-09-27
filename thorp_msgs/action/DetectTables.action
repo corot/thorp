@@ -1,0 +1,15 @@
+# goal definition
+
+float32 min_side  # minimum length of the table's shortest side
+
+---
+
+# result definition
+
+# box collision objects, with the x dimension along the longest side; the pose is the table center, oriented along
+# its longest side, at the table surface height
+moveit_msgs/CollisionObject[] tables
+
+---
+
+# feedback
