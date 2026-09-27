@@ -1,37 +1,42 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
-Populate gazebo world with randomly spawn models:
- - cats for hunter
- - tables and objects for gatherer
- - cubes at known locations on playground world
- - objects at known locations on playground world
+Populate the Gazebo world with tables and objects:
+ - playground_fixed: a table with a sample of objects at reachable locations, in front of the robot
+ - playground_cubes: a table with cubes at reachable locations, ready to stack
+ - playground_rows: a table with 5 rows of 8 cubes
+ - playground_random: a random table with random objects, in front of the robot
+ - fun_house_objects: random tables with random objects, in open spaces of the map (any map, despite the
+   name); needs navigation running
+Usage:
+    ros2 run thorp_simulation spawn_gazebo_models.py <mode> [-l]
+    -l: place random tables at preferred locations
 Author:
     Jorge Santos
 """
 
+import os
 import random
 import sys
-import rospy
-import rospkg
 
-from scipy.spatial import KDTree
-from math import pi, copysign, sqrt
-from itertools import product
+from math import pi, copysign, cos, sin, sqrt
 
-from nav_msgs.msg import MapMetaData
-from mbf_msgs.srv import CheckPose, CheckPoseRequest, CheckPoseResponse
-from gazebo_msgs.srv import SpawnModel, DeleteModel
+import rclpy
+from rclpy.node import Node
+from rclpy.qos import QoSDurabilityPolicy, QoSProfile
 
-from thorp_toolkit.geometry import TF2, distance_2d, create_2d_pose, create_3d_pose, pose2d2str
+from ament_index_python.packages import get_package_share_directory
+from nav_msgs.msg import OccupancyGrid
+from ros_gz_interfaces.srv import SpawnEntity
+
+from thorp_toolkit.common import init
+from thorp_toolkit.geometry import TF2, distance_2d, create_2d_pose, create_3d_pose, pose2d2str, yaw
 
 # name: surface name
 # size: x, y dimensions
 # objs: number of tabletop objects to spawn
 # dist: distributions models (one of 'uniform', 'diagonal', 'xor', '+/+')
 # count: number of surfaces of this type to spawn
-# frame: reference frame in gazebo (optional)
-# offset: x, y displacement of the distribution (optional)
 surfaces = [{'name': 'doll_table',
              'size': (0.45, 0.45),
              'objs': 4,
@@ -49,34 +54,6 @@ surfaces = [{'name': 'doll_table',
              'count': 1}
             ]
 
-small_house_surfaces = [{'name': 'ShoeRack',
-                         'size': (0.82, 0.22),
-                         'objs': 4,
-                         'dist': 'uniform',
-                         'count': 0,
-                         'frame': 'ShoeRack_01_001::aws_robomaker_residential_ShoeRack_01::link',
-                         'offset': (0.0, 0.04)},
-                        {'name': 'CoffeeTable',
-                         'size': (1.33, 0.67),
-                         'objs': 6,
-                         'dist': 'uniform',
-                         'count': 0,
-                         'frame': 'CoffeeTable_01_001::aws_robomaker_residential_CoffeeTable_01::link'},
-                        {'name': 'TVCabinet',
-                         'size': (0.25, 2.0),
-                         'objs': 10,
-                         'dist': 'uniform',
-                         'count': 0,
-                         'frame': 'TVCabinet_01_001::aws_robomaker_residential_TVCabinet_01::link',
-                         'offset': (0.15, 0.0)},
-                        {'name': 'BalconyTable',
-                         'size': (0.56, 0.56),
-                         'objs': 4,
-                         'dist': 'uniform',
-                         'count': 0,
-                         'frame': 'BalconyTable_01_001::aws_robomaker_residential_BalconyTable_01::link'}
-                        ]
-
 objects = ['wood_cube_2_5cm',
            'tower',
            'cube',
@@ -88,11 +65,6 @@ objects = ['wood_cube_2_5cm',
            'star',
            'cross',
            'clover']
-spawned = {o: 0 for o in objects}
-
-cats = [{'name': 'cat_black', 'count': 3},
-        {'name': 'cat_orange', 'count': 3}]
-models = {}
 
 # a sample of objects mostly at reachable locations
 PLAYGROUND_OBJS = [('square',    'square',    (-0.22,  0.15,  0.5, 0.0, 0.0, 0.4)),
@@ -118,7 +90,6 @@ N_ROWS_OF_CUBES = [('cube ' + str(i), 'cube',
 
 SURFS_MIN_DIST = 1.5
 OBJS_MIN_DIST = 0.08
-CATS_MIN_DIST = 4.0
 
 PREFERRED_LOCATIONS = [(12.5, 7.5),
                        (8.4, 9.6),
@@ -126,299 +97,200 @@ PREFERRED_LOCATIONS = [(12.5, 7.5),
                        (5.8, 6.5)]
 
 
-def load_models():
-    global models
-    for obj in objects + [s['name'] for s in surfaces] + [c['name'] for c in cats] + ['rocket']:
-        model_path = ros_pack.get_path('thorp_simulation') + '/worlds/gazebo/models/' + obj + '/model.sdf'
-        models[obj] = open(model_path, 'r').read()
+class ModelsSpawner(Node):
+    def __init__(self):
+        super().__init__('spawn_gazebo_models')
+        init(self)
+        self.spawned = {o: 0 for o in objects}
+        models_path = os.path.join(get_package_share_directory('thorp_simulation'), 'worlds', 'gazebo', 'models')
+        self.models = {}
+        for model in objects + [s['name'] for s in surfaces]:
+            with open(os.path.join(models_path, model, 'model.sdf')) as f:
+                self.models[model] = f.read()
+        self.spawn_client = self.create_client(SpawnEntity, '/world/default/create')
+        if not self.spawn_client.wait_for_service(timeout_sec=30.0):
+            raise RuntimeError("Service '/world/default/create' not available")
+        self.costmap = None
 
+    def spawn_model(self, name, model, pose, surface_pose=None):
+        """ Spawn model on the given world pose, or relative to a surface's pose if provided """
+        if surface_pose:
+            # Gazebo can't spawn relative to a model created on the same step, so we compose the poses here
+            surface_yaw = yaw(surface_pose)
+            pose = create_3d_pose(surface_pose.position.x + cos(surface_yaw) * pose.position.x
+                                  - sin(surface_yaw) * pose.position.y,
+                                  surface_pose.position.y + sin(surface_yaw) * pose.position.x
+                                  + cos(surface_yaw) * pose.position.y,
+                                  pose.position.z, 0.0, 0.0, surface_yaw + yaw(pose))
+        request = SpawnEntity.Request()
+        request.entity_factory.name = name
+        request.entity_factory.sdf = self.models[model]
+        request.entity_factory.pose = pose
+        future = self.spawn_client.call_async(request)
+        rclpy.spin_until_future_complete(self, future)
+        if not future.result().success:
+            self.get_logger().error(f"Spawn model {name} failed")
+        return future.result().success
 
-def spawn_model(name, model, pose, frame):
-    """
-    equivalent to command line:
-    rosrun gazebo_ros spawn_model -sdf -database wood_cube_2_5cm -model wood_cube_2_5cm_10 -reference_frame doll_table_0::link -x 0 -y 0 -z 0.45
-    """
-    resp = spawn_model_client(
-        model_name=name,
-        model_xml=model,
-        initial_pose=pose,
-        reference_frame=frame
-    )
-    if not resp.success:
-        rospy.logerr("Spawn model failed: %s", resp.status_message)
-    return resp.success
+    def wait_for_map(self, topic):
+        """ Get a map or costmap, published as a latched occupancy grid """
+        grids = []
+        qos = QoSProfile(depth=1, durability=QoSDurabilityPolicy.TRANSIENT_LOCAL)
+        sub = self.create_subscription(OccupancyGrid, topic, grids.append, qos)
+        while rclpy.ok() and not grids:
+            rclpy.spin_once(self, timeout_sec=1.0)
+        self.destroy_subscription(sub)
+        return grids[0]
 
-
-def close_to_robot(pose, robot_pose, min_dist):
-    """
-    Check if the pose is closer than min_dist to the current robot pose
-    """
-    return distance_2d(pose, robot_pose) < min_dist
-
-
-def close_to_prev_pose(pose, added_poses, min_dist):
-    """
-    Check if the pose is closer than min_dist to any of the previous poses
-    """
-    if not added_poses:
+    def close_to_obstacle(self, x, y, clearance):
+        """ Check if the location is closer than clearance to any non-free global costmap cell """
+        info = self.costmap.info
+        cells = int(clearance / info.resolution)
+        cx = int((x - info.origin.position.x) / info.resolution)
+        cy = int((y - info.origin.position.y) / info.resolution)
+        for i in range(cx - cells, cx + cells + 1):
+            for j in range(cy - cells, cy + cells + 1):
+                if (i - cx) ** 2 + (j - cy) ** 2 > cells ** 2:
+                    continue
+                # cells outside the costmap, unknown or with any cost are all obstacles
+                if not (0 <= i < info.width and 0 <= j < info.height) or self.costmap.data[j * info.width + i] != 0:
+                    return True
         return False
 
-    # Convert poses to a list of coordinates to feed the KDTree
-    pose_coords = [[p.position.x, p.position.y] for p in added_poses]
-    kdtree = KDTree(pose_coords)
+    def spawn_objects(self, surf, surf_index, surf_pose, preferred_obj=None):
+        added_poses = [create_3d_pose(0, 0, 0, 0, 0, 0)]  # fake pose to avoid the (non-reachable) surface's center
+        obj_index = 0
+        margin = 0.1  # no obstacles at table margins
+        reachable = 0.2  # no obstacles beyond arm reach
 
-    # Query the KDTree for the nearest neighbors and check if there is anyone within the min_dist
-    dist, _ = kdtree.query([pose.position.x, pose.position.y], distance_upper_bound=min_dist)
+        # Compute the unreachable inner area
+        inner_min_x = -surf['size'][0] / 2.0 + reachable
+        inner_max_x = +surf['size'][0] / 2.0 - reachable
+        inner_min_y = -surf['size'][1] / 2.0 + reachable
+        inner_max_y = +surf['size'][1] / 2.0 - reachable
+        while obj_index < surf['objs'] and rclpy.ok():
+            obj_name = preferred_obj or random.choice(objects)
 
-    return dist < min_dist
+            # even distribution
+            x = random.uniform((-surf['size'][0] + margin) / 2.0, (+surf['size'][0] - margin) / 2.0)
+            y = random.uniform((-surf['size'][1] + margin) / 2.0, (+surf['size'][1] - margin) / 2.0)
 
+            # check if the generated position is within the unreachable inner area
+            if inner_min_x <= x <= inner_max_x and inner_min_y <= y <= inner_max_y:
+                continue
 
-def close_to_obstacle(x, y, theta, clearance):
-    if not hasattr(close_to_obstacle, 'check_srv'):
-        # we need MBF's check pose service to ensure that the spawned objects are in open spaces
-        close_to_obstacle.check_srv = rospy.ServiceProxy('move_base_flex/check_pose_cost', CheckPose, persistent=True)
-        close_to_obstacle.check_srv.wait_for_service(10)
-        close_to_obstacle.robot_radius = rospy.get_param('move_base_flex/global_costmap/robot_radius')
+            if surf['dist'] == 'diagonal':
+                # half-surface by diagonal
+                if x + y < 0:
+                    x = -x
+                    y = -y
+            elif surf['dist'] == 'xor':
+                # +x/-y or -x/+y quadrants
+                if x * y < 0:
+                    x = copysign(x, y)
+            elif surf['dist'] == '+/+':
+                # only +x/+y quadrant
+                x = abs(x)
+                y = abs(y)
+            elif surf['dist'] != 'uniform':
+                raise ValueError("Unknown distribution " + surf['dist'])
 
-    # check if the location is away from any non-zero cost in the global costmap by at least the given clearance
-    # (we need to subtract robot radius because check pose service assumes we want to check the footprint cost)
-    resp = close_to_obstacle.check_srv(pose=create_2d_pose(x, y, theta, 'map'),
-                                       safety_dist=clearance - close_to_obstacle.robot_radius,
-                                       costmap=CheckPoseRequest.GLOBAL_COSTMAP)
-    if resp.state > CheckPoseResponse.FREE or resp.cost > 0:
-        # note that we also reject poses that return INSCRIBED, LETHAL, UNKNOWN and OUTSIDE
-        return True
-    return False
+            z = 0.5
+            pose = create_3d_pose(x, y, z, 0, 0, random.uniform(-pi, +pi))
+            # we check that the distance to all previously added objects is below a threshold to space the objects
+            if any(distance_2d(pose, p) < OBJS_MIN_DIST for p in added_poses):
+                continue
+            added_poses.append(pose)
+            model_name = '_'.join([surf['name'], str(surf_index), obj_name, str(obj_index)])
+            if self.spawn_model(model_name, obj_name, pose, surf_pose):
+                self.spawned[obj_name] += 1
+            obj_index += 1
 
+    def spawn_surfaces(self, use_preferred_locs=False):
+        # random locations within the map, away from the robot and in open space
+        grid = self.wait_for_map('map')
+        min_x = grid.info.origin.position.x
+        min_y = grid.info.origin.position.y
+        max_x = min_x + grid.info.width * grid.info.resolution
+        max_y = min_y + grid.info.height * grid.info.resolution
+        self.costmap = self.wait_for_map('global_costmap/costmap')
+        robot_pose = TF2().transform_pose(None, 'base_footprint', 'map')
 
-def spawn_objects(surf, surf_index, preferred_obj=None):
-    added_poses = [create_3d_pose(0, 0, 0, 0, 0, 0)]  # fake pose to avoid the (non-reachable) surface's center
-    obj_index = 0
-    margin = rospy.get_param('table_margins_clearance', 0.1)  # no obstacles at table margins
-    reachable = rospy.get_param('max_distance_from_border', 0.2)  # no obstacles beyond arm reach
-    offset_x, offset_y = surf.get('offset', (0, 0))
+        added_poses = []  # to check that tables are at least SURFS_MIN_DIST apart from each other
+        for surf in surfaces:
+            surf_index = 0
+            # clearance = surface diagonal / 2 + some extra margin
+            clearance = sqrt((surf['size'][0] / 2.0) ** 2 + (surf['size'][1] / 2.0) ** 2) + 0.1
+            while surf_index < surf['count'] and rclpy.ok():
+                if use_preferred_locs:
+                    x, y = random.choice(PREFERRED_LOCATIONS)
+                else:
+                    x = random.uniform(min_x, max_x)
+                    y = random.uniform(min_y, max_y)
+                theta = random.uniform(-pi, +pi)
+                pose = create_2d_pose(x, y, theta)
+                # we check that the distance to all previously added surfaces is below a threshold to space them
+                if any(distance_2d(pose, p) < SURFS_MIN_DIST for p in added_poses):
+                    continue
 
-    # Compute the unreachable inner area
-    inner_min_x = -surf['size'][0] / 2.0 + reachable
-    inner_max_x = +surf['size'][0] / 2.0 - reachable
-    inner_min_y = -surf['size'][1] / 2.0 + reachable
-    inner_max_y = +surf['size'][1] / 2.0 - reachable
-    while obj_index < surf['objs'] and not rospy.is_shutdown():
-        obj_name = preferred_obj or random.choice(objects)
+                # check also that the surface is not too close to the robot
+                if distance_2d(pose, robot_pose) < SURFS_MIN_DIST:
+                    continue
 
-        # even distribution
-        x = random.uniform((-surf['size'][0] + margin) / 2.0, (+surf['size'][0] - margin) / 2.0) + offset_x
-        y = random.uniform((-surf['size'][1] + margin) / 2.0, (+surf['size'][1] - margin) / 2.0) + offset_y
+                # and in open space
+                if self.close_to_obstacle(x, y, clearance):
+                    continue
 
-        # check if the generated position is within the unreachable inner area
-        if inner_min_x <= x <= inner_max_x and inner_min_y <= y <= inner_max_y:
-            continue
+                added_poses.append(pose)
+                model = surf['name']
+                model_name = model + '_' + str(surf_index + 10)  # allow for some objects added by hand
+                if self.spawn_model(model_name, model, pose):
+                    self.get_logger().info(f"Spawned {model_name} at {pose2d2str(pose)}")
+                    # populate this surface with some objects
+                    self.spawn_objects(surf, surf_index + 10, pose)
+                surf_index += 1
 
-        if surf['dist'] == 'diagonal':
-            # half-surface by diagonal
-            if x + y < 0:
-                x = -x
-                y = -y
-        elif surf['dist'] == 'xor':
-            # +x/-y or -x/+y quadrants
-            if x * y < 0:
-                x = copysign(x, y)
-        elif surf['dist'] == '+/+':
-            # only +x/+y quadrant
-            x = abs(x)
-            y = abs(y)
-        elif surf['dist'] == 'uniform':
-            pass
+    def spawn(self, mode, use_preferred_locs):
+        self.get_logger().info(f"Spawning {mode} in {'preferred' if use_preferred_locs else 'random'} locations")
+        if mode == 'fun_house_objects':
+            self.spawn_surfaces(use_preferred_locs)
+            self.get_logger().info("Spawned objects:\n  " +
+                                   '\n  '.join(f'{k}: {v}' for k, v in self.spawned.items()))
+        elif mode == 'playground_random':  # random objects over a random table
+            surface = random.choice(surfaces)
+            surf_name = surface['name']
+            surf_pose = create_2d_pose(0.45, 0.0, pi / 2.0)
+            self.spawn_model(surf_name + '_0', surf_name, surf_pose)
+            self.spawn_objects(surface, 0, surf_pose)
+        elif mode in ('playground_fixed', 'playground_cubes', 'playground_rows'):
+            objs = {'playground_fixed': PLAYGROUND_OBJS,  # a sample of objects mostly at reachable locations
+                    'playground_cubes': PLAYGROUND_CUBES,  # cubes at reachable locations, ready to stack
+                    'playground_rows': N_ROWS_OF_CUBES}[mode]  # rows of cubes
+            surf_pose = create_2d_pose(0.45, 0.0, 0.0)
+            self.spawn_model('lack_table', 'lack_table', surf_pose)
+            for obj in objs:
+                self.spawn_model(obj[0], obj[1], create_3d_pose(*obj[2]), surf_pose)
         else:
-            rospy.logerr("ERROR: unknown distribution " + surf['dist'])
-            sys.exit(-1)
-
-        z = 0.5
-        pose = create_3d_pose(x, y, z, 0, 0, random.uniform(-pi, +pi))
-        # we check that the distance to all previously added objects is below a threshold to space the objects
-        if close_to_prev_pose(pose, added_poses, OBJS_MIN_DIST):
-            continue
-        added_poses.append(pose)
-        model_name = '_'.join([surf['name'], str(surf_index), obj_name, str(obj_index)])
-        model_frame = surf.get('frame', surf['name'] + '_' + str(surf_index) + '::link')
-        success = spawn_model(
-            name=model_name,
-            model=models[obj_name],
-            pose=pose,
-            frame=model_frame
-        )
-        if success:
-            spawned[obj_name] += 1
-        obj_index += 1
+            raise ValueError(f"Unknown mode {mode}")
 
 
-def spawn_surfaces(use_preferred_locs=False):
-    added_poses = []  # to check that tables are at least SURFS_MIN_DIST apart from each other
-    for surf in surfaces:
-        surf_index = 0
-        # clearance = surface diagonal / 2 + some extra margin
-        clearance = sqrt((surf['size'][0] / 2.0) ** 2 + (surf['size'][1] / 2.0) ** 2) + 0.1
-        while surf_index < surf['count'] and not rospy.is_shutdown():
-            if use_preferred_locs:
-                x, y = random.choice(PREFERRED_LOCATIONS)
-            else:
-                x = random.uniform(min_x, max_x)
-                y = random.uniform(min_y, max_y)
-            theta = random.uniform(-pi, +pi)
-            pose = create_2d_pose(x, y, theta)
-            # we check that the distance to all previously added surfaces is below a threshold to space the surfaces
-            if close_to_prev_pose(pose, added_poses, SURFS_MIN_DIST):
-                continue
-
-            # check also that the surface is not too close to the robot
-            if close_to_robot(pose, robot_pose, SURFS_MIN_DIST):
-                continue
-
-            # and in open space
-            if close_to_obstacle(x, y, theta, clearance):
-                continue
-
-            added_poses.append(pose)
-            model = surf['name']
-            model_name = model + '_' + str(surf_index + 10)  # allow for some objects added by hand
-            success = spawn_model(
-                name=model_name,
-                model=models[model],
-                pose=pose,
-                frame='ground_plane::link'
-            )
-            if success:
-                # populate this surface with some objects
-                spawn_objects(surf, surf_index + 10)
-            surf_index += 1
-
-
-def spawn_cats(use_preferred_locs=False):
-    added_poses = []  # to check that cats are at least CATS_MIN_DIST apart from each other
-    for cat in cats:
-        cat_index = 0
-        while cat_index < cat['count'] and not rospy.is_shutdown():
-            if use_preferred_locs:
-                x, y = random.choice(PREFERRED_LOCATIONS)
-            else:
-                x = random.uniform(min_x, max_x)
-                y = random.uniform(min_y, max_y)
-            theta = random.uniform(-pi, +pi)
-            pose = create_2d_pose(x, y, theta)
-            # we check that the distance to all previously added surfaces is below a threshold to space the surfaces
-            if close_to_prev_pose(pose, added_poses, CATS_MIN_DIST):
-                continue
-
-            # check also that the surface is not too close to the robot
-            if close_to_robot(pose, robot_pose, CATS_MIN_DIST):
-                continue
-
-            # and not within an obstacle
-            if close_to_obstacle(x, y, theta, 0.0):
-                continue
-
-            added_poses.append(pose)
-            model = cat['name']
-            model_name = model + '_' + str(cat_index)
-            success = spawn_model(
-                name=model_name,
-                model=models[model].format(name=model_name),
-                pose=pose,
-                frame='ground_plane::link'
-            )
-            if success:
-                rospy.loginfo("Spawn %s at %s", model_name, pose2d2str(pose))
-            cat_index += 1
-
-
-def spawn_rocket():
-    # spawn a rocket somewhere not visible
-    spawn_model(
-        name='rocket',
-        model=models['rocket'],
-        pose=create_2d_pose(-40, -40, 0),
-        frame='ground_plane::link'
-    )
-
-
-def delete_all():
-    for surf in surfaces:
-        for surf_index in range(surf['count']):
-            for obj in surf['objs']:
-                for obj_index in range(obj['count']):
-                    try:
-                        model_name = '_'.join([surf['name'], str(surf_index + 10), obj['name'], str(obj_index)])
-                        delete_model_client(model_name)
-                    except rospy.ServiceException:
-                        pass
-                    obj_index += 1
-            try:
-                delete_model_client(surf['name'] + '_' + str(surf_index + 10))
-            except:
-                pass
-            surf_index += 1
-
-
-if __name__ == "__main__":
-    rospy.init_node("spawn_gazebo_models")
-
-    if len(sys.argv) == 1:
-        rospy.logerr("Usage: spawn_gazebo_models.py objects | cats | playground_ + fixed | cubes | random [-d] [-l]")
+def main():
+    args = rclpy.utilities.remove_ros_args(sys.argv)
+    if len(args) < 2:
+        print("Usage: spawn_gazebo_models.py playground_fixed | playground_cubes | playground_rows | "
+              "playground_random | fun_house_objects [-l]")
         sys.exit(-1)
-
-    ros_pack = rospkg.RosPack()
-
-    spawn_model_client = rospy.ServiceProxy('/gazebo/spawn_sdf_model', SpawnModel)
-    spawn_model_client.wait_for_service(30)
-
-    if len(sys.argv) > 2 and '-d' in sys.argv:
-        # optionally delete previously spawned objects  TODO:  broken,, could call instead whenever a model fails to spawn
-        delete_model_client = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
-        delete_model_client.wait_for_service(30)
-        delete_all()
-
-    # get map bounds
-    map_metadata = rospy.wait_for_message('map_metadata', MapMetaData, 30)
-    min_x = map_metadata.origin.position.x
-    min_y = map_metadata.origin.position.y
-    max_x = map_metadata.origin.position.x + map_metadata.width * map_metadata.resolution
-    max_y = map_metadata.origin.position.y + map_metadata.height * map_metadata.resolution
-
-    load_models()
-
-    robot_pose = TF2().transform_pose(None, 'base_footprint', 'map')
-
+    rclpy.init()
+    node = ModelsSpawner()
     random.seed()
-    use_preferred_locs = len(sys.argv) > 2 and '-l' in sys.argv
-    rospy.loginfo("Spawning %s in %s locations", sys.argv[1], 'preferred' if use_preferred_locs else 'random')
-    if sys.argv[1] == 'fun_house_objects':
-        spawn_surfaces(use_preferred_locs)
-        rospy.loginfo("Spawned objects:\n  " + '\n  '.join(f'{k}: {v}' for k, v in spawned.items()))
-    elif sys.argv[1] == 'small_house_objects':
-        for surface in small_house_surfaces:
-            spawn_objects(surface, 0)
-        rospy.loginfo("Spawned objects:\n  " + '\n  '.join(f'{k}: {v}' for k, v in spawned.items()))
-    elif sys.argv[1] == 'cats':
-        spawn_cats(use_preferred_locs)
-        spawn_rocket()
-    elif sys.argv[1] == 'playground_random':  # random objects over a random table
-        surface = random.choice(surfaces)
-        surf_name = surface['name']
-        spawn_model(surf_name + '_0', models[surf_name], create_2d_pose(0.45, 0.0, pi / 2.0), 'ground_plane::link')
-        spawn_objects(surface, 0)
-    elif sys.argv[1] == 'playground_fixed':  # a sample of objects mostly at reachable locations
-        spawn_model('lack_table', models['lack_table'], create_2d_pose(0.45, 0.0, 0.0), 'ground_plane::link')
-        for obj in PLAYGROUND_OBJS:
-            spawn_model(obj[0], models[obj[1]], create_3d_pose(*obj[2]), 'lack_table::link')
-    elif sys.argv[1] == 'playground_cubes':  # cubes at reachable locations, ready to stack
-        spawn_model('lack_table', models['lack_table'], create_2d_pose(0.45, 0.0, 0.0), 'ground_plane::link')
-        for obj in PLAYGROUND_CUBES:
-            spawn_model(obj[0], models[obj[1]], create_3d_pose(*obj[2]), 'lack_table::link')
-    elif sys.argv[1] == 'playground_rows':  # cubes at reachable locations, ready to stack
-        spawn_model('lack_table', models['lack_table'], create_2d_pose(0.45, 0.0, 0.0), 'ground_plane::link')
-        for obj in N_ROWS_OF_CUBES:
-            spawn_model(obj[0], models[obj[1]], create_3d_pose(*obj[2]), 'lack_table::link')
-    else:
-        rospy.logerr("Unrecognized objects type %s", str(sys.argv[1]))
+    try:
+        node.spawn(args[1], '-l' in args[2:])
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.try_shutdown()
 
-    sys.exit(0)
+
+if __name__ == '__main__':
+    main()

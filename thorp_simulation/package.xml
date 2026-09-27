@@ -26,6 +26,8 @@
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>ros_gz_sim</exec_depend>
   <exec_depend>ros_gz_bridge</exec_depend>
+  <exec_depend>ros_gz_interfaces</exec_depend>
+  <exec_depend>rclpy</exec_depend>
   <exec_depend>rclcpp_components</exec_depend>
   <exec_depend>depth_image_proc</exec_depend>
   <exec_depend>depthimage_to_laserscan</exec_depend>
