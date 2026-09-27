@@ -130,6 +130,18 @@ def test_missing_list_aborts_rather_than_crashing(runner):
     assert "poses" in out.get("error", ""), out
 
 
+def test_local_offset_moves_along_the_pose_own_axes(runner):
+    """Facing +y, a local x offset moves the pose along map +y; a frame offset would move it along x."""
+    state, out, result = runner.run("test_server_local_offset",
+                                    inputs={"start_pose": "1.0;2.0;1.5708;map", "offset_x": OFFSET_X},
+                                    output_keys=["moved_pose"])
+    assert state == GoalStatus.SUCCEEDED and result.success, status_name(state)
+    pose = out["moved_pose"]
+    assert pose["x"] == pytest.approx(1.0, abs=1e-3)
+    assert pose["y"] == pytest.approx(2.0 + OFFSET_X, abs=1e-3)
+    assert pose["yaw"] == pytest.approx(1.5708, abs=1e-3)
+
+
 def test_pose_list_seeds_from_a_json_array(runner):
     """
     A json array becomes a real std::vector<PoseStamped>, which is what unblocks the

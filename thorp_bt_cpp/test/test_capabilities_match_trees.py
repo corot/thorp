@@ -103,8 +103,28 @@ def remapped_key(port, value):
     return None
 
 
+def script_keys(code):
+    """
+    What a <Script> reads and writes, as {key: type} each: BT.CPP scripts reach the blackboard
+    by bare name rather than through ports. `key := expr` and `key = expr` write key, and every
+    other name is read, except the boolean literals and anything inside a quoted string.
+    """
+    reads, writes = {}, {}
+    for statement in code.split(";"):
+        assignment = re.match(r"\s*([A-Za-z_]\w*)\s*:?=(?!=)(.*)", statement)
+        expression = assignment.group(2) if assignment else statement
+        if assignment:
+            writes[assignment.group(1)] = ""
+        for name in re.findall(r"[A-Za-z_]\w*", re.sub(r"'[^']*'", "", expression)):
+            if name not in ("true", "false"):
+                reads[name] = ""
+    return reads, writes
+
+
 def node_keys(node, directions):
     """What one node reads and writes, as {key: type} each, from its ports' directions."""
+    if node.tag == "Script":
+        return script_keys(node.get("code", ""))
     reads, writes = {}, {}
     for port, value in node.attrib.items():
         key = remapped_key(port, value)
@@ -188,6 +208,12 @@ def declared():
 @pytest.fixture(scope="module")
 def derived():
     return derive_interfaces()
+
+
+def test_script_assignments_write_and_their_operands_read():
+    assert script_keys("retreat := near - far") == ({"near": "", "far": ""}, {"retreat": ""})
+    assert script_keys("done = true; n := n + 1") == ({"n": ""}, {"done": "", "n": ""})
+    assert script_keys("ok := name == 'far'") == ({"name": ""}, {"ok": ""})
 
 
 def test_every_tree_is_either_described_or_excluded(declared, derived):

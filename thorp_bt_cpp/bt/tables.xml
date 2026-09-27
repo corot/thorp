@@ -13,8 +13,7 @@
     Park against the table in front, on its nearest side, ready to pick from or place on it.
     Detects the table again rather than taking one, so it works from wherever the robot stands:
     after inspect_table that is the viewing pose, which sees far more of the table than the
-    start pose does. approach_pose is the viewing pose on the side it parked at, so that
-    detach_from_table backs out the way the robot came in.
+    start pose does.
   -->
   <BehaviorTree ID="approach_table">
     <Sequence>
@@ -34,16 +33,6 @@
       <GetClosestPose poses="{pickup_poses}"
                       target_pose="{robot_pose}"
                       closest_pose="{pickup_pose}"/>
-      <ReadDoubleParam param_name="approach_dist_to_table"
-                       output_key="{approach_dist_to_table}"/>
-      <GetPosesAroundTable distance="{approach_dist_to_table}"
-                           split_long_sides="false"
-                           table="{table}"
-                           table_pose="{table_pose}"
-                           table_side_poses="{approach_poses}"/>
-      <GetClosestPose poses="{approach_poses}"
-                      target_pose="{pickup_pose}"
-                      closest_pose="{approach_pose}"/>
       <SubTree ID="attach_to_table"
                table="{table}"
                pose="{pickup_pose}"
@@ -79,10 +68,27 @@
     </Parallel>
   </BehaviorTree>
 
+  <!--
+    Back straight out from the table the robot is parked against. attach_to_table drives in
+    head-on, so the robot's -x points away from the table; it retreats as far as the pickup
+    planner's detach poses do, far enough to navigate around the table again.
+  -->
   <BehaviorTree ID="detach_from_table">
     <Parallel failure_count="1"
               success_count="1">
       <Sequence>
+        <GetRobotPose timeout="1"
+                      robot_pose="{robot_pose}"
+                      error="{error}"/>
+        <ReadDoubleParam param_name="pickup_dist_to_table"
+                         output_key="{pickup_dist_to_table}"/>
+        <ReadDoubleParam param_name="detach_dist_from_table"
+                         output_key="{detach_dist_from_table}"/>
+        <Script code="retreat := pickup_dist_to_table - detach_dist_from_table"/>
+        <TransformPose in_pose="{robot_pose}"
+                       x="{retreat}"
+                       local="true"
+                       out_pose="{pose}"/>
         <PoseAsPath pose="{pose}"
                     path="{path}"/>
         <ExePath action_name="move_base_flex/exe_path"
@@ -91,7 +97,7 @@
                  server_timeout="5.000000"
                  error="{error}"
                  feedback="{exe_path_feedback}"/>
-        <RestoreTableAccess table="{table}"/>
+        <RestoreTableAccess/>
         <EnableSafetyController/>
       </Sequence>
       <UseNamedConfig config_name="precise_controlling"
@@ -239,9 +245,7 @@
                 <ClearPlanningScene keep_tray="true"
                                     service_name="manipulation/clear_planning_scene"
                                     timeout="100"/>
-                <SubTree ID="detach_from_table"
-                         table="{table}"
-                         pose="{detach_pose}"/>
+                <SubTree ID="detach_from_table"/>
               </Sequence>
             </ForEachPickupLocation>
           </Sequence>

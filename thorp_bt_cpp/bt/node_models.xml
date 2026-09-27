@@ -321,7 +321,7 @@
             <input_port name="server_timeout" type="double" default="5.000000">timeout to connect to server (seconds)</input_port>
         </Action>
         <Action ID="RestoreTableAccess">
-            <input_port name="table" type="rail_manipulation_msgs::SegmentedObject_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="table_name" type="std::string" default="table">name of the table to restore access to</input_port>
         </Action>
         <Action ID="SegmentRooms">
             <output_port name="room_information_in_pixel" type="std::vector&lt;ipa_building_msgs::RoomInformation_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;ipa_building_msgs::RoomInformation_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
@@ -407,6 +407,7 @@
         <Action ID="TransformPose">
             <output_port name="out_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="in_pose" type="geometry_msgs::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="local" type="bool" default="false">apply the offset along in_pose's own axes, not its frame's</input_port>
             <input_port name="yaw" type="double"/>
             <input_port name="pitch" type="double"/>
             <input_port name="roll" type="double"/>

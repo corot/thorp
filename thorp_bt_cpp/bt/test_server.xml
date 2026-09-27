@@ -43,6 +43,14 @@
     </Sequence>
   </BehaviorTree>
 
+  <!-- TransformPose with local="true" moves along in_pose's own axes, not its frame's -->
+  <BehaviorTree ID="test_server_local_offset">
+    <TransformPose in_pose="{start_pose}"
+                   x="{offset_x}"
+                   local="true"
+                   out_pose="{moved_pose}"/>
+  </BehaviorTree>
+
   <!--
     Mirrors how reach_first_pose uses a list, without needing navigation. Asked for with no
     inputs, the first node to read {poses} must abort the goal naming it, not crash the server.

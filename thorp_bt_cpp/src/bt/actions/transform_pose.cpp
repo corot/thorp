@@ -24,6 +24,7 @@ public:
              BT::InputPort<double>("roll"),   //
              BT::InputPort<double>("pitch"),  //
              BT::InputPort<double>("yaw"),    //
+             BT::InputPort<bool>("local", false, "apply the offset along in_pose's own axes, not its frame's"),
              BT::InputPort<geometry_msgs::PoseStamped>("in_pose"),
              BT::OutputPort<geometry_msgs::PoseStamped>("out_pose") };
   }
@@ -44,9 +45,19 @@ private:
     double pitch = o_pitch ? *o_pitch : 0.0;
     double yaw = o_yaw ? *o_yaw : 0.0;
     auto pose = requireInput<geometry_msgs::PoseStamped>(*this, "in_pose");
-    geometry_msgs::TransformStamped tf =
-        ttk::toTransform(ttk::createPose(x, y, z, roll, pitch, yaw, pose.header.frame_id));
-    tf2::doTransform(pose, pose, tf);
+    if (requireInput<bool>(*this, "local"))
+    {
+      tf2::Transform in_tf, offset_tf;
+      tf2::fromMsg(pose.pose, in_tf);
+      tf2::fromMsg(ttk::createPose(x, y, z, roll, pitch, yaw), offset_tf);
+      tf2::toMsg(in_tf * offset_tf, pose.pose);
+    }
+    else
+    {
+      geometry_msgs::TransformStamped tf =
+          ttk::toTransform(ttk::createPose(x, y, z, roll, pitch, yaw, pose.header.frame_id));
+      tf2::doTransform(pose, pose, tf);
+    }
     setOutput("out_pose", pose);
     return BT::NodeStatus::SUCCESS;
   }
