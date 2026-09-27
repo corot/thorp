@@ -447,7 +447,8 @@ private:
 
   /**
    * Objects on the planning scene with their origin within an axis-aligned volume on the output frame.
-   * PlanningSceneInterface::getKnownObjectNamesInROI checks the shapes' poses, relative to the object's one.
+   * PlanningSceneInterface::getKnownObjectNamesInROI takes the shapes' poses, relative to the object's pose, as
+   * absolute; https://github.com/moveit/moveit2/pull/3884 fixes it.
    */
   std::set<std::string> objectsInVolume(const Eigen::Vector3d& min, const Eigen::Vector3d& max)
   {

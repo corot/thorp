@@ -328,3 +328,7 @@ Differences with the Noetic simulation:
 - In simulation, `xtion_fov_analyzer.py` reports the field of view blocked with the arm resting: the Xtion sees
   something at 0.37-0.40 m just above the cropped bottom of the image, probably the resting arm, as the simulated
   depth near clip is 0.35 m (0.45 m on the real camera). Maybe related to the octomap issue above.
+- MoveIt's `PlanningSceneInterface::getKnownObjectNamesInROI` takes the collision objects' shape poses, relative to
+  the object pose, as absolute, so it misses objects placed with a pose; `object_detection` checks the objects' poses
+  itself instead. Fixed upstream by https://github.com/moveit/moveit2/pull/3884 (open); once released on Jazzy,
+  `objectsInVolume` can go back to it.
