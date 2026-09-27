@@ -57,7 +57,7 @@ source install/setup.bash
 | 7a | MoveIt 2 configuration: move group, controllers, octomap from the Xtion, RViz; pick_ik replaces the IKFast plugin | done |
 | 7b | Pickup and place object action servers on MoveIt Task Constructor | done |
 | 7c | Grasping in simulation and object spawning | done |
-| 8 | Perception | |
+| 8 | Perception: tables and tabletop objects detection | done |
 | 9 | Executive: behavior trees and apps | |
 
 Block 3 onwards will be refined as we get there.
@@ -104,10 +104,11 @@ Thorp's fork) and `full_coverage_path_planner`'s Spiral-STC planner, as an MBF g
 | thorp_msgs | migrated |
 | thorp_cannon | migrated; simulation only, the real cannon waits for the boards (see below) |
 | thorp_manipulation | partial: pickup and place object servers, fake gripper joint states (see below) |
+| thorp_perception | partial: tables and objects detection, camera field of view check (see below) |
 | thorp_navigation | partial: Nav2 configuration and launch, maps, velocity display (see below) |
 | thorp_simulation | partial: Gazebo Harmonic launch, worlds, controllers and navigation (see below) |
 | thorp_toolkit | partial: core C++ and Python modules (see below) |
-| thorp_apps, thorp_boards, thorp_bt_cpp, thorp_costmap_layers, thorp_exploration, thorp_mbf_plugins, thorp_perception, thorp_rviz_plugins, thorp_smach | ROS 1 (ignored) |
+| thorp_apps, thorp_boards, thorp_bt_cpp, thorp_costmap_layers, thorp_exploration, thorp_mbf_plugins, thorp_rviz_plugins, thorp_smach | ROS 1 (ignored) |
 
 ### thorp_moveit_config
 
@@ -121,7 +122,32 @@ Jazzy. `move_group` loads MoveIt Task Constructor's ExecuteTaskSolution capabili
 ### thorp_msgs
 
 Ported from the `bt_server` branch, so it includes `RunSubtree.action`. The unused `KeyboardInput` message is
-dropped, as ROS 2 rejects its lowercase constants.
+dropped, as ROS 2 rejects its lowercase constants. `DetectTables.action` is new: it replaces the executive's direct
+use of RAIL segmentation to find tables, returning them as collision objects.
+
+### thorp_perception
+
+`object_detection` segments the table in front of the robot on the Xtion point cloud, and the objects on it, and
+identifies each object by matching it with a 2D ICP against the templates in `meshes`. The `object_detection` action
+(`thorp_msgs/DetectObjects`) adds the table and the identified objects to the planning scene, keeping the names of
+redetected objects and removing those no longer on the table; `object_detection/detect_tables`
+(`thorp_msgs/DetectTables`) only segments the table, if its shortest side reaches a minimum. Tables and objects are
+collision objects: tables are boxes with x along their longest side; objects carry their template mesh, and their
+size and color name as JSON in `type.db`, as on the `bt_server` branch. `xtion_fov_analyzer.py` is ported too.
+
+The segmentation and template matching are rewritten into `thorp_perception` from Thorp's forks of
+`rail_segmentation` and `rail_mesh_icp`, instead of porting the forks as source dependencies: the forks carry much
+dead RAIL code, and running all in one node drops the RAIL messages, the segmentation service and the template
+matching action. The README records the source commits and licenses. Only what Thorp used is kept: a single crop box
+instead of segmentation zones, the table as the largest quadrilateral in the surface's convex hull (now centered on
+that quadrilateral rather than on the points' bounding box), and the 2D non-linear ICP; RAIL's color features,
+images, markers and object recognition fields are dropped. ORK and YOLO pipelines are dropped too. Pending ROS 1
+files:
+
+| Files | Block |
+|-------|-------|
+| COB object detection: `config/cob`, `nodes/object_tracking.py` | 9 |
+| `scripts/generate_meshes.*`, `scripts/parametric_star.scad`: offline OpenSCAD tools that made the object meshes | undecided |
 
 ### thorp_toolkit
 
@@ -140,7 +166,7 @@ Ported: C++ `common`, `geometry`, `math`, `parameters`, `progress_tracker`, `tf2
 | `reconfigure`, `alternative_config` (C++ and Python), `test_reconfigure.py` | navigation | 6 |
 | `nodes/save_pose_node.cpp` | real robot navigation | real robot |
 | `planning_scene` (C++ and Python); `simulation` (`waitForObjectsSpawning`) | tray manager, BT runner | 9 |
-| `point_tracker.py` | object tracking | 8 |
+| `point_tracker.py` | object tracking | 9 |
 | `kobuki_base` (bumper names), `semantic_map.py`, `test_semantic_map.py` | BT conditions, smach states | 9 |
 | `spatial_hash.hpp` | none: an unused draft with a `main`; perception and costmap layers have their own | undecided |
 | Python `pause_gazebo` and `resume_gazebo` | none | undecided |
@@ -295,3 +321,10 @@ Differences with the Noetic simulation:
   servers.
 - Once, of about 25 simulated place goals, planning failed with "open gripper: Start state is out of bounds!"; it
   didn't happen again, so the joint out of bounds is unknown.
+- The simulated Kobuki rests tilted back on its back caster, 2 mm above the ground in the model, by 0.015 rad
+  (0.85 degrees) while the arm rests: its center of mass must be behind the wheels. TF assumes a level base, so
+  points seen by the cameras are about 9 mm off at the tables distance (farther and lower); the tilt goes away when
+  the arm reaches forward. Detection and grasping still work.
+- In simulation, `xtion_fov_analyzer.py` reports the field of view blocked with the arm resting: the Xtion sees
+  something at 0.37-0.40 m just above the cropped bottom of the image, probably the resting arm, as the simulated
+  depth near clip is 0.35 m (0.45 m on the real camera). Maybe related to the octomap issue above.
