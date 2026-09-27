@@ -24,6 +24,7 @@ add_library(${PROJECT_NAME} SHARED
   src/common.cpp
   src/geometry.cpp
   src/progress_tracker.cpp
+  src/simulation.cpp
   src/tf2.cpp
   src/visualization.cpp
 )
@@ -57,6 +58,7 @@ install(FILES include/thorp_toolkit/common.hpp
               include/thorp_toolkit/math.hpp
               include/thorp_toolkit/parameters.hpp
               include/thorp_toolkit/progress_tracker.hpp
+              include/thorp_toolkit/simulation.hpp
               include/thorp_toolkit/tf2.hpp
               include/thorp_toolkit/visualization.hpp
         DESTINATION include/${PROJECT_NAME}/${PROJECT_NAME}
