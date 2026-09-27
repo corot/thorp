@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="4">
+  <!--
+    Everything done at a manipulation surface (normally a table).
+  -->
+  <include path="perception.xml"/>
+
+  <include path="navigation.xml"/>
+
+  <include path="pickup_objects.xml"/>
+
+  <!--
+    Park against the table in front, on its nearest side, ready to pick from or place on it.
+    Detects the table again rather than taking one, so it works from wherever the robot stands:
+    after inspect_table that is the viewing pose, which sees far more of the table than the
+    start pose does. approach_pose is the viewing pose on the side it parked at, so that
+    detach_from_table backs out the way the robot came in.
+  -->
+  <BehaviorTree ID="approach_table">
+    <Sequence>
+      <SubTree ID="detect_table"
+               table="{table}"
+               table_pose="{table_pose}"/>
+      <ReadDoubleParam param_name="pickup_dist_to_table"
+                       output_key="{pickup_dist_to_table}"/>
+      <GetPosesAroundTable distance="{pickup_dist_to_table}"
+                           split_long_sides="true"
+                           table="{table}"
+                           table_pose="{table_pose}"
+                           table_side_poses="{pickup_poses}"/>
+      <GetRobotPose timeout="1"
+                    robot_pose="{robot_pose}"
+                    error="{error}"/>
+      <GetClosestPose poses="{pickup_poses}"
+                      target_pose="{robot_pose}"
+                      closest_pose="{pickup_pose}"/>
+      <ReadDoubleParam param_name="approach_dist_to_table"
+                       output_key="{approach_dist_to_table}"/>
+      <GetPosesAroundTable distance="{approach_dist_to_table}"
+                           split_long_sides="false"
+                           table="{table}"
+                           table_pose="{table_pose}"
+                           table_side_poses="{approach_poses}"/>
+      <GetClosestPose poses="{approach_poses}"
+                      target_pose="{pickup_pose}"
+                      closest_pose="{approach_pose}"/>
+      <SubTree ID="attach_to_table"
+               table="{table}"
+               pose="{pickup_pose}"
+               error="{error}"/>
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="attach_to_table">
+    <Parallel failure_count="1"
+              success_count="1">
+      <Sequence>
+        <DisableSafetyController/>
+        <ClearTableAccess table="{table}"
+                          table_pose="{pose}"/>
+        <PoseAsPath pose="{pose}"
+                    path="{path}"/>
+        <WhileDoElse>
+          <Inverter>
+            <BumperPressed/>
+          </Inverter>
+          <ExePath action_name="move_base_flex/exe_path"
+                   controller="TEBPlanner"
+                   path="{path}"
+                   server_timeout="5.000000"
+                   error="{error}"
+                   feedback="{exe_path_feedback}"/>
+          <AlwaysSuccess/>
+        </WhileDoElse>
+      </Sequence>
+      <UseNamedConfig config_name="precise_controlling"
+                      source_ns="named_configuration"
+                      target_ns=""/>
+    </Parallel>
+  </BehaviorTree>
+
+  <BehaviorTree ID="detach_from_table">
+    <Parallel failure_count="1"
+              success_count="1">
+      <Sequence>
+        <PoseAsPath pose="{pose}"
+                    path="{path}"/>
+        <ExePath action_name="move_base_flex/exe_path"
+                 controller="TEBPlanner"
+                 path="{path}"
+                 server_timeout="5.000000"
+                 error="{error}"
+                 feedback="{exe_path_feedback}"/>
+        <RestoreTableAccess table="{table}"/>
+        <EnableSafetyController/>
+      </Sequence>
+      <UseNamedConfig config_name="precise_controlling"
+                      source_ns="named_configuration"
+                      target_ns=""/>
+    </Parallel>
+  </BehaviorTree>
+
+  <!--
+    Look the table in front over from a viewing pose and report what is on it. The objects are
+    for choosing what to do; they are detected from outside arm reach, so picking one still
+    means approach_table and detect_objects from there.
+  -->
+  <BehaviorTree ID="inspect_table">
+    <Sequence>
+      <SubTree ID="validate_table"
+               table="{table}"
+               table_pose="{table_pose}"
+               inspect_pose="{inspect_pose}"/>
+      <SubTree ID="detect_objects"
+               objects="{objects}"
+               surface="{surface}"/>
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="validate_table">
+    <Sequence>
+      <GetRobotPose timeout="1"
+                    error="{error}"
+                    robot_pose="{robot_pose}"/>
+      <!--
+        Turn to face the table before inspecting it, but only if we have been told where it
+        is. Inside object_gatherer the parent has already detected one, so {table_pose} is on
+        the blackboard and this looks at it. Run on its own as a capability there is no table
+        pose yet, and LookAtPose reads it as *getInput, which on an unset key is not an error
+        but a segfault: it took bt_server down. IsListEmpty and the other guards read with a
+        checked getInput for exactly this reason; PoseInBlackboard is how to do it from xml.
+      -->
+      <Fallback>
+        <Inverter>
+          <PoseInBlackboard key="{table_pose}"/>
+        </Inverter>
+        <LookAtPose action_name="move_base_flex/exe_path"
+                    controller="TEBPlanner"
+                    robot_pose="{robot_pose}"
+                    server_timeout="5.000000"
+                    target_pose="{table_pose}"
+                    error="{error}"
+                    feedback="{look_at_feedback}"/>
+      </Fallback>
+      <DetectTables action_name="rail_segmentation/segment_objects"
+                    server_timeout="5"
+                    table="{table}"
+                    table_pose="{table_pose}"/>
+      <ReadDoubleParam param_name="approach_dist_to_table"
+                       output_key="{approach_dist_to_table}"/>
+      <GetPosesAroundTable distance="{approach_dist_to_table}"
+                           table="{table}"
+                           table_pose="{table_pose}"
+                           table_side_poses="{approach_poses}"/>
+      <GetClosestPose poses="{approach_poses}"
+                      target_pose="{robot_pose}"
+                      closest_pose="{inspect_pose}"/>
+      <GoToPose action_name="move_base_flex/move_base"
+                angle_tolerance=""
+                controller="TEBPlanner"
+                dist_tolerance=""
+                planner=""
+                pose="{inspect_pose}"
+                server_timeout="5.000000"
+                error="{error}"
+                feedback="{goto_pose_feedback}"/>
+      <DetectTables action_name="rail_segmentation/segment_objects"
+                    server_timeout="5"
+                    table="{table}"
+                    table_pose="{table_pose}"/>
+      <TableAsObstacle table="{table}"
+                       table_pose="{table_pose}"/>
+      <TableValidSize table="{table}"/>
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="cleanup_table">
+    <Sequence>
+      <ReadDoubleParam param_name="pickup_dist_to_table"
+                       output_key="{pickup_dist_to_table}"/>
+      <GetPosesAroundTable distance="{pickup_dist_to_table}"
+                           split_long_sides="true"
+                           table="{table}"
+                           table_pose="{table_pose}"
+                           table_side_poses="{pickup_poses}"/>
+      <Repeat num_cycles="2"
+              _description="Recheck that we left no objects behind">
+        <Fallback>
+          <Sequence>
+            <DetectObjects action_name="object_detection"
+                           object_types=""
+                           server_timeout="5.000000"
+                           objects="{objects}"
+                           surface="{surface}"/>
+            <Inverter>
+              <ObjectsDetected given_up_count="{given_up_count}"
+                               ignore_given_up="true"
+                               objects="{objects}"/>
+            </Inverter>
+            <ClearRailMarkers service_name="rail_segmentation/clear_markers"
+                              timeout="100"/>
+            <ClearPlanningScene keep_tray="true"
+                                service_name="manipulation/clear_planning_scene"
+                                timeout="100"/>
+          </Sequence>
+          <Sequence>
+            <GetRobotPose timeout="1"
+                          error="{error}"
+                          robot_pose="{robot_pose}"/>
+            <MakePickupPlan action_name="manipulation/make_pickup_plan"
+                            objects="{objects}"
+                            pickup_poses="{pickup_poses}"
+                            robot_pose="{robot_pose}"
+                            server_timeout="5.000000"
+                            surface="{surface}"
+                            pickup_plan="{pickup_plan}"/>
+            <ForEachPickupLocation element="{pickup_location}"
+                                   list="{pickup_plan}">
+              <Sequence>
+                <ExpandPickupLocation pickup_location="{pickup_location}"
+                                      approach_pose="{approach_pose}"
+                                      detach_pose="{detach_pose}"
+                                      pickup_pose="{pickup_pose}"/>
+                <GoToPose action_name="move_base_flex/move_base"
+                          angle_tolerance=""
+                          controller="TEBPlanner"
+                          dist_tolerance=""
+                          planner=""
+                          pose="{approach_pose}"
+                          server_timeout="5.000000"
+                          error="{error}"
+                          feedback="{goto_pose_feedback}"/>
+                <SubTree ID="attach_to_table"
+                         table="{table}"
+                         pose="{pickup_pose}"/>
+                <SubTree ID="pickup_objects"/>
+                <ClearRailMarkers service_name="rail_segmentation/clear_markers"
+                                  timeout="100"/>
+                <ClearPlanningScene keep_tray="true"
+                                    service_name="manipulation/clear_planning_scene"
+                                    timeout="100"/>
+                <SubTree ID="detach_from_table"
+                         table="{table}"
+                         pose="{detach_pose}"/>
+              </Sequence>
+            </ForEachPickupLocation>
+          </Sequence>
+        </Fallback>
+      </Repeat>
+    </Sequence>
+  </BehaviorTree>
+</root>

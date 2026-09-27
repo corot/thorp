@@ -12,6 +12,9 @@ disagree:
              producing it: the caller still has to supply the list in the first place.
   an output  is a key some node writes without reading.
 
+A <SubTree> call reads and writes whatever the called tree's own interface says, carried across
+the call's remapping (explicit, or _autoremap), so trees compose without inlining their callees.
+
 Pure xml and yaml parsing: no roscore, no bt_server, no robot. Run it anywhere, any time.
 
     cd /catkin_ws/src/thorp/thorp_bt_cpp && python3 -m pytest test/test_capabilities_match_trees.py -v
@@ -100,43 +103,79 @@ def remapped_key(port, value):
     return None
 
 
-def derive_interfaces():
-    """tree id -> {'inputs': {key: type}, 'outputs': {key: type}, 'file': path}."""
-    directions = port_directions()
-    interfaces = {}
+def node_keys(node, directions):
+    """What one node reads and writes, as {key: type} each, from its ports' directions."""
+    reads, writes = {}, {}
+    for port, value in node.attrib.items():
+        key = remapped_key(port, value)
+        if not key:
+            continue
+        direction, type_ = directions.get(node.tag, {}).get(port, (None, ""))
+        if direction in ("in", "inout", None):
+            reads[key] = type_
+        if direction in ("out", "inout"):
+            writes[key] = type_
+    return reads, writes
 
+
+def subtree_keys(node, callee):
+    """
+    What a <SubTree> call reads and writes in its caller: the callee's own interface, carried
+    across the call's remapping. The remapping says nothing about direction, so direction comes
+    from the callee. A port with a literal value costs the caller nothing, and one neither
+    remapped nor covered by _autoremap stays on the callee's own blackboard.
+    """
+    autoremap = node.get("_autoremap", "false").strip().lower() in ("true", "1")
+
+    def caller_key(port):
+        if port in node.attrib:
+            return remapped_key(port, node.attrib[port])
+        return port if autoremap else None
+
+    reads = {caller_key(k): t for k, t in callee["inputs"].items() if caller_key(k)}
+    writes = {caller_key(k): t for k, t in callee["outputs"].items() if caller_key(k)}
+    return reads, writes
+
+
+def derive_interfaces():
+    """tree id -> {'inputs': {key: type}, 'outputs': {key: type}, 'reads': {key: type}, 'file': path}."""
+    directions = port_directions()
+    trees = {}
     for path in sorted(glob(os.path.join(BT_DIR, "*.xml"))):
         if os.path.basename(path) == "node_models.xml":
             continue
         for tree in ET.parse(path).getroot().findall("BehaviorTree"):
-            read, produced, types = {}, {}, {}
-            for node in tree.iter():
-                if node.tag == "BehaviorTree":
-                    continue
-                node_reads, node_writes = set(), set()
-                for port, value in node.attrib.items():
-                    key = remapped_key(port, value)
-                    if not key:
-                        continue
-                    # a <SubTree> remapping carries no direction here; treat it as a read, so
-                    # a key only ever passed down still counts as something to supply
-                    direction, type_ = ("in", "") if node.tag == "SubTree" \
-                        else directions.get(node.tag, {}).get(port, (None, ""))
-                    if direction in ("in", "inout", None):
-                        node_reads.add(key)
-                        read.setdefault(key, type_)
-                    if direction in ("out", "inout"):
-                        node_writes.add(key)
-                        types.setdefault(key, type_)
-                # only a pure write produces a key; a read-then-write hands back what it got
-                produced.update({k: types.get(k, "") for k in node_writes - node_reads})
+            trees[tree.get("ID")] = (tree, os.path.basename(path))
 
-            interfaces[tree.get("ID")] = {
-                "inputs": {k: v for k, v in read.items() if k not in produced},
-                "outputs": produced,
-                "reads": read,
-                "file": os.path.basename(path),
-            }
+    interfaces = {}
+
+    def derive(tree_id):
+        if tree_id in interfaces:
+            return interfaces[tree_id]
+        assert tree_id in trees, "a <SubTree> calls '{}', which no file under bt/ defines".format(tree_id)
+        tree, path = trees[tree_id]
+        read, produced = {}, {}
+        for node in tree.iter():
+            if node.tag == "BehaviorTree":
+                continue
+            node_reads, node_writes = subtree_keys(node, derive(node.get("ID"))) \
+                if node.tag == "SubTree" else node_keys(node, directions)
+            for key, type_ in node_reads.items():
+                read.setdefault(key, type_)
+            # only a pure write produces a key; a read-then-write hands back what it got
+            for key in node_writes.keys() - node_reads.keys():
+                produced.setdefault(key, node_writes[key])
+
+        interfaces[tree_id] = {
+            "inputs": {k: v for k, v in read.items() if k not in produced},
+            "outputs": produced,
+            "reads": read,
+            "file": path,
+        }
+        return interfaces[tree_id]
+
+    for tree_id in trees:
+        derive(tree_id)
     return interfaces
 
 

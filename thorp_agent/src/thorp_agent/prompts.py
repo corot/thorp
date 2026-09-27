@@ -38,10 +38,12 @@ PROMPTS = RobotSystemPrompts(
         "line what you are about to do and why."),
     constraints_and_guardrails=(
         "Your tools are all you can do. If there is no capability for what you are asked, say "
-        "which one you would want."),
+        "which one you would want.\n"
+        "Never invent a pose, a table or an object name. If you no longer have a value a call "
+        "needs, get it again from the capability that produces it, or say you don't have it."),
     about_your_environment=(
-        "The bench is a 10x10 m empty map spanning -5..5 in both axes, with one lack table at "
-        "(0.45, 0) carrying five 2.5 cm cubes named 'cube 1' to 'cube 5', and one stationary cat "
+        "The bench is a 10x10 m empty map spanning -5..5 in both axes, with one table at "
+        "(0.45, 0) carrying some objects, and one stationary cat "
         "1.5 m to the left of where the robot starts at (-0.5, 0). There are no walls."),
     about_your_capabilities=(
         "Poses are given as 'x;y;yaw;frame', and 'map' is the frame you want unless you have a "

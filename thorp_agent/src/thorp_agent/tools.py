@@ -76,9 +76,11 @@ def _args_model(spec: Dict[str, Any]):
             fields[field] = (Optional[PY_TYPES.get(kind, str)],
                              Field(default=None, description=meta["description"]))
         else:
-            # bt_server refuses a goal missing a required input
+            # a goal missing a required input aborts as soon as the tree reads it
             fields[field] = (PY_TYPES.get(kind, str), Field(description=meta["description"]))
-    return create_model(spec["name"] + "_args", **fields) if fields else None
+    # an empty model even with no inputs: without one, langchain derives the schema from
+    # invoke(**kwargs) and offers the model a `kwargs` argument
+    return create_model(spec["name"] + "_args", **fields)
 
 
 def build(specs: List[Dict[str, Any]],

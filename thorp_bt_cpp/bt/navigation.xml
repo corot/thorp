@@ -1,54 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root BTCPP_format="4">
-  <BehaviorTree ID="attach_to_table">
-    <Parallel failure_count="1"
-              success_count="1">
-      <Sequence>
-        <DisableSafetyController/>
-        <ClearTableAccess table="{table}"
-                          table_pose="{pose}"/>
-        <PoseAsPath pose="{pose}"
-                    path="{path}"/>
-        <WhileDoElse>
-          <Inverter>
-            <BumperPressed/>
-          </Inverter>
-          <ExePath action_name="move_base_flex/exe_path"
-                   controller="TEBPlanner"
-                   path="{path}"
-                   server_timeout="5.000000"
-                   error="{error}"
-                   feedback="{exe_path_feedback}"/>
-          <AlwaysSuccess/>
-        </WhileDoElse>
-      </Sequence>
-      <UseNamedConfig config_name="precise_controlling"
-                      source_ns="named_configuration"
-                      target_ns=""/>
-    </Parallel>
-  </BehaviorTree>
-
-  <BehaviorTree ID="detach_from_table">
-    <Parallel failure_count="1"
-              success_count="1">
-      <Sequence>
-        <PoseAsPath pose="{pose}"
-                    path="{path}"/>
-        <ExePath action_name="move_base_flex/exe_path"
-                 controller="TEBPlanner"
-                 path="{path}"
-                 server_timeout="5.000000"
-                 error="{error}"
-                 feedback="{exe_path_feedback}"/>
-        <RestoreTableAccess table="{table}"/>
-        <EnableSafetyController/>
-      </Sequence>
-      <UseNamedConfig config_name="precise_controlling"
-                      source_ns="named_configuration"
-                      target_ns=""/>
-    </Parallel>
-  </BehaviorTree>
-
   <BehaviorTree ID="follow_waypoints">
     <Sequence>
       <SubTree ID="reach_first_pose"
@@ -109,51 +60,6 @@
               server_timeout="5.000000"
               error="{error}"
               feedback="{goto_pose_feedback}"/>
-  </BehaviorTree>
-
-  <!-- Where to stand to look at a table: one pose per side, approach_dist_to_table out, facing it -->
-  <BehaviorTree ID="table_approach_poses">
-    <Sequence>
-      <ReadDoubleParam param_name="approach_dist_to_table"
-                       output_key="{distance}"/>
-      <GetPosesAroundTable distance="{distance}"
-                           split_long_sides="false"
-                           table="{table}"
-                           table_pose="{table_pose}"
-                           table_side_poses="{approach_poses}"/>
-    </Sequence>
-  </BehaviorTree>
-
-  <!-- Where to stand to pick from a table: pickup_dist_to_table out, long sides split so more of
-       the table is in arm reach -->
-  <BehaviorTree ID="table_pickup_poses">
-    <Sequence>
-      <ReadDoubleParam param_name="pickup_dist_to_table"
-                       output_key="{distance}"/>
-      <GetPosesAroundTable distance="{distance}"
-                           split_long_sides="true"
-                           table="{table}"
-                           table_pose="{table_pose}"
-                           table_side_poses="{pickup_poses}"/>
-    </Sequence>
-  </BehaviorTree>
-
-  <!--
-    Which of these poses is nearest the robot, and where the robot is while we are at it.
-
-    table_approach_poses and table_pickup_poses hand back one pose per side in a fixed geometric
-    order, not sorted by anything, so "the first one" is whichever side the table's own frame
-    calls +x. Use this to pick the near side.
-  -->
-  <BehaviorTree ID="closest_pose">
-    <Sequence>
-      <GetRobotPose timeout="1"
-                    robot_pose="{robot_pose}"
-                    error="{error}"/>
-      <GetClosestPose poses="{poses}"
-                      target_pose="{robot_pose}"
-                      closest_pose="{closest_pose}"/>
-    </Sequence>
   </BehaviorTree>
 
   <!--

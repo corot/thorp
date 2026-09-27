@@ -32,8 +32,7 @@
 # produces it itself, typically from a parameter. The drift test holds it to exactly that.
 #
 # An input's `from` lists the capability outputs that can supply it, as capability.output. More
-# than one means the choice is the caller's: closest_pose works on either list of table poses,
-# and which one it is decides whether the robot ends up in arm's reach or a meter back.
+# than one means the choice is the caller's.
 #
 # `needs` and `invalidates` are the other half of that, for what a capability assumes about the
 # world rather than about its arguments. `needs` maps a state to the capability that establishes
@@ -64,10 +63,10 @@
 # test: read only by the test suite; the agent side ignores this block.
 #   inputs_from: where an input comes from, when it should be a real value rather than one
 #     someone typed in: {table: [detect_table, table]} takes the table detect_table found, and
-#     a third element indexes a list, so [table_approach_poses, approach_poses, 0] is the first
-#     pose around it. Usable on the test's own inputs and on any setup step's. This is the same
-#     threading an agent does by hand between two goals, so a chain expressible here is one ROSA
-#     can be asked to follow.
+#     a third element indexes a list, so [full_coverage_planner, coverage_waypoints, 0] is the
+#     first waypoint of a coverage path. Usable on the test's own inputs and on any setup
+#     step's. This is the same threading an agent does by hand between two goals, so a chain
+#     expressible here is one ROSA can be asked to follow.
 #   setup: capabilities to call first, in order, to put the robot in the state this one
 #     assumes. pickup_object needs something detected to pick; place_object needs the gripper
 #     holding it. Written as capability calls rather than staged behind the robot's back, so
@@ -114,7 +113,7 @@ capabilities:
       holding something, and retrying with a cleared octomap if the first attempt fails.
     status: ok
     stack: [manipulation]
-    needs: {at_a_table: attach_to_table, objects_detected: detect_objects}
+    needs: {at_a_table: approach_table, objects_detected: detect_objects}
     invalidates: [objects_detected]
     inputs:
       object_name: {type: string, from: [detect_objects.objects], description: "name of the object to pick, as the detector named it"}
@@ -124,15 +123,9 @@ capabilities:
       attached_object: {type: string, description: "object now attached to the gripper, if any"}
       max_effort: {type: float, description: "gripper effort used, read from the gripper_max_effort parameter"}
     test:
-      inputs: {object_name: "cube 1"}
+      inputs: {object_name: "square 1"}
       setup:
-        - {subtree: detect_table}
-        - subtree: table_pickup_poses
-          inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
-        - subtree: closest_pose
-          inputs_from: {poses: [table_pickup_poses, pickup_poses]}
-        - subtree: attach_to_table
-          inputs_from: {table: [detect_table, table], pose: [closest_pose, closest_pose]}
+        - {subtree: approach_table}
         - {subtree: detect_objects}
       # The scene on this bench is fixed, so "did the pickup work" has a right answer.
       expect: succeeded
@@ -143,7 +136,7 @@ capabilities:
       Place the object currently held by the gripper at a given pose on the support surface.
     status: ok
     stack: [manipulation]
-    needs: {holding_object: pickup_object, at_a_table: attach_to_table}
+    needs: {holding_object: pickup_object, at_a_table: approach_table}
     invalidates: [holding_object, objects_detected]
     inputs:
       object_name: {type: string, from: [pickup_object.attached_object], description: "name of the object being placed"}
@@ -151,19 +144,13 @@ capabilities:
     outputs:
       error: {type: int, when: failure, description: "error code from the place action; 0 when it worked"}
     test:
-      # A clear spot on the near edge of the table, clear of the cubes at x 0.30 to 0.34.
+      # A clear spot on the near edge of the table; the nearest object, the star, is 8 cm further in.
       # In the map frame, so it stays put while the setup chain drives the robot to the table.
-      inputs: {object_name: "cube 1", place_pose: "0.2;0.0;0.4875;0.0;0.0;0.0;map"}
+      inputs: {object_name: "square 1", place_pose: "0.2;0.0;0.4875;0.0;0.0;0.0;map"}
       setup:
-        - {subtree: detect_table}
-        - subtree: table_pickup_poses
-          inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
-        - subtree: closest_pose
-          inputs_from: {poses: [table_pickup_poses, pickup_poses]}
-        - subtree: attach_to_table
-          inputs_from: {table: [detect_table, table], pose: [closest_pose, closest_pose]}
+        - {subtree: approach_table}
         - {subtree: detect_objects}
-        - {subtree: pickup_object, inputs: {object_name: "cube 1"}}
+        - {subtree: pickup_object, inputs: {object_name: "square 1"}}
       expect: any
       timeout: 120
 
@@ -181,17 +168,11 @@ capabilities:
       error: {type: int, when: failure, description: "error code from the place action; 0 when it worked"}
       pose_on_tray: {type: geometry_msgs::PoseStamped, description: "slot the object was placed in"}
     test:
-      inputs: {object_name: "cube 1"}
+      inputs: {object_name: "square 1"}
       setup:
-        - {subtree: detect_table}
-        - subtree: table_pickup_poses
-          inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
-        - subtree: closest_pose
-          inputs_from: {poses: [table_pickup_poses, pickup_poses]}
-        - subtree: attach_to_table
-          inputs_from: {table: [detect_table, table], pose: [closest_pose, closest_pose]}
+        - {subtree: approach_table}
         - {subtree: detect_objects}
-        - {subtree: pickup_object, inputs: {object_name: "cube 1"}}
+        - {subtree: pickup_object, inputs: {object_name: "square 1"}}
       expect: any
       timeout: 120
 
@@ -233,6 +214,132 @@ capabilities:
       expect: any          # needs a surface in view; whether there is one is the scene's business
       timeout: 60
 
+  # ------------------------------------------------------------------------- tables --------
+
+  approach_table:
+    description: >
+      Park against the table in front of the robot, on its nearest side, close enough for the
+      arm to reach what is on it: finds the table, works out where to stand and drives in until
+      the bumper touches. The step before picking from or placing on a table. It finds the
+      table itself, so it takes no arguments; from inspect_table's viewing pose it sees the
+      table better than from further back. The poses it returns are the ones attach_to_table
+      and detach_from_table take.
+    status: ok
+    stack: [navigation, perception]
+    invalidates: [objects_detected]
+    inputs: {}
+    outputs:
+      table: {type: rail_manipulation_msgs::SegmentedObject, description: "the table it parked against"}
+      table_pose: {type: geometry_msgs::PoseStamped, description: "where that table is, in the map frame"}
+      pickup_pose: {type: geometry_msgs::PoseStamped, description: "the pose it parked at, for attach_to_table"}
+      approach_pose: {type: geometry_msgs::PoseStamped, description: "the viewing pose on that same side, for detach_from_table"}
+      error: {type: int, when: failure, description: "error code from reading the robot pose or from path execution"}
+    test:
+      inputs: {}
+      expect: any          # the same attach as attach_to_table, which the scene can defeat
+      timeout: 180
+
+  inspect_table:
+    description: >
+      Look over the table in front of the robot from a viewing pose on its nearest side, and
+      report the table and the objects on it. Fails when no table is in view or it isn't a
+      usable size. The viewing pose is outside arm reach: to pick one of these objects,
+      approach_table and then detect_objects, whose names are the ones pickup_object takes.
+    status: ok
+    stack: [navigation, perception]
+    invalidates: [at_a_table]
+    inputs: {}
+    outputs:
+      table: {type: rail_manipulation_msgs::SegmentedObject, description: "the table, as seen from the viewing pose"}
+      table_pose: {type: geometry_msgs::PoseStamped, description: "where that table is, in the map frame"}
+      inspect_pose: {type: geometry_msgs::PoseStamped, description: "the viewing pose it looked from"}
+      objects: {type: std::vector<moveit_msgs::CollisionObject>, description: "the objects on the table, each as name and color; empty when there are none"}
+      surface: {type: moveit_msgs::CollisionObject, description: "the surface they were found on, as name and color"}
+    test:
+      inputs: {}
+      expect: any
+      timeout: 300
+
+  attach_to_table:
+    description: >
+      Drive head-on into a table under precise control until the bumper touches it, from
+      approach_table's pickup_pose. approach_table already ends this way; use this to go back
+      in after detach_from_table without detecting the table again.
+    status: ok
+    stack: [navigation, perception]
+    invalidates: [objects_detected]
+    inputs:
+      table: {type: rail_manipulation_msgs::SegmentedObject, from: [approach_table.table], description: "table to approach; name, pose and size"}
+      pose: {type: geometry_msgs::PoseStamped, from: [approach_table.pickup_pose], description: "pose to approach it from"}
+    outputs:
+      error: {type: int, when: failure, description: "error code from path execution"}
+    test:
+      # Goes back in from where approach_table parked, so this checks the goal's contract; the
+      # drive itself is what approach_table's own test exercises.
+      setup:
+        - {subtree: approach_table}
+      inputs_from: {table: [approach_table, table], pose: [approach_table, pickup_pose]}
+      expect: any
+      timeout: 180
+
+  detach_from_table:
+    description: >
+      Back away from a table under precise control to approach_table's approach_pose, the
+      viewing pose on the side the robot parked at, and restore the table's costmap footprint.
+    status: ok
+    stack: [navigation]
+    needs: {at_a_table: approach_table}
+    invalidates: [at_a_table, objects_detected]
+    inputs:
+      table: {type: rail_manipulation_msgs::SegmentedObject, from: [approach_table.table], description: "table to back away from"}
+      pose: {type: geometry_msgs::PoseStamped, from: [approach_table.approach_pose], description: "pose to retreat to"}
+    outputs:
+      error: {type: int, when: failure, description: "error code from path execution"}
+    test:
+      setup:
+        - {subtree: approach_table}
+      inputs_from: {table: [approach_table, table], pose: [approach_table, approach_pose]}
+      expect: any
+      timeout: 180
+
+  validate_table:
+    description: >
+      Look a detected table over from a viewpoint and decide whether it is a usable size.
+    status: ok
+    stack: [navigation, perception]
+    invalidates: [at_a_table, objects_detected]
+    inputs: {}
+    outputs:
+      table: {type: rail_manipulation_msgs::SegmentedObject, description: "the validated table (not serializable yet)"}
+      table_pose: {type: geometry_msgs::PoseStamped, description: "pose of the table"}
+      inspect_pose: {type: geometry_msgs::PoseStamped, description: "viewpoint used to inspect it"}
+    test:
+      inputs: {}
+      expect: any
+      timeout: 300
+
+  cleanup_table:
+    description: >
+      Clear every reachable object from one table onto the tray, working through a planned
+      sequence of pickup locations.
+    status: ok
+    stack: [navigation, manipulation, perception]
+    invalidates: [at_a_table, objects_detected, holding_object]
+    inputs:
+      table: {type: rail_manipulation_msgs::SegmentedObject, from: [detect_table.table], description: "table to clear"}
+      table_pose: {type: geometry_msgs::PoseStamped, from: [detect_table.table_pose], description: "pose of that table"}
+      given_up_count: {type: unsigned int, description: "objects abandoned so far; 0 to start"}
+    outputs:
+      pickup_pose: {type: geometry_msgs::PoseStamped, when: maybe, description: "pose the last pickup was attempted from"}
+      error: {type: int, when: maybe, description: "error code from the last action"}
+    test:
+      inputs: {given_up_count: 0}
+      setup:
+        - {subtree: detect_table}
+      inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
+      expect: any
+      timeout: 900
+
   # ---------------------------------------------------------------------- navigation -------
 
   goto_pose:
@@ -246,78 +353,13 @@ capabilities:
     stack: [navigation]
     invalidates: [at_a_table, objects_detected]
     inputs:
-      pose: {type: geometry_msgs::PoseStamped, from: [closest_pose.closest_pose], description: "where to drive to, as 'x;y;yaw;frame'"}
+      pose: {type: geometry_msgs::PoseStamped, description: "where to drive to, as 'x;y;yaw;frame'"}
     outputs:
       error: {type: int, when: failure, description: "move_base error code; only set when the drive failed"}
     test:
       inputs: {pose: '2.0;3.0;1.57;map'}
       expect: any
       timeout: 300
-
-  table_approach_poses:
-    description: >
-      Where to stand to look at a table: one pose per side, far enough out to see the whole
-      tabletop, each facing the table. Drive there with goto_pose, then detect_objects. Too far
-      to reach anything with the arm. Nothing moves; this is arithmetic on a table you have
-      already found. The poses come in a fixed geometric order, not nearest first: pass them
-      to closest_pose to get the near side.
-    status: ok
-    stack: [none]
-    inputs:
-      table: {type: rail_manipulation_msgs::SegmentedObject, from: [detect_table.table], description: "the table, as detect_table returned it"}
-      table_pose: {type: geometry_msgs::PoseStamped, from: [detect_table.table_pose], description: "that table's pose, as detect_table returned it"}
-    outputs:
-      approach_poses: {type: std::vector<geometry_msgs::PoseStamped>, description: "one pose per usable side"}
-    test:
-      setup:
-        - {subtree: detect_table}
-      inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
-      expect: succeeded    # pure geometry on a table we just found; nothing to blame the scene for
-      timeout: 30
-
-  table_pickup_poses:
-    description: >
-      Where to stand to pick objects from a table, or place them on it: poses close enough for
-      the arm to reach, along every usable side. Get to one with attach_to_table, never
-      goto_pose: they are inside the table's costmap margin, which only attach_to_table clears.
-      Nothing moves; this is arithmetic on a table you have already found. The poses come in a
-      fixed geometric order, not nearest first: pass them to closest_pose to get the near side.
-    status: ok
-    stack: [none]
-    inputs:
-      table: {type: rail_manipulation_msgs::SegmentedObject, from: [detect_table.table], description: "the table, as detect_table returned it"}
-      table_pose: {type: geometry_msgs::PoseStamped, from: [detect_table.table_pose], description: "that table's pose, as detect_table returned it"}
-    outputs:
-      pickup_poses: {type: std::vector<geometry_msgs::PoseStamped>, description: "poses along every usable side"}
-    test:
-      setup:
-        - {subtree: detect_table}
-      inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
-      expect: succeeded
-      timeout: 30
-
-  closest_pose:
-    description: >
-      Of a list of poses, the one nearest the robot, and the robot's own pose with it. Use it
-      on what table_approach_poses or table_pickup_poses return: those lists are in a fixed
-      geometric order, so choosing a side without comparing to where the robot is means driving
-      around the table for no reason. Nothing moves.
-    status: ok
-    stack: [none]
-    inputs:
-      poses: {type: std::vector<geometry_msgs::PoseStamped>, from: [table_pickup_poses.pickup_poses, table_approach_poses.approach_poses], description: "the poses to choose between"}
-    outputs:
-      closest_pose: {type: geometry_msgs::PoseStamped, description: "whichever of them is nearest the robot"}
-      robot_pose: {type: geometry_msgs::PoseStamped, description: "where the robot is now"}
-      error: {type: int, when: failure, description: "error code from reading the robot pose"}
-    test:
-      setup:
-        - {subtree: detect_table}
-        - subtree: table_approach_poses
-          inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
-      inputs_from: {poses: [table_approach_poses, approach_poses]}
-      expect: succeeded    # picking the nearest of a list we just computed
-      timeout: 30
 
   look_at_pose:
     description: >
@@ -422,22 +464,6 @@ capabilities:
       cancel_after: 30
       timeout: 300   # runs until commanded to exit; expected to be canceled
 
-  validate_table:
-    description: >
-      Look a detected table over from a viewpoint and decide whether it is a usable size.
-    status: ok
-    stack: [navigation, perception]
-    invalidates: [at_a_table, objects_detected]
-    inputs: {}
-    outputs:
-      table: {type: rail_manipulation_msgs::SegmentedObject, description: "the validated table (not serializable yet)"}
-      table_pose: {type: geometry_msgs::PoseStamped, description: "pose of the table"}
-      inspect_pose: {type: geometry_msgs::PoseStamped, description: "viewpoint used to inspect it"}
-    test:
-      inputs: {}
-      expect: any
-      timeout: 300
-
   hunt_cat:
     description: >
       The attack half of cat_hunter: follow the tracked target, aim and fire while it stays
@@ -509,7 +535,7 @@ capabilities:
     stack: [navigation]
     invalidates: [at_a_table, objects_detected]
     inputs:
-      poses: {type: std::vector<geometry_msgs::PoseStamped>, from: [table_approach_poses.approach_poses], description: "candidate poses, tried in order, each as 'x;y;yaw;frame'"}
+      poses: {type: std::vector<geometry_msgs::PoseStamped>, description: "candidate poses, tried in order, each as 'x;y;yaw;frame'"}
     outputs:
       next_pose: {type: geometry_msgs::PoseStamped, description: "the pose actually reached"}
       goto_pose_error: {type: int, when: failure, description: "error code from the navigation goal"}
@@ -536,93 +562,13 @@ capabilities:
       expect: any
       timeout: 600
 
-  attach_to_table:
-    description: >
-      Approach a table head-on under precise control until the bumper touches it, from a pose
-      table_pickup_poses gave. The last step before picking from or placing on a table.
-    status: ok
-    stack: [navigation, perception]
-    invalidates: [objects_detected]
-    inputs:
-      table: {type: rail_manipulation_msgs::SegmentedObject, from: [detect_table.table], description: "table to approach; name, pose and size"}
-      pose: {type: geometry_msgs::PoseStamped, from: [closest_pose.closest_pose], description: "pose to approach it from"}
-    outputs:
-      error: {type: int, when: failure, description: "error code from path execution"}
-    test:
-      setup:
-        - {subtree: detect_table}
-        - subtree: table_pickup_poses
-          inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
-        - subtree: closest_pose
-          inputs_from: {poses: [table_pickup_poses, pickup_poses]}
-      inputs_from: {table: [detect_table, table], pose: [closest_pose, closest_pose]}
-      expect: any
-      timeout: 180
-
-  detach_from_table:
-    description: >
-      Back away from a table under precise control and restore its costmap footprint.
-    status: ok
-    stack: [navigation]
-    needs: {at_a_table: attach_to_table}
-    invalidates: [at_a_table, objects_detected]
-    inputs:
-      table: {type: rail_manipulation_msgs::SegmentedObject, from: [detect_table.table], description: "table to back away from"}
-      pose: {type: geometry_msgs::PoseStamped, from: [closest_pose.closest_pose], description: "pose to retreat to"}
-    outputs:
-      error: {type: int, when: failure, description: "error code from path execution"}
-    test:
-      # You can only detach from a table you are attached to, so this drives in and then backs
-      # out again, to the approach distance. closest_pose runs twice, which is what `as` is for:
-      # without it the second call's results would file over the first's.
-      inputs: {}
-      setup:
-        - {subtree: detect_table}
-        - subtree: table_pickup_poses
-          inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
-        - subtree: closest_pose
-          as: near_side
-          inputs_from: {poses: [table_pickup_poses, pickup_poses]}
-        - subtree: attach_to_table
-          inputs_from: {table: [detect_table, table], pose: [near_side, closest_pose]}
-        - subtree: table_approach_poses
-          inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
-        - subtree: closest_pose
-          as: retreat_side
-          inputs_from: {poses: [table_approach_poses, approach_poses]}
-      inputs_from: {table: [detect_table, table], pose: [retreat_side, closest_pose]}
-      expect: any
-      timeout: 180
-
-  cleanup_table:
-    description: >
-      Clear every reachable object from one table onto the tray, working through a planned
-      sequence of pickup locations.
-    status: ok
-    stack: [navigation, manipulation, perception]
-    invalidates: [at_a_table, objects_detected, holding_object]
-    inputs:
-      table: {type: rail_manipulation_msgs::SegmentedObject, from: [detect_table.table], description: "table to clear"}
-      table_pose: {type: geometry_msgs::PoseStamped, from: [detect_table.table_pose], description: "pose of that table"}
-      given_up_count: {type: unsigned int, description: "objects abandoned so far; 0 to start"}
-    outputs:
-      pickup_pose: {type: geometry_msgs::PoseStamped, when: maybe, description: "pose the last pickup was attempted from"}
-      error: {type: int, when: maybe, description: "error code from the last action"}
-    test:
-      inputs: {given_up_count: 0}
-      setup:
-        - {subtree: detect_table}
-      inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
-      expect: any
-      timeout: 900
-
   pickup_objects:
     description: >
       Pick up the objects of a planned sequence one at a time, stowing each on the tray and
       recording the ones that keep failing.
     status: ok
     stack: [manipulation, perception]
-    needs: {at_a_table: attach_to_table, objects_detected: detect_objects}
+    needs: {at_a_table: approach_table, objects_detected: detect_objects}
     invalidates: [objects_detected, holding_object]
     inputs:
       failures: {type: "std::map<std::string, uint32_t>", description: "per-object failure counts so far; {} to start"}
@@ -633,13 +579,7 @@ capabilities:
     test:
       inputs: {failures: {}, given_up_count: 0}
       setup:
-        - {subtree: detect_table}
-        - subtree: table_pickup_poses
-          inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
-        - subtree: closest_pose
-          inputs_from: {poses: [table_pickup_poses, pickup_poses]}
-        - subtree: attach_to_table
-          inputs_from: {table: [detect_table, table], pose: [closest_pose, closest_pose]}
+        - {subtree: approach_table}
         - {subtree: detect_objects}
       expect: any
       timeout: 600
