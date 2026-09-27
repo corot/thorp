@@ -54,8 +54,10 @@ gripper_controller:
     joint: gripper_joint
     goal_tolerance: 0.01
     allow_stalling: true
-    stall_velocity_threshold: 0.001
-    stall_timeout: 0.5  # as Noetic's gripper controller stalled_time
+    # Pressing an object, the simulated servo chatters: its velocity jumps to the limit every 0.2 s or more, and
+    # jitters up to 0.005 rad/s in between, so a longer or stricter stall detection can take seconds
+    stall_velocity_threshold: 0.01
+    stall_timeout: 0.1
 
 # Cannon position controller; controllers can't be named as their joints
 cannon_joint_controller:
