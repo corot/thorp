@@ -272,7 +272,7 @@ Differences with the Noetic simulation:
   `gazebo_ros` did, as sim time Python nodes need a lot of CPU to process it at 1 kHz.
 - `thorp_gazebo.launch.py` sets Gazebo transport on loopback (`GZ_IP=127.0.0.1`): with a VPN interface (Tailscale)
   on the development machine, a quarter of the simulations started without clock, as Gazebo missed the bridge's
-  subscription to it; none of 30 on loopback. Gazebo command line tools need it too, e.g. `GZ_IP=127.0.0.1 gz topic -l`.
+  subscription to it; none of 30 on loopback.
 
 ## Known issues
 
