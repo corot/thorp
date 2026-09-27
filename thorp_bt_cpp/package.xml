@@ -1,33 +1,43 @@
-<package format="2">
-    <name>thorp_bt_cpp</name>
-    <version>0.1.0</version>
-    <description>Behavior Trees for Thorp robot using behaviortree cpp v3 framework</description>
-    <maintainer email="jsantossimon@gmail.com">Jorge Santos Simón</maintainer>
-    <author email="jsantossimon@gmail.com">Jorge Santos Simón</author>
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>thorp_bt_cpp</name>
+  <version>0.1.0</version>
+  <description>Behavior trees for Thorp robot, on the BehaviorTree.CPP 4 framework</description>
+  <maintainer email="jsantossimon@gmail.com">Jorge Santos Simón</maintainer>
+  <author email="jsantossimon@gmail.com">Jorge Santos Simón</author>
 
-    <license>BSD</license>
+  <license>BSD</license>
 
-    <url type="bugtracker">https://github.com/corot/thorp/issues</url>
-    <url type="repository">https://github.com/corot/thorp</url>
+  <url type="bugtracker">https://github.com/corot/thorp/issues</url>
+  <url type="repository">https://github.com/corot/thorp</url>
 
-    <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
-    <depend>tf2</depend>
-    <depend>roscpp</depend>
-    <depend>actionlib</depend>
-    <depend>std_msgs</depend>
-    <depend>std_srvs</depend>
-    <depend>nav_msgs</depend>
-    <depend>mbf_msgs</depend>
-    <depend>kobuki_msgs</depend>
-    <depend>geometry_msgs</depend>
-    <depend>jsk_rviz_plugins</depend>
-    <depend>ipa_building_msgs</depend>
-    <depend>cob_perception_msgs</depend>
-    <depend>rail_manipulation_msgs</depend>
-    <depend>behaviortree_cpp</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_action</depend>
+  <depend>behaviortree_cpp</depend>
+  <depend>nav2_behavior_tree</depend>
+  <depend>nav2_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>control_msgs</depend>
+  <depend>moveit_msgs</depend>
+  <depend>moveit_ros_planning_interface</depend>
+  <depend>nav_msgs</depend>
+  <depend>shape_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tinyxml2_vendor</depend>
+  <depend>nlohmann-json-dev</depend>
+  <depend>thorp_msgs</depend>
+  <depend>thorp_toolkit</depend>
 
-    <depend>thorp_msgs</depend>
-    <depend>thorp_costmap_layers</depend>
-    <depend>thorp_toolkit</depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
 </package>

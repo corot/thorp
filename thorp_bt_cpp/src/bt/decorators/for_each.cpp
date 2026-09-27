@@ -2,7 +2,7 @@
 
 #include "thorp_bt_cpp/node_common.hpp"
 
-#include <thorp_msgs/PickupLocation.h>
+#include <thorp_msgs/msg/pickup_location.hpp>
 
 namespace thorp::bt::decorators
 {
@@ -59,7 +59,7 @@ public:
       setOutput("element", list.front());
       list.erase(list.begin());
       setOutput("list", list);
-      ROS_DEBUG_STREAM(name() << ":\tnew size is " << list.size());
+      RCLCPP_DEBUG_STREAM(logger(*this), ":\tnew size is " << list.size());
 
       BT::NodeStatus child_state = child_node_->executeTick();
       running_child_ = child_state == BT::NodeStatus::RUNNING;
@@ -87,5 +87,5 @@ private:
 };
 
 // Register a builder for each templated version this class
-BT_REGISTER_TEMPLATE_NODE(ForEach<thorp_msgs::PickupLocation>, "ForEachPickupLocation");
+BT_REGISTER_TEMPLATE_NODE(ForEach<thorp_msgs::msg::PickupLocation>, "ForEachPickupLocation");
 }  // namespace thorp::bt::decorators

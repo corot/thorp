@@ -1,44 +1,45 @@
 #include <behaviortree_cpp/action_node.h>
 
 #include "thorp_bt_cpp/node_common.hpp"
-#include "thorp_bt_cpp/ros_service_node.hpp"
-
-#include <thorp_msgs/ClearPlanningScene.h>
+#include "thorp_bt_cpp/planning_scene.hpp"
+#include "thorp_bt_cpp/tray.hpp"
 
 namespace thorp::bt::actions
 {
 /**
- * Clear the planning scene, optionally sparing the tray and its content
+ * Remove all the objects from the planning scene, optionally keeping those on the tray.
  */
-class ClearPlanningScene : public BT::RosServiceNode<thorp_msgs::ClearPlanningScene, BT::SyncActionNode>
+class ClearPlanningScene : public BT::SyncActionNode
 {
 public:
-  ClearPlanningScene(const std::string& name, const BT::NodeConfig& conf)
-    : RosServiceNode<ServiceType, ParentType>(name, conf)
+  ClearPlanningScene(const std::string& name, const BT::NodeConfig& config) : BT::SyncActionNode(name, config)
   {
   }
 
   static BT::PortsList providedPorts()
   {
-    // overwrite service_name with a default value
-    BT::PortsList ports = BT::RosServiceNode<ServiceType, ParentType>::providedPorts();
-    ports["service_name"].setDefaultValue("manipulation/clear_planning_scene");
-    ports.insert({ BT::InputPort<bool>("keep_tray") });
-    return ports;
+    return { BT::InputPort<bool>("keep_tray") };
   }
 
 private:
-  void sendRequest(RequestType& request) override
+  BT::NodeStatus tick() override
   {
-    request.keep_tray = requireInput<bool>(*this, "keep_tray");
-    ROS_INFO_NAMED(name(), "Clearing planning scene %s", request.keep_tray ? "but keeping tray and its content" : "");
-  }
-
-  BT::NodeStatus onResponse(const ResponseType& response) override
-  {
+    const bool keep_tray = requireInput<bool>(*this, "keep_tray");
+    RCLCPP_INFO(logger(*this), "Clearing planning scene%s", keep_tray ? ", but keeping tray content" : "");
+    std::vector<std::string> to_remove;
+    Tray tray(rosNode(*this));
+    for (const auto& [id, object] : planningScene().getObjects())
+    {
+      if (!keep_tray || !tray.onTray(object))
+      {
+        to_remove.push_back(id);
+      }
+    }
+    planningScene().removeCollisionObjects(to_remove);
     return BT::NodeStatus::SUCCESS;
   }
 
   BT_REGISTER_NODE(ClearPlanningScene);
 };
+
 }  // namespace thorp::bt::actions

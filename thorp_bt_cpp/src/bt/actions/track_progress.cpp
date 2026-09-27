@@ -17,14 +17,14 @@ public:
 
   static BT::PortsList providedPorts()
   {
-    return { BT::InputPort<geometry_msgs::PoseStamped>("robot_pose"),  //
+    return { BT::InputPort<geometry_msgs::msg::PoseStamped>("robot_pose"),  //
              BT::BidirectionalPort<Waypoints>("waypoints"),            //
              BT::InputPort<double>("reached_threshold"),               //
              BT::OutputPort<size_t>("next_waypoint") };
   }
 
 private:
-  using Waypoints = std::vector<geometry_msgs::PoseStamped>;
+  using Waypoints = std::vector<geometry_msgs::msg::PoseStamped>;
 
   BT::NodeStatus onStart() override
   {
@@ -32,21 +32,22 @@ private:
     waypoints_ = requireInput<Waypoints>(*this, "waypoints");
     auto reached_threshold = getInput<double>("reached_threshold");
     pt_.init(waypoints_, reached_threshold ? *reached_threshold : 1.0);  // TODO use paran
-    ROS_INFO_STREAM_NAMED(name(), "Tracking progress along " << waypoints_.size() << " waypoints");
+    RCLCPP_INFO_STREAM(logger(*this), "Tracking progress along " << waypoints_.size() << " waypoints");
     return BT::NodeStatus::RUNNING;
   }
 
   BT::NodeStatus onRunning() override
   {
-    pt_.updatePose(requireInput<geometry_msgs::PoseStamped>(*this, "robot_pose"));
+    pt_.updatePose(requireInput<geometry_msgs::msg::PoseStamped>(*this, "robot_pose"));
     if (next_waypoint_ != pt_.nextWaypoint())
     {
       next_waypoint_ = pt_.nextWaypoint();
       auto consumed = std::min(next_waypoint_, waypoints_.size());
       setOutput("waypoints", Waypoints{ waypoints_.begin() + consumed, waypoints_.end() });
       setOutput("next_waypoint", next_waypoint_);
-      ROS_INFO_STREAM_NAMED(name(), "Next waypoint: " << next_waypoint_ << " (" << waypoints_.size() - consumed << "/"
-                                                      << waypoints_.size() << " left)");
+      RCLCPP_INFO_STREAM(logger(*this), "Next waypoint: " << next_waypoint_ << " ("
+                                                          << waypoints_.size() - consumed << "/" << waypoints_.size()
+                                                          << " left)");
     }
     return BT::NodeStatus::RUNNING;
   }

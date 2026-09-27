@@ -1,9 +1,10 @@
 #include "thorp_bt_cpp/bt_runner.hpp"
 
+#include <fstream>
+
 // bt tools
 #include <behaviortree_cpp/xml_parsing.h>
 
-#include <thorp_toolkit/common.hpp>
 #include <thorp_toolkit/simulation.hpp>
 namespace ttk = thorp::toolkit;
 
@@ -11,64 +12,75 @@ namespace thorp::bt
 {
 BT::BehaviorTreeFactory Runner::bt_factory_{};
 
-Runner::Runner() : pnh_("~")
+Runner::Runner(const rclcpp::Node::SharedPtr& node) : node_(node)
 {
+}
+
+BT::Blackboard::Ptr Runner::makeBlackboard(const rclcpp::Node::SharedPtr& node)
+{
+  using std::chrono::milliseconds;
+  const double tick_rate = node->get_parameter_or("tick_rate", 10.0);
+  auto blackboard = BT::Blackboard::create();
+  blackboard->set<rclcpp::Node::SharedPtr>("node", node);
+  // Nav2's BT nodes wait for replies from servers within a tick, for up to half the tick period
+  blackboard->set<milliseconds>("bt_loop_duration", milliseconds(static_cast<int>(1000.0 / tick_rate)));
+  blackboard->set<milliseconds>("server_timeout", milliseconds(static_cast<int>(500.0 / tick_rate)));
+  blackboard->set<milliseconds>("cancel_timeout", milliseconds(1000));
+  // Tree creation fails if a server is not available after this long
+  blackboard->set<milliseconds>("wait_for_service_timeout",
+                                milliseconds(node->get_parameter_or("wait_for_service_timeout", 5000)));
+  return blackboard;
 }
 
 bool Runner::loadTree()
 {
   // on simulation, wait for the simulated time to start before loading and running the tree
-  if (!ros::Time::waitForValid(ros::WallDuration(60)))
+  if (!node_->get_clock()->wait_until_started(rclcpp::Duration::from_seconds(60)))
   {
-    ROS_ERROR_STREAM_NAMED("bt_runner", "No valid time after 60 seconds");
+    RCLCPP_ERROR(node_->get_logger(), "No valid time after 60 seconds");
     return false;
   }
 
-  std::string bt_filepath, nodes_filepath;
-  pnh_.getParam("app_name", app_name_);
-  pnh_.getParam("bt_filepath", bt_filepath);
-  pnh_.getParam("nodes_filepath", nodes_filepath);
+  app_name_ = node_->get_parameter_or<std::string>("app_name", "");
+  const std::string bt_filepath = node_->get_parameter_or<std::string>("bt_filepath", "");
+  const std::string nodes_filepath = node_->get_parameter_or<std::string>("nodes_filepath", "");
 
   // dump to an XML file to load on Groot
-  std::ofstream ofs;
-  ofs.open(nodes_filepath,
-           std::ios::out |        // output file stream
-               std::ios::trunc);  // truncate content
-  if (ofs)
+  if (!nodes_filepath.empty())
   {
+    std::ofstream ofs(nodes_filepath, std::ios::out | std::ios::trunc);
+    if (!ofs)
+    {
+      RCLCPP_ERROR_STREAM(node_->get_logger(), "Unable to open file to write node models file: " << nodes_filepath);
+      return false;
+    }
     ofs << BT::writeTreeNodesModelXML(bt_factory_) << std::endl;
-    ofs.close();
-  }
-  else
-  {
-    ROS_ERROR_STREAM_NAMED("bt_runner", "Unable to open file to write node models file: " << nodes_filepath);
-    return false;
   }
 
   try
   {
     bt_factory_.registerBehaviorTreeFromFile(bt_filepath);
-    bt_ = bt_factory_.createTree(app_name_);
+    bt_ = bt_factory_.createTree(app_name_, makeBlackboard(node_));
   }
   catch (const std::exception& e)
   {
-    ROS_ERROR_STREAM_NAMED("bt_runner", "Failed to load behavior tree " << bt_filepath);
-    ROS_ERROR_STREAM_NAMED("bt_runner", e.what());
+    RCLCPP_ERROR_STREAM(node_->get_logger(), "Failed to load behavior tree " << bt_filepath << ": " << e.what());
     return false;
   }
 
   // init publishers for debugging bt
-  if (bt_ && pnh_.param<bool>("publish_bt", false))
+  if (node_->get_parameter_or("publish_bt", false))
   {
     bt_pub_groot_.emplace(*bt_);
-    bt_pub_file_.emplace(*bt_, pnh_.param<std::string>("publish_bt_filepath", "/tmp/" + app_name_ + ".btlog").c_str());
-    bt_pub_topic_.emplace(*bt_);
+    bt_pub_file_.emplace(*bt_, node_->get_parameter_or<std::string>("publish_bt_filepath",
+                                                                     "/tmp/" + app_name_ + ".btlog"));
+    bt_pub_topic_.emplace(*bt_, node_);
   }
 
-  tick_rate_ = pnh_.param("tick_rate", 10.0);
+  tick_rate_ = node_->get_parameter_or("tick_rate", 10.0);
   if (tick_rate_ <= 0)
   {
-    ROS_WARN_NAMED("bt_runner", "Tick rate %.2f is non-positive, defaulting to 10 Hz", tick_rate_);
+    RCLCPP_WARN(node_->get_logger(), "Tick rate %.2f is non-positive, defaulting to 10 Hz", tick_rate_);
     tick_rate_ = 10;
   }
   return true;
@@ -78,26 +90,29 @@ void Runner::run()
 {
   if (!bt_)
   {
-    ROS_ERROR_STREAM_NAMED("bt_runner", "Behavior tree for " << app_name_ << " is not initialized");
+    RCLCPP_ERROR_STREAM(node_->get_logger(), "Behavior tree for " << app_name_ << " is not initialized");
     return;
   }
 
   // Wait start_delay seconds and on simulation for objects spawning to complete
-  ros::Duration(pnh_.param("start_delay", 1.0)).sleep();
-  ttk::waitForObjectsSpawning(ros::Duration(60));
+  node_->get_clock()->sleep_for(rclcpp::Duration::from_seconds(node_->get_parameter_or("start_delay", 1.0)));
+  ttk::waitForObjectsSpawning(node_, rclcpp::Duration::from_seconds(60));
 
-  ros::Time time_start = ros::Time::now();
+  // Callbacks run between ticks, never concurrently with them
+  rclcpp::executors::SingleThreadedExecutor executor;
+  executor.add_node(node_);
 
+  const rclcpp::Time time_start = node_->now();
   using namespace std::chrono;
   auto tick_period = duration_cast<system_clock::duration>(duration<double>(1.0 / tick_rate_));
   auto status = BT::NodeStatus::RUNNING;
-  while (ros::ok() && !BT::isStatusCompleted(status))
+  while (rclcpp::ok() && !BT::isStatusCompleted(status))
   {
     // Record the start time to subtract the time used on tick and ROS spin from the sleep time
     auto start_time = system_clock::now();
 
     status = bt_->tickOnce();
-    ros::spinOnce();
+    executor.spin_some();
 
     // Sleep tick period minus elapsed time
     auto elapsed_time = system_clock::now() - start_time;
@@ -108,14 +123,15 @@ void Runner::run()
     }
     else
     {
-      ROS_WARN_THROTTLE_NAMED(1.0, "bt_runner",
-                              "Missed desired tick rate of %.2fHz, most recent tick actually took %.2f seconds",
-                              tick_rate_, duration_cast<duration<double>>(elapsed_time).count());
+      RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 1000,
+                           "Missed desired tick rate of %.2fHz, most recent tick actually took %.2f seconds",
+                           tick_rate_, duration_cast<duration<double>>(elapsed_time).count());
     }
   }
 
-  const double completion_time = (ros::Time::now() - time_start).toSec();
-  ROS_INFO_NAMED("bt_runner", "%s completed in %.2fs with status %d", app_name_.c_str(), completion_time, (int)status);
+  const double completion_time = (node_->now() - time_start).seconds();
+  RCLCPP_INFO(node_->get_logger(), "%s completed in %.2fs with status %s", app_name_.c_str(), completion_time,
+              BT::toStr(status).c_str());
 }
 
 }  // namespace thorp::bt

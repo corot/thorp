@@ -2,7 +2,7 @@
 
 #include "thorp_bt_cpp/node_common.hpp"
 
-#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/msg/pose_stamped.hpp>
 
 namespace thorp::bt::actions
 {
@@ -27,7 +27,7 @@ private:
     const auto value = getInput<T>("input");
     if (!value)
     {
-      ROS_ERROR_STREAM_NAMED(name(), "No value provided");
+      RCLCPP_ERROR_STREAM(logger(*this), "No value provided");
       return BT::NodeStatus::FAILURE;
     }
     setOutput("output", *value);
@@ -42,5 +42,5 @@ BT_REGISTER_TEMPLATE_NODE(SetBlackboard<bool>, "SetBool");
 BT_REGISTER_TEMPLATE_NODE(SetBlackboard<double>, "SetDouble");
 BT_REGISTER_TEMPLATE_NODE(SetBlackboard<uint32_t>, "SetUInt");
 BT_REGISTER_TEMPLATE_NODE(SetBlackboard<std::string>, "SetString");
-BT_REGISTER_TEMPLATE_NODE(SetBlackboard<geometry_msgs::PoseStamped>, "SetPose");
+BT_REGISTER_TEMPLATE_NODE(SetBlackboard<geometry_msgs::msg::PoseStamped>, "SetPose");
 }  // namespace thorp::bt::actions

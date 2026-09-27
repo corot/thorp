@@ -23,7 +23,7 @@ namespace thorp::bt
  * reads a key as goes through BT::convertFromString<T>, the very same mechanism BT.CPP
  * already uses to parse literal attributes -- so this function never needs to know what
  * type each key is "supposed" to be, and supporting a new type is just a matter of adding
- * a BT::convertFromString<T> specialization (as already done for geometry_msgs::PoseStamped
+ * a BT::convertFromString<T> specialization (as already done for geometry_msgs::msg::PoseStamped
  * in type_converters.hpp), with nothing to change here or in bt_server.
  *
  * Scalars go through that string path. A structured value -- a json array or object -- can't,
@@ -31,10 +31,10 @@ namespace thorp::bt
  * are built as the real type and written to the blackboard directly. That needs to know what
  * type the key is supposed to be, which BT.CPP can tell us: building a tree pre-creates an
  * entry per remapped port carrying its declared type, so the port itself says what to build.
- * Supported today are std::vector<geometry_msgs::PoseStamped> (an array of pose strings),
- * std::map<std::string, unsigned> (an object of counts), and
- * rail_manipulation_msgs::SegmentedObject (an object of the fields the trees actually read).
- * A structured value for any other type is skipped with a ROS_WARN naming the type, which is
+ * Supported today are geometry_msgs::msg::PoseStamped and std::vector of them (pose strings or
+ * objects), std::map<std::string, unsigned> (an object of counts), and
+ * moveit_msgs::msg::CollisionObject for tables (an object of the fields the trees actually read).
+ * A structured value for any other type is skipped with a warning naming the type, which is
  * the cue to add a case in blackboard_json.cpp.
  */
 void blackboardFromJson(const nlohmann::json& json, BT::Blackboard& blackboard);

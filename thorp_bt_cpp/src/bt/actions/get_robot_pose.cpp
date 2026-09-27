@@ -2,7 +2,7 @@
 
 #include "thorp_bt_cpp/node_common.hpp"
 
-#include <mbf_msgs/ExePathAction.h>
+#include <nav2_msgs/action/follow_path.hpp>
 
 #include <thorp_toolkit/tf2.hpp>
 namespace ttk = thorp::toolkit;
@@ -21,19 +21,19 @@ public:
   {
     return { BT::InputPort<double>("timeout"),  //
              BT::OutputPort<int>("error"),      //
-             BT::OutputPort<geometry_msgs::PoseStamped>("robot_pose") };
+             BT::OutputPort<geometry_msgs::msg::PoseStamped>("robot_pose") };
   }
 
 private:
   BT::NodeStatus onStart() override
   {
-    timeout_.fromSec(requireInput<double>(*this, "timeout"));
+    timeout_ = tf2::durationFromSec(requireInput<double>(*this, "timeout"));
     return onRunning();
   }
 
   BT::NodeStatus onRunning() override
   {
-    geometry_msgs::PoseStamped robot_pose;
+    geometry_msgs::msg::PoseStamped robot_pose;
     robot_pose.header.frame_id = "base_footprint";
     robot_pose.pose.orientation.w = 1.0;
     if (tf2_.transformPose("map", robot_pose, robot_pose, timeout_))
@@ -42,8 +42,8 @@ private:
       return BT::NodeStatus::SUCCESS;
     }
 
-    ROS_ERROR_NAMED(name(), "Could not get the current robot pose");
-    setOutput<int>("error", mbf_msgs::ExePathResult::TF_ERROR);
+    RCLCPP_ERROR(logger(*this), "Could not get the current robot pose");
+    setOutput<int>("error", nav2_msgs::action::FollowPath::Result::TF_ERROR);
 
     return BT::NodeStatus::FAILURE;
   }
@@ -53,7 +53,7 @@ private:
   }
 
   ttk::TF2& tf2_;
-  ros::Duration timeout_;
+  tf2::Duration timeout_;
 
   BT_REGISTER_NODE(GetRobotPose);
 };

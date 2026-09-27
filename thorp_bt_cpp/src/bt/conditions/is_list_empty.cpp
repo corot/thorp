@@ -2,8 +2,8 @@
 
 #include "thorp_bt_cpp/node_common.hpp"
 
-#include <geometry_msgs/PoseStamped.h>
-#include <thorp_msgs/PickupLocation.h>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <thorp_msgs/msg/pickup_location.hpp>
 
 namespace thorp::bt::conditions
 {
@@ -40,6 +40,6 @@ public:
 
 // Register a builder for each templated version this class
 BT_REGISTER_TEMPLATE_NODE(IsListEmpty<uint32_t>, "IsUIntListEmpty");
-BT_REGISTER_TEMPLATE_NODE(IsListEmpty<geometry_msgs::PoseStamped>, "IsPoseListEmpty");
-BT_REGISTER_TEMPLATE_NODE(IsListEmpty<thorp_msgs::PickupLocation>, "PickupPlanCompleted");
+BT_REGISTER_TEMPLATE_NODE(IsListEmpty<geometry_msgs::msg::PoseStamped>, "IsPoseListEmpty");
+BT_REGISTER_TEMPLATE_NODE(IsListEmpty<thorp_msgs::msg::PickupLocation>, "PickupPlanCompleted");
 }  // namespace thorp::bt::conditions

@@ -3,7 +3,7 @@
 #include "thorp_bt_cpp/node_common.hpp"
 #include "thorp_bt_cpp/ros_service_node.hpp"
 
-#include <std_srvs/Trigger.h>
+#include <std_srvs/srv/trigger.hpp>
 
 namespace thorp::bt::condition
 {
@@ -13,7 +13,7 @@ namespace thorp::bt::condition
  * SUCCESS if the fov is clear
  * FAILURE if the fov is blocked
  */
-class CameraFOVClear : public BT::RosServiceNode<std_srvs::Trigger, BT::ConditionNode>
+class CameraFOVClear : public BT::RosServiceNode<std_srvs::srv::Trigger, BT::ConditionNode>
 {
 public:
   CameraFOVClear(const std::string& name, const BT::NodeConfig& conf)
@@ -36,14 +36,14 @@ private:
 
   BT::NodeStatus onResponse(const ResponseType& response) override
   {
-    ROS_DEBUG_STREAM_NAMED(name(), response.message);
+    RCLCPP_DEBUG_STREAM(logger(*this), response.message);
     return response.success ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
   }
 
   BT::NodeStatus onFailedRequest(FailureCause failure) override
   {
-    ROS_ERROR_STREAM_COND_NAMED(failure == MISSING_SERVER, name(), "Check clear fov service not connected");
-    ROS_ERROR_STREAM_COND_NAMED(failure == FAILED_CALL, name(), "Check clear fov service call failed");
+    RCLCPP_ERROR_EXPRESSION(logger(*this), failure == MISSING_SERVER, "Check clear fov service not connected");
+    RCLCPP_ERROR_EXPRESSION(logger(*this), failure == FAILED_CALL, "Check clear fov service call failed");
     return BT::NodeStatus::FAILURE;
   }
 

@@ -1,47 +1,38 @@
 #include <behaviortree_cpp/condition_node.h>
 
 #include "thorp_bt_cpp/node_common.hpp"
-#include "thorp_bt_cpp/ros_service_node.hpp"
+#include "thorp_bt_cpp/planning_scene.hpp"
 
-#include <std_srvs/Trigger.h>
-
-namespace thorp::bt::condition
+namespace thorp::bt::conditions
 {
 /**
- * Check if the gripper is physically holding an object, regardless of what the planning scene says.
+ * Check whether the planning scene has an object attached to the robot, and name it.
  */
-class ObjectAttached : public BT::RosServiceNode<std_srvs::Trigger, BT::ConditionNode>
+class ObjectAttached : public BT::ConditionNode
 {
 public:
-  ObjectAttached(const std::string& name, const BT::NodeConfig& conf)
-    : RosServiceNode<ServiceType, ParentType>(name, conf)
+  ObjectAttached(const std::string& name, const BT::NodeConfig& config) : BT::ConditionNode(name, config)
   {
   }
 
   static BT::PortsList providedPorts()
   {
-    // overwrite service_name with a default value
-    BT::PortsList ports = BT::RosServiceNode<ServiceType, ParentType>::providedPorts();
-    ports["service_name"].setDefaultValue("obj_attached");
-    ports.insert({ BT::OutputPort<std::string>("attached_object") });
-    return ports;
+    return { BT::OutputPort<std::string>("attached_object") };
   }
 
 private:
-  void sendRequest(RequestType& request) override
+  BT::NodeStatus tick() override
   {
-  }
-
-  BT::NodeStatus onResponse(const ResponseType& response) override
-  {
-    if (response.success)
+    const auto attached_objects = planningScene().getAttachedObjects();
+    if (attached_objects.empty())
     {
-      setOutput("attached_object", response.message);
-      return BT::NodeStatus::SUCCESS;
+      return BT::NodeStatus::FAILURE;
     }
-    return BT::NodeStatus::FAILURE;
+    setOutput("attached_object", attached_objects.begin()->first);
+    return BT::NodeStatus::SUCCESS;
   }
 
   BT_REGISTER_NODE(ObjectAttached);
 };
-}  // namespace thorp::bt::condition
+
+}  // namespace thorp::bt::conditions

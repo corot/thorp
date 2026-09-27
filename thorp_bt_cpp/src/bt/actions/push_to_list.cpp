@@ -2,7 +2,7 @@
 
 #include "thorp_bt_cpp/node_common.hpp"
 
-#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/msg/pose_stamped.hpp>
 
 namespace thorp::bt::actions
 {
@@ -36,5 +36,5 @@ private:
 };
 
 // Register a builder for each templated version this class
-BT_REGISTER_TEMPLATE_NODE(PushToList<geometry_msgs::PoseStamped>, "PushPoseToList");
+BT_REGISTER_TEMPLATE_NODE(PushToList<geometry_msgs::msg::PoseStamped>, "PushPoseToList");
 }  // namespace thorp::bt::actions

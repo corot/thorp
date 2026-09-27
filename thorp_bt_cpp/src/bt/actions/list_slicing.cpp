@@ -2,7 +2,7 @@
 
 #include "thorp_bt_cpp/node_common.hpp"
 
-#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/msg/pose_stamped.hpp>
 
 namespace thorp::bt::actions
 {
@@ -27,7 +27,7 @@ private:
     auto list = getInput<std::vector<T>>("list");
     if (!list)
     {
-      ROS_ERROR_STREAM_NAMED(name(), "No list provided");
+      RCLCPP_ERROR_STREAM(logger(*this), "No list provided");
       return BT::NodeStatus::FAILURE;
     }
     auto opt_start = getInput<size_t>("start");
@@ -35,7 +35,7 @@ private:
     int start = opt_start ? *opt_start : 0;
     int end = opt_end ? *opt_end : 0;
     auto new_list = std::vector<T>(list->begin() + start, list->end() + end);
-    ROS_INFO_NAMED(name(), "Slicing list[%d:%d] (size %lu -> %lu)", start, end, list->size(), new_list.size());
+    RCLCPP_INFO(logger(*this), "Slicing list[%d:%d] (size %lu -> %lu)", start, end, list->size(), new_list.size());
     setOutput("list", new_list);
     return BT::NodeStatus::SUCCESS;
   }
@@ -44,5 +44,5 @@ private:
 };
 
 // Register a builder for each templated version this class
-BT_REGISTER_TEMPLATE_NODE(ListSlicing<geometry_msgs::PoseStamped>, "PoseListSlicing");
+BT_REGISTER_TEMPLATE_NODE(ListSlicing<geometry_msgs::msg::PoseStamped>, "PoseListSlicing");
 }  // namespace thorp::bt::actions

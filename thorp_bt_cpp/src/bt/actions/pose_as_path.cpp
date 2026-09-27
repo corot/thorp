@@ -2,8 +2,8 @@
 
 #include "thorp_bt_cpp/node_common.hpp"
 
-#include <geometry_msgs/PoseStamped.h>
-#include <nav_msgs/Path.h>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <nav_msgs/msg/path.hpp>
 
 namespace thorp::bt::actions
 {
@@ -21,16 +21,16 @@ public:
   static BT::PortsList providedPorts()
   {
     return {
-      BT::InputPort<geometry_msgs::PoseStamped>("pose"),  //
-      BT::OutputPort<nav_msgs::Path>("path"),
+      BT::InputPort<geometry_msgs::msg::PoseStamped>("pose"),  //
+      BT::OutputPort<nav_msgs::msg::Path>("path"),
     };
   }
 
 private:
   BT::NodeStatus tick() override
   {
-    nav_msgs::Path path;
-    path.poses.push_back(requireInput<geometry_msgs::PoseStamped>(*this, "pose"));
+    nav_msgs::msg::Path path;
+    path.poses.push_back(requireInput<geometry_msgs::msg::PoseStamped>(*this, "pose"));
     setOutput("path", path);
     return BT::NodeStatus::SUCCESS;
   }

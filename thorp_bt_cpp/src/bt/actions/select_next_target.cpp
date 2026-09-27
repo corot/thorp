@@ -2,7 +2,7 @@
 
 #include "thorp_bt_cpp/node_common.hpp"
 
-#include <moveit_msgs/CollisionObject.h>
+#include <moveit_msgs/msg/collision_object.hpp>
 
 #include <thorp_toolkit/tf2.hpp>
 #include <thorp_toolkit/geometry.hpp>
@@ -15,18 +15,19 @@ namespace thorp::bt::actions
 class SelectNextTarget : public BT::SyncActionNode
 {
 public:
-  using Object = moveit_msgs::CollisionObject;
+  using Object = moveit_msgs::msg::CollisionObject;
 
   SelectNextTarget(const std::string& name, const BT::NodeConfig& config)
     : BT::SyncActionNode(name, config), tf2_(ttk::TF2::instance())
   {
-    ros::NodeHandle pnh("~");
-    max_arm_reach_ = pnh.param("max_arm_reach", 0.3);
-    max_failures_ = pnh.param("pickup_max_failures", 3);
-    tightening_ = pnh.param("gripper_tightening", 0.002);
-    std::string manip_frame = pnh.param("pickup_planning_frame", std::string("arm_base_link"));
+    auto node = rosNode(*this);
+    max_arm_reach_ = node->get_parameter_or("max_arm_reach", 0.3);
+    max_failures_ = node->get_parameter_or("pickup_max_failures", 3);
+    tightening_ = node->get_parameter_or("gripper_tightening", 0.002);
+    std::string manip_frame = node->get_parameter_or<std::string>("pickup_planning_frame", "arm_base_link");
     arm_pose_on_bfp_rf_.header.frame_id = manip_frame;
-    if (!tf2_.transformPose("base_footprint", arm_pose_on_bfp_rf_, arm_pose_on_bfp_rf_, ros::Duration(10)))
+    if (!tf2_.transformPose("base_footprint", arm_pose_on_bfp_rf_, arm_pose_on_bfp_rf_,
+                             tf2::durationFromSec(10.0)))
       throw tf2::TransformException("Unable to get arm base pose on base_footprint reference frame");
   }
 
@@ -43,14 +44,14 @@ private:
   uint32_t max_failures_;
   float max_arm_reach_;
   float tightening_;
-  geometry_msgs::PoseStamped arm_pose_on_bfp_rf_;
+  geometry_msgs::msg::PoseStamped arm_pose_on_bfp_rf_;
 
   BT::NodeStatus tick() override
   {
     auto objects = getInput<std::vector<Object>>("objects");
     if (!objects || objects->empty())
     {
-      ROS_INFO_STREAM_NAMED(name(), "No objects available");
+      RCLCPP_INFO_STREAM(logger(*this), "No objects available");
       return BT::NodeStatus::FAILURE;
     }
 
@@ -68,7 +69,7 @@ private:
 
     if (targets.empty())
     {
-      ROS_WARN_NAMED(name(), "No targets within range (closer than %g m)", max_arm_reach_);
+      RCLCPP_WARN(logger(*this), "No targets within range (closer than %g m)", max_arm_reach_);
       return BT::NodeStatus::FAILURE;
     }
 
@@ -96,7 +97,7 @@ private:
           static std::default_random_engine generator;
           std::uniform_real_distribution<float> uniform(0.0, tightening_ * 2.0 * fc);
           auto extra_tightening = uniform(generator);
-          ROS_INFO_NAMED(name(), "Retrying target '%s' (%d previous failures; %.1f mm of extra tightening)",
+          RCLCPP_INFO(logger(*this), "Retrying target '%s' (%d previous failures; %.1f mm of extra tightening)",
                          target.c_str(), fc, extra_tightening * 1000);
           setOutput("tightening", extra_tightening);
         }
@@ -105,12 +106,12 @@ private:
           setOutput("tightening", tightening_);
         }
         setOutput("target_name", target);
-        ROS_INFO_NAMED(name(), "Next target: '%s', located at %.2f m from the arm", target.c_str(), dist);
+        RCLCPP_INFO(logger(*this), "Next target: '%s', located at %.2f m from the arm", target.c_str(), dist);
         return BT::NodeStatus::SUCCESS;
       }
     }
 
-    ROS_WARN_NAMED(name(), "No targets to retry (failed less than %d times)", max_failures_);
+    RCLCPP_WARN(logger(*this), "No targets to retry (failed less than %d times)", max_failures_);
     return BT::NodeStatus::FAILURE;
   }
 

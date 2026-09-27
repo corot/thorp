@@ -1,48 +1,53 @@
-#include <behaviortree_cpp/condition_node.h>
+#include <nav2_behavior_tree/bt_action_node.hpp>
 
 #include "thorp_bt_cpp/node_common.hpp"
-#include "thorp_bt_cpp/ros_service_node.hpp"
 
-#include <std_srvs/Trigger.h>
+#include <control_msgs/action/gripper_command.hpp>
 
-namespace thorp::bt::condition
+namespace thorp::bt::conditions
 {
 /**
- * Check if we have a collision object attached to the gripper, according to the planning scene.
+ * Check whether the gripper holds something by closing it: it stalls if an object prevents it from closing fully.
+ * A held object stays pressed with the closing force.
  */
-class GripperBusy : public BT::RosServiceNode<std_srvs::Trigger, BT::ConditionNode>
+class GripperBusy : public nav2_behavior_tree::BtActionNode<control_msgs::action::GripperCommand>
 {
 public:
-  GripperBusy(const std::string& name, const BT::NodeConfig& conf)
-    : RosServiceNode<ServiceType, ParentType>(name, conf)
+  GripperBusy(const std::string& name, const std::string& action_name, const BT::NodeConfig& config)
+    : BtActionNode(name, action_name, config)
   {
   }
 
   static BT::PortsList providedPorts()
   {
-    // overwrite service_name with a default value
-    BT::PortsList ports = BT::RosServiceNode<ServiceType, ParentType>::providedPorts();
-    ports["service_name"].setDefaultValue("gripper_busy");
-    ports.insert({ BT::OutputPort<std::string>("attached_object") });
-    return ports;
+    return providedBasicPorts({ BT::InputPort<double>("closed_position", 0.45, "gripper_joint angle fully closed") });
   }
 
 private:
-  void sendRequest(RequestType& request) override
+  void on_tick() override
   {
+    goal_.command.position = requireInput<double>(*this, "closed_position");
   }
 
-  BT::NodeStatus onResponse(const ResponseType& response) override
+  BT::NodeStatus on_success() override
   {
-    if (response.success)
+    const auto& result = *result_.result;
+    if (result.stalled && !result.reached_goal)
     {
-      ROS_INFO_STREAM(response.message);
-      setOutput("attached_object", response.message);
+      RCLCPP_INFO(logger(*this), "Gripper holding something; stalled at %g", result.position);
       return BT::NodeStatus::SUCCESS;
     }
+    RCLCPP_INFO(logger(*this), "Gripper empty; closed to %g", result.position);
     return BT::NodeStatus::FAILURE;
   }
 
-  BT_REGISTER_NODE(GripperBusy);
+  BT::NodeStatus on_aborted() override
+  {
+    RCLCPP_ERROR(logger(*this), "Closing gripper failed");
+    return BT::NodeStatus::FAILURE;
+  }
+
+  BT_REGISTER_ACTION_NODE(GripperBusy, "gripper_controller/gripper_cmd");
 };
-}  // namespace thorp::bt::condition
+
+}  // namespace thorp::bt::conditions

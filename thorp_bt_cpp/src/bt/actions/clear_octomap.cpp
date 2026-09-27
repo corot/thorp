@@ -3,11 +3,11 @@
 #include "thorp_bt_cpp/node_common.hpp"
 #include "thorp_bt_cpp/ros_service_node.hpp"
 
-#include <std_srvs/Empty.h>
+#include <std_srvs/srv/empty.hpp>
 
 namespace thorp::bt::actions
 {
-class ClearOctomap : public BT::RosServiceNode<std_srvs::Empty, BT::SyncActionNode>
+class ClearOctomap : public BT::RosServiceNode<std_srvs::srv::Empty, BT::SyncActionNode>
 {
 public:
   ClearOctomap(const std::string& name, const BT::NodeConfig& conf)

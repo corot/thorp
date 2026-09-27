@@ -2,7 +2,7 @@
 
 #include "thorp_bt_cpp/node_common.hpp"
 
-#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/msg/pose_stamped.hpp>
 
 namespace thorp::bt::actions
 {
@@ -31,13 +31,13 @@ private:
     std::vector<T> list = requireInput<std::vector<T>>(*this, "list");
     if (list.empty())
     {
-      ROS_DEBUG_STREAM(name() << "Tried to pop from empty list");
+      RCLCPP_DEBUG_STREAM(logger(*this), "Tried to pop from empty list");
       return BT::NodeStatus::FAILURE;
     }
     setOutput("element", list.front());
     list.erase(list.begin());
     setOutput("list", list);
-    ROS_DEBUG_STREAM(name() << ":\tnew size is " << list.size());
+    RCLCPP_DEBUG_STREAM(logger(*this), ":\tnew size is " << list.size());
     return BT::NodeStatus::SUCCESS;
   }
 
@@ -46,5 +46,5 @@ private:
 
 // Register a builder for each templated version this class
 BT_REGISTER_TEMPLATE_NODE(PopFromList<uint32_t>, "PopUIntFromList");
-BT_REGISTER_TEMPLATE_NODE(PopFromList<geometry_msgs::PoseStamped>, "PopPoseFromList");
+BT_REGISTER_TEMPLATE_NODE(PopFromList<geometry_msgs::msg::PoseStamped>, "PopPoseFromList");
 }  // namespace thorp::bt::actions

@@ -2,7 +2,7 @@
 
 #include "thorp_bt_cpp/node_common.hpp"
 
-#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/msg/pose_stamped.hpp>
 
 namespace thorp::bt::actions
 {
@@ -32,7 +32,7 @@ private:
       setOutput("list", *list);
       return BT::NodeStatus::SUCCESS;
     }
-    ROS_ERROR_STREAM_NAMED(name(), "No list provided");
+    RCLCPP_ERROR_STREAM(logger(*this), "No list provided");
     return BT::NodeStatus::FAILURE;
   }
 
@@ -40,5 +40,5 @@ private:
 };
 
 // Register a builder for each templated version this class
-BT_REGISTER_TEMPLATE_NODE(ClearList<geometry_msgs::PoseStamped>, "ClearPoseList");
+BT_REGISTER_TEMPLATE_NODE(ClearList<geometry_msgs::msg::PoseStamped>, "ClearPoseList");
 }  // namespace thorp::bt::actions

@@ -1,44 +1,35 @@
 #include <behaviortree_cpp/condition_node.h>
 
 #include "thorp_bt_cpp/node_common.hpp"
-#include "thorp_bt_cpp/ros_service_node.hpp"
-
-#include <thorp_msgs/TrayCapacity.h>
+#include "thorp_bt_cpp/planning_scene.hpp"
+#include "thorp_bt_cpp/tray.hpp"
 
 namespace thorp::bt::conditions
 {
 /**
- * Check whether the tray is full.
- * Return SUCCESS if the tray is full.
+ * Check whether all the tray slots have an object on them.
  */
-class TrayFull : public BT::RosServiceNode<thorp_msgs::TrayCapacity, BT::ConditionNode>
+class TrayFull : public BT::ConditionNode
 {
 public:
-  TrayFull(const std::string& name, const BT::NodeConfig& conf)
-    : RosServiceNode<ServiceType, ParentType>(name, conf)
+  TrayFull(const std::string& name, const BT::NodeConfig& config) : BT::ConditionNode(name, config)
   {
   }
 
   static BT::PortsList providedPorts()
   {
-    // overwrite service_name with a default value
-    BT::PortsList ports = BT::RosServiceNode<ServiceType, ParentType>::providedPorts();
-    ports["service_name"].setDefaultValue("manipulation/tray/get_capacity");
-    return ports;
+    return {};
   }
 
 private:
-  void sendRequest(RequestType& request) override
+  BT::NodeStatus tick() override
   {
-  }
-
-  BT::NodeStatus onResponse(const ResponseType& response) override
-  {
-    bool tray_full = response.current == 0;
-    ROS_DEBUG_COND_NAMED(tray_full, name(), "The tray is full");
+    const bool tray_full = Tray(rosNode(*this)).freeSlots(planningScene().getObjects()).empty();
+    RCLCPP_DEBUG_EXPRESSION(logger(*this), tray_full, "The tray is full");
     return tray_full ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
   }
 
   BT_REGISTER_NODE(TrayFull);
 };
+
 }  // namespace thorp::bt::conditions

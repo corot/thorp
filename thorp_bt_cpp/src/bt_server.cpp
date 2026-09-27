@@ -8,7 +8,7 @@
 #include <sstream>
 #include <vector>
 
-#include <boost/bind.hpp>
+#include <thread>
 
 #include "thorp_bt_cpp/bt_runner.hpp"  // owner of the shared, static bt_factory_
 #include "thorp_bt_cpp/blackboard_json.hpp"
@@ -17,21 +17,21 @@ namespace fs = std::filesystem;
 
 namespace thorp::bt
 {
-Server::Server() : pnh_("~"), as_(pnh_, "run_subtree", boost::bind(&Server::executeCB, this, _1), false)
+Server::Server(const rclcpp::Node::SharedPtr& node) : node_(node)
 {
 }
 
 bool Server::loadTrees()
 {
-  if (!pnh_.getParam("bt_dir", bt_dir_))
+  if (!node_->get_parameter("bt_dir", bt_dir_))
   {
-    ROS_ERROR_STREAM_NAMED("bt_server", "Missing required parameter: bt_dir");
+    RCLCPP_ERROR_STREAM(node_->get_logger(), "Missing required parameter: bt_dir");
     return false;
   }
-  tick_rate_ = pnh_.param("tick_rate", 10.0);
+  tick_rate_ = node_->get_parameter_or("tick_rate", 10.0);
   if (tick_rate_ <= 0)
   {
-    ROS_WARN_NAMED("bt_server", "Tick rate %.2f is non-positive, defaulting to 10 Hz", tick_rate_);
+    RCLCPP_WARN(node_->get_logger(), "Tick rate %.2f is non-positive, defaulting to 10 Hz", tick_rate_);
     tick_rate_ = 10;
   }
 
@@ -51,12 +51,12 @@ bool Server::loadTrees()
   }
   if (ec)
   {
-    ROS_ERROR_STREAM_NAMED("bt_server", "Cannot list bt_dir '" << bt_dir_ << "': " << ec.message());
+    RCLCPP_ERROR_STREAM(node_->get_logger(), "Cannot list bt_dir '" << bt_dir_ << "': " << ec.message());
     return false;
   }
   if (tree_files.empty())
   {
-    ROS_ERROR_STREAM_NAMED("bt_server", "No behavior tree xml files found in " << bt_dir_);
+    RCLCPP_ERROR_STREAM(node_->get_logger(), "No behavior tree xml files found in " << bt_dir_);
     return false;
   }
   std::sort(tree_files.begin(), tree_files.end());
@@ -69,7 +69,7 @@ bool Server::loadTrees()
     }
     catch (const std::exception& e)
     {
-      ROS_ERROR_STREAM_NAMED("bt_server", "Failed to load " << file << ": " << e.what());
+      RCLCPP_ERROR_STREAM(node_->get_logger(), "Failed to load " << file << ": " << e.what());
       return false;
     }
   }
@@ -80,21 +80,38 @@ bool Server::loadTrees()
   {
     ids << id << " ";
   }
-  ROS_INFO_STREAM_NAMED("bt_server", "Loaded " << tree_files.size() << " file(s) from " << bt_dir_ << ": "
+  RCLCPP_INFO_STREAM(node_->get_logger(), "Loaded " << tree_files.size() << " file(s) from " << bt_dir_ << ": "
                                                << tree_ids.size() << " subtree(s) available: " << ids.str());
   return true;
 }
 
-void Server::run()
+void Server::start()
 {
-  as_.start();
-  ROS_INFO_NAMED("bt_server", "Ready to run subtrees on action '%s'", pnh_.resolveName("run_subtree").c_str());
-  ros::spin();
+  as_ = rclcpp_action::create_server<RunSubtree>(
+      node_, "~/run_subtree",
+      [this](const rclcpp_action::GoalUUID&, std::shared_ptr<const RunSubtree::Goal> goal) {
+        if (busy_.exchange(true))
+        {
+          RCLCPP_ERROR_STREAM(node_->get_logger(), "Rejecting subtree '" << goal->subtree << "': already running one");
+          return rclcpp_action::GoalResponse::REJECT;
+        }
+        return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
+      },
+      [](const std::shared_ptr<GoalHandle>) { return rclcpp_action::CancelResponse::ACCEPT; },
+      [this](const std::shared_ptr<GoalHandle> goal_handle) {
+        std::thread([this, goal_handle]() {
+          execute(goal_handle);
+          busy_ = false;
+        }).detach();
+      });
+  RCLCPP_INFO(node_->get_logger(), "Ready to run subtrees on action '%s/run_subtree'",
+              node_->get_fully_qualified_name());
 }
 
-void Server::executeCB(const thorp_msgs::RunSubtreeGoalConstPtr& goal)
+void Server::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
-  thorp_msgs::RunSubtreeResult result;
+  const auto goal = goal_handle->get_goal();
+  auto result = std::make_shared<RunSubtree::Result>();
 
   nlohmann::json input_json;
   try
@@ -103,24 +120,24 @@ void Server::executeCB(const thorp_msgs::RunSubtreeGoalConstPtr& goal)
   }
   catch (const nlohmann::json::exception& e)
   {
-    ROS_ERROR_STREAM_NAMED("bt_server", "Invalid input json for subtree '" << goal->subtree << "': " << e.what());
-    result.success = false;
-    result.json = nlohmann::json{ { "error", std::string("invalid input json: ") + e.what() } }.dump();
-    as_.setAborted(result);
+    RCLCPP_ERROR_STREAM(node_->get_logger(), "Invalid input json for subtree '" << goal->subtree << "': " << e.what());
+    result->success = false;
+    result->json = nlohmann::json{ { "error", std::string("invalid input json: ") + e.what() } }.dump();
+    goal_handle->abort(result);
     return;
   }
 
   std::optional<BT::Tree> tree;
   try
   {
-    tree = Runner::bt_factory_.createTree(goal->subtree);
+    tree = Runner::bt_factory_.createTree(goal->subtree, Runner::makeBlackboard(node_));
   }
   catch (const std::exception& e)
   {
-    ROS_ERROR_STREAM_NAMED("bt_server", "Cannot create subtree '" << goal->subtree << "': " << e.what());
-    result.success = false;
-    result.json = nlohmann::json{ { "error", std::string("unknown subtree: ") + e.what() } }.dump();
-    as_.setAborted(result);
+    RCLCPP_ERROR_STREAM(node_->get_logger(), "Cannot create subtree '" << goal->subtree << "': " << e.what());
+    result->success = false;
+    result->json = nlohmann::json{ { "error", std::string("unknown subtree: ") + e.what() } }.dump();
+    goal_handle->abort(result);
     return;
   }
 
@@ -136,10 +153,10 @@ void Server::executeCB(const thorp_msgs::RunSubtreeGoalConstPtr& goal)
     // the process: one badly shaped argument and every later goal dies with it, which for a
     // server whose callers are LLMs writing json is not a question of if. A refusal names the
     // problem and leaves the server standing.
-    ROS_ERROR_STREAM_NAMED("bt_server", "Cannot seed inputs for subtree '" << goal->subtree << "': " << e.what());
-    result.success = false;
-    result.json = nlohmann::json{ { "error", std::string("cannot seed inputs: ") + e.what() } }.dump();
-    as_.setAborted(result);
+    RCLCPP_ERROR_STREAM(node_->get_logger(), "Cannot seed inputs for subtree '" << goal->subtree << "': " << e.what());
+    result->success = false;
+    result->json = nlohmann::json{ { "error", std::string("cannot seed inputs: ") + e.what() } }.dump();
+    goal_handle->abort(result);
     return;
   }
 
@@ -157,7 +174,7 @@ void Server::executeCB(const thorp_msgs::RunSubtreeGoalConstPtr& goal)
                                 entriesToJson(*blackboard, goal->output_keys);
   };
 
-  ROS_INFO_STREAM_NAMED("bt_server", "Running subtree '" << goal->subtree << "' with input " << input_json.dump());
+  RCLCPP_INFO_STREAM(node_->get_logger(), "Running subtree '" << goal->subtree << "' with input " << input_json.dump());
 
   using namespace std::chrono;
   const auto tick_period = duration_cast<system_clock::duration>(duration<double>(1.0 / tick_rate_));
@@ -167,21 +184,20 @@ void Server::executeCB(const thorp_msgs::RunSubtreeGoalConstPtr& goal)
   // abort this goal with the message and leave the server serving the next one.
   try
   {
-    while (ros::ok() && !BT::isStatusCompleted(status))
+    while (rclcpp::ok() && !BT::isStatusCompleted(status))
     {
-      if (as_.isPreemptRequested())
+      if (goal_handle->is_canceling())
       {
-        ROS_WARN_STREAM_NAMED("bt_server", "Subtree '" << goal->subtree << "' preempted");
+        RCLCPP_WARN_STREAM(node_->get_logger(), "Subtree '" << goal->subtree << "' preempted");
         tree->haltTree();
-        result.success = false;
-        result.json = collectOutputs().dump();
-        as_.setPreempted(result);
+        result->success = false;
+        result->json = collectOutputs().dump();
+        goal_handle->canceled(result);
         return;
       }
 
       const auto start_time = system_clock::now();
       status = tree->tickOnce();
-      ros::spinOnce();
 
       const auto elapsed_time = system_clock::now() - start_time;
       const auto sleep_time = tick_period - elapsed_time;
@@ -191,34 +207,34 @@ void Server::executeCB(const thorp_msgs::RunSubtreeGoalConstPtr& goal)
       }
       else
       {
-        ROS_WARN_THROTTLE_NAMED(1.0, "bt_server",
-                                "Missed desired tick rate of %.2fHz, most recent tick actually took %.2f seconds",
-                                tick_rate_, duration_cast<duration<double>>(elapsed_time).count());
+        RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 1000,
+                             "Missed desired tick rate of %.2fHz, most recent tick actually took %.2f seconds",
+                             tick_rate_, duration_cast<duration<double>>(elapsed_time).count());
       }
     }
   }
   catch (const std::exception& e)
   {
-    ROS_ERROR_STREAM_NAMED("bt_server", "Subtree '" << goal->subtree << "' threw: " << e.what());
+    RCLCPP_ERROR_STREAM(node_->get_logger(), "Subtree '" << goal->subtree << "' threw: " << e.what());
     try
     {
       tree->haltTree();
     }
     catch (const std::exception& halt_error)
     {
-      ROS_ERROR_STREAM_NAMED("bt_server", "Halting '" << goal->subtree << "' threw too: " << halt_error.what());
+      RCLCPP_ERROR_STREAM(node_->get_logger(), "Halting '" << goal->subtree << "' threw too: " << halt_error.what());
     }
-    result.success = false;
-    result.json = nlohmann::json{ { "error", std::string("subtree threw: ") + e.what() } }.dump();
-    as_.setAborted(result);
+    result->success = false;
+    result->json = nlohmann::json{ { "error", std::string("subtree threw: ") + e.what() } }.dump();
+    goal_handle->abort(result);
     return;
   }
 
-  result.success = status == BT::NodeStatus::SUCCESS;
-  result.json = collectOutputs().dump();
-  ROS_INFO_STREAM_NAMED("bt_server", "Subtree '" << goal->subtree << "' completed with status " << BT::toStr(status)
-                                                 << ", output " << result.json);
-  as_.setSucceeded(result);
+  result->success = status == BT::NodeStatus::SUCCESS;
+  result->json = collectOutputs().dump();
+  RCLCPP_INFO_STREAM(node_->get_logger(), "Subtree '" << goal->subtree << "' completed with status "
+                                                       << BT::toStr(status) << ", output " << result->json);
+  goal_handle->succeed(result);
 }
 
 }  // namespace thorp::bt

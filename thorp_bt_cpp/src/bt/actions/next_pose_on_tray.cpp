@@ -1,44 +1,42 @@
 #include <behaviortree_cpp/action_node.h>
 
 #include "thorp_bt_cpp/node_common.hpp"
-#include "thorp_bt_cpp/ros_service_node.hpp"
-
-#include <thorp_msgs/TrayNextPose.h>
+#include "thorp_bt_cpp/planning_scene.hpp"
+#include "thorp_bt_cpp/tray.hpp"
 
 namespace thorp::bt::actions
 {
 /**
- * Calculate the next pose where to put an object on the tray.
- * Return FAILURE if the tray is full.
+ * Pose to place an object on the next free slot of the tray.
+ *
+ * @return  SUCCESS with the pose, FAILURE if the tray is full
  */
-class NextPoseOnTray : public BT::RosServiceNode<thorp_msgs::TrayNextPose, BT::SyncActionNode>
+class NextPoseOnTray : public BT::SyncActionNode
 {
 public:
-  NextPoseOnTray(const std::string& name, const BT::NodeConfig& conf)
-    : RosServiceNode<ServiceType, ParentType>(name, conf)
+  NextPoseOnTray(const std::string& name, const BT::NodeConfig& config) : BT::SyncActionNode(name, config)
   {
   }
 
   static BT::PortsList providedPorts()
   {
-    // overwrite service_name with a default value
-    BT::PortsList ports = BT::RosServiceNode<ServiceType, ParentType>::providedPorts();
-    ports["service_name"].setDefaultValue("manipulation/tray/get_next_pose");
-    ports.insert({ BT::OutputPort<geometry_msgs::PoseStamped>("pose_on_tray") });
-    return ports;
+    return { BT::OutputPort<geometry_msgs::msg::PoseStamped>("pose_on_tray") };
   }
 
 private:
-  void sendRequest(RequestType& request) override
+  BT::NodeStatus tick() override
   {
-  }
-
-  BT::NodeStatus onResponse(const ResponseType& response) override
-  {
-    setOutput("pose_on_tray", response.pose_on_tray);
+    const auto free_slots = Tray(rosNode(*this)).freeSlots(planningScene().getObjects());
+    if (free_slots.empty())
+    {
+      RCLCPP_ERROR(logger(*this), "Tray is full");
+      return BT::NodeStatus::FAILURE;
+    }
+    setOutput("pose_on_tray", free_slots.front());
     return BT::NodeStatus::SUCCESS;
   }
 
   BT_REGISTER_NODE(NextPoseOnTray);
 };
+
 }  // namespace thorp::bt::actions

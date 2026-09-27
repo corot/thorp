@@ -7,18 +7,16 @@
 #include <typeinfo>
 #include <vector>
 
-#include <ros/console.h>
+#include <rclcpp/logging.hpp>
 
-#include <geometry_msgs/Pose.h>
-#include <geometry_msgs/PoseStamped.h>
-#include <moveit_msgs/CollisionObject.h>
-#include <rail_manipulation_msgs/SegmentedObject.h>
+#include <geometry_msgs/msg/pose.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <moveit_msgs/msg/collision_object.hpp>
+#include <shape_msgs/msg/solid_primitive.hpp>
 
 #include <behaviortree_cpp/utils/demangle_util.h>
 
-// for convertFromString<PoseStamped>: a pose arrives in exactly the same "x;y;yaw;frame" form
-// whether it came from a literal xml attribute or from a goal's json, and parsing it in one
-// place is what keeps those two from drifting
+// for parsePose: callers write poses in Thorp's short forms, "x;y;yaw;frame" and "x;y;z;roll;pitch;yaw;frame"
 #include "thorp_bt_cpp/type_converters.hpp"
 
 #include <thorp_toolkit/common.hpp>
@@ -30,6 +28,11 @@ namespace thorp::bt
 {
 namespace
 {
+rclcpp::Logger logger()
+{
+  return rclcpp::get_logger("blackboard_json");
+}
+
 // Renders a json scalar the same way it would look as a literal XML attribute, so it can
 // be parsed back by whatever BT::convertFromString<T> a port applies to it.
 std::string scalarToBTString(const nlohmann::json& value)
@@ -52,7 +55,7 @@ std::string scalarToBTString(const nlohmann::json& value)
 // are all zero, so that whoever reads this doesn't have to handle two different pose shapes.
 // Note this isn't quite the inverse of BT::convertFromString<PoseStamped>, which takes the
 // same values ';'-separated rather than as an object.
-nlohmann::json poseToJson(const geometry_msgs::Pose& pose)
+nlohmann::json poseToJson(const geometry_msgs::msg::Pose& pose)
 {
   // quaternion to rpy readily yields -0.0, which is valid json but reads oddly
   auto tidy = [](double value) { return value == 0.0 ? 0.0 : value; };
@@ -69,27 +72,60 @@ nlohmann::json poseToJson(const geometry_msgs::Pose& pose)
 
 // Everything the caller sees is in the map frame; a pose in a sensor frame means nothing to
 // it. Only the outgoing json is converted, not the blackboard.
-geometry_msgs::PoseStamped inMapFrame(const geometry_msgs::PoseStamped& pose)
+geometry_msgs::msg::PoseStamped inMapFrame(const geometry_msgs::msg::PoseStamped& pose)
 {
   if (pose.header.frame_id.empty() || pose.header.frame_id == "map")
   {
     return pose;
   }
 
-  geometry_msgs::PoseStamped in_map;
+  geometry_msgs::msg::PoseStamped in_map;
   if (!ttk::TF2::instance().transformPose("map", pose, in_map))
   {
-    ROS_WARN_STREAM("Cannot transform pose from " << pose.header.frame_id << " to map; reporting as is");
+    RCLCPP_WARN_STREAM(logger(), "Cannot transform pose from " << pose.header.frame_id
+                                                               << " to map; reporting as is");
     return pose;
   }
   return in_map;
 }
 
-nlohmann::json poseToJson(const geometry_msgs::PoseStamped& pose)
+nlohmann::json poseToJson(const geometry_msgs::msg::PoseStamped& pose)
 {
-  const geometry_msgs::PoseStamped in_map = inMapFrame(pose);
+  const geometry_msgs::msg::PoseStamped in_map = inMapFrame(pose);
   nlohmann::json json = poseToJson(in_map.pose);
   json["frame"] = in_map.header.frame_id;
+  return json;
+}
+
+// Tables are collision objects made of a single box; tabletop objects carry their meshes.
+bool isTable(const moveit_msgs::msg::CollisionObject& object)
+{
+  return object.meshes.empty() && object.primitives.size() == 1 &&
+         object.primitives.front().type == shape_msgs::msg::SolidPrimitive::BOX;
+}
+
+std::string colorFromMetadata(const moveit_msgs::msg::CollisionObject& object)
+{
+  const nlohmann::json metadata = nlohmann::json::parse(object.type.db, nullptr, false);
+  return metadata.is_object() && metadata.contains("color") ? metadata["color"].get<std::string>() : std::string();
+}
+
+// A table as the trees use it: name, size, color and pose. Depth is the longest side, along the box x axis, and
+// height the box thickness.
+nlohmann::json tableToJson(const moveit_msgs::msg::CollisionObject& table)
+{
+  geometry_msgs::msg::PoseStamped pose;
+  pose.header = table.header;
+  pose.pose = table.pose;
+
+  const auto& dimensions = table.primitives.front().dimensions;
+  nlohmann::json json;
+  json["name"] = table.id;
+  json["depth"] = dimensions[shape_msgs::msg::SolidPrimitive::BOX_X];
+  json["width"] = dimensions[shape_msgs::msg::SolidPrimitive::BOX_Y];
+  json["height"] = dimensions[shape_msgs::msg::SolidPrimitive::BOX_Z];
+  json["color"] = colorFromMetadata(table);
+  json["pose"] = poseToJson(pose);
   return json;
 }
 
@@ -99,15 +135,18 @@ nlohmann::json poseToJson(const geometry_msgs::PoseStamped& pose)
 // next, and repeating it here would go stale the moment anything moves. What the caller can't
 // get anywhere else is what the detector decided to call them, and a name is all pickup_object,
 // place_object and place_on_tray ever take.
-nlohmann::json collisionObjectToJson(const moveit_msgs::CollisionObject& object)
+nlohmann::json collisionObjectToJson(const moveit_msgs::msg::CollisionObject& object)
 {
+  if (isTable(object))
+  {
+    return tableToJson(object);
+  }
+
   nlohmann::json json;
   json["name"] = object.id;
-
-  const nlohmann::json metadata = nlohmann::json::parse(object.type.db, nullptr, false);
-  if (metadata.is_object() && metadata.contains("color"))
+  if (const std::string color = colorFromMetadata(object); !color.empty())
   {
-    json["color"] = metadata["color"];
+    json["color"] = color;
   }
   return json;
 }
@@ -148,13 +187,13 @@ nlohmann::json anyToJson(const BT::Any& any)
   {
     return any.cast<double>();
   }
-  if (any.type() == typeid(geometry_msgs::PoseStamped))
+  if (any.type() == typeid(geometry_msgs::msg::PoseStamped))
   {
-    return poseToJson(any.cast<geometry_msgs::PoseStamped>());
+    return poseToJson(any.cast<geometry_msgs::msg::PoseStamped>());
   }
-  if (any.type() == typeid(geometry_msgs::Pose))
+  if (any.type() == typeid(geometry_msgs::msg::Pose))
   {
-    return poseToJson(any.cast<geometry_msgs::Pose>());
+    return poseToJson(any.cast<geometry_msgs::msg::Pose>());
   }
   if (any.type() == typeid(std::map<std::string, uint32_t>))
   {
@@ -165,60 +204,43 @@ nlohmann::json anyToJson(const BT::Any& any)
     }
     return json;
   }
-  if (any.type() == typeid(rail_manipulation_msgs::SegmentedObject))
-  {
-    // the same fields seeding accepts, so a table can round-trip
-    const auto object = any.cast<rail_manipulation_msgs::SegmentedObject>();
-    geometry_msgs::Pose pose;
-    pose.position = object.center;
-    pose.orientation = object.orientation;
-
-    nlohmann::json json;
-    json["name"] = object.name;
-    json["width"] = object.width;
-    json["depth"] = object.depth;
-    json["height"] = object.height;
-    json["color"] = ttk::colorName(object.cielab[0], object.cielab[1], object.cielab[2]);
-    json["pose"] = poseToJson(pose);
-    return json;
-  }
-  if (any.type() == typeid(std::vector<geometry_msgs::PoseStamped>))
+  if (any.type() == typeid(std::vector<geometry_msgs::msg::PoseStamped>))
   {
     nlohmann::json poses = nlohmann::json::array();
-    for (const auto& pose : any.cast<std::vector<geometry_msgs::PoseStamped>>())
+    for (const auto& pose : any.cast<std::vector<geometry_msgs::msg::PoseStamped>>())
     {
       poses.push_back(poseToJson(pose));
     }
     return poses;
   }
-  if (any.type() == typeid(std::vector<moveit_msgs::CollisionObject>))
+  if (any.type() == typeid(std::vector<moveit_msgs::msg::CollisionObject>))
   {
     nlohmann::json objects = nlohmann::json::array();
-    for (const auto& object : any.cast<std::vector<moveit_msgs::CollisionObject>>())
+    for (const auto& object : any.cast<std::vector<moveit_msgs::msg::CollisionObject>>())
     {
       objects.push_back(collisionObjectToJson(object));
     }
     return objects;
   }
-  if (any.type() == typeid(moveit_msgs::CollisionObject))
+  if (any.type() == typeid(moveit_msgs::msg::CollisionObject))
   {
-    return collisionObjectToJson(any.cast<moveit_msgs::CollisionObject>());
+    return collisionObjectToJson(any.cast<moveit_msgs::msg::CollisionObject>());
   }
   return "<unsupported type: " + BT::demangle(any.type()) + ">";
 }
 
-// A pose as json: either the "x;y;yaw;frame" string a literal xml attribute would use, or the
+// A pose as json: either a "x;y;yaw;frame" or "x;y;z;roll;pitch;yaw;frame" string, or the
 // nested object this file emits (x, y, z, roll, pitch, yaw, frame).
 //
 // Both forms occur: a caller writing a goal by hand reaches for the string, and one feeding back
 // a pose from an earlier result has the object, which is what lets capabilities compose.
 //
 // Returns nullopt for a shape that is neither, so the caller can report it rather than throw.
-std::optional<geometry_msgs::PoseStamped> poseFromJson(const nlohmann::json& json)
+std::optional<geometry_msgs::msg::PoseStamped> poseFromJson(const nlohmann::json& json)
 {
   if (json.is_string())
   {
-    return BT::convertFromString<geometry_msgs::PoseStamped>(json.get<std::string>());
+    return thorp::bt::parsePose(json.get<std::string>());
   }
   if (!json.is_object())
   {
@@ -229,35 +251,26 @@ std::optional<geometry_msgs::PoseStamped> poseFromJson(const nlohmann::json& jso
                          json.value("frame", std::string("map")));
 }
 
-// A table as the trees actually use it. They read width/depth (to judge whether the table is
-// a usable size, and to work out poses around it), name, and the bounding volume's dimensions;
-// detect_tables builds the table's pose out of center and orientation, so one pose input fills
-// both of those. Everything else on the message -- the point cloud, image, grasps, colors --
-// is left default: an agent has none of it, and nothing in the trees reads it.
-rail_manipulation_msgs::SegmentedObject segmentedObjectFromJson(const nlohmann::json& json)
+// A table as tableToJson writes it: a box collision object named, sized and posed as given.
+moveit_msgs::msg::CollisionObject tableFromJson(const nlohmann::json& json)
 {
-  rail_manipulation_msgs::SegmentedObject object;
-  object.name = json.value("name", std::string());
-  object.width = json.value("width", 0.0);
-  object.depth = json.value("depth", 0.0);
-  object.height = json.value("height", 0.0);
-
+  moveit_msgs::msg::CollisionObject table;
+  table.id = json.value("name", std::string());
+  table.primitives.resize(1);
+  table.primitives.front().type = shape_msgs::msg::SolidPrimitive::BOX;
+  table.primitives.front().dimensions = { json.value("depth", 0.0), json.value("width", 0.0),
+                                          json.value("height", 0.0) };
+  table.primitive_poses.resize(1);
+  table.primitive_poses.front().orientation.w = 1.0;
   if (json.contains("pose"))
   {
     if (auto pose = poseFromJson(json["pose"]))
     {
-      object.center = pose->pose.position;
-      object.orientation = pose->pose.orientation;
-      object.bounding_volume.pose = *pose;
+      table.header = pose->header;
+      table.pose = pose->pose;
     }
   }
-
-  // the same numbers again, in the form table_visited reads them; deriving it saves the
-  // caller from stating the table's size twice and getting the two copies out of step
-  object.bounding_volume.dimensions.x = object.width;
-  object.bounding_volume.dimensions.y = object.depth;
-  object.bounding_volume.dimensions.z = object.height;
-  return object;
+  return table;
 }
 
 // Builds a structured json value as whatever type the port declared, and writes it to the
@@ -266,7 +279,7 @@ rail_manipulation_msgs::SegmentedObject segmentedObjectFromJson(const nlohmann::
 bool setStructured(BT::Blackboard& blackboard, const std::string& key, const nlohmann::json& value,
                    const std::type_index& type)
 {
-  if (type == typeid(geometry_msgs::PoseStamped))
+  if (type == typeid(geometry_msgs::msg::PoseStamped))
   {
     auto pose = poseFromJson(value);
     if (!pose)
@@ -277,13 +290,13 @@ bool setStructured(BT::Blackboard& blackboard, const std::string& key, const nlo
     return true;
   }
 
-  if (type == typeid(std::vector<geometry_msgs::PoseStamped>))
+  if (type == typeid(std::vector<geometry_msgs::msg::PoseStamped>))
   {
     if (!value.is_array())
     {
       return false;
     }
-    std::vector<geometry_msgs::PoseStamped> poses;
+    std::vector<geometry_msgs::msg::PoseStamped> poses;
     for (const auto& element : value)
     {
       auto pose = poseFromJson(element);  // a string as a literal attribute writes one, or an object as we emit one
@@ -316,13 +329,13 @@ bool setStructured(BT::Blackboard& blackboard, const std::string& key, const nlo
     return true;
   }
 
-  if (type == typeid(rail_manipulation_msgs::SegmentedObject))
+  if (type == typeid(moveit_msgs::msg::CollisionObject))
   {
     if (!value.is_object())
     {
       return false;
     }
-    blackboard.set(key, segmentedObjectFromJson(value));
+    blackboard.set(key, tableFromJson(value));
     return true;
   }
 
@@ -346,7 +359,7 @@ bool addEntry(const BT::Blackboard& blackboard, const std::string& key, nlohmann
   }
   catch (const std::exception& e)
   {
-    ROS_WARN_STREAM_NAMED("blackboard_json", "Could not serialize blackboard key '" << key << "': " << e.what());
+    RCLCPP_WARN_STREAM(logger(), "Could not serialize blackboard key '" << key << "': " << e.what());
     json[key] = "<unreadable>";
   }
   return true;
@@ -361,7 +374,7 @@ void blackboardFromJson(const nlohmann::json& json, BT::Blackboard& blackboard)
   }
   if (!json.is_object())
   {
-    ROS_ERROR_STREAM_NAMED("blackboard_json", "Input json must be an object; got: " << json.dump());
+    RCLCPP_ERROR_STREAM(logger(), "Input json must be an object; got: " << json.dump());
     return;
   }
 
@@ -370,7 +383,11 @@ void blackboardFromJson(const nlohmann::json& json, BT::Blackboard& blackboard)
     const std::string& key = it.key();
     const nlohmann::json& value = it.value();
 
-    if (value.is_object() || value.is_array())
+    // Poses as strings too: the trees parse strings in Nav2's pose format, not in the short forms callers write
+    const BT::TypeInfo* string_info = value.is_string() ? blackboard.entryInfo(key) : nullptr;
+    const bool pose_string = string_info && string_info->type() == typeid(geometry_msgs::msg::PoseStamped);
+
+    if (value.is_object() || value.is_array() || pose_string)
     {
       // A structured value has to be built as its real type, which means knowing what that
       // type is. Ask the entry BT.CPP created for the port when it built the tree: no entry
@@ -378,14 +395,14 @@ void blackboardFromJson(const nlohmann::json& json, BT::Blackboard& blackboard)
       const BT::TypeInfo* info = blackboard.entryInfo(key);
       if (!info)
       {
-        ROS_WARN_STREAM_NAMED("blackboard_json", "Skipping input key '"
+        RCLCPP_WARN_STREAM(logger(), "Skipping input key '"
                                                      << key
                                                      << "': it is an object or array, and no port in this tree "
                                                         "uses that key, so there's no type to build it as");
       }
       else if (!setStructured(blackboard, key, value, info->type()))
       {
-        ROS_WARN_STREAM_NAMED("blackboard_json", "Skipping input key '" << key << "': can't build a "
+        RCLCPP_WARN_STREAM(logger(), "Skipping input key '" << key << "': can't build a "
                                                                         << BT::demangle(info->type()) << " out of "
                                                                         << value.dump());
       }
@@ -403,7 +420,7 @@ nlohmann::json entriesToJson(const BT::Blackboard& blackboard, const std::vector
   {
     if (!addEntry(blackboard, key, json))
     {
-      ROS_WARN_STREAM_NAMED("blackboard_json", "Requested output key '" << key << "' holds no value after the run");
+      RCLCPP_WARN_STREAM(logger(), "Requested output key '" << key << "' holds no value after the run");
     }
   }
   return json;

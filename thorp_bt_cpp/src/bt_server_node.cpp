@@ -2,11 +2,18 @@
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "bt_server");
-
-  thorp::bt::Server server;
+  rclcpp::init(argc, argv);
+  // Trees read app parameters by name, without declaring them
+  auto node = std::make_shared<rclcpp::Node>(
+      "bt_server", rclcpp::NodeOptions().automatically_declare_parameters_from_overrides(true));
+  thorp::bt::Server server(node);
   if (!server.loadTrees())
+  {
+    rclcpp::shutdown();
     return EXIT_FAILURE;
-  server.run();
+  }
+  server.start();
+  rclcpp::spin(node);
+  rclcpp::shutdown();
   return EXIT_SUCCESS;
 }

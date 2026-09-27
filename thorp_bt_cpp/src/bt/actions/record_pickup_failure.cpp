@@ -36,17 +36,18 @@ private:
       entry->second++;
 
     setOutput("failures", *failures);
-    ROS_INFO_STREAM_NAMED(name(), "Pickup " << target_name << " failed " << failures->at(target_name) << " time(s)");
+    RCLCPP_INFO_STREAM(logger(*this),
+                       "Pickup " << target_name << " failed " << failures->at(target_name) << " time(s)");
 
-    const auto max_failures = ros::NodeHandle("~").param("pickup_max_failures", 3);
+    const uint32_t max_failures = rosNode(*this)->get_parameter_or("pickup_max_failures", 3);
     const auto failures_count = failures->find(target_name)->second;
-    ROS_ASSERT_MSG(failures_count <= max_failures, "More failures than allowed?");
+    assert(failures_count <= max_failures && "More failures than allowed?");
     if (failures_count == max_failures)
     {
       const auto given_up_count_opt = getInput<uint32_t>("given_up_count");
       const auto given_up_count = given_up_count_opt ? *given_up_count_opt + 1 : 1;
       setOutput("given_up_count", given_up_count);
-      ROS_DEBUG_STREAM(target_name << " given up; " << given_up_count << " gave up in total");
+      RCLCPP_DEBUG_STREAM(logger(*this), target_name << " given up; " << given_up_count << " gave up in total");
     }
 
     return BT::NodeStatus::SUCCESS;

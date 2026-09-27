@@ -1,6 +1,8 @@
 #pragma once
 
-#include <ros/ros.h>
+#include <optional>
+
+#include <rclcpp/rclcpp.hpp>
 
 #include <behaviortree_cpp/bt_factory.h>
 
@@ -14,7 +16,7 @@ namespace thorp::bt
 class Runner
 {
 public:
-  Runner();
+  explicit Runner(const rclcpp::Node::SharedPtr& node);
 
   bool loadTree();
 
@@ -23,8 +25,14 @@ public:
   /** Factory to create the BT. It's static, so the custom nodes can register themselves with static initialization */
   static BT::BehaviorTreeFactory bt_factory_;
 
+  /**
+   * Blackboard with the entries every tree needs: the ROS node, as "node", and the timeouts Nav2's BT nodes read.
+   * Trees must be created on it, as nodes read these entries on construction.
+   */
+  static BT::Blackboard::Ptr makeBlackboard(const rclcpp::Node::SharedPtr& node);
+
 private:
-  ros::NodeHandle pnh_;
+  rclcpp::Node::SharedPtr node_;
 
   /** Running app name. */
   std::string app_name_;

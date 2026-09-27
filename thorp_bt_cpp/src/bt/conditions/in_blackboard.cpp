@@ -2,7 +2,7 @@
 
 #include "thorp_bt_cpp/node_common.hpp"
 
-#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/msg/pose_stamped.hpp>
 
 namespace thorp::bt::conditions
 {
@@ -31,6 +31,6 @@ private:
 };
 
 // Register a builder for each templated version this class
-BT_REGISTER_TEMPLATE_NODE(InBlackboard<geometry_msgs::PoseStamped>, "PoseInBlackboard");
+BT_REGISTER_TEMPLATE_NODE(InBlackboard<geometry_msgs::msg::PoseStamped>, "PoseInBlackboard");
 BT_REGISTER_TEMPLATE_NODE(InBlackboard<float>, "FloatInBlackboard");
 }  // namespace thorp::bt::conditions 

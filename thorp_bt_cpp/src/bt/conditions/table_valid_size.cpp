@@ -2,7 +2,7 @@
 
 #include "thorp_bt_cpp/node_common.hpp"
 
-#include <rail_manipulation_msgs/SegmentedObject.h>
+#include <moveit_msgs/msg/collision_object.hpp>
 
 #include <thorp_toolkit/geometry.hpp>
 namespace ttk = thorp::toolkit;
@@ -23,26 +23,26 @@ public:
 
   static BT::PortsList providedPorts()
   {
-    return { BT::InputPort<rail_manipulation_msgs::SegmentedObject>("table") };
+    return { BT::InputPort<moveit_msgs::msg::CollisionObject>("table") };
   }
 
 private:
   BT::NodeStatus tick() override
   {
-    ros::NodeHandle pnh("~");
-    const double table_min_side = pnh.param("table_min_side", 0.0);
-    const double table_max_side = pnh.param("table_max_side", 0.0);
+    const double table_min_side = rosNode(*this)->get_parameter_or("table_min_side", 0.0);
+    const double table_max_side = rosNode(*this)->get_parameter_or("table_max_side", 0.0);
     if (!table_min_side && !table_max_side)
     {
-      ROS_WARN_STREAM_ONCE_NAMED(name(), "No size limits set for tables");
+      RCLCPP_WARN_ONCE(logger(*this), "No size limits set for tables");
       return BT::NodeStatus::SUCCESS;
     }
 
-    const auto table = requireInput<rail_manipulation_msgs::SegmentedObject>(*this, "table");
-    if (std::min(table.width, table.depth) < table_min_side ||
-        std::max(table.width, table.depth) > table_max_side)
+    const auto table = requireInput<moveit_msgs::msg::CollisionObject>(*this, "table");
+    const double width = table.primitives.at(0).dimensions.at(1);
+    const double depth = table.primitives.at(0).dimensions.at(0);
+    if (std::min(width, depth) < table_min_side || std::max(width, depth) > table_max_side)
     {
-      ROS_INFO_NAMED(name(), "Table rejected due to invalid size: %.2f x %.2f", table.width, table.depth);
+      RCLCPP_INFO(logger(*this), "Table rejected due to invalid size: %.2f x %.2f", width, depth);
       return BT::NodeStatus::FAILURE;
     }
     return BT::NodeStatus::SUCCESS;

@@ -1,9 +1,9 @@
-#include <behaviortree_cpp/action_node.h>
+#include <nav2_behavior_tree/bt_action_node.hpp>
 
 #include "thorp_bt_cpp/node_common.hpp"
-#include "thorp_bt_cpp/ros_action_node.hpp"
 
-#include <rail_manipulation_msgs/SegmentObjectsAction.h>
+#include <moveit_msgs/msg/collision_object.hpp>
+#include <thorp_msgs/action/detect_tables.hpp>
 
 #include <thorp_toolkit/geometry.hpp>
 #include <thorp_toolkit/tf2.hpp>
@@ -12,69 +12,63 @@ namespace ttk = thorp::toolkit;
 namespace thorp::bt::actions
 {
 /**
- * Segment the observed scene in search of tables
+ * Detect the table in front of the robot, if its shortest side reaches the table_min_side parameter.
+ * The table is a box collision object, with x along its longest side; its pose is also provided on the map frame.
  */
-class DetectTables : public BT::RosActionNode<rail_manipulation_msgs::SegmentObjectsAction>
+class DetectTables : public nav2_behavior_tree::BtActionNode<thorp_msgs::action::DetectTables>
 {
 public:
-  DetectTables(const std::string& name, const BT::NodeConfig& conf)
-    : RosActionNode<ActionType>(name, conf), tf2_(ttk::TF2::instance())
+  DetectTables(const std::string& name, const std::string& action_name, const BT::NodeConfig& config)
+    : BtActionNode(name, action_name, config)
   {
   }
 
   static BT::PortsList providedPorts()
   {
-    BT::PortsList ports = BT::RosActionNode<ActionType>::providedPorts();
-    ports["action_name"].setDefaultValue("rail_segmentation/segment_objects");
-    ports.insert({ BT::OutputPort<rail_manipulation_msgs::SegmentedObject>("table"),  //
-                   BT::OutputPort<geometry_msgs::PoseStamped>("table_pose") });
-    return ports;
+    return providedBasicPorts({ BT::OutputPort<moveit_msgs::msg::CollisionObject>("table"),  //
+                                BT::OutputPort<geometry_msgs::msg::PoseStamped>("table_pose") });
   }
 
 private:
-  GoalType getGoal() override
+  void on_tick() override
   {
-    GoalType goal;
-    goal.only_surface = true;
-    goal.surface_min_side = ros::NodeHandle("~").param("table_min_side", 0.3);
-    return goal;
+    goal_.min_side = node_->get_parameter_or("table_min_side", 0.3);
   }
 
-  BT::NodeStatus onSucceeded(const ResultConstPtr& res) override
+  BT::NodeStatus on_success() override
   {
-    if (res->segmented_objects.objects.empty())
+    if (result_.result->tables.empty())
     {
       // No tables detected
       return BT::NodeStatus::FAILURE;
     }
-    auto table = res->segmented_objects.objects.front();
-    table.name = "table";
-    geometry_msgs::PoseStamped table_pose;
-    table_pose.header = table.point_cloud.header;
-    table_pose.pose.position = table.center;
-    table_pose.pose.orientation = table.orientation;
+
+    auto table = result_.result->tables.front();
+    table.id = "table";
+    geometry_msgs::msg::PoseStamped table_pose;
+    table_pose.header = table.header;
+    table_pose.pose = table.pose;
     if (!ttk::TF2::instance().transformPose("map", table_pose, table_pose))
     {
       // Transform table pose to map frame failed
       return BT::NodeStatus::FAILURE;
     }
-    double width = table.width, length = table.depth;
-    ROS_INFO_NAMED(name(), "Detected table of size %.1f x %.1f at %s", width, length, ttk::toCStr2D(table_pose));
+
+    const auto& size = table.primitives.front().dimensions;
+    RCLCPP_INFO(logger(*this), "Detected table of size %.1f x %.1f at %s", size[1], size[0],
+                ttk::toCStr2D(table_pose));
     setOutput("table", table);
     setOutput("table_pose", table_pose);
-
     return BT::NodeStatus::SUCCESS;
   }
 
-  BT::NodeStatus onAborted(const ResultConstPtr& res) override
+  BT::NodeStatus on_aborted() override
   {
-    ROS_ERROR_NAMED(name(), "Segment objects failed");
-
+    RCLCPP_ERROR(logger(*this), "Table detection failed");
     return BT::NodeStatus::FAILURE;
   }
 
-  ttk::TF2& tf2_;
-
-  BT_REGISTER_NODE(DetectTables);
+  BT_REGISTER_ACTION_NODE(DetectTables, "object_detection/detect_tables");
 };
+
 }  // namespace thorp::bt::actions

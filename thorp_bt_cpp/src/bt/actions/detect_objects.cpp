@@ -1,61 +1,43 @@
 #include <unordered_set>
 
-#include <behaviortree_cpp/action_node.h>
+#include <nav2_behavior_tree/bt_action_node.hpp>
 
 #include "thorp_bt_cpp/node_common.hpp"
-#include "thorp_bt_cpp/ros_action_node.hpp"
+#include "thorp_bt_cpp/planning_scene.hpp"
 
-#include <moveit_msgs/CollisionObject.h>
-#include <thorp_msgs/DetectObjectsAction.h>
+#include <moveit_msgs/msg/collision_object.hpp>
+#include <thorp_msgs/action/detect_objects.hpp>
 
-#include <thorp_toolkit/planning_scene.hpp>
 #include <thorp_toolkit/common.hpp>
 namespace ttk = thorp::toolkit;
 
 namespace thorp::bt::actions
 {
 /**
- * @brief Tabletop object detection.
- * Tries to segment a support surface and classify the tabletop objects found on it. Returns only the
- * objects of types listed on 'object_types' input key (or all if it's not provided).
- * As output, it returns the objects as a list of moveit_msgs/CollisionObject msgs and a single msg for
- * the support surface.
- * All detected objects and the support surface will be added to the planning scene as collision objects.
- * If clear_scene is true, the planning scene will be previously emptied.
+ * Detect the objects on the table in front of the robot, keeping only those of the given types, if any.
  */
-class DetectObjects : public BT::RosActionNode<thorp_msgs::DetectObjectsAction>
+class DetectObjects : public nav2_behavior_tree::BtActionNode<thorp_msgs::action::DetectObjects>
 {
 public:
-  DetectObjects(const std::string& name, const BT::NodeConfig& config) : RosActionNode(name, config)
+  DetectObjects(const std::string& name, const std::string& action_name, const BT::NodeConfig& config)
+    : BtActionNode(name, action_name, config)
   {
   }
 
   static BT::PortsList providedPorts()
   {
-    BT::PortsList ports = BT::RosActionNode<ActionType>::providedPorts();
-    ports["action_name"].setDefaultValue("object_detection");
-    ports.insert({ BT::InputPort<std::string>("object_types"),                            //
-                   BT::OutputPort<std::vector<moveit_msgs::CollisionObject>>("objects"),  //
-                   BT::OutputPort<moveit_msgs::CollisionObject>("surface") });
-    return ports;
+    return providedBasicPorts({ BT::InputPort<std::string>("object_types"),                                //
+                                BT::OutputPort<std::vector<moveit_msgs::msg::CollisionObject>>("objects"),  //
+                                BT::OutputPort<moveit_msgs::msg::CollisionObject>("surface") });
   }
 
 private:
-  GoalType getGoal() override
+  void on_tick() override
   {
-    GoalType goal;
-    goal.clear_scene = false;
-    ////TODO min side,,,, pasar de alguna forma    but not really needed, as perception will call the srv, not the action
-    // TODO goal.output_frame = requireInput<std::string>(*this, "support_surf");
-    return goal;
+    goal_.clear_scene = false;
   }
 
-  void onFeedback(const FeedbackConstPtr& feedback) override
-  {
-    setOutput("feedback", std::make_optional<FeedbackType>(*feedback));
-  }
-
-  BT::NodeStatus onSucceeded(const ResultConstPtr& res) override
+  BT::NodeStatus on_success() override
   {
     std::unordered_set<std::string> valid_targets;
     auto object_types_csv = requireInput<std::string>(*this, "object_types");
@@ -63,15 +45,15 @@ private:
     {
       auto object_types = ttk::tokenize(object_types_csv);
       std::copy(object_types.begin(), object_types.end(), inserter(valid_targets, valid_targets.begin()));
-      ROS_INFO_STREAM_NAMED(name(), "Detecting " << object_types_csv);
+      RCLCPP_INFO_STREAM(logger(*this), "Detecting " << object_types_csv);
     }
     else
     {
-      ROS_INFO_STREAM_NAMED(name(), "No object types provided; reporting all detections");
+      RCLCPP_INFO_STREAM(logger(*this), "No object types provided; reporting all detections");
     }
 
-    std::vector<moveit_msgs::CollisionObject> objects;
-    for (const auto& object : res->objects)
+    std::vector<moveit_msgs::msg::CollisionObject> objects;
+    for (const auto& object : result_.result->objects)
     {
       const auto obj_type = object.id.substr(0, object.id.find(' '));  // remove index
       if (valid_targets.empty() || valid_targets.find(obj_type) != valid_targets.end())
@@ -79,20 +61,20 @@ private:
         objects.emplace_back(object);
       }
     }
-    ROS_INFO_STREAM_NAMED(name(), objects.size() << " object(s) detected: " << ttk::getIDs(objects));
-    setOutput("objects", objects);
-    setOutput("surface", res->surface);
 
+    RCLCPP_INFO_STREAM(logger(*this), objects.size() << " object(s) detected: " << objectIds(objects));
+    setOutput("objects", objects);
+    setOutput("surface", result_.result->surface);
     return BT::NodeStatus::SUCCESS;
   }
 
-  BT::NodeStatus onAborted(const ResultConstPtr& res) override
+  BT::NodeStatus on_aborted() override
   {
-    ROS_ERROR_NAMED(name(), "Object detection failed");
-
+    RCLCPP_ERROR(logger(*this), "Object detection failed");
     return BT::NodeStatus::FAILURE;
   }
 
-  BT_REGISTER_NODE(DetectObjects);
+  BT_REGISTER_ACTION_NODE(DetectObjects, "object_detection");
 };
+
 }  // namespace thorp::bt::actions

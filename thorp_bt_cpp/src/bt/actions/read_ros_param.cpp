@@ -5,7 +5,7 @@
 namespace thorp::bt::actions
 {
 /**
- * Read a ROS parameter from the private (strategy) namespace and store its value on the blackboard.
+ * Read a parameter of the node running the tree and store its value on the blackboard.
  *
  * @param[in]  param_name  Input parameter name.
  * @param[out] output_key  Blackboard key where the value will be stored.
@@ -18,7 +18,6 @@ class ReadRosParam : public BT::SyncActionNode
 {
 public:
   ReadRosParam(const std::string& name, const BT::NodeConfig& config) : BT::SyncActionNode(name, config)
-  , pnh_("~")
   {
   }
 
@@ -29,18 +28,17 @@ public:
   }
 
 private:
-  ros::NodeHandle pnh_;
-
   BT::NodeStatus tick() override
   {
     const auto param_name = requireInput<std::string>(*this, "param_name");
     T param_value;
-    if (!pnh_.getParam(param_name, param_value))
+    if (!rosNode(*this)->get_parameter(param_name, param_value))
     {
-      ROS_ERROR_STREAM_NAMED(name(), "Parameter " << param_name << " not found in namespace " << pnh_.getNamespace());
+      RCLCPP_ERROR_STREAM(logger(*this), "Parameter " << param_name << " not found on node "
+                                                      << rosNode(*this)->get_fully_qualified_name());
       return BT::NodeStatus::FAILURE;
     }
-    ROS_INFO_STREAM_NAMED(name(), "Read ROS parameter " << param_name << " with value " << param_value);
+    RCLCPP_INFO_STREAM(logger(*this), "Read ROS parameter " << param_name << " with value " << param_value);
     setOutput("output_key", param_value);
     return BT::NodeStatus::SUCCESS;
   }

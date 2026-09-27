@@ -21,8 +21,8 @@ public:
   {
     return { BT::InputPort<double>("dist_tolerance"),             //
              BT::InputPort<double>("angle_tolerance"),            //
-             BT::InputPort<geometry_msgs::PoseStamped>("pose1"),  //
-             BT::InputPort<geometry_msgs::PoseStamped>("pose2") };
+             BT::InputPort<geometry_msgs::msg::PoseStamped>("pose1"),  //
+             BT::InputPort<geometry_msgs::msg::PoseStamped>("pose2") };
   }
 
 private:
@@ -30,18 +30,18 @@ private:
   {
     const auto dist_tolerance = getInput<double>("dist_tolerance");
     const auto angle_tolerance = getInput<double>("angle_tolerance");
-    const auto pose1 = requireInput<geometry_msgs::PoseStamped>(*this, "pose1");
-    const auto pose2 = requireInput<geometry_msgs::PoseStamped>(*this, "pose2");
+    const auto pose1 = requireInput<geometry_msgs::msg::PoseStamped>(*this, "pose1");
+    const auto pose2 = requireInput<geometry_msgs::msg::PoseStamped>(*this, "pose2");
     const auto dist_t = dist_tolerance ? *dist_tolerance : 0.1;
     const auto angle_t = angle_tolerance ? *angle_tolerance : 0.1;
     if (ttk::samePose(pose1, pose2, dist_t, angle_t))
     {
-      ROS_INFO_NAMED(name(), "Same pose: %s == %s with %f, %f tolerances", ttk::toCStr2D(pose1), ttk::toCStr2D(pose2),
-                     dist_t, angle_t);
+      RCLCPP_INFO(logger(*this), "Same pose: %s == %s with %f, %f tolerances", ttk::toCStr2D(pose1),
+                  ttk::toCStr2D(pose2), dist_t, angle_t);
       return BT::NodeStatus::SUCCESS;
     }
-    ROS_INFO_NAMED(name(), "Diff pose: %s != %s with %f, %f tolerances", ttk::toCStr2D(pose1), ttk::toCStr2D(pose2),
-                   dist_t, angle_t);
+    RCLCPP_INFO(logger(*this), "Diff pose: %s != %s with %f, %f tolerances", ttk::toCStr2D(pose1),
+                ttk::toCStr2D(pose2), dist_t, angle_t);
     return BT::NodeStatus::FAILURE;
   }
 

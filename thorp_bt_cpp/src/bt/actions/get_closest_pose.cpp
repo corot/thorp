@@ -20,24 +20,24 @@ public:
 
   static BT::PortsList providedPorts()
   {
-    return { BT::InputPort<std::vector<geometry_msgs::PoseStamped>>("poses"),  //
-             BT::InputPort<geometry_msgs::PoseStamped>("target_pose"),         //
-             BT::OutputPort<geometry_msgs::PoseStamped>("closest_pose") };
+    return { BT::InputPort<std::vector<geometry_msgs::msg::PoseStamped>>("poses"),  //
+             BT::InputPort<geometry_msgs::msg::PoseStamped>("target_pose"),         //
+             BT::OutputPort<geometry_msgs::msg::PoseStamped>("closest_pose") };
   }
 
 private:
   BT::NodeStatus tick() override
   {
-    const auto poses = requireInput<std::vector<geometry_msgs::PoseStamped>>(*this, "poses");
+    const auto poses = requireInput<std::vector<geometry_msgs::msg::PoseStamped>>(*this, "poses");
     if (poses.empty())
     {
-      ROS_WARN_STREAM_NAMED(name(), "Pose list is empty");
+      RCLCPP_WARN_STREAM(logger(*this), "Pose list is empty");
       return BT::NodeStatus::FAILURE;
     }
 
     // Find the closest pose to the target one
-    const auto target_pose = requireInput<geometry_msgs::PoseStamped>(*this, "target_pose");
-    geometry_msgs::PoseStamped closest_pose;
+    const auto target_pose = requireInput<geometry_msgs::msg::PoseStamped>(*this, "target_pose");
+    geometry_msgs::msg::PoseStamped closest_pose;
     double closest_dist = std::numeric_limits<double>::infinity();
     for (auto& pose : poses)
     {

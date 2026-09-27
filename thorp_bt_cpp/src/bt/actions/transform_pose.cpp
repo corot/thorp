@@ -2,7 +2,7 @@
 
 #include "thorp_bt_cpp/node_common.hpp"
 
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 #include <thorp_toolkit/geometry.hpp>
 namespace ttk = thorp::toolkit;
@@ -25,8 +25,8 @@ public:
              BT::InputPort<double>("pitch"),  //
              BT::InputPort<double>("yaw"),    //
              BT::InputPort<bool>("local", false, "apply the offset along in_pose's own axes, not its frame's"),
-             BT::InputPort<geometry_msgs::PoseStamped>("in_pose"),
-             BT::OutputPort<geometry_msgs::PoseStamped>("out_pose") };
+             BT::InputPort<geometry_msgs::msg::PoseStamped>("in_pose"),
+             BT::OutputPort<geometry_msgs::msg::PoseStamped>("out_pose") };
   }
 
 private:
@@ -44,7 +44,7 @@ private:
     double roll = o_roll ? *o_roll : 0.0;
     double pitch = o_pitch ? *o_pitch : 0.0;
     double yaw = o_yaw ? *o_yaw : 0.0;
-    auto pose = requireInput<geometry_msgs::PoseStamped>(*this, "in_pose");
+    auto pose = requireInput<geometry_msgs::msg::PoseStamped>(*this, "in_pose");
     if (requireInput<bool>(*this, "local"))
     {
       tf2::Transform in_tf, offset_tf;
@@ -54,7 +54,7 @@ private:
     }
     else
     {
-      geometry_msgs::TransformStamped tf =
+      geometry_msgs::msg::TransformStamped tf =
           ttk::toTransform(ttk::createPose(x, y, z, roll, pitch, yaw, pose.header.frame_id));
       tf2::doTransform(pose, pose, tf);
     }

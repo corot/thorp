@@ -41,7 +41,7 @@ private:
       list.erase(list.begin() + index);
       setOutput("list", list);
     }
-    ROS_DEBUG_STREAM(name() << ":\tindex: " << index << "\telement: " << list[index] << (pop ? "\tpop" : "")
+    RCLCPP_DEBUG_STREAM(logger(*this), ":\tindex: " << index << "\telement: " << list[index] << (pop ? "\tpop" : "")
                             << "\tnew size: " << list.size());
     return BT::NodeStatus::SUCCESS;
   }
