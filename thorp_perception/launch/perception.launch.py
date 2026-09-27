@@ -16,8 +16,8 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument('use_sim_time', default_value='false'),
 
-        Node(package='thorp_perception', executable='object_detection', name='object_detection', output='screen',
-             respawn=True,
+        # Not renamed, as launch renames all the nodes in the process, also PlanningSceneInterface's own node
+        Node(package='thorp_perception', executable='object_detection', output='screen', respawn=True,
              parameters=[PathJoinSubstitution([FindPackageShare('thorp_perception'), 'config',
                                                'object_detection.yaml']), sim_time],
              remappings=[('cloud', '/xtion/depth_registered/points')]),
