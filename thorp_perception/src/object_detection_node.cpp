@@ -6,9 +6,11 @@
 #include <chrono>
 #include <cmath>
 #include <condition_variable>
+#include <iomanip>
 #include <map>
 #include <mutex>
 #include <set>
+#include <sstream>
 #include <thread>
 
 #include <rclcpp/rclcpp.hpp>
@@ -149,6 +151,7 @@ public:
         "cloud", rclcpp::SensorDataQoS(), [this](sensor_msgs::msg::PointCloud2::ConstSharedPtr msg) {
           std::lock_guard<std::mutex> lock(cloud_mutex_);
           cloud_ = msg;
+          cloud_receipt_ = std::chrono::steady_clock::now();
           cloud_received_.notify_all();
         });
     // Named as on Noetic, where the executive found them
@@ -195,7 +198,20 @@ private:
       std::unique_lock<std::mutex> lock(cloud_mutex_);
       if (!cloud_received_.wait_for(lock, 5s, [&] { return cloud_ && rclcpp::Time(cloud_->header.stamp) >= request_time; }))
       {
-        error = "no point cloud received";
+        if (!cloud_)
+        {
+          error = "no point cloud received";
+        }
+        else
+        {
+          std::ostringstream text;
+          text << std::fixed << std::setprecision(2) << "no point cloud captured after the request (at "
+               << request_time.seconds() << " s) received in 5 s; the last one was captured at "
+               << rclcpp::Time(cloud_->header.stamp).seconds() << " s and received "
+               << std::chrono::duration<double>(std::chrono::steady_clock::now() - cloud_receipt_).count()
+               << " s ago";
+          error = text.str();
+        }
         return nullptr;
       }
       msg = cloud_;
@@ -525,6 +541,7 @@ private:
   std::mutex cloud_mutex_;
   std::condition_variable cloud_received_;
   sensor_msgs::msg::PointCloud2::ConstSharedPtr cloud_;
+  std::chrono::steady_clock::time_point cloud_receipt_;
 
   std::string output_frame_;
   std::string meshes_path_;
