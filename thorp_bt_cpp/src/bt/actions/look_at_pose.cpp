@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 #include "thorp_bt_cpp/ros_action_node.hpp"
 
 #include <mbf_msgs/ExePathAction.h>
@@ -44,11 +44,11 @@ private:
   void onTick() override
   {
     GoalType new_goal;
-    new_goal.controller = *getInput<std::string>("controller");
+    new_goal.controller = requireInput<std::string>(*this, "controller");
 
     // Create a single-pose path with the current robot location but heading toward the target pose
-    geometry_msgs::PoseStamped robot_pose = *getInput<geometry_msgs::PoseStamped>("robot_pose");
-    geometry_msgs::PoseStamped target_pose = *getInput<geometry_msgs::PoseStamped>("target_pose");
+    geometry_msgs::PoseStamped robot_pose = requireInput<geometry_msgs::PoseStamped>(*this, "robot_pose");
+    geometry_msgs::PoseStamped target_pose = requireInput<geometry_msgs::PoseStamped>(*this, "target_pose");
     double heading = ttk::heading(robot_pose, target_pose);
     ttk::setYaw(robot_pose, heading);
     new_goal.path.poses.push_back(robot_pose);

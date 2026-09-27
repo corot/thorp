@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 #include "thorp_bt_cpp/ros_action_node.hpp"
 
 #include <mbf_msgs/RecoveryAction.h>
@@ -27,7 +27,7 @@ private:
   GoalType getGoal() override
   {
     GoalType goal;
-    goal.behavior = *getInput<std::string>("behavior");
+    goal.behavior = requireInput<std::string>(*this, "behavior");
     return goal;
   }
 

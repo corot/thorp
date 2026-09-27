@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 
 #include <mbf_msgs/ExePathAction.h>
 
@@ -27,7 +27,7 @@ public:
 private:
   BT::NodeStatus onStart() override
   {
-    timeout_.fromSec(*getInput<double>("timeout"));
+    timeout_.fromSec(requireInput<double>(*this, "timeout"));
     return onRunning();
   }
 

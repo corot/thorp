@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="4">
+  <!--
+    Perception steps offered as capabilities in their own right.
+
+    The other files here hold trees written for an app: each one does a whole job, and the
+    perception inside it is a node halfway down a sequence, reachable only by running that
+    job. An agent composing its own behavior needs the step on its own (look at the table,
+    then decide what to do about what it saw), so this file wraps such nodes as trees the
+    RunSubtree action can call directly. Nothing else runs them.
+  -->
+
+  <!--
+    Detect the objects on the surface in front of the robot.
+
+    The detection itself lands in the MoveIt planning scene, where the geometry belongs and
+    where it survives between goals, so what comes back on the blackboard is only what the
+    caller can't get anywhere else: the names the detector gave the objects. Those names are
+    what pickup_object, place_object and place_on_tray take as object_name.
+
+    Positioning is not part of this. The robot has to be in front of the table already.
+  -->
+  <BehaviorTree ID="detect_objects">
+    <DetectObjects action_name="object_detection"
+                   object_types=""
+                   server_timeout="5.000000"
+                   objects="{objects}"
+                   surface="{surface}"/>
+  </BehaviorTree>
+
+  <!--
+    Find the table in front of the robot.
+
+    One table, not a list: the node reports the nearest surface it segments and throws the
+    rest away, and it renames that one to "table" whatever the detector called it. So unlike
+    detect_objects, the name it comes back with carries no information; the pose and the size
+    are the answer. The pose is in the map frame.
+
+    Fails when nothing in view is a big enough surface, the threshold being the table_min_side
+    parameter in bt_server's namespace.
+
+    Named for what it returns rather than after the DetectTables node it wraps.
+  -->
+  <BehaviorTree ID="detect_table">
+    <DetectTables action_name="rail_segmentation/segment_objects"
+                  server_timeout="5"
+                  table="{table}"
+                  table_pose="{table_pose}"/>
+  </BehaviorTree>
+
+</root>

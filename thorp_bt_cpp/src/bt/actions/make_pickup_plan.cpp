@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 #include "thorp_bt_cpp/ros_action_node.hpp"
 
 #include <geometry_msgs/PoseStamped.h>
@@ -34,10 +34,10 @@ private:
   GoalType getGoal() override
   {
     GoalType goal;
-    goal.robot_pose = *getInput<geometry_msgs::PoseStamped>("robot_pose");
-    goal.pickup_poses = *getInput<std::vector<geometry_msgs::PoseStamped>>("pickup_poses");
-    goal.objects = *getInput<std::vector<moveit_msgs::CollisionObject>>("objects");
-    goal.surface = *getInput<moveit_msgs::CollisionObject>("surface");
+    goal.robot_pose = requireInput<geometry_msgs::PoseStamped>(*this, "robot_pose");
+    goal.pickup_poses = requireInput<std::vector<geometry_msgs::PoseStamped>>(*this, "pickup_poses");
+    goal.objects = requireInput<std::vector<moveit_msgs::CollisionObject>>(*this, "objects");
+    goal.surface = requireInput<moveit_msgs::CollisionObject>(*this, "surface");
 
     ros::NodeHandle pnh("~");
     pnh.getParam("pickup_planning_frame", goal.planning_frame);

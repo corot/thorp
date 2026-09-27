@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/condition_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 
 #include <std_msgs/UInt16.h>
 

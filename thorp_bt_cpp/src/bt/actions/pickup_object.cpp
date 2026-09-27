@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 #include "thorp_bt_cpp/ros_action_node.hpp"
 
 #include <thorp_msgs/PickupObjectAction.h>
@@ -34,10 +34,10 @@ private:
   GoalType getGoal() override
   {
     GoalType goal;
-    goal.object_name = *getInput<std::string>("object_name");
-    goal.support_surf = *getInput<std::string>("support_surf");
-    goal.max_effort = *getInput<float>("max_effort");
-    goal.tightening = *getInput<float>("tightening");
+    goal.object_name = requireInput<std::string>(*this, "object_name");
+    goal.support_surf = requireInput<std::string>(*this, "support_surf");
+    goal.max_effort = requireInput<float>(*this, "max_effort");
+    goal.tightening = requireInput<float>(*this, "tightening");
     return goal;
   }
 

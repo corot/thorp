@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 #include "thorp_bt_cpp/ros_service_node.hpp"
 
 #include <thorp_msgs/TrayAddObject.h>
@@ -31,8 +31,8 @@ public:
 private:
   void sendRequest(RequestType& request) override
   {
-    request.object_name = *getInput<std::string>("object_name");
-    request.pose_on_tray = *getInput<geometry_msgs::PoseStamped>("pose_on_tray");
+    request.object_name = requireInput<std::string>(*this, "object_name");
+    request.pose_on_tray = requireInput<geometry_msgs::PoseStamped>(*this, "pose_on_tray");
   }
 
   BT::NodeStatus onResponse(const ResponseType& response) override

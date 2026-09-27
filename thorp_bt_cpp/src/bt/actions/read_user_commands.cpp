@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 
 #include <jsk_rviz_plugins/OverlayText.h>
 #include <jsk_rviz_plugins/EusCommand.h>

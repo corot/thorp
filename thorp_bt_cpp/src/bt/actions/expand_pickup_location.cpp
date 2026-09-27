@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 
 #include <geometry_msgs/PoseStamped.h>
 #include <thorp_msgs/PickupLocation.h>
@@ -29,7 +29,7 @@ public:
 private:
   BT::NodeStatus tick() override
   {
-    auto pickup_location = *getInput<thorp_msgs::PickupLocation>("pickup_location");
+    auto pickup_location = requireInput<thorp_msgs::PickupLocation>(*this, "pickup_location");
     setOutput("approach_pose", pickup_location.approach_pose);
     setOutput("pickup_pose", pickup_location.pickup_pose);
     setOutput("detach_pose", pickup_location.detach_pose);

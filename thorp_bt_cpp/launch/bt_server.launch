@@ -1,0 +1,17 @@
+<launch>
+  <arg name="output" default="screen"/>
+  <arg name="respawn" default="false"/>
+
+  <arg name="tick_rate" default="10.0"/>
+  <arg name="bt_dir" default="$(find thorp_bt_cpp)/bt"/>
+
+  <arg name="debug"          value="$(optenv DEBUG_BT false)" />
+  <arg if="$(arg debug)"     name="launch_prefix" value="gdb --ex run --args" />
+  <arg unless="$(arg debug)" name="launch_prefix" value="" />
+
+  <node pkg="thorp_bt_cpp" type="bt_server_node" name="bt_server"
+        output="$(arg output)" respawn="$(arg respawn)" launch-prefix="$(arg launch_prefix)">
+    <param name="tick_rate" value="$(arg tick_rate)"/>
+    <param name="bt_dir" value="$(arg bt_dir)"/>
+  </node>
+</launch>

@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 
 #include <rail_manipulation_msgs/SegmentedObject.h>
 
@@ -28,8 +28,8 @@ public:
 private:
   BT::NodeStatus tick() override
   {
-    const auto table = *getInput<rail_manipulation_msgs::SegmentedObject>("table");
-    const auto table_pose = *getInput<geometry_msgs::PoseStamped>("table_pose");
+    const auto table = requireInput<rail_manipulation_msgs::SegmentedObject>(*this, "table");
+    const auto table_pose = requireInput<geometry_msgs::PoseStamped>(*this, "table_pose");
     const auto table_name = table.name + " approach";
     geometry_msgs::Vector3 table_size;
     table_size.x = 1.0;

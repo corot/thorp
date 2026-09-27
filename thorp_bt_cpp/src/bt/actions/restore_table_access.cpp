@@ -1,8 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
-
-#include <rail_manipulation_msgs/SegmentedObject.h>
+#include "thorp_bt_cpp/node_common.hpp"
 
 #include <thorp_costmap_layers/srv_iface_client.hpp>
 namespace tcl = thorp::costmap_layers;
@@ -21,14 +19,14 @@ public:
 
   static BT::PortsList providedPorts()
   {
-    return { BT::InputPort<rail_manipulation_msgs::SegmentedObject>("table") };
+    // detect_table names every table it finds "table", so that is what ClearTableAccess cleared
+    return { BT::InputPort<std::string>("table_name", "table", "name of the table to restore access to") };
   }
 
 private:
   BT::NodeStatus tick() override
   {
-    const auto table = *getInput<rail_manipulation_msgs::SegmentedObject>("table");
-    const auto table_name = table.name + " approach";
+    const auto table_name = requireInput<std::string>(*this, "table_name") + " approach";
     tcl::ServiceClient::instance().removeObject(table_name, "free_space", "local");
     return BT::NodeStatus::SUCCESS;
   }

@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 #include "thorp_bt_cpp/ros_service_node.hpp"
 
 #include <thorp_toolkit/geometry.hpp>
@@ -29,8 +29,8 @@ public:
 private:
   BT::NodeStatus tick() override
   {
-    geometry_msgs::PoseStamped robot_pose = *getInput<geometry_msgs::PoseStamped>("robot_pose");
-    geometry_msgs::PoseStamped target_pose = *getInput<geometry_msgs::PoseStamped>("target_pose");
+    geometry_msgs::PoseStamped robot_pose = requireInput<geometry_msgs::PoseStamped>(*this, "robot_pose");
+    geometry_msgs::PoseStamped target_pose = requireInput<geometry_msgs::PoseStamped>(*this, "target_pose");
     geometry_msgs::PoseStamped target_pose_cannon_rf;
     if (tf2_.transformPose("cannon_shaft_link", target_pose, target_pose_cannon_rf, ros::Duration(0.1)))
     {
@@ -96,7 +96,7 @@ private:
   void sendRequest(RequestType& request) override
   {
     request.action = ServiceType::Request::TILT;
-    request.angle = *getInput<float>("angle");
+    request.angle = requireInput<float>(*this, "angle");
   }
 
   BT_REGISTER_NODE(TiltCannon);
@@ -120,7 +120,7 @@ private:
   void sendRequest(RequestType& request) override
   {
     request.action = ServiceType::Request::FIRE;
-    request.shots = *getInput<uint32_t>("shots");
+    request.shots = requireInput<uint32_t>(*this, "shots");
   }
 
   BT_REGISTER_NODE(FireCannon);

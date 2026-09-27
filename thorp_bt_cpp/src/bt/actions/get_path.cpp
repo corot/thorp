@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 #include "thorp_bt_cpp/ros_action_node.hpp"
 
 #include <mbf_msgs/GetPathAction.h>
@@ -32,8 +32,8 @@ private:
   GoalType getGoal() override
   {
     GoalType goal;
-    goal.planner = *getInput<std::string>("planner");
-    goal.target_pose = *getInput<geometry_msgs::PoseStamped>("target_pose");
+    goal.planner = requireInput<std::string>(*this, "planner");
+    goal.target_pose = requireInput<geometry_msgs::PoseStamped>(*this, "target_pose");
     return goal;
   }
 

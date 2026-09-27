@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 
 #include <geometry_msgs/PoseStamped.h>
 
@@ -27,7 +27,7 @@ private:
   {
     std::vector<T> list;
     getInput<std::vector<T>>("list", list);
-    list.insert(list.begin(), *getInput<T>("element"));
+    list.insert(list.begin(), requireInput<T>(*this, "element"));
     setOutput("list", list);
     return BT::NodeStatus::SUCCESS;
   }

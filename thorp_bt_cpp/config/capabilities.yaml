@@ -1,0 +1,608 @@
+# What each behavior tree under bt/ offers when invoked through the RunSubtree action.
+#
+# Two consumers read this file, which is the point of it existing:
+#   - test/test_capabilities.py parametrizes over these entries
+#   - the agent side (ROSA) turns them into tool descriptions
+# so drift here isn't harmless bookkeeping: if an entry stops matching its tree, the tests
+# fail and the agent's picture of the robot is wrong in the same stroke.
+#
+# `inputs` and `outputs` were derived from the trees, not written from memory: inputs are the
+# blackboard keys a tree reads but never produces, outputs the keys it writes.
+# test/test_capabilities_match_trees.py recomputes both from bt/*.xml and fails when this file
+# disagrees. The `description` fields are the part that ISN'T derived -- they're my reading
+# of each tree's structure and want a human pass, since they're what the agent reasons over.
+#
+# An output's `when` says whether it will be there once the tree is done -- "the tree can write
+# this key" and "the tree did write this key" are different claims, and an agent that can't
+# tell them apart reads a missing error code as a broken capability. It follows the callback
+# the setOutput sits in:
+#   success  - written on the path that succeeds (a tick, or an action's onSucceeded), so a run
+#              reporting success has it. The default, so it's left off rather than repeated on
+#              nearly every entry.
+#   failure  - written only when something went wrong: a setOutput inside onAborted. A run that
+#              succeeded has nothing to report here, and its absence is the good outcome. Error
+#              codes are almost all of these.
+#   maybe    - written from a callback that may never fire -- onRunning or onFeedback on an
+#              action that returned first time, or a branch not taken. Worth asking for, never
+#              worth relying on.
+# The test suite asks for every documented output and insists only on the `success` ones, so a
+# clean run isn't failed for the absence of an error it never had.
+#
+# An input marked `optional: true` may be left out: the tree reads it when given and otherwise
+# produces it itself, typically from a parameter. The drift test holds it to exactly that.
+#
+# An input's `from` lists the capability outputs that can supply it, as capability.output. More
+# than one means the choice is the caller's.
+#
+# `needs` and `invalidates` are the other half of that, for what a capability assumes about the
+# world rather than about its arguments. `needs` maps a state to the capability that establishes
+# it; which capability establishes a state is read off by inverting that, so nothing declares it
+# twice. `invalidates` lists the states this capability breaks. Between them an agent can work
+# out what a run left standing instead of redoing everything, which is the difference between
+# picking a second cube in two calls and in six.
+#
+# kind:
+#   capability - a step an agent can ask for. The default, so it is left off.
+#   app        - a whole session's behavior rather than a step: it drives the robot until
+#                something stops it, or it waits for a person at the keyboard. These stay
+#                described here because the drift test insists every tree is accounted for
+#                and because their interfaces are still worth checking, but the agent side
+#                must not offer them, and the test suite skips them unless --apps is passed.
+#                A tree that cannot finish on its own (KeepRunningUntilFailure at the root,
+#                or Repeat with no cycle limit) HAS to be one; the drift test checks that.
+#
+# status:
+#   ok       - callable through RunSubtree today
+#   blocked  - the tree needs an input bt_server can't put on a blackboard yet; see `blocked`.
+#              Left in deliberately rather than omitted: the test suite reports these as skips
+#              with their reason, so the gap stays visible.
+#
+# stack: what must already be running for the tree to do anything
+#   none | navigation | manipulation | perception
+#
+# test: read only by the test suite; the agent side ignores this block.
+#   inputs_from: where an input comes from, when it should be a real value rather than one
+#     someone typed in: {table: [detect_table, table]} takes the table detect_table found, and
+#     a third element indexes a list, so [full_coverage_planner, coverage_waypoints, 0] is the
+#     first waypoint of a coverage path. Usable on the test's own inputs and on any setup
+#     step's. This is the same threading an agent does by hand between two goals, so a chain
+#     expressible here is one ROSA can be asked to follow.
+#   setup: capabilities to call first, in order, to put the robot in the state this one
+#     assumes. pickup_object needs something detected to pick; place_object needs the gripper
+#     holding it. Written as capability calls rather than staged behind the robot's back, so
+#     the precondition is stated in the same vocabulary the agent would reach it with, and a
+#     step that fails SKIPS the test instead of failing it -- "this capability is broken" and
+#     "the world wasn't ready for it" are different findings and shouldn't look alike. The
+#     stacks a setup step needs count toward the ones this capability needs.
+#   expect: succeeded | failed | any | runs
+#     `any` means the physical outcome depends on the scene and isn't asserted -- the contract
+#     (goal served, requested outputs returned, types right) is still checked either way.
+#     `runs` is for the app-level trees that never finish by design (KeepRunningUntilFailure,
+#     or a Repeat with no cycle count): the test lets one run for `cancel_after` seconds, then
+#     cancels and checks it was still going and had produced something. Without this they'd
+#     just hit their timeout and be reported as failures.
+
+# Facts about the world that capabilities depend on and change. `observed` says how the agent
+# can tell whether one holds right now: a state the agent cannot check is one it can only assume
+# from what it has already done, which survives a sequence of capability calls and does not
+# survive anybody touching the robot. Only declare a state some capability genuinely requires --
+# pickup_object clears the gripper itself, so an empty gripper is not one of these.
+states:
+  at_a_table:
+    means: the robot is parked against a table, close enough for the arm to reach what is on it
+    observed: no
+  objects_detected:
+    means: >
+      the objects on the surface in front of the robot are in the planning scene, under the
+      names detect_objects gave them
+    observed: the planning scene
+  holding_object:
+    means: the gripper holds an object
+    observed: the planning scene, and the gripper itself
+  target_in_view:
+    means: the tracker is publishing a pose for something to chase
+    observed: the target tracker
+
+capabilities:
+
+  # ------------------------------------------------------------------- manipulation --------
+
+  pickup_object:
+    description: >
+      Pick up an already-detected object with the arm, clearing the gripper first if it is
+      holding something, and retrying with a cleared octomap if the first attempt fails.
+    status: ok
+    stack: [manipulation]
+    needs: {at_a_table: approach_table, objects_detected: detect_objects}
+    invalidates: [objects_detected]
+    inputs:
+      object_name: {type: string, from: [detect_objects.objects], description: "name of the object to pick, as the detector named it"}
+      tightening: {type: float, optional: true, description: "extra gripper closure past contact, in meters; leave it out to use the gripper's configured value"}
+    outputs:
+      error: {type: int, when: failure, description: "error code from the pickup action; 0 when it worked"}
+      attached_object: {type: string, description: "object now attached to the gripper, if any"}
+      max_effort: {type: float, description: "gripper effort used, read from the gripper_max_effort parameter"}
+    test:
+      inputs: {object_name: "square 1"}
+      setup:
+        - {subtree: approach_table}
+        - {subtree: detect_objects}
+      # The scene on this bench is fixed, so "did the pickup work" has a right answer.
+      expect: succeeded
+      timeout: 120
+
+  place_object:
+    description: >
+      Place the object currently held by the gripper at a given pose on the support surface.
+    status: ok
+    stack: [manipulation]
+    needs: {holding_object: pickup_object, at_a_table: approach_table}
+    invalidates: [holding_object, objects_detected]
+    inputs:
+      object_name: {type: string, from: [pickup_object.attached_object], description: "name of the object being placed"}
+      place_pose: {type: geometry_msgs::PoseStamped, description: "where to place it, as 'x;y;yaw;frame' or 'x;y;z;roll;pitch;yaw;frame'; the short form leaves z at 0, which is the floor"}
+    outputs:
+      error: {type: int, when: failure, description: "error code from the place action; 0 when it worked"}
+    test:
+      # A clear spot on the near edge of the table; the nearest object, the star, is 8 cm further in.
+      # In the map frame, so it stays put while the setup chain drives the robot to the table.
+      inputs: {object_name: "square 1", place_pose: "0.2;0.0;0.4875;0.0;0.0;0.0;map"}
+      setup:
+        - {subtree: approach_table}
+        - {subtree: detect_objects}
+        - {subtree: pickup_object, inputs: {object_name: "square 1"}}
+      expect: any
+      timeout: 120
+
+  place_on_tray:
+    description: >
+      Place the held object on the robot's own tray, asking the tray service where the next
+      free slot is, and recording the object as stored there.
+    status: ok
+    stack: [manipulation]
+    needs: {holding_object: pickup_object}
+    invalidates: [holding_object]
+    inputs:
+      object_name: {type: string, from: [pickup_object.attached_object], description: "name of the object to stow on the tray"}
+    outputs:
+      error: {type: int, when: failure, description: "error code from the place action; 0 when it worked"}
+      pose_on_tray: {type: geometry_msgs::PoseStamped, description: "slot the object was placed in"}
+    test:
+      inputs: {object_name: "square 1"}
+      setup:
+        - {subtree: approach_table}
+        - {subtree: detect_objects}
+        - {subtree: pickup_object, inputs: {object_name: "square 1"}}
+      expect: any
+      timeout: 120
+
+  # ---------------------------------------------------------------------- perception -------
+
+  detect_objects:
+    description: >
+      Segment the surface in front of the robot and classify the objects on it, adding every
+      one to the MoveIt planning scene and returning a name and a color for each. Those
+      names are what pickup_object, place_object and place_on_tray take as object_name, so
+      this is the step that tells you what there is to manipulate. It doesn't move the robot:
+      it looks at whatever is in front of the camera now, so drive to the table first.
+    status: ok
+    stack: [perception]
+    inputs: {}
+    outputs:
+      objects: {type: std::vector<moveit_msgs::CollisionObject>, description: "the objects found on the surface, each as name and color; empty when there are none"}
+      surface: {type: moveit_msgs::CollisionObject, description: "the support surface they were found on, as name and color"}
+    test:
+      inputs: {}
+      expect: any          # needs a table in view; whether there is one is the scene's business
+      timeout: 60
+
+  detect_table:
+    description: >
+      Find the table in front of the robot and report its size and where it is on the map.
+      Only the nearest surface is reported, however many are in view, and it always comes
+      back named "table" -- the name carries no information here, unlike detect_objects. This
+      is the step that tells you a table is there and where to stand relative to it; it does
+      not move the robot, and it fails when nothing in view is a large enough surface.
+    status: ok
+    stack: [perception]
+    inputs: {}
+    outputs:
+      table: {type: rail_manipulation_msgs::SegmentedObject, description: "the table: name, width, depth, height, color and center pose"}
+      table_pose: {type: geometry_msgs::PoseStamped, description: "where that table is, in the map frame"}
+    test:
+      inputs: {}
+      expect: any          # needs a surface in view; whether there is one is the scene's business
+      timeout: 60
+
+  # ------------------------------------------------------------------------- tables --------
+
+  approach_table:
+    description: >
+      Park against the table in front of the robot, on its nearest side, close enough for the
+      arm to reach what is on it: finds the table, works out where to stand and drives in until
+      the bumper touches. The step before picking from or placing on a table. It finds the
+      table itself, so it takes no arguments; from inspect_table's viewing pose it sees the
+      table better than from further back. Its pickup_pose is what attach_to_table takes to go
+      back in after detach_from_table.
+    status: ok
+    stack: [navigation, perception]
+    invalidates: [objects_detected]
+    inputs: {}
+    outputs:
+      table: {type: rail_manipulation_msgs::SegmentedObject, description: "the table it parked against"}
+      table_pose: {type: geometry_msgs::PoseStamped, description: "where that table is, in the map frame"}
+      pickup_pose: {type: geometry_msgs::PoseStamped, description: "the pose it parked at, for attach_to_table"}
+      error: {type: int, when: failure, description: "error code from reading the robot pose or from path execution"}
+    test:
+      inputs: {}
+      expect: any          # the same attach as attach_to_table, which the scene can defeat
+      timeout: 180
+
+  inspect_table:
+    description: >
+      Look over the table in front of the robot from a viewing pose on its nearest side, and
+      report the table and the objects on it. Fails when no table is in view or it isn't a
+      usable size. The viewing pose is outside arm reach: to pick one of these objects,
+      approach_table and then detect_objects, whose names are the ones pickup_object takes.
+    status: ok
+    stack: [navigation, perception]
+    invalidates: [at_a_table]
+    inputs: {}
+    outputs:
+      table: {type: rail_manipulation_msgs::SegmentedObject, description: "the table, as seen from the viewing pose"}
+      table_pose: {type: geometry_msgs::PoseStamped, description: "where that table is, in the map frame"}
+      inspect_pose: {type: geometry_msgs::PoseStamped, description: "the viewing pose it looked from"}
+      objects: {type: std::vector<moveit_msgs::CollisionObject>, description: "the objects on the table, each as name and color; empty when there are none"}
+      surface: {type: moveit_msgs::CollisionObject, description: "the surface they were found on, as name and color"}
+    test:
+      inputs: {}
+      expect: any
+      timeout: 300
+
+  attach_to_table:
+    description: >
+      Drive head-on into a table under precise control until the bumper touches it, from
+      approach_table's pickup_pose. approach_table already ends this way; use this to go back
+      in after detach_from_table without detecting the table again.
+    status: ok
+    stack: [navigation, perception]
+    invalidates: [objects_detected]
+    inputs:
+      table: {type: rail_manipulation_msgs::SegmentedObject, from: [approach_table.table], description: "table to approach; name, pose and size"}
+      pose: {type: geometry_msgs::PoseStamped, from: [approach_table.pickup_pose], description: "pose to approach it from"}
+    outputs:
+      error: {type: int, when: failure, description: "error code from path execution"}
+    test:
+      # Goes back in from where approach_table parked, so this checks the goal's contract; the
+      # drive itself is what approach_table's own test exercises.
+      setup:
+        - {subtree: approach_table}
+      inputs_from: {table: [approach_table, table], pose: [approach_table, pickup_pose]}
+      expect: any
+      timeout: 180
+
+  detach_from_table:
+    description: >
+      Back straight out from the table the robot is parked against, under precise control,
+      far enough to navigate around it again, and restore the table's costmap footprint. Takes
+      no arguments: it backs out along the way the robot is facing.
+    status: ok
+    stack: [navigation]
+    needs: {at_a_table: approach_table}
+    invalidates: [at_a_table, objects_detected]
+    inputs: {}
+    outputs:
+      error: {type: int, when: failure, description: "error code from reading the robot pose or from path execution"}
+    test:
+      inputs: {}
+      setup:
+        - {subtree: approach_table}
+      expect: any
+      timeout: 180
+
+  validate_table:
+    description: >
+      Look a detected table over from a viewpoint and decide whether it is a usable size.
+    status: ok
+    stack: [navigation, perception]
+    invalidates: [at_a_table, objects_detected]
+    inputs: {}
+    outputs:
+      table: {type: rail_manipulation_msgs::SegmentedObject, description: "the validated table (not serializable yet)"}
+      table_pose: {type: geometry_msgs::PoseStamped, description: "pose of the table"}
+      inspect_pose: {type: geometry_msgs::PoseStamped, description: "viewpoint used to inspect it"}
+    test:
+      inputs: {}
+      expect: any
+      timeout: 300
+
+  cleanup_table:
+    description: >
+      Clear every reachable object from one table onto the tray, working through a planned
+      sequence of pickup locations.
+    status: ok
+    stack: [navigation, manipulation, perception]
+    invalidates: [at_a_table, objects_detected, holding_object]
+    inputs:
+      table: {type: rail_manipulation_msgs::SegmentedObject, from: [detect_table.table], description: "table to clear"}
+      table_pose: {type: geometry_msgs::PoseStamped, from: [detect_table.table_pose], description: "pose of that table"}
+      given_up_count: {type: unsigned int, description: "objects abandoned so far; 0 to start"}
+    outputs:
+      pickup_pose: {type: geometry_msgs::PoseStamped, when: maybe, description: "pose the last pickup was attempted from"}
+      error: {type: int, when: maybe, description: "error code from the last action"}
+    test:
+      inputs: {given_up_count: 0}
+      setup:
+        - {subtree: detect_table}
+      inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
+      expect: any
+      timeout: 900
+
+  # ---------------------------------------------------------------------- navigation -------
+
+  goto_pose:
+    description: >
+      Drive to one pose on the map, planning and controlling the whole way, and stop there
+      facing the yaw that was asked for. It tries once: if the pose turns out to be
+      unreachable the tree fails and error says why, so the caller can choose somewhere else
+      rather than leave the robot grinding away at it. Use reach_first_pose instead when you
+      have several candidate poses and only care that one of them works.
+    status: ok
+    stack: [navigation]
+    invalidates: [at_a_table, objects_detected]
+    inputs:
+      pose: {type: geometry_msgs::PoseStamped, description: "where to drive to, as 'x;y;yaw;frame'"}
+    outputs:
+      error: {type: int, when: failure, description: "move_base error code; only set when the drive failed"}
+    test:
+      inputs: {pose: '2.0;3.0;1.57;map'}
+      expect: any
+      timeout: 300
+
+  look_at_pose:
+    description: >
+      Turn on the spot until the robot is facing a given pose, without going anywhere. The
+      camera has about a 57 degree field of view and is fixed to the base, so anything to the
+      side or behind has to be turned toward before a perception capability can see it. Prefer
+      it over goto_pose when only the heading is wrong.
+    status: ok
+    stack: [navigation]
+    invalidates: [at_a_table, objects_detected]
+    inputs:
+      pose: {type: geometry_msgs::PoseStamped, description: "what to face; only its position matters"}
+    outputs:
+      robot_pose: {type: geometry_msgs::PoseStamped, description: "where the robot was before turning"}
+      error: {type: int, when: failure, description: "error code from reading the robot pose or from the controller"}
+    test:
+      inputs: {pose: "-0.5;1.5;0.0;map"}    # the cat llm_playground spawns
+      expect: succeeded
+      timeout: 60
+
+  # ------------------------------------------------- app-level trees, no caller inputs -----
+
+  patrol_2_points:
+    description: >
+      Drive back and forth between two hardcoded map poses, ten times. Mostly a navigation
+      smoke test.
+    kind: app
+    status: ok
+    stack: [navigation]
+    inputs: {}
+    outputs:
+      goto_pose_error: {type: int, when: failure, description: "error code from the last navigation goal"}
+    test:
+      inputs: {}
+      expect: any
+      timeout: 600
+
+  explore_house:
+    description: >
+      Cover the whole map, using whichever strategy the exploration_method parameter selects
+      (full_coverage_planner or per_room_coverage).
+    status: ok
+    stack: [navigation]
+    invalidates: [at_a_table, objects_detected]
+    inputs: {}
+    outputs:
+      exploration_method: {type: string, description: "strategy actually used, from the parameter"}
+    test:
+      inputs: {}
+      expect: any
+      timeout: 900
+
+  cat_hunter:
+    description: >
+      Explore the house looking for cats, and when one is seen, approach and fire the cannon
+      at it until the ammo runs out.
+    kind: app
+    status: ok
+    stack: [navigation, perception]
+    inputs: {}
+    outputs:
+      tracked_object: {type: cob_perception_msgs::Detection, when: maybe, description: "what was spotted (not serializable yet)"}
+      tracked_object_pose: {type: geometry_msgs::PoseStamped, when: maybe, description: "where it was spotted"}
+      robot_pose: {type: geometry_msgs::PoseStamped, when: maybe, description: "robot pose at the last check"}
+    test:
+      inputs: {}
+      expect: runs
+      cancel_after: 60
+      timeout: 900
+
+  object_gatherer:
+    description: >
+      Explore the house, and for every table found, validate it and clear the objects from it
+      onto the tray.
+    kind: app
+    status: ok
+    stack: [navigation, manipulation, perception]
+    inputs: {}
+    outputs:
+      table: {type: rail_manipulation_msgs::SegmentedObject, description: "table being worked on (not serializable yet)"}
+      table_pose: {type: geometry_msgs::PoseStamped, description: "pose of that table"}
+    test:
+      inputs: {}
+      expect: any
+      timeout: 1800
+
+  object_manip:
+    description: >
+      Interactive tabletop loop: waits for a user command, then detects objects and drags,
+      picks and places whichever one was chosen.
+    kind: app
+    status: ok
+    stack: [manipulation, perception]
+    inputs: {}
+    outputs:
+      object_name: {type: string, when: maybe, description: "object last operated on"}
+      user_command: {type: string, description: "command last read from the user"}
+      error: {type: int, when: failure, description: "error code from the last manipulation action"}
+    test:
+      inputs: {}
+      expect: runs
+      cancel_after: 30
+      timeout: 300   # runs until commanded to exit; expected to be canceled
+
+  hunt_cat:
+    description: >
+      The attack half of cat_hunter: follow the tracked target, aim and fire while it stays
+      visible and there is ammo left.
+    status: ok
+    stack: [navigation, perception]
+    needs: {target_in_view: look_at_pose}
+    invalidates: [at_a_table, objects_detected]
+    inputs: {}
+    outputs:
+      cannon_tilt_angle: {type: float, when: maybe, description: "angle the cannon was tilted to"}
+      tracked_object_pose: {type: geometry_msgs::PoseStamped, when: maybe, description: "where the target was last seen"}
+    test:
+      inputs: {}
+      setup:
+        - subtree: look_at_pose    # the cat is to the left, and the camera is fixed
+          inputs: {pose: "-0.5;1.5;0.0;map"}
+      # 'any' because the FollowPose sits under a ForceSuccess: the tree succeeds having seen
+      # nothing, and only cannon_tilt_angle tells the two apart
+      expect: any
+      expect_outputs: [cannon_tilt_angle]
+      timeout: 300
+
+  full_coverage_planner:
+    description: >
+      Plan one coverage path over the whole map and follow it.
+    status: ok
+    stack: [navigation]
+    invalidates: [at_a_table, objects_detected]
+    inputs: {}
+    outputs:
+      coverage_waypoints: {type: std::vector<geometry_msgs::PoseStamped>, description: "the waypoints planned"}
+      error: {type: int, when: failure, description: "error code from planning or following"}
+    test:
+      inputs: {}
+      expect: any
+      timeout: 900
+
+  per_room_coverage:
+    description: >
+      Segment the map into rooms, order them, and cover each one in turn.
+    status: ok
+    stack: [navigation]
+    invalidates: [at_a_table, objects_detected]
+    inputs: {}
+    outputs:
+      room_sequence: {type: std::vector<unsigned int>, description: "order the rooms are visited in"}
+      room_number: {type: unsigned int, description: "room currently being covered"}
+      coverage_waypoints: {type: std::vector<geometry_msgs::PoseStamped>, description: "waypoints for the current room"}
+      robot_pose: {type: geometry_msgs::PoseStamped, when: maybe, description: "robot pose when planning started"}
+    test:
+      inputs: {}
+      expect: any
+      timeout: 1800
+
+  # ------------------- structured inputs: lists, maps and tables, seeded as json ----------
+  #
+  # These were blocked until bt_server learned to build structured values. A json array of
+  # pose strings becomes a std::vector<geometry_msgs::PoseStamped>, a json object of counts a
+  # std::map<std::string, uint32_t>, and a json object with name/pose/width/depth/height a
+  # rail_manipulation_msgs::SegmentedObject -- the fields the trees actually read, with the
+  # point cloud, image and grasps left default, since an agent has none of those.
+
+  reach_first_pose:
+    description: >
+      Drive to the first pose of a list, dropping poses that turn out to be unreachable until
+      one works.
+    status: ok
+    stack: [navigation]
+    invalidates: [at_a_table, objects_detected]
+    inputs:
+      poses: {type: std::vector<geometry_msgs::PoseStamped>, description: "candidate poses, tried in order, each as 'x;y;yaw;frame'"}
+    outputs:
+      next_pose: {type: geometry_msgs::PoseStamped, description: "the pose actually reached"}
+      goto_pose_error: {type: int, when: failure, description: "error code from the navigation goal"}
+    test:
+      inputs: {poses: ['2.0;5.0;1.57;map', '2.0;1.0;-1.57;map']}
+      expect: any
+      timeout: 300
+
+  follow_waypoints:
+    description: >
+      Follow a list of waypoints as one smoothed path, replanning from the first reachable
+      waypoint whenever following fails.
+    status: ok
+    stack: [navigation]
+    invalidates: [at_a_table, objects_detected]
+    inputs:
+      waypoints: {type: std::vector<geometry_msgs::PoseStamped>, from: [full_coverage_planner.coverage_waypoints, per_room_coverage.coverage_waypoints], description: "waypoints to follow in order, each as 'x;y;yaw;frame'"}
+    outputs:
+      next_waypoint: {type: unsigned long, when: maybe, description: "index of the waypoint being driven to"}
+      robot_pose: {type: geometry_msgs::PoseStamped, when: maybe, description: "robot pose while following"}
+      exe_path_error: {type: int, when: failure, description: "error code from path execution"}
+    test:
+      inputs: {waypoints: ['2.0;5.0;1.57;map', '2.0;1.0;-1.57;map']}
+      expect: any
+      timeout: 600
+
+  pickup_objects:
+    description: >
+      Pick up the objects of a planned sequence one at a time, stowing each on the tray and
+      recording the ones that keep failing.
+    status: ok
+    stack: [manipulation, perception]
+    needs: {at_a_table: approach_table, objects_detected: detect_objects}
+    invalidates: [objects_detected, holding_object]
+    inputs:
+      failures: {type: "std::map<std::string, uint32_t>", description: "per-object failure counts so far; {} to start"}
+      given_up_count: {type: unsigned int, description: "objects abandoned so far; 0 to start"}
+    outputs:
+      object_name: {type: string, when: maybe, description: "object last picked"}
+      error: {type: int, when: failure, description: "error code from the last action"}
+    test:
+      inputs: {failures: {}, given_up_count: 0}
+      setup:
+        - {subtree: approach_table}
+        - {subtree: detect_objects}
+      expect: any
+      timeout: 600
+
+# Trees under bt/ that are deliberately NOT capabilities, and why. Listing them is what lets
+# test_capabilities_match_trees.py insist every tree is accounted for: add one and you have to
+# either describe it above or say here why an agent shouldn't see it. Silence would otherwise
+# mean a capability nobody ever told the agent about.
+not_capabilities:
+  test_server: >
+    Test fixture: transforms a pose and reads back four parameters, exercising bt_server's
+    json/blackboard plumbing end to end. Not a robot capability, and not runnable from the
+    capability suite either -- the parameters it reads are seeded by test_bt_server.py, which
+    is where it is tested.
+  test_server_slow: >
+    Test fixture: sleeps long enough that a goal can be canceled mid-run, for checking
+    preemption returns the outputs produced so far.
+  test_server_needs_list: >
+    Test fixture: pops from a list, so a goal that omits it must abort naming the list rather
+    than crash the server, and one that supplies it checks a json array seeds a pose list.
+  test_server_local_offset: >
+    Test fixture: a TransformPose offset along the pose's own axes, which is how
+    detach_from_table backs out.
+  test_server_table: >
+    Test fixture: TableValidSize reads only a table's width and depth, so whether it passes
+    says whether those fields survived being seeded from json.
+  test_server_counts: >
+    Test fixture: bumps a count in a map and writes it back, to check a map round-trips.

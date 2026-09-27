@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/decorator_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 
 namespace thorp::bt::decorators
 {

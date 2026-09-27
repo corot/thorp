@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 #include "thorp_bt_cpp/ros_action_node.hpp"
 
 #include <mbf_msgs/ExePathAction.h>
@@ -43,8 +43,8 @@ private:
   void onTick() override
   {
     GoalType new_goal;
-    new_goal.controller = *getInput<std::string>("controller");
-    new_goal.path = *getInput<nav_msgs::Path>("path");
+    new_goal.controller = requireInput<std::string>(*this, "controller");
+    new_goal.path = requireInput<nav_msgs::Path>(*this, "path");
     if (!current_goal_ || *current_goal_ != new_goal)
     {
       current_goal_ = new_goal;

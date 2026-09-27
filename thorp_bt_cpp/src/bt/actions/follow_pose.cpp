@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 #include "thorp_bt_cpp/ros_action_node.hpp"
 
 #include <thorp_msgs/FollowPoseAction.h>
@@ -31,10 +31,10 @@ private:
   GoalType getGoal() override
   {
     GoalType goal;
-    goal.no_pose_timeout.fromSec(*getInput<float>("no_pose_timeout"));
-    goal.exec_time_limit.fromSec(*getInput<float>("exec_time_limit"));
-    goal.target_distance = *getInput<float>("target_distance");
-    goal.stop_at_distance = *getInput<bool>("stop_at_distance");
+    goal.no_pose_timeout.fromSec(requireInput<float>(*this, "no_pose_timeout"));
+    goal.exec_time_limit.fromSec(requireInput<float>(*this, "exec_time_limit"));
+    goal.target_distance = requireInput<float>(*this, "target_distance");
+    goal.stop_at_distance = requireInput<bool>(*this, "stop_at_distance");
     return goal;
   }
 

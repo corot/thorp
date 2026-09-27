@@ -18,6 +18,12 @@
       </ForceSuccess>
       <ReadFloatParam param_name="gripper_max_effort"
                       output_key="{max_effort}"/>
+      <!-- tightening is optional: the caller's if given, else the gripper_tightening parameter -->
+      <Fallback>
+        <FloatInBlackboard key="{tightening}"/>
+        <ReadFloatParam param_name="gripper_tightening"
+                        output_key="{tightening}"/>
+      </Fallback>
       <RecoverAndRetry>
         <PickupObject action_name="manipulation/pickup_object"
                       max_effort="{max_effort}"

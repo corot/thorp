@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 
 #include <geometry_msgs/PoseStamped.h>
 
@@ -28,7 +28,7 @@ public:
 private:
   BT::NodeStatus tick() override
   {
-    std::vector<T> list = *getInput<std::vector<T>>("list");
+    std::vector<T> list = requireInput<std::vector<T>>(*this, "list");
     if (list.empty())
       return BT::NodeStatus::FAILURE;
 

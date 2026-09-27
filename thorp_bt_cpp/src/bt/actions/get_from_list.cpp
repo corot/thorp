@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 
 namespace thorp::bt::actions
 {
@@ -26,11 +26,11 @@ public:
 private:
   BT::NodeStatus tick() override
   {
-    std::vector<T> list = *getInput<std::vector<T>>("list");
+    std::vector<T> list = requireInput<std::vector<T>>(*this, "list");
     if (list.empty())
       return BT::NodeStatus::FAILURE;
 
-    int32_t index = *getInput<int32_t>("index");
+    int32_t index = requireInput<int32_t>(*this, "index");
     if (index < 0)
       index += list.size();
     setOutput("element", list[index]);

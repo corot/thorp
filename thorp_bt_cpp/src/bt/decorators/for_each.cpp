@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/decorator_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 
 #include <thorp_msgs/PickupLocation.h>
 
@@ -51,7 +51,7 @@ public:
       }
     }
 
-    auto list = *getInput<std::vector<T>>("list");
+    auto list = requireInput<std::vector<T>>(*this, "list");
     while (!list.empty())
     {
       setStatus(BT::NodeStatus::RUNNING);

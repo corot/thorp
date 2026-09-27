@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 #include "thorp_bt_cpp/ros_action_node.hpp"
 
 #include <geometry_msgs/PoseStamped.h>
@@ -34,12 +34,12 @@ private:
   {
     GoalType goal;
     goal.robot_start_coordinate = getInput<geometry_msgs::PoseStamped>("robot_pose")->pose;
-    goal.robot_radius = *getInput<float>("robot_radius");
-    goal.input_map = *getInput<sensor_msgs::Image>("map_image");
-    goal.map_origin = *getInput<geometry_msgs::Pose>("map_origin");
-    goal.map_resolution = *getInput<float>("map_resolution");
+    goal.robot_radius = requireInput<float>(*this, "robot_radius");
+    goal.input_map = requireInput<sensor_msgs::Image>(*this, "map_image");
+    goal.map_origin = requireInput<geometry_msgs::Pose>(*this, "map_origin");
+    goal.map_resolution = requireInput<float>(*this, "map_resolution");
     goal.room_information_in_pixel =
-        *getInput<std::vector<ipa_building_msgs::RoomInformation>>("room_information_in_pixel");
+        requireInput<std::vector<ipa_building_msgs::RoomInformation>>(*this, "room_information_in_pixel");
 
     return goal;
   }

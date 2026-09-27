@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/condition_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 
 #include <thorp_toolkit/geometry.hpp>
 #include <thorp_toolkit/tf2.hpp>
@@ -27,8 +27,8 @@ public:
 private:
   BT::NodeStatus tick() override
   {
-    float max_dist = *getInput<float>("max_dist");
-    float max_angle = *getInput<float>("max_angle");
+    float max_dist = requireInput<float>(*this, "max_dist");
+    float max_angle = requireInput<float>(*this, "max_angle");
     auto robot_pose = getInput<geometry_msgs::PoseStamped>("robot_pose");
     auto target_pose = getInput<geometry_msgs::PoseStamped>("target_pose");
     if (!robot_pose || !target_pose)

@@ -1,6 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
-#include "thorp_bt_cpp/node_register.hpp"
+#include "thorp_bt_cpp/node_common.hpp"
 #include "thorp_bt_cpp/ros_action_node.hpp"
 
 #include <moveit_msgs/CollisionObject.h>
@@ -40,7 +40,7 @@ private:
 
     GoalType goal;
     goal.output_frame = pnh.param("pickup_planning_frame", std::string("arm_base_link"));
-    const auto objects = *getInput<std::vector<moveit_msgs::CollisionObject>>("objects");
+    const auto objects = requireInput<std::vector<moveit_msgs::CollisionObject>>(*this, "objects");
     std::for_each(objects.begin(), objects.end(), [&](const auto& o) { goal.object_names.push_back(o.id); });
     return goal;
   }
