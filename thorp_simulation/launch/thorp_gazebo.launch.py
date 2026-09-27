@@ -10,7 +10,7 @@ Thorp simulation on Gazebo Harmonic:
 """
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, SetEnvironmentVariable
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.conditions import IfCondition, UnlessCondition
 from launch.substitutions import Command, LaunchConfiguration, PathJoinSubstitution
@@ -63,6 +63,10 @@ def generate_launch_description():
         DeclareLaunchArgument('initial_pose_y', default_value='0.0'),
         DeclareLaunchArgument('initial_pose_a', default_value='0.0'),
         DeclareLaunchArgument('gui', default_value='true', description='Start Gazebo GUI'),
+
+        # Gazebo transport on loopback, as the simulation is local; on other interfaces, as a VPN's, its discovery
+        # sometimes misses the bridge's subscription to the clock
+        SetEnvironmentVariable('GZ_IP', '127.0.0.1'),
 
         gz_sim(False, IfCondition(gui)),
         gz_sim(True, UnlessCondition(gui)),
