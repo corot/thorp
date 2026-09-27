@@ -332,3 +332,6 @@ Differences with the Noetic simulation:
   the object pose, as absolute, so it misses objects placed with a pose; `object_detection` checks the objects' poses
   itself instead. Fixed upstream by https://github.com/moveit/moveit2/pull/3884 (open); once released on Jazzy,
   `objectsInVolume` can go back to it.
+- In simulation, the gripper doesn't always close enough to grasp detected objects (seen with `star 1`, a flat shape);
+  to tune with the manipulation apps in Block 9: the gripper opening from the object size and `tightening`, and the
+  grasp pose.
