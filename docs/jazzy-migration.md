@@ -56,7 +56,7 @@ source install/setup.bash
 | 6e | Coverage planning | deferred to 9 |
 | 7a | MoveIt 2 configuration: move group, controllers, octomap from the Xtion, RViz; pick_ik replaces the IKFast plugin | done |
 | 7b | Pickup and place object action servers on MoveIt Task Constructor | done |
-| 7c | Grasping in simulation and object spawning | next |
+| 7c | Grasping in simulation and object spawning | done |
 | 8 | Perception | |
 | 9 | Executive: behavior trees and apps | |
 
@@ -154,7 +154,7 @@ simulation it tilts the cannon with `cannon_joint_controller`, and fires by publ
 `arbotix/cannon_trigger` (it was an `arbotix_msgs/Digital`), bridged to Gazebo. `thorp_cannon_system`, a Gazebo
 Harmonic system, replaces the Gazebo Classic plugin: while the trigger is on, it places the `rocket` model at the
 cannon muzzle and launches it at the speed the configured force gives it in one simulation step. Firing needs a model
-named `rocket` in the world; `spawn_gazebo_models.py` and the cats controller spawn it.
+named `rocket` in the world; the cats mode of `spawn_gazebo_models.py` and the cats controller spawn it (Block 9).
 
 ### thorp_manipulation
 
@@ -218,13 +218,18 @@ Dropped with Move Base Flex: `param/move_base_flex/`, `launch/includes/move_base
 Ported: `thorp_gazebo.launch.py` and `navigation.launch.py`, the `empty` and `playground` worlds, the Gazebo models, the
 ROS / Gazebo bridge configuration, the controllers configuration and `gazebo_ground_truth`, now fed by Gazebo's
 odometry publisher. `thorp_gazebo.launch.py` also runs what Noetic's `sim_common.launch.xml` and
-`thorp_gazebo.launch.xml` did: velocity commands multiplexer and depth image and point cloud to laser scan. Pending
-ROS 1 files:
+`thorp_gazebo.launch.xml` did: velocity commands multiplexer and depth image and point cloud to laser scan.
+`spawn_gazebo_models.py` populates the world with tables and objects through Gazebo's create service, bridged to ROS
+with the remove and set pose services: the playground modes (`playground_fixed`, `playground_cubes`, `playground_rows`,
+`playground_random`) put a table in front of the robot, and `fun_house_objects` spawns random tables with objects in
+open spaces of any map, checked on Nav2's global costmap instead of Move Base Flex's check pose service. Objects are
+placed relative to their tables by the script, as Gazebo can't place them relative to a model created on the same
+step. Its `-d` option, to delete previously spawned models, is dropped; it didn't work on Noetic. Pending ROS 1 files:
 
 | Files | Block |
 |-------|-------|
 | Bumper and cliff point clouds in `thorp_gazebo.launch.xml` | real robot |
-| `scripts/spawn_gazebo_models.py`; grasp-fix plugin | 7 |
+| `spawn_gazebo_models.py` cats (with the rocket) and `small_house_objects` modes | 9, with the small house world |
 | `src/gazebo_camera_control*.cpp`, `nodes/` (cats controller, model markers, movie director) | 9 |
 | `fun_house` and `small_house` Gazebo worlds | when needed |
 | Stage and STDR launch files, worlds and robot configurations (no Jazzy release of either simulator) | undecided |
@@ -258,9 +263,16 @@ Differences with the Noetic simulation:
   `gripper_controller/gripper_cmd`, taking `gripper_joint` angles; the cannon position controller is
   `cannon_joint_controller`, as ros2_control controllers can't be named as their joints. Simulated servos report no
   effort, so the gripper only detects stalls by not moving.
-- No grasp-fix plugin yet: grasped objects are held only by friction.
+- No grasp-fix plugin: friction holds grasped objects well enough, as the gripper keeps pressing them. Pressing an
+  object, the simulated servo chatters, so `gripper_controller` detects stalls in 0.1 s under 0.01 rad/s; Noetic's
+  0.5 s takes seconds, beyond MoveIt's execution time limit. Without the plugin's grasp events, the house keeping's
+  gripper busy check needs another way to tell whether an object is held in Block 9: e.g. the gripper stopping before
+  its closing target.
 - Gazebo publishes the clock on every step (1 kHz); `thorp_gazebo.launch.py` throttles it to 100 Hz, as Noetic's
   `gazebo_ros` did, as sim time Python nodes need a lot of CPU to process it at 1 kHz.
+- `thorp_gazebo.launch.py` sets Gazebo transport on loopback (`GZ_IP=127.0.0.1`): with a VPN interface (Tailscale)
+  on the development machine, a quarter of the simulations started without clock, as Gazebo missed the bridge's
+  subscription to it; none of 30 on loopback. Gazebo command line tools need it too, e.g. `GZ_IP=127.0.0.1 gz topic -l`.
 
 ## Known issues
 
