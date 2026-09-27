@@ -281,9 +281,5 @@ Differences with the Noetic simulation:
   and MoveIt stops the execution as timed out, leaving the arm off its path, sometimes in collision for the next plan.
   Maybe a physical contact MoveIt doesn't model (the arm links have `selfCollide`); to check with the manipulation
   servers.
-- This machine also has NVIDIA's Isaac ROS apt repository, that offers `ros-jazzy-moveit-task-constructor-core`
-  99.99.0; apt prefers it over the ROS release (0.1.8), mismatching the other MoveIt Task Constructor packages.
-  The ROS versions are installed explicitly (`apt install ros-jazzy-moveit-task-constructor-core=0.1.8-...`); an apt
-  pin for packages.ros.org would keep upgrades and `rosdep install` from switching.
 - Once, of about 25 simulated place goals, planning failed with "open gripper: Start state is out of bounds!"; it
   didn't happen again, so the joint out of bounds is unknown.
