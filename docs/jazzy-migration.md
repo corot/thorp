@@ -58,7 +58,7 @@ source install/setup.bash
 | 7b | Pickup and place object action servers on MoveIt Task Constructor | done |
 | 7c | Grasping in simulation and object spawning | done |
 | 8 | Perception: tables and tabletop objects detection | done |
-| 9a | Behavior trees framework on BehaviorTree.CPP 4 (runner, `bt_server`, JSON blackboard), manipulation and perception capabilities; `object_manip` and `pickup_objects` apps | in progress: `pickup_objects` done |
+| 9a | Behavior trees framework on BehaviorTree.CPP 4 (runner, `bt_server`, JSON blackboard), manipulation and perception capabilities; `object_manip` and `pickup_objects` apps | in progress: `pickup_objects` and `object_manip` done |
 | 9b | Navigation capabilities on Nav2, semantic costmap layer, pickup planner; `patrol_2_points` and `cleanup_table` apps | |
 | 9c | Exploration: coverage planning and room segmentation; `explore_house` and `object_gatherer` apps | |
 | 9d | Cat hunter: object detection replacing COB, cats models and controller | |
@@ -108,19 +108,20 @@ Thorp's fork) and `full_coverage_path_planner`'s Spiral-STC planner, as an MBF g
 
 | Package | Status |
 |---------|--------|
-| thorp_bringup | partial: velocity multiplexer and depth to scan parameters, navigation RViz config (see below) |
+| thorp_bringup | partial: velocity multiplexer and depth to scan parameters, navigation and manipulation RViz configs (see below) |
 | thorp_description | migrated |
 | thorp_moveit_config | migrated (see below) |
 | thorp_msgs | migrated |
 | thorp_cannon | migrated; simulation only, the real cannon waits for the boards (see below) |
 | thorp_manipulation | partial: pickup and place object servers, fake gripper joint states (see below) |
 | thorp_bt_cpp | partial: runner, `bt_server`, manipulation and perception nodes and trees (see below) |
-| thorp_apps | partial: common launch, `pickup_objects` (see below) |
+| thorp_apps | partial: common launch, `pickup_objects` and `object_manip` (see below) |
+| thorp_rviz_plugins | partial: user commands panel (see below) |
 | thorp_perception | partial: tables and objects detection, camera field of view check (see below) |
 | thorp_navigation | partial: Nav2 configuration and launch, maps, velocity display (see below) |
 | thorp_simulation | partial: Gazebo Harmonic launch, worlds, controllers and navigation (see below) |
 | thorp_toolkit | partial: core C++ and Python modules (see below) |
-| thorp_boards, thorp_costmap_layers, thorp_exploration, thorp_mbf_plugins, thorp_rviz_plugins, thorp_smach | ROS 1 (ignored) |
+| thorp_boards, thorp_costmap_layers, thorp_exploration, thorp_mbf_plugins, thorp_smach | ROS 1 (ignored) |
 
 ### thorp_moveit_config
 
@@ -213,7 +214,8 @@ as on Noetic, and need some clearance over the support surface: contacts with it
 IK. To release the object, the gripper opens only 1.5 cm wider than it, not to hit objects around, as those already on
 the tray. Tasks plan from the measured state with its velocities cleared and its positions clamped to the joint limits:
 MTC checks the start state bounds, velocities included, and pickups failed now and then with the start state out of
-bounds, just after closing the gripper.
+bounds, just after closing the gripper. On shutdown, a goal being executed stops waiting for its result, so the node
+exits cleanly.
 `scripts/test_pick_and_place.py` picks and places a cube on a table that exist only in the planning scene.
 
 The fake gripper joints state publisher (`fake_joint_pub.py`, from `turtlebot_arm_bringup`) and
@@ -225,15 +227,16 @@ files:
 | Files | Block |
 |-------|-------|
 | Real robot servos: `param/controllers.yaml`, `launch/includes/controllers.launch.xml`, `nodes/dynamixel_*.py`, and their use in `launch/includes/arm.launch.xml`; `fake_servos_srv.py` from `thorp_bringup` on simulation | real robot |
-| `src/interactive_manip_server.cpp` (drag and drop) | 9a |
 | `nodes/pickup_planner_server.py`, `setup.py` | 9b |
 
-The tray manager (`src/tray_manager_server.cpp`) is replaced by `thorp_bt_cpp`'s tray nodes.
+The tray manager and the drag and drop server (`interactive_manip_server.cpp`) are replaced by `thorp_bt_cpp`'s tray
+and `DragAndDrop` nodes.
 
 ### thorp_bt_cpp
 
 `bt_runner.launch.py` runs an app's tree, `bt/<app_name>.xml`'s root tree `<app_name>`, on a node named after the app
-(given as an argument, as a launch node name would rename the nodes some tree nodes create too).
+(given as an argument, as a launch node name would rename the nodes some tree nodes create too); with
+`on_exit_shutdown`, the whole launch shuts down when the tree completes.
 `bt_server.launch.py` offers every installed tree as a capability on `bt_server/run_subtree` (`thorp_msgs/RunSubtree`),
 with inputs and outputs as JSON. Both load the app parameters, undeclared, and the tray geometry, from
 `thorp_description/config/tray.yaml`, now a ROS 2 parameters file. `thorp::toolkit` is initialized with their node, and
@@ -250,27 +253,34 @@ Poses are written in the trees in Nav2's `PoseStamped` format (`nav2_behavior_tr
 poses as `{x, y, z, roll, pitch, yaw, frame}` objects. Tables are collision objects, reported as
 `{name, depth, width, height, color, pose}`, and objects as `{name, color}`.
 
-Noetic's housekeeping services are gone:
+Noetic's housekeeping services, and the servers for user commands and drag and drop, are gone:
 
 - `GripperBusy` closes the gripper to 0.45 rad: it holds something if it stalls short of 0.42.
 - `ObjectAttached`, `DetachObject` and `ClearPlanningScene` use MoveIt's planning scene interface; clearing the
   gripper is a `clear_gripper` subtree (open, then detach and remove whatever was attached).
 - `SetArmConfig` sends `move_group` a joint goal from the SRDF named states, read from `robot_description_semantic`.
+- `ReadUserCommands` takes the commands from the `user_command` topic (`std_msgs/String`), as the RViz user commands
+  panel publishes them, instead of serving `jsk_rviz_plugins`' command service; it still echoes them as an overlay
+  text, on `rviz/user_command`.
+- `DragAndDrop` serves the `move_objects` interactive markers itself, instead of calling a drag and drop action server
+  in `thorp_manipulation`. Its place pose is the gripper's, as the place action takes it: the object's top once resting
+  at the drop position, plus `placing_height_on_table`.
 - The tray has no state: `NextPoseOnTray` and `TrayFull` find the free slots from the planning scene objects on it.
   Placing poses are the gripper's, so the pose on the tray is raised by the held object's height, over
   `placing_height_on_tray` (0.01 m over the tray frame, at the bottom of its 2 mm base). Noetic placed the gripper at a
   fixed 3 cm, lower than the tops of the 3.2 cm objects once on the tray; MoveIt 1's place allowed touching the tray.
 
 Ported: the runner, `bt_server`, the JSON blackboard, the ROS logger, the manipulation, perception, list, blackboard
-and parameter nodes, and the `manipulation`, `perception`, `pickup_objects` and `test_server` trees. Dropped:
-`add_object_to_tray` and `clear_gripper`, replaced as described. Pending ROS 1 files:
+and parameter nodes, the user commands and drag and drop nodes, and the `manipulation`, `perception`,
+`pickup_objects`, `object_manip` and `test_server` trees. `add_object_to_tray` and `clear_gripper` are removed, replaced
+as described. Pending ROS 1 files:
 
 | Files | Block |
 |-------|-------|
-| `read_user_commands`, `drag_and_drop`, `use_named_config`, `clear_rail_markers`, `monitor_objects`; `bt/object_manip.xml`; `test/`, `config/capabilities.yaml`, `scripts/test_bt_server.py`; `scripts/show_bt_node_on_rviz.py`, `bt/node_models.xml`, `groot/` | 9a |
-| Navigation and tables nodes (`go_to_pose`, `get_path`, `exe_path`, `follow_pose`, `smooth_path`, `recovery`, `clear_costmaps`, `look_at_pose`, `get_poses_around_table`, `table_visited`, `target_reachable`, `table_as_obstacle`, `clear_table_access`, `restore_table_access`, `make_pickup_plan`, `expand_pickup_location`, `bumper_pressed`, `switch_safety_controller`); `bt/navigation.xml`, `bt/tables.xml`, `bt/patrol_2_points.xml` | 9b |
+| `test/`, `config/capabilities.yaml`, `scripts/test_bt_server.py`; `scripts/show_bt_node_on_rviz.py`, `bt/node_models.xml`, `groot/` | 9a |
+| Navigation and tables nodes (`use_named_config`, `clear_rail_markers`, `go_to_pose`, `get_path`, `exe_path`, `follow_pose`, `smooth_path`, `recovery`, `clear_costmaps`, `look_at_pose`, `get_poses_around_table`, `table_visited`, `target_reachable`, `table_as_obstacle`, `clear_table_access`, `restore_table_access`, `make_pickup_plan`, `expand_pickup_location`, `bumper_pressed`, `switch_safety_controller`); `bt/navigation.xml`, `bt/tables.xml`, `bt/patrol_2_points.xml` | 9b |
 | `segment_rooms`, `plan_room_sequence`, `plan_room_exploration`; `bt/exploration.xml`, `bt/explore_house.xml`, `bt/object_gatherer.xml` | 9c |
-| `cannon_control`, `cannon_has_ammo`; `bt/cat_hunter.xml` | 9d |
+| `cannon_control`, `cannon_has_ammo`, `monitor_objects`; `bt/cat_hunter.xml` | 9d |
 
 ### thorp_apps
 
@@ -278,14 +288,25 @@ and parameter nodes, and the `manipulation`, `perception`, `pickup_objects` and 
 and the executive: `bt_runner` with the app's tree (`executive:=bt`, the default), or `bt_server` (`executive:=llm`).
 SMACH executives, the executive visualization and video recording aren't ported. `param/apps_config.yaml` is a ROS 2
 parameters file for whichever node runs the app. `pickup_objects.launch.py` adds a static `map` to `odom` transform
-(no map server), the objects spawner, perception, manipulation and MoveIt's RViz. Pending: the other apps' ROS 1
-launch files and `resources/movie_scripts`, with their blocks.
+(no map server), the objects spawner, perception, manipulation and RViz, through
+`launch/includes/tabletop_manip.launch.py`, shared with `object_manip.launch.py`. `object_manip` shuts everything down
+on the exit command, as on Noetic. Both use `thorp_bringup`'s `rviz/manipulation.rviz`, with the user commands panel.
+Pending: the other apps' ROS 1 launch files and `resources/movie_scripts`, with their blocks.
+
+### thorp_rviz_plugins
+
+The user commands panel (`thorp_rviz_plugins/UserCommands`) replaces `jsk_rviz_plugins`' robot command buttons: its
+buttons, set in the RViz configuration as a list of name, icon and command, publish the command on the `user_command`
+topic. Pending: the ROS 1 navigation tools (clear costmaps and cancel navigation buttons), with Block 9b.
 
 ### thorp_bringup
 
 Ported: `param/cmd_vel_mux.yaml` (was `vel_multiplexer.yaml`, now for `twist_mux`), the Kinect and Xtion depth to
-laser scan parameters and `rviz/navigation.rviz` (based on Nav2's default view). Everything else is pending: real robot
-launch files and drivers, other RViz configurations, scripts and the docker image.
+laser scan parameters, `rviz/navigation.rviz` (based on Nav2's default view) and `rviz/manipulation.rviz` (based on
+MoveIt's, plus the objects' interactive markers, the user command overlay and the user commands panel, with the
+`rviz/icons`). `scripts/user_commands.py` and `rviz/user_commands.yaml` are replaced by the user commands panel and
+`ReadUserCommands`. Everything else is pending: real robot launch files and drivers, other RViz configurations,
+scripts and the docker image.
 
 ### thorp_navigation
 
@@ -367,6 +388,9 @@ Differences with the Noetic simulation:
   0.5 s takes seconds, beyond MoveIt's execution time limit. Without the plugin's grasp events, the house keeping's
   gripper busy check needs another way to tell whether an object is held in Block 9: e.g. the gripper stopping before
   its closing target.
+- `thorp_gazebo.launch.py` runs Gazebo itself, with the paths `ros_gz_sim`'s `gz_sim.launch.py` sets, as that one
+  runs it through a shell, that doesn't pass launch's signals on: Gazebo kept running when launch shut down other
+  than with Ctrl-C, as on an app's exit command.
 - Gazebo publishes the clock on every step (1 kHz); `thorp_gazebo.launch.py` throttles it to 100 Hz, as Noetic's
   `gazebo_ros` did, as sim time Python nodes need a lot of CPU to process it at 1 kHz.
 - `thorp_gazebo.launch.py` sets Gazebo transport on loopback (`GZ_IP=127.0.0.1`): with a VPN interface (Tailscale)
