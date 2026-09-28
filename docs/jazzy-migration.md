@@ -58,7 +58,7 @@ source install/setup.bash
 | 7b | Pickup and place object action servers on MoveIt Task Constructor | done |
 | 7c | Grasping in simulation and object spawning | done |
 | 8 | Perception: tables and tabletop objects detection | done |
-| 9a | Behavior trees framework on BehaviorTree.CPP 4 (runner, `bt_server`, JSON blackboard), manipulation and perception capabilities; `object_manip` and `pickup_objects` apps | next |
+| 9a | Behavior trees framework on BehaviorTree.CPP 4 (runner, `bt_server`, JSON blackboard), manipulation and perception capabilities; `object_manip` and `pickup_objects` apps | in progress: `pickup_objects` done |
 | 9b | Navigation capabilities on Nav2, semantic costmap layer, pickup planner; `patrol_2_points` and `cleanup_table` apps | |
 | 9c | Exploration: coverage planning and room segmentation; `explore_house` and `object_gatherer` apps | |
 | 9d | Cat hunter: object detection replacing COB, cats models and controller | |
@@ -92,9 +92,9 @@ MoveIt 2 has no pick and place capability (`moveit_msgs` keeps the `Pickup` and 
 them), so the pickup and place object servers build MoveIt Task Constructor tasks instead, keeping their `thorp_msgs`
 actions, now with the stage being executed as feedback. The rest of Noetic's manipulation servers go to the executive,
 in Block 9: `move_to_target` (the behavior trees only use named targets, that `move_group` takes directly), the house
-keeping services (clear gripper, force resting, object attached and gripper busy: planning scene queries and
-controller commands), the tray manager (slot poses, as executive state) and the drag and drop demo. So does the pickup
-planner, that groups objects on a table into pickup locations: app-level planning, with no MoveIt use.
+keeping services (clear gripper, force resting, object attached and gripper busy: planning scene queries and controller
+commands), the tray manager (slot poses, now computed from the planning scene) and the drag and drop demo. So does the
+pickup planner, that groups objects on a table into pickup locations: app-level planning, with no MoveIt use.
 
 Coverage planning is deferred to Block 9, with the exploration apps, its only users. No option is a Jazzy release:
 `ipa_coverage_planning` (room segmentation, room sequence planning and room exploration) has no ROS 2 port;
@@ -114,20 +114,25 @@ Thorp's fork) and `full_coverage_path_planner`'s Spiral-STC planner, as an MBF g
 | thorp_msgs | migrated |
 | thorp_cannon | migrated; simulation only, the real cannon waits for the boards (see below) |
 | thorp_manipulation | partial: pickup and place object servers, fake gripper joint states (see below) |
+| thorp_bt_cpp | partial: runner, `bt_server`, manipulation and perception nodes and trees (see below) |
+| thorp_apps | partial: common launch, `pickup_objects` (see below) |
 | thorp_perception | partial: tables and objects detection, camera field of view check (see below) |
 | thorp_navigation | partial: Nav2 configuration and launch, maps, velocity display (see below) |
 | thorp_simulation | partial: Gazebo Harmonic launch, worlds, controllers and navigation (see below) |
 | thorp_toolkit | partial: core C++ and Python modules (see below) |
-| thorp_apps, thorp_boards, thorp_bt_cpp, thorp_costmap_layers, thorp_exploration, thorp_mbf_plugins, thorp_rviz_plugins, thorp_smach | ROS 1 (ignored) |
+| thorp_boards, thorp_costmap_layers, thorp_exploration, thorp_mbf_plugins, thorp_rviz_plugins, thorp_smach | ROS 1 (ignored) |
 
 ### thorp_moveit_config
 
 MoveIt 2 configuration built with `moveit_configs_utils`, launched with `move_group.launch.py` and
-`moveit_rviz.launch.py` (both take `simulation` and `use_sim_time`). It keeps Noetic's SRDF, joint velocity limits
-(plus the 1.0 rad/s² accelerations MoveIt assumed), trajectory execution tolerances and OMPL, and drives
-`arm_controller` and `gripper_controller` (`gripper_cmd`). `pick_ik` replaces the IKFast (TranslationDirection5D)
-plugin generated for the TurtleBot arm; LMA, what ROS 2 configurations for similar arms use, is no longer in MoveIt on
-Jazzy. `move_group` loads MoveIt Task Constructor's ExecuteTaskSolution capability, for `thorp_manipulation`. The unused CHOMP and Pilz pipelines aren't ported. The Xtion octomap is disabled (see the known issues).
+`moveit_rviz.launch.py` (both take `simulation` and `use_sim_time`). It keeps Noetic's SRDF, joint velocity limits (plus
+the 1.0 rad/s² accelerations MoveIt assumed), trajectory execution tolerances and OMPL, and drives `arm_controller` and
+`gripper_controller` (`gripper_cmd`). `pick_ik` replaces the IKFast (TranslationDirection5D) plugin generated for the
+TurtleBot arm; LMA, what ROS 2 configurations for similar arms use, is no longer in MoveIt on Jazzy. `move_group` loads
+MoveIt Task Constructor's ExecuteTaskSolution capability, for `thorp_manipulation`. It publishes the semantic
+description, but not the robot description, left to `robot_state_publisher`: its copy lacks the ros2_control parameters,
+and Gazebo could spawn Thorp from it. The unused CHOMP and Pilz pipelines aren't ported. The Xtion octomap is disabled
+(see the known issues).
 
 ### thorp_msgs
 
@@ -205,7 +210,11 @@ arm's compensations (backlash, gripper asymmetry, distance fall short) as parame
 side across it minus `tightening`, converted into a `gripper_joint` angle with Noetic's one-sided gripper model;
 `max_effort` is ignored, as `move_group` sends its controller's fixed maximum effort. Place poses are gripper targets,
 as on Noetic, and need some clearance over the support surface: contacts with it are allowed only after the place pose
-IK. `scripts/test_pick_and_place.py` picks and places a cube on a table that exist only in the planning scene.
+IK. To release the object, the gripper opens only 1.5 cm wider than it, not to hit objects around, as those already on
+the tray. Tasks plan from the measured state with its velocities cleared and its positions clamped to the joint limits:
+MTC checks the start state bounds, velocities included, and pickups failed now and then with the start state out of
+bounds, just after closing the gripper.
+`scripts/test_pick_and_place.py` picks and places a cube on a table that exist only in the planning scene.
 
 The fake gripper joints state publisher (`fake_joint_pub.py`, from `turtlebot_arm_bringup`) and
 `launch/includes/arm.launch.py`, that runs it, are ported too. The gripper command action comes from
@@ -216,7 +225,61 @@ files:
 | Files | Block |
 |-------|-------|
 | Real robot servos: `param/controllers.yaml`, `launch/includes/controllers.launch.xml`, `nodes/dynamixel_*.py`, and their use in `launch/includes/arm.launch.xml`; `fake_servos_srv.py` from `thorp_bringup` on simulation | real robot |
-| `src/tray_manager_server.cpp`, `src/interactive_manip_server.cpp` (drag and drop), `nodes/pickup_planner_server.py`, `setup.py` | 9 |
+| `src/interactive_manip_server.cpp` (drag and drop) | 9a |
+| `nodes/pickup_planner_server.py`, `setup.py` | 9b |
+
+The tray manager (`src/tray_manager_server.cpp`) is replaced by `thorp_bt_cpp`'s tray nodes.
+
+### thorp_bt_cpp
+
+`bt_runner.launch.py` runs an app's tree, `bt/<app_name>.xml`'s root tree `<app_name>`, on a node named after the app
+(given as an argument, as a launch node name would rename the nodes some tree nodes create too).
+`bt_server.launch.py` offers every installed tree as a capability on `bt_server/run_subtree` (`thorp_msgs/RunSubtree`),
+with inputs and outputs as JSON. Both load the app parameters, undeclared, and the tray geometry, from
+`thorp_description/config/tray.yaml`, now a ROS 2 parameters file. `thorp::toolkit` is initialized with their node, and
+subtree blackboards get the root's node and timeouts, as they see only their remapped ports.
+
+Nodes calling actions derive from Nav2's `BtActionNode`, with their servers' names as `server_name` defaults; the
+runner puts Nav2's timeouts on the blackboard: `server_timeout` half a tick and `wait_for_service_timeout` 5 s, 60 s
+in `bt_runner.launch.py`, as it starts with the servers. Nav2 creates action clients with the tree, so tree creation
+fails if a server is missing. Services use a synchronous node template, with its own callback group. BT 4 checks
+literal port values when loading a tree, so the trees drop Groot's empty values for unset ports.
+
+Poses are written in the trees in Nav2's `PoseStamped` format (`nav2_behavior_tree` defines the string conversion);
+`bt_server` takes Thorp's `x;y;yaw;frame` and `x;y;z;roll;pitch;yaw;frame` strings in its JSON inputs, and reports
+poses as `{x, y, z, roll, pitch, yaw, frame}` objects. Tables are collision objects, reported as
+`{name, depth, width, height, color, pose}`, and objects as `{name, color}`.
+
+Noetic's housekeeping services are gone:
+
+- `GripperBusy` closes the gripper to 0.45 rad: it holds something if it stalls short of 0.42.
+- `ObjectAttached`, `DetachObject` and `ClearPlanningScene` use MoveIt's planning scene interface; clearing the
+  gripper is a `clear_gripper` subtree (open, then detach and remove whatever was attached).
+- `SetArmConfig` sends `move_group` a joint goal from the SRDF named states, read from `robot_description_semantic`.
+- The tray has no state: `NextPoseOnTray` and `TrayFull` find the free slots from the planning scene objects on it.
+  Placing poses are the gripper's, so the pose on the tray is raised by the held object's height, over
+  `placing_height_on_tray` (0.01 m over the tray frame, at the bottom of its 2 mm base). Noetic placed the gripper at a
+  fixed 3 cm, lower than the tops of the 3.2 cm objects once on the tray; MoveIt 1's place allowed touching the tray.
+
+Ported: the runner, `bt_server`, the JSON blackboard, the ROS logger, the manipulation, perception, list, blackboard
+and parameter nodes, and the `manipulation`, `perception`, `pickup_objects` and `test_server` trees. Dropped:
+`add_object_to_tray` and `clear_gripper`, replaced as described. Pending ROS 1 files:
+
+| Files | Block |
+|-------|-------|
+| `read_user_commands`, `drag_and_drop`, `use_named_config`, `clear_rail_markers`, `monitor_objects`; `bt/object_manip.xml`; `test/`, `config/capabilities.yaml`, `scripts/test_bt_server.py`; `scripts/show_bt_node_on_rviz.py`, `bt/node_models.xml`, `groot/` | 9a |
+| Navigation and tables nodes (`go_to_pose`, `get_path`, `exe_path`, `follow_pose`, `smooth_path`, `recovery`, `clear_costmaps`, `look_at_pose`, `get_poses_around_table`, `table_visited`, `target_reachable`, `table_as_obstacle`, `clear_table_access`, `restore_table_access`, `make_pickup_plan`, `expand_pickup_location`, `bumper_pressed`, `switch_safety_controller`); `bt/navigation.xml`, `bt/tables.xml`, `bt/patrol_2_points.xml` | 9b |
+| `segment_rooms`, `plan_room_sequence`, `plan_room_exploration`; `bt/exploration.xml`, `bt/explore_house.xml`, `bt/object_gatherer.xml` | 9c |
+| `cannon_control`, `cannon_has_ammo`; `bt/cat_hunter.xml` | 9d |
+
+### thorp_apps
+
+`launch/includes/apps_common.launch.py` starts the simulation (Gazebo only, until the real robot's bringup is ported)
+and the executive: `bt_runner` with the app's tree (`executive:=bt`, the default), or `bt_server` (`executive:=llm`).
+SMACH executives, the executive visualization and video recording aren't ported. `param/apps_config.yaml` is a ROS 2
+parameters file for whichever node runs the app. `pickup_objects.launch.py` adds a static `map` to `odom` transform
+(no map server), the objects spawner, perception, manipulation and MoveIt's RViz. Pending: the other apps' ROS 1
+launch files and `resources/movie_scripts`, with their blocks.
 
 ### thorp_bringup
 
@@ -329,8 +392,6 @@ Differences with the Noetic simulation:
   and MoveIt stops the execution as timed out, leaving the arm off its path, sometimes in collision for the next plan.
   Maybe a physical contact MoveIt doesn't model (the arm links have `selfCollide`); to check with the manipulation
   servers.
-- Once, of about 25 simulated place goals, planning failed with "open gripper: Start state is out of bounds!"; it
-  didn't happen again, so the joint out of bounds is unknown.
 - The simulated Kobuki rests tilted back on its back caster, 2 mm above the ground in the model, by 0.015 rad
   (0.85 degrees) while the arm rests: its center of mass must be behind the wheels. TF assumes a level base, so
   points seen by the cameras are about 9 mm off at the tables distance (farther and lower); the tilt goes away when
@@ -342,6 +403,7 @@ Differences with the Noetic simulation:
   the object pose, as absolute, so it misses objects placed with a pose; `object_detection` checks the objects' poses
   itself instead. Fixed upstream by https://github.com/moveit/moveit2/pull/3884 (open); once released on Jazzy,
   `objectsInVolume` can go back to it.
-- In simulation, the gripper doesn't always close enough to grasp detected objects (seen with `star 1`, a flat shape);
-  to tune with the manipulation apps in Block 9: the gripper opening from the object size and `tightening`, and the
-  grasp pose.
+- In simulation, grasps across an object's wide side (openings of 2.6 to 3.2 cm) often fail: after closing, the
+  gripper holds nothing. Across the 1.1 cm side, they succeed. The arm has no wrist roll, so objects whose thin side
+  faces the arm can only be grasped across the wide one. In a `pickup_objects` run, 4 objects ended on the tray and
+  `clover 1` was given up after failing like this 3 times.
