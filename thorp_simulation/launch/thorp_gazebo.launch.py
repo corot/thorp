@@ -9,8 +9,11 @@ Thorp simulation on Gazebo Harmonic:
 - arm, gripper and cannon controllers, and the cannon controller node
 """
 
+import os
+
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, SetEnvironmentVariable
+from launch.actions import (DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription, SetEnvironmentVariable,
+                            Shutdown)
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.conditions import IfCondition, UnlessCondition
 from launch.substitutions import Command, LaunchConfiguration, PathJoinSubstitution
@@ -18,6 +21,12 @@ from launch_ros.actions import ComposableNodeContainer, Node
 from launch_ros.parameter_descriptions import ParameterValue
 from launch_ros.descriptions import ComposableNode
 from launch_ros.substitutions import FindPackageShare
+from ros_gz_sim.actions.gzserver import GazeboRosPaths
+
+
+def shutdown_unless_shutting_down(event, context):
+    """ Shut everything down when Gazebo exits, as when closing its window; a second shutdown makes launch fail """
+    return None if context.is_shutdown else [Shutdown(reason='Gazebo exited')]
 
 
 def generate_launch_description():
@@ -32,13 +41,21 @@ def generate_launch_description():
                                                 ' ros2_control_params:=', controllers_file]), value_type=str)
     sim_time = {'use_sim_time': True}
 
+    # The environment ros_gz_sim's gz_sim.launch.py sets: models and plugins paths exported by packages, as Thorp's
+    # meshes and cannon system, and libraries as plugins
+    model_paths, plugin_paths = GazeboRosPaths.get_paths()
+    gz_env = {'GZ_SIM_RESOURCE_PATH': os.pathsep.join([os.environ.get('GZ_SIM_RESOURCE_PATH', ''), model_paths]),
+              'GZ_SIM_SYSTEM_PLUGIN_PATH': os.pathsep.join([os.environ.get('GZ_SIM_SYSTEM_PLUGIN_PATH', ''),
+                                                            os.environ.get('LD_LIBRARY_PATH', ''), plugin_paths])}
+
     def gz_sim(server_only, condition):
         # -r: start running; -s: server only, with headless rendering for the sensors
-        args = '-r -s --headless-rendering ' if server_only else '-r '
-        return IncludeLaunchDescription(
-            PathJoinSubstitution([FindPackageShare('ros_gz_sim'), 'launch', 'gz_sim.launch.py']),
-            launch_arguments={'gz_args': [args, world_file], 'on_exit_shutdown': 'true'}.items(),
-            condition=condition)
+        args = ['-r', '-s', '--headless-rendering'] if server_only else ['-r']
+        # Not through gz_sim.launch.py, as its shell doesn't pass launch's signals on to Gazebo, left running when
+        # launch shuts down other than with Ctrl-C
+        return ExecuteProcess(cmd=['gz', 'sim'] + args + [world_file, '--force-version', '8'], name='gazebo',
+                              output='screen', additional_env=gz_env, on_exit=shutdown_unless_shutting_down,
+                              condition=condition)
 
     def point_cloud(camera):
         # Registered point cloud on the RGB optical frame, as produced by the real cameras' drivers
