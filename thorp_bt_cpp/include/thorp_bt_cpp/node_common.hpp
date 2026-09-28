@@ -15,6 +15,25 @@
 namespace thorp::bt
 {
 /**
+ * Copy the entries every node may need from the root blackboard into a subtree's one, so nodes find them there:
+ * the ROS node and Nav2's timeouts. Subtree blackboards see only their remapped ports.
+ */
+inline void shareRootEntries(const BT::Blackboard::Ptr& blackboard)
+{
+  using std::chrono::milliseconds;
+  const BT::Blackboard* root = blackboard->rootBlackboard();
+  if (root == blackboard.get() || blackboard->getEntry("node"))
+  {
+    return;
+  }
+  blackboard->set("node", root->get<rclcpp::Node::SharedPtr>("node"));
+  for (const auto& key : { "bt_loop_duration", "server_timeout", "cancel_timeout", "wait_for_service_timeout" })
+  {
+    blackboard->set(key, root->get<milliseconds>(key));
+  }
+}
+
+/**
  * @brief Struct that will, upon creation, register a builder for the owner custom node to the BT factory.
  * You need to add this struct as a static attribute to each of your custom BT nodes, so they get registered
  * on static initialization.
@@ -29,6 +48,7 @@ struct NodeRegister
   {
     BT::NodeBuilder builder = [args = std::make_tuple(args...)](const std::string& name,
                                                                 const BT::NodeConfig& config) {
+      shareRootEntries(config.blackboard);
       return std::apply([&](const auto&... node_args) { return std::make_unique<T>(name, node_args..., config); },
                         args);
     };
