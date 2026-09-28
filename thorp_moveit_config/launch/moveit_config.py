@@ -19,5 +19,6 @@ def thorp_moveit_config(simulation):
             .planning_pipelines(pipelines=['ompl'], default_planning_pipeline='ompl')
             .trajectory_execution(file_path='config/moveit_controllers.yaml')
             .sensors_3d(file_path='config/sensors_3d.yaml')
-            .planning_scene_monitor(publish_robot_description=True, publish_robot_description_semantic=True)
+            # robot_state_publisher publishes the description; this one lacks the ros2_control parameters Gazebo needs
+            .planning_scene_monitor(publish_robot_description=False, publish_robot_description_semantic=True)
             .to_moveit_configs())
