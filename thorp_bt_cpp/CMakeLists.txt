@@ -11,6 +11,7 @@ find_package(rclcpp_action REQUIRED)
 find_package(behaviortree_cpp REQUIRED)
 find_package(nav2_behavior_tree REQUIRED)
 find_package(nav2_msgs REQUIRED)
+find_package(geometric_shapes REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(control_msgs REQUIRED)
 find_package(moveit_msgs REQUIRED)
@@ -78,6 +79,7 @@ target_link_libraries(bt_runner PUBLIC
   behaviortree_cpp::behaviortree_cpp
   ${nav2_behavior_tree_LIBRARIES}
   ${nav2_msgs_TARGETS}
+  geometric_shapes::geometric_shapes
   ${geometry_msgs_TARGETS}
   ${moveit_msgs_TARGETS}
   moveit_ros_planning_interface::moveit_planning_scene_interface

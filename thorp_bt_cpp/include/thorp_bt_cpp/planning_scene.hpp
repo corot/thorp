@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include <geometric_shapes/shape_operations.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.hpp>
 
 namespace thorp::bt
@@ -27,6 +28,18 @@ inline std::string objectIds(const std::vector<moveit_msgs::msg::CollisionObject
   for (size_t i = 0; i < objects.size(); ++i)
     ids << (i ? ", " : "") << objects[i].id;
   return ids.str();
+}
+
+/**
+ * Height of an object made of a single shape, as perception makes them; zero if it has none.
+ */
+inline double objectHeight(const moveit_msgs::msg::CollisionObject& object)
+{
+  if (!object.meshes.empty())
+    return shapes::computeShapeExtents(shapes::ShapeMsg(object.meshes.front())).z();
+  if (!object.primitives.empty())
+    return shapes::computeShapeExtents(shapes::ShapeMsg(object.primitives.front())).z();
+  return 0.0;
 }
 
 }  // namespace thorp::bt

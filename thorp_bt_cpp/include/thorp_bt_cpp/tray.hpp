@@ -23,7 +23,7 @@ class Tray
 public:
   /**
    * Read the tray geometry from the node's parameters: tray.link, tray.side_x, tray.side_y, tray.slot, and
-   * placing_height_on_tray, the placing poses height over the tray.
+   * placing_height_on_tray, the height over the tray's base where objects are released.
    */
   explicit Tray(const rclcpp::Node::SharedPtr& node)
   {
@@ -31,7 +31,7 @@ public:
     const double side_x = node->get_parameter_or("tray.side_x", 0.14);
     const double side_y = node->get_parameter_or("tray.side_y", 0.14);
     slot_ = node->get_parameter_or("tray.slot", 0.035);
-    placing_height_ = node->get_parameter_or("placing_height_on_tray", 0.03);
+    placing_height_ = node->get_parameter_or("placing_height_on_tray", 0.01);
     slots_x_ = static_cast<int>(std::round(side_x / slot_ + 0.1));
     slots_y_ = static_cast<int>(std::round(side_y / slot_ + 0.1));
   }
