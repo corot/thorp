@@ -1,11 +1,14 @@
 #include "thorp_bt_cpp/bt_server.hpp"
 
+#include <thorp_toolkit/common.hpp>
+
 int main(int argc, char** argv)
 {
   rclcpp::init(argc, argv);
   // Trees read app parameters by name, without declaring them
   auto node = std::make_shared<rclcpp::Node>(
       "bt_server", rclcpp::NodeOptions().automatically_declare_parameters_from_overrides(true));
+  thorp::toolkit::init(node);
   thorp::bt::Server server(node);
   if (!server.loadTrees())
   {

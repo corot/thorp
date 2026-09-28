@@ -41,7 +41,7 @@ bool Runner::loadTree()
     return false;
   }
 
-  app_name_ = node_->get_parameter_or<std::string>("app_name", "");
+  app_name_ = node_->get_parameter_or<std::string>("app_name", node_->get_name());
   const std::string bt_filepath = node_->get_parameter_or<std::string>("bt_filepath", "");
   const std::string nodes_filepath = node_->get_parameter_or<std::string>("nodes_filepath", "");
 
