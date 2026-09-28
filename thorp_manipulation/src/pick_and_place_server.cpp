@@ -128,11 +128,35 @@ typename rclcpp_action::Server<Action>::SharedPtr PickAndPlaceServer::createServ
         return rclcpp_action::CancelResponse::ACCEPT;
       },
       [this, execute](const std::shared_ptr<GoalHandle> goal_handle) {
-        std::thread([this, execute, goal_handle]() {
-          (this->*execute)(goal_handle);
+        // The previous goal's thread has finished, as goals are accepted only when not busy
+        if (goal_thread_.joinable())
+          goal_thread_.join();
+        goal_thread_ = std::thread([this, execute, goal_handle]() {
+          try
+          {
+            (this->*execute)(goal_handle);
+          }
+          catch (const std::runtime_error&)
+          {
+            // Reporting the result fails when shutting down
+            if (rclcpp::ok())
+              throw;
+          }
           busy_ = false;
-        }).detach();
+        });
       });
+}
+
+PickAndPlaceServer::~PickAndPlaceServer()
+{
+  // The goal thread uses this object; on shutdown, it stops waiting for the execution result
+  {
+    std::lock_guard<std::mutex> lock(planning_task_mutex_);
+    if (planning_task_)
+      planning_task_->preempt();
+  }
+  if (goal_thread_.joinable())
+    goal_thread_.join();
 }
 
 void PickAndPlaceServer::executePickup(const std::shared_ptr<rclcpp_action::ServerGoalHandle<PickupObject>> goal_handle)
@@ -569,6 +593,11 @@ int32_t PickAndPlaceServer::run(mtc::Task& task, const Feedback& feedback, const
   auto result_future = execute_client_->async_get_result(goal_handle);
   while (result_future.wait_for(100ms) != std::future_status::ready)
   {
+    if (!rclcpp::ok())
+    {
+      RCLCPP_WARN(node_->get_logger(), "Shutting down while executing task '%s'", task.name().c_str());
+      return MoveItErrorCodes::FAILURE;
+    }
     if (canceling())
     {
       RCLCPP_WARN(node_->get_logger(), "Task '%s' canceled; stopping execution", task.name().c_str());
@@ -576,6 +605,16 @@ int32_t PickAndPlaceServer::run(mtc::Task& task, const Feedback& feedback, const
       result_future.wait_for(5s);
       return MoveItErrorCodes::PREEMPTED;
     }
+  }
+  // The result is an exception if the client couldn't get it, as when shutting down
+  try
+  {
+    result_future.get();
+  }
+  catch (const rclcpp_action::exceptions::UnawareGoalHandleError& e)
+  {
+    RCLCPP_ERROR(node_->get_logger(), "Task '%s' execution result lost: %s", task.name().c_str(), e.what());
+    return MoveItErrorCodes::FAILURE;
   }
   const auto& result = result_future.get();
   if (result.code != rclcpp_action::ResultCode::SUCCEEDED || !result.result)

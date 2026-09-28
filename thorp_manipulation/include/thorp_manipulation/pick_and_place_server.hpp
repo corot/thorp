@@ -8,6 +8,7 @@
 #include <functional>
 #include <mutex>
 #include <string>
+#include <thread>
 
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
@@ -33,6 +34,7 @@ class PickAndPlaceServer
 {
 public:
   explicit PickAndPlaceServer(const rclcpp::Node::SharedPtr& node);
+  ~PickAndPlaceServer();
 
 private:
   using PickupObject = thorp_msgs::action::PickupObject;
@@ -84,8 +86,9 @@ private:
   rclcpp_action::Server<PickupObject>::SharedPtr pickup_server_;
   rclcpp_action::Server<PlaceObject>::SharedPtr place_server_;
 
-  // Pick and place goals are served one at a time, as they share the arm
+  // Pick and place goals are served one at a time, as they share the arm, each on its own thread
   std::atomic<bool> busy_{ false };
+  std::thread goal_thread_;
   std::mutex planning_task_mutex_;
   moveit::task_constructor::Task* planning_task_ = nullptr;
 
