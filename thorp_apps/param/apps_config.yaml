@@ -1,32 +1,36 @@
-# exploration
-exploration_method: full_coverage_planner
-wp_reached_threshold: 1.0  # we consider a waypoint reached when we pass by at least this distance
+# Apps configuration, for whichever node runs the app: the behavior tree runner or bt_server
+/**:
+  ros__parameters:
+    # exploration
+    exploration_method: full_coverage_planner
+    wp_reached_threshold: 1.0  # we consider a waypoint reached when we pass by at least this distance
 
-# navigation
-default_planner: 'GlobalPlanner'
-default_controller: 'TEBPlanner'
-follow_controller: 'PoseFollower'
-follow_recovery: ['clear_local_cm', 'escape_distance']
-get_path_recovery: ['clear_global_cm']
-exe_path_recovery: ['clear_local_cm', 'escape_distance', 'out_to_free_space']
-move_base_recovery: ['clear_both_cms', 'escape_distance', 'out_to_free_space']
-tight_dist_tolerance: 0.035
-tight_angle_tolerance: 0.05  # ~3 deg
-loose_dist_tolerance: 0.25
-loose_angle_tolerance: 0.5  # ~30 deg
-inf_angle_tolerance: +Inf
+    # navigation
+    default_planner: 'GlobalPlanner'
+    default_controller: 'TEBPlanner'
+    follow_controller: 'PoseFollower'
+    follow_recovery: ['clear_local_cm', 'escape_distance']
+    get_path_recovery: ['clear_global_cm']
+    exe_path_recovery: ['clear_local_cm', 'escape_distance', 'out_to_free_space']
+    move_base_recovery: ['clear_both_cms', 'escape_distance', 'out_to_free_space']
+    tight_dist_tolerance: 0.035
+    tight_angle_tolerance: 0.05  # ~3 deg
+    loose_dist_tolerance: 0.25
+    loose_angle_tolerance: 0.5  # ~30 deg
+    inf_angle_tolerance: .inf
 
-# manipulation
-table_min_side: 0.2  # to include also shelves; for reference, doll table side is 45 cm
-table_max_side: 1.4  # anything bigger won't fit into the camera fov anyway
-table_min_pickup_side: 0.35  # to avoid picking up from shelves laterals, too narrow and partially blocked
-approach_dist_to_table: 0.35  # close enough to properly detect tabletop objects but not for picking up
-detach_dist_from_table: 0.45  # far enough to safely navigate around the table to other pickup locations
-clear_table_way_timeout: 15.0  # seconds; restore costmap after this time
-pickup_planning_frame: arm_base_link  # TODO: reconsider this;  it should not be a param, I think
-pickup_max_failures: 3  # pickup failures allowed for each object on current pickup location (resets upon moving)
-pickup_dist_to_table: 0.15  # ideal picking distance to the table, as close as possible without risk
-placing_height_on_table: 0.005  # slightly above the table to avoid crashing the object against it
-gripper_max_effort: 0.5  # max effort exerted by the gripper on grasping (stops closing upon reaching this value)
-gripper_tightening: 0.0015  # additional gripper closing to tighten grasped objects
-max_arm_reach: 0.3  # distance reachable by the arm as measured from the robot base frame
+    # manipulation
+    table_min_side: 0.2  # to include also shelves; for reference, doll table side is 45 cm
+    table_max_side: 1.4  # anything bigger won't fit into the camera fov anyway
+    table_min_pickup_side: 0.35  # to avoid picking up from shelves laterals, too narrow and partially blocked
+    approach_dist_to_table: 0.35  # close enough to properly detect tabletop objects but not for picking up
+    detach_dist_from_table: 0.45  # far enough to safely navigate around the table to other pickup locations
+    clear_table_way_timeout: 15.0  # seconds; restore costmap after this time
+    pickup_planning_frame: arm_base_link  # TODO: reconsider this;  it should not be a param, I think
+    pickup_max_failures: 3  # pickup failures allowed for each object on current pickup location (resets upon moving)
+    pickup_dist_to_table: 0.15  # ideal picking distance to the table, as close as possible without risk
+    placing_height_on_table: 0.005  # slightly above the table to avoid crashing the object against it
+    placing_height_on_tray: 0.01  # slightly above the tray's 2 mm thick base
+    gripper_max_effort: 0.5  # max effort exerted by the gripper on grasping (stops closing upon reaching this value)
+    gripper_tightening: 0.0015  # additional gripper closing to tighten grasped objects
+    max_arm_reach: 0.3  # distance reachable by the arm as measured from the robot base frame

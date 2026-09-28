@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<package format="2">
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>thorp_apps</name>
   <version>0.1.0</version>
   <description>Launch files and resources for Thorp apps</description>
@@ -10,15 +11,20 @@
 
   <url type="bugtracker">https://github.com/corot/thorp/issues</url>
   <url type="repository">https://github.com/corot/thorp</url>
-  <url type="website">http://wiki.ros.org/thorp_apps</url>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <exec_depend>thorp_bringup</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
   <exec_depend>thorp_bt_cpp</exec_depend>
-  <exec_depend>thorp_smach</exec_depend>
-  <exec_depend>thorp_simulation</exec_depend>
-  <exec_depend>thorp_navigation</exec_depend>
-  <exec_depend>thorp_perception</exec_depend>
+  <exec_depend>thorp_description</exec_depend>
   <exec_depend>thorp_manipulation</exec_depend>
+  <exec_depend>thorp_moveit_config</exec_depend>
+  <exec_depend>thorp_perception</exec_depend>
+  <exec_depend>thorp_simulation</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
 </package>

@@ -1,19 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
 project(thorp_apps)
 
-find_package(catkin REQUIRED COMPONENTS)
+find_package(ament_cmake REQUIRED)
 
-catkin_package()
-
-
-#############
-## Install ##
-#############
-
-install(DIRECTORY launch
-        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+install(DIRECTORY launch param resources
+        DESTINATION share/${PROJECT_NAME}
 )
 
-install(DIRECTORY resources
-        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)
+ament_package()
