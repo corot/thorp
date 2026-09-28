@@ -20,6 +20,8 @@
   <exec_depend>rviz2</exec_depend>
   <exec_depend>nav2_rviz_plugins</exec_depend>
   <exec_depend>rviz_2d_overlay_plugins</exec_depend>
+  <exec_depend>moveit_ros_visualization</exec_depend>
+  <exec_depend>thorp_rviz_plugins</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
