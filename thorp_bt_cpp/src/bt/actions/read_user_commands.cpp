@@ -1,74 +1,81 @@
+#include <algorithm>
+#include <mutex>
+
 #include <behaviortree_cpp/action_node.h>
 
 #include "thorp_bt_cpp/node_common.hpp"
 
-#include <jsk_rviz_plugins/OverlayText.h>
-#include <jsk_rviz_plugins/EusCommand.h>
+#include <rviz_2d_overlay_msgs/msg/overlay_text.hpp>
+#include <std_msgs/msg/string.hpp>
 
 #include <thorp_toolkit/visualization.hpp>
 namespace ttk = thorp::toolkit;
 
 namespace thorp::bt::actions
 {
+/**
+ * Output the last command received on the user_command topic, as RViz's user commands panel publishes them, if
+ * any since the previous tick. Echo it, or the error if the app doesn't support it, as an RViz overlay text.
+ */
 class ReadUserCommands : public BT::SyncActionNode
 {
 public:
   ReadUserCommands(const std::string& name, const BT::NodeConfig& config) : BT::SyncActionNode(name, config)
   {
-    ros::NodeHandle nh;
-    valid_cmds_ = nh.param("object_manip_user_commands/valid_commands", valid_cmds_);
-    cmd_pub_ = nh.advertise<jsk_rviz_plugins::OverlayText>("rviz/user_command", 1);
-    cmd_srv_ = nh.advertiseService("eus_command", &ReadUserCommands::userCommandCB, this);
+    auto node = rosNode(*this);
+    feedback_pub_ = node->create_publisher<rviz_2d_overlay_msgs::msg::OverlayText>("rviz/user_command", 1);
+    command_sub_ = node->create_subscription<std_msgs::msg::String>(
+        "user_command", 1, [this](const std_msgs::msg::String::ConstSharedPtr msg) { userCommandCB(msg->data); });
   }
 
   static BT::PortsList providedPorts()
   {
-    return { BT::OutputPort<std::string>("user_command") };
+    return { BT::InputPort<std::vector<std::string>>("valid_commands", "Commands the app supports, ';' separated"),
+             BT::OutputPort<std::string>("user_command") };
   }
 
 private:
-  ros::Publisher cmd_pub_;
-  ros::ServiceServer cmd_srv_;
+  rclcpp::Publisher<rviz_2d_overlay_msgs::msg::OverlayText>::SharedPtr feedback_pub_;
+  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr command_sub_;
+  std::mutex mutex_;  // bt_server receives commands on another thread than the one ticking the tree
   std::string user_command_;
-  std::vector<std::string> valid_cmds_;
 
   BT::NodeStatus tick() override
   {
-    if (!user_command_.empty())
+    std::string user_command;
     {
-      setOutput("user_command", user_command_);
-      user_command_.clear();
+      std::lock_guard<std::mutex> lock(mutex_);
+      user_command.swap(user_command_);
     }
+    if (user_command.empty())
+    {
+      return BT::NodeStatus::SUCCESS;
+    }
+
+    constexpr auto TOP_OFFSET = 20;
+    constexpr auto TEXT_SIZE = 12;
+    const auto valid_commands = requireInput<std::vector<std::string>>(*this, "valid_commands");
+    if (std::find(valid_commands.begin(), valid_commands.end(), user_command) == valid_commands.end())
+    {
+      const std::string error = user_command + " command not supported";
+      RCLCPP_ERROR_STREAM(logger(*this), error);
+      feedback_pub_->publish(
+          ttk::Visualization::createOverlayText(TOP_OFFSET, ttk::namedColor("red"), error, TEXT_SIZE));
+      return BT::NodeStatus::SUCCESS;
+    }
+
+    const std::string message = user_command == "exit" ? "Shutting down app" : "Received command: " + user_command;
+    RCLCPP_INFO_STREAM(logger(*this), message);
+    feedback_pub_->publish(ttk::Visualization::createOverlayText(
+        TOP_OFFSET, ttk::namedColor(user_command == "exit" ? "blue" : "white"), message, TEXT_SIZE));
+    setOutput("user_command", user_command);
     return BT::NodeStatus::SUCCESS;
   }
 
-  bool userCommandCB(jsk_rviz_plugins::EusCommand::Request  &request,
-                     jsk_rviz_plugins::EusCommand::Response &response)
+  void userCommandCB(const std::string& command)
   {
-    constexpr auto TOP_OFFSET = 20;
-    constexpr auto TEXT_SIZE = 12;
-
-    user_command_ = request.command;
-    if (user_command_ == "exit")
-    {
-      std::string exit_msg = "Shutting down app";
-      ROS_WARN_STREAM_NAMED(name(), exit_msg);
-      cmd_pub_.publish(ttk::Visualization::createOverlayText(TOP_OFFSET, ttk::namedColor("blue"), exit_msg, TEXT_SIZE));
-    }
-    else if (auto it = std::find(valid_cmds_.begin(), valid_cmds_.end(), user_command_); it == valid_cmds_.end())
-    {
-      std::string err_msg = user_command_ + " command not supported";
-      ROS_ERROR_STREAM_NAMED(name(), err_msg);
-      cmd_pub_.publish(ttk::Visualization::createOverlayText(TOP_OFFSET, ttk::namedColor("red"), err_msg, TEXT_SIZE));
-    }
-    else
-    {
-      std::string cmd_msg = "Received command: " + user_command_;
-      ROS_INFO_STREAM_NAMED(name(), cmd_msg);
-      cmd_pub_.publish(ttk::Visualization::createOverlayText(TOP_OFFSET, ttk::namedColor("white"), cmd_msg, TEXT_SIZE));
-    }
-
-    return true;
+    std::lock_guard<std::mutex> lock(mutex_);
+    user_command_ = command;
   }
 
   BT_REGISTER_NODE(ReadUserCommands);

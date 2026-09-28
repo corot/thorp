@@ -16,7 +16,9 @@ find_package(geometry_msgs REQUIRED)
 find_package(control_msgs REQUIRED)
 find_package(moveit_msgs REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
+find_package(interactive_markers REQUIRED)
 find_package(nav_msgs REQUIRED)
+find_package(rviz_2d_overlay_msgs REQUIRED)
 find_package(tinyxml2_vendor REQUIRED)
 find_package(TinyXML2 REQUIRED)
 find_package(shape_msgs REQUIRED)
@@ -24,6 +26,7 @@ find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
 find_package(nlohmann_json REQUIRED)
 find_package(thorp_msgs REQUIRED)
 find_package(thorp_toolkit REQUIRED)
@@ -36,6 +39,7 @@ set(BT_NODES
   src/bt/actions/detach_object.cpp
   src/bt/actions/detect_objects.cpp
   src/bt/actions/detect_tables.cpp
+  src/bt/actions/drag_and_drop.cpp
   src/bt/actions/get_closest_pose.cpp
   src/bt/actions/get_from_list.cpp
   src/bt/actions/get_list_front.cpp
@@ -49,6 +53,7 @@ set(BT_NODES
   src/bt/actions/pose_as_path.cpp
   src/bt/actions/push_to_list.cpp
   src/bt/actions/read_ros_param.cpp
+  src/bt/actions/read_user_commands.cpp
   src/bt/actions/record_pickup_failure.cpp
   src/bt/actions/select_next_target.cpp
   src/bt/actions/set_arm_config.cpp
@@ -84,13 +89,16 @@ target_link_libraries(bt_runner PUBLIC
   ${moveit_msgs_TARGETS}
   moveit_ros_planning_interface::moveit_planning_scene_interface
   ${control_msgs_TARGETS}
+  interactive_markers::interactive_markers
   ${nav_msgs_TARGETS}
+  ${rviz_2d_overlay_msgs_TARGETS}
   tinyxml2::tinyxml2
   ${shape_msgs_TARGETS}
   ${std_msgs_TARGETS}
   ${std_srvs_TARGETS}
   tf2::tf2
   tf2_geometry_msgs::tf2_geometry_msgs
+  ${visualization_msgs_TARGETS}
   ${thorp_msgs_TARGETS}
   thorp_toolkit::thorp_toolkit
 )
@@ -114,7 +122,7 @@ install(FILES launch/bt_runner.launch.py launch/bt_server.launch.py
 )
 
 # Trees ported to ROS 2; listed one by one, as the package is ported in stages
-install(FILES bt/manipulation.xml bt/perception.xml bt/pickup_objects.xml bt/test_server.xml
+install(FILES bt/manipulation.xml bt/object_manip.xml bt/perception.xml bt/pickup_objects.xml bt/test_server.xml
         DESTINATION share/${PROJECT_NAME}/bt
 )
 

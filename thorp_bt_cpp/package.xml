@@ -24,12 +24,15 @@
   <depend>control_msgs</depend>
   <depend>moveit_msgs</depend>
   <depend>moveit_ros_planning_interface</depend>
+  <depend>interactive_markers</depend>
   <depend>nav_msgs</depend>
+  <depend>rviz_2d_overlay_msgs</depend>
   <depend>shape_msgs</depend>
   <depend>std_msgs</depend>
   <depend>std_srvs</depend>
   <depend>tf2</depend>
   <depend>tf2_geometry_msgs</depend>
+  <depend>visualization_msgs</depend>
   <depend>tinyxml2_vendor</depend>
   <depend>nlohmann-json-dev</depend>
   <depend>thorp_msgs</depend>

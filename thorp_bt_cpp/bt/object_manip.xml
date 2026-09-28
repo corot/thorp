@@ -5,7 +5,8 @@
   <BehaviorTree ID="object_manip">
     <Repeat num_cycles="-1">
       <ReactiveSequence>
-        <ReadUserCommands user_command="{user_command}"/>
+        <ReadUserCommands valid_commands="start;stop;reset;exit;clear;fold"
+                          user_command="{user_command}"/>
         <Switch6 case_1="start"
                  case_2="stop"
                  case_3="reset"
@@ -15,15 +16,10 @@
                  variable="{user_command}">
           <ForceSuccess>
             <Sequence>
-              <DetectObjects action_name="object_detection"
-                             object_types=""
-                             server_timeout="5.000000"
+              <DetectObjects object_types=""
                              objects="{objects}"
                              surface="{surface}"/>
-              <DragAndDrop action_name="drag_and_drop"
-                           objects="{objects}"
-                           server_timeout="5.000000"
-                           feedback=""
+              <DragAndDrop objects="{objects}"
                            object_name="{object_name}"
                            pickup_pose="{pickup_pose}"
                            place_pose="{place_pose}"/>
@@ -45,17 +41,13 @@
                          output_key="user_command"/>
           <AlwaysFailure/>
           <Sequence>
-            <ClearGripper service_name="clear_gripper"
-                          timeout="100"/>
+            <SubTree ID="clear_gripper"/>
             <SetBlackboard value=""
                            output_key="user_command"/>
           </Sequence>
           <Sequence>
-            <SetArmConfig action_name="manipulation/move_to_target"
-                          configuration="resting"
-                          server_timeout="5.000000"
-                          error="{error}"
-                          feedback=""/>
+            <SetArmConfig configuration="resting"
+                          error="{error}"/>
             <SetBlackboard value=""
                            output_key="user_command"/>
           </Sequence>
