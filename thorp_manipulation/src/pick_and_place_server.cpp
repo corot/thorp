@@ -427,6 +427,13 @@ planning_scene::PlanningScenePtr PickAndPlaceServer::getPlanningScene()
   }
   auto scene = std::make_shared<planning_scene::PlanningScene>(robot_model_);
   scene->setPlanningSceneMsg(future.get()->scene);
+  // Planners reject start states out of bounds, including velocities; the measured state often is, slightly, when a
+  // joint has just moved or is pressing an object, as the simulated gripper does
+  moveit::core::RobotState& state = scene->getCurrentStateNonConst();
+  state.zeroVelocities();
+  state.zeroAccelerations();
+  state.enforceBounds();
+  state.update();
   return scene;
 }
 
