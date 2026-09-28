@@ -1,0 +1,37 @@
+"""
+Run an app's behavior tree, bt/<app_name>.xml, whose root tree is named as the app
+"""
+
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch_ros.actions import Node
+from launch_ros.substitutions import FindPackageShare
+
+
+def generate_launch_description():
+    tray_params = PathJoinSubstitution([FindPackageShare('thorp_description'), 'config', 'tray.yaml'])
+    app_name = LaunchConfiguration('app_name')
+    return LaunchDescription([
+        DeclareLaunchArgument('app_name'),
+        DeclareLaunchArgument('params_file', description='App parameters'),
+        DeclareLaunchArgument('start_delay', default_value='0.0'),
+        DeclareLaunchArgument('publish_bt', default_value='false',
+                              description='Publish the tree for Groot2, to a log file and to ~/bt_status'),
+        DeclareLaunchArgument('nodes_filepath', default_value='',
+                              description='Write the node models there, for Groot2'),
+        DeclareLaunchArgument('use_sim_time', default_value='false'),
+
+        # Named after the app with an argument, not with the node name
+        Node(package='thorp_bt_cpp', executable='bt_runner_node', output='screen', arguments=[app_name],
+             parameters=[tray_params, LaunchConfiguration('params_file'),
+                         {'app_name': app_name,
+                          'start_delay': LaunchConfiguration('start_delay'),
+                          'publish_bt': LaunchConfiguration('publish_bt'),
+                          'bt_filepath': [PathJoinSubstitution([FindPackageShare('thorp_bt_cpp'), 'bt', app_name]),
+                                          '.xml'],
+                          'nodes_filepath': LaunchConfiguration('nodes_filepath'),
+                          # The runner usually starts with the servers its tree uses, so it waits longer for them
+                          'wait_for_service_timeout': 60000,
+                          'use_sim_time': LaunchConfiguration('use_sim_time')}]),
+    ])

@@ -10,18 +10,13 @@
           <RecoverAndRetry>
             <Sequence>
               <Inverter>
-                <TrayFull timeout="100"
-                          service_name="manipulation/tray/get_capacity"/>
+                <TrayFull/>
               </Inverter>
               <DetectObjects surface="{surface}"
                              objects="{objects}"
                              object_types=""
-                             action_name="object_detection"
-                             server_timeout="5.000000"
                              _skipIf="already_detected"/>
-              <ObjectsDetected ignore_given_up=""
-                               given_up_count=""
-                               objects="{objects}"/>
+              <ObjectsDetected objects="{objects}"/>
               <SelectNextTarget tightening="{tightening}"
                                 failures="{failures}"
                                 target_name="{object_name}"
@@ -48,8 +43,6 @@
                       <DetectObjects surface="{surface}"
                                      objects="{objects}"
                                      object_types=""
-                                     action_name="object_detection"
-                                     server_timeout="5.000000"
                                      _onSuccess="already_detected=true"/>
                     </Sequence>
                   </RetryUntilSuccessful>
@@ -59,11 +52,8 @@
                                      target_name="{object_name}"/>
               </IfThenElse>
             </Sequence>
-            <SetArmConfig feedback=""
-                          error="{error}"
+            <SetArmConfig error="{error}"
                           configuration="resting"
-                          action_name="manipulation/move_to_target"
-                          server_timeout="5.000000"
                           _post="already_detected=false"/>
           </RecoverAndRetry>
         </KeepRunningUntilFailure>
@@ -74,8 +64,7 @@
                             failures="{failures}"
                             target_name="{object_name}"
                             objects="{objects}"/>
-          <TrayFull timeout="100"
-                    service_name="manipulation/tray/get_capacity"/>
+          <TrayFull/>
         </Sequence>
       </Inverter>
     </Fallback>

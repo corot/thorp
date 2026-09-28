@@ -5,15 +5,10 @@
       <ForceSuccess>
         <Sequence>
           <Fallback>
-            <ObjectAttached service_name="obj_attached"
-                            timeout="100"
-                            attached_object="{attached_object}"/>
-            <GripperBusy service_name="gripper_busy"
-                         timeout="100"
-                         attached_object="{attached_object}"/>
+            <ObjectAttached attached_object="{attached_object}"/>
+            <GripperBusy/>
           </Fallback>
-          <ClearGripper service_name="clear_gripper"
-                        timeout="100"/>
+          <SubTree ID="clear_gripper"/>
         </Sequence>
       </ForceSuccess>
       <ReadFloatParam param_name="gripper_max_effort"
@@ -25,24 +20,19 @@
                         output_key="{tightening}"/>
       </Fallback>
       <RecoverAndRetry>
-        <PickupObject action_name="manipulation/pickup_object"
-                      max_effort="{max_effort}"
+        <PickupObject max_effort="{max_effort}"
                       object_name="{object_name}"
-                      server_timeout="5.000000"
                       support_surf="table"
                       tightening="{tightening}"
-                      error="{error}"
-                      feedback=""/>
+                      error="{error}"/>
         <ClearOctomap service_name="clear_octomap"
                       timeout="100"/>
       </RecoverAndRetry>
+      <!-- the planning scene has the object attached, but only the gripper can tell whether it really holds it -->
       <Fallback>
-        <GripperBusy service_name="gripper_busy"
-                     timeout="100"
-                     attached_object="{attached_object}"/>
+        <GripperBusy/>
         <ForceFailure>
-          <ClearGripper service_name="clear_gripper"
-                        timeout="100"/>
+          <SubTree ID="clear_gripper"/>
         </ForceFailure>
       </Fallback>
     </Sequence>
@@ -50,13 +40,10 @@
 
   <BehaviorTree ID="place_object">
     <RecoverAndRetry>
-      <PlaceObject action_name="manipulation/place_object"
-                   object_name="{object_name}"
+      <PlaceObject object_name="{object_name}"
                    place_pose="{place_pose}"
-                   server_timeout="5.000000"
                    support_surf="table"
-                   error="{error}"
-                   feedback=""/>
+                   error="{error}"/>
       <ClearOctomap service_name="clear_octomap"
                     timeout="100"/>
     </RecoverAndRetry>
@@ -64,27 +51,29 @@
 
   <BehaviorTree ID="place_on_tray">
     <Sequence>
-      <NextPoseOnTray service_name="manipulation/tray/get_next_pose"
-                      timeout="100"
-                      pose_on_tray="{pose_on_tray}"/>
+      <NextPoseOnTray pose_on_tray="{pose_on_tray}"/>
       <RecoverAndRetry>
-        <PlaceObject action_name="manipulation/place_object"
-                     object_name="{object_name}"
+        <PlaceObject object_name="{object_name}"
                      place_pose="{pose_on_tray}"
-                     server_timeout="5.000000"
-                     support_surf="tray"
-                     error="{error}"
-                     feedback=""/>
+                     support_surf="tray_link"
+                     error="{error}"/>
         <ClearOctomap service_name="clear_octomap"
                       timeout="100"/>
-        <NextPoseOnTray service_name="manipulation/tray/get_next_pose"
-                        timeout="100"
-                        pose_on_tray="{pose_on_tray}"/>
+        <NextPoseOnTray pose_on_tray="{pose_on_tray}"/>
       </RecoverAndRetry>
-      <AddObjectToTray object_name="{object_name}"
-                       pose_on_tray="{pose_on_tray}"
-                       service_name="manipulation/tray/add_object"
-                       timeout="100"/>
+    </Sequence>
+  </BehaviorTree>
+
+  <!-- Open the gripper, and detach and remove from the planning scene whatever object it held -->
+  <BehaviorTree ID="clear_gripper">
+    <Sequence>
+      <MoveGripper/>
+      <ForceSuccess>
+        <Sequence>
+          <ObjectAttached attached_object="{attached_object}"/>
+          <DetachObject object_name="{attached_object}"/>
+        </Sequence>
+      </ForceSuccess>
     </Sequence>
   </BehaviorTree>
 </root>

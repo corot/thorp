@@ -107,4 +107,13 @@ install(TARGETS bt_runner_node bt_server_node
         DESTINATION lib/${PROJECT_NAME}
 )
 
+install(FILES launch/bt_runner.launch.py launch/bt_server.launch.py
+        DESTINATION share/${PROJECT_NAME}/launch
+)
+
+# Trees ported to ROS 2; listed one by one, as the package is ported in stages
+install(FILES bt/manipulation.xml bt/perception.xml bt/pickup_objects.xml bt/test_server.xml
+        DESTINATION share/${PROJECT_NAME}/bt
+)
+
 ament_package()
