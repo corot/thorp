@@ -29,6 +29,8 @@ def generate_launch_description():
         DeclareLaunchArgument('viz_executive', default_value='false',
                               description='Publish the tree for Groot2, to a log file and to ~/bt_status'),
         DeclareLaunchArgument('start_delay', default_value='0.0'),
+        DeclareLaunchArgument('on_exit_shutdown', default_value='false',
+                              description='Shut down the whole app when its tree completes'),
         DeclareLaunchArgument('use_sim_time', default_value=simulation),
 
         IncludeLaunchDescription(
@@ -45,6 +47,7 @@ def generate_launch_description():
                               'params_file': apps_config,
                               'start_delay': LaunchConfiguration('start_delay'),
                               'publish_bt': LaunchConfiguration('viz_executive'),
+                              'on_exit_shutdown': LaunchConfiguration('on_exit_shutdown'),
                               'use_sim_time': LaunchConfiguration('use_sim_time')}.items(),
             condition=IfCondition(PythonExpression(["'", executive, "' == 'bt'"]))),
 

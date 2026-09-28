@@ -3,10 +3,18 @@ Run an app's behavior tree, bt/<app_name>.xml, whose root tree is named as the a
 """
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, Shutdown
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
+
+
+def shutdown_on_exit(event, context):
+    """ Shut everything down when the tree completes, if requested; not if already shutting down, as a second
+    shutdown makes launch fail """
+    if context.is_shutdown or LaunchConfiguration('on_exit_shutdown').perform(context) != 'true':
+        return None
+    return [Shutdown(reason='App completed')]
 
 
 def generate_launch_description():
@@ -21,9 +29,12 @@ def generate_launch_description():
         DeclareLaunchArgument('nodes_filepath', default_value='',
                               description='Write the node models there, for Groot2'),
         DeclareLaunchArgument('use_sim_time', default_value='false'),
+        DeclareLaunchArgument('on_exit_shutdown', default_value='false',
+                              description='Shut down the whole launch when the tree completes'),
 
         # Named after the app with an argument, not with the node name
         Node(package='thorp_bt_cpp', executable='bt_runner_node', output='screen', arguments=[app_name],
+             on_exit=shutdown_on_exit,
              parameters=[tray_params, LaunchConfiguration('params_file'),
                          {'app_name': app_name,
                           'start_delay': LaunchConfiguration('start_delay'),
