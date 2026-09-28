@@ -21,6 +21,11 @@ double GripperModel::angle(double opening) const
   return center - std::asin((opening - pad_width) / (2.0 * finger_length));
 }
 
+double GripperModel::opening(double angle) const
+{
+  return pad_width + 2.0 * finger_length * std::sin(center - angle);
+}
+
 std::optional<geometry_msgs::msg::Pose> makeTargetPose(const geometry_msgs::msg::Point& target,
                                                        double operation_height,
                                                        const ArmCompensations& compensations, int attempt,

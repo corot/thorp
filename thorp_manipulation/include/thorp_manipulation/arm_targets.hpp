@@ -34,6 +34,7 @@ struct GripperModel
   double finger_length = 0.03;
 
   double angle(double opening) const;
+  double opening(double angle) const;
 };
 
 /**

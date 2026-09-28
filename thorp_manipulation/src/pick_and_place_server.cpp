@@ -4,6 +4,7 @@
 
 #include "thorp_manipulation/pick_and_place_server.hpp"
 
+#include <algorithm>
 #include <chrono>
 #include <map>
 #include <sstream>
@@ -37,6 +38,8 @@ constexpr double PICK_APPROACH_MIN = 0.025;
 constexpr double PICK_APPROACH_MAX = 0.05;
 constexpr double PLACE_APPROACH_MIN = 0.01;
 constexpr double PLACE_APPROACH_MAX = 0.05;
+// Opening the gripper this much wider than the held object releases it
+constexpr double RELEASE_MARGIN = 0.015;
 
 template <typename T>
 T param(const rclcpp::Node::SharedPtr& node, const std::string& name, const T& default_value)
@@ -366,9 +369,14 @@ int32_t PickAndPlaceServer::place(const PlaceObject::Goal& goal, const Feedback&
     place->insert(std::move(stage));
   }
   {
+    // Opening just enough, so the fingers don't hit objects around, as those already on the tray
+    std::map<std::string, double> open;
+    robot_model_->getJointModelGroup(GRIPPER_GROUP)->getVariableDefaultPositions("open", open);
+    const double held = gripper_model_.opening(scene->getCurrentState().getVariablePosition(GRIPPER_JOINT));
     auto stage = std::make_unique<mtc::stages::MoveTo>("open gripper", interpolation_planner_);
     stage->setGroup(GRIPPER_GROUP);
-    stage->setGoal("open");
+    stage->setGoal(std::map<std::string, double>{
+        { GRIPPER_JOINT, std::max(gripper_model_.angle(held + RELEASE_MARGIN), open[GRIPPER_JOINT]) } });
     place->insert(std::move(stage));
   }
   {
