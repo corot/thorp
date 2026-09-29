@@ -171,6 +171,10 @@ nlohmann::json anyToJson(const BT::Any& any)
   {
     return any.cast<unsigned>();
   }
+  if (any.type() == typeid(uint16_t))  // Nav2's error codes
+  {
+    return any.cast<uint16_t>();
+  }
   if (any.type() == typeid(int64_t))
   {
     return any.cast<int64_t>();

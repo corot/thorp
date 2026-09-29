@@ -6,10 +6,12 @@ if(NOT CMAKE_CXX_STANDARD)
 endif()
 
 find_package(ament_cmake REQUIRED)
+find_package(ament_index_cpp REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(behaviortree_cpp REQUIRED)
 find_package(nav2_behavior_tree REQUIRED)
+find_package(nav2_costmap_2d REQUIRED)
 find_package(nav2_msgs REQUIRED)
 find_package(geometric_shapes REQUIRED)
 find_package(geometry_msgs REQUIRED)
@@ -28,6 +30,7 @@ find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(nlohmann_json REQUIRED)
+find_package(thorp_costmap_layers REQUIRED)
 find_package(thorp_msgs REQUIRED)
 find_package(thorp_toolkit REQUIRED)
 
@@ -36,15 +39,20 @@ set(BT_NODES
   src/bt/actions/clear_list.cpp
   src/bt/actions/clear_octomap.cpp
   src/bt/actions/clear_planning_scene.cpp
+  src/bt/actions/clear_table_access.cpp
   src/bt/actions/detach_object.cpp
   src/bt/actions/detect_objects.cpp
   src/bt/actions/detect_tables.cpp
   src/bt/actions/drag_and_drop.cpp
+  src/bt/actions/expand_pickup_location.cpp
   src/bt/actions/get_closest_pose.cpp
   src/bt/actions/get_from_list.cpp
   src/bt/actions/get_list_front.cpp
+  src/bt/actions/get_poses_around_table.cpp
   src/bt/actions/get_robot_pose.cpp
   src/bt/actions/list_slicing.cpp
+  src/bt/actions/look_at_pose.cpp
+  src/bt/actions/make_pickup_plan.cpp
   src/bt/actions/move_gripper.cpp
   src/bt/actions/next_pose_on_tray.cpp
   src/bt/actions/pickup_object.cpp
@@ -55,9 +63,11 @@ set(BT_NODES
   src/bt/actions/read_ros_param.cpp
   src/bt/actions/read_user_commands.cpp
   src/bt/actions/record_pickup_failure.cpp
+  src/bt/actions/restore_table_access.cpp
   src/bt/actions/select_next_target.cpp
   src/bt/actions/set_arm_config.cpp
   src/bt/actions/set_blackboard.cpp
+  src/bt/actions/table_as_obstacle.cpp
   src/bt/actions/track_progress.cpp
   src/bt/actions/transform_pose.cpp
   src/bt/conditions/are_same_pose.cpp
@@ -79,10 +89,12 @@ set(BT_NODES
 add_library(bt_runner SHARED src/bt_runner.cpp src/bt_ros_logger.cpp ${BT_NODES})
 target_include_directories(bt_runner PUBLIC include ${nav2_behavior_tree_INCLUDE_DIRS})
 target_link_libraries(bt_runner PUBLIC
+  ament_index_cpp::ament_index_cpp
   rclcpp::rclcpp
   rclcpp_action::rclcpp_action
   behaviortree_cpp::behaviortree_cpp
   ${nav2_behavior_tree_LIBRARIES}
+  nav2_costmap_2d::nav2_costmap_2d_core
   ${nav2_msgs_TARGETS}
   geometric_shapes::geometric_shapes
   ${geometry_msgs_TARGETS}
@@ -99,6 +111,7 @@ target_link_libraries(bt_runner PUBLIC
   tf2::tf2
   tf2_geometry_msgs::tf2_geometry_msgs
   ${visualization_msgs_TARGETS}
+  ${thorp_costmap_layers_TARGETS}
   ${thorp_msgs_TARGETS}
   thorp_toolkit::thorp_toolkit
 )

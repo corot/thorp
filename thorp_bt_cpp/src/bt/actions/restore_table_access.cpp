@@ -1,14 +1,12 @@
 #include <behaviortree_cpp/action_node.h>
 
 #include "thorp_bt_cpp/node_common.hpp"
-
-#include <thorp_costmap_layers/srv_iface_client.hpp>
-namespace tcl = thorp::costmap_layers;
+#include "thorp_bt_cpp/semantic_layer.hpp"
 
 namespace thorp::bt::actions
 {
 /**
- * Restore the area cleared to approach the table, so we don't collide with it after detaching
+ * Undo ClearTableAccess, restoring the local costmap around the table.
  */
 class RestoreTableAccess : public BT::SyncActionNode
 {
@@ -26,11 +24,15 @@ public:
 private:
   BT::NodeStatus tick() override
   {
-    const auto table_name = requireInput<std::string>(*this, "table_name") + " approach";
-    tcl::ServiceClient::instance().removeObject(table_name, "free_space", "local");
-    return BT::NodeStatus::SUCCESS;
+    thorp_costmap_layers::msg::Object access;
+    access.operation = thorp_costmap_layers::msg::Object::REMOVE;
+    access.type = "free_space";
+    access.name = requireInput<std::string>(*this, "table_name") + " approach";
+    return updateSemanticLayer(rosNode(*this), "local", { access }) ? BT::NodeStatus::SUCCESS :
+                                                                      BT::NodeStatus::FAILURE;
   }
 
   BT_REGISTER_NODE(RestoreTableAccess);
 };
+
 }  // namespace thorp::bt::actions

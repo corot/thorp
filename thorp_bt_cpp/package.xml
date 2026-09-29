@@ -18,6 +18,7 @@
   <depend>rclcpp_action</depend>
   <depend>behaviortree_cpp</depend>
   <depend>nav2_behavior_tree</depend>
+  <depend>nav2_costmap_2d</depend>
   <depend>nav2_msgs</depend>
   <depend>geometric_shapes</depend>
   <depend>geometry_msgs</depend>
@@ -35,6 +36,8 @@
   <depend>visualization_msgs</depend>
   <depend>tinyxml2_vendor</depend>
   <depend>nlohmann-json-dev</depend>
+  <depend>ament_index_cpp</depend>
+  <depend>thorp_costmap_layers</depend>
   <depend>thorp_msgs</depend>
   <depend>thorp_toolkit</depend>
 

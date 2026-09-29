@@ -1,167 +1,129 @@
+#include <cmath>
+
 #include <behaviortree_cpp/action_node.h>
 
 #include "thorp_bt_cpp/node_common.hpp"
+#include "thorp_bt_cpp/service_call.hpp"
 
-#include <mbf_msgs/CheckPose.h>
-#include <geometry_msgs/PoseArray.h>
-#include <rail_manipulation_msgs/SegmentedObject.h>
+#include <geometry_msgs/msg/pose_array.hpp>
+#include <moveit_msgs/msg/collision_object.hpp>
+#include <nav2_costmap_2d/cost_values.hpp>
+#include <nav2_msgs/srv/get_cost.hpp>
+#include <shape_msgs/msg/solid_primitive.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
-#include <thorp_toolkit/parameters.hpp>
 #include <thorp_toolkit/geometry.hpp>
+#include <thorp_toolkit/tf2.hpp>
 namespace ttk = thorp::toolkit;
 
 namespace thorp::bt::actions
 {
 /**
- * Calculate pickup locations around a table at a given distance, discarding those blocked on global costmap.
+ * Poses facing the table at a distance from each of its sides, one per side, or two on sides longer than twice the
+ * arm reach if split_long_sides; none on sides shorter than table_min_pickup_side. Poses on obstacles on the global
+ * costmap are discarded; those on the table's inflation are not, as pickup poses are under its eaves.
  */
 class GetPosesAroundTable : public BT::SyncActionNode
 {
 public:
   GetPosesAroundTable(const std::string& name, const BT::NodeConfig& config) : BT::SyncActionNode(name, config)
   {
-    ttk::getParam("max_arm_reach", max_arm_reach_);
-    ttk::getParam("table_min_pickup_side", min_pickup_side_);
+    auto node = rosNode(*this);
+    max_arm_reach_ = node->get_parameter_or("max_arm_reach", 0.3);
+    min_pickup_side_ = node->get_parameter_or("table_min_pickup_side", 0.35);
+    auto qos = rclcpp::QoS(1).transient_local();
+    valid_poses_pub_ = node->create_publisher<geometry_msgs::msg::PoseArray>("~/valid_poses_around_table", qos);
+    blocked_poses_pub_ = node->create_publisher<geometry_msgs::msg::PoseArray>("~/blocked_poses_around_table", qos);
   }
 
   static BT::PortsList providedPorts()
   {
-    return { BT::InputPort<rail_manipulation_msgs::SegmentedObject>("table"),  //
-             BT::InputPort<geometry_msgs::PoseStamped>("table_pose"),          //
-             BT::InputPort<double>("distance"),                                //
+    return { BT::InputPort<moveit_msgs::msg::CollisionObject>("table"),     //
+             BT::InputPort<geometry_msgs::msg::PoseStamped>("table_pose"),  //
+             BT::InputPort<double>("distance"),                             //
              BT::InputPort<bool>("split_long_sides", false, "Create two poses on sides longer than max_arm_reach x 2"),
-             BT::OutputPort<std::vector<geometry_msgs::PoseStamped>>("table_side_poses") };
+             BT::OutputPort<std::vector<geometry_msgs::msg::PoseStamped>>("table_side_poses") };
   }
 
 private:
   double max_arm_reach_;
   double min_pickup_side_;
-
-  // bt_server builds a tree per goal, so anything a node owns dies with the goal. A publisher
-  // advertised and used inside one tick has no time for a subscriber to connect, and the service
-  // wait would run again on every call. These outlive the tree instead.
-  static ros::Publisher& validPosesPub()
-  {
-    static ros::Publisher pub =
-        ros::NodeHandle("~").advertise<geometry_msgs::PoseArray>("valid_poses_around_table", 1, true);
-    return pub;
-  }
-
-  static ros::Publisher& blockedPosesPub()
-  {
-    static ros::Publisher pub =
-        ros::NodeHandle("~").advertise<geometry_msgs::PoseArray>("blocked_poses_around_table", 1, true);
-    return pub;
-  }
-
-  /// Not persistent: this one is held for the life of the process, and a persistent handle that
-  /// went stale would silently fail every call, leaving every pose looking reachable
-  static ros::ServiceClient& checkPoseSrv()
-  {
-    static ros::ServiceClient srv = []
-    {
-      if (ros::service::waitForService("move_base_flex/check_pose_cost", ros::Duration(30)))
-      {
-        return ros::NodeHandle().serviceClient<mbf_msgs::CheckPose>("move_base_flex/check_pose_cost");
-      }
-      ROS_WARN_NAMED("GetPosesAroundTable",
-                     "Unable to connect to MBF's check_pose_cost service; we won't filter blocked poses");
-      return ros::ServiceClient();
-    }();
-    return srv;
-  }
+  rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr valid_poses_pub_;
+  rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr blocked_poses_pub_;
 
   BT::NodeStatus tick() override
   {
-    const auto table = requireInput<rail_manipulation_msgs::SegmentedObject>(*this, "table");
-    const auto table_pose = requireInput<geometry_msgs::PoseStamped>(*this, "table_pose");
+    using shape_msgs::msg::SolidPrimitive;
+    const auto table = requireInput<moveit_msgs::msg::CollisionObject>(*this, "table");
+    const auto table_pose = requireInput<geometry_msgs::msg::PoseStamped>(*this, "table_pose");
     const auto split_long = requireInput<bool>(*this, "split_long_sides");
     const auto distance = requireInput<double>(*this, "distance");
+    const double depth = table.primitives.at(0).dimensions.at(SolidPrimitive::BOX_X);
+    const double width = table.primitives.at(0).dimensions.at(SolidPrimitive::BOX_Y);
 
-    // Create 0, 1 or 2 poses for each of the four sides around the table
-    const double p_x = distance + table.depth / 2.0;
-    const double n_x = -p_x;
-    const double p_y = distance + table.width / 2.0;
-    const double n_y = -p_y;
-
-    auto make_poses = [&](double x, double y, double t, double l) -> std::vector<geometry_msgs::PoseStamped>
-    {
-      // none, too narrow to pickup
-      if (l < min_pickup_side_)
-        return {};
-      // one at the center of the side
-      if (l < max_arm_reach_ * 2.0 || !split_long)
-        return { ttk::createPose(x, y, t, "table_frame") };
-      // split the side into two poses
-      return { ttk::createPose(x == 0.0 ? -l / 4.0 : x, y == 0.0 ? -l / 4.0 : y, t, "table_frame"),
-               ttk::createPose(x == 0.0 ? +l / 4.0 : x, y == 0.0 ? +l / 4.0 : y, t, "table_frame") };
+    // 0, 1 or 2 poses for each of the four sides around the table, on the table frame
+    const double p_x = distance + depth / 2.0;
+    const double p_y = distance + width / 2.0;
+    std::vector<geometry_msgs::msg::PoseStamped> poses;
+    auto add_poses = [&](double x, double y, double yaw, double side) {
+      if (side < min_pickup_side_)
+        return;  // too narrow to pickup
+      if (side < max_arm_reach_ * 2.0 || !split_long)
+      {
+        poses.push_back(ttk::createPose(x, y, yaw, "table_frame"));
+        return;
+      }
+      for (const double half : { -side / 4.0, side / 4.0 })
+        poses.push_back(ttk::createPose(x == 0.0 ? half : x, y == 0.0 ? half : y, yaw, "table_frame"));
     };
+    add_poses(p_x, 0.0, -M_PI, width);
+    add_poses(-p_x, 0.0, 0.0, width);
+    add_poses(0.0, p_y, -M_PI / 2.0, depth);
+    add_poses(0.0, -p_y, M_PI / 2.0, depth);
 
-    auto tmp_all = { std::move(make_poses(p_x, 0.0, -M_PI, table.width)),
-                     std::move(make_poses(n_x, 0.0, 0.0, table.width)),
-                     std::move(make_poses(0.0, p_y, -M_PI / 2.0, table.depth)),
-                     std::move(make_poses(0.0, n_y, M_PI / 2.0, table.depth)) };
-    std::vector<geometry_msgs::PoseStamped> poses;
-    for (const auto& tmp : tmp_all)
+    // to the table pose's frame, at floor level
+    auto table_tf = ttk::toTransform(table_pose);
+    table_tf.transform.translation.z = 0.0;
+    for (auto& pose : poses)
     {
-      poses.insert(poses.end(), tmp.begin(), tmp.end());
+      tf2::doTransform(pose, pose, table_tf);
+      pose.header.frame_id = table_tf.header.frame_id;
     }
 
-    auto table_tf = ttk::toTransform(table_pose);
-    table_tf.transform.translation.z = 0.0;  // as we want poses at floor level
-
-    // Transform table side poses to global frame
-    std::for_each(poses.begin(), poses.end(),
-                  [&](geometry_msgs::PoseStamped& pose) { tf2::doTransform(pose, pose, table_tf); });
-
-    // Remove blocked poses
-    std::vector<geometry_msgs::PoseStamped> removed_poses;
-    std::copy_if(poses.begin(), poses.end(), std::back_inserter(removed_poses),
-                 [this](const geometry_msgs::PoseStamped& pose) { return isBlocked(pose); });
-    ROS_INFO_COND_NAMED(!removed_poses.empty(), name(), "%lu poses out of %lu discarded as blocked",
-                        removed_poses.size(), poses.size());
-
-    poses.erase(std::remove_if(poses.begin(), poses.end(), [&](const geometry_msgs::PoseStamped& pose)
-                       { return std::find(removed_poses.begin(), removed_poses.end(), pose) != removed_poses.end(); }),
-                poses.end());
-    ROS_WARN_COND_NAMED(poses.empty(), name(), "Every pose around the table is blocked; returning none");
-
-    validPosesPub().publish(ttk::toPoseArray(poses, 0.01, table_tf.header.frame_id));
-    blockedPosesPub().publish(ttk::toPoseArray(removed_poses, 0.01, table_tf.header.frame_id));
-
-    setOutput("table_side_poses", poses);
-
+    std::vector<geometry_msgs::msg::PoseStamped> valid, blocked;
+    for (const auto& pose : poses)
+      (isBlocked(pose) ? blocked : valid).push_back(pose);
+    RCLCPP_INFO_EXPRESSION(logger(*this), !blocked.empty(), "%zu poses out of %zu discarded as blocked",
+                           blocked.size(), poses.size());
+    RCLCPP_WARN_EXPRESSION(logger(*this), valid.empty(), "Every pose around the table is blocked; returning none");
+    valid_poses_pub_->publish(ttk::toPoseArray(valid, 0.01, table_tf.header.frame_id));
+    blocked_poses_pub_->publish(ttk::toPoseArray(blocked, 0.01, table_tf.header.frame_id));
+    setOutput("table_side_poses", valid);
     return BT::NodeStatus::SUCCESS;
   }
 
-  bool isBlocked(const geometry_msgs::PoseStamped& pose)
+  /**
+   * Whether the pose is on an obstacle on the global costmap; not blocked if the costmap can't tell
+   */
+  bool isBlocked(const geometry_msgs::msg::PoseStamped& pose)
   {
-    if (!checkPoseSrv())
-    {
-      return false;  // no check service available; we already warned when we first looked
-    }
-
-    // Evaluate cost of the footprint at the given pose
-    mbf_msgs::CheckPose srv;
-    srv.request.pose = pose;
-    srv.request.costmap = mbf_msgs::CheckPoseRequest::GLOBAL_COSTMAP;
-    srv.request.safety_dist = -0.1;  // pickup poses can be within the table, and so in collision
-    if (!checkPoseSrv().call(srv))
-    {
-      ROS_WARN_NAMED(name(), "MBF check pose service failed; assume pose is not blocked");
+    geometry_msgs::msg::PoseStamped map_pose;
+    if (!ttk::TF2::instance().transformPose("map", pose, map_pose))
       return false;
-    }
-    if (srv.response.state >= mbf_msgs::CheckPoseResponse::LETHAL)
-    {
-      ROS_INFO_NAMED(name(), "Blocked pose %s: %d; cost: %u", ttk::toCStr2D(pose), (int)srv.response.state,
-                     srv.response.cost);
-      return true;
-    }
-    ROS_DEBUG_NAMED(name(), "Reachable pose %s: %d; cost: %u", ttk::toCStr2D(pose), (int)srv.response.state,
-                    srv.response.cost);
-    return false;
+    nav2_msgs::srv::GetCost::Request request;
+    request.use_footprint = false;
+    request.x = map_pose.pose.position.x;
+    request.y = map_pose.pose.position.y;
+    request.theta = ttk::yaw(map_pose);
+    const auto response =
+        callService<nav2_msgs::srv::GetCost>(rosNode(*this), "/global_costmap/get_cost_global_costmap", request);
+    if (!response)
+      return false;
+    RCLCPP_DEBUG(logger(*this), "Pose [%.2f, %.2f] cost: %g", request.x, request.y, response->cost);
+    return response->cost >= nav2_costmap_2d::LETHAL_OBSTACLE;
   }
 
   BT_REGISTER_NODE(GetPosesAroundTable);
 };
+
 }  // namespace thorp::bt::actions

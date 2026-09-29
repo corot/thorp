@@ -31,7 +31,16 @@ public:
    */
   static BT::Blackboard::Ptr makeBlackboard(const rclcpp::Node::SharedPtr& node);
 
+  /**
+   * Register, once, the nodes the trees use from nav2_behavior_tree: navigation to poses, path following and the
+   * spin and backup behaviors. Their builders get the root blackboard entries shared with subtrees, as Thorp's do.
+   */
+  static void registerNav2Nodes();
+
 private:
+  /** If there's navigation, wait for it to be active */
+  void waitForNavigation(const rclcpp::Duration& timeout);
+
   rclcpp::Node::SharedPtr node_;
 
   /** Running app name. */

@@ -1,86 +1,60 @@
-#include <behaviortree_cpp/action_node.h>
+#include <cmath>
+
+#include <nav2_behavior_tree/bt_action_node.hpp>
 
 #include "thorp_bt_cpp/node_common.hpp"
-#include "thorp_bt_cpp/ros_action_node.hpp"
 
-#include <mbf_msgs/ExePathAction.h>
+#include <nav2_msgs/action/spin.hpp>
 
 #include <thorp_toolkit/geometry.hpp>
+#include <thorp_toolkit/tf2.hpp>
 namespace ttk = thorp::toolkit;
 
 namespace thorp::bt::actions
 {
 /**
- * Turn toward a given pose.
- * Allows updating the goal while running.
+ * Turn on the spot to face a pose, without translating, with Nav2's spin behavior. To point the camera, fixed to the
+ * base.
  */
-class LookAtPose : public BT::RosActionNode<mbf_msgs::ExePathAction>
+class LookAtPose : public nav2_behavior_tree::BtActionNode<nav2_msgs::action::Spin>
 {
 public:
-  LookAtPose(const std::string& name, const BT::NodeConfig& config) : RosActionNode(name, config)
+  LookAtPose(const std::string& name, const std::string& action_name, const BT::NodeConfig& config)
+    : BtActionNode(name, action_name, config)
   {
   }
 
   static BT::PortsList providedPorts()
   {
-    BT::PortsList ports = BT::RosActionNode<ActionType>::providedPorts();
-    ports["action_name"].setDefaultValue("move_base_flex/exe_path");
-    ports.insert({ BT::InputPort<std::string>("controller"),                  //
-                   BT::InputPort<geometry_msgs::PoseStamped>("robot_pose"),   //
-                   BT::InputPort<geometry_msgs::PoseStamped>("target_pose"),  //
-                   BT::OutputPort<int>("error"),                              //
-                   BT::OutputPort<std::optional<FeedbackType>>("feedback") });
-    return ports;
+    return providedBasicPorts({ BT::InputPort<geometry_msgs::msg::PoseStamped>("robot_pose"),   //
+                                BT::InputPort<geometry_msgs::msg::PoseStamped>("target_pose"),  //
+                                BT::OutputPort<int>("error") });
   }
 
 private:
-  std::optional<GoalType> current_goal_;
-
-  GoalType getGoal() override
+  void on_tick() override
   {
-    return *current_goal_;
+    const auto robot_pose = requireInput<geometry_msgs::msg::PoseStamped>(*this, "robot_pose");
+    auto target_pose = requireInput<geometry_msgs::msg::PoseStamped>(*this, "target_pose");
+    if (!ttk::TF2::instance().transformPose(robot_pose.header.frame_id, target_pose, target_pose))
+      throw BT::RuntimeError(name(), ": cannot transform target pose to ", robot_pose.header.frame_id);
+
+    const double heading = std::atan2(target_pose.pose.position.y - robot_pose.pose.position.y,
+                                      target_pose.pose.position.x - robot_pose.pose.position.x);
+    goal_ = nav2_msgs::action::Spin::Goal();
+    goal_.target_yaw = static_cast<float>(ttk::normAngle(heading - ttk::yaw(robot_pose)));
+    goal_.time_allowance.sec = 10;
   }
 
-  void onTick() override
+  BT::NodeStatus on_aborted() override
   {
-    GoalType new_goal;
-    new_goal.controller = requireInput<std::string>(*this, "controller");
-
-    // Create a single-pose path with the current robot location but heading toward the target pose
-    geometry_msgs::PoseStamped robot_pose = requireInput<geometry_msgs::PoseStamped>(*this, "robot_pose");
-    geometry_msgs::PoseStamped target_pose = requireInput<geometry_msgs::PoseStamped>(*this, "target_pose");
-    double heading = ttk::heading(robot_pose, target_pose);
-    ttk::setYaw(robot_pose, heading);
-    new_goal.path.poses.push_back(robot_pose);
-    if (!current_goal_ || *current_goal_ != new_goal)
-    {
-      current_goal_ = new_goal;
-      goal_updated_ = true;
-    }
-  }
-
-  void onFeedback(const FeedbackConstPtr& feedback) override
-  {
-    setOutput("feedback", std::make_optional<FeedbackType>(*feedback));
-  }
-
-  void onFinished() override
-  {
-    current_goal_.reset();
-  }
-
-  BT::NodeStatus onAborted(const ResultConstPtr& res) override
-  {
-    ROS_ERROR_NAMED(name(), "LookAtPose failed at %.2f, %.2f, %.2f; distance to goal: %.2f, angle to goal: %.2f",
-                    res->final_pose.pose.position.x, res->final_pose.pose.position.y, ttk::yaw(res->final_pose),
-                    res->dist_to_goal, res->angle_to_goal);
-
-    ROS_ERROR_NAMED(name(), "Error %d: %s", res->outcome, res->message.c_str());
-    setOutput<int>("error", res->outcome);
-
+    RCLCPP_ERROR(logger(*this), "Turning to face the target pose failed with error %d: %s",
+                 result_.result->error_code, result_.result->error_msg.c_str());
+    setOutput<int>("error", result_.result->error_code);
     return BT::NodeStatus::FAILURE;
   }
 
-  BT_REGISTER_NODE(LookAtPose);
+  BT_REGISTER_ACTION_NODE(LookAtPose, "spin");
 };
+
 }  // namespace thorp::bt::actions

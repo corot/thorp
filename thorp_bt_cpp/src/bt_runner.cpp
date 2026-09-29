@@ -1,12 +1,22 @@
 #include "thorp_bt_cpp/bt_runner.hpp"
 
 #include <fstream>
+#include <mutex>
+#include <set>
+
+#include <ament_index_cpp/get_package_prefix.hpp>
 
 // bt tools
+#include <behaviortree_cpp/utils/shared_library.h>
 #include <behaviortree_cpp/xml_parsing.h>
+
+#include <std_srvs/srv/trigger.hpp>
 
 #include <thorp_toolkit/simulation.hpp>
 namespace ttk = thorp::toolkit;
+
+#include "thorp_bt_cpp/node_common.hpp"
+#include "thorp_bt_cpp/service_call.hpp"
 
 namespace thorp::bt
 {
@@ -32,8 +42,42 @@ BT::Blackboard::Ptr Runner::makeBlackboard(const rclcpp::Node::SharedPtr& node)
   return blackboard;
 }
 
+void Runner::registerNav2Nodes()
+{
+  static std::once_flag registered;
+  std::call_once(registered, [] {
+    const std::string lib_dir = ament_index_cpp::get_package_prefix("nav2_behavior_tree") + "/lib/";
+    for (const auto* plugin : { "nav2_navigate_to_pose_action_bt_node", "nav2_navigate_through_poses_action_bt_node",
+                                "nav2_follow_path_action_bt_node", "nav2_spin_action_bt_node",
+                                "nav2_back_up_action_bt_node" })
+    {
+      std::set<std::string> known;
+      for (const auto& [id, builder] : bt_factory_.builders())
+        known.insert(id);
+      bt_factory_.registerFromPlugin(lib_dir + BT::SharedLibrary::getOSName(plugin));
+
+      std::vector<std::string> added;
+      for (const auto& [id, builder] : bt_factory_.builders())
+        if (!known.count(id))
+          added.push_back(id);
+      for (const auto& id : added)
+      {
+        const BT::TreeNodeManifest manifest = bt_factory_.manifests().at(id);
+        const BT::NodeBuilder builder = bt_factory_.builders().at(id);
+        bt_factory_.unregisterBuilder(id);
+        bt_factory_.registerBuilder(manifest, [builder](const std::string& name, const BT::NodeConfig& config) {
+          shareRootEntries(config.blackboard);
+          return builder(name, config);
+        });
+      }
+    }
+  });
+}
+
 bool Runner::loadTree()
 {
+  registerNav2Nodes();
+
   // on simulation, wait for the simulated time to start before loading and running the tree
   if (!node_->get_clock()->wait_until_started(rclcpp::Duration::from_seconds(60)))
   {
@@ -86,6 +130,25 @@ bool Runner::loadTree()
   return true;
 }
 
+void Runner::waitForNavigation(const rclcpp::Duration& timeout)
+{
+  // Nav2's servers exist since configured, but reject goals until activated
+  const std::string is_active = "/lifecycle_manager_navigation/is_active";
+  const auto services = node_->get_service_names_and_types();
+  if (services.find(is_active) == services.end())
+    return;  // no navigation
+
+  const rclcpp::Time time_start = node_->now();
+  while (rclcpp::ok() && (node_->now() - time_start) < timeout)
+  {
+    const auto response = callService<std_srvs::srv::Trigger>(node_, is_active, std_srvs::srv::Trigger::Request());
+    if (response && response->success)
+      return;
+    node_->get_clock()->sleep_for(rclcpp::Duration::from_seconds(0.5));
+  }
+  RCLCPP_ERROR_STREAM(node_->get_logger(), "Navigation not active after " << timeout.seconds() << " seconds");
+}
+
 void Runner::run()
 {
   if (!bt_)
@@ -97,6 +160,7 @@ void Runner::run()
   // Wait start_delay seconds and on simulation for objects spawning to complete
   node_->get_clock()->sleep_for(rclcpp::Duration::from_seconds(node_->get_parameter_or("start_delay", 1.0)));
   ttk::waitForObjectsSpawning(node_, rclcpp::Duration::from_seconds(60));
+  waitForNavigation(rclcpp::Duration::from_seconds(60));
 
   // Callbacks run between ticks, never concurrently with them
   rclcpp::executors::SingleThreadedExecutor executor;

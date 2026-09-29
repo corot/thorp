@@ -1,17 +1,17 @@
+#include <cmath>
+
 #include <behaviortree_cpp/action_node.h>
 
 #include "thorp_bt_cpp/node_common.hpp"
+#include "thorp_bt_cpp/semantic_layer.hpp"
 
-#include <rail_manipulation_msgs/SegmentedObject.h>
-
-#include <thorp_costmap_layers/srv_iface_client.hpp>
-namespace tcl = thorp::costmap_layers;
+#include <moveit_msgs/msg/collision_object.hpp>
+#include <shape_msgs/msg/solid_primitive.hpp>
 
 namespace thorp::bt::actions
 {
 /**
- * Mark table area as an obstacle on both local and global costmaps,
- * so robot doesn't collide with the (for him) invisible eaves.
+ * Mark a table as an obstacle on both costmaps, as the scans can't see its eaves.
  */
 class TableAsObstacle : public BT::SyncActionNode
 {
@@ -22,25 +22,30 @@ public:
 
   static BT::PortsList providedPorts()
   {
-    return { BT::InputPort<rail_manipulation_msgs::SegmentedObject>("table"),  //
-             BT::InputPort<geometry_msgs::PoseStamped>("table_pose") };
+    return { BT::InputPort<moveit_msgs::msg::CollisionObject>("table"),  //
+             BT::InputPort<geometry_msgs::msg::PoseStamped>("table_pose") };
   }
 
 private:
   BT::NodeStatus tick() override
   {
-    const auto table = requireInput<rail_manipulation_msgs::SegmentedObject>(*this, "table");
-    const auto table_pose = requireInput<geometry_msgs::PoseStamped>(*this, "table_pose");
-    const auto table_name = table.name                                                           // avoid name
-                            + "_" + std::to_string((int)std::round(table_pose.pose.position.x))  // collisions
-                            + "_" + std::to_string((int)std::round(table_pose.pose.position.y));
-    geometry_msgs::Vector3 table_size;
-    table_size.x = table.depth;
-    table_size.y = table.width;
-    tcl::ServiceClient::instance().addObject(table_name, "obstacle", table_pose, table_size, "both");
-    return BT::NodeStatus::SUCCESS;
+    using shape_msgs::msg::SolidPrimitive;
+    const auto table = requireInput<moveit_msgs::msg::CollisionObject>(*this, "table");
+    thorp_costmap_layers::msg::Object obstacle;
+    obstacle.operation = thorp_costmap_layers::msg::Object::ADD;
+    obstacle.type = "obstacle";
+    obstacle.pose = requireInput<geometry_msgs::msg::PoseStamped>(*this, "table_pose");
+    // detect_table names every table "table"; its position tells them apart
+    obstacle.name = table.id + "_" + std::to_string(std::lround(obstacle.pose.pose.position.x)) + "_" +
+                    std::to_string(std::lround(obstacle.pose.pose.position.y));
+    obstacle.dimensions.x = table.primitives.at(0).dimensions.at(SolidPrimitive::BOX_X);
+    obstacle.dimensions.y = table.primitives.at(0).dimensions.at(SolidPrimitive::BOX_Y);
+    const bool marked = updateSemanticLayer(rosNode(*this), "local", { obstacle }) &&
+                        updateSemanticLayer(rosNode(*this), "global", { obstacle });
+    return marked ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
   }
 
   BT_REGISTER_NODE(TableAsObstacle);
 };
+
 }  // namespace thorp::bt::actions
