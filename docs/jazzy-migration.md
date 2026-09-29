@@ -78,6 +78,15 @@ port is deferred to Block 9, where the executive shows what the table approach n
 with its keepout filter, fed with a mask of rectangles by a small node, but can't clear regions persistently (only once,
 with `clear_around_pose`); porting the layer as a Nav2 plugin keeps the Noetic behavior.
 
+Block 9b moves the executive's navigation to Nav2's actions, using `nav2_behavior_tree`'s nodes where they fit:
+`navigate_to_pose` for going to a pose, with one goal tolerance for all goals; `navigate_through_poses` for following
+waypoints, its remaining poses dropping the passed ones; `follow_path` for docking at a table, straight to the pickup
+pose; and the behaviors `spin` for turning to face a pose and `backup` for leaving a table. Noetic's named
+configurations, that reconfigured TEB at runtime, become plugins chosen per goal: a precise controller and precise and
+loose goal checkers. The trees drop the bumper and safety controller nodes until the real robot, and the RAIL markers
+clearing. `patrol_2_points` runs on the playground world, instead of Stage's maze, and a new `cleanup_table` app picks
+the objects around the playground table.
+
 Bumpers and cliff sensors are deferred to the real robot: it needs `kobuki_ros` from source anyway (the Kobuki driver,
 `kobuki_bumper2pc` and `kobuki_safety_controller` have no Jazzy release), and simulated bumper and cliff events, from
 Gazebo contact sensors and downward rays, can then match the real driver's topics.
