@@ -50,6 +50,7 @@ SERIALIZED_AS = {
     "bool": bool,
     "int": int,
     "unsigned int": int,
+    "uint16_t": int,
     "unsigned long": int,
     "float": float,
     "double": float,

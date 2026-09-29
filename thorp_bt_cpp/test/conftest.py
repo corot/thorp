@@ -43,6 +43,7 @@ from rclpy.parameter import Parameter
 from rclpy.parameter_client import AsyncParameterClient
 
 from geometry_msgs.msg import Pose
+from nav2_msgs.srv import ClearEntireCostmap
 from ros_gz_interfaces.msg import Entity
 from ros_gz_interfaces.srv import SetEntityPose
 from thorp_msgs.action import RunSubtree
@@ -201,8 +202,8 @@ def runner(request, ros_node):
 
 def gazebo_model_poses():
     """
-    Name -> pose of the models in the Gazebo simulation, but Thorp; empty if there is no simulation. Read with the
-    gz tool, in the environment the simulation was started in, as ROS doesn't bridge the world's poses.
+    Name -> pose of the models in the Gazebo simulation; empty if there is no simulation. Read with the gz tool, in
+    the environment the simulation was started in, as ROS doesn't bridge the world's poses.
     """
     def gz(*args):
         try:
@@ -210,7 +211,7 @@ def gazebo_model_poses():
         except (OSError, subprocess.TimeoutExpired):
             return ""
 
-    models = set(re.findall(r"^\s*- (\S+)$", gz("model", "--list"), re.M)) - {"thorp"}
+    models = set(re.findall(r"^\s*- (\S+)$", gz("model", "--list"), re.M))
     poses = {}
     # the world's models come first, followed by their links and visuals, that can share names
     for block in re.findall(r"^pose \{\n(.*?)^\}", gz("topic", "-e", "-n", "1", "-t", "/world/default/pose/info"),
@@ -250,7 +251,9 @@ def reset_scene(runner, initial_model_poses):
     the arm resting, out of the camera's view; and MoveIt's planning scene empty, for the next
     detect_objects to fill it from what the camera can actually see. Then the world's, on
     simulation: every model back to its pose at the start of the session, so the objects are
-    back on the table. The sleep is for physics: objects put back need a moment to settle
+    back on the table, and Thorp at its start, what navigation follows only with Gazebo's ground
+    truth localization; and with navigation, its costmaps cleared of what they marked before
+    the jump. The sleep is for physics: objects put back need a moment to settle
     before a detection of them means anything.
 
     A function rather than a fixture doing the reset, deliberately: a fixture runs before the
@@ -276,6 +279,11 @@ def reset_scene(runner, initial_model_poses):
             future = set_pose.call_async(request)
             if not runner.wait(future, 5.0) or not future.result().success:
                 print("--> putting {} back failed".format(name))
+        for costmap in ("local", "global"):
+            clear = runner.node.create_client(
+                ClearEntireCostmap, "/{0}_costmap/clear_entirely_{0}_costmap".format(costmap))
+            if clear.wait_for_service(timeout_sec=1.0):
+                runner.wait(clear.call_async(ClearEntireCostmap.Request()), 5.0)
         time.sleep(1.0)
 
     yield reset

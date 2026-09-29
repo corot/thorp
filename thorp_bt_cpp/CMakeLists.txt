@@ -144,7 +144,8 @@ install(FILES config/capabilities.yaml
 )
 
 # Trees ported to ROS 2; listed one by one, as the package is ported in stages
-install(FILES bt/manipulation.xml bt/object_manip.xml bt/perception.xml bt/pickup_objects.xml bt/test_capabilities.xml
+install(FILES bt/cleanup_table.xml bt/manipulation.xml bt/navigation.xml bt/object_manip.xml bt/patrol_2_points.xml
+              bt/perception.xml bt/pickup_objects.xml bt/tables.xml bt/test_capabilities.xml
               bt/test_server.xml
         DESTINATION share/${PROJECT_NAME}/bt
 )

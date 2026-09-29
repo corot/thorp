@@ -236,8 +236,8 @@ capabilities:
   approach_table:
     description: >
       Park against the table in front of the robot, on its nearest side, close enough for the
-      arm to reach what is on it: finds the table, works out where to stand and drives in until
-      the bumper touches. The step before picking from or placing on a table. It finds the
+      arm to reach what is on it: finds the table, works out where to stand and docks there
+      precisely, under the table's eaves. The step before picking from or placing on a table. It finds the
       table itself, so it takes no arguments; from inspect_table's viewing pose it sees the
       table better than from further back. Its pickup_pose is what attach_to_table takes to go
       back in after detach_from_table.
@@ -249,7 +249,8 @@ capabilities:
       table: {type: moveit_msgs::msg::CollisionObject, description: "the table it parked against"}
       table_pose: {type: geometry_msgs::msg::PoseStamped, description: "where that table is, in the map frame"}
       pickup_pose: {type: geometry_msgs::msg::PoseStamped, description: "the pose it parked at, for attach_to_table"}
-      error: {type: int, when: failure, description: "error code from reading the robot pose or from path execution"}
+      error: {type: int, when: failure, description: "error code from reading the robot pose"}
+      nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's follow_path, docking"}
     test:
       inputs: {}
       expect: any          # the same attach as attach_to_table, which the scene can defeat
@@ -278,8 +279,7 @@ capabilities:
 
   attach_to_table:
     description: >
-      Drive head-on into a table under precise control until the bumper touches it, from
-      approach_table's pickup_pose. approach_table already ends this way; use this to go back
+      Dock head-on at a table, precisely and under its eaves, at approach_table's pickup_pose. approach_table already ends this way; use this to go back
       in after detach_from_table without detecting the table again.
     status: ok
     stack: [navigation, perception]
@@ -288,7 +288,8 @@ capabilities:
       table: {type: moveit_msgs::msg::CollisionObject, from: [approach_table.table], description: "table to approach; name, pose and size"}
       pose: {type: geometry_msgs::msg::PoseStamped, from: [approach_table.pickup_pose], description: "pose to approach it from"}
     outputs:
-      error: {type: int, when: failure, description: "error code from path execution"}
+      error: {type: int, when: failure, description: "error code from reading the robot pose"}
+      nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's follow_path"}
     test:
       # Goes back in from where approach_table parked, so this checks the goal's contract; the
       # drive itself is what approach_table's own test exercises.
@@ -300,8 +301,8 @@ capabilities:
 
   detach_from_table:
     description: >
-      Back straight out from the table the robot is parked against, under precise control,
-      far enough to navigate around it again, and restore the table's costmap footprint. Takes
+      Back straight out from the table the robot is parked against, far enough to navigate
+      around it again, and restore the table's costmap footprint. Takes
       no arguments: it backs out along the way the robot is facing.
     status: ok
     stack: [navigation]
@@ -309,7 +310,7 @@ capabilities:
     invalidates: [at_a_table, objects_detected]
     inputs: {}
     outputs:
-      error: {type: int, when: failure, description: "error code from reading the robot pose or from path execution"}
+      nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's backup behavior"}
     test:
       inputs: {}
       setup:
@@ -336,17 +337,19 @@ capabilities:
   cleanup_table:
     description: >
       Clear every reachable object from one table onto the tray, working through a planned
-      sequence of pickup locations.
+      sequence of pickup locations around it. With no table given, it takes the one in front,
+      as validate_table does.
     status: ok
     stack: [navigation, manipulation, perception]
     invalidates: [at_a_table, objects_detected, holding_object]
     inputs:
-      table: {type: moveit_msgs::msg::CollisionObject, from: [detect_table.table], description: "table to clear"}
-      table_pose: {type: geometry_msgs::msg::PoseStamped, from: [detect_table.table_pose], description: "pose of that table"}
+      table: {type: moveit_msgs::msg::CollisionObject, optional: true, from: [detect_table.table], description: "table to clear; leave it out to take the one in front"}
+      table_pose: {type: geometry_msgs::msg::PoseStamped, optional: true, from: [detect_table.table_pose], description: "pose of that table"}
       given_up_count: {type: unsigned int, description: "objects abandoned so far; 0 to start"}
     outputs:
       pickup_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "pose the last pickup was attempted from"}
       error: {type: int, when: maybe, description: "error code from the last action"}
+      nav_error: {type: uint16_t, when: maybe, description: "error code from the last Nav2 action"}
     test:
       inputs: {given_up_count: 0}
       setup:
@@ -370,9 +373,9 @@ capabilities:
     inputs:
       pose: {type: geometry_msgs::msg::PoseStamped, description: "where to drive to, as 'x;y;yaw;frame'"}
     outputs:
-      error: {type: int, when: failure, description: "move_base error code; only set when the drive failed"}
+      nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's navigate_to_pose; only set when the drive failed"}
     test:
-      inputs: {pose: '2.0;3.0;1.57;map'}
+      inputs: {pose: '2.5;2.5;1.57;map'}
       expect: any
       timeout: 300
 
@@ -389,7 +392,7 @@ capabilities:
       pose: {type: geometry_msgs::msg::PoseStamped, description: "what to face; only its position matters"}
     outputs:
       robot_pose: {type: geometry_msgs::msg::PoseStamped, description: "where the robot was before turning"}
-      error: {type: int, when: failure, description: "error code from reading the robot pose or from the controller"}
+      error: {type: int, when: failure, description: "error code from reading the robot pose or from Nav2's spin behavior"}
     test:
       inputs: {pose: "-0.5;1.5;0.0;map"}    # the cat llm_playground spawns
       expect: succeeded
@@ -399,14 +402,14 @@ capabilities:
 
   patrol_2_points:
     description: >
-      Drive back and forth between two hardcoded map poses, ten times. Mostly a navigation
-      smoke test.
+      Drive back and forth between two hardcoded poses of the playground map, ten times. Mostly a
+      navigation smoke test.
     kind: app
     status: ok
     stack: [navigation]
     inputs: {}
     outputs:
-      goto_pose_error: {type: int, when: failure, description: "error code from the last navigation goal"}
+      nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's navigate_to_pose, for the last goal"}
     test:
       inputs: {}
       expect: any
@@ -553,16 +556,17 @@ capabilities:
       poses: {type: std::vector<geometry_msgs::msg::PoseStamped>, description: "candidate poses, tried in order, each as 'x;y;yaw;frame'"}
     outputs:
       next_pose: {type: geometry_msgs::msg::PoseStamped, description: "the pose actually reached"}
-      goto_pose_error: {type: int, when: failure, description: "error code from the navigation goal"}
+      goto_pose_error: {type: uint16_t, when: failure, description: "error code from Nav2's navigate_to_pose"}
     test:
-      inputs: {poses: ['2.0;5.0;1.57;map', '2.0;1.0;-1.57;map']}
+      # the first pose is off the playground map, so it has to be dropped
+      inputs: {poses: ['2.0;5.0;1.57;map', '2.5;2.5;1.57;map']}
       expect: any
       timeout: 300
 
   follow_waypoints:
     description: >
-      Follow a list of waypoints as one smoothed path, replanning from the first reachable
-      waypoint whenever following fails.
+      Go through a list of waypoints in order, as Nav2's navigate_through_poses plans them,
+      resuming from the next waypoint not passed yet whenever it fails.
     status: ok
     stack: [navigation]
     invalidates: [at_a_table, objects_detected]
@@ -571,9 +575,9 @@ capabilities:
     outputs:
       next_waypoint: {type: unsigned long, when: maybe, description: "index of the waypoint being driven to"}
       robot_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "robot pose while following"}
-      exe_path_error: {type: int, when: failure, description: "error code from path execution"}
+      nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's navigate_through_poses"}
     test:
-      inputs: {waypoints: ['2.0;5.0;1.57;map', '2.0;1.0;-1.57;map']}
+      inputs: {waypoints: ['-2.0;1.0;1.57;map', '2.5;2.5;1.57;map']}
       expect: any
       timeout: 600
 

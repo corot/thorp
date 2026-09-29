@@ -6,6 +6,14 @@
             <input_port name="angle_tolerance" type="double"/>
             <input_port name="dist_tolerance" type="double"/>
         </Condition>
+        <Action ID="BackUp">
+            <input_port name="backup_dist" type="double" default="0.150000">Distance to backup</input_port>
+            <input_port name="backup_speed" type="double" default="0.025000">Speed at which to backup</input_port>
+            <input_port name="time_allowance" type="double" default="10.000000">Allowed time for reversing</input_port>
+            <output_port name="error_code_id" type="unsigned short">The back up behavior server error code</output_port>
+            <input_port name="server_timeout" type="std::chrono::milliseconds"/>
+            <input_port name="server_name" type="std::string">Action server name</input_port>
+        </Action>
         <Condition ID="CameraFOVClear">
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
             <input_port name="service_name" type="std::string" default="xtion_fov_analyzer/check_clear">name of the ROS service</input_port>
@@ -19,6 +27,10 @@
         </Action>
         <Action ID="ClearPoseList">
             <inout_port name="list" type="std::vector&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+        </Action>
+        <Action ID="ClearTableAccess">
+            <input_port name="table_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;">pickup pose at the table</input_port>
+            <input_port name="table" type="moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Action ID="DetachObject">
             <input_port name="object_name" type="std::string"/>
@@ -42,9 +54,24 @@
             <output_port name="object_name" type="std::string"/>
             <input_port name="objects" type="std::vector&lt;moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
         </Action>
+        <Action ID="ExpandPickupLocation">
+            <output_port name="pickup_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <output_port name="detach_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <output_port name="approach_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="pickup_location" type="thorp_msgs::msg::PickupLocation_&lt;std::allocator&lt;void&gt; &gt;"/>
+        </Action>
         <Condition ID="FloatInBlackboard">
             <input_port name="key" type="float"/>
         </Condition>
+        <Action ID="FollowPath">
+            <input_port name="path" type="nav_msgs::msg::Path_&lt;std::allocator&lt;void&gt; &gt;">Path to follow</input_port>
+            <input_port name="controller_id" type="std::string"/>
+            <input_port name="goal_checker_id" type="std::string"/>
+            <input_port name="progress_checker_id" type="std::string"/>
+            <output_port name="error_code_id" type="unsigned short">The follow path error code</output_port>
+            <input_port name="server_timeout" type="std::chrono::milliseconds"/>
+            <input_port name="server_name" type="std::string">Action server name</input_port>
+        </Action>
         <Decorator ID="ForEachPickupLocation">
             <output_port name="element" type="thorp_msgs::msg::PickupLocation_&lt;std::allocator&lt;void&gt; &gt;"/>
             <inout_port name="list" type="std::vector&lt;thorp_msgs::msg::PickupLocation_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;thorp_msgs::msg::PickupLocation_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
@@ -57,6 +84,13 @@
         <Action ID="GetPoseListFront">
             <output_port name="element" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="list" type="std::vector&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+        </Action>
+        <Action ID="GetPosesAroundTable">
+            <input_port name="split_long_sides" type="bool" default="false">Create two poses on sides longer than max_arm_reach x 2</input_port>
+            <input_port name="distance" type="double"/>
+            <input_port name="table_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <output_port name="table_side_poses" type="std::vector&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+            <input_port name="table" type="moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Action ID="GetRobotPose">
             <output_port name="robot_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
@@ -83,8 +117,35 @@
         <Condition ID="IsUIntListEmpty">
             <input_port name="list" type="std::vector&lt;unsigned int, std::allocator&lt;unsigned int&gt; &gt;"/>
         </Condition>
+        <Action ID="LookAtPose">
+            <input_port name="robot_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="target_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <output_port name="error" type="int"/>
+            <input_port name="server_timeout" type="std::chrono::milliseconds"/>
+            <input_port name="server_name" type="std::string">Action server name</input_port>
+        </Action>
+        <Action ID="MakePickupPlan">
+            <output_port name="pickup_plan" type="std::vector&lt;thorp_msgs::msg::PickupLocation_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;thorp_msgs::msg::PickupLocation_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+            <input_port name="objects" type="std::vector&lt;moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+            <input_port name="pickup_poses" type="std::vector&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+            <input_port name="robot_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+        </Action>
         <Action ID="MoveGripper">
             <input_port name="position" type="double" default="-0.360000">gripper_joint angle</input_port>
+            <input_port name="server_timeout" type="std::chrono::milliseconds"/>
+            <input_port name="server_name" type="std::string">Action server name</input_port>
+        </Action>
+        <Action ID="NavigateThroughPoses">
+            <input_port name="goals" type="std::vector&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;">Destinations to plan through</input_port>
+            <input_port name="behavior_tree" type="std::string">Behavior tree to run</input_port>
+            <output_port name="error_code_id" type="unsigned short">The navigate through poses error code</output_port>
+            <input_port name="server_timeout" type="std::chrono::milliseconds"/>
+            <input_port name="server_name" type="std::string">Action server name</input_port>
+        </Action>
+        <Action ID="NavigateToPose">
+            <input_port name="goal" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;">Destination to plan to</input_port>
+            <input_port name="behavior_tree" type="std::string">Behavior tree to run</input_port>
+            <output_port name="error_code_id" type="unsigned short">Navigate to pose error code</output_port>
             <input_port name="server_timeout" type="std::chrono::milliseconds"/>
             <input_port name="server_name" type="std::string">Action server name</input_port>
         </Action>
@@ -131,6 +192,7 @@
         </Action>
         <Action ID="PoseAsPath">
             <output_port name="path" type="nav_msgs::msg::Path_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="start" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;">if given, a straight path from it to pose</input_port>
             <input_port name="pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Condition ID="PoseInBlackboard">
@@ -175,6 +237,9 @@
             <input_port name="target_name" type="std::string"/>
         </Action>
         <Control ID="RecoverAndRetry"/>
+        <Action ID="RestoreTableAccess">
+            <input_port name="table_name" type="std::string" default="table">name of the table to restore access to</input_port>
+        </Action>
         <Action ID="SelectNextTarget">
             <output_port name="tightening" type="float"/>
             <output_port name="target_name" type="std::string"/>
@@ -207,9 +272,21 @@
             <output_port name="output" type="unsigned int"/>
             <input_port name="input" type="unsigned int"/>
         </Action>
+        <Action ID="Spin">
+            <input_port name="spin_dist" type="double" default="1.570000">Spin distance</input_port>
+            <input_port name="time_allowance" type="double" default="10.000000">Allowed time for spinning</input_port>
+            <input_port name="is_recovery" type="bool" default="true">True if recovery</input_port>
+            <output_port name="error_code_id" type="unsigned short">The spin behavior error code</output_port>
+            <input_port name="server_timeout" type="std::chrono::milliseconds"/>
+            <input_port name="server_name" type="std::string">Action server name</input_port>
+        </Action>
         <Decorator ID="StoreResult">
             <output_port name="result" type="bool"/>
         </Decorator>
+        <Action ID="TableAsObstacle">
+            <input_port name="table_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="table" type="moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;"/>
+        </Action>
         <Condition ID="TableValidSize">
             <input_port name="table" type="moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Condition>

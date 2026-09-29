@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root BTCPP_format="4">
+  <!--
+    Go through a list of waypoints: to the first one reachable, and then through the rest with Nav2's
+    navigate_through_poses, dropping the waypoints passed by, so after a failure it resumes from the next one.
+  -->
   <BehaviorTree ID="follow_waypoints">
     <Sequence>
       <SubTree ID="reach_first_pose"
@@ -8,21 +12,8 @@
         <Fallback>
           <Parallel failure_count="1"
                     success_count="1">
-            <UseNamedConfig config_name="waypoints_following"
-                            source_ns="named_configuration"
-                            target_ns=""/>
-            <Sequence>
-              <SmoothPath service_name="waypoints_path/connect_waypoints"
-                          timeout="100"
-                          waypoints="{waypoints}"
-                          path="{path}"/>
-              <ExePath action_name="move_base_flex/exe_path"
-                       controller="TEBPlanner"
-                       path="{path}"
-                       server_timeout="5.000000"
-                       error="{exe_path_error}"
-                       feedback="{exe_path_feedback}"/>
-            </Sequence>
+            <NavigateThroughPoses goals="{waypoints}"
+                                  error_code_id="{nav_error}"/>
             <ReactiveSequence>
               <GetRobotPose timeout="1"
                             error="{error}"
@@ -46,56 +37,37 @@
 
   <!--
     Drive to one pose, with no list and no retrying: the single pose counterpart of
-    reach_first_pose, for a caller that has already decided where it wants to be. Empty
-    tolerances mean "leave the controller's own alone", so unlike reach_first_pose (which
-    passes 3.15 rad and so ignores the final heading) this one stops facing the given yaw.
+    reach_first_pose, for a caller that has already decided where it wants to be.
   -->
   <BehaviorTree ID="goto_pose">
-    <GoToPose action_name="move_base_flex/move_base"
-              angle_tolerance=""
-              controller="TEBPlanner"
-              dist_tolerance=""
-              planner=""
-              pose="{pose}"
-              server_timeout="5.000000"
-              error="{error}"
-              feedback="{goto_pose_feedback}"/>
+    <NavigateToPose goal="{pose}"
+                    error_code_id="{nav_error}"/>
   </BehaviorTree>
 
   <!--
-    Turn on the spot to face a pose, without translating: exe_path with a rotation, rather than
-    move_base as goto_pose uses. Use it to point the camera, which is fixed to the base.
+    Turn on the spot to face a pose, without translating. Use it to point the camera, which is
+    fixed to the base.
   -->
   <BehaviorTree ID="look_at_pose">
     <Sequence>
       <GetRobotPose timeout="1"
                     robot_pose="{robot_pose}"
                     error="{error}"/>
-      <LookAtPose action_name="move_base_flex/exe_path"
-                  controller="TEBPlanner"
-                  robot_pose="{robot_pose}"
+      <LookAtPose robot_pose="{robot_pose}"
                   target_pose="{pose}"
-                  server_timeout="5.000000"
-                  error="{error}"
-                  feedback="{look_at_feedback}"/>
+                  error="{error}"/>
     </Sequence>
   </BehaviorTree>
 
+  <!-- Go to the first pose of the list we can reach, dropping those we can't -->
   <BehaviorTree ID="reach_first_pose">
     <RetryUntilSuccessful num_attempts="-1">
       <Fallback>
         <Sequence>
           <GetPoseListFront list="{poses}"
                             element="{next_pose}"/>
-          <GoToPose action_name="move_base_flex/move_base"
-                    angle_tolerance="3.15"
-                    controller="TEBPlanner"
-                    dist_tolerance="0.3"
-                    planner=""
-                    pose="{next_pose}"
-                    server_timeout="5.000000"
-                    error="{goto_pose_error}"
-                    feedback="{goto_pose_feedback}"/>
+          <NavigateToPose goal="{next_pose}"
+                          error_code_id="{goto_pose_error}"/>
         </Sequence>
         <Inverter>
           <PopPoseFromList element="{next_pose}"

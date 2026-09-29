@@ -72,6 +72,7 @@ def normalize_type(declared):
         if t == before:
             break
 
+    t = re.sub(r"\bunsigned short\b", "uint16_t", t)
     t = re.sub(r"\bunsigned int\b", "uint32_t", t)
     t = re.sub(r"\bunsigned long\b", "uint64_t", t)
     t = re.sub(r"\bunsigned\b", "uint32_t", t)

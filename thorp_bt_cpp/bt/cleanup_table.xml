@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The cleanup_table app runs the capability of the same name, on the table in front of the robot -->
+<root BTCPP_format="4">
+  <include path="tables.xml"/>
+</root>
