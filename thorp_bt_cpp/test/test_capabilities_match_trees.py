@@ -15,9 +15,13 @@ disagree:
 A <SubTree> call reads and writes whatever the called tree's own interface says, carried across
 the call's remapping (explicit, or _autoremap), so trees compose without inlining their callees.
 
-Pure xml and yaml parsing: no roscore, no bt_server, no robot. Run it anywhere, any time.
+Only the trees installed with thorp_bt_cpp are checked: those ported to ROS 2. The yaml keeps
+describing the rest, still ROS 1, and those entries are skipped as not ported yet.
 
-    cd /catkin_ws/src/thorp/thorp_bt_cpp && python3 -m pytest test/test_capabilities_match_trees.py -v
+Pure xml and yaml parsing: no bt_server, no robot; just a sourced workspace, to find the
+installed trees. From the package directory:
+
+    python3 -m pytest test/test_capabilities_match_trees.py -v
 
 What it can't check is whether a `description` is *true* -- that a tree said to pick up an
 object really does. Those are the fields an LLM leans on hardest, and they still need a human
@@ -32,10 +36,20 @@ from glob import glob
 import pytest
 import yaml
 
+from ament_index_python.packages import get_package_share_directory
+
 HERE = os.path.dirname(os.path.abspath(__file__))
-BT_DIR = os.path.join(HERE, os.pardir, "bt")
+SOURCE_BT_DIR = os.path.join(HERE, os.pardir, "bt")
+BT_DIR = os.path.join(get_package_share_directory("thorp_bt_cpp"), "bt")
 CAPABILITIES = os.path.join(HERE, os.pardir, "config", "capabilities.yaml")
-NODE_MODELS = os.path.join(BT_DIR, "node_models.xml")
+NODE_MODELS = os.path.join(SOURCE_BT_DIR, "node_models.xml")
+
+
+def source_trees():
+    """Ids of all the trees under bt/, ported or not."""
+    return {tree.get("ID") for path in glob(os.path.join(SOURCE_BT_DIR, "*.xml"))
+            if os.path.basename(path) != "node_models.xml"
+            for tree in ET.parse(path).getroot().findall("BehaviorTree")}
 
 
 def normalize_type(declared):
@@ -231,8 +245,15 @@ def test_every_tree_is_either_described_or_excluded(declared, derived):
 def test_nothing_is_described_that_does_not_exist(declared, derived):
     """The other direction: an entry left behind after its tree was renamed or deleted."""
     for section in ("capabilities", "not_capabilities"):
-        stale = set(declared.get(section) or {}) - set(derived)
+        stale = set(declared.get(section) or {}) - set(derived) - source_trees()
         assert not stale, "{} names trees that no longer exist in bt/: {}".format(section, sorted(stale))
+
+
+@pytest.fixture
+def ported(capability_name, derived):
+    """Skip the checks of a capability whose tree is still ROS 1, and so not installed."""
+    if capability_name not in derived and capability_name in source_trees():
+        pytest.skip("not ported to ROS 2 yet")
 
 
 def capability_ids(declared_caps):
@@ -246,7 +267,7 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize("capability_name", sorted(caps))
 
 
-def test_declared_inputs_match_the_tree(capability_name, declared, derived):
+def test_declared_inputs_match_the_tree(capability_name, declared, derived, ported):
     """
     Exactly, not loosely: bt_server refuses a goal missing any required input, so an entry
     promising too few has the agent building goals that always bounce, and one promising too
@@ -270,7 +291,7 @@ def test_declared_inputs_match_the_tree(capability_name, declared, derived):
             "fallback for it".format(capability_name, key))
 
 
-def test_declared_outputs_exist_in_the_tree(capability_name, declared, derived):
+def test_declared_outputs_exist_in_the_tree(capability_name, declared, derived, ported):
     """
     Subset, not equality: a tree may write a dozen intermediate keys and the yaml documents
     the few worth handing an agent. What it must never do is promise one the tree never sets.
@@ -284,7 +305,7 @@ def test_declared_outputs_exist_in_the_tree(capability_name, declared, derived):
         "{}: yaml promises outputs the tree never writes: {}".format(capability_name, sorted(invented)))
 
 
-def test_declared_types_match_the_ports(capability_name, declared, derived):
+def test_declared_types_match_the_ports(capability_name, declared, derived, ported):
     """Types come from the ports themselves, so a retyped port shows up here as a mismatch."""
     spec = declared["capabilities"][capability_name]
     interface = derived[capability_name]

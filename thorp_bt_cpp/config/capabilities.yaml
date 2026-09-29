@@ -140,13 +140,14 @@ capabilities:
     invalidates: [holding_object, objects_detected]
     inputs:
       object_name: {type: string, from: [pickup_object.attached_object], description: "name of the object being placed"}
-      place_pose: {type: geometry_msgs::PoseStamped, description: "where to place it, as 'x;y;yaw;frame' or 'x;y;z;roll;pitch;yaw;frame'; the short form leaves z at 0, which is the floor"}
+      place_pose: {type: geometry_msgs::msg::PoseStamped, description: "where the gripper releases the object, as 'x;y;yaw;frame' or 'x;y;z;roll;pitch;yaw;frame'. The gripper holds objects by their top, so z is the surface height plus the object's height, plus a few millimeters; the short form leaves z at 0, which is the floor"}
     outputs:
       error: {type: int, when: failure, description: "error code from the place action; 0 when it worked"}
     test:
       # A clear spot on the near edge of the table; the nearest object, the star, is 8 cm further in.
-      # In the map frame, so it stays put while the setup chain drives the robot to the table.
-      inputs: {object_name: "square 1", place_pose: "0.2;0.0;0.4875;0.0;0.0;0.0;map"}
+      # The square's top once on the table (0.47 m high), 5 mm above. In the map frame, so it stays
+      # put while the setup chain drives the robot to the table.
+      inputs: {object_name: "square 1", place_pose: "0.2;0.0;0.51;0.0;0.0;0.0;map"}
       setup:
         - {subtree: approach_table}
         - {subtree: detect_objects}
@@ -156,8 +157,8 @@ capabilities:
 
   place_on_tray:
     description: >
-      Place the held object on the robot's own tray, asking the tray service where the next
-      free slot is, and recording the object as stored there.
+      Place the held object on the robot's own tray, on the next free slot, found from the
+      objects already on the tray in the planning scene.
     status: ok
     stack: [manipulation]
     needs: {holding_object: pickup_object}
@@ -166,7 +167,7 @@ capabilities:
       object_name: {type: string, from: [pickup_object.attached_object], description: "name of the object to stow on the tray"}
     outputs:
       error: {type: int, when: failure, description: "error code from the place action; 0 when it worked"}
-      pose_on_tray: {type: geometry_msgs::PoseStamped, description: "slot the object was placed in"}
+      pose_on_tray: {type: geometry_msgs::msg::PoseStamped, description: "slot the object was placed in"}
     test:
       inputs: {object_name: "square 1"}
       setup:
@@ -175,6 +176,22 @@ capabilities:
         - {subtree: pickup_object, inputs: {object_name: "square 1"}}
       expect: any
       timeout: 120
+
+  clear_gripper:
+    description: >
+      Open the gripper, and if the planning scene has an object attached to it, detach it and
+      remove it from the scene. For a gripper holding something it shouldn't, or a planning
+      scene that believes so after a failed pickup; pickup_object does it itself first.
+    status: ok
+    stack: [manipulation]
+    invalidates: [holding_object]
+    inputs: {}
+    outputs:
+      attached_object: {type: string, when: maybe, description: "the object that was attached, if any"}
+    test:
+      inputs: {}
+      expect: succeeded
+      timeout: 60
 
   # ---------------------------------------------------------------------- perception -------
 
@@ -189,8 +206,8 @@ capabilities:
     stack: [perception]
     inputs: {}
     outputs:
-      objects: {type: std::vector<moveit_msgs::CollisionObject>, description: "the objects found on the surface, each as name and color; empty when there are none"}
-      surface: {type: moveit_msgs::CollisionObject, description: "the support surface they were found on, as name and color"}
+      objects: {type: std::vector<moveit_msgs::msg::CollisionObject>, description: "the objects found on the surface, each as name and color; empty when there are none"}
+      surface: {type: moveit_msgs::msg::CollisionObject, description: "the support surface they were found on, as name and color"}
     test:
       inputs: {}
       expect: any          # needs a table in view; whether there is one is the scene's business
@@ -199,7 +216,7 @@ capabilities:
   detect_table:
     description: >
       Find the table in front of the robot and report its size and where it is on the map.
-      Only the nearest surface is reported, however many are in view, and it always comes
+      Only one surface is reported, however many are in view, and it always comes
       back named "table" -- the name carries no information here, unlike detect_objects. This
       is the step that tells you a table is there and where to stand relative to it; it does
       not move the robot, and it fails when nothing in view is a large enough surface.
@@ -207,8 +224,8 @@ capabilities:
     stack: [perception]
     inputs: {}
     outputs:
-      table: {type: rail_manipulation_msgs::SegmentedObject, description: "the table: name, width, depth, height, color and center pose"}
-      table_pose: {type: geometry_msgs::PoseStamped, description: "where that table is, in the map frame"}
+      table: {type: moveit_msgs::msg::CollisionObject, description: "the table: name, width, depth, height, color and center pose"}
+      table_pose: {type: geometry_msgs::msg::PoseStamped, description: "where that table is, in the map frame"}
     test:
       inputs: {}
       expect: any          # needs a surface in view; whether there is one is the scene's business
@@ -229,9 +246,9 @@ capabilities:
     invalidates: [objects_detected]
     inputs: {}
     outputs:
-      table: {type: rail_manipulation_msgs::SegmentedObject, description: "the table it parked against"}
-      table_pose: {type: geometry_msgs::PoseStamped, description: "where that table is, in the map frame"}
-      pickup_pose: {type: geometry_msgs::PoseStamped, description: "the pose it parked at, for attach_to_table"}
+      table: {type: moveit_msgs::msg::CollisionObject, description: "the table it parked against"}
+      table_pose: {type: geometry_msgs::msg::PoseStamped, description: "where that table is, in the map frame"}
+      pickup_pose: {type: geometry_msgs::msg::PoseStamped, description: "the pose it parked at, for attach_to_table"}
       error: {type: int, when: failure, description: "error code from reading the robot pose or from path execution"}
     test:
       inputs: {}
@@ -249,11 +266,11 @@ capabilities:
     invalidates: [at_a_table]
     inputs: {}
     outputs:
-      table: {type: rail_manipulation_msgs::SegmentedObject, description: "the table, as seen from the viewing pose"}
-      table_pose: {type: geometry_msgs::PoseStamped, description: "where that table is, in the map frame"}
-      inspect_pose: {type: geometry_msgs::PoseStamped, description: "the viewing pose it looked from"}
-      objects: {type: std::vector<moveit_msgs::CollisionObject>, description: "the objects on the table, each as name and color; empty when there are none"}
-      surface: {type: moveit_msgs::CollisionObject, description: "the surface they were found on, as name and color"}
+      table: {type: moveit_msgs::msg::CollisionObject, description: "the table, as seen from the viewing pose"}
+      table_pose: {type: geometry_msgs::msg::PoseStamped, description: "where that table is, in the map frame"}
+      inspect_pose: {type: geometry_msgs::msg::PoseStamped, description: "the viewing pose it looked from"}
+      objects: {type: std::vector<moveit_msgs::msg::CollisionObject>, description: "the objects on the table, each as name and color; empty when there are none"}
+      surface: {type: moveit_msgs::msg::CollisionObject, description: "the surface they were found on, as name and color"}
     test:
       inputs: {}
       expect: any
@@ -268,8 +285,8 @@ capabilities:
     stack: [navigation, perception]
     invalidates: [objects_detected]
     inputs:
-      table: {type: rail_manipulation_msgs::SegmentedObject, from: [approach_table.table], description: "table to approach; name, pose and size"}
-      pose: {type: geometry_msgs::PoseStamped, from: [approach_table.pickup_pose], description: "pose to approach it from"}
+      table: {type: moveit_msgs::msg::CollisionObject, from: [approach_table.table], description: "table to approach; name, pose and size"}
+      pose: {type: geometry_msgs::msg::PoseStamped, from: [approach_table.pickup_pose], description: "pose to approach it from"}
     outputs:
       error: {type: int, when: failure, description: "error code from path execution"}
     test:
@@ -308,9 +325,9 @@ capabilities:
     invalidates: [at_a_table, objects_detected]
     inputs: {}
     outputs:
-      table: {type: rail_manipulation_msgs::SegmentedObject, description: "the validated table (not serializable yet)"}
-      table_pose: {type: geometry_msgs::PoseStamped, description: "pose of the table"}
-      inspect_pose: {type: geometry_msgs::PoseStamped, description: "viewpoint used to inspect it"}
+      table: {type: moveit_msgs::msg::CollisionObject, description: "the validated table (not serializable yet)"}
+      table_pose: {type: geometry_msgs::msg::PoseStamped, description: "pose of the table"}
+      inspect_pose: {type: geometry_msgs::msg::PoseStamped, description: "viewpoint used to inspect it"}
     test:
       inputs: {}
       expect: any
@@ -324,11 +341,11 @@ capabilities:
     stack: [navigation, manipulation, perception]
     invalidates: [at_a_table, objects_detected, holding_object]
     inputs:
-      table: {type: rail_manipulation_msgs::SegmentedObject, from: [detect_table.table], description: "table to clear"}
-      table_pose: {type: geometry_msgs::PoseStamped, from: [detect_table.table_pose], description: "pose of that table"}
+      table: {type: moveit_msgs::msg::CollisionObject, from: [detect_table.table], description: "table to clear"}
+      table_pose: {type: geometry_msgs::msg::PoseStamped, from: [detect_table.table_pose], description: "pose of that table"}
       given_up_count: {type: unsigned int, description: "objects abandoned so far; 0 to start"}
     outputs:
-      pickup_pose: {type: geometry_msgs::PoseStamped, when: maybe, description: "pose the last pickup was attempted from"}
+      pickup_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "pose the last pickup was attempted from"}
       error: {type: int, when: maybe, description: "error code from the last action"}
     test:
       inputs: {given_up_count: 0}
@@ -351,7 +368,7 @@ capabilities:
     stack: [navigation]
     invalidates: [at_a_table, objects_detected]
     inputs:
-      pose: {type: geometry_msgs::PoseStamped, description: "where to drive to, as 'x;y;yaw;frame'"}
+      pose: {type: geometry_msgs::msg::PoseStamped, description: "where to drive to, as 'x;y;yaw;frame'"}
     outputs:
       error: {type: int, when: failure, description: "move_base error code; only set when the drive failed"}
     test:
@@ -369,9 +386,9 @@ capabilities:
     stack: [navigation]
     invalidates: [at_a_table, objects_detected]
     inputs:
-      pose: {type: geometry_msgs::PoseStamped, description: "what to face; only its position matters"}
+      pose: {type: geometry_msgs::msg::PoseStamped, description: "what to face; only its position matters"}
     outputs:
-      robot_pose: {type: geometry_msgs::PoseStamped, description: "where the robot was before turning"}
+      robot_pose: {type: geometry_msgs::msg::PoseStamped, description: "where the robot was before turning"}
       error: {type: int, when: failure, description: "error code from reading the robot pose or from the controller"}
     test:
       inputs: {pose: "-0.5;1.5;0.0;map"}    # the cat llm_playground spawns
@@ -420,8 +437,8 @@ capabilities:
     inputs: {}
     outputs:
       tracked_object: {type: cob_perception_msgs::Detection, when: maybe, description: "what was spotted (not serializable yet)"}
-      tracked_object_pose: {type: geometry_msgs::PoseStamped, when: maybe, description: "where it was spotted"}
-      robot_pose: {type: geometry_msgs::PoseStamped, when: maybe, description: "robot pose at the last check"}
+      tracked_object_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "where it was spotted"}
+      robot_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "robot pose at the last check"}
     test:
       inputs: {}
       expect: runs
@@ -437,8 +454,8 @@ capabilities:
     stack: [navigation, manipulation, perception]
     inputs: {}
     outputs:
-      table: {type: rail_manipulation_msgs::SegmentedObject, description: "table being worked on (not serializable yet)"}
-      table_pose: {type: geometry_msgs::PoseStamped, description: "pose of that table"}
+      table: {type: moveit_msgs::msg::CollisionObject, description: "table being worked on (not serializable yet)"}
+      table_pose: {type: geometry_msgs::msg::PoseStamped, description: "pose of that table"}
     test:
       inputs: {}
       expect: any
@@ -473,7 +490,7 @@ capabilities:
     inputs: {}
     outputs:
       cannon_tilt_angle: {type: float, when: maybe, description: "angle the cannon was tilted to"}
-      tracked_object_pose: {type: geometry_msgs::PoseStamped, when: maybe, description: "where the target was last seen"}
+      tracked_object_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "where the target was last seen"}
     test:
       inputs: {}
       setup:
@@ -493,7 +510,7 @@ capabilities:
     invalidates: [at_a_table, objects_detected]
     inputs: {}
     outputs:
-      coverage_waypoints: {type: std::vector<geometry_msgs::PoseStamped>, description: "the waypoints planned"}
+      coverage_waypoints: {type: std::vector<geometry_msgs::msg::PoseStamped>, description: "the waypoints planned"}
       error: {type: int, when: failure, description: "error code from planning or following"}
     test:
       inputs: {}
@@ -510,8 +527,8 @@ capabilities:
     outputs:
       room_sequence: {type: std::vector<unsigned int>, description: "order the rooms are visited in"}
       room_number: {type: unsigned int, description: "room currently being covered"}
-      coverage_waypoints: {type: std::vector<geometry_msgs::PoseStamped>, description: "waypoints for the current room"}
-      robot_pose: {type: geometry_msgs::PoseStamped, when: maybe, description: "robot pose when planning started"}
+      coverage_waypoints: {type: std::vector<geometry_msgs::msg::PoseStamped>, description: "waypoints for the current room"}
+      robot_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "robot pose when planning started"}
     test:
       inputs: {}
       expect: any
@@ -520,9 +537,9 @@ capabilities:
   # ------------------- structured inputs: lists, maps and tables, seeded as json ----------
   #
   # These were blocked until bt_server learned to build structured values. A json array of
-  # pose strings becomes a std::vector<geometry_msgs::PoseStamped>, a json object of counts a
+  # pose strings becomes a std::vector<geometry_msgs::msg::PoseStamped>, a json object of counts a
   # std::map<std::string, uint32_t>, and a json object with name/pose/width/depth/height a
-  # rail_manipulation_msgs::SegmentedObject -- the fields the trees actually read, with the
+  # moveit_msgs::msg::CollisionObject -- the fields the trees actually read, with the
   # point cloud, image and grasps left default, since an agent has none of those.
 
   reach_first_pose:
@@ -533,9 +550,9 @@ capabilities:
     stack: [navigation]
     invalidates: [at_a_table, objects_detected]
     inputs:
-      poses: {type: std::vector<geometry_msgs::PoseStamped>, description: "candidate poses, tried in order, each as 'x;y;yaw;frame'"}
+      poses: {type: std::vector<geometry_msgs::msg::PoseStamped>, description: "candidate poses, tried in order, each as 'x;y;yaw;frame'"}
     outputs:
-      next_pose: {type: geometry_msgs::PoseStamped, description: "the pose actually reached"}
+      next_pose: {type: geometry_msgs::msg::PoseStamped, description: "the pose actually reached"}
       goto_pose_error: {type: int, when: failure, description: "error code from the navigation goal"}
     test:
       inputs: {poses: ['2.0;5.0;1.57;map', '2.0;1.0;-1.57;map']}
@@ -550,10 +567,10 @@ capabilities:
     stack: [navigation]
     invalidates: [at_a_table, objects_detected]
     inputs:
-      waypoints: {type: std::vector<geometry_msgs::PoseStamped>, from: [full_coverage_planner.coverage_waypoints, per_room_coverage.coverage_waypoints], description: "waypoints to follow in order, each as 'x;y;yaw;frame'"}
+      waypoints: {type: std::vector<geometry_msgs::msg::PoseStamped>, from: [full_coverage_planner.coverage_waypoints, per_room_coverage.coverage_waypoints], description: "waypoints to follow in order, each as 'x;y;yaw;frame'"}
     outputs:
       next_waypoint: {type: unsigned long, when: maybe, description: "index of the waypoint being driven to"}
-      robot_pose: {type: geometry_msgs::PoseStamped, when: maybe, description: "robot pose while following"}
+      robot_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "robot pose while following"}
       exe_path_error: {type: int, when: failure, description: "error code from path execution"}
     test:
       inputs: {waypoints: ['2.0;5.0;1.57;map', '2.0;1.0;-1.57;map']}
@@ -587,6 +604,9 @@ capabilities:
 # either describe it above or say here why an agent shouldn't see it. Silence would otherwise
 # mean a capability nobody ever told the agent about.
 not_capabilities:
+  test_reset_scene: >
+    Test fixture: empties the gripper, rests the arm and clears the planning scene, for
+    test_capabilities.py to start every test from the same robot state.
   test_server: >
     Test fixture: transforms a pose and reads back four parameters, exercising bt_server's
     json/blackboard plumbing end to end. Not a robot capability, and not runnable from the

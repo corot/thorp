@@ -18,19 +18,21 @@ insisted on. An error code written in an action's onAborted is absent from a run
 well, and reading that absence as a broken promise would fail on the good outcome.
 
 Trees needing a stack you haven't declared with --stack are skipped, as are those marked
-`status: blocked`, so the suite reports the gaps instead of hiding them:
+`status: blocked` and those not ported to ROS 2 yet, so the suite reports the gaps instead of
+hiding them. States the world already provides, declared with --given, spare the setup steps
+that would establish them. From the package directory:
 
-    cd /catkin_ws/src/thorp/thorp_bt_cpp && python3 -m pytest test/test_capabilities.py -v
-    cd /catkin_ws/src/thorp/thorp_bt_cpp && python3 -m pytest test/test_capabilities.py -v --stack navigation
-    cd /catkin_ws/src/thorp/thorp_bt_cpp && python3 -m pytest test/test_capabilities.py -v -k pickup_object
+    python3 -m pytest test/test_capabilities.py -v
+    python3 -m pytest test/test_capabilities.py -v --stack manipulation,perception --given at_a_table
+    python3 -m pytest test/test_capabilities.py -v -k pickup_object
 """
 
 import warnings
 
 import pytest
-from actionlib_msgs.msg import GoalStatus
+from action_msgs.msg import GoalStatus
 
-from conftest import reset_scene, status_name
+from conftest import capabilities_path, installed_trees, status_name
 
 POSE_FIELDS = {"x", "y", "z", "roll", "pitch", "yaw", "frame"}
 
@@ -51,14 +53,13 @@ SERIALIZED_AS = {
     "unsigned long": int,
     "float": float,
     "double": float,
-    "geometry_msgs::PoseStamped": dict,
-    "std::vector<geometry_msgs::PoseStamped>": list,
+    "geometry_msgs::msg::PoseStamped": dict,
+    "std::vector<geometry_msgs::msg::PoseStamped>": list,
     # collision objects come back as name and color, not as geometry: the geometry lives in the
-    # planning scene, and a name is what the manipulation capabilities take
-    "moveit_msgs::CollisionObject": dict,
-    "std::vector<moveit_msgs::CollisionObject>": list,
-    # a table comes back as the fields the trees actually read, plus its color
-    "rail_manipulation_msgs::SegmentedObject": dict,
+    # planning scene, and a name is what the manipulation capabilities take. Tables are
+    # collision objects too, and come back as the fields the trees read, plus their color
+    "moveit_msgs::msg::CollisionObject": dict,
+    "std::vector<moveit_msgs::msg::CollisionObject>": list,
 }
 
 
@@ -66,14 +67,9 @@ def pytest_generate_tests(metafunc):
     """One test per capability, named after it so -k works on tree names."""
     if "capability" not in metafunc.fixturenames:
         return
-    import os
     import yaml
 
-    path = metafunc.config.getoption("--capabilities")
-    if not path:
-        here = os.path.dirname(os.path.abspath(__file__))
-        path = os.path.join(here, os.pardir, "config", "capabilities.yaml")
-    with open(path) as f:
+    with open(capabilities_path(metafunc.config)) as f:
         caps = yaml.safe_load(f)["capabilities"]
 
     # Plain alphabetical, and the order carries no meaning: clean_scene resets the world
@@ -99,7 +95,7 @@ def check_value(name, value, declared_type):
         assert isinstance(value, expected), \
             "{}={!r} should be {} for declared type {}".format(name, value, expected.__name__, declared_type)
 
-    if declared_type == "geometry_msgs::PoseStamped":
+    if declared_type == "geometry_msgs::msg::PoseStamped":
         assert set(value) == POSE_FIELDS, "pose {} has fields {}".format(name, sorted(value))
 
 
@@ -108,9 +104,21 @@ def step_label(step):
     return step.get("as") or step["subtree"]
 
 
-def setup_steps(spec, capabilities):
-    """(name, its spec, the step as written) for each step of a capability's setup."""
+def establishes(name, capabilities):
+    """The states a capability establishes: those other capabilities say they need it for."""
+    return {state for spec in capabilities.values()
+            for state, establisher in (spec.get("needs") or {}).items() if establisher == name}
+
+
+def setup_steps(spec, capabilities, given=frozenset()):
+    """
+    (name, its spec, the step as written) for each step of a capability's setup, but those
+    only establishing states the world already provides.
+    """
     for step in (spec.get("test") or {}).get("setup") or []:
+        states = establishes(step["subtree"], capabilities)
+        if states and states <= given:
+            continue
         yield step["subtree"], capabilities.get(step["subtree"], {}), step
 
 
@@ -149,7 +157,7 @@ def resolve_inputs(block, produced):
 
 
 @pytest.fixture(autouse=True)
-def runnable(capability, available_stacks, capabilities, request):
+def runnable(capability, available_stacks, given_states, capabilities, request):
     """
     Whether this capability can be exercised at all, decided before anything touches the robot.
 
@@ -166,12 +174,18 @@ def runnable(capability, available_stacks, capabilities, request):
     if spec.get("status") == "blocked":
         pytest.skip("blocked: {}".format(" ".join(spec.get("blocked", "no reason given").split())))
 
+    trees = installed_trees()
+    not_ported = [tree for tree in [name] + [step for step, _, _ in setup_steps(spec, capabilities, given_states)]
+                  if tree not in trees]
+    if not_ported:
+        pytest.skip("not ported to ROS 2 yet: {}".format(", ".join(not_ported)))
+
     # The setup steps are capabilities too, so whatever they need has to be running as well:
     # pickup_object is manipulation, but the detect_objects that gives it something to pick is
     # perception. Rolling them together means an incomplete --stack skips with a reason rather
     # than failing halfway through the precondition.
     needed = set(spec.get("stack", ["none"]))
-    for _, step_spec, _ in setup_steps(spec, capabilities):
+    for _, step_spec, _ in setup_steps(spec, capabilities, given_states):
         needed |= set(step_spec.get("stack", ["none"]))
     needed -= {"none"}
     missing = needed - available_stacks
@@ -181,7 +195,7 @@ def runnable(capability, available_stacks, capabilities, request):
 
 
 @pytest.fixture(autouse=True)
-def clean_scene(runnable):
+def clean_scene(runnable, reset_scene):
     """
     The same starting world for every test that is actually going to run one.
 
@@ -193,7 +207,7 @@ def clean_scene(runnable):
     reset_scene()
 
 
-def test_capability(runner, capability, capabilities):
+def test_capability(runner, capability, capabilities, given_states):
     name, spec = capability
 
     # Put the robot in the state this capability assumes. These calls go through the same
@@ -204,7 +218,7 @@ def test_capability(runner, capability, capabilities):
     # detected for it to pick up" are different findings, and a red test that means the second
     # one teaches you to ignore red tests.
     produced = {}
-    for step_name, step_spec, step in setup_steps(spec, capabilities):
+    for step_name, step_spec, step in setup_steps(spec, capabilities, given_states):
         try:
             step_inputs = resolve_inputs(step, produced)
         except LookupError as e:
@@ -215,14 +229,14 @@ def test_capability(runner, capability, capabilities):
                 step_name, inputs=step_inputs,
                 output_keys=sorted(step_spec.get("outputs") or {}),
                 timeout=(step_spec.get("test") or {}).get("timeout", 120))
-            if step_state == GoalStatus.SUCCEEDED and step_result.success:
+            if step_state == GoalStatus.STATUS_SUCCEEDED and step_result.success:
                 break
             print("--> setup step {} failed on attempt {} of {}: {}".format(
                 step_name, attempt, SETUP_ATTEMPTS, step_out or "no detail"))
         else:
             # Which of the two failed: the action completing and the tree succeeding are
             # different things, and the action state alone reads as a success either way.
-            outcome = ("the tree returned FAILURE" if step_state == GoalStatus.SUCCEEDED
+            outcome = ("the tree returned FAILURE" if step_state == GoalStatus.STATUS_SUCCEEDED
                        else "the goal ended as {}".format(status_name(step_state)))
             pytest.skip("precondition not established in {} attempts: {} {}{}".format(
                 SETUP_ATTEMPTS, step_name, outcome,
@@ -249,9 +263,9 @@ def test_capability(runner, capability, capabilities):
     # the contract: the server accepted and served the goal. An aborted goal means it couldn't
     # -- unknown tree, bad json, a missing input, a node that threw -- which is our problem, not
     # the robot's, so it fails regardless of `expect`.
-    assert state != GoalStatus.ABORTED, \
+    assert state != GoalStatus.STATUS_ABORTED, \
         "goal was aborted: {}".format(out.get("error", out))
-    assert state in (GoalStatus.SUCCEEDED, GoalStatus.PREEMPTED), status_name(state)
+    assert state in (GoalStatus.STATUS_SUCCEEDED, GoalStatus.STATUS_CANCELED), status_name(state)
 
     # Outputs a real run has to produce, asserted whatever `expect` says. For a tree whose
     # status carries no information this is the only thing that separates a run that did the
@@ -271,7 +285,7 @@ def test_capability(runner, capability, capabilities):
         # Repeat with no cycle count. "Did it finish" is meaningless for one of those; what
         # can be checked is that it accepted the goal, got far enough to put something on the
         # blackboard, and stopped cleanly when canceled.
-        assert state == GoalStatus.PREEMPTED, \
+        assert state == GoalStatus.STATUS_CANCELED, \
             "expected to still be running at the cancel, but ended as {}".format(status_name(state))
         assert out, "ran for {}s without producing any of {}".format(test.get("cancel_after"), output_keys)
     elif not result.success:

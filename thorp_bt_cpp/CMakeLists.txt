@@ -121,8 +121,14 @@ install(FILES launch/bt_runner.launch.py launch/bt_server.launch.py
         DESTINATION share/${PROJECT_NAME}/launch
 )
 
+# What each tree offers as a capability, for bt_server's callers
+install(FILES config/capabilities.yaml
+        DESTINATION share/${PROJECT_NAME}/config
+)
+
 # Trees ported to ROS 2; listed one by one, as the package is ported in stages
-install(FILES bt/manipulation.xml bt/object_manip.xml bt/perception.xml bt/pickup_objects.xml bt/test_server.xml
+install(FILES bt/manipulation.xml bt/object_manip.xml bt/perception.xml bt/pickup_objects.xml bt/test_capabilities.xml
+              bt/test_server.xml
         DESTINATION share/${PROJECT_NAME}/bt
 )
 

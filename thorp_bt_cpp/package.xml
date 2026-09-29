@@ -42,6 +42,14 @@
   <exec_depend>launch_ros</exec_depend>
   <exec_depend>thorp_description</exec_depend>
 
+  <!-- test/: bt_server's contract and capability tests, run against a running bt_server -->
+  <test_depend>action_msgs</test_depend>
+  <test_depend>ament_index_python</test_depend>
+  <test_depend>python3-pytest</test_depend>
+  <test_depend>python3-yaml</test_depend>
+  <test_depend>rclpy</test_depend>
+  <test_depend>ros_gz_interfaces</test_depend>
+
   <export>
     <build_type>ament_cmake</build_type>
   </export>

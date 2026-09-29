@@ -1,19 +1,19 @@
 """
 bt_server's own contract, tested against bt/test_server.xml -- trees built only from nodes
-that need nothing outside the process. No robot, no simulator, no other node: just a roscore
-and bt_server, so this tier is fast and deterministic enough to run on every commit.
+that need nothing outside the process. No robot, no simulator, no other node: just bt_server,
+so this tier is fast and deterministic enough to run on every commit. From the package
+directory:
 
-    roscore &
-    rosrun thorp_bt_cpp bt_server_node _bt_dir:=/catkin_ws/src/thorp/thorp_bt_cpp/bt
-    cd /catkin_ws/src/thorp/thorp_bt_cpp && python3 -m pytest test/test_bt_server.py -v
+    ros2 run thorp_bt_cpp bt_server_node
+    python3 -m pytest test/test_bt_server.py -v
 """
 
 import pytest
-from actionlib_msgs.msg import GoalStatus
+from action_msgs.msg import GoalStatus
 
 from conftest import status_name
 
-# what the test trees read from bt_server's private namespace, and what should come back out
+# what the test trees read from bt_server's parameters, and what should come back out
 PARAMS = {
     "test_float": 1.5,
     "test_int": 42,
@@ -39,7 +39,7 @@ def test_named_outputs_come_back_typed(runner):
     wanted = ["moved_pose", "a_float", "an_int", "a_string", "a_bool"]
     state, out, result = runner.run("test_server", inputs=INPUTS, output_keys=wanted)
 
-    assert state == GoalStatus.SUCCEEDED, status_name(state)
+    assert state == GoalStatus.STATUS_SUCCEEDED, status_name(state)
     assert result.success
     assert set(out) == set(wanted), "result should hold exactly the requested keys"
 
@@ -53,7 +53,7 @@ def test_named_outputs_come_back_typed(runner):
 def test_pose_round_trips_as_a_nested_object(runner):
     """A pose seeded as 'x;y;yaw;frame' is parsed, used, and returned as an object."""
     state, out, _ = runner.run("test_server", inputs=INPUTS, output_keys=["moved_pose"])
-    assert state == GoalStatus.SUCCEEDED, status_name(state)
+    assert state == GoalStatus.STATUS_SUCCEEDED, status_name(state)
 
     pose = out["moved_pose"]
     assert isinstance(pose, dict), "pose should be nested, not a ';' separated string"
@@ -67,7 +67,7 @@ def test_pose_round_trips_as_a_nested_object(runner):
 def test_unserializable_output_is_tagged_not_dropped(runner):
     """A type we have no serializer for has to be visible in the result, not just missing."""
     state, out, _ = runner.run("test_server", inputs=INPUTS, output_keys=["a_path"])
-    assert state == GoalStatus.SUCCEEDED, status_name(state)
+    assert state == GoalStatus.STATUS_SUCCEEDED, status_name(state)
     assert out["a_path"].startswith("<unsupported type:"), out["a_path"]
 
 
@@ -75,7 +75,7 @@ def test_output_key_never_set_is_omitted(runner):
     """So a caller can tell what's missing by diffing against what it asked for."""
     state, out, result = runner.run("test_server", inputs=INPUTS,
                                     output_keys=["a_string", "no_such_key"])
-    assert state == GoalStatus.SUCCEEDED, status_name(state)
+    assert state == GoalStatus.STATUS_SUCCEEDED, status_name(state)
     assert result.success, "a missing output key doesn't make the tree itself fail"
     assert "no_such_key" not in out
     assert "a_string" in out
@@ -84,7 +84,7 @@ def test_output_key_never_set_is_omitted(runner):
 def test_discovery_mode_reports_what_the_run_added(runner):
     """Empty output_keys: everything the run produced, and none of what we seeded."""
     state, out, _ = runner.run("test_server", inputs=INPUTS, output_keys=[])
-    assert state == GoalStatus.SUCCEEDED, status_name(state)
+    assert state == GoalStatus.STATUS_SUCCEEDED, status_name(state)
 
     produced = {"moved_pose", "a_float", "an_int", "a_string", "a_bool", "a_path"}
     assert produced <= set(out), "missing {}".format(sorted(produced - set(out)))
@@ -94,14 +94,14 @@ def test_discovery_mode_reports_what_the_run_added(runner):
 def test_unknown_subtree_aborts(runner):
     """A bad request aborts, rather than being served and reported as a failure."""
     state, out, result = runner.run("no_such_tree", inputs={})
-    assert state == GoalStatus.ABORTED, status_name(state)
+    assert state == GoalStatus.STATUS_ABORTED, status_name(state)
     assert not result.success
     assert "error" in out
 
 
 def test_malformed_input_json_aborts(runner):
     state, out, result = runner.run("test_server", raw_json="{not valid json")
-    assert state == GoalStatus.ABORTED, status_name(state)
+    assert state == GoalStatus.STATUS_ABORTED, status_name(state)
     assert not result.success
     assert "error" in out
 
@@ -113,7 +113,7 @@ def test_missing_input_aborts_naming_the_key(runner):
     must still be alive for the next goal -- which the test after this one checks.
     """
     state, out, result = runner.run("test_server", inputs={"offset_x": OFFSET_X})  # no start_pose
-    assert state == GoalStatus.ABORTED, status_name(state)
+    assert state == GoalStatus.STATUS_ABORTED, status_name(state)
     assert not result.success
     assert "start_pose" in out.get("error", ""), out
 
@@ -125,7 +125,7 @@ def test_missing_list_aborts_rather_than_crashing(runner):
     case that took the server down when ports were dereferenced unchecked.
     """
     state, out, result = runner.run("test_server_needs_list", inputs={})
-    assert state == GoalStatus.ABORTED, status_name(state)
+    assert state == GoalStatus.STATUS_ABORTED, status_name(state)
     assert not result.success
     assert "poses" in out.get("error", ""), out
 
@@ -135,7 +135,7 @@ def test_local_offset_moves_along_the_pose_own_axes(runner):
     state, out, result = runner.run("test_server_local_offset",
                                     inputs={"start_pose": "1.0;2.0;1.5708;map", "offset_x": OFFSET_X},
                                     output_keys=["moved_pose"])
-    assert state == GoalStatus.SUCCEEDED and result.success, status_name(state)
+    assert state == GoalStatus.STATUS_SUCCEEDED and result.success, status_name(state)
     pose = out["moved_pose"]
     assert pose["x"] == pytest.approx(1.0, abs=1e-3)
     assert pose["y"] == pytest.approx(2.0 + OFFSET_X, abs=1e-3)
@@ -152,7 +152,7 @@ def test_pose_list_seeds_from_a_json_array(runner):
     state, out, result = runner.run("test_server_needs_list",
                                     inputs={"poses": ["1.0;2.0;0.0;map", "3.0;4.0;1.57;map"]},
                                     output_keys=["first_pose", "popped_pose"])
-    assert state == GoalStatus.SUCCEEDED, status_name(state)
+    assert state == GoalStatus.STATUS_SUCCEEDED, status_name(state)
     assert result.success
 
     first = out["first_pose"]
@@ -173,12 +173,12 @@ def test_segmented_object_seeds_from_a_json_object(runner):
 
     in_range = {"name": "table1", "pose": "1.0;2.0;0.0;map", "width": 1.0, "depth": 0.8}
     state, _, result = runner.run("test_server_table", inputs={"table": in_range})
-    assert state == GoalStatus.SUCCEEDED, status_name(state)
+    assert state == GoalStatus.STATUS_SUCCEEDED, status_name(state)
     assert result.success, "a 1.0 x 0.8 table is within [0.5, 1.5] and should be accepted"
 
     too_big = dict(in_range, width=3.0)
     state, _, result = runner.run("test_server_table", inputs={"table": too_big})
-    assert state == GoalStatus.SUCCEEDED, status_name(state)
+    assert state == GoalStatus.STATUS_SUCCEEDED, status_name(state)
     assert not result.success, "a 3.0 x 0.8 table is outside [0.5, 1.5] and should be rejected"
 
 
@@ -189,7 +189,7 @@ def test_counts_map_round_trips(runner):
                                             "failures": {"cube1": 1, "cube2": 5},
                                             "given_up_count": 0},
                                     output_keys=["failures"])
-    assert state == GoalStatus.SUCCEEDED, status_name(state)
+    assert state == GoalStatus.STATUS_SUCCEEDED, status_name(state)
 
     failures = out["failures"]
     assert isinstance(failures, dict), failures
@@ -206,7 +206,7 @@ def test_structured_input_for_an_unknown_key_is_reported(runner):
     state, out, result = runner.run("test_server_needs_list",
                                     inputs={"poses": ["1.0;2.0;0.0;map"], "mystery": [1, 2, 3]},
                                     output_keys=["first_pose"])
-    assert state == GoalStatus.SUCCEEDED, status_name(state)
+    assert state == GoalStatus.STATUS_SUCCEEDED, status_name(state)
     assert "first_pose" in out, "the key that is used should still have worked"
 
 
@@ -227,7 +227,7 @@ def test_a_pose_we_emitted_can_be_seeded_back(runner):
     state, out, result = runner.run("test_server",
                                     inputs={"start_pose": emitted, "offset_x": 0.0},
                                     output_keys=["moved_pose"])
-    assert state == GoalStatus.SUCCEEDED, status_name(state)
+    assert state == GoalStatus.STATUS_SUCCEEDED, status_name(state)
     assert result.success
     for field in ("x", "y", "z", "frame"):
         assert out["moved_pose"][field] == emitted[field], \
@@ -245,15 +245,15 @@ def test_a_badly_shaped_input_aborts_rather_than_killing_the_server(runner):
     """
     state, out, result = runner.run("test_server",
                                     inputs={"start_pose": {"x": "not a number"}, "offset_x": 0.5})
-    assert state in (GoalStatus.SUCCEEDED, GoalStatus.ABORTED), status_name(state)
-    if state == GoalStatus.ABORTED:
+    assert state in (GoalStatus.STATUS_SUCCEEDED, GoalStatus.STATUS_ABORTED), status_name(state)
+    if state == GoalStatus.STATUS_ABORTED:
         assert "error" in out, out
 
 
 def test_server_survives_a_rejected_goal(runner):
     """Whatever the previous cases threw at it, the server is still serving."""
     state, out, result = runner.run("test_server", inputs=INPUTS, output_keys=["a_string"])
-    assert state == GoalStatus.SUCCEEDED, status_name(state)
+    assert state == GoalStatus.STATUS_SUCCEEDED, status_name(state)
     assert out["a_string"] == PARAMS["test_string"]
 
 
@@ -262,7 +262,7 @@ def test_preemption_returns_partial_outputs(runner):
     state, out, result = runner.run("test_server_slow", inputs=INPUTS,
                                     output_keys=["moved_pose", "late_value"],
                                     cancel_after=1.0, timeout=30.0)
-    assert state == GoalStatus.PREEMPTED, status_name(state)
+    assert state == GoalStatus.STATUS_CANCELED, status_name(state)
     assert not result.success
     assert "moved_pose" in out, "output set before the cancel should still be reported"
     assert "late_value" not in out, "output the run never reached should be omitted"

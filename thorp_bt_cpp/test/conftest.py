@@ -1,47 +1,60 @@
 """
 Shared fixtures for the bt_server test suite.
 
-Two tiers live side by side here:
+Three tiers live side by side here:
 
-  test_bt_server.py    the action's own contract, against trees that need nothing but a
-                       roscore and bt_server. Seconds, deterministic, CI-able.
-  test_capabilities.py every tree in config/capabilities.yaml, which mostly means a running
-                       robot stack. Minutes, and only as deterministic as the robot.
+  test_bt_server.py                 the action's own contract, against trees that need nothing but
+                                    bt_server. Seconds, deterministic, CI-able.
+  test_capabilities.py              every tree in config/capabilities.yaml, which mostly means a
+                                    running robot stack. Minutes, and only as deterministic as the robot.
+  test_capabilities_match_trees.py  config/capabilities.yaml against the trees; pure parsing.
 
-Both need a roscore and bt_server up; neither starts them, deliberately. Bringing up Gazebo
-per test file would put a couple of minutes between you and every run, so the stack is
-somebody else's job and these just connect to it.
+The first two need bt_server up, and don't start it, deliberately. Bringing up Gazebo per test
+file would put a couple of minutes between you and every run, so the stack is somebody else's
+job and these just connect to it:
 
-    cd /catkin_ws/src/thorp/thorp_bt_cpp && python3 -m pytest test/ -v
-    cd /catkin_ws/src/thorp/thorp_bt_cpp && python3 -m pytest test/test_bt_server.py -v
-    cd /catkin_ws/src/thorp/thorp_bt_cpp && python3 -m pytest test/ -v -k pickup
-    cd /catkin_ws/src/thorp/thorp_bt_cpp && python3 -m pytest test/ -v --stack navigation,manipulation,perception
+    ros2 run thorp_bt_cpp bt_server_node
+    ros2 launch thorp_apps object_manip.launch.py executive:=llm
+
+Then, from the package directory:
+
+    python3 -m pytest test/ -v
+    python3 -m pytest test/test_bt_server.py -v
+    python3 -m pytest test/ -v -k pickup
+    python3 -m pytest test/ -v --stack manipulation,perception --given at_a_table
 """
 
 import json
 import os
+import re
+import subprocess
+import time
+import xml.etree.ElementTree as ET
+from glob import glob
 
 import pytest
 import yaml
 
-import actionlib
-import rospy
-from actionlib_msgs.msg import GoalStatus
+import rclpy
+from action_msgs.msg import GoalStatus
+from ament_index_python.packages import get_package_share_directory
+from rclpy.action import ActionClient
+from rclpy.parameter import Parameter
+from rclpy.parameter_client import AsyncParameterClient
 
-from std_srvs.srv import Empty
-
-from thorp_msgs.msg import RunSubtreeAction, RunSubtreeGoal
-from thorp_msgs.srv import ClearPlanningScene
+from geometry_msgs.msg import Pose
+from ros_gz_interfaces.msg import Entity
+from ros_gz_interfaces.srv import SetEntityPose
+from thorp_msgs.action import RunSubtree
 
 STATUS_NAMES = {
-    GoalStatus.PENDING: "PENDING",
-    GoalStatus.ACTIVE: "ACTIVE",
-    GoalStatus.PREEMPTED: "PREEMPTED",
-    GoalStatus.SUCCEEDED: "SUCCEEDED",
-    GoalStatus.ABORTED: "ABORTED",
-    GoalStatus.REJECTED: "REJECTED",
-    GoalStatus.RECALLED: "RECALLED",
-    GoalStatus.LOST: "LOST",
+    GoalStatus.STATUS_UNKNOWN: "UNKNOWN",
+    GoalStatus.STATUS_ACCEPTED: "ACCEPTED",
+    GoalStatus.STATUS_EXECUTING: "EXECUTING",
+    GoalStatus.STATUS_CANCELING: "CANCELING",
+    GoalStatus.STATUS_SUCCEEDED: "SUCCEEDED",
+    GoalStatus.STATUS_CANCELED: "CANCELED",
+    GoalStatus.STATUS_ABORTED: "ABORTED",
 }
 
 
@@ -49,77 +62,37 @@ def status_name(state):
     return STATUS_NAMES.get(state, str(state))
 
 
+def installed_trees():
+    """
+    Tree id -> file name, for the trees installed with thorp_bt_cpp: those ported to ROS 2, that bt_server offers.
+    The rest are still ROS 1, and their capabilities are skipped as not ported yet.
+    """
+    trees = {}
+    for path in sorted(glob(os.path.join(get_package_share_directory("thorp_bt_cpp"), "bt", "*.xml"))):
+        for tree in ET.parse(path).getroot().findall("BehaviorTree"):
+            trees[tree.get("ID")] = os.path.basename(path)
+    return trees
+
+
 def pytest_addoption(parser):
-    parser.addoption("--action", default="/bt_server/run_subtree",
-                     help="RunSubtree action name; bt_server advertises it in its own "
-                          "private namespace, so this follows the node's name")
-    parser.addoption("--param-ns", default="/bt_server",
-                     help="bt_server's private namespace, where trees read parameters from")
+    parser.addoption("--action", default="/bt_server/run_subtree", help="RunSubtree action name")
+    parser.addoption("--node", default="/bt_server",
+                     help="bt_server's node, whose parameters the trees read")
     parser.addoption("--stack", default="none",
                      help="comma separated list of stacks that are actually running "
                           "(none,navigation,manipulation,perception). Capabilities needing "
                           "anything not listed here are skipped rather than failed.")
+    parser.addoption("--given", default="",
+                     help="comma separated list of states (see capabilities.yaml) the world "
+                          "already provides, e.g. at_a_table on the playground world, where the "
+                          "robot starts in front of the table. Setup steps establishing only "
+                          "given states are skipped, and so are the stacks they need.")
     parser.addoption("--capabilities", default=None, help="path to capabilities.yaml")
     parser.addoption("--apps", action="store_true",
                      help="also exercise the entries marked `kind: app`. They are skipped by "
                           "default: an app drives the robot until something stops it, or waits "
-                          "for a person at the keyboard, so running one inside a test suite "
-                          "means a cancel-and-hope rather than a result.")
-
-
-def _try_service(name, srv_type, **kwargs):
-    """
-    Call a service if it's there, and shrug if it isn't.
-
-    The same fixture runs whether you brought up a simulator, a real robot or neither, and a
-    reset that isn't available is not a reason to fail a test -- it just means there is
-    nothing to put back. Anything worse than absence (the call itself failing) is worth
-    seeing, so it's printed rather than swallowed.
-    """
-    try:
-        rospy.wait_for_service(name, timeout=2.0)
-    except rospy.ROSException:
-        return False
-    try:
-        rospy.ServiceProxy(name, srv_type)(**kwargs)
-        return True
-    except rospy.ServiceException as e:
-        print("--> {} failed: {}".format(name, e))
-        return False
-
-
-def reset_scene():
-    """
-    Put the world back to how it started.
-
-    Three parts, because none of them is enough alone. /gazebo/reset_world returns every model to
-    its spawn pose, so the cubes are back on the table -- but MoveIt doesn't watch gazebo, so
-    its planning scene still holds the objects where they used to be, and possibly one still
-    attached to the gripper. manipulation/clear_planning_scene empties that, and the next
-    detect_objects refills it from what the camera can actually see.
-
-    The sleep is for physics: models dropped back onto the table need a moment to settle
-    before a detection of them means anything.
-
-    Caveat worth knowing: reset_world yanks the robot's own model back too, arm joints
-    included, while the controllers are running. That's the part of this to keep an eye on.
-
-    A plain function rather than a fixture, deliberately: a fixture runs before the test body,
-    which means before the body has decided whether it is going to skip. Resetting the world
-    for a test that is about to say "needs navigation running" costs a second and a confusing
-    pile of gazebo log lines. The caller resets once it knows it will use the robot.
-    """
-    # The gripper goes first, and it is the one that matters. An object attached to the gripper
-    # in MoveIt's scene survives both of the calls below AND a restart of the test process,
-    # since the stack keeps running: the next pickup then reports OBJECT_NOT_FOUND (-200) for
-    # an object it believes it is already holding, and says so while writing that object's name
-    # into attached_object. This is the service pickup_object's own tree uses to get out of it.
-    if not _try_service("/clear_gripper", Empty):
-        _try_service("/manipulation/clear_gripper", Empty)
-    reset = _try_service("/gazebo/reset_world", Empty)
-    _try_service("/manipulation/clear_planning_scene", ClearPlanningScene, keep_tray=False)
-    if reset:
-        rospy.sleep(1.0)
+                          "for a person, so running one inside a test suite means a "
+                          "cancel-and-hope rather than a result.")
 
 
 @pytest.fixture(scope="session")
@@ -129,65 +102,90 @@ def available_stacks(request):
 
 
 @pytest.fixture(scope="session")
-def capabilities(request):
-    path = request.config.getoption("--capabilities")
+def given_states(request):
+    raw = request.config.getoption("--given")
+    return {s.strip() for s in raw.split(",") if s.strip()}
+
+
+def capabilities_path(config):
+    path = config.getoption("--capabilities")
     if not path:
         # works from a source checkout; falls back to the installed share/ directory
         here = os.path.dirname(os.path.abspath(__file__))
         path = os.path.join(here, os.pardir, "config", "capabilities.yaml")
         if not os.path.exists(path):
-            import rospkg
-            path = os.path.join(rospkg.RosPack().get_path("thorp_bt_cpp"), "config", "capabilities.yaml")
-    with open(path) as f:
+            path = os.path.join(get_package_share_directory("thorp_bt_cpp"), "config", "capabilities.yaml")
+    return path
+
+
+@pytest.fixture(scope="session")
+def capabilities(request):
+    with open(capabilities_path(request.config)) as f:
         return yaml.safe_load(f)["capabilities"]
 
 
 @pytest.fixture(scope="session")
 def ros_node():
     """
-    rospy.init_node can only be called once per process, hence session scope. Deliberately not
-    autouse: test_capabilities_match_trees.py is pure parsing, and shouldn't need a master
-    just because it shares a directory with tests that do. Only `runner` pulls this in.
+    Session scope, as the ROS context is per process. Deliberately not autouse:
+    test_capabilities_match_trees.py is pure parsing, and shouldn't need ROS just because it
+    shares a directory with tests that do. Only `runner` pulls this in.
     """
-    rospy.init_node("test_bt_server", anonymous=True, disable_signals=True)
+    rclpy.init()
+    node = rclpy.create_node("test_bt_server")
+    yield node
+    node.destroy_node()
+    rclpy.try_shutdown()
 
 
 class SubtreeRunner:
     """Thin wrapper over the action client: send a goal, get back parsed json."""
 
-    def __init__(self, action_name, param_ns):
-        self.param_ns = param_ns
-        self.client = actionlib.SimpleActionClient(action_name, RunSubtreeAction)
-        if not self.client.wait_for_server(rospy.Duration(10.0)):
+    def __init__(self, node, action_name, server_node):
+        self.node = node
+        self.client = ActionClient(node, RunSubtree, action_name)
+        if not self.client.wait_for_server(timeout_sec=10.0):
             pytest.fail("action server '{}' not available -- is bt_server_node running?".format(action_name))
+        self.parameters = AsyncParameterClient(node, server_node)
+
+    def wait(self, future, timeout):
+        """Spin until the future completes; False if it doesn't within the timeout."""
+        rclpy.spin_until_future_complete(self.node, future, timeout_sec=timeout)
+        return future.done()
 
     def set_param(self, name, value):
-        rospy.set_param("{}/{}".format(self.param_ns.rstrip("/"), name), value)
+        results = self.parameters.set_parameters([Parameter(name, value=value)])
+        assert self.wait(results, 5.0), "setting parameter {} timed out".format(name)
+        assert results.result().results[0].successful, results.result().results[0].reason
 
     def run(self, subtree, inputs=None, output_keys=None, raw_json=None, timeout=30.0, cancel_after=None):
         """Returns (state, parsed_json, result). `raw_json` bypasses json.dumps."""
-        goal = RunSubtreeGoal()
+        goal = RunSubtree.Goal()
         goal.subtree = subtree
         goal.json = raw_json if raw_json is not None else (json.dumps(inputs) if inputs is not None else "")
         goal.output_keys = output_keys or []
 
         print("\n--> subtree={!r} json={} output_keys={}".format(goal.subtree, goal.json, list(goal.output_keys)))
-        self.client.send_goal(goal)
+        send = self.client.send_goal_async(goal)
+        if not self.wait(send, 10.0) or not send.result().accepted:
+            pytest.fail("goal for subtree '{}' not accepted".format(subtree))
+        goal_handle = send.result()
+        result_future = goal_handle.get_result_async()
 
         if cancel_after is not None:
-            rospy.sleep(cancel_after)
-            print("--> canceling after {}s".format(cancel_after))
-            self.client.cancel_goal()
+            self.wait(result_future, cancel_after)
+            if not result_future.done():
+                print("--> canceling after {}s".format(cancel_after))
+                self.wait(goal_handle.cancel_goal_async(), 5.0)
 
-        if not self.client.wait_for_result(rospy.Duration(timeout)):
-            self.client.cancel_goal()
+        if not self.wait(result_future, timeout):
+            self.wait(goal_handle.cancel_goal_async(), 5.0)
             pytest.fail("subtree '{}' gave no result within {}s".format(subtree, timeout))
 
-        state = self.client.get_state()
-        result = self.client.get_result()
-        raw = result.json if result else ""
-        print("<-- state={} success={} json={}".format(
-            status_name(state), result.success if result else "?", raw))
+        state = result_future.result().status
+        result = result_future.result().result
+        raw = result.json
+        print("<-- state={} success={} json={}".format(status_name(state), result.success, raw))
 
         try:
             parsed = json.loads(raw) if raw else {}
@@ -198,4 +196,88 @@ class SubtreeRunner:
 
 @pytest.fixture(scope="session")
 def runner(request, ros_node):
-    return SubtreeRunner(request.config.getoption("--action"), request.config.getoption("--param-ns"))
+    return SubtreeRunner(ros_node, request.config.getoption("--action"), request.config.getoption("--node"))
+
+
+def gazebo_model_poses():
+    """
+    Name -> pose of the models in the Gazebo simulation, but Thorp; empty if there is no simulation. Read with the
+    gz tool, in the environment the simulation was started in, as ROS doesn't bridge the world's poses.
+    """
+    def gz(*args):
+        try:
+            return subprocess.run(["gz"] + list(args), capture_output=True, text=True, timeout=20).stdout
+        except (OSError, subprocess.TimeoutExpired):
+            return ""
+
+    models = set(re.findall(r"^\s*- (\S+)$", gz("model", "--list"), re.M)) - {"thorp"}
+    poses = {}
+    # the world's models come first, followed by their links and visuals, that can share names
+    for block in re.findall(r"^pose \{\n(.*?)^\}", gz("topic", "-e", "-n", "1", "-t", "/world/default/pose/info"),
+                            re.M | re.S):
+        name = re.search(r'^  name: "([^"]*)"', block, re.M).group(1)
+        if name not in models or name in poses:
+            continue
+
+        def field(section, axis):
+            match = re.search(r"^  {} \{{[^}}]*?^    {}: (\S+)".format(section, axis), block, re.M | re.S)
+            return float(match.group(1)) if match else 0.0
+
+        pose = Pose()
+        pose.position.x, pose.position.y, pose.position.z = (field("position", a) for a in "xyz")
+        pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w = \
+            (field("orientation", a) for a in "xyzw")
+        poses[name] = pose
+    return poses
+
+
+@pytest.fixture(scope="session")
+def initial_model_poses(ros_node):
+    """
+    The models' poses when the session starts, to put them back before each test, and after the last one. So start
+    the first session on a fresh world: the objects where they were spawned.
+    """
+    return gazebo_model_poses()
+
+
+@pytest.fixture(scope="session")
+def reset_scene(runner, initial_model_poses):
+    """
+    Put the world back to how it started, as a function to call once the test knows it will use the robot.
+
+    Two parts. The robot's, through bt_server's test_reset_scene tree: the gripper empty, first,
+    as an object MoveIt believes attached survives everything else, and then pickups fail on it;
+    the arm resting, out of the camera's view; and MoveIt's planning scene empty, for the next
+    detect_objects to fill it from what the camera can actually see. Then the world's, on
+    simulation: every model back to its pose at the start of the session, so the objects are
+    back on the table. The sleep is for physics: objects put back need a moment to settle
+    before a detection of them means anything.
+
+    A function rather than a fixture doing the reset, deliberately: a fixture runs before the
+    test body, which means before the body has decided whether it is going to skip. The caller
+    resets once it knows it will use the robot. If any did, the world is reset once more at the
+    end of the session, to leave it as the session found it, ready for the next one.
+    """
+    set_pose = runner.node.create_client(SetEntityPose, "/world/default/set_pose")
+    used = []
+
+    def reset():
+        used.append(True)
+        state, out, result = runner.run("test_reset_scene", inputs={}, timeout=60)
+        if state != GoalStatus.STATUS_SUCCEEDED or not result.success:
+            print("--> resetting the robot failed: {}".format(out or status_name(state)))
+        if not initial_model_poses or not set_pose.wait_for_service(timeout_sec=2.0):
+            return
+        for name, pose in initial_model_poses.items():
+            request = SetEntityPose.Request()
+            request.entity.name = name
+            request.entity.type = Entity.MODEL
+            request.pose = pose
+            future = set_pose.call_async(request)
+            if not runner.wait(future, 5.0) or not future.result().success:
+                print("--> putting {} back failed".format(name))
+        time.sleep(1.0)
+
+    yield reset
+    if used:
+        reset()

@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   Trees for exercising bt_server's json <-> blackboard plumbing, used by
-  scripts/test_bt_server.py. Deliberately built out of nodes that need nothing outside the
+  test/test_bt_server.py. Deliberately built out of nodes that need nothing outside the
   process: no action server, no service, no tf, no simulation. Every other tree under bt/
-  bottoms out in a RosActionNode that fails once its server_timeout expires unless the whole
-  robot stack is up, which makes them useless for testing the server itself.
+  calls action servers, and creating it fails unless the whole robot stack is up, which
+  makes them useless for testing the server itself.
 
   Between them these cover every branch of the value conversion: a pose and a number seeded
   as inputs and read back through BT::convertFromString, typed float/int/string/bool outputs
-  straight from the param server, a PoseStamped output, and a nav_msgs::Path output that
+  straight from bt_server's parameters, a PoseStamped output, and a nav_msgs::Path output that
   bt_server has no serializer for (so it should come back tagged, not silently dropped).
 -->
 <root BTCPP_format="4">
@@ -26,7 +26,7 @@
                      out_pose="{moved_pose}"/>
 
       <!-- outputs that are genuinely typed, not strings the caller happened to seed.
-           Parameters are read from bt_server's private namespace, i.e. /bt_server/<name> -->
+           Parameters are read from bt_server's own node -->
       <ReadFloatParam param_name="test_float"
                       output_key="{a_float}"/>
       <ReadIntParam param_name="test_int"
