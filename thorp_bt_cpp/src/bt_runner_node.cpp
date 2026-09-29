@@ -8,9 +8,10 @@ int main(int argc, char** argv)
   // nodes some tree nodes create, e.g. MoveIt's planning scene interface
   const auto args = rclcpp::init_and_remove_ros_arguments(argc, argv);
   const std::string app_name = args.size() > 1 ? args[1] : "bt_runner";
-  // Trees read app parameters by name, without declaring them
+  // Trees read app parameters by name, without declaring them, so callers can set any
   auto node = std::make_shared<rclcpp::Node>(
-      app_name, rclcpp::NodeOptions().automatically_declare_parameters_from_overrides(true));
+      app_name,
+      rclcpp::NodeOptions().allow_undeclared_parameters(true).automatically_declare_parameters_from_overrides(true));
   thorp::toolkit::init(node);
   thorp::bt::Runner runner(node);
   int result = EXIT_FAILURE;
