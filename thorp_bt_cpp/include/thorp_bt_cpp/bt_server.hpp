@@ -1,8 +1,9 @@
 #pragma once
 
-#include <string>
-
 #include <atomic>
+#include <string>
+#include <thread>
+#include <utility>
 
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
@@ -29,6 +30,7 @@ class Server
 {
 public:
   explicit Server(const rclcpp::Node::SharedPtr& node);
+  ~Server();
 
   /**
    * @brief Register every *.xml tree file under the bt_dir parameter (except the generated
@@ -58,10 +60,19 @@ private:
 
   rclcpp_action::Server<RunSubtree>::SharedPtr as_;
 
-  /** Subtrees run one at a time */
+  /** Subtrees run one at a time, each on its own thread */
   std::atomic<bool> busy_{ false };
+  std::thread goal_thread_;
 
-  void execute(const std::shared_ptr<GoalHandle> goal_handle);
+  enum class Outcome
+  {
+    SUCCEEDED,
+    CANCELED,
+    ABORTED
+  };
+
+  /** Run the goal's subtree, discarding it before returning the result to report. */
+  std::pair<Outcome, RunSubtree::Result::SharedPtr> execute(const std::shared_ptr<GoalHandle> goal_handle);
 };
 
 }  // namespace thorp::bt

@@ -99,16 +99,43 @@ void Server::start()
       },
       [](const std::shared_ptr<GoalHandle>) { return rclcpp_action::CancelResponse::ACCEPT; },
       [this](const std::shared_ptr<GoalHandle> goal_handle) {
-        std::thread([this, goal_handle]() {
-          execute(goal_handle);
+        // The previous goal's thread has finished, as goals are accepted only when not busy
+        if (goal_thread_.joinable())
+          goal_thread_.join();
+        goal_thread_ = std::thread([this, goal_handle]() {
+          const auto [outcome, result] = execute(goal_handle);
+          // Free before reporting, so the caller can send its next goal as soon as it has this one's result
           busy_ = false;
-        }).detach();
+          try
+          {
+            if (outcome == Outcome::SUCCEEDED)
+              goal_handle->succeed(result);
+            else if (outcome == Outcome::CANCELED)
+              goal_handle->canceled(result);
+            else
+              goal_handle->abort(result);
+          }
+          catch (const std::runtime_error&)
+          {
+            // Reporting the result fails when shutting down
+            if (rclcpp::ok())
+              throw;
+          }
+        });
       });
   RCLCPP_INFO(node_->get_logger(), "Ready to run subtrees on action '%s/run_subtree'",
               node_->get_fully_qualified_name());
 }
 
-void Server::execute(const std::shared_ptr<GoalHandle> goal_handle)
+Server::~Server()
+{
+  // The goal thread uses this object; on shutdown, the running subtree stops
+  if (goal_thread_.joinable())
+    goal_thread_.join();
+}
+
+std::pair<Server::Outcome, thorp_msgs::action::RunSubtree::Result::SharedPtr>
+Server::execute(const std::shared_ptr<GoalHandle> goal_handle)
 {
   const auto goal = goal_handle->get_goal();
   auto result = std::make_shared<RunSubtree::Result>();
@@ -123,8 +150,7 @@ void Server::execute(const std::shared_ptr<GoalHandle> goal_handle)
     RCLCPP_ERROR_STREAM(node_->get_logger(), "Invalid input json for subtree '" << goal->subtree << "': " << e.what());
     result->success = false;
     result->json = nlohmann::json{ { "error", std::string("invalid input json: ") + e.what() } }.dump();
-    goal_handle->abort(result);
-    return;
+    return { Outcome::ABORTED, result };
   }
 
   std::optional<BT::Tree> tree;
@@ -137,8 +163,7 @@ void Server::execute(const std::shared_ptr<GoalHandle> goal_handle)
     RCLCPP_ERROR_STREAM(node_->get_logger(), "Cannot create subtree '" << goal->subtree << "': " << e.what());
     result->success = false;
     result->json = nlohmann::json{ { "error", std::string("unknown subtree: ") + e.what() } }.dump();
-    goal_handle->abort(result);
-    return;
+    return { Outcome::ABORTED, result };
   }
 
   auto blackboard = tree->rootBlackboard();
@@ -156,8 +181,7 @@ void Server::execute(const std::shared_ptr<GoalHandle> goal_handle)
     RCLCPP_ERROR_STREAM(node_->get_logger(), "Cannot seed inputs for subtree '" << goal->subtree << "': " << e.what());
     result->success = false;
     result->json = nlohmann::json{ { "error", std::string("cannot seed inputs: ") + e.what() } }.dump();
-    goal_handle->abort(result);
-    return;
+    return { Outcome::ABORTED, result };
   }
 
   // Normally the caller names the keys it wants back, and we just read those once the run is
@@ -192,8 +216,7 @@ void Server::execute(const std::shared_ptr<GoalHandle> goal_handle)
         tree->haltTree();
         result->success = false;
         result->json = collectOutputs().dump();
-        goal_handle->canceled(result);
-        return;
+        return { Outcome::CANCELED, result };
       }
 
       const auto start_time = system_clock::now();
@@ -226,15 +249,14 @@ void Server::execute(const std::shared_ptr<GoalHandle> goal_handle)
     }
     result->success = false;
     result->json = nlohmann::json{ { "error", std::string("subtree threw: ") + e.what() } }.dump();
-    goal_handle->abort(result);
-    return;
+    return { Outcome::ABORTED, result };
   }
 
   result->success = status == BT::NodeStatus::SUCCESS;
   result->json = collectOutputs().dump();
   RCLCPP_INFO_STREAM(node_->get_logger(), "Subtree '" << goal->subtree << "' completed with status "
                                                        << BT::toStr(status) << ", output " << result->json);
-  goal_handle->succeed(result);
+  return { Outcome::SUCCEEDED, result };
 }
 
 }  // namespace thorp::bt
