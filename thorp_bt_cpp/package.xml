@@ -40,6 +40,7 @@
 
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
+  <exec_depend>rclpy</exec_depend>
   <exec_depend>thorp_description</exec_depend>
 
   <!-- test/: bt_server's contract and capability tests, run against a running bt_server -->

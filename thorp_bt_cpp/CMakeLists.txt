@@ -117,6 +117,10 @@ install(TARGETS bt_runner_node bt_server_node
         DESTINATION lib/${PROJECT_NAME}
 )
 
+install(PROGRAMS scripts/show_bt_node_on_rviz.py
+        DESTINATION lib/${PROJECT_NAME}
+)
+
 install(FILES launch/bt_runner.launch.py launch/bt_server.launch.py
         DESTINATION share/${PROJECT_NAME}/launch
 )

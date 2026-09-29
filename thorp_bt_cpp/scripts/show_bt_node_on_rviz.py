@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 Show the currently running BT node on RViz in the top-left corner
@@ -6,37 +6,49 @@ Author:
     Jorge Santos
 """
 
-import rospy
+import rclpy
+from rclpy.node import Node
 
-from jsk_rviz_plugins.msg import OverlayText
-
+from rviz_2d_overlay_msgs.msg import OverlayText
 from thorp_msgs.msg import BTNodeStatus
 from thorp_toolkit.visualization import Visualization
-
 
 # nodes of secondary relevance that run in parallel with more critical ones
 BLACKLISTED_NODES = ['Sleep', 'TrackProgress']
 
 
-def bt_status_cb(msg):
-    if msg.name in BLACKLISTED_NODES:
-        return
+class ShowBTNodeOnRViz(Node):
 
-    # Publish only subtrees and actions the first tick they start running
-    if msg.type not in [BTNodeStatus.ACTION, BTNodeStatus.SUBTREE]:
-        return
+    def __init__(self):
+        super().__init__('show_bt_node_on_rviz')
+        app_name = self.declare_parameter('app_name', '').value
+        self.status_pub = self.create_publisher(OverlayText, 'rviz/executive_progress_overlay', 1)
+        # bt_runner's node is named after the app
+        self.create_subscription(BTNodeStatus, f'/{app_name}/bt_status', self.bt_status_cb, 5)
 
-    if msg.prev_status == BTNodeStatus.IDLE and msg.status == BTNodeStatus.RUNNING:
-        overlay_text = Visualization.create_overlay_text(60, (1.0, 1.0, 1.0), msg.name, 12)
-        status_pub.publish(overlay_text)
+    def bt_status_cb(self, msg):
+        if msg.name in BLACKLISTED_NODES:
+            return
+
+        # Publish only subtrees and actions the first tick they start running
+        if msg.type not in [BTNodeStatus.ACTION, BTNodeStatus.SUBTREE]:
+            return
+
+        if msg.prev_status == BTNodeStatus.IDLE and msg.status == BTNodeStatus.RUNNING:
+            self.status_pub.publish(Visualization.create_overlay_text(60, (1.0, 1.0, 1.0), msg.name, 12))
 
 
-if __name__ == "__main__":
-    rospy.init_node("show_bt_node_on_rviz")
+def main():
+    rclpy.init()
+    node = ShowBTNodeOnRViz()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.try_shutdown()
 
-    status_pub = rospy.Publisher('rviz/executive_progress_overlay', OverlayText, queue_size=1)
 
-    status_topic = rospy.get_param('~app_name') + '/bt_status'
-    cs_sub = rospy.Subscriber(status_topic, BTNodeStatus, bt_status_cb, queue_size=5)
-
-    rospy.spin()
+if __name__ == '__main__':
+    main()
