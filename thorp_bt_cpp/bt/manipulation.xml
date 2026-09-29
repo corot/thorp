@@ -30,7 +30,10 @@
       </RecoverAndRetry>
       <!-- the planning scene has the object attached, but only the gripper can tell whether it really holds it -->
       <Fallback>
-        <GripperBusy/>
+        <Sequence>
+          <GripperBusy/>
+          <ObjectAttached attached_object="{attached_object}"/>
+        </Sequence>
         <ForceFailure>
           <SubTree ID="clear_gripper"/>
         </ForceFailure>
