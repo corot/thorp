@@ -8,11 +8,19 @@ Thorp navigation:
 - localization: AMCL, static or Gazebo ground truth
 """
 
+import os
+
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
+
+
+def behavior_tree(navigator):
+    """ bt_navigator's tree for navigate_to_pose or navigate_through_poses """
+    return os.path.join(get_package_share_directory('thorp_navigation'), 'behavior_trees', f'navigate_{navigator}.xml')
 
 
 def launch_setup(context):
@@ -47,7 +55,9 @@ def launch_setup(context):
         Node(package='nav2_behaviors', executable='behavior_server', name='behavior_server', output='screen',
              respawn=True, parameters=common_params, remappings=cmd_vel_remap),
         Node(package='nav2_bt_navigator', executable='bt_navigator', name='bt_navigator', output='screen',
-             respawn=True, parameters=common_params),
+             respawn=True, parameters=common_params + [{'default_nav_to_pose_bt_xml': behavior_tree('to_pose'),
+                                                       'default_nav_through_poses_bt_xml':
+                                                           behavior_tree('through_poses')}]),
         # Following goes to its own multiplexer input, as Noetic's pose follower
         Node(package='opennav_following', executable='opennav_following', name='following_server', output='screen',
              respawn=True, parameters=common_params, remappings=[('cmd_vel', '/cmd_vel_mux/input/following')]),

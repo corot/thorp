@@ -16,6 +16,10 @@ install(FILES param/nav2.yaml
         DESTINATION share/${PROJECT_NAME}/param
 )
 
+install(DIRECTORY behavior_trees
+        DESTINATION share/${PROJECT_NAME}
+)
+
 # small_house map files are symlinks to a small_house_world package checkout, not ported
 install(DIRECTORY maps
         DESTINATION share/${PROJECT_NAME}
