@@ -8,7 +8,7 @@ Nodes common to all apps:
 import os
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, GroupAction, IncludeLaunchDescription
 from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, PythonExpression
 from launch_ros.actions import Node
@@ -49,24 +49,27 @@ def generate_launch_description():
                               'initial_pose_y': LaunchConfiguration('initial_pose_y'),
                               'initial_pose_a': LaunchConfiguration('initial_pose_a')}.items()),
 
-        IncludeLaunchDescription(
-            PathJoinSubstitution([FindPackageShare('thorp_bt_cpp'), 'launch', 'bt_runner.launch.py']),
-            launch_arguments={'app_name': LaunchConfiguration('app_name'),
-                              'params_file': apps_config,
-                              'start_delay': LaunchConfiguration('start_delay'),
-                              'publish_bt': LaunchConfiguration('viz_executive'),
-                              'on_exit_shutdown': LaunchConfiguration('on_exit_shutdown'),
-                              'use_sim_time': LaunchConfiguration('use_sim_time')}.items(),
-            condition=IfCondition(PythonExpression(["'", executive, "' == 'bt'"]))),
+        # Scoped, as their params_file argument would otherwise reach Nav2's launch, included later by some apps
+        GroupAction(scoped=True, actions=[
+            IncludeLaunchDescription(
+                PathJoinSubstitution([FindPackageShare('thorp_bt_cpp'), 'launch', 'bt_runner.launch.py']),
+                launch_arguments={'app_name': LaunchConfiguration('app_name'),
+                                  'params_file': apps_config,
+                                  'start_delay': LaunchConfiguration('start_delay'),
+                                  'publish_bt': LaunchConfiguration('viz_executive'),
+                                  'on_exit_shutdown': LaunchConfiguration('on_exit_shutdown'),
+                                  'use_sim_time': LaunchConfiguration('use_sim_time')}.items(),
+                condition=IfCondition(PythonExpression(["'", executive, "' == 'bt'"]))),
 
-        # Everything the app needs, but with no tree running: bt_server sits waiting instead, offering each tree
-        # under bt/ as a capability over the RunSubtree action, for an LLM agent or the capability tests to call
-        # one at a time. Use this rather than 'bt', so bt_runner isn't also ticking a whole app
-        IncludeLaunchDescription(
-            PathJoinSubstitution([FindPackageShare('thorp_bt_cpp'), 'launch', 'bt_server.launch.py']),
-            launch_arguments={'params_file': apps_config,
-                              'use_sim_time': LaunchConfiguration('use_sim_time')}.items(),
-            condition=IfCondition(PythonExpression(["'", executive, "' == 'llm'"]))),
+            # Everything the app needs, but with no tree running: bt_server sits waiting instead, offering each tree
+            # under bt/ as a capability over the RunSubtree action, for an LLM agent or the capability tests to call
+            # one at a time. Use this rather than 'bt', so bt_runner isn't also ticking a whole app
+            IncludeLaunchDescription(
+                PathJoinSubstitution([FindPackageShare('thorp_bt_cpp'), 'launch', 'bt_server.launch.py']),
+                launch_arguments={'params_file': apps_config,
+                                  'use_sim_time': LaunchConfiguration('use_sim_time')}.items(),
+                condition=IfCondition(PythonExpression(["'", executive, "' == 'llm'"]))),
+        ]),
 
         # The tree's running node on RViz, and the whole tree on Groot2, monitoring bt_runner's publisher (port 1667)
         Node(package='thorp_bt_cpp', executable='show_bt_node_on_rviz.py', output='screen', respawn=True,

@@ -1,6 +1,6 @@
 """
 Nodes common to the apps manipulating objects on the table in front of Thorp, with no navigation:
-- static global reference frame
+- static global reference frame, unless navigation localizes the robot
 - a table with some tabletop objects, on simulation
 - perception and manipulation
 - RViz, to see the state of move_group and interact with the app
@@ -21,10 +21,12 @@ def generate_launch_description():
         DeclareLaunchArgument('simulation'),
         DeclareLaunchArgument('object_type', description='Objects to spawn on simulation'),
         DeclareLaunchArgument('rviz', default_value='true'),
+        DeclareLaunchArgument('static_map', default_value='true', description='Map fixed on the odometry origin'),
 
         # As we are not running navigation, provide a static global reference frame
         Node(package='tf2_ros', executable='static_transform_publisher', name='fake_global_reference',
-             arguments=['--frame-id', 'map', '--child-frame-id', 'odom'], parameters=[sim_time]),
+             arguments=['--frame-id', 'map', '--child-frame-id', 'odom'], parameters=[sim_time],
+             condition=IfCondition(LaunchConfiguration('static_map'))),
 
         # Spawn a table with some tabletop objects; the executive waits for it to finish
         Node(package='thorp_simulation', executable='spawn_gazebo_models.py', name='objects_spawner', output='screen',

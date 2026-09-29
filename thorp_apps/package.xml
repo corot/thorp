@@ -22,6 +22,7 @@
   <exec_depend>thorp_description</exec_depend>
   <exec_depend>thorp_manipulation</exec_depend>
   <exec_depend>thorp_moveit_config</exec_depend>
+  <exec_depend>thorp_navigation</exec_depend>
   <exec_depend>thorp_perception</exec_depend>
   <exec_depend>thorp_simulation</exec_depend>
 
