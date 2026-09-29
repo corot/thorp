@@ -111,7 +111,18 @@ void Runner::run()
     // Record the start time to subtract the time used on tick and ROS spin from the sleep time
     auto start_time = system_clock::now();
 
-    status = bt_->tickOnce();
+    try
+    {
+      status = bt_->tickOnce();
+    }
+    catch (const std::exception& e)
+    {
+      // e.g. a node missing an input; the tree can't go on
+      RCLCPP_ERROR(node_->get_logger(), "%s", e.what());
+      bt_->haltTree();
+      status = BT::NodeStatus::FAILURE;
+      break;
+    }
     executor.spin_some();
 
     // Sleep tick period minus elapsed time
