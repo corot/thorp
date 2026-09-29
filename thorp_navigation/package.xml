@@ -17,6 +17,7 @@
   <exec_depend>rclpy</exec_depend>
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>thorp_costmap_layers</exec_depend>
   <exec_depend>rviz_2d_overlay_msgs</exec_depend>
   <exec_depend>thorp_toolkit</exec_depend>
   <exec_depend>launch</exec_depend>

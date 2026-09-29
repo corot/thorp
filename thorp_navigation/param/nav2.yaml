@@ -167,7 +167,7 @@ local_costmap:
       resolution: 0.02
       transform_tolerance: 0.5
       robot_radius: 0.18
-      plugins: [sonars_layer, infrared_layer, obstacle_layer, inflation_layer]
+      plugins: [sonars_layer, infrared_layer, obstacle_layer, semantic_layer, inflation_layer]
       sonars_layer:
         plugin: nav2_costmap_2d::RangeSensorLayer
         clear_threshold: 0.46
@@ -213,6 +213,23 @@ local_costmap:
           max_obstacle_height: 0.4
           obstacle_max_range: 2.0
           raytrace_max_range: 2.5
+      semantic_layer:
+        # Known objects the executive marks, as tables, that the scans can't see well, or areas it clears, as a
+        # table's approach; painted in increasing precedence
+        plugin: thorp_costmap_layers::SemanticLayer
+        object_types: [obstacle, free_space, blocked_area]
+        obstacle:  # the perimeter, lethal
+          cost: 1.0
+          fill: false
+          precedence: 0
+        free_space:  # cleared after all obstacles are added
+          cost: 0.0
+          fill: true
+          precedence: 100
+        blocked_area:  # filled, lethal
+          cost: 1.0
+          fill: true
+          precedence: 0
       inflation_layer:
         plugin: nav2_costmap_2d::InflationLayer
         inflation_radius: 0.40
@@ -230,7 +247,7 @@ global_costmap:
       track_unknown_space: true
       robot_radius: 0.18
       resolution: 0.05
-      plugins: [static_layer, sonars_layer, infrared_layer, obstacle_layer, inflation_layer]
+      plugins: [static_layer, sonars_layer, infrared_layer, obstacle_layer, semantic_layer, inflation_layer]
       static_layer:
         plugin: nav2_costmap_2d::StaticLayer
         map_subscribe_transient_local: true
@@ -279,6 +296,23 @@ global_costmap:
           max_obstacle_height: 0.4
           obstacle_max_range: 2.0
           raytrace_max_range: 2.5
+      semantic_layer:
+        # Known objects the executive marks, as tables, that the scans can't see well, or areas it clears, as a
+        # table's approach; painted in increasing precedence
+        plugin: thorp_costmap_layers::SemanticLayer
+        object_types: [obstacle, free_space, blocked_area]
+        obstacle:  # the perimeter, lethal
+          cost: 1.0
+          fill: false
+          precedence: 0
+        free_space:  # cleared after all obstacles are added
+          cost: 0.0
+          fill: true
+          precedence: 100
+        blocked_area:  # filled, lethal
+          cost: 1.0
+          fill: true
+          precedence: 0
       inflation_layer:
         plugin: nav2_costmap_2d::InflationLayer
         inflation_radius: 0.40

@@ -1,88 +1,49 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.8)
 project(thorp_costmap_layers)
 
-# uncomment to enable OpenCV display of internally processed data (does not work on robot)
-# add_definitions(-DDEBUG_DRAW_INTERNALS)
-# add_definition(-DDEBUG_DRAW_HASH_INTERNALS)
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17)
+endif()
 
-# uncomment to enable GDB debugging
-# set(CMAKE_BUILD_TYPE Debug)
+find_package(ament_cmake REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(nav2_costmap_2d REQUIRED)
+find_package(pluginlib REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 
-if (NOT CMAKE_BUILD_TYPE MATCHES Debug)
-    add_definitions(-DNDEBUG)
-endif ()
+rosidl_generate_interfaces(${PROJECT_NAME}
+  msg/Object.msg
+  srv/QueryObjects.srv
+  srv/UpdateObjects.srv
+  DEPENDENCIES geometry_msgs
+)
+rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} rosidl_typesupport_cpp)
 
-find_package(catkin REQUIRED COMPONENTS
-             roscpp
-             tf2_ros
-             costmap_2d
-             shape_msgs
-             geometry_msgs
-             visualization_msgs
-             message_generation
-             dynamic_reconfigure
-             thorp_toolkit
-             thorp_msgs
+add_library(semantic_layer SHARED src/semantic_layer.cpp)
+target_include_directories(semantic_layer PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
+)
+target_link_libraries(semantic_layer PUBLIC
+  ${cpp_typesupport_target}
+  ${geometry_msgs_TARGETS}
+  nav2_costmap_2d::nav2_costmap_2d_core
+  pluginlib::pluginlib
+  rclcpp::rclcpp
+  tf2::tf2
+  tf2_geometry_msgs::tf2_geometry_msgs
 )
 
-add_message_files(DIRECTORY msg FILES Object.msg)
-add_service_files(DIRECTORY srv FILES QueryObjects.srv
-                                      UpdateObjects.srv)
-
-catkin_python_setup()
-
-generate_messages(DEPENDENCIES geometry_msgs)
-
-generate_dynamic_reconfigure_options(cfg/SemanticLayer.cfg)
-
-find_package(Boost 1.58 REQUIRED)
-
-include_directories(
-  include
-  ${Boost_INCLUDE_DIRS}
-  ${catkin_INCLUDE_DIRS}
-  ${JSONCPP_INCLUDE_DIRS}
-)
-
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES semantic_layer
-  CATKIN_DEPENDS
-  tf2_ros
-  roscpp
-  costmap_2d
-  geometry_msgs
-  visualization_msgs
-  dynamic_reconfigure
-  thorp_toolkit
-  thorp_msgs
-)
-
-#######################################################################################################################
-# semantic layer
-#######################################################################################################################
-add_library(semantic_layer
-            src/semantic_layer.cpp
-            src/base_interface.cpp
-            src/srv_interface.cpp
-            src/srv_iface_client.cpp
-            src/visualization.cpp
-            src/spatial_hash.cpp
-)
-
-target_link_libraries(semantic_layer
-                      ${JSONCPP_LIBRARIES}
-                      ${catkin_LIBRARIES}
-)
-
-add_dependencies(semantic_layer ${PROJECT_NAME}_gencfg  ${PROJECT_NAME}_generate_messages_cpp)
-
-if (catkin_EXPORTED_LIBRARIES)
-    add_dependencies(semantic_layer ${catkin_EXPORTED_LIBS})
-endif ()
+pluginlib_export_plugin_description_file(nav2_costmap_2d plugins/semantic_layer.xml)
 
 install(TARGETS semantic_layer
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
 )
+
+ament_export_dependencies(rosidl_default_runtime)
+ament_package()

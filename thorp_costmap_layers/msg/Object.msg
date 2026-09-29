@@ -1,9 +1,9 @@
 # Object to add to / remove from the semantic layer using the update_objects service
 
-byte ADD    = 1
-byte REMOVE = 2
+uint8 ADD    = 1
+uint8 REMOVE = 2
 
-byte operation
+uint8 operation
 
 string name
 string type

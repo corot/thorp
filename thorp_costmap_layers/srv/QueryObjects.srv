@@ -1,4 +1,4 @@
-# Query objects within a region
+# Query objects within a region, on the layer's fixed frame (map)
 
 geometry_msgs/Point lower_left
 geometry_msgs/Point upper_right
