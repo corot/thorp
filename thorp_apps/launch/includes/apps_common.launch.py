@@ -2,19 +2,27 @@
 Nodes common to all apps:
 - Thorp robot, simulated on Gazebo; the real robot's bringup is not ported yet
 - executive: the app's behavior tree (bt), or bt_server offering all trees as capabilities (llm)
+- optional executive visualization: the running node on RViz, and Groot2 if installed in ~/Groot2
 """
 
+import os
+
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription
 from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, PythonExpression
+from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
+
+GROOT2 = os.path.expanduser(os.path.join('~', 'Groot2', 'bin', 'groot2'))
 
 
 def generate_launch_description():
     simulator = LaunchConfiguration('simulator')
     executive = LaunchConfiguration('executive')
     simulation = PythonExpression(["'false' if '", simulator, "' == 'none' else 'true'"])
+    visualize_bt = PythonExpression(["'", LaunchConfiguration('viz_executive'), "' == 'true' and '", executive,
+                                     "' == 'bt'"])
     # Into whichever node runs the app: bt_runner, or bt_server for the LLM executive
     apps_config = PathJoinSubstitution([FindPackageShare('thorp_apps'), 'param', 'apps_config.yaml'])
     return LaunchDescription([
@@ -27,7 +35,7 @@ def generate_launch_description():
         DeclareLaunchArgument('initial_pose_a', default_value='0.0'),
         DeclareLaunchArgument('executive', default_value='bt', choices=['bt', 'llm']),
         DeclareLaunchArgument('viz_executive', default_value='false',
-                              description='Publish the tree for Groot2, to a log file and to ~/bt_status'),
+                              description='Show the tree running, on RViz and Groot2'),
         DeclareLaunchArgument('start_delay', default_value='0.0'),
         DeclareLaunchArgument('on_exit_shutdown', default_value='false',
                               description='Shut down the whole app when its tree completes'),
@@ -59,4 +67,13 @@ def generate_launch_description():
             launch_arguments={'params_file': apps_config,
                               'use_sim_time': LaunchConfiguration('use_sim_time')}.items(),
             condition=IfCondition(PythonExpression(["'", executive, "' == 'llm'"]))),
+
+        # The tree's running node on RViz, and the whole tree on Groot2, monitoring bt_runner's publisher (port 1667)
+        Node(package='thorp_bt_cpp', executable='show_bt_node_on_rviz.py', output='screen', respawn=True,
+             parameters=[{'app_name': LaunchConfiguration('app_name'),
+                          'use_sim_time': LaunchConfiguration('use_sim_time')}],
+             condition=IfCondition(visualize_bt)),
+        # Not respawned: it would loop fast if Groot2 can't start, and closing its window is the user's choice
+        ExecuteProcess(cmd=[GROOT2, '--nosplash', 'true'], output='screen',
+                       condition=IfCondition(PythonExpression([visualize_bt, ' and ', str(os.path.exists(GROOT2))]))),
     ])

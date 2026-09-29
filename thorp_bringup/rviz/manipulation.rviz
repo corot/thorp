@@ -62,6 +62,16 @@ Visualization Manager:
       Value: false
     - Class: rviz_2d_overlay_plugins/TextOverlay
       Enabled: true
+      Name: Executive
+      Topic:
+        Depth: 1
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /rviz/executive_progress_overlay
+      Value: true
+    - Class: rviz_2d_overlay_plugins/TextOverlay
+      Enabled: true
       Name: User Command
       Topic:
         Depth: 1
