@@ -544,6 +544,20 @@ int32_t PickAndPlaceServer::run(mtc::Task& task, const Feedback& feedback, const
   // Name the stage of each sub-trajectory with motion, to report the one being executed
   auto goal = ExecuteTaskSolution::Goal();
   solution.toMsg(goal.solution, &task.introspection());
+  // MTC exports the full planning scene, not a diff, for sub-trajectories whose end scene isn't a child of their
+  // start one. Applied on execution, it would revert the world to its state when planned, removing e.g. objects
+  // detected meanwhile; the task changes the world only on its scene modifying stages, exported as diffs, so of
+  // those full scenes we keep just the robot state
+  for (auto& sub_trajectory : goal.solution.sub_trajectory)
+  {
+    if (sub_trajectory.scene_diff.is_diff)
+      continue;
+    moveit_msgs::msg::PlanningScene robot_state_diff;
+    robot_state_diff.is_diff = true;
+    robot_state_diff.robot_state = sub_trajectory.scene_diff.robot_state;
+    robot_state_diff.robot_state.is_diff = true;
+    sub_trajectory.scene_diff = robot_state_diff;
+  }
   moveit_task_constructor_msgs::msg::TaskDescription description;
   task.introspection().fillTaskDescription(description);
   std::map<uint32_t, std::string> stage_names;
