@@ -1,0 +1,17 @@
+# Report a skill's effect on the world, as the skill believes it
+
+uint8 PICKED=1     # object_id is in the gripper
+uint8 PLACED=2     # object_id is on table_id, at pose
+uint8 STOWED=3     # object_id is on the tray, on slot
+uint8 DISTURBED=4  # a skill touched object_id without the result it wanted, so it may have moved
+uint8 DOCKED=5     # the robot is parked against table_id
+uint8 UNDOCKED=6   # the robot left the table it was docked at
+
+uint8 effect
+string object_id
+string table_id
+geometry_msgs/PoseStamped pose
+int32 slot
+---
+bool success
+string message

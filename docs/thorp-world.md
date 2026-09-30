@@ -23,6 +23,22 @@ tolerance; a table, the known table its center falls on. A table's pose and size
 about as large, as partial views give smaller tables. Objects known on a table become missing only where the observed
 surface covers them.
 
+## Node
+
+`world_node.py`, launched by `world.launch.py`, serves under its name (`world`):
+
+| Interface | Type | Use |
+|---|---|---|
+| `world/observe` | `thorp_msgs/ObserveWorld` | Detections report tables, or a surface with the objects on it, as the collision objects they produce, on any frame; the world transforms them to `map` at their stamp, matches them and returns their ids. |
+| `world/update` | `thorp_msgs/UpdateWorld` | Skills report an effect: an object picked, placed, stowed or disturbed; the robot docked or undocked. Unknown ids are refused. |
+| `world/query` | `thorp_msgs/QueryWorld` | Entities filtered by ids, kind, support or status, with each one's reachability from the arm's base (`arm_frame`, `max_arm_reach`) and the table the robot is still docked at (`dock_distance`). |
+| `world/save`, `world/load` | `std_srvs/Trigger` | To and from `world_file`, also loaded on start if it exists. |
+| `world/state` | `thorp_msgs/WorldState` | Everything known, latched, whenever it changes. |
+| `world/markers` | `visualization_msgs/MarkerArray` | Tables and objects on a table, labeled with their ids: gray if missing or disturbed, faded if only believed. |
+
+`scripts/check_world_node.py` exercises a running node against static transforms; its docstring tells how. Run it on
+a ROS domain nothing else uses: static transforms published beside a simulation stay in its nodes' buffers.
+
 ## Interactions
 
 | Node | With thorp_world |
@@ -33,7 +49,7 @@ surface covers them.
 | Behavior trees | `GetEntity` and `QueryWorld` nodes read it; `UpdateWorld` reports skills' effects, on success and failure. |
 | Semantic costmap layer | Subscribes to `world/state`: tables as obstacles, and the approach area of the table the robot is docked at cleared. |
 | LLM agent | Skills take ids; a `query_world` tool, a world summary with each request and the world changes with each skill result. |
-| RViz | `world/markers`, labeled with the ids; observed facts solid, believed translucent, stale grey. |
+| RViz | `world/markers`, labeled with the ids; faded if only believed, gray if missing or disturbed. |
 | Simulation | A checker compares `world/state` with Gazebo's model poses, telling perception errors from reasoning errors. |
 
 ## Steps
@@ -41,7 +57,7 @@ surface covers them.
 | # | Step | Status |
 |---|------|--------|
 | 1 | Core in plain Python: entities, matching, relations, provenance, persistence; with tests | done |
-| 2 | ROS 2 node: `thorp_msgs` interfaces (entity, state, observe, update, query, save and load), RViz markers | |
+| 2 | ROS 2 node: `thorp_msgs` interfaces (entity, state, observe, update, query, save and load), RViz markers | done |
 | 3 | Perception reports to it, and names objects with its ids | |
 | 4 | Skills on ids: world tree nodes; table and manipulation skills take ids and report effects; `capabilities.yaml` drops `states`, `needs`, `invalidates` and `from`, and gains `errors` | |
 | 5 | Agent on ROS 2 (ROSA): world tools, world summary, world changes in skill results | |

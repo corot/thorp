@@ -1,0 +1,12 @@
+# Report what a detection saw, as it reports it: collision objects on any frame, stamped when seen, with their size
+# and color as JSON in type.db. thorp_world matches them with what it knows, and returns the ids it gives them.
+
+moveit_msgs/CollisionObject[] tables   # tables seen, as DetectTables reports them
+moveit_msgs/CollisionObject surface    # the table some objects were seen on, as DetectObjects reports it; none if no id
+moveit_msgs/CollisionObject[] objects  # the objects seen on the surface
+---
+bool success
+string message
+string[] table_ids   # in the tables' order
+string surface_id
+string[] object_ids  # in the objects' order

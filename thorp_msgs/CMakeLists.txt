@@ -13,12 +13,17 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   msg/PickupLocation.msg
   msg/Room.msg
   msg/ThorpError.msg
+  msg/WorldEntity.msg
+  msg/WorldState.msg
   srv/CannonCommand.srv
   srv/ClearPlanningScene.srv
+  srv/ObserveWorld.srv
   srv/PlanRoomExploration.srv
   srv/PlanRoomSequence.srv
+  srv/QueryWorld.srv
   srv/SegmentRooms.srv
   srv/SetNamedConfig.srv
+  srv/UpdateWorld.srv
   action/DetectObjects.action
   action/DetectTables.action
   action/DragAndDrop.action

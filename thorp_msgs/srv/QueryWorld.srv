@@ -1,0 +1,13 @@
+# What thorp_world knows: every entity, or those matching all the fields given, with the relations that depend on
+# where the robot is now
+
+string[] ids    # only these
+string kind     # only of this kind
+string support  # only on this support
+string status   # only with this status
+---
+bool success
+string message
+WorldEntity[] entities
+bool[] reachable    # per entity: on a table, within the arm's reach from its base
+string docked_at    # the table the robot is docked at, if it's still at it; empty otherwise
