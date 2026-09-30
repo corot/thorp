@@ -37,7 +37,7 @@ install(FILES param/gz_bridge.yaml param/controllers.yaml
         DESTINATION share/${PROJECT_NAME}/param
 )
 
-install(FILES worlds/gazebo/empty.world worlds/gazebo/playground.world
+install(FILES worlds/gazebo/empty.world worlds/gazebo/fun_house.world worlds/gazebo/playground.world
         DESTINATION share/${PROJECT_NAME}/worlds/gazebo
 )
 

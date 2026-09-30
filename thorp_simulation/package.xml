@@ -46,6 +46,8 @@
   <exec_depend>thorp_navigation</exec_depend>
   <exec_depend>rviz2</exec_depend>
   <exec_depend>thorp_cannon</exec_depend>
+  <!-- the fun house world's house model -->
+  <exec_depend>turtlebot3_gazebo</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
