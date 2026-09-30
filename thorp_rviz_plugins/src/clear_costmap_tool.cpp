@@ -1,49 +1,55 @@
-#include <thorp_rviz_plugins/clear_costmap_tool.hpp>
+#include "thorp_rviz_plugins/clear_costmap_tool.hpp"
 
-namespace thorp::rviz_plugins
+#include <string>
+
+#include <QTimer>
+
+#include <rviz_common/display_context.hpp>
+#include <rviz_common/tool_manager.hpp>
+
+namespace thorp_rviz_plugins
 {
-ClearCostmapTool::ClearCostmapTool()
+ClearCostmapTool::ClearCostmapTool() : logger_(rclcpp::get_logger("clear_costmap_tool"))
 {
-  service_property_ = std::make_unique<rviz::StringProperty>(
-      "Service", "/move_base_flex/clear_costmaps", "The service on which to make request for clearing costmaps.",
-      getPropertyContainer(), SLOT(updateService()), this);
 }
 
-void ClearCostmapTool::init()
+void ClearCostmapTool::onInitialize()
 {
   setName("Clear Costmaps");
-  updateService();
+  auto node = context_->getRosNodeAbstraction().lock()->get_raw_node();
+  logger_ = node->get_logger();
+  for (const std::string costmap : { "global_costmap", "local_costmap" })
+    clients_.push_back(node->create_client<ClearCostmap>("/" + costmap + "/clear_entirely_" + costmap));
 }
 
-void ClearCostmapTool::updateService()
+void ClearCostmapTool::activate()
 {
-  try
+  for (const auto& client : clients_)
   {
-    clear_costmap_client_ = nh_.serviceClient<std_srvs::Empty>(service_property_->getStdString());
+    const std::string service = client->get_service_name();
+    if (!client->service_is_ready())
+    {
+      RCLCPP_ERROR(logger_, "Can't clear the costmap: service %s not available", service.c_str());
+      continue;
+    }
+    client->async_send_request(std::make_shared<ClearCostmap::Request>(),
+                               [this, service](rclcpp::Client<ClearCostmap>::SharedFuture)
+                               { RCLCPP_INFO(logger_, "Costmap cleared by %s", service.c_str()); });
   }
-  catch (const ros::Exception& e)
-  {
-    ROS_ERROR_STREAM_NAMED("ClearCostmapTool", e.what());
-  }
+  // A button, not a mode: go back to the default tool once the tool manager has finished activating this one
+  QTimer::singleShot(0, this,
+                     [this]()
+                     {
+                       auto tool_manager = context_->getToolManager();
+                       tool_manager->setCurrentTool(tool_manager->getDefaultTool());
+                     });
 }
 
-void ClearCostmapTool::onClick()
+void ClearCostmapTool::deactivate()
 {
-  std_srvs::Empty srv;
-  if (clear_costmap_client_.call(srv))
-  {
-    ROS_INFO_NAMED("ClearCostmapTool", "Costmaps cleared!");
-    setStatusMsg("Cleared the costmaps");
-  }
-  else
-  {
-    ROS_ERROR_STREAM_NAMED("ClearCostmapTool",
-                           "Failed to call the service to clear costmaps: " << clear_costmap_client_.getService());
-    setStatusMsg("Failed to clear the costmaps");
-  }
 }
 
-}  // end namespace thorp::rviz_plugins
+}  // namespace thorp_rviz_plugins
 
-#include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(thorp::rviz_plugins::ClearCostmapTool, rviz::Tool)
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS(thorp_rviz_plugins::ClearCostmapTool, rviz_common::Tool)

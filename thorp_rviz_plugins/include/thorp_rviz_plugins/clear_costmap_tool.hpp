@@ -1,35 +1,40 @@
 /**
  * \file
- * \brief       RVIZ tool to set clear costmap
+ * \brief       RViz tool to clear the costmaps
  * \author      Gautam <gautam.sharma@rapyuta-robotics.com>
  * \copyright   Copyright (c) 2021, Rapyuta Robotics Co., Ltd.
  */
 
 #pragma once
 
-#include <thorp_rviz_plugins/button_tool.hpp>
-#include <rviz/properties/string_property.h>
-#include <std_srvs/Empty.h>
-#include <memory.h>
+#include <vector>
 
-namespace thorp::rviz_plugins
+#include <rclcpp/rclcpp.hpp>
+#include <rviz_common/tool.hpp>
+
+#include <nav2_msgs/srv/clear_entire_costmap.hpp>
+
+namespace thorp_rviz_plugins
 {
-class ClearCostmapTool : public ButtonTool
+/**
+ * Toolbar button clearing both Nav2 costmaps. It releases itself right after the click; the costmaps' answers are
+ * logged when they arrive.
+ */
+class ClearCostmapTool : public rviz_common::Tool
 {
   Q_OBJECT
 public:
   ClearCostmapTool();
-  ~ClearCostmapTool() = default;
 
-  virtual void init() override;
-  virtual void onClick() override;
-
-protected Q_SLOTS:
-  void updateService();
+  void onInitialize() override;
+  void activate() override;
+  void deactivate() override;
 
 private:
-  ros::ServiceClient clear_costmap_client_;
-  std::unique_ptr<rviz::StringProperty> service_property_;
+  using ClearCostmap = nav2_msgs::srv::ClearEntireCostmap;
+
+  std::vector<rclcpp::Client<ClearCostmap>::SharedPtr> clients_;
+  rclcpp::Logger logger_;
 };
 
-}  // namespace thorp::rviz_plugins
+}  // namespace thorp_rviz_plugins

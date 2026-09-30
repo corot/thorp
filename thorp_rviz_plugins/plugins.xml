@@ -3,4 +3,8 @@
          base_class_type="rviz_common::Panel">
     <description>Buttons that send commands to the running app</description>
   </class>
+  <class name="thorp_rviz_plugins/ClearCostmapTool" type="thorp_rviz_plugins::ClearCostmapTool"
+         base_class_type="rviz_common::Tool">
+    <description>Button that clears both costmaps</description>
+  </class>
 </library>

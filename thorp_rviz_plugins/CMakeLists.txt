@@ -6,6 +6,7 @@ if(NOT CMAKE_CXX_STANDARD)
 endif()
 
 find_package(ament_cmake REQUIRED)
+find_package(nav2_msgs REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(Qt5 REQUIRED COMPONENTS Widgets)
 find_package(rclcpp REQUIRED)
@@ -14,9 +15,10 @@ find_package(std_msgs REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 
-# Plugins ported to ROS 2; the navigation tools are still ROS 1
 add_library(${PROJECT_NAME} SHARED
+  include/${PROJECT_NAME}/clear_costmap_tool.hpp
   include/${PROJECT_NAME}/user_commands_panel.hpp
+  src/clear_costmap_tool.cpp
   src/user_commands_panel.cpp
 )
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -28,6 +30,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   Qt5::Widgets
   rclcpp::rclcpp
   rviz_common::rviz_common
+  ${nav2_msgs_TARGETS}
   ${std_msgs_TARGETS}
 )
 
@@ -38,5 +41,7 @@ install(TARGETS ${PROJECT_NAME}
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
 )
+
+install(DIRECTORY icons DESTINATION share/${PROJECT_NAME})
 
 ament_package()
