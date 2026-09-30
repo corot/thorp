@@ -182,6 +182,20 @@
             <input_port name="server_timeout" type="std::chrono::milliseconds"/>
             <input_port name="server_name" type="std::string">Action server name</input_port>
         </Action>
+        <Action ID="PlanRoomExploration">
+            <output_port name="coverage_waypoints" type="std::vector&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+            <input_port name="room_number" type="unsigned int">room to explore; 0 for the whole map</input_port>
+            <input_port name="robot_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
+            <input_port name="service_name" type="std::string" default="exploration/plan_room_exploration">name of the ROS service</input_port>
+        </Action>
+        <Action ID="PlanRoomSequence">
+            <input_port name="rooms" type="std::vector&lt;unsigned int, std::allocator&lt;unsigned int&gt; &gt;"/>
+            <input_port name="robot_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
+            <output_port name="room_sequence" type="std::vector&lt;unsigned int, std::allocator&lt;unsigned int&gt; &gt;"/>
+            <input_port name="service_name" type="std::string" default="exploration/plan_room_sequence">name of the ROS service</input_port>
+        </Action>
         <Action ID="PopPoseFromList">
             <output_port name="element" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <inout_port name="list" type="std::vector&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
@@ -240,6 +254,11 @@
         <Action ID="RestoreTableAccess">
             <input_port name="table_name" type="std::string" default="table">name of the table to restore access to</input_port>
         </Action>
+        <Action ID="SegmentRooms">
+            <output_port name="rooms" type="std::vector&lt;unsigned int, std::allocator&lt;unsigned int&gt; &gt;"/>
+            <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
+            <input_port name="service_name" type="std::string" default="exploration/segment_rooms">name of the ROS service</input_port>
+        </Action>
         <Action ID="SelectNextTarget">
             <output_port name="tightening" type="float"/>
             <output_port name="target_name" type="std::string"/>
@@ -288,6 +307,10 @@
             <input_port name="table" type="moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Condition ID="TableValidSize">
+            <input_port name="table" type="moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;"/>
+        </Condition>
+        <Condition ID="TableVisited">
+            <input_port name="table_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="table" type="moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Condition>
         <Action ID="TrackProgress">

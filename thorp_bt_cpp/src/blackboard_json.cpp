@@ -1,5 +1,6 @@
 #include "thorp_bt_cpp/blackboard_json.hpp"
 
+#include <algorithm>
 #include <cstdint>
 #include <map>
 #include <optional>
@@ -208,6 +209,10 @@ nlohmann::json anyToJson(const BT::Any& any)
     }
     return json;
   }
+  if (any.type() == typeid(std::vector<uint32_t>))  // room ids
+  {
+    return any.cast<std::vector<uint32_t>>();
+  }
   if (any.type() == typeid(std::vector<geometry_msgs::msg::PoseStamped>))
   {
     nlohmann::json poses = nlohmann::json::array();
@@ -311,6 +316,17 @@ bool setStructured(BT::Blackboard& blackboard, const std::string& key, const nlo
       poses.push_back(*pose);
     }
     blackboard.set(key, poses);
+    return true;
+  }
+
+  if (type == typeid(std::vector<uint32_t>))
+  {
+    if (!value.is_array() ||
+        !std::all_of(value.begin(), value.end(), [](const auto& element) { return element.is_number_unsigned(); }))
+    {
+      return false;
+    }
+    blackboard.set(key, value.get<std::vector<uint32_t>>());
     return true;
   }
 

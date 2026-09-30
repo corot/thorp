@@ -58,7 +58,7 @@
 #              with their reason, so the gap stays visible.
 #
 # stack: what must already be running for the tree to do anything
-#   none | navigation | manipulation | perception
+#   none | navigation | manipulation | perception | exploration (the exploration planner)
 #
 # test: read only by the test suite; the agent side ignores this block.
 #   inputs_from: where an input comes from, when it should be a real value rather than one
@@ -420,7 +420,7 @@ capabilities:
       Cover the whole map, using whichever strategy the exploration_method parameter selects
       (full_coverage_planner or per_room_coverage).
     status: ok
-    stack: [navigation]
+    stack: [navigation, exploration]
     invalidates: [at_a_table, objects_detected]
     inputs: {}
     outputs:
@@ -454,7 +454,7 @@ capabilities:
       onto the tray.
     kind: app
     status: ok
-    stack: [navigation, manipulation, perception]
+    stack: [navigation, manipulation, perception, exploration]
     inputs: {}
     outputs:
       table: {type: moveit_msgs::msg::CollisionObject, description: "table being worked on (not serializable yet)"}
@@ -507,14 +507,16 @@ capabilities:
 
   full_coverage_planner:
     description: >
-      Plan one coverage path over the whole map and follow it.
+      Plan the poses from where the camera sees the whole map, from where the robot stands, and
+      drive through them. Resumes the poses left, if any.
     status: ok
-    stack: [navigation]
+    stack: [navigation, exploration]
     invalidates: [at_a_table, objects_detected]
     inputs: {}
     outputs:
-      coverage_waypoints: {type: std::vector<geometry_msgs::msg::PoseStamped>, description: "the waypoints planned"}
-      error: {type: int, when: failure, description: "error code from planning or following"}
+      coverage_waypoints: {type: std::vector<geometry_msgs::msg::PoseStamped>, description: "the poses left to drive through; empty once done"}
+      robot_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "robot pose when planning started"}
+      error: {type: int, when: failure, description: "error code from getting the robot pose"}
     test:
       inputs: {}
       expect: any
@@ -522,13 +524,16 @@ capabilities:
 
   per_room_coverage:
     description: >
-      Segment the map into rooms, order them, and cover each one in turn.
+      Segment the map into rooms and order them from where the robot stands; then, for each room,
+      plan the poses from where the camera sees all of it and drive through them. Resumes the
+      rooms and poses left, if any.
     status: ok
-    stack: [navigation]
+    stack: [navigation, exploration]
     invalidates: [at_a_table, objects_detected]
     inputs: {}
     outputs:
-      room_sequence: {type: std::vector<unsigned int>, description: "order the rooms are visited in"}
+      rooms: {type: std::vector<unsigned int>, when: maybe, description: "ids of the rooms segmented"}
+      room_sequence: {type: std::vector<unsigned int>, description: "rooms left to visit, in order; empty once done"}
       room_number: {type: unsigned int, description: "room currently being covered"}
       coverage_waypoints: {type: std::vector<geometry_msgs::msg::PoseStamped>, description: "waypoints for the current room"}
       robot_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "robot pose when planning started"}

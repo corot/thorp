@@ -57,6 +57,8 @@ set(BT_NODES
   src/bt/actions/next_pose_on_tray.cpp
   src/bt/actions/pickup_object.cpp
   src/bt/actions/place_object.cpp
+  src/bt/actions/plan_room_exploration.cpp
+  src/bt/actions/plan_room_sequence.cpp
   src/bt/actions/pop_from_list.cpp
   src/bt/actions/pose_as_path.cpp
   src/bt/actions/push_to_list.cpp
@@ -64,6 +66,7 @@ set(BT_NODES
   src/bt/actions/read_user_commands.cpp
   src/bt/actions/record_pickup_failure.cpp
   src/bt/actions/restore_table_access.cpp
+  src/bt/actions/segment_rooms.cpp
   src/bt/actions/select_next_target.cpp
   src/bt/actions/set_arm_config.cpp
   src/bt/actions/set_blackboard.cpp
@@ -79,6 +82,7 @@ set(BT_NODES
   src/bt/conditions/object_attached.cpp
   src/bt/conditions/objects_detected.cpp
   src/bt/conditions/table_valid_size.cpp
+  src/bt/conditions/table_visited.cpp
   src/bt/conditions/tray_full.cpp
   src/bt/controls/recover_and_retry.cpp
   src/bt/decorators/for_each.cpp
@@ -144,9 +148,9 @@ install(FILES config/capabilities.yaml
 )
 
 # Trees ported to ROS 2; listed one by one, as the package is ported in stages
-install(FILES bt/cleanup_table.xml bt/manipulation.xml bt/navigation.xml bt/object_manip.xml bt/patrol_2_points.xml
-              bt/perception.xml bt/pickup_objects.xml bt/tables.xml bt/test_capabilities.xml
-              bt/test_server.xml
+install(FILES bt/cleanup_table.xml bt/exploration.xml bt/explore_house.xml bt/manipulation.xml bt/navigation.xml
+              bt/object_gatherer.xml bt/object_manip.xml bt/patrol_2_points.xml bt/perception.xml bt/pickup_objects.xml
+              bt/tables.xml bt/test_capabilities.xml bt/test_server.xml
         DESTINATION share/${PROJECT_NAME}/bt
 )
 

@@ -2,25 +2,15 @@
 <root BTCPP_format="4">
   <include path="exploration.xml"/>
 
+  <!-- Explore the whole house, with the strategy the exploration_method parameter selects -->
   <BehaviorTree ID="explore_house">
     <Sequence>
-      <ReadStringParam output_key="{exploration_method}"
-                       param_name="exploration_method"/>
+      <ReadStringParam param_name="exploration_method"
+                       output_key="{exploration_method}"/>
       <SubTree ID="full_coverage_planner"
                _skipIf="exploration_method != 'full_coverage_planner'"/>
       <SubTree ID="per_room_coverage"
                _skipIf="exploration_method != 'per_room_coverage'"/>
     </Sequence>
   </BehaviorTree>
-
-  <!-- Description of Node Models (used by Groot) -->
-  <TreeNodesModel>
-    <Action ID="ReadStringParam">
-      <output_port name="output_key"
-                   type="std::string"/>
-      <input_port name="param_name"
-                  type="std::string"/>
-    </Action>
-  </TreeNodesModel>
-
 </root>

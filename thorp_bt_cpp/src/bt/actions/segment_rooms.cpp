@@ -1,84 +1,49 @@
 #include <behaviortree_cpp/action_node.h>
 
 #include "thorp_bt_cpp/node_common.hpp"
-#include "thorp_bt_cpp/ros_action_node.hpp"
+#include "thorp_bt_cpp/ros_service_node.hpp"
 
-#include <nav_msgs/OccupancyGrid.h>
-#include <ipa_building_msgs/MapSegmentationAction.h>
-
-#include <thorp_toolkit/common.hpp>
-namespace ttk = thorp::toolkit;
+#include <thorp_msgs/srv/segment_rooms.hpp>
 
 namespace thorp::bt::actions
 {
-class SegmentRooms : public BT::RosActionNode<ipa_building_msgs::MapSegmentationAction>
+/**
+ * Segment the map into rooms, with the exploration planner, that keeps them for planning their sequence and
+ * exploration. Provides the rooms' ids.
+ */
+class SegmentRooms : public BT::RosServiceNode<thorp_msgs::srv::SegmentRooms, BT::SyncActionNode>
 {
 public:
-  SegmentRooms(const std::string& name, const BT::NodeConfig& config) : RosActionNode(name, config)
+  SegmentRooms(const std::string& name, const BT::NodeConfig& conf)
+    : RosServiceNode<ServiceType, ParentType>(name, conf)
   {
   }
 
   static BT::PortsList providedPorts()
   {
-    BT::PortsList ports = BT::RosActionNode<ActionType>::providedPorts();
-    ports["action_name"].setDefaultValue("exploration/room_segmentation");
-    ports.insert({ BT::OutputPort<sensor_msgs::Image>("map_image"),      //
-                   BT::OutputPort<geometry_msgs::Pose>("map_origin"),    //
-                   BT::OutputPort<float>("map_resolution"),              //
-                   BT::OutputPort<float>("robot_radius"),                //
-                   BT::OutputPort<sensor_msgs::Image>("segmented_map"),  //
-                   BT::OutputPort<std::vector<ipa_building_msgs::RoomInformation>>("room_information_in_meter"),
-                   BT::OutputPort<std::vector<ipa_building_msgs::RoomInformation>>("room_information_in_pixel") });
+    BT::PortsList ports = BT::RosServiceNode<ServiceType, ParentType>::providedPorts();
+    ports["service_name"].setDefaultValue("exploration/segment_rooms");
+    ports.insert(BT::OutputPort<std::vector<uint32_t>>("rooms"));
     return ports;
   }
 
 private:
-  GoalType getGoal() override
+  void sendRequest(RequestType& request) override
   {
-    auto map = ttk::waitForMessage<nav_msgs::OccupancyGrid>("map");
-    if (!map)
-    {
-      throw BT::RuntimeError(name(), ": Unable to retrieve map");
-    }
-    GoalType goal;
-    goal.input_map.header = map->header;
-    goal.input_map.height = map->info.height;
-    goal.input_map.width = map->info.width;
-    goal.input_map.step = map->info.width;
-    goal.input_map.encoding = "mono8";
-    goal.input_map.data.resize(map->info.height * map->info.width, 255);
-    // Convert map into a black and white 8bit single-channel image (format 8UC1), which is 0 (black)
-    // for obstacles and unknown space, and 255 (white) for free space
-    for (int i = 0; i < map->info.height; ++i)
-    {
-      for (int j = 0; j < map->info.width; ++j)
-      {
-        if (map->data[i * map->info.width + j] == -1 || map->data[i * map->info.width + j] == 100)
-          goal.input_map.data[i * map->info.width + j] = 0;
-      }
-    }
-    goal.map_origin = map->info.origin;
-    goal.map_resolution = map->info.resolution;
-    goal.return_format_in_meter = true;
-    goal.return_format_in_pixel = true;
-    goal.robot_radius = ros::NodeHandle().param<float>("move_base_flex/global_costmap/robot_radius", 0.18);
-
-    // those values are also needed by PlanRoomSequence and PlanRoomExploration, so share them on output ports
-    // the segmented map comes with its own origin and resolution, but both are the same as for the input map
-    setOutput("map_image", goal.input_map);
-    setOutput("map_origin", goal.map_origin);
-    setOutput("map_resolution", goal.map_resolution);
-    setOutput("robot_radius", goal.robot_radius);
-
-    return goal;
   }
 
-  BT::NodeStatus onSucceeded(const ResultConstPtr& res) override
+  BT::NodeStatus onResponse(const ResponseType& response) override
   {
-    setOutput("segmented_map", res->segmented_map);
-    setOutput("room_information_in_meter", res->room_information_in_meter);
-    setOutput("room_information_in_pixel", res->room_information_in_pixel);
-
+    if (!response.success)
+    {
+      RCLCPP_ERROR(logger(*this), "Room segmentation failed: %s", response.message.c_str());
+      return BT::NodeStatus::FAILURE;
+    }
+    std::vector<uint32_t> rooms;
+    for (const auto& room : response.rooms)
+      rooms.push_back(room.id);
+    RCLCPP_INFO(logger(*this), "Map segmented into %zu rooms", rooms.size());
+    setOutput("rooms", rooms);
     return BT::NodeStatus::SUCCESS;
   }
 

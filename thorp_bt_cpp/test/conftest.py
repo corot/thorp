@@ -81,7 +81,7 @@ def pytest_addoption(parser):
                      help="bt_server's node, whose parameters the trees read")
     parser.addoption("--stack", default="none",
                      help="comma separated list of stacks that are actually running "
-                          "(none,navigation,manipulation,perception). Capabilities needing "
+                          "(none,navigation,manipulation,perception,exploration). Capabilities needing "
                           "anything not listed here are skipped rather than failed.")
     parser.addoption("--given", default="",
                      help="comma separated list of states (see capabilities.yaml) the world "
