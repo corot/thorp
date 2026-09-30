@@ -36,7 +36,7 @@ def generate_launch_description():
             PathJoinSubstitution([includes, 'apps_common.launch.py']),
             launch_arguments={'app_name': 'cleanup_table',
                               'rviz': LaunchConfiguration('rviz'),
-                              'rviz_config': 'gathering.rviz',
+                              'rviz_config': 'cleanup_table.rviz',
                               'simulator': simulator,
                               'world_name': 'playground',
                               'gui': LaunchConfiguration('gui'),
