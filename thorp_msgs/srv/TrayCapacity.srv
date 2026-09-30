@@ -1,5 +1,0 @@
-# Request tray total and current capacity
-
----
-uint8 total
-uint8 current

@@ -3,7 +3,6 @@ Nodes common to the apps manipulating objects on the table in front of Thorp, wi
 - static global reference frame, unless navigation localizes the robot
 - a table with some tabletop objects, on simulation
 - perception and manipulation
-- RViz, to see the state of move_group and interact with the app
 """
 
 from launch import LaunchDescription
@@ -20,7 +19,6 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument('simulation'),
         DeclareLaunchArgument('object_type', description='Objects to spawn on simulation'),
-        DeclareLaunchArgument('rviz', default_value='true'),
         DeclareLaunchArgument('static_map', default_value='true', description='Map fixed on the odometry origin'),
 
         # As we are not running navigation, provide a static global reference frame
@@ -39,11 +37,4 @@ def generate_launch_description():
         IncludeLaunchDescription(
             PathJoinSubstitution([FindPackageShare('thorp_manipulation'), 'launch', 'manipulation.launch.py']),
             launch_arguments={'simulation': simulation, 'use_sim_time': simulation}.items()),
-
-        IncludeLaunchDescription(
-            PathJoinSubstitution([FindPackageShare('thorp_moveit_config'), 'launch', 'moveit_rviz.launch.py']),
-            launch_arguments={'simulation': simulation, 'use_sim_time': simulation,
-                              'rviz_config': PathJoinSubstitution([FindPackageShare('thorp_bringup'), 'rviz',
-                                                                   'manipulation.rviz'])}.items(),
-            condition=IfCondition(LaunchConfiguration('rviz'))),
     ])

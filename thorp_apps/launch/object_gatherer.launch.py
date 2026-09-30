@@ -37,19 +37,19 @@ def generate_launch_description():
         IncludeLaunchDescription(
             PathJoinSubstitution([includes, 'apps_common.launch.py']),
             launch_arguments={'app_name': 'object_gatherer',
+                              'rviz': LaunchConfiguration('rviz'),
+                              'rviz_config': 'gathering.rviz',
                               'simulator': simulator,
                               'world_name': LaunchConfiguration('world_name'),
                               'gui': LaunchConfiguration('gui'),
                               'executive': LaunchConfiguration('executive'),
                               'viz_executive': LaunchConfiguration('viz_executive'),
                               'start_delay': LaunchConfiguration('start_delay'), **initial_pose}.items()),
-        # RViz comes with MoveIt's, below
         IncludeLaunchDescription(
             PathJoinSubstitution([includes, 'navigation.launch.py']),
             launch_arguments={'simulation': simulation,
                               'world_name': LaunchConfiguration('world_name'),
-                              'localization': LaunchConfiguration('localization'),
-                              'rviz': 'false', **initial_pose}.items()),
+                              'localization': LaunchConfiguration('localization'), **initial_pose}.items()),
         # The tables are found with the Xtion, so the exploration covers the house with its field of view
         IncludeLaunchDescription(
             PathJoinSubstitution([FindPackageShare('thorp_exploration'), 'launch', 'exploration.launch.py']),
@@ -66,10 +66,4 @@ def generate_launch_description():
         IncludeLaunchDescription(
             PathJoinSubstitution([FindPackageShare('thorp_manipulation'), 'launch', 'manipulation.launch.py']),
             launch_arguments={'simulation': simulation, 'use_sim_time': simulation}.items()),
-        IncludeLaunchDescription(
-            PathJoinSubstitution([FindPackageShare('thorp_moveit_config'), 'launch', 'moveit_rviz.launch.py']),
-            launch_arguments={'simulation': simulation, 'use_sim_time': simulation,
-                              'rviz_config': PathJoinSubstitution([FindPackageShare('thorp_bringup'), 'rviz',
-                                                                   'gathering.rviz'])}.items(),
-            condition=IfCondition(LaunchConfiguration('rviz'))),
     ])

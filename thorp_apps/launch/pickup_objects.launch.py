@@ -28,6 +28,8 @@ def generate_launch_description():
         IncludeLaunchDescription(
             PathJoinSubstitution([includes, 'apps_common.launch.py']),
             launch_arguments={'app_name': 'pickup_objects',
+                              'rviz': LaunchConfiguration('rviz'),
+                              'rviz_config': 'manipulation.rviz',
                               'simulator': simulator,
                               'gui': LaunchConfiguration('gui'),
                               'executive': LaunchConfiguration('executive'),
@@ -36,6 +38,5 @@ def generate_launch_description():
         IncludeLaunchDescription(
             PathJoinSubstitution([includes, 'tabletop_manip.launch.py']),
             launch_arguments={'simulation': PythonExpression(["'false' if '", simulator, "' == 'none' else 'true'"]),
-                              'object_type': LaunchConfiguration('object_type'),
-                              'rviz': LaunchConfiguration('rviz')}.items()),
+                              'object_type': LaunchConfiguration('object_type')}.items()),
     ])

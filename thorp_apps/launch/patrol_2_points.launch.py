@@ -33,6 +33,8 @@ def generate_launch_description():
         IncludeLaunchDescription(
             PathJoinSubstitution([includes, 'apps_common.launch.py']),
             launch_arguments={'app_name': 'patrol_2_points',
+                              'rviz': LaunchConfiguration('rviz'),
+                              'rviz_config': 'navigation.rviz',
                               'simulator': simulator,
                               'world_name': LaunchConfiguration('world_name'),
                               'gui': LaunchConfiguration('gui'),
@@ -43,6 +45,5 @@ def generate_launch_description():
             PathJoinSubstitution([includes, 'navigation.launch.py']),
             launch_arguments={'simulation': PythonExpression(["'false' if '", simulator, "' == 'none' else 'true'"]),
                               'world_name': LaunchConfiguration('world_name'),
-                              'localization': LaunchConfiguration('localization'),
-                              'rviz': LaunchConfiguration('rviz'), **initial_pose}.items()),
+                              'localization': LaunchConfiguration('localization'), **initial_pose}.items()),
     ])

@@ -37,6 +37,8 @@ def generate_launch_description():
         IncludeLaunchDescription(
             PathJoinSubstitution([includes, 'apps_common.launch.py']),
             launch_arguments={'app_name': 'explore_house',
+                              'rviz': LaunchConfiguration('rviz'),
+                              'rviz_config': 'exploration.rviz',
                               'simulator': simulator,
                               'world_name': LaunchConfiguration('world_name'),
                               'gui': LaunchConfiguration('gui'),
@@ -47,9 +49,7 @@ def generate_launch_description():
             PathJoinSubstitution([includes, 'navigation.launch.py']),
             launch_arguments={'simulation': simulation,
                               'world_name': LaunchConfiguration('world_name'),
-                              'localization': LaunchConfiguration('localization'),
-                              'rviz': LaunchConfiguration('rviz'),
-                              'rviz_config': 'exploration.rviz', **initial_pose}.items()),
+                              'localization': LaunchConfiguration('localization'), **initial_pose}.items()),
         IncludeLaunchDescription(
             PathJoinSubstitution([FindPackageShare('thorp_exploration'), 'launch', 'exploration.launch.py']),
             launch_arguments={'camera': LaunchConfiguration('camera'), 'use_sim_time': simulation}.items()),

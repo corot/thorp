@@ -3,6 +3,7 @@ Nodes common to all apps:
 - Thorp robot, simulated on Gazebo; the real robot's bringup is not ported yet
 - executive: the app's behavior tree (bt), or bt_server offering all trees as capabilities (llm)
 - optional executive visualization: the running node on RViz, and Groot2 if installed in ~/Groot2
+- RViz, with the app's configuration
 """
 
 import os
@@ -40,6 +41,8 @@ def generate_launch_description():
         DeclareLaunchArgument('on_exit_shutdown', default_value='false',
                               description='Shut down the whole app when its tree completes'),
         DeclareLaunchArgument('use_sim_time', default_value=simulation),
+        DeclareLaunchArgument('rviz', default_value='true'),
+        DeclareLaunchArgument('rviz_config', description="The app's RViz configuration, from thorp_bringup's rviz"),
 
         IncludeLaunchDescription(
             PathJoinSubstitution([FindPackageShare('thorp_simulation'), 'launch', ['thorp_', simulator, '.launch.py']]),
@@ -79,4 +82,12 @@ def generate_launch_description():
         # Not respawned: it would loop fast if Groot2 can't start, and closing its window is the user's choice
         ExecuteProcess(cmd=[GROOT2, '--nosplash', 'true'], output='screen',
                        condition=IfCondition(PythonExpression([visualize_bt, ' and ', str(os.path.exists(GROOT2))]))),
+
+        # MoveIt's RViz, as some configurations show its motion planning display
+        IncludeLaunchDescription(
+            PathJoinSubstitution([FindPackageShare('thorp_moveit_config'), 'launch', 'moveit_rviz.launch.py']),
+            launch_arguments={'simulation': simulation, 'use_sim_time': LaunchConfiguration('use_sim_time'),
+                              'rviz_config': PathJoinSubstitution([FindPackageShare('thorp_bringup'), 'rviz',
+                                                                   LaunchConfiguration('rviz_config')])}.items(),
+            condition=IfCondition(LaunchConfiguration('rviz'))),
     ])
