@@ -45,9 +45,11 @@ private:
       auto consumed = std::min(next_waypoint_, waypoints_.size());
       setOutput("waypoints", Waypoints{ waypoints_.begin() + consumed, waypoints_.end() });
       setOutput("next_waypoint", next_waypoint_);
-      RCLCPP_INFO_STREAM(logger(*this), "Next waypoint: " << next_waypoint_ << " ("
-                                                          << waypoints_.size() - consumed << "/" << waypoints_.size()
-                                                          << " left)");
+      if (consumed < waypoints_.size())
+        RCLCPP_INFO(logger(*this), "Next waypoint: %zu (%zu/%zu left)", next_waypoint_, waypoints_.size() - consumed,
+                    waypoints_.size());
+      else
+        RCLCPP_INFO(logger(*this), "All %zu waypoints reached", waypoints_.size());
     }
     return BT::NodeStatus::RUNNING;
   }
