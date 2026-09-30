@@ -124,12 +124,6 @@
             <input_port name="server_timeout" type="std::chrono::milliseconds"/>
             <input_port name="server_name" type="std::string">Action server name</input_port>
         </Action>
-        <Action ID="MakePickupPlan">
-            <output_port name="pickup_plan" type="std::vector&lt;thorp_msgs::msg::PickupLocation_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;thorp_msgs::msg::PickupLocation_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
-            <input_port name="objects" type="std::vector&lt;moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
-            <input_port name="pickup_poses" type="std::vector&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
-            <input_port name="robot_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-        </Action>
         <Action ID="MoveGripper">
             <input_port name="position" type="double" default="-0.360000">gripper_joint angle</input_port>
             <input_port name="server_timeout" type="std::chrono::milliseconds"/>
@@ -181,6 +175,12 @@
             <output_port name="error" type="int"/>
             <input_port name="server_timeout" type="std::chrono::milliseconds"/>
             <input_port name="server_name" type="std::string">Action server name</input_port>
+        </Action>
+        <Action ID="PlanPickupLocations">
+            <output_port name="pickup_plan" type="std::vector&lt;thorp_msgs::msg::PickupLocation_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;thorp_msgs::msg::PickupLocation_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+            <input_port name="objects" type="std::vector&lt;moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+            <input_port name="pickup_poses" type="std::vector&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+            <input_port name="robot_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Action ID="PlanRoomExploration">
             <output_port name="coverage_waypoints" type="std::vector&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>

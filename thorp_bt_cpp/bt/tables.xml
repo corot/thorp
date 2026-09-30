@@ -176,10 +176,10 @@
             <GetRobotPose timeout="1"
                           error="{error}"
                           robot_pose="{robot_pose}"/>
-            <MakePickupPlan objects="{objects}"
-                            pickup_poses="{pickup_poses}"
-                            robot_pose="{robot_pose}"
-                            pickup_plan="{pickup_plan}"/>
+            <PlanPickupLocations objects="{objects}"
+                                 pickup_poses="{pickup_poses}"
+                                 robot_pose="{robot_pose}"
+                                 pickup_plan="{pickup_plan}"/>
             <ForEachPickupLocation element="{pickup_location}"
                                    list="{pickup_plan}">
               <Sequence>

@@ -25,10 +25,10 @@ namespace thorp::bt::actions
  * the locations to visit as few as possible, travelling the least: a pickup plan. Each object is picked from the
  * location where it's closest to the arm.
  */
-class MakePickupPlan : public BT::SyncActionNode
+class PlanPickupLocations : public BT::SyncActionNode
 {
 public:
-  MakePickupPlan(const std::string& name, const BT::NodeConfig& config) : BT::SyncActionNode(name, config)
+  PlanPickupLocations(const std::string& name, const BT::NodeConfig& config) : BT::SyncActionNode(name, config)
   {
   }
 
@@ -222,7 +222,7 @@ private:
     return locations;
   }
 
-  BT_REGISTER_NODE(MakePickupPlan);
+  BT_REGISTER_NODE(PlanPickupLocations);
 };
 
 }  // namespace thorp::bt::actions

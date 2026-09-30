@@ -52,11 +52,11 @@ set(BT_NODES
   src/bt/actions/get_robot_pose.cpp
   src/bt/actions/list_slicing.cpp
   src/bt/actions/look_at_pose.cpp
-  src/bt/actions/make_pickup_plan.cpp
   src/bt/actions/move_gripper.cpp
   src/bt/actions/next_pose_on_tray.cpp
   src/bt/actions/pickup_object.cpp
   src/bt/actions/place_object.cpp
+  src/bt/actions/plan_pickup_locations.cpp
   src/bt/actions/plan_room_exploration.cpp
   src/bt/actions/plan_room_sequence.cpp
   src/bt/actions/pop_from_list.cpp
