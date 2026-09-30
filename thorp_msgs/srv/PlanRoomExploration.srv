@@ -1,0 +1,12 @@
+# Poses from where the camera sees all of a room, ordered to travel the least from the start pose
+
+uint32 WHOLE_MAP=0
+
+geometry_msgs/PoseStamped start
+uint32 room  # id from the last segmentation, or WHOLE_MAP
+
+---
+
+geometry_msgs/PoseStamped[] poses
+bool success
+string message  # why it failed

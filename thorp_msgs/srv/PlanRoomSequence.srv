@@ -1,0 +1,10 @@
+# Order rooms to visit them all traveling the least, from the start pose
+
+geometry_msgs/PoseStamped start
+uint32[] rooms  # ids from the last segmentation; all of its rooms if empty
+
+---
+
+uint32[] sequence
+bool success
+string message  # why it failed

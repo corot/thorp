@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
-<package format="2">
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>thorp_exploration</name>
   <version>0.1.0</version>
-  <description>Configuration and launch files to provide exploration capabilities</description>
+  <description>Exploration planner: room segmentation, room sequence and camera coverage of rooms</description>
   <maintainer email="jsantossimon@gmail.com">Jorge Santos Simón</maintainer>
   <author email="jsantossimon@gmail.com">Jorge Santos Simón</author>
 
@@ -10,11 +11,26 @@
 
   <url type="bugtracker">https://github.com/corot/thorp/issues</url>
   <url type="repository">https://github.com/corot/thorp</url>
-  <url type="website">http://wiki.ros.org/thorp_exploration</url>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
 
-  <exec_depend>ipa_building_navigation</exec_depend>
-  <exec_depend>ipa_room_segmentation</exec_depend>
-  <exec_depend>ipa_room_exploration</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>visualization_msgs</exec_depend>
+  <exec_depend>thorp_msgs</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>python3-scipy</exec_depend>
+  <exec_depend>python3-opencv</exec_depend>
+
+  <test_depend>ament_cmake_pytest</test_depend>
+  <test_depend>ament_index_python</test_depend>
+  <test_depend>python3-yaml</test_depend>
+  <test_depend>thorp_navigation</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
 </package>

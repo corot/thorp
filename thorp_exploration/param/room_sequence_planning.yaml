@@ -1,5 +1,0 @@
-# room sequence planning parameters
-tsp_solver: 1         # Concorde solver
-planning_method: 1    # SimpleOrderPlanning (plan the optimal order of a simple set of locations)
-display_map: false
-return_sequence_map: true

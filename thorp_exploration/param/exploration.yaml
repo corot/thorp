@@ -1,0 +1,15 @@
+exploration:
+  ros__parameters:
+    # Fields of view of the cameras, as x, y pairs of a convex polygon on base_footprint; the launch file sets the
+    # camera to plan for
+    kinect_field_of_view: [0.5, 0.289, 0.5, -0.289, 2.0, -1.155, 2.0, 1.155]
+    xtion_field_of_view: [0.2, 0.2, 0.2, -0.2, 1.2, -0.6, 1.2, 0.6]
+
+    clearance: 0.25            # minimum distance to obstacles to travel through, in meters
+    viewpoint_clearance: 0.4   # minimum distance to obstacles of the planned poses
+    room_area_min: 2.0         # rooms smaller than this, in square meters, merge into a neighbor
+    room_area_max: 20.0        # the largest eroded area of a room: bigger regions keep eroding, looking for doors
+    viewpoint_spacing: 0.3     # distance between candidate poses
+    headings: 8                # candidate headings on each candidate pose
+    coverage: 0.95             # fraction of what the camera can see of a room to cover
+    min_view_area: 0.25        # stop adding poses that see less than this, in square meters, not seen yet

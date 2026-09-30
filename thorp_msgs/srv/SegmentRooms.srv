@@ -1,0 +1,7 @@
+# Segment the map into rooms; the planner keeps them for planning their sequence and exploration
+
+---
+
+thorp_msgs/Room[] rooms
+bool success
+string message  # why it failed

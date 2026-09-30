@@ -15,10 +15,14 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   msg/ObjectToPickup.msg
   msg/PickupPlan.msg
   msg/PickupLocation.msg
+  msg/Room.msg
   msg/ThorpError.msg
   srv/CannonCommand.srv
   srv/ClearPlanningScene.srv
   srv/ConnectWaypoints.srv
+  srv/PlanRoomExploration.srv
+  srv/PlanRoomSequence.srv
+  srv/SegmentRooms.srv
   srv/TrayAddObject.srv
   srv/TrayCapacity.srv
   srv/TrayNextPose.srv
