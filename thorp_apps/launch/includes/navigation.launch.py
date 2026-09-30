@@ -1,7 +1,7 @@
 """
 Navigation for the apps that move around:
 - Nav2 and localization, on the map of the world
-- RViz, showing the map, costmaps and plans
+- RViz, showing the map, costmaps and plans, or the given configuration
 """
 
 from launch import LaunchDescription
@@ -24,6 +24,7 @@ def generate_launch_description():
         DeclareLaunchArgument('initial_pose_y', default_value='0.0'),
         DeclareLaunchArgument('initial_pose_a', default_value='0.0'),
         DeclareLaunchArgument('rviz', default_value='true'),
+        DeclareLaunchArgument('rviz_config', default_value='navigation.rviz', description="thorp_bringup's RViz config"),
 
         # Velocity smoothing only on the real robot, as the simulated base takes commands as they come
         IncludeLaunchDescription(
@@ -34,6 +35,7 @@ def generate_launch_description():
                               'localization': LaunchConfiguration('localization'), **initial_pose}.items()),
 
         Node(package='rviz2', executable='rviz2', name='rviz', output='screen', respawn=True,
-             arguments=['-d', PathJoinSubstitution([FindPackageShare('thorp_bringup'), 'rviz', 'navigation.rviz'])],
+             arguments=['-d', PathJoinSubstitution([FindPackageShare('thorp_bringup'), 'rviz',
+                                                    LaunchConfiguration('rviz_config')])],
              parameters=[{'use_sim_time': simulation}], condition=IfCondition(LaunchConfiguration('rviz'))),
     ])
