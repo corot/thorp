@@ -10,12 +10,15 @@
 
 #include "thorp_bt_cpp/node_common.hpp"
 
+#include <geometry_msgs/msg/pose_array.hpp>
 #include <moveit_msgs/msg/collision_object.hpp>
 #include <thorp_msgs/msg/pickup_location.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
+#include <thorp_toolkit/common.hpp>
 #include <thorp_toolkit/geometry.hpp>
 #include <thorp_toolkit/tf2.hpp>
+#include <thorp_toolkit/visualization.hpp>
 namespace ttk = thorp::toolkit;
 
 namespace thorp::bt::actions
@@ -23,13 +26,16 @@ namespace thorp::bt::actions
 /**
  * Group the objects on a table into pickup locations, the poses around it from where the arm reaches them, and sort
  * the locations to visit as few as possible, travelling the least: a pickup plan. Each object is picked from the
- * location where it's closest to the arm.
+ * location where it's closest to the arm. Shows the plan on RViz: the pickup poses on ~/pickup_poses, and on
+ * ~/pickup_plan each location's arm reach, labeled with its order, name and objects count, and its objects' names.
  */
 class PlanPickupLocations : public BT::SyncActionNode
 {
 public:
-  PlanPickupLocations(const std::string& name, const BT::NodeConfig& config) : BT::SyncActionNode(name, config)
+  PlanPickupLocations(const std::string& name, const BT::NodeConfig& config)
+    : BT::SyncActionNode(name, config), markers_("pickup_plan", 0.0)
   {
+    poses_pub_ = rosNode(*this)->create_publisher<geometry_msgs::msg::PoseArray>("~/pickup_poses", 1);
   }
 
   static BT::PortsList providedPorts()
@@ -109,8 +115,36 @@ private:
     }
     RCLCPP_INFO(logger(*this), "Pickup plan of %zu locations, %.2f m to travel:%s", plan.size(),
                 travelled(robot_pose, plan), summary.str().c_str());
+    showPlan(plan, max_reach);
     setOutput("pickup_plan", plan);
     return BT::NodeStatus::SUCCESS;
+  }
+
+  void showPlan(const std::vector<Location>& plan, double max_reach)
+  {
+    markers_.reset();
+    geometry_msgs::msg::PoseArray poses;
+    poses.header.frame_id = "map";
+    for (size_t i = 0; i < plan.size(); ++i)
+    {
+      const auto& location = plan[i];
+      const auto color = ttk::randomColor(i + 1, 0.5f);
+      markers_.addDiscMarker(location.arm_pose, max_reach * 2.0, color);
+      auto label_pose = location.arm_pose;
+      label_pose.pose.position.z += 0.15;
+      const auto label = std::to_string(i + 1) + " " + location.name + " " + std::to_string(location.objects.size());
+      markers_.addTextMarker(label_pose, label, 0.2, color);
+      for (const auto& object : location.objects)
+      {
+        auto object_pose = object.pose;
+        object_pose.pose.position.z += 0.05;
+        markers_.addTextMarker(object_pose, location.name + " " + object.name, 0.1, color);
+      }
+      poses.poses.push_back(location.pickup_pose.pose);
+      poses.poses.back().position.z += 0.025;  // over the costmap, so it can be seen
+    }
+    markers_.publishMarkers();
+    poses_pub_->publish(poses);
   }
 
   geometry_msgs::msg::PoseStamped toMap(const geometry_msgs::msg::PoseStamped& pose) const
@@ -221,6 +255,9 @@ private:
                     locations.end());
     return locations;
   }
+
+  ttk::Visualization markers_;
+  rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr poses_pub_;
 
   BT_REGISTER_NODE(PlanPickupLocations);
 };
