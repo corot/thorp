@@ -1,643 +1,653 @@
 # Based on nav2_bringup nav2_default_view.rviz (Apache 2.0 license), with Thorp topics
 Panels:
-- Class: rviz_common/Displays
-  Help Height: 0
-  Name: Displays
-  Property Tree Widget:
+  - Class: rviz_common/Displays
+    Help Height: 0
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Global Options1
+        - /TF1/Frames1
+        - /TF1/Tree1
+      Splitter Ratio: 0.5833333134651184
+    Tree Height: 287
+  - Class: rviz_common/Selection
+    Name: Selection
+  - Class: rviz_common/Tool Properties
     Expanded:
-    - /Global Options1
-    - /TF1/Frames1
-    - /TF1/Tree1
-    Splitter Ratio: 0.5833333134651184
-  Tree Height: 287
-- Class: rviz_common/Selection
-  Name: Selection
-- Class: rviz_common/Tool Properties
-  Expanded:
-  - /Publish Point1
-  Name: Tool Properties
-  Splitter Ratio: 0.5886790156364441
-- Class: rviz_common/Views
-  Expanded:
-  - /Current View1
-  Name: Views
-  Splitter Ratio: 0.3333333432674408
+      - /Publish Point1
+    Name: Tool Properties
+    Splitter Ratio: 0.5886790156364441
+  - Class: rviz_common/Views
+    Expanded:
+      - /Current View1
+    Name: Views
+    Splitter Ratio: 0.3333333432674408
 Visualization Manager:
   Class: ''
   Displays:
-  - Alpha: 0.5
-    Cell Size: 1
-    Class: rviz_default_plugins/Grid
-    Color: 160; 160; 164
-    Enabled: true
-    Line Style:
-      Line Width: 0.029999999329447746
-      Value: Lines
-    Name: Grid
-    Normal Cell Count: 0
-    Offset:
-      X: 0
-      Y: 0
-      Z: 0
-    Plane: XY
-    Plane Cell Count: 10
-    Reference Frame: <Fixed Frame>
-    Value: true
-  - Alpha: 1
-    Class: rviz_default_plugins/RobotModel
-    Collision Enabled: false
-    Description File: ''
-    Description Source: Topic
-    Description Topic:
-      Depth: 5
-      Durability Policy: Volatile
-      History Policy: Keep Last
-      Reliability Policy: Reliable
-      Value: /robot_description
-    Enabled: true
-    Links:
-      All Links Enabled: true
-      Expand Joint Details: false
-      Expand Link Details: false
-      Expand Tree: false
-      Link Tree Style: ''
-    Mass Properties:
-      Inertia: false
-      Mass: false
-    Name: RobotModel
-    TF Prefix: ''
-    Update Interval: 0
-    Value: true
-    Visual Enabled: true
-  - Class: rviz_default_plugins/TF
-    Enabled: false
-    Filter (blacklist): ''
-    Filter (whitelist): ''
-    Frame Timeout: 15
-    Frames:
-      All Enabled: true
-    Marker Scale: 1
-    Name: TF
-    Show Arrows: true
-    Show Axes: true
-    Show Names: false
-    Tree: {}
-    Update Interval: 0
-    Value: false
-  - Alpha: 1.0
-    Binary representation: false
-    Binary threshold: 100
-    Class: rviz_default_plugins/Map
-    Color Scheme: map
-    Draw Behind: true
-    Enabled: true
-    Name: Map
-    Topic:
-      Depth: 1
-      Durability Policy: Transient Local
-      Filter size: 10
-      History Policy: Keep Last
-      Reliability Policy: Reliable
-      Value: /map
-    Update Topic:
-      Depth: 5
-      Durability Policy: Volatile
-      History Policy: Keep Last
-      Reliability Policy: Reliable
-      Value: /map_updates
-    Use Timestamp: false
-    Value: true
-  - Class: rviz_common/Group
-    Displays:
-    - Class: rviz_common/Group
-      Displays:
-      - Class: rviz_default_plugins/Range
-        Enabled: true
-        Name: m90
-        Alpha: 0.5
-        Buffer Length: 1
-        Color: 255; 255; 255
-        Topic:
-          Depth: 5
-          Durability Policy: Volatile
-          Filter size: 10
-          History Policy: Keep Last
-          Reliability Policy: Best Effort
-          Value: /mobile_base/sensors/sonars/m90
-        Value: true
-      - Class: rviz_default_plugins/Range
-        Enabled: true
-        Name: m72
-        Alpha: 0.5
-        Buffer Length: 1
-        Color: 255; 255; 255
-        Topic:
-          Depth: 5
-          Durability Policy: Volatile
-          Filter size: 10
-          History Policy: Keep Last
-          Reliability Policy: Best Effort
-          Value: /mobile_base/sensors/sonars/m72
-        Value: true
-      - Class: rviz_default_plugins/Range
-        Enabled: true
-        Name: m54
-        Alpha: 0.5
-        Buffer Length: 1
-        Color: 255; 255; 255
-        Topic:
-          Depth: 5
-          Durability Policy: Volatile
-          Filter size: 10
-          History Policy: Keep Last
-          Reliability Policy: Best Effort
-          Value: /mobile_base/sensors/sonars/m54
-        Value: true
-      - Class: rviz_default_plugins/Range
-        Enabled: true
-        Name: m36
-        Alpha: 0.5
-        Buffer Length: 1
-        Color: 255; 255; 255
-        Topic:
-          Depth: 5
-          Durability Policy: Volatile
-          Filter size: 10
-          History Policy: Keep Last
-          Reliability Policy: Best Effort
-          Value: /mobile_base/sensors/sonars/m36
-        Value: true
-      - Class: rviz_default_plugins/Range
-        Enabled: true
-        Name: m18
-        Alpha: 0.5
-        Buffer Length: 1
-        Color: 255; 255; 255
-        Topic:
-          Depth: 5
-          Durability Policy: Volatile
-          Filter size: 10
-          History Policy: Keep Last
-          Reliability Policy: Best Effort
-          Value: /mobile_base/sensors/sonars/m18
-        Value: true
-      - Class: rviz_default_plugins/Range
-        Enabled: true
-        Name: p0
-        Alpha: 0.5
-        Buffer Length: 1
-        Color: 255; 255; 255
-        Topic:
-          Depth: 5
-          Durability Policy: Volatile
-          Filter size: 10
-          History Policy: Keep Last
-          Reliability Policy: Best Effort
-          Value: /mobile_base/sensors/sonars/p0
-        Value: true
-      - Class: rviz_default_plugins/Range
-        Enabled: true
-        Name: p18
-        Alpha: 0.5
-        Buffer Length: 1
-        Color: 255; 255; 255
-        Topic:
-          Depth: 5
-          Durability Policy: Volatile
-          Filter size: 10
-          History Policy: Keep Last
-          Reliability Policy: Best Effort
-          Value: /mobile_base/sensors/sonars/p18
-        Value: true
-      - Class: rviz_default_plugins/Range
-        Enabled: true
-        Name: p36
-        Alpha: 0.5
-        Buffer Length: 1
-        Color: 255; 255; 255
-        Topic:
-          Depth: 5
-          Durability Policy: Volatile
-          Filter size: 10
-          History Policy: Keep Last
-          Reliability Policy: Best Effort
-          Value: /mobile_base/sensors/sonars/p36
-        Value: true
-      - Class: rviz_default_plugins/Range
-        Enabled: true
-        Name: p54
-        Alpha: 0.5
-        Buffer Length: 1
-        Color: 255; 255; 255
-        Topic:
-          Depth: 5
-          Durability Policy: Volatile
-          Filter size: 10
-          History Policy: Keep Last
-          Reliability Policy: Best Effort
-          Value: /mobile_base/sensors/sonars/p54
-        Value: true
-      - Class: rviz_default_plugins/Range
-        Enabled: true
-        Name: p72
-        Alpha: 0.5
-        Buffer Length: 1
-        Color: 255; 255; 255
-        Topic:
-          Depth: 5
-          Durability Policy: Volatile
-          Filter size: 10
-          History Policy: Keep Last
-          Reliability Policy: Best Effort
-          Value: /mobile_base/sensors/sonars/p72
-        Value: true
-      - Class: rviz_default_plugins/Range
-        Enabled: true
-        Name: p90
-        Alpha: 0.5
-        Buffer Length: 1
-        Color: 255; 255; 255
-        Topic:
-          Depth: 5
-          Durability Policy: Volatile
-          Filter size: 10
-          History Policy: Keep Last
-          Reliability Policy: Best Effort
-          Value: /mobile_base/sensors/sonars/p90
-        Value: true
+    - Alpha: 0.5
+      Cell Size: 1
+      Class: rviz_default_plugins/Grid
+      Color: 160; 160; 164
       Enabled: true
-      Name: Sonars
-    - Class: rviz_common/Group
-      Displays:
-      - Class: rviz_default_plugins/Range
-        Enabled: true
-        Name: arm
-        Alpha: 0.5
-        Buffer Length: 1
-        Color: 255; 85; 0
-        Topic:
-          Depth: 5
-          Durability Policy: Volatile
-          Filter size: 10
-          History Policy: Keep Last
-          Reliability Policy: Best Effort
-          Value: /mobile_base/sensors/infrared/arm
-        Value: true
-      - Class: rviz_default_plugins/Range
-        Enabled: true
-        Name: 155 left
-        Alpha: 0.5
-        Buffer Length: 1
-        Color: 255; 85; 0
-        Topic:
-          Depth: 5
-          Durability Policy: Volatile
-          Filter size: 10
-          History Policy: Keep Last
-          Reliability Policy: Best Effort
-          Value: /mobile_base/sensors/infrared/l155
-        Value: true
-      - Class: rviz_default_plugins/Range
-        Enabled: true
-        Name: 180 left
-        Alpha: 0.5
-        Buffer Length: 1
-        Color: 255; 85; 0
-        Topic:
-          Depth: 5
-          Durability Policy: Volatile
-          Filter size: 10
-          History Policy: Keep Last
-          Reliability Policy: Best Effort
-          Value: /mobile_base/sensors/infrared/l180
-        Value: true
-      - Class: rviz_default_plugins/Range
-        Enabled: true
-        Name: 180 right
-        Alpha: 0.5
-        Buffer Length: 1
-        Color: 255; 85; 0
-        Topic:
-          Depth: 5
-          Durability Policy: Volatile
-          Filter size: 10
-          History Policy: Keep Last
-          Reliability Policy: Best Effort
-          Value: /mobile_base/sensors/infrared/r180
-        Value: true
-      - Class: rviz_default_plugins/Range
-        Enabled: true
-        Name: 155 right
-        Alpha: 0.5
-        Buffer Length: 1
-        Color: 255; 85; 0
-        Topic:
-          Depth: 5
-          Durability Policy: Volatile
-          Filter size: 10
-          History Policy: Keep Last
-          Reliability Policy: Best Effort
-          Value: /mobile_base/sensors/infrared/r155
-        Value: true
-      - Class: rviz_default_plugins/Range
-        Enabled: true
-        Name: cannon
-        Alpha: 0.5
-        Buffer Length: 1
-        Color: 255; 85; 0
-        Topic:
-          Depth: 5
-          Durability Policy: Volatile
-          Filter size: 10
-          History Policy: Keep Last
-          Reliability Policy: Best Effort
-          Value: /mobile_base/sensors/infrared/cannon
-        Value: true
-      Enabled: true
-      Name: IR sensors
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz_default_plugins/LaserScan
-      Color: 255; 255; 255
-      Color Transformer: Intensity
-      Decay Time: 0
-      Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 0
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: Kinect Scan
-      Position Transformer: XYZ
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.009999999776482582
-      Style: Points
-      Topic:
-        Depth: 5
-        Durability Policy: Volatile
-        Filter size: 10
-        History Policy: Keep Last
-        Reliability Policy: Best Effort
-        Value: /kinect/scan
-      Use Fixed Frame: true
-      Use rainbow: true
+      Line Style:
+        Line Width: 0.029999999329447746
+        Value: Lines
+      Name: Grid
+      Normal Cell Count: 0
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Plane: XY
+      Plane Cell Count: 10
+      Reference Frame: <Fixed Frame>
       Value: true
     - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz_default_plugins/LaserScan
-      Color: 255; 255; 255
-      Color Transformer: Intensity
-      Decay Time: 0
+      Class: rviz_default_plugins/RobotModel
+      Collision Enabled: false
+      Description File: ''
+      Description Source: Topic
+      Description Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /robot_description
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: ''
+      Mass Properties:
+        Inertia: false
+        Mass: false
+      Name: RobotModel
+      TF Prefix: ''
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
+    - Class: rviz_default_plugins/TF
       Enabled: false
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 0
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: Xtion Scan
-      Position Transformer: XYZ
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.009999999776482582
-      Style: Points
-      Topic:
-        Depth: 5
-        Durability Policy: Volatile
-        Filter size: 10
-        History Policy: Keep Last
-        Reliability Policy: Best Effort
-        Value: /xtion/scan
-      Use Fixed Frame: true
-      Use rainbow: true
+      Filter (blacklist): ''
+      Filter (whitelist): ''
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+      Marker Scale: 1
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: false
+      Tree: {}
+      Update Interval: 0
       Value: false
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz_default_plugins/PointCloud2
-      Color: 255; 255; 255
-      Color Transformer: RGB8
-      Decay Time: 0
-      Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 4096
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: Xtion
-      Position Transformer: XYZ
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.009999999776482582
-      Style: Flat Squares
-      Topic:
-        Depth: 5
-        Durability Policy: Volatile
-        History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: /xtion/depth_registered/points
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: true
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz_default_plugins/PointCloud2
-      Color: 255; 255; 255
-      Color Transformer: RGB8
-      Decay Time: 0
-      Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 4096
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: Kinect
-      Position Transformer: XYZ
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.009999999776482582
-      Style: Flat Squares
-      Topic:
-        Depth: 5
-        Durability Policy: Volatile
-        History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: /kinect/depth_registered/points
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: true
-    Enabled: true
-    Name: Sensors
-  - Class: rviz_common/Group
-    Displays:
-    - Alpha: 0.3
+    - Alpha: 1.0
       Binary representation: false
       Binary threshold: 100
       Class: rviz_default_plugins/Map
-      Color Scheme: costmap
-      Draw Behind: false
+      Color Scheme: map
+      Draw Behind: true
       Enabled: true
-      Name: Global Costmap
+      Name: Map
       Topic:
         Depth: 1
         Durability Policy: Transient Local
         Filter size: 10
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /global_costmap/costmap
+        Value: /map
       Update Topic:
         Depth: 5
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /global_costmap/costmap_updates
+        Value: /map_updates
       Use Timestamp: false
       Value: true
-    - Alpha: 1
-      Buffer Length: 1
-      Class: rviz_default_plugins/Path
-      Color: 255; 0; 0
+    - Class: rviz_common/Group
+      Displays:
+        - Class: rviz_common/Group
+          Displays:
+            - Alpha: 0.5
+              Buffer Length: 1
+              Class: rviz_default_plugins/Range
+              Color: 255; 255; 255
+              Enabled: true
+              Name: m90
+              Topic:
+                Depth: 5
+                Durability Policy: Volatile
+                Filter size: 10
+                History Policy: Keep Last
+                Reliability Policy: Best Effort
+                Value: /mobile_base/sensors/sonars/m90
+              Value: true
+            - Alpha: 0.5
+              Buffer Length: 1
+              Class: rviz_default_plugins/Range
+              Color: 255; 255; 255
+              Enabled: true
+              Name: m72
+              Topic:
+                Depth: 5
+                Durability Policy: Volatile
+                Filter size: 10
+                History Policy: Keep Last
+                Reliability Policy: Best Effort
+                Value: /mobile_base/sensors/sonars/m72
+              Value: true
+            - Alpha: 0.5
+              Buffer Length: 1
+              Class: rviz_default_plugins/Range
+              Color: 255; 255; 255
+              Enabled: true
+              Name: m54
+              Topic:
+                Depth: 5
+                Durability Policy: Volatile
+                Filter size: 10
+                History Policy: Keep Last
+                Reliability Policy: Best Effort
+                Value: /mobile_base/sensors/sonars/m54
+              Value: true
+            - Alpha: 0.5
+              Buffer Length: 1
+              Class: rviz_default_plugins/Range
+              Color: 255; 255; 255
+              Enabled: true
+              Name: m36
+              Topic:
+                Depth: 5
+                Durability Policy: Volatile
+                Filter size: 10
+                History Policy: Keep Last
+                Reliability Policy: Best Effort
+                Value: /mobile_base/sensors/sonars/m36
+              Value: true
+            - Alpha: 0.5
+              Buffer Length: 1
+              Class: rviz_default_plugins/Range
+              Color: 255; 255; 255
+              Enabled: true
+              Name: m18
+              Topic:
+                Depth: 5
+                Durability Policy: Volatile
+                Filter size: 10
+                History Policy: Keep Last
+                Reliability Policy: Best Effort
+                Value: /mobile_base/sensors/sonars/m18
+              Value: true
+            - Alpha: 0.5
+              Buffer Length: 1
+              Class: rviz_default_plugins/Range
+              Color: 255; 255; 255
+              Enabled: true
+              Name: p0
+              Topic:
+                Depth: 5
+                Durability Policy: Volatile
+                Filter size: 10
+                History Policy: Keep Last
+                Reliability Policy: Best Effort
+                Value: /mobile_base/sensors/sonars/p0
+              Value: true
+            - Alpha: 0.5
+              Buffer Length: 1
+              Class: rviz_default_plugins/Range
+              Color: 255; 255; 255
+              Enabled: true
+              Name: p18
+              Topic:
+                Depth: 5
+                Durability Policy: Volatile
+                Filter size: 10
+                History Policy: Keep Last
+                Reliability Policy: Best Effort
+                Value: /mobile_base/sensors/sonars/p18
+              Value: true
+            - Alpha: 0.5
+              Buffer Length: 1
+              Class: rviz_default_plugins/Range
+              Color: 255; 255; 255
+              Enabled: true
+              Name: p36
+              Topic:
+                Depth: 5
+                Durability Policy: Volatile
+                Filter size: 10
+                History Policy: Keep Last
+                Reliability Policy: Best Effort
+                Value: /mobile_base/sensors/sonars/p36
+              Value: true
+            - Alpha: 0.5
+              Buffer Length: 1
+              Class: rviz_default_plugins/Range
+              Color: 255; 255; 255
+              Enabled: true
+              Name: p54
+              Topic:
+                Depth: 5
+                Durability Policy: Volatile
+                Filter size: 10
+                History Policy: Keep Last
+                Reliability Policy: Best Effort
+                Value: /mobile_base/sensors/sonars/p54
+              Value: true
+            - Alpha: 0.5
+              Buffer Length: 1
+              Class: rviz_default_plugins/Range
+              Color: 255; 255; 255
+              Enabled: true
+              Name: p72
+              Topic:
+                Depth: 5
+                Durability Policy: Volatile
+                Filter size: 10
+                History Policy: Keep Last
+                Reliability Policy: Best Effort
+                Value: /mobile_base/sensors/sonars/p72
+              Value: true
+            - Alpha: 0.5
+              Buffer Length: 1
+              Class: rviz_default_plugins/Range
+              Color: 255; 255; 255
+              Enabled: true
+              Name: p90
+              Topic:
+                Depth: 5
+                Durability Policy: Volatile
+                Filter size: 10
+                History Policy: Keep Last
+                Reliability Policy: Best Effort
+                Value: /mobile_base/sensors/sonars/p90
+              Value: true
+          Enabled: true
+          Name: Sonars
+        - Class: rviz_common/Group
+          Displays:
+            - Alpha: 0.5
+              Buffer Length: 1
+              Class: rviz_default_plugins/Range
+              Color: 255; 85; 0
+              Enabled: true
+              Name: arm
+              Topic:
+                Depth: 5
+                Durability Policy: Volatile
+                Filter size: 10
+                History Policy: Keep Last
+                Reliability Policy: Best Effort
+                Value: /mobile_base/sensors/infrared/arm
+              Value: true
+            - Alpha: 0.5
+              Buffer Length: 1
+              Class: rviz_default_plugins/Range
+              Color: 255; 85; 0
+              Enabled: true
+              Name: 155 left
+              Topic:
+                Depth: 5
+                Durability Policy: Volatile
+                Filter size: 10
+                History Policy: Keep Last
+                Reliability Policy: Best Effort
+                Value: /mobile_base/sensors/infrared/l155
+              Value: true
+            - Alpha: 0.5
+              Buffer Length: 1
+              Class: rviz_default_plugins/Range
+              Color: 255; 85; 0
+              Enabled: true
+              Name: 180 left
+              Topic:
+                Depth: 5
+                Durability Policy: Volatile
+                Filter size: 10
+                History Policy: Keep Last
+                Reliability Policy: Best Effort
+                Value: /mobile_base/sensors/infrared/l180
+              Value: true
+            - Alpha: 0.5
+              Buffer Length: 1
+              Class: rviz_default_plugins/Range
+              Color: 255; 85; 0
+              Enabled: true
+              Name: 180 right
+              Topic:
+                Depth: 5
+                Durability Policy: Volatile
+                Filter size: 10
+                History Policy: Keep Last
+                Reliability Policy: Best Effort
+                Value: /mobile_base/sensors/infrared/r180
+              Value: true
+            - Alpha: 0.5
+              Buffer Length: 1
+              Class: rviz_default_plugins/Range
+              Color: 255; 85; 0
+              Enabled: true
+              Name: 155 right
+              Topic:
+                Depth: 5
+                Durability Policy: Volatile
+                Filter size: 10
+                History Policy: Keep Last
+                Reliability Policy: Best Effort
+                Value: /mobile_base/sensors/infrared/r155
+              Value: true
+            - Alpha: 0.5
+              Buffer Length: 1
+              Class: rviz_default_plugins/Range
+              Color: 255; 85; 0
+              Enabled: true
+              Name: cannon
+              Topic:
+                Depth: 5
+                Durability Policy: Volatile
+                Filter size: 10
+                History Policy: Keep Last
+                Reliability Policy: Best Effort
+                Value: /mobile_base/sensors/infrared/cannon
+              Value: true
+          Enabled: true
+          Name: IR sensors
+        - Alpha: 1
+          Autocompute Intensity Bounds: true
+          Autocompute Value Bounds:
+            Max Value: 10
+            Min Value: -10
+            Value: true
+          Axis: Z
+          Channel Name: intensity
+          Class: rviz_default_plugins/LaserScan
+          Color: 255; 255; 255
+          Color Transformer: Intensity
+          Decay Time: 0
+          Enabled: true
+          Invert Rainbow: false
+          Max Color: 255; 255; 255
+          Max Intensity: 0
+          Min Color: 0; 0; 0
+          Min Intensity: 0
+          Name: Kinect Scan
+          Position Transformer: XYZ
+          Selectable: true
+          Size (Pixels): 3
+          Size (m): 0.009999999776482582
+          Style: Points
+          Topic:
+            Depth: 5
+            Durability Policy: Volatile
+            Filter size: 10
+            History Policy: Keep Last
+            Reliability Policy: Best Effort
+            Value: /kinect/scan
+          Use Fixed Frame: true
+          Use rainbow: true
+          Value: true
+        - Alpha: 1
+          Autocompute Intensity Bounds: true
+          Autocompute Value Bounds:
+            Max Value: 10
+            Min Value: -10
+            Value: true
+          Axis: Z
+          Channel Name: intensity
+          Class: rviz_default_plugins/LaserScan
+          Color: 255; 255; 255
+          Color Transformer: Intensity
+          Decay Time: 0
+          Enabled: false
+          Invert Rainbow: false
+          Max Color: 255; 255; 255
+          Max Intensity: 0
+          Min Color: 0; 0; 0
+          Min Intensity: 0
+          Name: Xtion Scan
+          Position Transformer: XYZ
+          Selectable: true
+          Size (Pixels): 3
+          Size (m): 0.009999999776482582
+          Style: Points
+          Topic:
+            Depth: 5
+            Durability Policy: Volatile
+            Filter size: 10
+            History Policy: Keep Last
+            Reliability Policy: Best Effort
+            Value: /xtion/scan
+          Use Fixed Frame: true
+          Use rainbow: true
+          Value: false
+        - Alpha: 1
+          Autocompute Intensity Bounds: true
+          Autocompute Value Bounds:
+            Max Value: 10
+            Min Value: -10
+            Value: true
+          Axis: Z
+          Channel Name: intensity
+          Class: rviz_default_plugins/PointCloud2
+          Color: 255; 255; 255
+          Color Transformer: RGB8
+          Decay Time: 0
+          Enabled: true
+          Invert Rainbow: false
+          Max Color: 255; 255; 255
+          Max Intensity: 4096
+          Min Color: 0; 0; 0
+          Min Intensity: 0
+          Name: Xtion
+          Position Transformer: XYZ
+          Selectable: true
+          Size (Pixels): 3
+          Size (m): 0.009999999776482582
+          Style: Flat Squares
+          Topic:
+            Depth: 5
+            Durability Policy: Volatile
+            History Policy: Keep Last
+            Reliability Policy: Reliable
+            Value: /xtion/depth_registered/points
+          Use Fixed Frame: true
+          Use rainbow: true
+          Value: true
+        - Alpha: 1
+          Autocompute Intensity Bounds: true
+          Autocompute Value Bounds:
+            Max Value: 10
+            Min Value: -10
+            Value: true
+          Axis: Z
+          Channel Name: intensity
+          Class: rviz_default_plugins/PointCloud2
+          Color: 255; 255; 255
+          Color Transformer: RGB8
+          Decay Time: 0
+          Enabled: true
+          Invert Rainbow: false
+          Max Color: 255; 255; 255
+          Max Intensity: 4096
+          Min Color: 0; 0; 0
+          Min Intensity: 0
+          Name: Kinect
+          Position Transformer: XYZ
+          Selectable: true
+          Size (Pixels): 3
+          Size (m): 0.009999999776482582
+          Style: Flat Squares
+          Topic:
+            Depth: 5
+            Durability Policy: Volatile
+            History Policy: Keep Last
+            Reliability Policy: Reliable
+            Value: /kinect/depth_registered/points
+          Use Fixed Frame: true
+          Use rainbow: true
+          Value: true
       Enabled: true
-      Head Diameter: 0.019999999552965164
-      Head Length: 0.019999999552965164
-      Length: 0.30000001192092896
-      Line Style: Lines
-      Line Width: 0.029999999329447746
-      Name: Global Plan
-      Offset:
-        X: 0
-        Y: 0
-        Z: 0
-      Pose Color: 255; 85; 255
-      Pose Style: None
-      Radius: 0.029999999329447746
-      Shaft Diameter: 0.004999999888241291
-      Shaft Length: 0.019999999552965164
-      Topic:
-        Depth: 5
-        Durability Policy: Volatile
-        Filter size: 10
-        History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: /plan
-      Value: true
-    - Alpha: 0.7
-      Binary representation: false
-      Binary threshold: 100
-      Class: rviz_default_plugins/Map
-      Color Scheme: costmap
-      Draw Behind: false
+      Name: Sensors
+    - Class: rviz_common/Group
+      Displays:
+        - Alpha: 0.3
+          Binary representation: false
+          Binary threshold: 100
+          Class: rviz_default_plugins/Map
+          Color Scheme: costmap
+          Draw Behind: false
+          Enabled: true
+          Name: Global Costmap
+          Topic:
+            Depth: 1
+            Durability Policy: Transient Local
+            Filter size: 10
+            History Policy: Keep Last
+            Reliability Policy: Reliable
+            Value: /global_costmap/costmap
+          Update Topic:
+            Depth: 5
+            Durability Policy: Volatile
+            History Policy: Keep Last
+            Reliability Policy: Reliable
+            Value: /global_costmap/costmap_updates
+          Use Timestamp: false
+          Value: true
+        - Alpha: 1
+          Buffer Length: 1
+          Class: rviz_default_plugins/Path
+          Color: 255; 0; 0
+          Enabled: true
+          Head Diameter: 0.019999999552965164
+          Head Length: 0.019999999552965164
+          Length: 0.30000001192092896
+          Line Style: Lines
+          Line Width: 0.029999999329447746
+          Name: Global Plan
+          Offset:
+            X: 0
+            Y: 0
+            Z: 0
+          Pose Color: 255; 85; 255
+          Pose Style: None
+          Radius: 0.029999999329447746
+          Shaft Diameter: 0.004999999888241291
+          Shaft Length: 0.019999999552965164
+          Topic:
+            Depth: 5
+            Durability Policy: Volatile
+            Filter size: 10
+            History Policy: Keep Last
+            Reliability Policy: Reliable
+            Value: /plan
+          Value: true
+        - Alpha: 0.7
+          Binary representation: false
+          Binary threshold: 100
+          Class: rviz_default_plugins/Map
+          Color Scheme: costmap
+          Draw Behind: false
+          Enabled: true
+          Name: Local Costmap
+          Topic:
+            Depth: 1
+            Durability Policy: Transient Local
+            Filter size: 10
+            History Policy: Keep Last
+            Reliability Policy: Reliable
+            Value: /local_costmap/costmap
+          Update Topic:
+            Depth: 5
+            Durability Policy: Volatile
+            History Policy: Keep Last
+            Reliability Policy: Reliable
+            Value: /local_costmap/costmap_updates
+          Use Timestamp: false
+          Value: true
+        - Alpha: 1
+          Buffer Length: 1
+          Class: rviz_default_plugins/Path
+          Color: 0; 12; 255
+          Enabled: true
+          Head Diameter: 0.019999999552965164
+          Head Length: 0.019999999552965164
+          Length: 0.30000001192092896
+          Line Style: Lines
+          Line Width: 0.029999999329447746
+          Name: Local Plan
+          Offset:
+            X: 0
+            Y: 0
+            Z: 0
+          Pose Color: 255; 85; 255
+          Pose Style: None
+          Radius: 0.029999999329447746
+          Shaft Diameter: 0.004999999888241291
+          Shaft Length: 0.019999999552965164
+          Topic:
+            Depth: 5
+            Durability Policy: Volatile
+            Filter size: 10
+            History Policy: Keep Last
+            Reliability Policy: Reliable
+            Value: /local_plan
+          Value: true
+        - Alpha: 1
+          Class: rviz_default_plugins/Polygon
+          Color: 25; 255; 0
+          Enabled: true
+          Name: Footprint
+          Topic:
+            Depth: 5
+            Durability Policy: Volatile
+            Filter size: 10
+            History Policy: Keep Last
+            Reliability Policy: Reliable
+            Value: /local_costmap/published_footprint
+          Value: true
       Enabled: true
-      Name: Local Costmap
+      Name: Navigation
+    - Class: rviz_common/Group
+      Displays:
+        - Acceleration_Scaling_Factor: 1.0
+          Class: moveit_rviz_plugin/MotionPlanning
+          Enabled: false
+          Name: MotionPlanning
+          Planned Path:
+            Loop Animation: false
+            State Display Time: 0.05 s
+            Trajectory Topic: display_planned_path
+          Planning Scene Topic: monitored_planning_scene
+          Robot Description: robot_description
+          Scene Geometry:
+            Scene Alpha: 1
+          Scene Robot:
+            Robot Alpha: 0.5
+          Value: false
+          Velocity_Scaling_Factor: 1.0
+        - Class: rviz_default_plugins/InteractiveMarkers
+          Enabled: true
+          Interactive Markers Namespace: /move_objects
+          Name: Objects Interaction
+          Show Axes: false
+          Show Descriptions: false
+          Show Visual Aids: false
+          Value: true
+      Enabled: false
+      Name: Manipulation
+    - Class: rviz_2d_overlay_plugins/TextOverlay
+      Enabled: true
+      Name: Executive
       Topic:
         Depth: 1
-        Durability Policy: Transient Local
-        Filter size: 10
-        History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: /local_costmap/costmap
-      Update Topic:
-        Depth: 5
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /local_costmap/costmap_updates
-      Use Timestamp: false
+        Value: /rviz/executive_progress_overlay
       Value: true
-    - Alpha: 1
-      Buffer Length: 1
-      Class: rviz_default_plugins/Path
-      Color: 0; 12; 255
-      Enabled: true
-      Head Diameter: 0.019999999552965164
-      Head Length: 0.019999999552965164
-      Length: 0.30000001192092896
-      Line Style: Lines
-      Line Width: 0.029999999329447746
-      Name: Local Plan
-      Offset:
-        X: 0
-        Y: 0
-        Z: 0
-      Pose Color: 255; 85; 255
-      Pose Style: None
-      Radius: 0.029999999329447746
-      Shaft Diameter: 0.004999999888241291
-      Shaft Length: 0.019999999552965164
-      Topic:
-        Depth: 5
-        Durability Policy: Volatile
-        Filter size: 10
-        History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: /local_plan
-      Value: true
-    - Alpha: 1
-      Class: rviz_default_plugins/Polygon
-      Color: 25; 255; 0
-      Enabled: true
-      Name: Footprint
-      Topic:
-        Depth: 5
-        Durability Policy: Volatile
-        Filter size: 10
-        History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: /local_costmap/published_footprint
-      Value: true
-    Enabled: true
-    Name: Navigation
-  - Class: rviz_common/Group
-    Displays:
-    - Class: moveit_rviz_plugin/MotionPlanning
-      Name: MotionPlanning
-      Velocity_Scaling_Factor: 1.0
-      Acceleration_Scaling_Factor: 1.0
-      Planned Path:
-        Loop Animation: false
-        State Display Time: 0.05 s
-        Trajectory Topic: display_planned_path
-      Planning Scene Topic: monitored_planning_scene
-      Robot Description: robot_description
-      Scene Geometry:
-        Scene Alpha: 1
-      Scene Robot:
-        Robot Alpha: 0.5
-      Value: false
-      Enabled: false
-    - Class: rviz_default_plugins/InteractiveMarkers
-      Enabled: true
-      Interactive Markers Namespace: /move_objects
-      Name: Objects Interaction
-      Show Axes: false
-      Show Descriptions: false
-      Show Visual Aids: false
-      Value: true
-    Enabled: false
-    Name: Manipulation
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -645,31 +655,31 @@ Visualization Manager:
     Frame Rate: 30
   Name: root
   Tools:
-  - Class: rviz_default_plugins/MoveCamera
-  - Class: rviz_default_plugins/Select
-  - Class: rviz_default_plugins/FocusCamera
-  - Class: rviz_default_plugins/Measure
-    Line color: 128; 128; 0
-  - Class: rviz_default_plugins/SetInitialPose
-    Covariance x: 0.25
-    Covariance y: 0.25
-    Covariance yaw: 0.06853891909122467
-    Topic:
-      Depth: 5
-      Durability Policy: Volatile
-      History Policy: Keep Last
-      Reliability Policy: Reliable
-      Value: /initialpose
-  - Class: rviz_default_plugins/PublishPoint
-    Single click: true
-    Topic:
-      Depth: 5
-      Durability Policy: Volatile
-      History Policy: Keep Last
-      Reliability Policy: Reliable
-      Value: /clicked_point
-  - Class: nav2_rviz_plugins/GoalTool
-  - Class: thorp_rviz_plugins/ClearCostmapTool
+    - Class: rviz_default_plugins/MoveCamera
+    - Class: rviz_default_plugins/Select
+    - Class: rviz_default_plugins/FocusCamera
+    - Class: rviz_default_plugins/Measure
+      Line color: 128; 128; 0
+    - Class: rviz_default_plugins/SetInitialPose
+      Covariance x: 0.25
+      Covariance y: 0.25
+      Covariance yaw: 0.06853891909122467
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /initialpose
+    - Class: rviz_default_plugins/PublishPoint
+      Single click: true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /clicked_point
+    - Class: nav2_rviz_plugins/GoalTool
+    - Class: thorp_rviz_plugins/ClearCostmapTool
   Transformation:
     Current:
       Class: rviz_default_plugins/TF
