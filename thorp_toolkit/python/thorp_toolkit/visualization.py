@@ -104,23 +104,31 @@ class Visualization(metaclass=Singleton):
             return ColorRGBA(r=float(rgba[0]), g=float(rgba[1]), b=float(rgba[2]), a=float(rgba[3]))
         raise ValueError("Color tuple has to be of len 3 or 4!")
 
+    # every name the C++ colorName can return, as in its namedColor
+    NAMED_COLORS = {
+        'black': (0.0, 0.0, 0.0),
+        'gray': (0.5, 0.5, 0.5),
+        'light gray': (0.75, 0.75, 0.75),
+        'white': (1.0, 1.0, 1.0),
+        'red': (1.0, 0.0, 0.0),
+        'orange': (1.0, 0.65, 0.0),
+        'yellow': (1.0, 1.0, 0.0),
+        'green': (0.0, 1.0, 0.0),
+        'cyan': (0.0, 1.0, 1.0),
+        'blue': (0.0, 0.0, 1.0),
+        'purple': (0.5, 0.0, 0.5),
+        'pink': (1.0, 0.75, 0.8),
+        'beige': (0.96, 0.96, 0.86),
+    }
+
     @classmethod
     def named_color(cls, color_name, alpha=1.0):
-        """ Create color msg for some basic color names. Alpha defaults to 1.0 """
-        if not hasattr(cls, 'color_map'):
-            cls.color_map = {
-                "red": ColorRGBA(r=1.0, g=0.0, b=0.0, a=float(alpha)),
-                "blue": ColorRGBA(r=0.0, g=0.0, b=1.0, a=float(alpha)),
-                "green": ColorRGBA(r=0.0, g=1.0, b=0.0, a=float(alpha)),
-                "yellow": ColorRGBA(r=1.0, g=1.0, b=0.0, a=float(alpha)),
-                "orange": ColorRGBA(r=1.0, g=0.65, b=0.0, a=float(alpha)),
-                "white": ColorRGBA(r=1.0, g=1.0, b=1.0, a=float(alpha)),
-                "gray": ColorRGBA(r=0.5, g=0.5, b=0.5, a=float(alpha)),
-                "beige": ColorRGBA(r=0.96, g=0.96, b=0.86, a=float(alpha)),
-                "cyan": ColorRGBA(r=0.0, g=1.0, b=1.0, a=float(alpha)),
-            }
-
-        return cls.color_map[color_name]
+        """ Create color msg for a color name, as those detections report. Alpha defaults to 1.0 """
+        try:
+            r, g, b = cls.NAMED_COLORS[color_name]
+        except KeyError:
+            raise ValueError(f"Unknown color name '{color_name}'") from None
+        return ColorRGBA(r=r, g=g, b=b, a=float(alpha))
 
     @classmethod
     def create_mesh_marker(cls, pose, mesh_file, scale=None, color=None, namespace='mesh_marker'):
