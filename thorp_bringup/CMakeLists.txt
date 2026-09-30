@@ -14,7 +14,8 @@ install(FILES param/xtion/pointcloud_to_laserscan.yaml
         DESTINATION share/${PROJECT_NAME}/param/xtion
 )
 
-install(FILES rviz/manipulation.rviz rviz/navigation.rviz
+install(FILES rviz/exploration.rviz rviz/gathering.rviz rviz/hunting.rviz rviz/manipulation.rviz rviz/navigation.rviz
+              rviz/perception.rviz rviz/view_all.rviz rviz/view_model.rviz
         DESTINATION share/${PROJECT_NAME}/rviz
 )
 install(DIRECTORY rviz/icons
