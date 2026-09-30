@@ -58,7 +58,7 @@ a ROS domain nothing else uses: static transforms published beside a simulation 
 |---|------|--------|
 | 1 | Core in plain Python: entities, matching, relations, provenance, persistence; with tests | done |
 | 2 | ROS 2 node: `thorp_msgs` interfaces (entity, state, observe, update, query, save and load), RViz markers | done |
-| 3 | Perception reports to it, and names objects with its ids | |
+| 3 | Perception reports to it, and names objects with its ids; the planning scene's table keeps the name `table` until the skills take table ids | done |
 | 4 | Skills on ids: world tree nodes; table and manipulation skills take ids and report effects; `capabilities.yaml` drops `states`, `needs`, `invalidates` and `from`, and gains `errors` | |
 | 5 | Agent on ROS 2 (ROSA): world tools, world summary, world changes in skill results | |
 

@@ -11,6 +11,7 @@
 #include <limits>
 #include <map>
 #include <mutex>
+#include <optional>
 #include <set>
 #include <sstream>
 #include <thread>
@@ -38,6 +39,7 @@
 
 #include <thorp_msgs/action/detect_objects.hpp>
 #include <thorp_msgs/action/detect_tables.hpp>
+#include <thorp_msgs/srv/observe_world.hpp>
 #include <thorp_toolkit/common.hpp>
 #include <thorp_toolkit/tray.hpp>
 
@@ -186,6 +188,7 @@ class ObjectDetectionServer
 public:
   using DetectObjects = thorp_msgs::action::DetectObjects;
   using DetectTables = thorp_msgs::action::DetectTables;
+  using ObserveWorld = thorp_msgs::srv::ObserveWorld;
 
   explicit ObjectDetectionServer(const rclcpp::Node::SharedPtr& node)
     : node_(node), tf_buffer_(node->get_clock()), tf_listener_(tf_buffer_)
@@ -215,6 +218,7 @@ public:
     markers_pub_ = node_->create_publisher<visualization_msgs::msg::MarkerArray>("~/markers", toolkit::LATCHED);
     table_pub_ = node_->create_publisher<sensor_msgs::msg::PointCloud2>("~/table", toolkit::LATCHED);
     clusters_pub_ = node_->create_publisher<sensor_msgs::msg::PointCloud2>("~/clusters", toolkit::LATCHED);
+    world_client_ = node_->create_client<ObserveWorld>("world/observe");
     // Reliable, as the cloud publisher; with Cyclone DDS, a best effort subscription gets none of these ~10 MB clouds
     cloud_sub_ = node_->create_subscription<sensor_msgs::msg::PointCloud2>(
         "cloud", rclcpp::QoS(1), [this](sensor_msgs::msg::PointCloud2::ConstSharedPtr msg) {
@@ -336,20 +340,29 @@ private:
       return;
     }
     std::optional<Surface> surface = findSurface(cloud, segmentation_, goal_handle->get_goal()->min_side, error);
-    if (surface)
-    {
-      result->tables.push_back(makeTable(*surface, header));
-      table_pub_->publish(toMsg(*surface->cloud, header));
-      visualization_msgs::msg::MarkerArray markers;
-      markers.markers.push_back(makeOutline(*surface, header));
-      markers_pub_->publish(markers);
-      RCLCPP_INFO(node_->get_logger(), "Table of %.2f x %.2f m detected at [%.2f, %.2f, %.2f]", surface->length,
-                  surface->width, surface->center.x(), surface->center.y(), surface->height(surface->center));
-    }
-    else
+    if (!surface)
     {
       RCLCPP_INFO(node_->get_logger(), "No table detected: %s", error.c_str());
+      goal_handle->succeed(result);
+      return;
     }
+    result->tables.push_back(makeTable(*surface, header));
+    table_pub_->publish(toMsg(*surface->cloud, header));
+    visualization_msgs::msg::MarkerArray markers;
+    markers.markers.push_back(makeOutline(*surface, header));
+    markers_pub_->publish(markers);
+    auto request = std::make_shared<ObserveWorld::Request>();
+    request->tables = result->tables;
+    std::optional<ObserveWorld::Response> observed = observeWorld(request, error);
+    if (!observed)
+    {
+      RCLCPP_ERROR(node_->get_logger(), "Table detection failed: %s", error.c_str());
+      goal_handle->abort(result);
+      return;
+    }
+    RCLCPP_INFO(node_->get_logger(), "Table of %.2f x %.2f m detected at [%.2f, %.2f, %.2f]: %s", surface->length,
+                surface->width, surface->center.x(), surface->center.y(), surface->height(surface->center),
+                observed->table_ids.front().c_str());
     goal_handle->succeed(result);
   }
 
@@ -381,13 +394,6 @@ private:
     std::vector<CollisionObject> scene_objects{ result->surface };
     std::vector<ObjectColor> colors{ objectColor(result->surface.id, meanColor(*surface->cloud)) };
 
-    // Existing names, so new objects don't take them
-    std::set<std::string> taken_names;
-    for (const auto& name : planning_scene_.getKnownObjectNames())
-      taken_names.insert(name);
-    for (const auto& [name, attached] : planning_scene_.getAttachedObjects())
-      taken_names.insert(name);
-
     std::vector<PointCloud::Ptr> clusters = extractClusters(cloud, *surface, segmentation_);
     clusters_pub_->publish(toMsg(clusters, header));
     RCLCPP_INFO(node_->get_logger(), "%zu objects plus table segmented in %.2f seconds", clusters.size(),
@@ -395,6 +401,8 @@ private:
     visualization_msgs::msg::MarkerArray markers;
     markers.markers.emplace_back().action = visualization_msgs::msg::Marker::DELETEALL;
     markers.markers.push_back(makeOutline(*surface, header));
+    std::vector<CollisionObject> objects;
+    std::vector<Eigen::Vector3f> object_rgbs;
     for (const auto& cluster : clusters)
     {
       if (goal_handle->is_canceling())
@@ -402,26 +410,48 @@ private:
         goal_handle->canceled(result);
         return;
       }
-      const int marker_id = static_cast<int>(markers.markers.size());
       std::string rejection;
-      std::optional<CollisionObject> object = identifyObject(*cluster, *surface, header, taken_names, rejection);
+      std::optional<CollisionObject> object = identifyObject(*cluster, *surface, header, rejection);
       if (!object)
       {
         PointT min_pt, max_pt;
         pcl::getMinMax3D(*cluster, min_pt, max_pt);
-        markers.markers.push_back(makeLabel("rejected", marker_id, rejection, toolkit::makeColor(1.0f, 0.2f, 0.2f),
-                                            header, (min_pt.x + max_pt.x) / 2.0, (min_pt.y + max_pt.y) / 2.0,
-                                            (min_pt.z + max_pt.z) / 2.0 + 0.05));
+        markers.markers.push_back(makeLabel("rejected", static_cast<int>(markers.markers.size()), rejection,
+                                            toolkit::makeColor(1.0f, 0.2f, 0.2f), header, (min_pt.x + max_pt.x) / 2.0,
+                                            (min_pt.y + max_pt.y) / 2.0, (min_pt.z + max_pt.z) / 2.0 + 0.05));
         continue;
       }
-      taken_names.insert(object->id);
-      result->objects.push_back(*object);
-      scene_objects.push_back(*object);
-      colors.push_back(objectColor(object->id, meanColor(*cluster)));
+      objects.push_back(*object);
+      object_rgbs.push_back(meanColor(*cluster));
+    }
+
+    // thorp_world names them, as the objects it already knows at about the same place, or as new ones
+    auto request = std::make_shared<ObserveWorld::Request>();
+    request->surface = result->surface;
+    request->objects = objects;
+    std::optional<ObserveWorld::Response> observed = observeWorld(request, error);
+    if (observed && observed->object_ids.size() != objects.size())
+    {
+      error = "thorp_world returned " + std::to_string(observed->object_ids.size()) + " ids for " +
+              std::to_string(objects.size()) + " objects";
+      observed.reset();
+    }
+    if (!observed)
+    {
+      RCLCPP_ERROR(node_->get_logger(), "Object detection failed: %s", error.c_str());
+      goal_handle->abort(result);
+      return;
+    }
+    for (size_t i = 0; i < objects.size(); ++i)
+    {
+      objects[i].id = observed->object_ids[i];
+      result->objects.push_back(objects[i]);
+      scene_objects.push_back(objects[i]);
+      colors.push_back(objectColor(objects[i].id, object_rgbs[i]));
       // The planning scene doesn't show object names, so we label them
-      markers.markers.push_back(makeLabel("labels", marker_id, object->id, colors.back().color, header,
-                                          object->pose.position.x, object->pose.position.y,
-                                          object->pose.position.z + 0.05));
+      const auto& position = objects[i].pose.position;
+      markers.markers.push_back(makeLabel("labels", static_cast<int>(markers.markers.size()), objects[i].id,
+                                          colors.back().color, header, position.x, position.y, position.z + 0.05));
     }
 
     // Remove the objects previously detected on the table but not now; the redetected ones get replaced
@@ -449,8 +479,7 @@ private:
    * @return The object, or nothing if it has an impossible size or pose, or doesn't match any template
    */
   std::optional<CollisionObject> identifyObject(const PointCloud& cluster, const Surface& surface,
-                                                const std_msgs::msg::Header& header,
-                                                const std::set<std::string>& taken_names, std::string& rejection)
+                                                const std_msgs::msg::Header& header, std::string& rejection)
   {
     PointT min_pt, max_pt;
     pcl::getMinMax3D(cluster, min_pt, max_pt);
@@ -530,36 +559,41 @@ private:
     object.mesh_poses.resize(1);
     object.mesh_poses[0].position.z = -height / 2.0;  // meshes' origin is at their base
     object.mesh_poses[0].orientation.w = 1.0;
+    object.type.key = match.name;
     object.type.db = metadata(length, width, height, meanColor(cluster));
-    object.id = objectName(match.name, object.pose, length, height, taken_names);
+    object.id = match.name;
     RCLCPP_INFO(node_->get_logger(), "Object at [%.2f, %.2f, %.2f] classified as %s (error %.2f)",
-                object.pose.position.x, object.pose.position.y, object.pose.position.z, object.id.c_str(),
+                object.pose.position.x, object.pose.position.y, object.pose.position.z, match.name.c_str(),
                 match.error * 1e6);
     return object;
   }
 
   /**
-   * The name of an object of the same type already on the planning scene at about the same place, as that's
-   * probably the same object; otherwise, the type plus the first free index.
+   * Report what was detected to thorp_world, that matches it with what it knows.
+   * @return Its response, with the ids it gives each thing, or nothing if it's not there or can't take it
    */
-  std::string objectName(const std::string& type, const geometry_msgs::msg::Pose& pose, double length, double height,
-                         const std::set<std::string>& taken_names)
+  std::optional<ObserveWorld::Response> observeWorld(const ObserveWorld::Request::SharedPtr& request,
+                                                     std::string& error)
   {
-    double half_side = length / 2.0 + redetect_tolerance_;
-    double half_height = height / 2.0 + redetect_tolerance_;
-    for (const auto& name : objectsInVolume(
-             Eigen::Vector3d(pose.position.x - half_side, pose.position.y - half_side, pose.position.z - half_height),
-             Eigen::Vector3d(pose.position.x + half_side, pose.position.y + half_side, pose.position.z + half_height)))
+    if (!world_client_->wait_for_service(1s))
     {
-      if (name.rfind(type + " ", 0) == 0)
-        return name;
+      error = "thorp_world's world/observe service is not available";
+      return std::nullopt;
     }
-    for (int index = 1;; ++index)
+    auto future = world_client_->async_send_request(request);
+    if (future.wait_for(5s) != std::future_status::ready)
     {
-      std::string name = type + " " + std::to_string(index);
-      if (taken_names.count(name) == 0)
-        return name;
+      world_client_->remove_pending_request(future);
+      error = "thorp_world didn't answer world/observe";
+      return std::nullopt;
     }
+    ObserveWorld::Response::SharedPtr response = future.get();
+    if (!response->success)
+    {
+      error = "thorp_world refused the observation: " + response->message;
+      return std::nullopt;
+    }
+    return *response;
   }
 
   /**
@@ -646,6 +680,7 @@ private:
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr markers_pub_;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr table_pub_;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr clusters_pub_;
+  rclcpp::Client<ObserveWorld>::SharedPtr world_client_;
   rclcpp_action::Server<DetectObjects>::SharedPtr objects_server_;
   rclcpp_action::Server<DetectTables>::SharedPtr tables_server_;
   std::atomic<bool> busy_{ false };

@@ -1,11 +1,11 @@
 """
 Thorp perception:
-- tables and tabletop objects detection on the Xtion point cloud
+- tables and tabletop objects detection on the Xtion point cloud, reported to thorp_world, that names them
 - Xtion field of view clearance check
 """
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
@@ -15,6 +15,14 @@ def generate_launch_description():
     sim_time = {'use_sim_time': LaunchConfiguration('use_sim_time')}
     return LaunchDescription([
         DeclareLaunchArgument('use_sim_time', default_value='false'),
+        DeclareLaunchArgument('world_file', default_value='',
+                              description="thorp_world's file, to load the world from on start and save it to"),
+
+        IncludeLaunchDescription(
+            PathJoinSubstitution([FindPackageShare('thorp_world'), 'launch', 'world.launch.py']),
+            launch_arguments={'world_file': LaunchConfiguration('world_file'),
+                              'use_sim_time': LaunchConfiguration('use_sim_time')}.items()),
+
 
         # Not renamed, as launch renames all the nodes in the process, also PlanningSceneInterface's own node
         # The tray geometry, to tell the objects on the tray from those on the table
