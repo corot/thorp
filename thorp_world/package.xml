@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>thorp_world</name>
+  <version>0.1.0</version>
+  <description>What Thorp knows about the world: tables and objects in the map frame, and their relations</description>
+  <maintainer email="jsantossimon@gmail.com">Jorge Santos Simón</maintainer>
+  <author email="jsantossimon@gmail.com">Jorge Santos Simón</author>
+
+  <license>BSD</license>
+
+  <url type="bugtracker">https://github.com/corot/thorp/issues</url>
+  <url type="repository">https://github.com/corot/thorp</url>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
+
+  <exec_depend>python3-yaml</exec_depend>
+
+  <test_depend>ament_cmake_pytest</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
