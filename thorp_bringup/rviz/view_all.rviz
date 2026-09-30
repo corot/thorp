@@ -1,1381 +1,714 @@
+# Based on nav2_bringup nav2_default_view.rviz (Apache 2.0 license), with Thorp topics
 Panels:
-  - Class: rviz/Displays
-    Help Height: 84
-    Name: Displays
-    Property Tree Widget:
-      Expanded:
-        - /TF1/Frames1
-        - /TF1/Tree1
-      Splitter Ratio: 0.4014599919319153
-    Tree Height: 790
-  - Class: rviz/Help
-    Name: Help
-  - Class: rviz/Views
+- Class: rviz_common/Displays
+  Help Height: 0
+  Name: Displays
+  Property Tree Widget:
     Expanded:
-      - /Current View1
-    Name: Views
-    Splitter Ratio: 0.5
-  - Class: rviz/Tool Properties
-    Expanded:
-      - /2D Nav Goal1
-      - /2D Pose Estimate1
-    Name: Tool Properties
-    Splitter Ratio: 0.5
-Preferences:
-  PromptSaveOnExit: true
-Toolbars:
-  toolButtonStyle: 2
+    - /Global Options1
+    - /TF1/Frames1
+    - /TF1/Tree1
+    Splitter Ratio: 0.5833333134651184
+  Tree Height: 287
+- Class: rviz_common/Selection
+  Name: Selection
+- Class: rviz_common/Tool Properties
+  Expanded:
+  - /Publish Point1
+  Name: Tool Properties
+  Splitter Ratio: 0.5886790156364441
+- Class: rviz_common/Views
+  Expanded:
+  - /Current View1
+  Name: Views
+  Splitter Ratio: 0.3333333432674408
 Visualization Manager:
-  Class: ""
+  Class: ''
   Displays:
-    - Alpha: 0.5
-      Cell Size: 1
-      Class: rviz/Grid
-      Color: 160; 160; 164
+  - Alpha: 0.5
+    Cell Size: 1
+    Class: rviz_default_plugins/Grid
+    Color: 160; 160; 164
+    Enabled: true
+    Line Style:
+      Line Width: 0.029999999329447746
+      Value: Lines
+    Name: Grid
+    Normal Cell Count: 0
+    Offset:
+      X: 0
+      Y: 0
+      Z: 0
+    Plane: XY
+    Plane Cell Count: 10
+    Reference Frame: <Fixed Frame>
+    Value: true
+  - Alpha: 1
+    Class: rviz_default_plugins/RobotModel
+    Collision Enabled: false
+    Description File: ''
+    Description Source: Topic
+    Description Topic:
+      Depth: 5
+      Durability Policy: Volatile
+      History Policy: Keep Last
+      Reliability Policy: Reliable
+      Value: /robot_description
+    Enabled: true
+    Links:
+      All Links Enabled: true
+      Expand Joint Details: false
+      Expand Link Details: false
+      Expand Tree: false
+      Link Tree Style: ''
+    Mass Properties:
+      Inertia: false
+      Mass: false
+    Name: RobotModel
+    TF Prefix: ''
+    Update Interval: 0
+    Value: true
+    Visual Enabled: true
+  - Class: rviz_default_plugins/TF
+    Enabled: false
+    Filter (blacklist): ''
+    Filter (whitelist): ''
+    Frame Timeout: 15
+    Frames:
+      All Enabled: true
+    Marker Scale: 1
+    Name: TF
+    Show Arrows: true
+    Show Axes: true
+    Show Names: false
+    Tree: {}
+    Update Interval: 0
+    Value: false
+  - Alpha: 1.0
+    Binary representation: false
+    Binary threshold: 100
+    Class: rviz_default_plugins/Map
+    Color Scheme: map
+    Draw Behind: true
+    Enabled: true
+    Name: Map
+    Topic:
+      Depth: 1
+      Durability Policy: Transient Local
+      Filter size: 10
+      History Policy: Keep Last
+      Reliability Policy: Reliable
+      Value: /map
+    Update Topic:
+      Depth: 5
+      Durability Policy: Volatile
+      History Policy: Keep Last
+      Reliability Policy: Reliable
+      Value: /map_updates
+    Use Timestamp: false
+    Value: true
+  - Class: rviz_common/Group
+    Displays:
+    - Class: rviz_common/Group
+      Displays:
+      - Class: rviz_default_plugins/Range
+        Enabled: true
+        Name: m90
+        Alpha: 0.5
+        Buffer Length: 1
+        Color: 255; 255; 255
+        Topic:
+          Depth: 5
+          Durability Policy: Volatile
+          Filter size: 10
+          History Policy: Keep Last
+          Reliability Policy: Best Effort
+          Value: /mobile_base/sensors/sonars/m90
+        Value: true
+      - Class: rviz_default_plugins/Range
+        Enabled: true
+        Name: m72
+        Alpha: 0.5
+        Buffer Length: 1
+        Color: 255; 255; 255
+        Topic:
+          Depth: 5
+          Durability Policy: Volatile
+          Filter size: 10
+          History Policy: Keep Last
+          Reliability Policy: Best Effort
+          Value: /mobile_base/sensors/sonars/m72
+        Value: true
+      - Class: rviz_default_plugins/Range
+        Enabled: true
+        Name: m54
+        Alpha: 0.5
+        Buffer Length: 1
+        Color: 255; 255; 255
+        Topic:
+          Depth: 5
+          Durability Policy: Volatile
+          Filter size: 10
+          History Policy: Keep Last
+          Reliability Policy: Best Effort
+          Value: /mobile_base/sensors/sonars/m54
+        Value: true
+      - Class: rviz_default_plugins/Range
+        Enabled: true
+        Name: m36
+        Alpha: 0.5
+        Buffer Length: 1
+        Color: 255; 255; 255
+        Topic:
+          Depth: 5
+          Durability Policy: Volatile
+          Filter size: 10
+          History Policy: Keep Last
+          Reliability Policy: Best Effort
+          Value: /mobile_base/sensors/sonars/m36
+        Value: true
+      - Class: rviz_default_plugins/Range
+        Enabled: true
+        Name: m18
+        Alpha: 0.5
+        Buffer Length: 1
+        Color: 255; 255; 255
+        Topic:
+          Depth: 5
+          Durability Policy: Volatile
+          Filter size: 10
+          History Policy: Keep Last
+          Reliability Policy: Best Effort
+          Value: /mobile_base/sensors/sonars/m18
+        Value: true
+      - Class: rviz_default_plugins/Range
+        Enabled: true
+        Name: p0
+        Alpha: 0.5
+        Buffer Length: 1
+        Color: 255; 255; 255
+        Topic:
+          Depth: 5
+          Durability Policy: Volatile
+          Filter size: 10
+          History Policy: Keep Last
+          Reliability Policy: Best Effort
+          Value: /mobile_base/sensors/sonars/p0
+        Value: true
+      - Class: rviz_default_plugins/Range
+        Enabled: true
+        Name: p18
+        Alpha: 0.5
+        Buffer Length: 1
+        Color: 255; 255; 255
+        Topic:
+          Depth: 5
+          Durability Policy: Volatile
+          Filter size: 10
+          History Policy: Keep Last
+          Reliability Policy: Best Effort
+          Value: /mobile_base/sensors/sonars/p18
+        Value: true
+      - Class: rviz_default_plugins/Range
+        Enabled: true
+        Name: p36
+        Alpha: 0.5
+        Buffer Length: 1
+        Color: 255; 255; 255
+        Topic:
+          Depth: 5
+          Durability Policy: Volatile
+          Filter size: 10
+          History Policy: Keep Last
+          Reliability Policy: Best Effort
+          Value: /mobile_base/sensors/sonars/p36
+        Value: true
+      - Class: rviz_default_plugins/Range
+        Enabled: true
+        Name: p54
+        Alpha: 0.5
+        Buffer Length: 1
+        Color: 255; 255; 255
+        Topic:
+          Depth: 5
+          Durability Policy: Volatile
+          Filter size: 10
+          History Policy: Keep Last
+          Reliability Policy: Best Effort
+          Value: /mobile_base/sensors/sonars/p54
+        Value: true
+      - Class: rviz_default_plugins/Range
+        Enabled: true
+        Name: p72
+        Alpha: 0.5
+        Buffer Length: 1
+        Color: 255; 255; 255
+        Topic:
+          Depth: 5
+          Durability Policy: Volatile
+          Filter size: 10
+          History Policy: Keep Last
+          Reliability Policy: Best Effort
+          Value: /mobile_base/sensors/sonars/p72
+        Value: true
+      - Class: rviz_default_plugins/Range
+        Enabled: true
+        Name: p90
+        Alpha: 0.5
+        Buffer Length: 1
+        Color: 255; 255; 255
+        Topic:
+          Depth: 5
+          Durability Policy: Volatile
+          Filter size: 10
+          History Policy: Keep Last
+          Reliability Policy: Best Effort
+          Value: /mobile_base/sensors/sonars/p90
+        Value: true
       Enabled: true
-      Line Style:
-        Line Width: 0.029999999329447746
-        Value: Lines
-      Name: Grid
-      Normal Cell Count: 0
+      Name: Sonars
+    - Class: rviz_common/Group
+      Displays:
+      - Class: rviz_default_plugins/Range
+        Enabled: true
+        Name: arm
+        Alpha: 0.5
+        Buffer Length: 1
+        Color: 255; 85; 0
+        Topic:
+          Depth: 5
+          Durability Policy: Volatile
+          Filter size: 10
+          History Policy: Keep Last
+          Reliability Policy: Best Effort
+          Value: /mobile_base/sensors/infrared/arm
+        Value: true
+      - Class: rviz_default_plugins/Range
+        Enabled: true
+        Name: 155 left
+        Alpha: 0.5
+        Buffer Length: 1
+        Color: 255; 85; 0
+        Topic:
+          Depth: 5
+          Durability Policy: Volatile
+          Filter size: 10
+          History Policy: Keep Last
+          Reliability Policy: Best Effort
+          Value: /mobile_base/sensors/infrared/l155
+        Value: true
+      - Class: rviz_default_plugins/Range
+        Enabled: true
+        Name: 180 left
+        Alpha: 0.5
+        Buffer Length: 1
+        Color: 255; 85; 0
+        Topic:
+          Depth: 5
+          Durability Policy: Volatile
+          Filter size: 10
+          History Policy: Keep Last
+          Reliability Policy: Best Effort
+          Value: /mobile_base/sensors/infrared/l180
+        Value: true
+      - Class: rviz_default_plugins/Range
+        Enabled: true
+        Name: 180 right
+        Alpha: 0.5
+        Buffer Length: 1
+        Color: 255; 85; 0
+        Topic:
+          Depth: 5
+          Durability Policy: Volatile
+          Filter size: 10
+          History Policy: Keep Last
+          Reliability Policy: Best Effort
+          Value: /mobile_base/sensors/infrared/r180
+        Value: true
+      - Class: rviz_default_plugins/Range
+        Enabled: true
+        Name: 155 right
+        Alpha: 0.5
+        Buffer Length: 1
+        Color: 255; 85; 0
+        Topic:
+          Depth: 5
+          Durability Policy: Volatile
+          Filter size: 10
+          History Policy: Keep Last
+          Reliability Policy: Best Effort
+          Value: /mobile_base/sensors/infrared/r155
+        Value: true
+      - Class: rviz_default_plugins/Range
+        Enabled: true
+        Name: cannon
+        Alpha: 0.5
+        Buffer Length: 1
+        Color: 255; 85; 0
+        Topic:
+          Depth: 5
+          Durability Policy: Volatile
+          Filter size: 10
+          History Policy: Keep Last
+          Reliability Policy: Best Effort
+          Value: /mobile_base/sensors/infrared/cannon
+        Value: true
+      Enabled: true
+      Name: IR sensors
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz_default_plugins/LaserScan
+      Color: 255; 255; 255
+      Color Transformer: Intensity
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 0
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: Kinect Scan
+      Position Transformer: XYZ
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Points
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Best Effort
+        Value: /kinect/scan
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz_default_plugins/LaserScan
+      Color: 255; 255; 255
+      Color Transformer: Intensity
+      Decay Time: 0
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 0
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: Xtion Scan
+      Position Transformer: XYZ
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Points
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Best Effort
+        Value: /xtion/scan
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz_default_plugins/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: RGB8
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: Xtion
+      Position Transformer: XYZ
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Flat Squares
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /xtion/depth_registered/points
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz_default_plugins/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: RGB8
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: Kinect
+      Position Transformer: XYZ
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Flat Squares
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /kinect/depth_registered/points
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    Enabled: true
+    Name: Sensors
+  - Class: rviz_common/Group
+    Displays:
+    - Alpha: 0.3
+      Binary representation: false
+      Binary threshold: 100
+      Class: rviz_default_plugins/Map
+      Color Scheme: costmap
+      Draw Behind: false
+      Enabled: true
+      Name: Global Costmap
+      Topic:
+        Depth: 1
+        Durability Policy: Transient Local
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /global_costmap/costmap
+      Update Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /global_costmap/costmap_updates
+      Use Timestamp: false
+      Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz_default_plugins/Path
+      Color: 255; 0; 0
+      Enabled: true
+      Head Diameter: 0.019999999552965164
+      Head Length: 0.019999999552965164
+      Length: 0.30000001192092896
+      Line Style: Lines
+      Line Width: 0.029999999329447746
+      Name: Global Plan
       Offset:
         X: 0
         Y: 0
         Z: 0
-      Plane: XY
-      Plane Cell Count: 10
-      Reference Frame: <Fixed Frame>
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.004999999888241291
+      Shaft Length: 0.019999999552965164
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /plan
       Value: true
-    - Alpha: 1
-      Class: rviz/RobotModel
-      Collision Enabled: false
-      Enabled: true
-      Links:
-        All Links Enabled: true
-        Expand Joint Details: false
-        Expand Link Details: false
-        Expand Tree: false
-        Link Tree Style: Links in Alphabetic Order
-        arm_base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        arm_elbow_F10_0_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_elbow_F10_1_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_elbow_F10_2_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_elbow_F3_0_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_elbow_flex_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_elbow_flex_servo_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_mount_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_shoulder_F10_0_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_shoulder_F10_1_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_shoulder_F10_2_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_shoulder_F3_0_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_shoulder_lift_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_shoulder_lift_servo_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_shoulder_pan_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_shoulder_pan_servo_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_wrist_F3_0_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_wrist_flex_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_wrist_flex_servo_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        base_footprint:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cannon_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cannon_servo_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cannon_shaft_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cannon_tube1_hollow_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cannon_tube1_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cannon_tube2_hollow_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cannon_tube2_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cannon_tube3_hollow_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cannon_tube3_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cannon_tube4_hollow_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cannon_tube4_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cannon_tube5_hollow_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cannon_tube5_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cannon_tube6_hollow_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cannon_tube6_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        caster_back_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        caster_front_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cliff_sensor_front_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        cliff_sensor_left_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        cliff_sensor_right_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        gripper_active_finger_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        gripper_active_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        gripper_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        gripper_servo_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        gripper_static_finger_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        gripper_static_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        gyro_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        ir_arm_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        ir_l155_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        ir_l180_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        ir_r155_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        ir_r180_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        kinect_depth_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        kinect_depth_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        kinect_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        kinect_rgb_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        kinect_rgb_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        opencm_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        plate_bottom_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        plate_middle_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        plate_top_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_bottom_0_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_bottom_10_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_bottom_11_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_bottom_12_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_bottom_13_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_bottom_14_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_bottom_15_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_bottom_1_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_bottom_2_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_bottom_3_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_bottom_4_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_bottom_5_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_kinect_0_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_kinect_1_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_middle_0_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_middle_11_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_middle_1_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_middle_21_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_middle_2_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_middle_3_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_top_0_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_top_10_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_top_12_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_top_1_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_top_20_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_top_22_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_top_2_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_top_3_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        s_0_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        s_m18_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        s_m36_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        s_m54_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        s_m72_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        s_m90_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        s_p18_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        s_p36_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        s_p54_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        s_p72_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        s_p90_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        senz3d_calib_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        senz3d_depth_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        senz3d_depth_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        senz3d_gazebo_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        senz3d_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        senz3d_mount_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        senz3d_rgb_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        senz3d_rgb_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        sonars_mount_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        wheel_left_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        wheel_right_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        xtion_depth_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        xtion_depth_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        xtion_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        xtion_mount_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        xtion_rgb_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        xtion_rgb_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-      Name: RobotModel
-      Robot Description: robot_description
-      TF Prefix: ""
-      Update Interval: 0
-      Value: true
-      Visual Enabled: true
-    - Class: rviz/TF
-      Enabled: false
-      Frame Timeout: 15
-      Frames:
-        All Enabled: false
-      Marker Scale: 1
-      Name: TF
-      Show Arrows: true
-      Show Axes: true
-      Show Names: true
-      Tree:
-        {}
-      Update Interval: 0
-      Value: false
-    - Alpha: 0.699999988079071
-      Class: rviz/Map
-      Color Scheme: map
+    - Alpha: 0.7
+      Binary representation: false
+      Binary threshold: 100
+      Class: rviz_default_plugins/Map
+      Color Scheme: costmap
       Draw Behind: false
       Enabled: true
-      Name: Map
-      Topic: /map
-      Unreliable: false
+      Name: Local Costmap
+      Topic:
+        Depth: 1
+        Durability Policy: Transient Local
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /local_costmap/costmap
+      Update Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /local_costmap/costmap_updates
       Use Timestamp: false
       Value: true
-    - Class: rviz/Group
-      Displays:
-        - Class: rviz/Group
-          Displays:
-            - Alpha: 0.15000000596046448
-              Buffer Length: 1
-              Class: rviz/Range
-              Color: 200; 255; 200
-              Enabled: true
-              Name: p90
-              Queue Size: 100
-              Topic: /mobile_base/sensors/sonars/p90
-              Unreliable: false
-              Value: true
-            - Alpha: 0.15000000596046448
-              Buffer Length: 1
-              Class: rviz/Range
-              Color: 200; 255; 200
-              Enabled: true
-              Name: p72
-              Queue Size: 100
-              Topic: /mobile_base/sensors/sonars/p72
-              Unreliable: false
-              Value: true
-            - Alpha: 0.15000000596046448
-              Buffer Length: 1
-              Class: rviz/Range
-              Color: 200; 255; 200
-              Enabled: true
-              Name: p54
-              Queue Size: 100
-              Topic: /mobile_base/sensors/sonars/p54
-              Unreliable: false
-              Value: true
-            - Alpha: 0.15000000596046448
-              Buffer Length: 1
-              Class: rviz/Range
-              Color: 200; 255; 200
-              Enabled: true
-              Name: p36
-              Queue Size: 100
-              Topic: /mobile_base/sensors/sonars/p36
-              Unreliable: false
-              Value: true
-            - Alpha: 0.15000000596046448
-              Buffer Length: 1
-              Class: rviz/Range
-              Color: 200; 255; 200
-              Enabled: true
-              Name: p18
-              Queue Size: 100
-              Topic: /mobile_base/sensors/sonars/p18
-              Unreliable: false
-              Value: true
-            - Alpha: 0.15000000596046448
-              Buffer Length: 1
-              Class: rviz/Range
-              Color: 200; 255; 200
-              Enabled: true
-              Name: 0
-              Queue Size: 100
-              Topic: /mobile_base/sensors/sonars/0
-              Unreliable: false
-              Value: true
-            - Alpha: 0.15000000596046448
-              Buffer Length: 1
-              Class: rviz/Range
-              Color: 200; 255; 200
-              Enabled: true
-              Name: m18
-              Queue Size: 100
-              Topic: /mobile_base/sensors/sonars/m18
-              Unreliable: false
-              Value: true
-            - Alpha: 0.15000000596046448
-              Buffer Length: 1
-              Class: rviz/Range
-              Color: 200; 255; 200
-              Enabled: true
-              Name: m36
-              Queue Size: 100
-              Topic: /mobile_base/sensors/sonars/m36
-              Unreliable: false
-              Value: true
-            - Alpha: 0.15000000596046448
-              Buffer Length: 1
-              Class: rviz/Range
-              Color: 200; 255; 200
-              Enabled: true
-              Name: m54
-              Queue Size: 100
-              Topic: /mobile_base/sensors/sonars/m54
-              Unreliable: false
-              Value: true
-            - Alpha: 0.15000000596046448
-              Buffer Length: 1
-              Class: rviz/Range
-              Color: 200; 255; 200
-              Enabled: true
-              Name: m72
-              Queue Size: 100
-              Topic: /mobile_base/sensors/sonars/m72
-              Unreliable: false
-              Value: true
-            - Alpha: 0.15000000596046448
-              Buffer Length: 1
-              Class: rviz/Range
-              Color: 200; 255; 200
-              Enabled: true
-              Name: m90
-              Queue Size: 100
-              Topic: /mobile_base/sensors/sonars/m90
-              Unreliable: false
-              Value: true
-          Enabled: true
-          Name: Sonars
-        - Class: rviz/Group
-          Displays:
-            - Alpha: 0.15000000596046448
-              Buffer Length: 1
-              Class: rviz/Range
-              Color: 255; 200; 200
-              Enabled: true
-              Name: arm
-              Queue Size: 100
-              Topic: /mobile_base/sensors/infrared/arm
-              Unreliable: false
-              Value: true
-            - Alpha: 0.15000000596046448
-              Buffer Length: 1
-              Class: rviz/Range
-              Color: 255; 200; 200
-              Enabled: true
-              Name: 155 left
-              Queue Size: 100
-              Topic: /mobile_base/sensors/infrared/l155
-              Unreliable: false
-              Value: true
-            - Alpha: 0.15000000596046448
-              Buffer Length: 1
-              Class: rviz/Range
-              Color: 255; 200; 200
-              Enabled: true
-              Name: 180 left
-              Queue Size: 100
-              Topic: /mobile_base/sensors/infrared/l180
-              Unreliable: false
-              Value: true
-            - Alpha: 0.15000000596046448
-              Buffer Length: 1
-              Class: rviz/Range
-              Color: 255; 200; 200
-              Enabled: true
-              Name: 180 right
-              Queue Size: 100
-              Topic: /mobile_base/sensors/infrared/r180
-              Unreliable: false
-              Value: true
-            - Alpha: 0.15000000596046448
-              Buffer Length: 1
-              Class: rviz/Range
-              Color: 255; 200; 200
-              Enabled: true
-              Name: 155 right
-              Queue Size: 100
-              Topic: /mobile_base/sensors/infrared/r155
-              Unreliable: false
-              Value: true
-          Enabled: true
-          Name: IR sensors
-        - Alpha: 1
-          Autocompute Intensity Bounds: true
-          Autocompute Value Bounds:
-            Max Value: 10
-            Min Value: -10
-            Value: true
-          Axis: Z
-          Channel Name: intensity
-          Class: rviz/LaserScan
-          Color: 255; 255; 255
-          Color Transformer: Intensity
-          Decay Time: 0
-          Enabled: true
-          Invert Rainbow: false
-          Max Color: 255; 255; 255
-          Max Intensity: 4096
-          Min Color: 0; 0; 0
-          Min Intensity: 0
-          Name: LaserScan
-          Position Transformer: XYZ
-          Queue Size: 10
-          Selectable: true
-          Size (Pixels): 3
-          Size (m): 0.009999999776482582
-          Style: Flat Squares
-          Topic: /scan
-          Unreliable: false
-          Use Fixed Frame: true
-          Use rainbow: true
-          Value: true
-        - Alpha: 1
-          Autocompute Intensity Bounds: true
-          Autocompute Value Bounds:
-            Max Value: 10
-            Min Value: -10
-            Value: true
-          Axis: Z
-          Channel Name: intensity
-          Class: rviz/PointCloud2
-          Color: 71; 255; 15
-          Color Transformer: RGB8
-          Decay Time: 0
-          Enabled: false
-          Invert Rainbow: false
-          Max Color: 255; 255; 255
-          Max Intensity: 4096
-          Min Color: 0; 0; 0
-          Min Intensity: 0
-          Name: Xtion PointCloud2
-          Position Transformer: XYZ
-          Queue Size: 10
-          Selectable: true
-          Size (Pixels): 3
-          Size (m): 0.20000000298023224
-          Style: Spheres
-          Topic: /xtion/depth_registered/points
-          Unreliable: false
-          Use Fixed Frame: true
-          Use rainbow: true
-          Value: false
-        - Alpha: 1
-          Auto Size:
-            Auto Size Factor: 1
-            Value: true
-          Autocompute Intensity Bounds: true
-          Autocompute Value Bounds:
-            Max Value: 10
-            Min Value: -10
-            Value: true
-          Axis: Z
-          Channel Name: intensity
-          Class: rviz/DepthCloud
-          Color: 255; 255; 255
-          Color Image Topic: /xtion/rgb/image_raw
-          Color Transformer: RGB8
-          Color Transport Hint: raw
-          Decay Time: 0
-          Depth Map Topic: /xtion/depth_registered/image_raw
-          Depth Map Transport Hint: raw
-          Enabled: true
-          Invert Rainbow: false
-          Max Color: 255; 255; 255
-          Max Intensity: 4096
-          Min Color: 0; 0; 0
-          Min Intensity: 0
-          Name: Xtion DepthCloud
-          Occlusion Compensation:
-            Occlusion Time-Out: 30
-            Value: false
-          Position Transformer: XYZ
-          Queue Size: 5
-          Selectable: true
-          Size (Pixels): 3
-          Style: Flat Squares
-          Topic Filter: true
-          Use Fixed Frame: true
-          Use rainbow: true
-          Value: true
-        - Alpha: 1
-          Autocompute Intensity Bounds: true
-          Autocompute Value Bounds:
-            Max Value: 10
-            Min Value: -10
-            Value: true
-          Axis: Z
-          Channel Name: intensity
-          Class: rviz/PointCloud2
-          Color: 255; 255; 255
-          Color Transformer: RGB8
-          Decay Time: 0
-          Enabled: false
-          Invert Rainbow: false
-          Max Color: 255; 255; 255
-          Max Intensity: 4096
-          Min Color: 0; 0; 0
-          Min Intensity: 0
-          Name: Kinect PointCloud2
-          Position Transformer: XYZ
-          Queue Size: 10
-          Selectable: true
-          Size (Pixels): 3
-          Size (m): 0.009999999776482582
-          Style: Flat Squares
-          Topic: /kinect/depth/points
-          Unreliable: false
-          Use Fixed Frame: true
-          Use rainbow: true
-          Value: false
-        - Alpha: 0
-          Auto Size:
-            Auto Size Factor: 1
-            Value: false
-          Autocompute Intensity Bounds: true
-          Autocompute Value Bounds:
-            Max Value: 10
-            Min Value: -10
-            Value: true
-          Axis: Z
-          Channel Name: intensity
-          Class: rviz/DepthCloud
-          Color: 255; 255; 255
-          Color Image Topic: /kinect/rgb/image_raw
-          Color Transformer: RGB8
-          Color Transport Hint: raw
-          Decay Time: 0
-          Depth Map Topic: /kinect/depth/image_raw
-          Depth Map Transport Hint: raw
-          Enabled: true
-          Invert Rainbow: false
-          Max Color: 255; 255; 255
-          Max Intensity: 4096
-          Min Color: 0; 0; 0
-          Min Intensity: 0
-          Name: Kinect DepthCloud
-          Occlusion Compensation:
-            Occlusion Time-Out: 30
-            Value: false
-          Position Transformer: XYZ
-          Queue Size: 5
-          Selectable: true
-          Size (Pixels): 3
-          Size (m): 9.999999747378752e-5
-          Style: Points
-          Topic Filter: true
-          Use Fixed Frame: true
-          Use rainbow: true
-          Value: true
-        - Alpha: 1
-          Autocompute Intensity Bounds: true
-          Autocompute Value Bounds:
-            Max Value: 10
-            Min Value: -10
-            Value: true
-          Axis: Z
-          Channel Name: intensity
-          Class: rviz/PointCloud2
-          Color: 255; 255; 255
-          Color Transformer: RGB8
-          Decay Time: 0
-          Enabled: false
-          Invert Rainbow: false
-          Max Color: 255; 255; 255
-          Max Intensity: 4096
-          Min Color: 0; 0; 0
-          Min Intensity: 0
-          Name: Senz3D PointCloud2
-          Position Transformer: XYZ
-          Queue Size: 10
-          Selectable: true
-          Size (Pixels): 3
-          Size (m): 0.009999999776482582
-          Style: Flat Squares
-          Topic: /senz3d/depth/points
-          Unreliable: false
-          Use Fixed Frame: true
-          Use rainbow: true
-          Value: false
-        - Alpha: 1
-          Auto Size:
-            Auto Size Factor: 1
-            Value: true
-          Autocompute Intensity Bounds: true
-          Autocompute Value Bounds:
-            Max Value: 10
-            Min Value: -10
-            Value: true
-          Axis: Z
-          Channel Name: intensity
-          Class: rviz/DepthCloud
-          Color: 255; 255; 255
-          Color Image Topic: ""
-          Color Transformer: RGB8
-          Color Transport Hint: raw
-          Decay Time: 0
-          Depth Map Topic: /senz3d/depth/image_raw
-          Depth Map Transport Hint: raw
-          Enabled: false
-          Invert Rainbow: false
-          Max Color: 255; 255; 255
-          Max Intensity: 4096
-          Min Color: 0; 0; 0
-          Min Intensity: 0
-          Name: Senz3D DepthCloud
-          Occlusion Compensation:
-            Occlusion Time-Out: 30
-            Value: false
-          Position Transformer: XYZ
-          Queue Size: 5
-          Selectable: true
-          Size (Pixels): 3
-          Style: Flat Squares
-          Topic Filter: true
-          Use Fixed Frame: true
-          Use rainbow: true
-          Value: false
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz_default_plugins/Path
+      Color: 0; 12; 255
       Enabled: true
-      Name: Sensors
-    - Class: rviz/Group
-      Displays:
-        - Alpha: 1
-          Buffer Length: 1
-          Class: rviz/Path
-          Color: 0; 255; 0
-          Enabled: true
-          Head Diameter: 0.30000001192092896
-          Head Length: 0.20000000298023224
-          Length: 0.30000001192092896
-          Line Style: Lines
-          Line Width: 0.029999999329447746
-          Name: Global Plan
-          Offset:
-            X: 0
-            Y: 0
-            Z: 0
-          Pose Color: 255; 85; 255
-          Pose Style: None
-          Radius: 0.029999999329447746
-          Shaft Diameter: 0.10000000149011612
-          Shaft Length: 0.10000000149011612
-          Topic: /move_base_flex/planner/plan
-          Unreliable: false
-          Value: true
-        - Alpha: 1
-          Buffer Length: 1
-          Class: rviz/Path
-          Color: 255; 85; 255
-          Enabled: true
-          Head Diameter: 0.30000001192092896
-          Head Length: 0.20000000298023224
-          Length: 0.30000001192092896
-          Line Style: Lines
-          Line Width: 0.029999999329447746
-          Name: Local Plan
-          Offset:
-            X: 0
-            Y: 0
-            Z: 0
-          Pose Color: 255; 85; 255
-          Pose Style: None
-          Radius: 0.029999999329447746
-          Shaft Diameter: 0.10000000149011612
-          Shaft Length: 0.10000000149011612
-          Topic: /move_base_flex/controller/local_plan
-          Unreliable: false
-          Value: true
-        - Alpha: 0.6000000238418579
-          Class: rviz/Map
-          Color Scheme: costmap
-          Draw Behind: false
-          Enabled: true
-          Name: Local Costmap
-          Topic: /move_base_flex/local_costmap/costmap
-          Unreliable: false
-          Use Timestamp: false
-          Value: true
-        - Alpha: 0.30000001192092896
-          Class: rviz/Map
-          Color Scheme: costmap
-          Draw Behind: true
-          Enabled: true
-          Name: Global Costmap
-          Topic: /move_base_flex/global_costmap/costmap
-          Unreliable: false
-          Use Timestamp: false
-          Value: true
+      Head Diameter: 0.019999999552965164
+      Head Length: 0.019999999552965164
+      Length: 0.30000001192092896
+      Line Style: Lines
+      Line Width: 0.029999999329447746
+      Name: Local Plan
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.004999999888241291
+      Shaft Length: 0.019999999552965164
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /local_plan
+      Value: true
+    - Alpha: 1
+      Class: rviz_default_plugins/Polygon
+      Color: 25; 255; 0
       Enabled: true
-      Name: Navigation
-    - Class: rviz/Group
-      Displays:
-        - Acceleration_Scaling_Factor: 1
-          Class: moveit_rviz_plugin/MotionPlanning
-          Enabled: true
-          Move Group Namespace: ""
-          MoveIt_Allow_Approximate_IK: false
-          MoveIt_Allow_External_Program: false
-          MoveIt_Allow_Replanning: false
-          MoveIt_Allow_Sensor_Positioning: false
-          MoveIt_Goal_Tolerance: 0
-          MoveIt_Planning_Attempts: 10
-          MoveIt_Planning_Time: 5
-          MoveIt_Use_Cartesian_Path: false
-          MoveIt_Use_Constraint_Aware_IK: true
-          MoveIt_Warehouse_Host: 127.0.0.1
-          MoveIt_Warehouse_Port: 33829
-          MoveIt_Workspace:
-            Center:
-              X: 0
-              Y: 0
-              Z: 0
-            Size:
-              X: 2
-              Y: 2
-              Z: 2
-          Name: MotionPlanning
-          Planned Path:
-            Color Enabled: false
-            Interrupt Display: false
-            Links:
-              All Links Enabled: true
-              Expand Joint Details: false
-              Expand Link Details: false
-              Expand Tree: false
-              Link Tree Style: Links in Alphabetic Order
-            Loop Animation: false
-            Robot Alpha: 0.5
-            Robot Color: 150; 50; 150
-            Show Robot Collision: false
-            Show Robot Visual: false
-            Show Trail: false
-            State Display Time: 0.05 s
-            Trail Step Size: 1
-            Trajectory Topic: /move_group/display_planned_path
-          Planning Metrics:
-            Payload: 1
-            Show Joint Torques: false
-            Show Manipulability: false
-            Show Manipulability Index: false
-            Show Weight Limit: false
-            TextHeight: 0.07999999821186066
-          Planning Request:
-            Colliding Link Color: 255; 0; 0
-            Goal State Alpha: 1
-            Goal State Color: 250; 128; 0
-            Interactive Marker Size: 0
-            Joint Violation Color: 255; 0; 255
-            Planning Group: ""
-            Query Goal State: true
-            Query Start State: false
-            Show Workspace: false
-            Start State Alpha: 1
-            Start State Color: 0; 255; 0
-          Planning Scene Topic: /move_group/monitored_planning_scene
-          Robot Description: robot_description
-          Scene Geometry:
-            Scene Alpha: 1
-            Scene Color: 50; 230; 50
-            Scene Display Time: 0.20000000298023224
-            Show Scene Geometry: true
-            Voxel Coloring: Z-Axis
-            Voxel Rendering: Occupied Voxels
-          Scene Robot:
-            Attached Body Color: 150; 50; 150
-            Links:
-              All Links Enabled: true
-              Expand Joint Details: false
-              Expand Link Details: false
-              Expand Tree: false
-              Link Tree Style: Links in Alphabetic Order
-            Robot Alpha: 1
-            Show Robot Collision: false
-            Show Robot Visual: true
-          Value: true
-          Velocity_Scaling_Factor: 1
-        - Alpha: 1
-          Axes Length: 1
-          Axes Radius: 0.10000000149011612
-          Class: rviz/Pose
-          Color: 220; 220; 220
-          Enabled: true
-          Head Length: 0.019999999552965164
-          Head Radius: 0.019999999552965164
-          Name: Pick/Place Pose
-          Shaft Length: 0.07999999821186066
-          Shaft Radius: 0.009999999776482582
-          Shape: Arrow
-          Topic: /gripper_pose
-          Unreliable: false
-          Value: true
-        - Alpha: 1
-          Arrow Length: 0.30000001192092896
-          Axes Length: 0.30000001192092896
-          Axes Radius: 0.009999999776482582
-          Class: rviz/PoseArray
-          Color: 0; 0; 255
-          Enabled: true
-          Head Length: 0.07000000029802322
-          Head Radius: 0.029999999329447746
-          Name: Blocks Poses
-          Shaft Length: 0.23000000417232513
-          Shaft Radius: 0.009999999776482582
-          Shape: Arrow (Flat)
-          Topic: /turtlebot_blocks
-          Unreliable: false
-          Value: true
-        - Alpha: 1
-          Arrow Length: 0.30000001192092896
-          Axes Length: 0.30000001192092896
-          Axes Radius: 0.009999999776482582
-          Class: rviz/PoseArray
-          Color: 255; 25; 0
-          Enabled: true
-          Head Length: 0.07000000029802322
-          Head Radius: 0.029999999329447746
-          Name: Pick & Place Poses
-          Shaft Length: 0.23000000417232513
-          Shaft Radius: 0.009999999776482582
-          Shape: Arrow (Flat)
-          Topic: /pick_and_place
-          Unreliable: false
-          Value: true
-        - Alpha: 1
-          Autocompute Intensity Bounds: true
-          Autocompute Value Bounds:
-            Max Value: 10
-            Min Value: -10
-            Value: true
-          Axis: Z
-          Channel Name: intensity
-          Class: rviz/PointCloud2
-          Color: 255; 255; 255
-          Color Transformer: RGB8
-          Decay Time: 0
-          Enabled: true
-          Invert Rainbow: false
-          Max Color: 255; 255; 255
-          Max Intensity: 4096
-          Min Color: 0; 0; 0
-          Min Intensity: 0
-          Name: Blocks PointCloud
-          Position Transformer: XYZ
-          Queue Size: 10
-          Selectable: true
-          Size (Pixels): 3
-          Size (m): 0.009999999776482582
-          Style: Flat Squares
-          Topic: /block_detection_action_server/block_output
-          Unreliable: false
-          Use Fixed Frame: true
-          Use rainbow: true
-          Value: true
-        - Class: rviz/InteractiveMarkers
-          Enable Transparency: true
-          Enabled: true
-          Name: InteractiveMarkers
-          Show Axes: true
-          Show Descriptions: true
-          Show Visual Aids: true
-          Update Topic: /move_objects/update
-          Value: true
-        - Alpha: 1
-          Axes Length: 0.10000000149011612
-          Axes Radius: 0.00800000037997961
-          Class: rviz/Pose
-          Color: 255; 25; 0
-          Enabled: true
-          Head Length: 0.30000001192092896
-          Head Radius: 0.10000000149011612
-          Name: Pick/Place Pose
-          Shaft Length: 1
-          Shaft Radius: 0.05000000074505806
-          Shape: Axes
-          Topic: /target_pose
-          Unreliable: false
-          Value: true
+      Name: Footprint
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /local_costmap/published_footprint
+      Value: true
+    Enabled: true
+    Name: Navigation
+  - Class: rviz_common/Group
+    Displays:
+    - Class: moveit_rviz_plugin/MotionPlanning
+      Name: MotionPlanning
+      Velocity_Scaling_Factor: 1.0
+      Acceleration_Scaling_Factor: 1.0
+      Planned Path:
+        Loop Animation: false
+        State Display Time: 0.05 s
+        Trajectory Topic: display_planned_path
+      Planning Scene Topic: monitored_planning_scene
+      Robot Description: robot_description
+      Scene Geometry:
+        Scene Alpha: 1
+      Scene Robot:
+        Robot Alpha: 0.5
+      Value: false
       Enabled: false
-      Name: Manipulation
+    - Class: rviz_default_plugins/InteractiveMarkers
+      Enabled: true
+      Interactive Markers Namespace: /move_objects
+      Name: Objects Interaction
+      Show Axes: false
+      Show Descriptions: false
+      Show Visual Aids: false
+      Value: true
+    Enabled: false
+    Name: Manipulation
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Default Light: true
     Fixed Frame: map
-    Frame Rate: 10
+    Frame Rate: 30
   Name: root
   Tools:
-    - Class: rviz/Interact
-      Hide Inactive Objects: true
-    - Class: rviz/MoveCamera
-    - Class: rviz/Select
-    - Class: rviz/SetGoal
-      Topic: /move_base_simple/goal
-    - Class: rviz/SetInitialPose
-      Theta std deviation: 0.2617993950843811
-      Topic: /initialpose
-      X std deviation: 0.5
-      Y std deviation: 0.5
+  - Class: rviz_default_plugins/MoveCamera
+  - Class: rviz_default_plugins/Select
+  - Class: rviz_default_plugins/FocusCamera
+  - Class: rviz_default_plugins/Measure
+    Line color: 128; 128; 0
+  - Class: rviz_default_plugins/SetInitialPose
+    Covariance x: 0.25
+    Covariance y: 0.25
+    Covariance yaw: 0.06853891909122467
+    Topic:
+      Depth: 5
+      Durability Policy: Volatile
+      History Policy: Keep Last
+      Reliability Policy: Reliable
+      Value: /initialpose
+  - Class: rviz_default_plugins/PublishPoint
+    Single click: true
+    Topic:
+      Depth: 5
+      Durability Policy: Volatile
+      History Policy: Keep Last
+      Reliability Policy: Reliable
+      Value: /clicked_point
+  - Class: nav2_rviz_plugins/GoalTool
+  - Class: thorp_rviz_plugins/ClearCostmapTool
+  Transformation:
+    Current:
+      Class: rviz_default_plugins/TF
   Value: true
   Views:
     Current:
-      Class: rviz/XYOrbit
-      Distance: 7.2750420570373535
+      Class: rviz_default_plugins/Orbit
+      Distance: 4.0
       Enable Stereo Rendering:
-        Stereo Eye Separation: 0.05999999865889549
+        Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 5.021410942077637
-        Y: -0.10981720685958862
-        Z: 0.010196522809565067
+        X: 0
+        Y: 0
+        Z: 0
       Focal Shape Fixed Size: true
-      Focal Shape Size: 0.05000000074505806
+      Focal Shape Size: 0.05
       Invert Z Axis: false
       Name: Current View
-      Near Clip Distance: 0.009999999776482582
-      Pitch: 0.7247960567474365
+      Near Clip Distance: 0.01
+      Pitch: 0.6
       Target Frame: <Fixed Frame>
-      Value: XYOrbit (rviz)
-      Yaw: 5.698142051696777
-    Saved: ~
+      Value: Orbit (rviz_default_plugins)
+      Yaw: 3.6
+    Saved: null
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 1025
-  Help:
-    collapsed: false
+  Height: 893
   Hide Left Dock: false
   Hide Right Dock: false
-  MotionPlanning:
+  Selection:
     collapsed: false
-  MotionPlanning - Trajectory Slider:
-    collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000100000000000002ed000003a7fc020000000afb000000100044006900730070006c006100790073010000003d000003a7000000c900fffffffb0000000800480065006c00700000000342000000bb0000006e00fffffffb0000000a005600690065007700730000000178000000b0000000a400fffffffb0000000c00430061006d00650072006100000002ff000001610000000000000000fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e006701000001f40000020e0000000000000000fb0000000a0049006d006100670065000000030a000000b70000000000000000fb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000002f1000000ab0000005c00fffffffb0000002e004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d00200053006c00690064006500720000000000ffffffff0000000000000000fb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e006700000001e5000001fd0000019b00fffffffb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff00000016000000160000044a000003a700000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Tool Properties:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1853
-  X: 67
-  Y: 27
+  Width: 1610
+  X: 1091
+  Y: 222

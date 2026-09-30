@@ -1,1132 +1,271 @@
+# Based on nav2_bringup nav2_default_view.rviz (Apache 2.0 license), with Thorp topics
 Panels:
-  - Class: rviz/Displays
-    Help Height: 0
-    Name: Displays
-    Property Tree Widget:
-      Expanded:
-        - /TF1/Frames1
-        - /Camera1/Visibility1
-        - /COB1
-        - /COB1/Tracked1/Status1
-        - /COB1/Tracked3/Status1
-        - /COB1/Target Pose1/Status1
-      Splitter Ratio: 0.5230547785758972
-    Tree Height: 561
-  - Class: rviz/Help
-    Name: Help
-  - Class: rviz/Views
+- Class: rviz_common/Displays
+  Help Height: 0
+  Name: Displays
+  Property Tree Widget:
     Expanded:
-      - /Current View1
-    Name: Views
-    Splitter Ratio: 0.5
-  - Class: rviz/Tool Properties
-    Expanded:
-      - /2D Nav Goal1
-      - /2D Pose Estimate1
-    Name: Tool Properties
-    Splitter Ratio: 0.5
-Preferences:
-  PromptSaveOnExit: true
-Toolbars:
-  toolButtonStyle: 2
+    - /Global Options1
+    - /TF1/Frames1
+    - /TF1/Tree1
+    Splitter Ratio: 0.5833333134651184
+  Tree Height: 287
+- Class: rviz_common/Selection
+  Name: Selection
+- Class: rviz_common/Tool Properties
+  Expanded:
+  - /Publish Point1
+  Name: Tool Properties
+  Splitter Ratio: 0.5886790156364441
+- Class: rviz_common/Views
+  Expanded:
+  - /Current View1
+  Name: Views
+  Splitter Ratio: 0.3333333432674408
 Visualization Manager:
-  Class: ""
+  Class: ''
   Displays:
-    - Alpha: 0.5
-      Cell Size: 1
-      Class: rviz/Grid
-      Color: 160; 160; 164
+  - Alpha: 0.5
+    Cell Size: 1
+    Class: rviz_default_plugins/Grid
+    Color: 160; 160; 164
+    Enabled: true
+    Line Style:
+      Line Width: 0.029999999329447746
+      Value: Lines
+    Name: Grid
+    Normal Cell Count: 0
+    Offset:
+      X: 0
+      Y: 0
+      Z: 0
+    Plane: XY
+    Plane Cell Count: 10
+    Reference Frame: <Fixed Frame>
+    Value: true
+  - Alpha: 1
+    Class: rviz_default_plugins/RobotModel
+    Collision Enabled: false
+    Description File: ''
+    Description Source: Topic
+    Description Topic:
+      Depth: 5
+      Durability Policy: Volatile
+      History Policy: Keep Last
+      Reliability Policy: Reliable
+      Value: /robot_description
+    Enabled: true
+    Links:
+      All Links Enabled: true
+      Expand Joint Details: false
+      Expand Link Details: false
+      Expand Tree: false
+      Link Tree Style: ''
+    Mass Properties:
+      Inertia: false
+      Mass: false
+    Name: RobotModel
+    TF Prefix: ''
+    Update Interval: 0
+    Value: true
+    Visual Enabled: true
+  - Class: rviz_default_plugins/TF
+    Enabled: false
+    Filter (blacklist): ''
+    Filter (whitelist): ''
+    Frame Timeout: 15
+    Frames:
+      All Enabled: true
+    Marker Scale: 1
+    Name: TF
+    Show Arrows: true
+    Show Axes: true
+    Show Names: false
+    Tree: {}
+    Update Interval: 0
+    Value: false
+  - Class: rviz_common/Group
+    Displays:
+    - Class: rviz_default_plugins/Image
       Enabled: true
-      Line Style:
-        Line Width: 0.029999999329447746
-        Value: Lines
-      Name: Grid
-      Normal Cell Count: 0
-      Offset:
-        X: 0
-        Y: 0
-        Z: 0
-      Plane: XY
-      Plane Cell Count: 10
-      Reference Frame: <Fixed Frame>
+      Max Value: 1
+      Median window: 5
+      Min Value: 0
+      Name: Depth
+      Normalize Range: true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /xtion/depth_registered/image_raw
+      Value: true
+    - Class: rviz_default_plugins/Image
+      Enabled: true
+      Max Value: 1
+      Median window: 5
+      Min Value: 0
+      Name: Color
+      Normalize Range: true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /xtion/rgb/image_raw
       Value: true
     - Alpha: 1
-      Class: rviz/RobotModel
-      Collision Enabled: false
-      Enabled: true
-      Links:
-        All Links Enabled: true
-        Expand Joint Details: false
-        Expand Link Details: false
-        Expand Tree: false
-        Link Tree Style: Links in Alphabetic Order
-        arm_base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        arm_elbow_F10_0_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_elbow_F10_1_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_elbow_F10_2_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_elbow_F3_0_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_elbow_flex_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_elbow_flex_servo_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_mount_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_shoulder_F10_0_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_shoulder_F10_1_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_shoulder_F10_2_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_shoulder_F3_0_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_shoulder_lift_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_shoulder_lift_servo_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_shoulder_pan_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_shoulder_pan_servo_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_wrist_F3_0_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_wrist_flex_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        arm_wrist_flex_servo_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        base_footprint:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cannon_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cannon_servo_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cannon_shaft_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cannon_tube1_hollow_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cannon_tube1_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cannon_tube2_hollow_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cannon_tube2_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cannon_tube3_hollow_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cannon_tube3_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cannon_tube4_hollow_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cannon_tube4_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cannon_tube5_hollow_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cannon_tube5_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cannon_tube6_hollow_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cannon_tube6_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        caster_back_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        caster_front_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        cliff_sensor_front_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        cliff_sensor_left_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        cliff_sensor_right_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        gripper_active_finger_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        gripper_active_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        gripper_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        gripper_servo_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        gripper_static_finger_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        gripper_static_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        gyro_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        ir_arm_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        ir_l155_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        ir_l180_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        ir_r155_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        ir_r180_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        kinect_depth_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        kinect_depth_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        kinect_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        kinect_rgb_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        kinect_rgb_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        opencm_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        plate_bottom_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        plate_middle_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        plate_top_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_bottom_0_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_bottom_10_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_bottom_11_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_bottom_12_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_bottom_13_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_bottom_14_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_bottom_15_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_bottom_1_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_bottom_2_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_bottom_3_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_bottom_4_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_bottom_5_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_kinect_0_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_kinect_1_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_middle_0_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_middle_11_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_middle_1_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_middle_21_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_middle_2_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_middle_3_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_top_0_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_top_10_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_top_12_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_top_1_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_top_20_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_top_22_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_top_2_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        pole_top_3_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        s_0_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        s_m18_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        s_m36_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        s_m54_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        s_m72_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        s_m90_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        s_p18_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        s_p36_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        s_p54_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        s_p72_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        s_p90_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        senz3d_calib_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        senz3d_depth_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        senz3d_depth_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        senz3d_gazebo_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        senz3d_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        senz3d_mount_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        senz3d_rgb_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        senz3d_rgb_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        sonars_mount_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        wheel_left_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        wheel_right_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        xtion_depth_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        xtion_depth_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        xtion_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        xtion_mount_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        xtion_rgb_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        xtion_rgb_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-      Name: RobotModel
-      Robot Description: robot_description
-      TF Prefix: ""
-      Update Interval: 0
-      Value: true
-      Visual Enabled: true
-    - Class: rviz/TF
-      Enabled: false
-      Frame Timeout: 15
-      Frames:
-        All Enabled: false
-      Marker Scale: 1
-      Name: TF
-      Show Arrows: true
-      Show Axes: true
-      Show Names: true
-      Tree:
-        {}
-      Update Interval: 0
-      Value: false
-    - Class: rviz/Camera
-      Enabled: false
-      Image Rendering: background and overlay
-      Image Topic: /senz3d/rgb/image_color
-      Name: Camera
-      Overlay Alpha: 0.5
-      Queue Size: 2
-      Transport Hint: raw
-      Unreliable: false
-      Value: false
-      Visibility:
-        "": true
-        COB:
-          Detected: true
-          Target Pose: true
-          Tracked: true
-          Value: true
-        External:
-          DepthCloud External Camera: true
-          PointCloud2 External Camera: true
-          Value: true
-        Grid: true
-        Kinect:
-          DepthCloud: true
-          Image: true
-          Value: true
-        ORK:
-          ORK Clusters: true
-          ORK Objects: true
-          ORK Tables: true
-          Value: true
-        RobotModel: true
-        TF: true
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
         Value: true
-        Xtion:
-          DepthCloud: true
-          Image Color: true
-          Image Depth: true
-          PointCloud2: true
-          Value: true
-      Zoom Factor: 1
-    - Class: rviz/Group
-      Displays:
-        - Alpha: 1
-          Autocompute Intensity Bounds: true
-          Autocompute Value Bounds:
-            Max Value: 10
-            Min Value: -10
-            Value: true
-          Axis: Z
-          Channel Name: intensity
-          Class: rviz/PointCloud2
-          Color: 255; 255; 255
-          Color Transformer: RGB8
-          Decay Time: 0
-          Enabled: false
-          Invert Rainbow: false
-          Max Color: 255; 255; 255
-          Max Intensity: 4096
-          Min Color: 0; 0; 0
-          Min Intensity: 0
-          Name: PointCloud2 External Camera
-          Position Transformer: XYZ
-          Queue Size: 10
-          Selectable: true
-          Size (Pixels): 3
-          Size (m): 0.009999999776482582
-          Style: Flat Squares
-          Topic: /external_camera/depth_registered/points
-          Unreliable: false
-          Use Fixed Frame: true
-          Use rainbow: true
-          Value: false
-        - Alpha: 1
-          Auto Size:
-            Auto Size Factor: 1
-            Value: true
-          Autocompute Intensity Bounds: true
-          Autocompute Value Bounds:
-            Max Value: 10
-            Min Value: -10
-            Value: true
-          Axis: Z
-          Channel Name: intensity
-          Class: rviz/DepthCloud
-          Color: 255; 255; 255
-          Color Image Topic: /external_camera/rgb/image_raw
-          Color Transformer: RGB8
-          Color Transport Hint: raw
-          Decay Time: 0
-          Depth Map Topic: /external_camera/depth_registered/image_raw
-          Depth Map Transport Hint: raw
-          Enabled: false
-          Invert Rainbow: false
-          Max Color: 255; 255; 255
-          Max Intensity: 4096
-          Min Color: 0; 0; 0
-          Min Intensity: 0
-          Name: DepthCloud External Camera
-          Occlusion Compensation:
-            Occlusion Time-Out: 30
-            Value: false
-          Position Transformer: XYZ
-          Queue Size: 5
-          Selectable: true
-          Size (Pixels): 3
-          Style: Flat Squares
-          Topic Filter: true
-          Use Fixed Frame: true
-          Use rainbow: true
-          Value: false
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz_default_plugins/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: RGB8
+      Decay Time: 0
       Enabled: true
-      Name: External
-    - Class: rviz/Group
-      Displays:
-        - Class: rviz/Image
-          Enabled: true
-          Image Topic: /xtion/depth_registered/image_raw
-          Max Value: 1
-          Median window: 5
-          Min Value: 0
-          Name: Image Depth
-          Normalize Range: true
-          Queue Size: 2
-          Transport Hint: raw
-          Unreliable: false
-          Value: true
-        - Class: rviz/Image
-          Enabled: true
-          Image Topic: /xtion/rgb/image_raw
-          Max Value: 1
-          Median window: 5
-          Min Value: 0
-          Name: Image Color
-          Normalize Range: true
-          Queue Size: 2
-          Transport Hint: raw
-          Unreliable: false
-          Value: true
-        - Alpha: 1
-          Autocompute Intensity Bounds: true
-          Autocompute Value Bounds:
-            Max Value: 10
-            Min Value: -10
-            Value: true
-          Axis: Z
-          Channel Name: intensity
-          Class: rviz/PointCloud2
-          Color: 71; 255; 15
-          Color Transformer: RGB8
-          Decay Time: 0
-          Enabled: false
-          Invert Rainbow: false
-          Max Color: 255; 255; 255
-          Max Intensity: 4096
-          Min Color: 0; 0; 0
-          Min Intensity: 0
-          Name: PointCloud2
-          Position Transformer: XYZ
-          Queue Size: 10
-          Selectable: true
-          Size (Pixels): 3
-          Size (m): 0.0024999999441206455
-          Style: Flat Squares
-          Topic: /xtion/depth_registered/points
-          Unreliable: false
-          Use Fixed Frame: true
-          Use rainbow: true
-          Value: false
-        - Alpha: 1
-          Auto Size:
-            Auto Size Factor: 1
-            Value: true
-          Autocompute Intensity Bounds: true
-          Autocompute Value Bounds:
-            Max Value: 10
-            Min Value: -10
-            Value: true
-          Axis: Z
-          Channel Name: intensity
-          Class: rviz/DepthCloud
-          Color: 255; 255; 255
-          Color Image Topic: /xtion/rgb/image_raw
-          Color Transformer: RGB8
-          Color Transport Hint: raw
-          Decay Time: 0
-          Depth Map Topic: /xtion/depth_registered/image_raw
-          Depth Map Transport Hint: raw
-          Enabled: true
-          Invert Rainbow: false
-          Max Color: 255; 255; 255
-          Max Intensity: 4096
-          Min Color: 0; 0; 0
-          Min Intensity: 0
-          Name: DepthCloud
-          Occlusion Compensation:
-            Occlusion Time-Out: 30
-            Value: false
-          Position Transformer: XYZ
-          Queue Size: 5
-          Selectable: true
-          Size (Pixels): 3
-          Style: Flat Squares
-          Topic Filter: true
-          Use Fixed Frame: true
-          Use rainbow: true
-          Value: true
-      Enabled: false
-      Name: Xtion
-    - Class: rviz/Group
-      Displays:
-        - Class: rviz/Image
-          Enabled: false
-          Image Topic: /kinect/rgb/image_rect_color
-          Max Value: 1
-          Median window: 5
-          Min Value: 0
-          Name: Image
-          Normalize Range: true
-          Queue Size: 2
-          Transport Hint: raw
-          Unreliable: false
-          Value: false
-        - Class: rviz/Image
-          Enabled: false
-          Image Topic: /kinect/rgb/image_raw
-          Max Value: 1
-          Median window: 5
-          Min Value: 0
-          Name: Image
-          Normalize Range: true
-          Queue Size: 2
-          Transport Hint: raw
-          Unreliable: false
-          Value: false
-        - Alpha: 1
-          Auto Size:
-            Auto Size Factor: 1
-            Value: true
-          Autocompute Intensity Bounds: true
-          Autocompute Value Bounds:
-            Max Value: 10
-            Min Value: -10
-            Value: true
-          Axis: Z
-          Channel Name: intensity
-          Class: rviz/DepthCloud
-          Color: 255; 255; 255
-          Color Image Topic: /kinect/rgb/image_raw
-          Color Transformer: RGB8
-          Color Transport Hint: raw
-          Decay Time: 0
-          Depth Map Topic: /kinect/depth_registered/image_raw
-          Depth Map Transport Hint: raw
-          Enabled: true
-          Invert Rainbow: false
-          Max Color: 255; 255; 255
-          Max Intensity: 4096
-          Min Color: 0; 0; 0
-          Min Intensity: 0
-          Name: DepthCloud
-          Occlusion Compensation:
-            Occlusion Time-Out: 30
-            Value: false
-          Position Transformer: XYZ
-          Queue Size: 5
-          Selectable: true
-          Size (Pixels): 3
-          Style: Flat Squares
-          Topic Filter: true
-          Use Fixed Frame: true
-          Use rainbow: true
-          Value: true
-      Enabled: true
-      Name: Kinect
-    - Class: rviz/Group
-      Displays:
-        - Class: object_recognition_ros/OrkObject
-          Confidence: true
-          Enabled: true
-          ID: false
-          Name: ORK Objects
-          Topic: /recognized_object_array
-          Unreliable: false
-          Value: true
-        - Class: rviz/MarkerArray
-          Enabled: false
-          Marker Topic: /tabletop/clusters
-          Name: ORK Clusters
-          Namespaces:
-            {}
-          Queue Size: 100
-          Value: false
-        - Bounding Box: false
-          Class: object_recognition_ros/OrkTable
-          Color: 0; 255; 255
-          Enabled: true
-          Hull: true
-          Name: ORK Tables
-          Top: true
-          Topic: /table_array
-          Unreliable: false
-          Value: true
-      Enabled: false
-      Name: ORK
-    - Class: rviz/Group
-      Displays:
-        - Class: rviz/Image
-          Enabled: false
-          Image Topic: /object_detection/detections_image
-          Max Value: 1
-          Median window: 5
-          Min Value: 0
-          Name: Detected
-          Normalize Range: true
-          Queue Size: 2
-          Transport Hint: raw
-          Unreliable: false
-          Value: false
-        - Class: rviz/Camera
-          Enabled: true
-          Image Rendering: background and overlay
-          Image Topic: /object_detection/detections_image
-          Name: Detected
-          Overlay Alpha: 0.5
-          Queue Size: 2
-          Transport Hint: raw
-          Unreliable: false
-          Value: true
-          Visibility:
-            COB:
-              Detected: true
-              Target Pose: true
-              Tracked: true
-              Value: true
-            Camera: true
-            External:
-              DepthCloud External Camera: true
-              PointCloud2 External Camera: true
-              Value: true
-            Grid: true
-            Kinect:
-              DepthCloud: true
-              Image: true
-              Value: true
-            Models: true
-            ORK:
-              ORK Clusters: true
-              ORK Objects: true
-              ORK Tables: true
-              Value: true
-            RobotModel: true
-            TF: true
-            Value: true
-            Xtion:
-              DepthCloud: true
-              Image Color: true
-              Image Depth: true
-              PointCloud2: true
-              Value: true
-          Zoom Factor: 1
-        - Class: rviz/MarkerArray
-          Enabled: true
-          Marker Topic: /tracked_objects_markers
-          Name: Tracked
-          Namespaces:
-            18: true
-            19: true
-          Queue Size: 100
-          Value: true
-        - Class: rviz/Image
-          Enabled: true
-          Image Topic: /tracked_objects_images
-          Max Value: 1
-          Median window: 5
-          Min Value: 0
-          Name: Tracked
-          Normalize Range: true
-          Queue Size: 2
-          Transport Hint: raw
-          Unreliable: false
-          Value: true
-        - Class: rviz_textured_quads/MeshDisplayCustom
-          Enabled: true
-          Image Topic: /tracked_objects_images
-          Meters per pixel: 0.0020000000949949026
-          Name: Tracked
-          Quad Frame: cat_17
-          Value: true
-        - Alpha: 1
-          Axes Length: 0.5
-          Axes Radius: 0.02500000037252903
-          Class: rviz/Pose
-          Color: 255; 25; 0
-          Enabled: true
-          Head Length: 0.30000001192092896
-          Head Radius: 0.10000000149011612
-          Name: Target Pose
-          Shaft Length: 1
-          Shaft Radius: 0.05000000074505806
-          Shape: Axes
-          Topic: /target_object_pose
-          Unreliable: false
-          Value: true
-      Enabled: true
-      Name: COB
-    - Class: rviz/InteractiveMarkers
-      Enable Transparency: true
-      Enabled: true
-      Name: Models
-      Show Axes: false
-      Show Descriptions: true
-      Show Visual Aids: false
-      Update Topic: /model_markers/update
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: Points
+      Position Transformer: XYZ
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Flat Squares
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /xtion/depth_registered/points
+      Use Fixed Frame: true
+      Use rainbow: true
       Value: true
+    Enabled: true
+    Name: Xtion
+  - Class: rviz_common/Group
+    Displays:
+    - Class: rviz_default_plugins/Image
+      Enabled: false
+      Max Value: 1
+      Median window: 5
+      Min Value: 0
+      Name: Color
+      Normalize Range: true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /kinect/rgb/image_raw
+      Value: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz_default_plugins/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: RGB8
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: Points
+      Position Transformer: XYZ
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Flat Squares
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /kinect/depth_registered/points
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    Enabled: true
+    Name: Kinect
+  - Class: rviz_common/Group
+    Displays:
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: true
+      Name: Tables and Objects
+      Namespaces: {}
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /object_detection/markers
+      Value: true
+    Enabled: true
+    Name: Object Detection
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Default Light: true
     Fixed Frame: base_footprint
-    Frame Rate: 10
+    Frame Rate: 30
   Name: root
   Tools:
-    - Class: rviz/Interact
-      Hide Inactive Objects: true
-    - Class: rviz/MoveCamera
-    - Class: rviz/Select
-    - Class: rviz/SetGoal
-      Topic: /move_base_simple/goal
-    - Class: rviz/SetInitialPose
-      Theta std deviation: 0.2617993950843811
-      Topic: /initialpose
-      X std deviation: 0.5
-      Y std deviation: 0.5
+  - Class: rviz_default_plugins/Interact
+    Hide Inactive Objects: true
+  - Class: rviz_default_plugins/MoveCamera
+  - Class: rviz_default_plugins/Select
+  Transformation:
+    Current:
+      Class: rviz_default_plugins/TF
   Value: true
   Views:
     Current:
-      Class: rviz/XYOrbit
-      Distance: 4.204005241394043
+      Class: rviz_default_plugins/Orbit
+      Distance: 2.5
       Enable Stereo Rendering:
-        Stereo Eye Separation: 0.05999999865889549
+        Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.1625903993844986
-        Y: 0.019704729318618774
-        Z: -1.3440900374916964e-6
+        X: 0.4
+        Y: 0
+        Z: 0.3
       Focal Shape Fixed Size: true
-      Focal Shape Size: 0.05000000074505806
+      Focal Shape Size: 0.05
       Invert Z Axis: false
       Name: Current View
-      Near Clip Distance: 0.009999999776482582
-      Pitch: -0.11020208895206451
-      Target Frame: base_link
-      Value: XYOrbit (rviz)
-      Yaw: 4.804476261138916
-    Saved: ~
+      Near Clip Distance: 0.01
+      Pitch: 0.5
+      Target Frame: <Fixed Frame>
+      Value: Orbit (rviz_default_plugins)
+      Yaw: 3.4
+    Saved: null
 Window Geometry:
-  Camera:
-    collapsed: false
-  Detected:
-    collapsed: false
   Displays:
     collapsed: false
-  Height: 1385
-  Help:
-    collapsed: false
+  Height: 893
   Hide Left Dock: false
   Hide Right Dock: false
-  Image:
+  Selection:
     collapsed: false
-  Image Color:
-    collapsed: false
-  Image Depth:
-    collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000100000000000002b80000050ffc020000000efc0000003d0000028b000000e60100001cfa000000000100000003fb000000100044006900730070006c0061007900730100000000000002b80000015600fffffffb0000000a005600690065007700730100000000ffffffff0000010000fffffffb0000000a0049006d0061006700650100000000ffffffff0000005e00fffffffb0000000a0049006d00610067006500000001440000009a0000001600fffffffb0000000800480065006c00700000000342000000bb0000006e00fffffffb000000100044006500740065006300740065006400000001ea0000011a0000001600fffffffb000000100044006500740065006300740065006401000002ce000001280000001600fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007300000002f1000000ab0000005c00fffffffb0000000c00430061006d006500720061020000000000000170000003b1000002c8fb000000160049006d00610067006500200043006f006c006f007200000002f5000000800000001600fffffffb000000160049006d006100670065002000440065007000740068000000037b000000690000001600fffffffb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e00670000000236000001cc0000000000000000fb0000000e0054007200610063006b0065006401000003fc000001500000001600fffffffb0000000c00430061006d006500720061000000031a000000ca0000000000000000fb0000000c00430061006d00650072006100000002a4000000770000000000000000fb0000000a0049006d00610067006500000002e1000001030000000000000000000006ff0000050f00000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Tool Properties:
-    collapsed: false
-  Tracked:
     collapsed: false
   Views:
     collapsed: false
-  Width: 2493
-  X: 1987
-  Y: 27
+  Width: 1610
+  X: 1091
+  Y: 222
