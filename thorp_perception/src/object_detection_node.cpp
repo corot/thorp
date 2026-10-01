@@ -37,6 +37,7 @@
 #include <thorp_msgs/action/detect_objects.hpp>
 #include <thorp_msgs/action/detect_tables.hpp>
 #include <thorp_toolkit/common.hpp>
+#include <thorp_toolkit/tray.hpp>
 
 #include "thorp_perception/segmentation.hpp"
 #include "thorp_perception/template_matcher.hpp"
@@ -446,7 +447,8 @@ private:
   }
 
   /**
-   * Objects on the planning scene within the volume over the table where we detect objects.
+   * Objects on the planning scene within the volume over the table where we detect objects, but those on the tray:
+   * docked at the table, under its eaves, the tray can be within that volume.
    */
   std::set<std::string> objectsOnTable(const Surface& surface)
   {
@@ -456,10 +458,19 @@ private:
       min = min.cwiseMin(corner);
       max = max.cwiseMax(corner);
     }
-    return objectsInVolume(Eigen::Vector3d(min.x() - redetect_tolerance_, min.y() - redetect_tolerance_,
-                                           surface.centroid.z() - redetect_tolerance_),
-                           Eigen::Vector3d(max.x() + redetect_tolerance_, max.y() + redetect_tolerance_,
-                                           surface.centroid.z() + tabletop_volume_height_));
+    std::set<std::string> names =
+        objectsInVolume(Eigen::Vector3d(min.x() - redetect_tolerance_, min.y() - redetect_tolerance_,
+                                        surface.centroid.z() - redetect_tolerance_),
+                        Eigen::Vector3d(max.x() + redetect_tolerance_, max.y() + redetect_tolerance_,
+                                        surface.centroid.z() + tabletop_volume_height_));
+    if (names.empty())
+      return names;
+    for (const auto& [name, object] : planning_scene_.getObjects({ names.begin(), names.end() }))
+    {
+      if (tray_.onTray(object))
+        names.erase(name);
+    }
+    return names;
   }
 
   /**
@@ -530,6 +541,7 @@ private:
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
   moveit::planning_interface::PlanningSceneInterface planning_scene_;
+  thorp::toolkit::Tray tray_;
   std::unique_ptr<TemplateMatcher> matcher_;
   std::map<std::string, shape_msgs::msg::Mesh> meshes_;
 
@@ -558,6 +570,7 @@ int main(int argc, char** argv)
 {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<rclcpp::Node>("object_detection");
+  thorp::toolkit::init(node);
   thorp::perception::ObjectDetectionServer server(node);
   rclcpp::spin(node);
   rclcpp::shutdown();

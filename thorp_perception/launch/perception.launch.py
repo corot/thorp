@@ -17,9 +17,12 @@ def generate_launch_description():
         DeclareLaunchArgument('use_sim_time', default_value='false'),
 
         # Not renamed, as launch renames all the nodes in the process, also PlanningSceneInterface's own node
+        # The tray geometry, to tell the objects on the tray from those on the table
         Node(package='thorp_perception', executable='object_detection', output='screen', respawn=True,
              parameters=[PathJoinSubstitution([FindPackageShare('thorp_perception'), 'config',
-                                               'object_detection.yaml']), sim_time],
+                                               'object_detection.yaml']),
+                         PathJoinSubstitution([FindPackageShare('thorp_description'), 'config', 'tray.yaml']),
+                         sim_time],
              remappings=[('cloud', '/xtion/depth_registered/points')]),
 
         Node(package='thorp_perception', executable='xtion_fov_analyzer.py', name='xtion_fov_analyzer',
