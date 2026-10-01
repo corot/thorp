@@ -15,14 +15,13 @@ def generate_launch_description():
     sim_time = {'use_sim_time': LaunchConfiguration('use_sim_time')}
     return LaunchDescription([
         DeclareLaunchArgument('use_sim_time', default_value='false'),
-        DeclareLaunchArgument('world_file', default_value='',
+        DeclareLaunchArgument('thorp_world_file', default_value='',
                               description="thorp_world's file, to load the world from on start and save it to"),
 
         IncludeLaunchDescription(
             PathJoinSubstitution([FindPackageShare('thorp_world'), 'launch', 'world.launch.py']),
-            launch_arguments={'world_file': LaunchConfiguration('world_file'),
+            launch_arguments={'thorp_world_file': LaunchConfiguration('thorp_world_file'),
                               'use_sim_time': LaunchConfiguration('use_sim_time')}.items()),
-
 
         # Not renamed, as launch renames all the nodes in the process, also PlanningSceneInterface's own node
         # The tray geometry, to tell the objects on the tray from those on the table

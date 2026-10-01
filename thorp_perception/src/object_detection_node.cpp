@@ -360,9 +360,10 @@ private:
       goal_handle->abort(result);
       return;
     }
+    result->tables.front().id = observed->table_ids.front();
     RCLCPP_INFO(node_->get_logger(), "Table of %.2f x %.2f m detected at [%.2f, %.2f, %.2f]: %s", surface->length,
                 surface->width, surface->center.x(), surface->center.y(), surface->height(surface->center),
-                observed->table_ids.front().c_str());
+                result->tables.front().id.c_str());
     goal_handle->succeed(result);
   }
 
@@ -442,6 +443,9 @@ private:
       goal_handle->abort(result);
       return;
     }
+    result->surface.id = observed->surface_id;
+    scene_objects.front().id = observed->surface_id;
+    colors.front().id = observed->surface_id;
     for (size_t i = 0; i < objects.size(); ++i)
     {
       objects[i].id = observed->object_ids[i];

@@ -48,7 +48,7 @@ set(BT_NODES
   src/bt/actions/expand_pickup_location.cpp
   src/bt/actions/follow_object.cpp
   src/bt/actions/get_closest_pose.cpp
-  src/bt/actions/get_docked_table.cpp
+  src/bt/actions/get_current_table.cpp
   src/bt/actions/get_from_list.cpp
   src/bt/actions/get_list_front.cpp
   src/bt/actions/get_poses_around_table.cpp

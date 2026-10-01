@@ -41,7 +41,7 @@ class WorldNode(Node):
         self.robot_frame = self.declare_parameter('robot_frame', 'base_footprint').value
         self.arm_frame = self.declare_parameter('arm_frame', 'arm_base_link').value
         self.max_arm_reach = self.declare_parameter('max_arm_reach', 0.3).value
-        self.dock_distance = self.declare_parameter('dock_distance', 0.3).value
+        self.at_table_distance = self.declare_parameter('at_table_distance', 0.3).value
         self.tf_timeout = Duration(seconds=self.declare_parameter('tf_timeout', 0.5).value)
         self.world_file = os.path.expanduser(self.declare_parameter('world_file', '').value)
         self.world = World(object_tolerance=self.declare_parameter('object_tolerance', 0.05).value,
@@ -97,13 +97,15 @@ class WorldNode(Node):
                 pose = to_pose(self.to_map(request.pose.header, request.pose.pose))
                 self.world.mark_placed(request.object_id, now, request.table_id, pose)
             elif request.effect == UpdateWorld.Request.STOWED:
-                self.world.mark_stowed(request.object_id, now, request.slot)
+                self.world.mark_stowed(request.object_id, now, request.slot if request.slot >= 0 else None)
             elif request.effect == UpdateWorld.Request.DISTURBED:
                 self.world.mark_disturbed(request.object_id, now)
             elif request.effect == UpdateWorld.Request.DOCKED:
                 self.world.dock(request.table_id)
             elif request.effect == UpdateWorld.Request.UNDOCKED:
                 self.world.undock()
+            elif request.effect == UpdateWorld.Request.LOST:
+                self.world.mark_lost(request.object_id, now)
             else:
                 raise ValueError(f'unknown effect {request.effect}')
         except (KeyError, ValueError, TransformException) as e:
@@ -129,7 +131,7 @@ class WorldNode(Node):
             return response
         response.reachable = [e.kind == OBJECT and self.world.within_reach(e.id, arm, self.max_arm_reach)
                               for e in entities]
-        response.docked_at = self.world.docked_table(robot, self.dock_distance) or ''
+        response.at_table = self.world.table_at(robot, self.at_table_distance) or ''
         return response
 
     def save(self, request, response):

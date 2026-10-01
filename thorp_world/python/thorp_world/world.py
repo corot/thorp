@@ -109,6 +109,14 @@ class World:
         """A skill touched the object without the result it wanted, so it may have moved."""
         self._set(object_id, stamp, status=DISTURBED)
 
+    def mark_lost(self, object_id, stamp):
+        """
+        The object left the gripper, for somewhere unknown, as when the gripper is cleared. Nothing changes for an object
+        not believed in the gripper, as one a failed pickup left on its table.
+        """
+        if self._object(object_id).support == GRIPPER:
+            self._set(object_id, stamp, pose=None, support=None, slot=None, status=MISSING)
+
     def dock(self, table_id):
         """The robot is parked against a table."""
         self._table(table_id)
@@ -117,15 +125,18 @@ class World:
     def undock(self):
         self.docked_at = None
 
-    def docked_table(self, robot_pose, max_distance=0.3):
+    def table_at(self, robot_pose, max_distance=0.3):
         """
-        The table the robot is docked at, if it's still that close to it; a docking left behind by a robot that
-        moved otherwise than undocking is ignored.
+        The table the robot is at: the one it docked at, if it's still that close to it, or else the closest one that
+        close, as the robot may stand at a table without docking, as in front of the bench's.
         """
-        table = self._entities.get(self.docked_at)
-        if table is None or distance_to_table(table, robot_pose.x, robot_pose.y) > max_distance:
-            return None
-        return table.id
+        docked = self._entities.get(self.docked_at)
+        if docked is not None and distance_to_table(docked, robot_pose.x, robot_pose.y) <= max_distance:
+            return docked.id
+        nearby = [(distance_to_table(t, robot_pose.x, robot_pose.y), t.id)
+                  for t in self._entities.values() if t.kind == TABLE]
+        nearby = [n for n in nearby if n[0] <= max_distance]
+        return min(nearby)[1] if nearby else None
 
     def within_reach(self, object_id, arm_pose, reach):
         """Whether an object on a table is closer than reach to the arm's base."""

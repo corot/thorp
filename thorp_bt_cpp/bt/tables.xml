@@ -10,16 +10,45 @@
   <include path="pickup_objects.xml"/>
 
   <!--
-    Park against the table in front, on its nearest side, ready to pick from or place on it.
-    Detects the table again rather than taking one, so it works from wherever the robot stands:
-    after inspect_table that is the viewing pose, which sees far more of the table than the
-    start pose does.
+    Park against a table, on its side closest to the robot, ready to pick from or place on it: the table thorp_world
+    knows as table_id, or the one in front if none is given. It goes first to the viewing pose on that side and detects
+    the table again from there, as a view from further away sees little of it; then docks, and detects the objects on
+    it, refreshing the world and the planning scene.
   -->
   <BehaviorTree ID="approach_table">
     <Sequence>
-      <SubTree ID="detect_table"
-               table="{table}"
-               table_pose="{table_pose}"/>
+      <IfThenElse>
+        <StringInBlackboard key="{table_id}"/>
+        <GetTable table_id="{table_id}"
+                  table="{table}"
+                  table_pose="{table_pose}"
+                  error="{error}"/>
+        <SubTree ID="detect_table"
+                 table="{table}"
+                 table_pose="{table_pose}"
+                 table_id="{table_id}"/>
+      </IfThenElse>
+      <GetRobotPose timeout="1"
+                    robot_pose="{robot_pose}"
+                    error="{error}"/>
+      <ReadDoubleParam param_name="approach_dist_to_table"
+                       output_key="{approach_dist_to_table}"/>
+      <GetPosesAroundTable distance="{approach_dist_to_table}"
+                           table="{table}"
+                           table_pose="{table_pose}"
+                           table_side_poses="{approach_poses}"/>
+      <GetClosestPose poses="{approach_poses}"
+                      target_pose="{robot_pose}"
+                      closest_pose="{approach_pose}"/>
+      <NavigateToPose goal="{approach_pose}"
+                      error_code_id="{nav_error}"/>
+      <!-- if the closer detection misses, go on with the table we have -->
+      <ForceSuccess>
+        <SubTree ID="detect_table"
+                 table="{table}"
+                 table_pose="{table_pose}"
+                 table_id="{table_id}"/>
+      </ForceSuccess>
       <ReadDoubleParam param_name="pickup_dist_to_table"
                        output_key="{pickup_dist_to_table}"/>
       <GetPosesAroundTable distance="{pickup_dist_to_table}"
@@ -34,20 +63,28 @@
                       target_pose="{robot_pose}"
                       closest_pose="{pickup_pose}"/>
       <SubTree ID="reach_table"
-               table="{table}"
+               table_id="{table_id}"
                pose="{pickup_pose}"
                error="{error}"
                nav_error="{nav_error}"/>
+      <SubTree ID="detect_objects"
+               objects="{objects}"
+               surface="{surface}"/>
     </Sequence>
   </BehaviorTree>
 
   <!--
-    Dock at the table: straight to the pickup pose, under the table's eaves, precisely. The table access is cleared
-    on the local costmap, so the controller doesn't take it as an obstacle. Docking that can't reach the pickup pose's
-    tolerance fails after a minute, as the progress checker never stops a robot that keeps moving around the goal.
+    Dock at a table: straight to the pickup pose, under the table's eaves, precisely, recording it in thorp_world. The
+    table access is cleared on the local costmap, so the controller doesn't take it as an obstacle. Docking that can't
+    reach the pickup pose's tolerance fails after a minute, as the progress checker never stops a robot that keeps
+    moving around the goal.
   -->
   <BehaviorTree ID="reach_table">
     <Sequence>
+      <GetTable table_id="{table_id}"
+                table="{table}"
+                table_pose="{table_pose}"
+                error="{error}"/>
       <ClearTableAccess table="{table}"
                         table_pose="{pose}"/>
       <GetRobotPose timeout="1"
@@ -62,16 +99,22 @@
                     goal_checker_id="precise_goal_checker"
                     error_code_id="{nav_error}"/>
       </Timeout>
+      <ForceSuccess>
+        <UpdateWorld effect="docked"
+                     table_id="{table_id}"/>
+      </ForceSuccess>
     </Sequence>
   </BehaviorTree>
 
   <!--
-    Back straight out from the table the robot is parked against. reach_table drives in
-    head-on, so backing up moves away from the table; it retreats as far as the pickup
-    planner's detach poses do, far enough to navigate around the table again.
+    Back straight out from the table the robot is at. reach_table drives in head-on, so backing up moves away from
+    the table; it retreats as far as the pickup planner's detach poses do, far enough to navigate around the table
+    again, and restores the table access reach_table cleared.
   -->
   <BehaviorTree ID="leave_table">
     <Sequence>
+      <GetCurrentTable table_id="{table_id}"
+                       error="{error}"/>
       <ReadDoubleParam param_name="pickup_dist_to_table"
                        output_key="{pickup_dist_to_table}"/>
       <ReadDoubleParam param_name="detach_dist_from_table"
@@ -80,20 +123,32 @@
       <BackUp backup_dist="{retreat}"
               backup_speed="0.1"
               error_code_id="{nav_error}"/>
-      <RestoreTableAccess/>
+      <RestoreTableAccess table_name="{table_id}"/>
+      <ForceSuccess>
+        <UpdateWorld effect="undocked"/>
+      </ForceSuccess>
     </Sequence>
   </BehaviorTree>
 
   <!--
-    Look the table in front over from a viewing pose and report what is on it. The objects are
-    for choosing what to do; they are detected from outside arm reach, so picking one still
-    means approach_table and detect_objects from there.
+    Look a table over from a viewing pose and report what is on it: the table thorp_world knows as table_id, or the one
+    in front if none is given. The objects are for choosing what to do; they are detected from outside arm reach, so
+    picking one still means approach_table, that detects them again from there.
   -->
   <BehaviorTree ID="inspect_table">
     <Sequence>
+      <IfThenElse>
+        <StringInBlackboard key="{table_id}"/>
+        <GetTable table_id="{table_id}"
+                  table="{table}"
+                  table_pose="{table_pose}"
+                  error="{error}"/>
+        <AlwaysSuccess/>
+      </IfThenElse>
       <SubTree ID="validate_table"
                table="{table}"
                table_pose="{table_pose}"
+               table_id="{table_id}"
                inspect_pose="{inspect_pose}"/>
       <SubTree ID="detect_objects"
                objects="{objects}"
@@ -102,11 +157,15 @@
   </BehaviorTree>
 
   <!--
-    Drive to the viewing pose of a known table: the closest of those facing each of its sides, outside arm reach. From
-    there the table is in view, for detecting, inspecting or approaching it.
+    Drive to the viewing pose of a table thorp_world knows: the closest of those facing each of its sides, outside arm
+    reach. From there the table is in view, for detecting, inspecting or approaching it.
   -->
   <BehaviorTree ID="go_to_table">
     <Sequence>
+      <GetTable table_id="{table_id}"
+                table="{table}"
+                table_pose="{table_pose}"
+                error="{error}"/>
       <ReadDoubleParam param_name="approach_dist_to_table"
                        output_key="{approach_dist_to_table}"/>
       <GetPosesAroundTable distance="{approach_dist_to_table}"
@@ -149,17 +208,18 @@
       -->
       <Fallback>
         <DetectTables table="{table}"
-                      table_pose="{table_pose}"/>
+                      table_pose="{table_pose}"
+                      table_id="{table_id}"/>
         <PoseInBlackboard key="{table_pose}"/>
       </Fallback>
       <SubTree ID="go_to_table"
-               table="{table}"
-               table_pose="{table_pose}"
+               table_id="{table_id}"
                inspect_pose="{inspect_pose}"
                error="{error}"
                nav_error="{nav_error}"/>
       <DetectTables table="{table}"
-                    table_pose="{table_pose}"/>
+                    table_pose="{table_pose}"
+                    table_id="{table_id}"/>
       <TableAsObstacle table="{table}"
                        table_pose="{table_pose}"/>
       <TableValidSize table="{table}"/>
@@ -167,18 +227,23 @@
   </BehaviorTree>
 
   <!--
-    Pick every object on a table and put it on the tray, from as few pickup locations around it as possible. With no
-    table given, it takes the one in front, validated and looked over from a viewing pose.
+    Pick every object on a table and put it on the tray, from as few pickup locations around it as possible: the table
+    thorp_world knows as table_id, or the one in front if none is given, validated and looked over from a viewing pose.
   -->
   <BehaviorTree ID="cleanup_table">
     <Sequence>
-      <Fallback>
-        <PoseInBlackboard key="{table_pose}"/>
+      <IfThenElse>
+        <StringInBlackboard key="{table_id}"/>
+        <GetTable table_id="{table_id}"
+                  table="{table}"
+                  table_pose="{table_pose}"
+                  error="{error}"/>
         <SubTree ID="validate_table"
                  table="{table}"
                  table_pose="{table_pose}"
+                 table_id="{table_id}"
                  inspect_pose="{inspect_pose}"/>
-      </Fallback>
+      </IfThenElse>
       <ReadDoubleParam param_name="pickup_dist_to_table"
                        output_key="{pickup_dist_to_table}"/>
       <GetPosesAroundTable distance="{pickup_dist_to_table}"
@@ -218,7 +283,7 @@
                 <NavigateToPose goal="{approach_pose}"
                                 error_code_id="{nav_error}"/>
                 <SubTree ID="reach_table"
-                         table="{table}"
+                         table_id="{table_id}"
                          pose="{pickup_pose}"/>
                 <SubTree ID="pickup_objects"/>
                 <ClearPlanningScene keep_tray="true"/>

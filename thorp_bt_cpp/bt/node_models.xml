@@ -50,6 +50,7 @@
         <Action ID="DetectTables">
             <output_port name="table" type="moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="table_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <output_port name="table_id" type="std::string">as thorp_world calls it</output_port>
             <input_port name="server_timeout" type="std::chrono::milliseconds"/>
             <input_port name="server_name" type="std::string">Action server name</input_port>
         </Action>
@@ -99,7 +100,7 @@
             <input_port name="target_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="poses" type="std::vector&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
         </Action>
-        <Action ID="GetDockedTable">
+        <Action ID="GetCurrentTable">
             <output_port name="error" type="int"/>
             <output_port name="table_id" type="std::string"/>
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
@@ -304,7 +305,7 @@
         </Action>
         <Control ID="RecoverAndRetry"/>
         <Action ID="RestoreTableAccess">
-            <input_port name="table_name" type="std::string" default="table">name of the table to restore access to</input_port>
+            <input_port name="table_name" type="std::string">id of the table to restore access to, as cleared</input_port>
         </Action>
         <Action ID="SegmentRooms">
             <output_port name="rooms" type="std::vector&lt;unsigned int, std::allocator&lt;unsigned int&gt; &gt;"/>
@@ -360,6 +361,9 @@
         <Decorator ID="StoreResult">
             <output_port name="result" type="bool"/>
         </Decorator>
+        <Condition ID="StringInBlackboard">
+            <input_port name="key" type="std::string"/>
+        </Condition>
         <Action ID="TableAsObstacle">
             <input_port name="table_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="table" type="moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;"/>
@@ -403,8 +407,8 @@
         <Action ID="UpdateWorld">
             <input_port name="table_id" type="std::string">placed on or docked at</input_port>
             <input_port name="pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;">where placed</input_port>
-            <input_port name="object_id" type="std::string">picked, placed, stowed or disturbed</input_port>
-            <input_port name="effect" type="std::string">picked, placed, stowed, disturbed, docked or undocked</input_port>
+            <input_port name="object_id" type="std::string">picked, placed, stowed, disturbed or lost</input_port>
+            <input_port name="effect" type="std::string">picked, placed, stowed, disturbed, lost, docked or undocked</input_port>
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
             <input_port name="slot" type="int" default="-1">tray slot stowed on</input_port>
             <input_port name="service_name" type="std::string" default="world/update">name of the ROS service</input_port>

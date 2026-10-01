@@ -6,6 +6,7 @@ uint8 STOWED=3     # object_id is on the tray, on slot
 uint8 DISTURBED=4  # a skill touched object_id without the result it wanted, so it may have moved
 uint8 DOCKED=5     # the robot is parked against table_id
 uint8 UNDOCKED=6   # the robot left the table it was docked at
+uint8 LOST=7       # object_id left the gripper, for somewhere unknown
 
 uint8 effect
 string object_id

@@ -12,13 +12,13 @@ namespace thorp::bt::actions
 using thorp_msgs::msg::ThorpError;
 
 /**
- * The table the robot is docked at, as thorp_world tells: the one it last docked at, if it's still at it.
- * Fails with NOT_AT_TABLE otherwise.
+ * The table the robot is at, as thorp_world tells: the one it docked at, or else the closest. Fails with NOT_AT_TABLE
+ * if it's at none.
  */
-class GetDockedTable : public BT::RosServiceNode<thorp_msgs::srv::QueryWorld, BT::SyncActionNode>
+class GetCurrentTable : public BT::RosServiceNode<thorp_msgs::srv::QueryWorld, BT::SyncActionNode>
 {
 public:
-  GetDockedTable(const std::string& name, const BT::NodeConfig& conf)
+  GetCurrentTable(const std::string& name, const BT::NodeConfig& conf)
     : RosServiceNode<ServiceType, ParentType>(name, conf)
   {
   }
@@ -39,14 +39,14 @@ private:
 
   BT::NodeStatus onResponse(const ResponseType& response) override
   {
-    if (response.docked_at.empty())
+    if (response.at_table.empty())
     {
-      RCLCPP_WARN(logger(*this), "Not docked at any table%s%s", response.message.empty() ? "" : ": ",
+      RCLCPP_WARN(logger(*this), "Not at any table%s%s", response.message.empty() ? "" : ": ",
                   response.message.c_str());
       setOutput("error", static_cast<int>(ThorpError::NOT_AT_TABLE));
       return BT::NodeStatus::FAILURE;
     }
-    setOutput("table_id", response.docked_at);
+    setOutput("table_id", response.at_table);
     return BT::NodeStatus::SUCCESS;
   }
 
@@ -56,6 +56,6 @@ private:
     return BT::NodeStatus::FAILURE;
   }
 
-  BT_REGISTER_NODE(GetDockedTable);
+  BT_REGISTER_NODE(GetCurrentTable);
 };
 }  // namespace thorp::bt::actions

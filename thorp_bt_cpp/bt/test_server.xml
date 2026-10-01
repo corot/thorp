@@ -108,9 +108,9 @@
               error="{error}"/>
   </BehaviorTree>
 
-  <BehaviorTree ID="test_world_docked">
-    <GetDockedTable table_id="{table_id}"
-                    error="{error}"/>
+  <BehaviorTree ID="test_world_current">
+    <GetCurrentTable table_id="{table_id}"
+                     error="{error}"/>
   </BehaviorTree>
 
   <BehaviorTree ID="test_world_pickable">

@@ -50,8 +50,8 @@ def test_an_unknown_table_fails_with_table_not_found(runner):
     assert not succeeded and out['error'] == ThorpError.TABLE_NOT_FOUND
 
 
-def test_the_docked_table_is_the_one_the_robot_is_at(runner):
-    succeeded, out = run(runner, 'test_world_docked')
+def test_the_current_table_is_the_one_the_robot_is_at(runner):
+    succeeded, out = run(runner, 'test_world_current')
     assert succeeded and out['table_id'] == 'table 1'
 
 

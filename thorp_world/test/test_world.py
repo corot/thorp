@@ -1,7 +1,7 @@
 """
 thorp_world's core, without ROS: identity across detections, skills' effects, relations and persistence.
 
-    cd ~/colcon_ws/thorp_world/src/thorp/thorp_world && PYTHONPATH=python python3 -m pytest test -v
+    cd ~/colcon_ws/thorp_world/src/thorp/thorp_world && PYTHONPATH=python python3 -m pytest test/test_world.py -v
 """
 
 import math
@@ -121,6 +121,16 @@ def test_skills_effects_are_beliefs(world):
     assert (seen.status, seen.provenance) == (OK, OBSERVED)
 
 
+def test_a_lost_object_is_missing_and_nowhere(world):
+    world.observe_objects(table(), [cube(0.3, 0.0)], stamp=1.0)
+    world.mark_picked('cube 1', stamp=2.0)
+    world.mark_lost('cube 1', stamp=3.0)
+    lost = world.get('cube 1')
+    assert (lost.support, lost.pose, lost.status, lost.provenance) == (None, None, MISSING, BELIEVED)
+    _, ids = world.observe_objects(table(), [cube(0.31, 0.0)], stamp=4.0)
+    assert ids == ['cube 2'], "a lost object has no pose to be matched by"
+
+
 def test_effects_on_unknown_entities_are_refused(world):
     world.observe_objects(table(), [cube(0.3, 0.0)], stamp=1.0)
     with pytest.raises(KeyError):
@@ -131,14 +141,22 @@ def test_effects_on_unknown_entities_are_refused(world):
         world.mark_picked('table 1', stamp=2.0)
 
 
-def test_docking_holds_only_while_the_robot_is_at_the_table(world):
-    world.observe_tables([table()], stamp=1.0)
-    world.dock('table 1')
-    # the table's near edge is at x 0.175
-    assert world.docked_table(Pose(0.03, 0.0)) == 'table 1'
-    assert world.docked_table(Pose(-0.5, 0.0)) is None
+def test_the_robot_is_at_a_table_when_close_to_it(world):
+    world.observe_tables([table(), table(0.45, 0.6)], stamp=1.0)
+    # table 1's near edge is at x 0.175
+    assert world.table_at(Pose(0.03, 0.0)) == 'table 1'
+    assert world.table_at(Pose(-0.5, 0.0)) is None
+    # between both, at the one docked at rather than the closest
+    world.dock('table 2')
+    assert world.table_at(Pose(0.03, 0.15)) == 'table 2'
     world.undock()
-    assert world.docked_table(Pose(0.03, 0.0)) is None
+    assert world.table_at(Pose(0.03, 0.15)) == 'table 1'
+
+
+def test_losing_an_object_not_in_the_gripper_changes_nothing(world):
+    world.observe_objects(table(), [cube(0.3, 0.0)], stamp=1.0)
+    world.mark_lost('cube 1', stamp=2.0)
+    assert world.get('cube 1').support == 'table 1' and world.get('cube 1').pose is not None
 
 
 def test_reach_is_measured_from_the_arm(world):

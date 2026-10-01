@@ -29,10 +29,8 @@
   <!--
     Find the table in front of the robot.
 
-    One table, not a list: the node reports the table the detector segments, and names it
-    "table" whatever the detector called it. So unlike detect_objects, the name it comes back
-    with carries no information; the pose and the size are the answer. The pose is in the map
-    frame.
+    One table, not a list: the node reports the table the detector segments, with the id thorp_world
+    knows it by, the one the other table skills take. The pose is in the map frame.
 
     Fails when nothing in view is a big enough surface, the threshold being the table_min_side
     parameter of the node running the tree.
@@ -41,7 +39,8 @@
   -->
   <BehaviorTree ID="detect_table">
     <DetectTables table="{table}"
-                  table_pose="{table_pose}"/>
+                  table_pose="{table_pose}"
+                  table_id="{table_id}"/>
   </BehaviorTree>
 
 </root>

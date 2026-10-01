@@ -12,7 +12,8 @@ namespace thorp::bt::actions
 {
 /**
  * Report a skill's effect to thorp_world: an object picked, placed on a table at a pose, stowed on a tray slot or
- * disturbed; the robot docked at a table or undocked. Fails if the world refuses it, as for an unknown id.
+ * disturbed, or lost from the gripper; the robot docked at a table or undocked. Fails if the world refuses it, as for
+ * an unknown id.
  */
 class UpdateWorld : public BT::RosServiceNode<thorp_msgs::srv::UpdateWorld, BT::SyncActionNode>
 {
@@ -26,8 +27,8 @@ public:
   {
     BT::PortsList ports = BT::RosServiceNode<ServiceType, ParentType>::providedPorts();
     ports["service_name"].setDefaultValue("world/update");
-    ports.insert({ BT::InputPort<std::string>("effect", "picked, placed, stowed, disturbed, docked or undocked"),
-                   BT::InputPort<std::string>("object_id", "picked, placed, stowed or disturbed"),
+    ports.insert({ BT::InputPort<std::string>("effect", "picked, placed, stowed, disturbed, lost, docked or undocked"),
+                   BT::InputPort<std::string>("object_id", "picked, placed, stowed, disturbed or lost"),
                    BT::InputPort<std::string>("table_id", "placed on or docked at"),
                    BT::InputPort<geometry_msgs::msg::PoseStamped>("pose", "where placed"),
                    BT::InputPort<int>("slot", -1, "tray slot stowed on") });
@@ -39,7 +40,8 @@ private:
   {
     static const std::map<std::string, uint8_t> effects = {
       { "picked", RequestType::PICKED },       { "placed", RequestType::PLACED }, { "stowed", RequestType::STOWED },
-      { "disturbed", RequestType::DISTURBED }, { "docked", RequestType::DOCKED }, { "undocked", RequestType::UNDOCKED }
+      { "disturbed", RequestType::DISTURBED }, { "lost", RequestType::LOST },     { "docked", RequestType::DOCKED },
+      { "undocked", RequestType::UNDOCKED }
     };
     const std::string effect = requireInput<std::string>(*this, "effect");
     const auto it = effects.find(effect);

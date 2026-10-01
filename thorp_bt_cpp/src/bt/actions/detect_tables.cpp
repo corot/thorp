@@ -25,8 +25,9 @@ public:
 
   static BT::PortsList providedPorts()
   {
-    return providedBasicPorts({ BT::OutputPort<moveit_msgs::msg::CollisionObject>("table"),  //
-                                BT::OutputPort<geometry_msgs::msg::PoseStamped>("table_pose") });
+    return providedBasicPorts({ BT::OutputPort<moveit_msgs::msg::CollisionObject>("table"),         //
+                                BT::OutputPort<geometry_msgs::msg::PoseStamped>("table_pose"),        //
+                                BT::OutputPort<std::string>("table_id", "as thorp_world calls it") });
   }
 
 private:
@@ -43,8 +44,7 @@ private:
       return BT::NodeStatus::FAILURE;
     }
 
-    auto table = result_.result->tables.front();
-    table.id = "table";
+    const auto& table = result_.result->tables.front();
     geometry_msgs::msg::PoseStamped table_pose;
     table_pose.header = table.header;
     table_pose.pose = table.pose;
@@ -59,6 +59,7 @@ private:
                 ttk::toCStr2D(table_pose));
     setOutput("table", table);
     setOutput("table_pose", table_pose);
+    setOutput("table_id", table.id);
     return BT::NodeStatus::SUCCESS;
   }
 

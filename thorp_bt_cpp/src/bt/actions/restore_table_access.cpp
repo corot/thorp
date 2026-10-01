@@ -17,8 +17,7 @@ public:
 
   static BT::PortsList providedPorts()
   {
-    // detect_table names every table it finds "table", so that is what ClearTableAccess cleared
-    return { BT::InputPort<std::string>("table_name", "table", "name of the table to restore access to") };
+    return { BT::InputPort<std::string>("table_name", "id of the table to restore access to, as cleared") };
   }
 
 private:

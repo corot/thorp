@@ -63,7 +63,7 @@
 #
 # test: read only by the test suite; the agent side ignores this block.
 #   inputs_from: where an input comes from, when it should be a real value rather than one
-#     someone typed in: {table: [detect_table, table]} takes the table detect_table found, and
+#     someone typed in: {table_id: [detect_table, table_id]} takes the table detect_table found, and
 #     a third element indexes a list, so [cover_in_one_tour, coverage_waypoints, 0] is the
 #     first waypoint of a coverage path. Usable on the test's own inputs and on any setup
 #     step's. This is the same threading an agent does by hand between two goals, so a chain
@@ -110,17 +110,19 @@ capabilities:
 
   pickup_object:
     description: >
-      Pick up an already-detected object with the arm, clearing the gripper first if it is
-      holding something, and retrying with a cleared octomap if the first attempt fails.
+      Pick up an object thorp_world knows, by its id, with the arm, clearing the gripper first if
+      it is holding something, and retrying with a cleared octomap if the first attempt fails.
+      The object must be on the table the robot is at and within the arm's reach; the world
+      records it in the gripper, or as disturbed if the pickup failed.
     status: ok
     stack: [manipulation]
     needs: {at_a_table: approach_table, objects_detected: detect_objects}
     invalidates: [objects_detected]
     inputs:
-      object_name: {type: string, from: [detect_objects.objects], description: "name of the object to pick, as the detector named it"}
+      object_name: {type: string, from: [detect_objects.objects], description: "id of the object to pick, as thorp_world knows it: 'cube 1'"}
       tightening: {type: float, optional: true, description: "extra gripper closure past contact, in meters; leave it out to use the gripper's configured value"}
     outputs:
-      error: {type: int, when: failure, description: "error code from the pickup action; 0 when it worked"}
+      error: {type: int, when: failure, description: "why it failed: OBJECT_NOT_FOUND, OBJECT_NOT_ON_TABLE, NOT_AT_TABLE or OUT_OF_REACH from checking the object against the world, or else the pickup action's error code"}
       attached_object: {type: string, description: "object now attached to the gripper, if any"}
       max_effort: {type: float, description: "gripper effort used, read from the gripper_max_effort parameter"}
     test:
@@ -134,7 +136,8 @@ capabilities:
 
   place_object:
     description: >
-      Place the object currently held by the gripper at a given pose on the support surface.
+      Place the object currently held by the gripper at a given pose on the table the robot is
+      at, and record it there in thorp_world.
     status: ok
     stack: [manipulation]
     needs: {holding_object: pickup_object, at_a_table: approach_table}
@@ -143,7 +146,7 @@ capabilities:
       object_name: {type: string, from: [pickup_object.attached_object], description: "name of the object being placed"}
       place_pose: {type: geometry_msgs::msg::PoseStamped, description: "where the object's center goes, as 'x;y;yaw;frame' or 'x;y;z;roll;pitch;yaw;frame'; z is the surface height plus half the object's height, plus a few millimeters, and the short form leaves z at 0, which is the floor"}
     outputs:
-      error: {type: int, when: failure, description: "error code from the place action; 0 when it worked"}
+      error: {type: int, when: failure, description: "NOT_AT_TABLE when the robot isn't at a table, or else the place action's error code"}
     test:
       # A clear spot on the near edge of the table; the nearest object, the star, is 8 cm further in.
       # The square's center once on the table (0.47 m high), 8 mm above. In the map frame, so it stays
@@ -161,6 +164,7 @@ capabilities:
       Place the held object on the robot's own tray, on the next free slot, found from the
       objects already on the tray in the planning scene, or on the following free slots if
       placing there fails; there, the placed object then lies level on the tray, where it fell.
+      thorp_world records it on that slot.
     status: ok
     stack: [manipulation]
     needs: {holding_object: pickup_object}
@@ -184,6 +188,7 @@ capabilities:
       Open the gripper, and if the planning scene has an object attached to it, detach it and
       remove it from the scene. For a gripper holding something it shouldn't, or a planning
       scene that believes so after a failed pickup; pickup_object does it itself first.
+      thorp_world takes an object it believed in the gripper as missing.
     status: ok
     stack: [manipulation]
     invalidates: [holding_object]
@@ -248,9 +253,9 @@ capabilities:
 
   detect_table:
     description: >
-      Find the table in front of the robot and report its size and where it is on the map.
-      Only one surface is reported, however many are in view, and it always comes
-      back named "table" -- the name carries no information here, unlike detect_objects. This
+      Find the table in front of the robot, record it in thorp_world, and report it by the id
+      the world knows it by, as "table 1", with its size and where it is on the map. A table
+      detected again keeps its id. Only one surface is reported, however many are in view. This
       is the step that tells you a table is there and where to stand relative to it; it does
       not move the robot, and it fails when nothing in view is a large enough surface. It only
       sees a table close in front; for one known but farther away, go_to_table first.
@@ -258,7 +263,8 @@ capabilities:
     stack: [perception]
     inputs: {}
     outputs:
-      table: {type: moveit_msgs::msg::CollisionObject, description: "the table: name, width, depth, height, color and center pose"}
+      table_id: {type: string, description: "the table's id in thorp_world"}
+      table: {type: moveit_msgs::msg::CollisionObject, description: "the table: id, width, depth, height, color and center pose"}
       table_pose: {type: geometry_msgs::msg::PoseStamped, description: "where that table is, in the map frame"}
     test:
       inputs: {}
@@ -269,23 +275,25 @@ capabilities:
 
   approach_table:
     description: >
-      Park against the table in front of the robot, on its nearest side, close enough for the
-      arm to reach what is on it: finds the table, works out where to stand and docks there
-      precisely, under the table's eaves. The step before picking from or placing on a table. It finds the
-      table itself, so it takes no arguments; from inspect_table's viewing pose it sees the
-      table better than from further back. It only finds a table close in front; for one
-      known but farther away, go_to_table first. Its pickup_pose is what reach_table takes
-      to go back in after leave_table.
+      Park against a table, on its side nearest to the robot, close enough for the arm to reach
+      what is on it, and detect the objects on it: the table thorp_world knows as table_id, or
+      the one in front if none is given. It goes to a viewing pose on that side first, detects
+      the table again from there and docks precisely, under the table's eaves. The step before
+      picking from or placing on a table. Its table_id and pickup_pose are what
+      reach_table takes to go back in after leave_table.
     status: ok
     stack: [navigation, perception]
-    invalidates: [objects_detected]
-    inputs: {}
+    inputs:
+      table_id: {type: string, optional: true, from: [detect_table.table_id, inspect_table.table_id], description: "id of the table to park against; leave it out to take the one in front"}
     outputs:
-      table: {type: moveit_msgs::msg::CollisionObject, description: "the table it parked against"}
+      table_id: {type: string, description: "the id of the table it parked against"}
+      table: {type: moveit_msgs::msg::CollisionObject, description: "that table"}
       table_pose: {type: geometry_msgs::msg::PoseStamped, description: "where that table is, in the map frame"}
       pickup_pose: {type: geometry_msgs::msg::PoseStamped, description: "the pose it parked at, for reach_table"}
-      error: {type: int, when: failure, description: "error code from reading the robot pose"}
-      nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's follow_path, docking"}
+      objects: {type: std::vector<moveit_msgs::msg::CollisionObject>, description: "the objects on the table, each as id and color; empty when there are none"}
+      surface: {type: moveit_msgs::msg::CollisionObject, description: "the surface they were found on, as id and color"}
+      error: {type: int, when: failure, description: "TABLE_NOT_FOUND for a table_id the world doesn't know, or an error code from reading the robot pose"}
+      nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's navigate_to_pose or follow_path, docking"}
     test:
       inputs: {}
       expect: any          # the same docking as reach_table, which the scene can defeat
@@ -293,21 +301,23 @@ capabilities:
 
   inspect_table:
     description: >
-      Look over the table in front of the robot from a viewing pose on its nearest side, and
-      report the table and the objects on it. Fails when no table is in view or it isn't a
-      usable size; for a table known but not close in front, go_to_table first. The viewing
-      pose is outside arm reach: to pick one of these objects, approach_table and then
-      detect_objects, whose names are the ones pickup_object takes.
+      Look a table over from a viewing pose on its side nearest to the robot, and report it and
+      the objects on it, recording them in thorp_world: the table the world knows as table_id,
+      or the one in front if none is given. Fails when no table is in view or it isn't a usable
+      size. The objects keep their ids from here on, but the viewing pose is outside arm reach:
+      approach_table before picking one.
     status: ok
     stack: [navigation, perception]
     invalidates: [at_a_table]
-    inputs: {}
+    inputs:
+      table_id: {type: string, optional: true, from: [detect_table.table_id, approach_table.table_id], description: "id of the table to inspect; leave it out to take the one in front"}
     outputs:
+      table_id: {type: string, description: "the table's id in thorp_world"}
       table: {type: moveit_msgs::msg::CollisionObject, description: "the table, as seen from the viewing pose"}
       table_pose: {type: geometry_msgs::msg::PoseStamped, description: "where that table is, in the map frame"}
       inspect_pose: {type: geometry_msgs::msg::PoseStamped, description: "the viewing pose it looked from"}
-      objects: {type: std::vector<moveit_msgs::msg::CollisionObject>, description: "the objects on the table, each as name and color; empty when there are none"}
-      surface: {type: moveit_msgs::msg::CollisionObject, description: "the surface they were found on, as name and color"}
+      objects: {type: std::vector<moveit_msgs::msg::CollisionObject>, description: "the objects on the table, each as id and color; empty when there are none"}
+      surface: {type: moveit_msgs::msg::CollisionObject, description: "the surface they were found on, as id and color"}
     test:
       inputs: {}
       expect: any
@@ -315,60 +325,61 @@ capabilities:
 
   go_to_table:
     description: >
-      Drive to the viewing pose of a table detected earlier: facing its side nearest the robot,
-      just outside arm reach. detect_table, inspect_table, approach_table and cleanup_table
-      only find a table close in front of the robot; when it isn't, come here first, with the
-      table an earlier call returned.
+      Drive to the viewing pose of a table thorp_world knows: facing its side nearest the robot,
+      just outside arm reach. detect_table, detect_objects and cleanup_table only find a table
+      close in front of the robot; when it isn't, come here first.
     status: ok
     stack: [navigation]
     invalidates: [at_a_table, objects_detected]
     inputs:
-      table: {type: moveit_msgs::msg::CollisionObject, from: [detect_table.table, approach_table.table, inspect_table.table], description: "table to go to; name, pose and size"}
-      table_pose: {type: geometry_msgs::msg::PoseStamped, from: [detect_table.table_pose, approach_table.table_pose, inspect_table.table_pose], description: "pose of that table"}
+      table_id: {type: string, from: [detect_table.table_id, approach_table.table_id, inspect_table.table_id], description: "id of the table to go to"}
     outputs:
       inspect_pose: {type: geometry_msgs::msg::PoseStamped, description: "the viewing pose it drove to"}
-      error: {type: int, when: failure, description: "error code from reading the robot pose"}
+      error: {type: int, when: failure, description: "TABLE_NOT_FOUND for a table_id the world doesn't know, or an error code from reading the robot pose"}
       nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's navigate_to_pose"}
     test:
       setup:
         - {subtree: detect_table}
-      inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
+      inputs_from: {table_id: [detect_table, table_id]}
       expect: any
       timeout: 300
 
   reach_table:
     description: >
-      Dock head-on at a table, precisely and under its eaves, at approach_table's pickup_pose. approach_table already ends this way; use this to go back
-      in after leave_table without detecting the table again.
+      Dock head-on at a table thorp_world knows, precisely and under its eaves, at a pickup
+      pose, and record that the robot is docked there. approach_table already ends this way; use
+      this to go back in after leave_table, with the table_id and pickup_pose
+      approach_table returned, without detecting the table again.
     status: ok
     stack: [navigation, perception]
     invalidates: [objects_detected]
     inputs:
-      table: {type: moveit_msgs::msg::CollisionObject, from: [approach_table.table], description: "table to approach; name, pose and size"}
-      pose: {type: geometry_msgs::msg::PoseStamped, from: [approach_table.pickup_pose], description: "pose to approach it from"}
+      table_id: {type: string, from: [approach_table.table_id], description: "id of the table to dock at"}
+      pose: {type: geometry_msgs::msg::PoseStamped, from: [approach_table.pickup_pose], description: "pose to dock at"}
     outputs:
-      error: {type: int, when: failure, description: "error code from reading the robot pose"}
+      error: {type: int, when: failure, description: "TABLE_NOT_FOUND for a table_id the world doesn't know, or an error code from reading the robot pose"}
       nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's follow_path"}
     test:
       # Goes back in from where approach_table parked, so this checks the goal's contract; the
       # drive itself is what approach_table's own test exercises.
       setup:
         - {subtree: approach_table}
-      inputs_from: {table: [approach_table, table], pose: [approach_table, pickup_pose]}
+      inputs_from: {table_id: [approach_table, table_id], pose: [approach_table, pickup_pose]}
       expect: any
       timeout: 180
 
   leave_table:
     description: >
-      Back straight out from the table the robot is parked against, far enough to navigate
-      around it again, and restore the table's costmap footprint. Takes
-      no arguments: it backs out along the way the robot is facing.
+      Back straight out from the table the robot is at, far enough to navigate around it again,
+      restore the table's costmap footprint, and record that the robot left it. Takes no
+      arguments: it backs out along the way the robot is facing.
     status: ok
     stack: [navigation]
     needs: {at_a_table: approach_table}
     invalidates: [at_a_table, objects_detected]
     inputs: {}
     outputs:
+      error: {type: int, when: failure, description: "NOT_AT_TABLE when the robot isn't at a table"}
       nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's backup behavior"}
     test:
       inputs: {}
@@ -379,13 +390,15 @@ capabilities:
 
   validate_table:
     description: >
-      Look a detected table over from a viewpoint and decide whether it is a usable size.
+      Look a detected table over from a viewpoint and decide whether it is a usable size,
+      recording it in thorp_world.
     status: ok
     stack: [navigation, perception]
     invalidates: [at_a_table, objects_detected]
     inputs: {}
     outputs:
-      table: {type: moveit_msgs::msg::CollisionObject, description: "the validated table (not serializable yet)"}
+      table_id: {type: string, description: "the table's id in thorp_world"}
+      table: {type: moveit_msgs::msg::CollisionObject, description: "the validated table"}
       table_pose: {type: geometry_msgs::msg::PoseStamped, description: "pose of the table"}
       inspect_pose: {type: geometry_msgs::msg::PoseStamped, description: "viewpoint used to inspect it"}
     test:
@@ -396,15 +409,15 @@ capabilities:
   cleanup_table:
     description: >
       Clear every reachable object from one table onto the tray, working through a planned
-      sequence of pickup locations around it. With no table given, it takes the one in front,
-      as validate_table does. Either way it looks for the objects from where the robot stands,
-      so start it close in front of the table: go_to_table gets there.
+      sequence of pickup locations around it: the table thorp_world knows as table_id, or the
+      one in front if none is given, as validate_table does. Either way it looks for the objects
+      from where the robot stands, so start it close in front of the table: go_to_table gets
+      there.
     status: ok
     stack: [navigation, manipulation, perception]
     invalidates: [at_a_table, objects_detected, holding_object]
     inputs:
-      table: {type: moveit_msgs::msg::CollisionObject, optional: true, from: [detect_table.table], description: "table to clear; leave it out to take the one in front"}
-      table_pose: {type: geometry_msgs::msg::PoseStamped, optional: true, from: [detect_table.table_pose], description: "pose of that table"}
+      table_id: {type: string, optional: true, from: [detect_table.table_id, inspect_table.table_id, approach_table.table_id], description: "id of the table to clear; leave it out to take the one in front"}
       given_up_count: {type: unsigned int, description: "objects abandoned so far; 0 to start"}
     outputs:
       pickup_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "pose the last pickup was attempted from"}
@@ -414,7 +427,7 @@ capabilities:
       inputs: {given_up_count: 0}
       setup:
         - {subtree: detect_table}
-      inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
+      inputs_from: {table_id: [detect_table, table_id]}
       expect: any
       timeout: 900
 
@@ -726,8 +739,8 @@ not_capabilities:
     says whether those fields survived being seeded from json.
   test_world_table: >
     Test fixture: GetTable, against test/world.yaml; see test_world_nodes.py.
-  test_world_docked: >
-    Test fixture: GetDockedTable, against test/world.yaml.
+  test_world_current: >
+    Test fixture: GetCurrentTable, against test/world.yaml.
   test_world_pickable: >
     Test fixture: ObjectPickable, against test/world.yaml.
   test_world_update: >

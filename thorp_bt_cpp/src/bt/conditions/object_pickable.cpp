@@ -13,9 +13,9 @@ using thorp_msgs::msg::ThorpError;
 using thorp_msgs::msg::WorldEntity;
 
 /**
- * Whether thorp_world says an object can be picked from where the robot is: on a table, the one the robot is
- * docked at, and within the arm's reach. Otherwise fails with the reason as error, the first of OBJECT_NOT_FOUND,
- * OBJECT_NOT_ON_TABLE (carried, or missing from where it was seen), NOT_AT_TABLE and OUT_OF_REACH.
+ * Whether thorp_world says an object can be picked from where the robot is: on a table, and within the arm's reach.
+ * Otherwise fails with the reason as error: OBJECT_NOT_FOUND, OBJECT_NOT_ON_TABLE (carried, or missing from where it
+ * was seen), NOT_AT_TABLE (out of reach, on a table the robot isn't at) or OUT_OF_REACH (on the robot's table).
  */
 class ObjectPickable : public BT::RosServiceNode<thorp_msgs::srv::QueryWorld, BT::ConditionNode>
 {
@@ -52,14 +52,14 @@ private:
       return fail(ThorpError::OBJECT_NOT_ON_TABLE,
                   "'" + object_id + "' is " + (object.has_pose ? "missing" : "on the " + object.support));
     setOutput("table_id", object.support);
-    if (response.docked_at != object.support)
+    if (response.reachable.front())
+      return BT::NodeStatus::SUCCESS;
+    if (response.at_table != object.support)
     {
-      const std::string robot_at = response.docked_at.empty() ? "at no table" : "at '" + response.docked_at + "'";
+      const std::string robot_at = response.at_table.empty() ? "at no table" : "at '" + response.at_table + "'";
       return fail(ThorpError::NOT_AT_TABLE, "'" + object_id + "' is on '" + object.support + "', robot " + robot_at);
     }
-    if (!response.reachable.front())
-      return fail(ThorpError::OUT_OF_REACH, "'" + object_id + "' is beyond the arm's reach");
-    return BT::NodeStatus::SUCCESS;
+    return fail(ThorpError::OUT_OF_REACH, "'" + object_id + "' is beyond the arm's reach");
   }
 
   BT::NodeStatus onFailedRequest(FailureCause failure) override

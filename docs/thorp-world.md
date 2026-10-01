@@ -16,7 +16,7 @@ passed from one call to the next, and the agent can reason on what is where with
   table in view).
 - The robot: only what TF can't tell, the table it's docked at.
 - Relations, derived on query: an object's support; whether it's within reach of the arm's base; the table the robot
-  is docked at, if it's still at it.
+  is at: the one it docked at if it's still close to it, or else the closest one that close.
 
 Observations are matched against what is known: an object is the known object of its type closest to it, within a
 tolerance; a table, the known table its center falls on. A table's pose and size are replaced only by views at least
@@ -25,13 +25,13 @@ surface covers them.
 
 ## Node
 
-`world_node.py`, launched by `world.launch.py`, serves under its name (`world`):
+`world_node.py`, launched by `world.launch.py` with its file as `thorp_world_file`, serves under its name (`world`):
 
 | Interface | Type | Use |
 |---|---|---|
 | `world/observe` | `thorp_msgs/ObserveWorld` | Detections report tables, or a surface with the objects on it, as the collision objects they produce, on any frame; the world transforms them to `map` at their stamp, matches them and returns their ids. |
-| `world/update` | `thorp_msgs/UpdateWorld` | Skills report an effect: an object picked, placed, stowed or disturbed; the robot docked or undocked. Unknown ids are refused. |
-| `world/query` | `thorp_msgs/QueryWorld` | Entities filtered by ids, kind, support or status, with each one's reachability from the arm's base (`arm_frame`, `max_arm_reach`) and the table the robot is still docked at (`dock_distance`). |
+| `world/update` | `thorp_msgs/UpdateWorld` | Skills report an effect: an object picked, placed, stowed, disturbed or lost from the gripper; the robot docked or undocked. Unknown ids are refused. |
+| `world/query` | `thorp_msgs/QueryWorld` | Entities filtered by ids, kind, support or status, with each one's reachability from the arm's base (`arm_frame`, `max_arm_reach`) and the table the robot is at (`at_table_distance`). |
 | `world/save`, `world/load` | `std_srvs/Trigger` | To and from `world_file`, also loaded on start if it exists. |
 | `world/state` | `thorp_msgs/WorldState` | Everything known, latched, whenever it changes. |
 | `world/markers` | `visualization_msgs/MarkerArray` | Tables and objects on a table, labeled with their ids: gray if missing or disturbed, faded if only believed. |
@@ -43,10 +43,10 @@ a ROS domain nothing else uses: static transforms published beside a simulation 
 
 | Node | With thorp_world |
 |---|---|
-| `object_detection` | Reports each detection to `world/observe`, in its own frame; the world transforms it to `map`, matches it and returns the ids, that detection gives the planning scene objects. The agent, the planning scene and the pick and place servers so use the same names. |
+| `object_detection` | Reports each detection to `world/observe`, in its own frame; the world transforms it to `map`, matches it and returns the ids, that detection gives the planning scene's table and objects. The agent, the planning scene and the pick and place servers so use the same names. |
 | MoveIt planning scene | Stays robot-relative, the short-lived working copy of the arm, refreshed by detecting at the table. The world never writes it. |
 | Tray | The planning scene stays the truth of which slots are free, as the tray moves with the robot; the world mirrors what each slot holds, as place skills report. |
-| Behavior trees | `GetEntity` and `QueryWorld` nodes read it; `UpdateWorld` reports skills' effects, on success and failure. |
+| Behavior trees | `GetTable`, `GetCurrentTable` and `ObjectPickable` read it; `UpdateWorld` reports skills' effects, on success and failure. The table and manipulation skills take ids: `approach_table`, `inspect_table` and `cleanup_table` an optional `table_id`, `reach_table` a `table_id` and `pickup_object` an object's; they fail with `TABLE_NOT_FOUND`, `OBJECT_NOT_FOUND`, `OBJECT_NOT_ON_TABLE`, `NOT_AT_TABLE` or `OUT_OF_REACH` when the world disagrees. |
 | Semantic costmap layer | Subscribes to `world/state`: tables as obstacles, and the approach area of the table the robot is docked at cleared. |
 | LLM agent | Skills take ids; a `query_world` tool, a world summary with each request and the world changes with each skill result. |
 | RViz | `world/markers`, labeled with the ids; faded if only believed, gray if missing or disturbed. |
@@ -59,8 +59,8 @@ a ROS domain nothing else uses: static transforms published beside a simulation 
 | 1 | Core in plain Python: entities, matching, relations, provenance, persistence; with tests | done |
 | 2 | ROS 2 node: `thorp_msgs` interfaces (entity, state, observe, update, query, save and load), RViz markers | done |
 | 3 | Perception reports to it, and names objects with its ids; the planning scene's table keeps the name `table` until the skills take table ids | done |
-| 4a | Tree nodes: `GetTable`, `GetDockedTable`, `ObjectPickable` (failing with `OBJECT_NOT_FOUND`, `OBJECT_NOT_ON_TABLE`, `NOT_AT_TABLE` or `OUT_OF_REACH`) and `UpdateWorld`; `test_world_nodes.py` runs them against `test/world.yaml` | done |
-| 4b | Table and manipulation skills take ids, check them on the world and report their effects; the planning scene's table takes its world id | |
+| 4a | Tree nodes: `GetTable`, `GetCurrentTable`, `ObjectPickable` (failing with `OBJECT_NOT_FOUND`, `OBJECT_NOT_ON_TABLE`, `NOT_AT_TABLE` or `OUT_OF_REACH`) and `UpdateWorld`; `test_world_nodes.py` runs them against `test/world.yaml` | done |
+| 4b | Table and manipulation skills take ids, check them on the world and report their effects; the planning scene's table takes its world id | done |
 | 4c | `capabilities.yaml` drops `states`, `needs`, `invalidates` and `from`, and gains `errors`; tests start from a preloaded world instead of `--given` | |
 | 4d | `PlanPickupLocations`, the semantic layer and `TableVisited` read the world | |
 | 5 | Agent on ROS 2 (ROSA): world tools, world summary, world changes in skill results | |

@@ -10,4 +10,4 @@ bool success
 string message
 WorldEntity[] entities
 bool[] reachable    # per entity: on a table, within the arm's reach from its base
-string docked_at    # the table the robot is docked at, if it's still at it; empty otherwise
+string at_table     # the table the robot is at: the one it docked at, or else the closest; empty if none

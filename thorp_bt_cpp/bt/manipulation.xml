@@ -1,7 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root BTCPP_format="4">
+  <!--
+    Pick an object, by the id thorp_world and the planning scene know it by, from its table. thorp_world must say it's
+    within the arm's reach, or the pickup fails with the reason as error, without moving; picked, it's in the gripper,
+    and otherwise disturbed, as the attempt may have moved it.
+  -->
   <BehaviorTree ID="pickup_object">
     <Sequence>
+      <ObjectPickable object_id="{object_name}"
+                      table_id="{table_id}"
+                      error="{error}"/>
       <ForceSuccess>
         <Sequence>
           <ObjectAttached attached_object="{attached_object}"/>
@@ -16,37 +24,60 @@
         <ReadFloatParam param_name="gripper_tightening"
                         output_key="{tightening}"/>
       </Fallback>
-      <RecoverAndRetry>
-        <PickupObject max_effort="{max_effort}"
-                      object_name="{object_name}"
-                      support_surf="table"
-                      tightening="{tightening}"
-                      error="{error}"/>
-        <ClearOctomap service_name="clear_octomap"
-                      timeout="100"/>
-      </RecoverAndRetry>
-      <!-- the planning scene has the object attached, but only the gripper can tell whether it really holds it -->
       <Fallback>
         <Sequence>
-          <GripperBusy/>
-          <ObjectAttached attached_object="{attached_object}"/>
+          <RecoverAndRetry>
+            <PickupObject max_effort="{max_effort}"
+                          object_name="{object_name}"
+                          support_surf="{table_id}"
+                          tightening="{tightening}"
+                          error="{error}"/>
+            <ClearOctomap service_name="clear_octomap"
+                          timeout="100"/>
+          </RecoverAndRetry>
+          <!-- the planning scene has the object attached, but only the gripper can tell whether it really holds it -->
+          <Fallback>
+            <Sequence>
+              <GripperBusy/>
+              <ObjectAttached attached_object="{attached_object}"/>
+            </Sequence>
+            <ForceFailure>
+              <SubTree ID="clear_gripper"/>
+            </ForceFailure>
+          </Fallback>
+          <ForceSuccess>
+            <UpdateWorld effect="picked"
+                         object_id="{object_name}"/>
+          </ForceSuccess>
         </Sequence>
         <ForceFailure>
-          <SubTree ID="clear_gripper"/>
+          <UpdateWorld effect="disturbed"
+                       object_id="{object_name}"/>
         </ForceFailure>
       </Fallback>
     </Sequence>
   </BehaviorTree>
 
+  <!-- Place the held object at a pose on the table the robot is at, failing with NOT_AT_TABLE if it's at none -->
   <BehaviorTree ID="place_object">
-    <RecoverAndRetry>
-      <PlaceObject object_name="{object_name}"
-                   place_pose="{place_pose}"
-                   support_surf="table"
-                   error="{error}"/>
-      <ClearOctomap service_name="clear_octomap"
-                    timeout="100"/>
-    </RecoverAndRetry>
+    <Sequence>
+      <GetCurrentTable table_id="{table_id}"
+                       error="{error}"/>
+      <RecoverAndRetry>
+        <PlaceObject object_name="{object_name}"
+                     place_pose="{place_pose}"
+                     support_surf="{table_id}"
+                     error="{error}"/>
+        <ClearOctomap service_name="clear_octomap"
+                      timeout="100"/>
+      </RecoverAndRetry>
+      <ForceSuccess>
+        <UpdateWorld effect="placed"
+                     object_id="{object_name}"
+                     table_id="{table_id}"
+                     pose="{place_pose}"/>
+      </ForceSuccess>
+    </Sequence>
   </BehaviorTree>
 
   <BehaviorTree ID="place_on_tray">
@@ -62,11 +93,17 @@
         <NextPoseOnTray after="{pose_on_tray}"
                         pose_on_tray="{pose_on_tray}"/>
       </RecoverAndRetry>
+      <ForceSuccess>
+        <UpdateWorld effect="stowed"
+                     object_id="{object_name}"/>
+      </ForceSuccess>
       <SettleOnTray object_name="{object_name}"/>
     </Sequence>
   </BehaviorTree>
 
-  <!-- Open the gripper, and detach and remove from the planning scene whatever object it held -->
+  <!--
+    Open the gripper, and detach and remove from the planning scene whatever object it held, lost then for thorp_world
+  -->
   <BehaviorTree ID="clear_gripper">
     <Sequence>
       <MoveGripper/>
@@ -74,6 +111,8 @@
         <Sequence>
           <ObjectAttached attached_object="{attached_object}"/>
           <DetachObject object_name="{attached_object}"/>
+          <UpdateWorld effect="lost"
+                       object_id="{attached_object}"/>
         </Sequence>
       </ForceSuccess>
     </Sequence>

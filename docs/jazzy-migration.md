@@ -174,13 +174,13 @@ calls them (see `docs/thorp-world.md`), and removes those no longer on the table
 over the table's volume when docked under its eaves (it reads the tray geometry, `thorp_description`'s `tray.yaml`, as
 the executive does); `object_detection/detect_tables` (`thorp_msgs/DetectTables`) only segments the table, if its
 shortest side reaches a minimum. Both report what they detect to `thorp_world`, and fail if it isn't running;
-`perception.launch.py` starts it. The planning scene's table is still named `table`, as the manipulation trees pass that
-name. Heights are measured from the fitted table plane rather than along the z axis of `base_footprint`, which needn't
-be perpendicular to the table (see the Kobuki tilt in the differences with the Noetic simulation). Tables and objects
-are collision objects: tables are boxes with x along their longest side, lying on the table plane, but with a level
-pose; objects carry their template mesh, their template name as `type.key`, and their size and color name as JSON in
-`type.db`, as on the `bt_server` branch. For debugging, it publishes the table and the clusters as point clouds, the
-table's outline, and why each rejected cluster was rejected. `xtion_fov_analyzer.py` is ported too.
+`perception.launch.py` starts it, with `thorp_world_file` as its file. Heights are measured from the fitted table plane
+rather than along the z axis of `base_footprint`, which needn't be perpendicular to the table (see the Kobuki tilt in
+the differences with the Noetic simulation). Tables and objects are collision objects: tables are boxes with x along
+their longest side, lying on the table plane, but with a level pose; objects carry their template mesh, their template
+name as `type.key`, and their size and color name as JSON in `type.db`, as on the `bt_server` branch. For debugging, it
+publishes the table and the clusters as point clouds, the table's outline, and why each rejected cluster was rejected.
+`xtion_fov_analyzer.py` is ported too.
 
 The segmentation and template matching are rewritten into `thorp_perception` from Thorp's forks of
 `rail_segmentation` and `rail_mesh_icp`, instead of porting the forks as source dependencies: the forks carry much
