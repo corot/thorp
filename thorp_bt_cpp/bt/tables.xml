@@ -43,7 +43,8 @@
 
   <!--
     Dock at the table: straight to the pickup pose, under the table's eaves, precisely. The table access is cleared
-    on the local costmap, so the controller doesn't take it as an obstacle.
+    on the local costmap, so the controller doesn't take it as an obstacle. Docking that can't reach the pickup pose's
+    tolerance fails after a minute, as the progress checker never stops a robot that keeps moving around the goal.
   -->
   <BehaviorTree ID="attach_to_table">
     <Sequence>
@@ -55,10 +56,12 @@
       <PoseAsPath start="{robot_pose}"
                   pose="{pose}"
                   path="{path}"/>
-      <FollowPath path="{path}"
-                  controller_id="PreciseFollowPath"
-                  goal_checker_id="precise_goal_checker"
-                  error_code_id="{nav_error}"/>
+      <Timeout msec="60000">
+        <FollowPath path="{path}"
+                    controller_id="PreciseFollowPath"
+                    goal_checker_id="precise_goal_checker"
+                    error_code_id="{nav_error}"/>
+      </Timeout>
     </Sequence>
   </BehaviorTree>
 

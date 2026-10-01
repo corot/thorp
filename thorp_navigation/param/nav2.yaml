@@ -177,6 +177,11 @@ controller_server:
       use_cost_regulated_linear_velocity_scaling: false  # the table is close by design
       approach_velocity_scaling_dist: 0.2
       min_approach_linear_velocity: 0.05
+      # steer for a point beyond the end of the path, along its last segment; steering for the goal itself, a few
+      # centimeters off the robot's heading, makes it circle around the goal without ever reaching its tolerance
+      use_fixed_curvature_lookahead: true
+      curvature_lookahead_dist: 0.2
+      interpolate_curvature_after_goal: true
       use_collision_detection: true
       max_allowed_time_to_collision_up_to_carrot: 1.0
       allow_reversing: false
