@@ -724,6 +724,14 @@ not_capabilities:
   test_server_table: >
     Test fixture: TableValidSize reads only a table's width and depth, so whether it passes
     says whether those fields survived being seeded from json.
+  test_world_table: >
+    Test fixture: GetTable, against test/world.yaml; see test_world_nodes.py.
+  test_world_docked: >
+    Test fixture: GetDockedTable, against test/world.yaml.
+  test_world_pickable: >
+    Test fixture: ObjectPickable, against test/world.yaml.
+  test_world_update: >
+    Test fixture: UpdateWorld, against test/world.yaml.
   test_server_counts: >
     Test fixture: bumps a count in a map and writes it back, to check a map round-trips.
   aim_at_cats: >

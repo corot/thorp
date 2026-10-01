@@ -30,6 +30,7 @@ int32 OBJECT_NOT_FOUND=-200
 int32 OBJECT_POSE_NOT_FOUND=-201
 int32 OBJECT_SIZE_NOT_FOUND=-202
 int32 INVALID_OBJECT_TYPE=-203
+int32 TABLE_NOT_FOUND=-204
 int32 INVALID_TARGET_POSE=-210
 int32 INVALID_TARGET_TYPE=-211
 int32 INVALID_NAMED_TARGET=-212
@@ -39,6 +40,9 @@ int32 SERVER_NOT_AVAILABLE=-215
 int32 OBJECT_NOT_ATTACHED=-220
 int32 OBJECT_ATTACHED=-221
 int32 NO_POSE_TIMEOUT=-222
+int32 NOT_AT_TABLE=-230         # the robot isn't docked at the table the action needs
+int32 OUT_OF_REACH=-231         # the object is beyond the arm's reach from where the robot is docked
+int32 OBJECT_NOT_ON_TABLE=-232  # the object is carried, or missing from where it was seen
 
 int32  code
 string text

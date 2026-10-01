@@ -100,4 +100,27 @@
     </Sequence>
   </BehaviorTree>
 
+  <!-- thorp_world's tree nodes, run by test_world_nodes.py against test/world.yaml -->
+  <BehaviorTree ID="test_world_table">
+    <GetTable table_id="{table_id}"
+              table="{table}"
+              table_pose="{table_pose}"
+              error="{error}"/>
+  </BehaviorTree>
+
+  <BehaviorTree ID="test_world_docked">
+    <GetDockedTable table_id="{table_id}"
+                    error="{error}"/>
+  </BehaviorTree>
+
+  <BehaviorTree ID="test_world_pickable">
+    <ObjectPickable object_id="{object_id}"
+                    table_id="{table_id}"
+                    error="{error}"/>
+  </BehaviorTree>
+
+  <BehaviorTree ID="test_world_update">
+    <UpdateWorld effect="{effect}"
+                 object_id="{object_id}"/>
+  </BehaviorTree>
 </root>

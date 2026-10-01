@@ -1,0 +1,16 @@
+# The world test_world_nodes.py runs thorp_world's tree nodes against. Its transforms put the robot at (0.03, 0) and
+# the arm base 0.1 m ahead: docked at table 1's near edge (x 0.175), cube 1 within the arm's reach, star 1 beyond it.
+docked_at: table 1
+entities:
+- {id: table 1, kind: table, type: table, size: [0.55, 0.55, 0.02], color: white,
+   pose: {x: 0.45, y: 0.0, z: 0.475, yaw: 0.0}, provenance: observed, stamp: 1.0, status: ok}
+- {id: table 2, kind: table, type: table, size: [0.8, 0.5, 0.02], color: beige,
+   pose: {x: 3.0, y: 2.0, z: 0.475, yaw: 0.0}, provenance: observed, stamp: 1.0, status: ok}
+- {id: cube 1, kind: object, type: cube, size: [0.025, 0.025, 0.025], color: white,
+   pose: {x: 0.3, y: 0.05, z: 0.49, yaw: 0.0}, support: table 1, provenance: observed, stamp: 1.0, status: ok}
+- {id: star 1, kind: object, type: star, size: [0.04, 0.04, 0.01], color: red,
+   pose: {x: 0.65, y: 0.2, z: 0.48, yaw: 0.0}, support: table 1, provenance: observed, stamp: 1.0, status: ok}
+- {id: cube 2, kind: object, type: cube, size: [0.025, 0.025, 0.025], color: green,
+   support: gripper, provenance: believed, stamp: 2.0, status: ok}
+- {id: pentagon 1, kind: object, type: pentagon, size: [0.03, 0.03, 0.01], color: purple,
+   pose: {x: 3.0, y: 2.0, z: 0.49, yaw: 0.0}, support: table 2, provenance: observed, stamp: 1.0, status: ok}

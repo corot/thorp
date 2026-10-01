@@ -59,7 +59,10 @@ a ROS domain nothing else uses: static transforms published beside a simulation 
 | 1 | Core in plain Python: entities, matching, relations, provenance, persistence; with tests | done |
 | 2 | ROS 2 node: `thorp_msgs` interfaces (entity, state, observe, update, query, save and load), RViz markers | done |
 | 3 | Perception reports to it, and names objects with its ids; the planning scene's table keeps the name `table` until the skills take table ids | done |
-| 4 | Skills on ids: world tree nodes; table and manipulation skills take ids and report effects; `capabilities.yaml` drops `states`, `needs`, `invalidates` and `from`, and gains `errors` | |
+| 4a | Tree nodes: `GetTable`, `GetDockedTable`, `ObjectPickable` (failing with `OBJECT_NOT_FOUND`, `OBJECT_NOT_ON_TABLE`, `NOT_AT_TABLE` or `OUT_OF_REACH`) and `UpdateWorld`; `test_world_nodes.py` runs them against `test/world.yaml` | done |
+| 4b | Table and manipulation skills take ids, check them on the world and report their effects; the planning scene's table takes its world id | |
+| 4c | `capabilities.yaml` drops `states`, `needs`, `invalidates` and `from`, and gains `errors`; tests start from a preloaded world instead of `--given` | |
+| 4d | `PlanPickupLocations`, the semantic layer and `TableVisited` read the world | |
 | 5 | Agent on ROS 2 (ROSA): world tools, world summary, world changes in skill results | |
 
 The work happens on the `thorp_world` branch, in a worktree with its own colcon workspace over the main one's install:

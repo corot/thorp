@@ -48,10 +48,12 @@ set(BT_NODES
   src/bt/actions/expand_pickup_location.cpp
   src/bt/actions/follow_object.cpp
   src/bt/actions/get_closest_pose.cpp
+  src/bt/actions/get_docked_table.cpp
   src/bt/actions/get_from_list.cpp
   src/bt/actions/get_list_front.cpp
   src/bt/actions/get_poses_around_table.cpp
   src/bt/actions/get_robot_pose.cpp
+  src/bt/actions/get_table.cpp
   src/bt/actions/list_slicing.cpp
   src/bt/actions/look_at_pose.cpp
   src/bt/actions/monitor_target.cpp
@@ -78,6 +80,7 @@ set(BT_NODES
   src/bt/actions/table_as_obstacle.cpp
   src/bt/actions/track_progress.cpp
   src/bt/actions/transform_pose.cpp
+  src/bt/actions/update_world.cpp
   src/bt/actions/use_named_config.cpp
   src/bt/conditions/are_same_pose.cpp
   src/bt/conditions/camera_fov_clear.cpp
@@ -87,6 +90,7 @@ set(BT_NODES
   src/bt/conditions/is_bool_true.cpp
   src/bt/conditions/is_list_empty.cpp
   src/bt/conditions/object_attached.cpp
+  src/bt/conditions/object_pickable.cpp
   src/bt/conditions/objects_detected.cpp
   src/bt/conditions/pose_on_tray.cpp
   src/bt/conditions/table_valid_size.cpp
