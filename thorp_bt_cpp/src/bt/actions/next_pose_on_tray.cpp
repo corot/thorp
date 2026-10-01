@@ -2,7 +2,8 @@
 
 #include "thorp_bt_cpp/node_common.hpp"
 #include "thorp_bt_cpp/planning_scene.hpp"
-#include "thorp_bt_cpp/tray.hpp"
+
+#include <thorp_toolkit/tray.hpp>
 
 namespace thorp::bt::actions
 {
@@ -27,7 +28,7 @@ public:
 private:
   BT::NodeStatus tick() override
   {
-    const auto free_slots = Tray(rosNode(*this)).freeSlots(planningScene().getObjects());
+    const auto free_slots = thorp::toolkit::Tray().freeSlots(planningScene().getObjects());
     if (free_slots.empty())
     {
       RCLCPP_ERROR(logger(*this), "Tray is full");

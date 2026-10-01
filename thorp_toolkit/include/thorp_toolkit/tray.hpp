@@ -2,17 +2,16 @@
 
 #include <cmath>
 #include <optional>
+#include <string>
 #include <vector>
 
-#include <rclcpp/rclcpp.hpp>
-
 #include <geometry_msgs/msg/pose_stamped.hpp>
-#include <moveit_msgs/msg/collision_object.hpp>
 
-#include <thorp_toolkit/geometry.hpp>
-#include <thorp_toolkit/tf2.hpp>
+#include "thorp_toolkit/geometry.hpp"
+#include "thorp_toolkit/parameters.hpp"
+#include "thorp_toolkit/tf2.hpp"
 
-namespace thorp::bt
+namespace thorp::toolkit
 {
 /**
  * Thorp's tray, as a grid of slots for placing objects. A slot is free if no planning scene object is on it, so the
@@ -22,16 +21,17 @@ class Tray
 {
 public:
   /**
-   * Read the tray geometry from the node's parameters: tray.link, tray.side_x, tray.side_y, tray.slot, and
+   * Read the tray geometry from the toolkit node's parameters: tray.link, tray.side_x, tray.side_y, tray.slot, and
    * placing_height_on_tray, the height over the tray's base where objects are released.
    */
-  explicit Tray(const rclcpp::Node::SharedPtr& node)
+  Tray()
   {
-    link_ = node->get_parameter_or<std::string>("tray.link", "tray_link");
-    const double side_x = node->get_parameter_or("tray.side_x", 0.14);
-    const double side_y = node->get_parameter_or("tray.side_y", 0.14);
-    slot_ = node->get_parameter_or("tray.slot", 0.035);
-    placing_height_ = node->get_parameter_or("placing_height_on_tray", 0.01);
+    double side_x, side_y;
+    getParam("tray.link", link_, std::string("tray_link"));
+    getParam("tray.side_x", side_x, 0.14);
+    getParam("tray.side_y", side_y, 0.14);
+    getParam("tray.slot", slot_, 0.035);
+    getParam("placing_height_on_tray", placing_height_, 0.01);
     slots_x_ = static_cast<int>(std::round(side_x / slot_ + 0.1));
     slots_y_ = static_cast<int>(std::round(side_y / slot_ + 0.1));
   }
@@ -43,9 +43,10 @@ public:
 
   /**
    * Whether an object is on the tray.
-   * @param object Planning scene object
+   * @param object Planning scene object, or anything with a header and a pose
    */
-  bool onTray(const moveit_msgs::msg::CollisionObject& object) const
+  template <typename Object>
+  bool onTray(const Object& object) const
   {
     return slotIndex(object).has_value();
   }
@@ -68,9 +69,8 @@ public:
     for (int j = 0; j < slots_y_; ++j)
       for (int i = 0; i < slots_x_; ++i)
         if (!occupied[j * slots_x_ + i])
-          free_slots.push_back(toolkit::createPose((i - slots_x_ / 2.0 + 0.5) * slot_,
-                                                   (j - slots_y_ / 2.0 + 0.5) * slot_, placing_height_, 0.0, 0.0,
-                                                   0.0, link_));
+          free_slots.push_back(createPose((i - slots_x_ / 2.0 + 0.5) * slot_, (j - slots_y_ / 2.0 + 0.5) * slot_,
+                                          placing_height_, 0.0, 0.0, 0.0, link_));
     return free_slots;
   }
 
@@ -79,12 +79,13 @@ private:
    * Index of the slot an object is on, if it's on the tray: within its sides, from slightly below its base to well
    * above it.
    */
-  std::optional<int> slotIndex(const moveit_msgs::msg::CollisionObject& object) const
+  template <typename Object>
+  std::optional<int> slotIndex(const Object& object) const
   {
     geometry_msgs::msg::PoseStamped pose;
     pose.header = object.header;
     pose.pose = object.pose;
-    if (!toolkit::TF2::instance().transformPose(link_, pose, pose))
+    if (!TF2::instance().transformPose(link_, pose, pose))
       return std::nullopt;
     if (pose.pose.position.z < -0.01 || pose.pose.position.z > 0.1)
       return std::nullopt;
@@ -102,4 +103,4 @@ private:
   int slots_y_;
 };
 
-}  // namespace thorp::bt
+}  // namespace thorp::toolkit

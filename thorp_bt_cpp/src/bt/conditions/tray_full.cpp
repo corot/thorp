@@ -2,7 +2,8 @@
 
 #include "thorp_bt_cpp/node_common.hpp"
 #include "thorp_bt_cpp/planning_scene.hpp"
-#include "thorp_bt_cpp/tray.hpp"
+
+#include <thorp_toolkit/tray.hpp>
 
 namespace thorp::bt::conditions
 {
@@ -24,7 +25,7 @@ public:
 private:
   BT::NodeStatus tick() override
   {
-    const bool tray_full = Tray(rosNode(*this)).freeSlots(planningScene().getObjects()).empty();
+    const bool tray_full = thorp::toolkit::Tray().freeSlots(planningScene().getObjects()).empty();
     RCLCPP_DEBUG_EXPRESSION(logger(*this), tray_full, "The tray is full");
     return tray_full ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
   }

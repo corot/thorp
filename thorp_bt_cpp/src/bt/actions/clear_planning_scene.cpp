@@ -2,7 +2,8 @@
 
 #include "thorp_bt_cpp/node_common.hpp"
 #include "thorp_bt_cpp/planning_scene.hpp"
-#include "thorp_bt_cpp/tray.hpp"
+
+#include <thorp_toolkit/tray.hpp>
 
 namespace thorp::bt::actions
 {
@@ -27,7 +28,7 @@ private:
     const bool keep_tray = requireInput<bool>(*this, "keep_tray");
     RCLCPP_INFO(logger(*this), "Clearing planning scene%s", keep_tray ? ", but keeping tray content" : "");
     std::vector<std::string> to_remove;
-    Tray tray(rosNode(*this));
+    const thorp::toolkit::Tray tray;
     for (const auto& [id, object] : planningScene().getObjects())
     {
       if (!keep_tray || !tray.onTray(object))

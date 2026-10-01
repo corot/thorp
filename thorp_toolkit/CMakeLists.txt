@@ -60,6 +60,7 @@ install(FILES include/thorp_toolkit/common.hpp
               include/thorp_toolkit/progress_tracker.hpp
               include/thorp_toolkit/simulation.hpp
               include/thorp_toolkit/tf2.hpp
+              include/thorp_toolkit/tray.hpp
               include/thorp_toolkit/visualization.hpp
         DESTINATION include/${PROJECT_NAME}/${PROJECT_NAME}
 )
