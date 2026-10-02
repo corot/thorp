@@ -53,15 +53,15 @@ source install/setup.bash
 | 6b | Thorp navigation nodes: pose follower, waypoints path, velocity display, robot pose saving | done |
 | 6c | Semantic costmap layer | done in 9b |
 | 6d | Bumpers and cliff sensors, on simulation and costmaps | deferred to real robot |
-| 6e | Coverage planning | deferred to 9 |
+| 6e | Coverage planning | done in 9c |
 | 7a | MoveIt 2 configuration: move group, controllers, octomap from the Xtion, RViz; pick_ik replaces the IKFast plugin | done |
 | 7b | Pickup and place object action servers on MoveIt Task Constructor | done |
 | 7c | Grasping in simulation and object spawning | done |
 | 8 | Perception: tables and tabletop objects detection | done |
 | 9a | Behavior trees framework on BehaviorTree.CPP 4 (runner, `bt_server`, JSON blackboard), manipulation and perception capabilities; `object_manip` and `pickup_objects` apps | done |
 | 9b | Navigation capabilities on Nav2, semantic costmap layer, pickup planner; `patrol_2_points` and `cleanup_table` apps | done |
-| 9c | Exploration: coverage planning and room segmentation; `explore_house` and `object_gatherer` apps | next |
-| 9d | Cat hunter: object detection replacing COB, cats models and controller | |
+| 9c | Exploration: coverage planning and room segmentation; `explore_house` and `object_gatherer` apps | done |
+| 9d | Cat hunter: object detection replacing COB, cats models and controller | next |
 | 9e | LLM agent (`thorp_agent`) | |
 
 Block 3 onwards will be refined as we get there.
@@ -104,33 +104,34 @@ keeping services (clear gripper, force resting, object attached and gripper busy
 commands), the tray manager (slot poses, now computed from the planning scene) and the drag and drop demo. So does the
 pickup planner, that groups objects on a table into pickup locations: app-level planning, with no MoveIt use.
 
-Coverage planning is deferred to Block 9, with the exploration apps, its only users. No option is a Jazzy release:
-`ipa_coverage_planning` (room segmentation, room sequence planning and room exploration) has no ROS 2 port;
-`full_coverage_path_planner`'s `ros2` branch is an unfinished migration, untouched since 2023; and `opennav_coverage`
-(Nav2 coverage server, source only) needs Fields2Cover 1.2.1, while Jazzy releases 2.0.0, and plans coverage of
-polygons, without room segmentation nor sequencing. Coverage planning is the only navigation code Thorp may need
-beyond Nav2: on Noetic, `ipa_coverage_planning` (room segmentation, room sequence planning and room exploration, from
-Thorp's fork) and `full_coverage_path_planner`'s Spiral-STC planner, as an MBF global planner.
+Coverage planning, for the exploration apps, is Thorp's own exploration planner (`thorp_exploration`). On Noetic it
+was `ipa_coverage_planning` (room segmentation, room sequence planning and room exploration, from Thorp's fork) and
+`full_coverage_path_planner`'s Spiral-STC planner, as an MBF global planner. No option is a Jazzy release:
+`ipa_coverage_planning` has no ROS 2 port, and its dependencies include `opengm` and `cob_map_accessibility_analysis`,
+not released for Jazzy either; `full_coverage_path_planner`'s `ros2` branch is an unfinished migration, untouched since
+2023; and `opennav_coverage` (Nav2 coverage server, source only; its `jazzy-v2` branch takes Jazzy's Fields2Cover 2.0)
+plans swaths over field polygons, without room segmentation nor sequencing.
 
 ## Package status
 
 | Package | Status |
 |---------|--------|
-| thorp_bringup | partial: velocity multiplexer and depth to scan parameters, navigation and manipulation RViz configs (see below) |
+| thorp_bringup | partial: velocity multiplexer and depth to scan parameters, RViz configs (see below) |
 | thorp_description | migrated |
 | thorp_moveit_config | migrated (see below) |
 | thorp_msgs | migrated |
 | thorp_cannon | migrated; simulation only, the real cannon waits for the boards (see below) |
 | thorp_manipulation | partial: pickup and place object servers, fake gripper joint states (see below) |
-| thorp_bt_cpp | partial: runner, `bt_server`, tests, manipulation, perception, navigation and tables nodes and trees (see below) |
-| thorp_apps | partial: common launch, `pickup_objects`, `object_manip`, `patrol_2_points` and `cleanup_table` (see below) |
+| thorp_bt_cpp | partial: runner, `bt_server`, tests, manipulation, perception, navigation, tables and exploration nodes and trees (see below) |
+| thorp_apps | partial: common launch, `pickup_objects`, `object_manip`, `patrol_2_points`, `cleanup_table`, `explore_house` and `object_gatherer` (see below) |
 | thorp_costmap_layers | migrated (see below) |
-| thorp_rviz_plugins | partial: user commands panel (see below) |
+| thorp_exploration | migrated, reimplemented (see below) |
+| thorp_rviz_plugins | migrated (see below) |
 | thorp_perception | partial: tables and objects detection, camera field of view check (see below) |
 | thorp_navigation | partial: Nav2 configuration, trees and launch, maps, velocity display (see below) |
-| thorp_simulation | partial: Gazebo Harmonic launch, worlds, controllers and navigation (see below) |
+| thorp_simulation | partial: Gazebo Harmonic launch, worlds but `small_house`, controllers and navigation (see below) |
 | thorp_toolkit | partial: core C++ and Python modules (see below) |
-| thorp_boards, thorp_exploration, thorp_mbf_plugins, thorp_smach | ROS 1 (ignored) |
+| thorp_boards, thorp_mbf_plugins, thorp_smach | ROS 1 (ignored) |
 
 ### thorp_moveit_config
 
@@ -148,17 +149,23 @@ and Gazebo could spawn Thorp from it. The unused CHOMP and Pilz pipelines aren't
 
 Ported from the `bt_server` branch, so it includes `RunSubtree.action`. The unused `KeyboardInput` message is
 dropped, as ROS 2 rejects its lowercase constants. `DetectTables.action` is new: it replaces the executive's direct
-use of RAIL segmentation to find tables, returning them as collision objects.
+use of RAIL segmentation to find tables, returning them as collision objects. So are the exploration planner's
+services, `SegmentRooms`, `PlanRoomSequence` and `PlanRoomExploration`, with the `Room` message, in place of
+`ipa_building_msgs`' actions. The interfaces of the servers the port drops are removed: `MakePickupPlan` (with
+`PickupPlan`), `MoveToTarget`, `UserCommand`, the tray services and `ConnectWaypoints`. `FollowPose.action` waits for
+Block 9d's `follow_pose`, that may use `opennav_following`'s action instead.
 
 ### thorp_perception
 
 `object_detection` segments the table in front of the robot on the Xtion point cloud, and the objects on it, and
 identifies each object by matching it with a 2D ICP against the templates in `meshes`. The `object_detection` action
 (`thorp_msgs/DetectObjects`) adds the table and the identified objects to the planning scene, keeping the names of
-redetected objects and removing those no longer on the table; `object_detection/detect_tables`
-(`thorp_msgs/DetectTables`) only segments the table, if its shortest side reaches a minimum. Tables and objects are
-collision objects: tables are boxes with x along their longest side; objects carry their template mesh, and their
-size and color name as JSON in `type.db`, as on the `bt_server` branch. `xtion_fov_analyzer.py` is ported too.
+redetected objects and removing those no longer on the table, but those on the tray, that can be over the table's volume
+when docked under its eaves (it reads the tray geometry, `thorp_description`'s `tray.yaml`, as the executive does);
+`object_detection/detect_tables` (`thorp_msgs/DetectTables`) only segments the table, if its shortest side reaches a
+minimum. Tables and objects are collision objects: tables are boxes with x along their longest side; objects carry their
+template mesh, and their size and color name as JSON in `type.db`, as on the `bt_server` branch. `xtion_fov_analyzer.py`
+is ported too.
 
 The segmentation and template matching are rewritten into `thorp_perception` from Thorp's forks of
 `rail_segmentation` and `rail_mesh_icp`, instead of porting the forks as source dependencies: the forks carry much
@@ -182,9 +189,10 @@ Applications must give the toolkit their node once, with `thorp::toolkit::init(n
 `rviz_2d_overlay_msgs`, and Python functions raise `ValueError` on invalid inputs and `RuntimeError` on TF failures,
 instead of `rospy.ROSException`.
 
-Ported: C++ `common`, `geometry`, `math`, `parameters`, `progress_tracker`, `tf2` and `visualization`; Python
-`common`, `decorators`, `geometry`, `progress_tracker`, `singleton`, `spatial_hash`, `tachometer`, `transform` and
-`visualization`, with `test_progress_tracker`. Pending ROS 1 files, ported with their first consumer:
+Ported: C++ `common`, `geometry`, `math`, `parameters`, `progress_tracker`, `tf2`, `tray` (the tray's slots, from the
+planning scene objects on it, for the executive and perception) and `visualization`; Python `common`, `decorators`,
+`geometry`, `progress_tracker`, `singleton`, `spatial_hash`, `tachometer`, `transform` and `visualization`, with
+`test_progress_tracker`. Pending ROS 1 files, ported with their first consumer:
 
 | Files | First consumer | Block |
 |-------|----------------|-------|
@@ -238,7 +246,7 @@ files:
 | Real robot servos: `param/controllers.yaml`, `launch/includes/controllers.launch.xml`, `nodes/dynamixel_*.py`, and their use in `launch/includes/arm.launch.xml`; `fake_servos_srv.py` from `thorp_bringup` on simulation | real robot |
 
 The tray manager, the drag and drop server (`interactive_manip_server.cpp`) and the pickup planner
-(`pickup_planner_server.py`) are replaced by `thorp_bt_cpp`'s tray, `DragAndDrop` and `MakePickupPlan` nodes. MTC
+(`pickup_planner_server.py`) are replaced by `thorp_bt_cpp`'s tray, `DragAndDrop` and `PlanPickupLocations` nodes. MTC
 exports the full planning scene, not a diff, for sub-trajectories whose end scene isn't a child of their start one;
 `move_group` applied it on execution, reverting the world to its state when planned, and so removing objects detected
 while executing, as `pickup_objects` does while placing on the tray. The server keeps just the robot state of those
@@ -258,13 +266,25 @@ Navigation uses `nav2_behavior_tree`'s own nodes, loaded from its plugins: `Navi
 `FollowPath`, `Spin` and `BackUp`, their builders wrapped to share the root entries with subtrees as Thorp's do. Their
 error codes, `uint16`, go to `{nav_error}` keys, as trees can't mix types on a key and Thorp's nodes write `int` errors.
 The runner waits for Nav2 to be active before ticking, when `lifecycle_manager_navigation` is running: `bt_navigator`
-rejects goals until activated. Thorp's `LookAtPose` turns with the `spin` behavior; `GetPosesAroundTable` discards
-poses on obstacles with the global costmap's `get_cost` service, checking the pose's cell rather than Noetic's footprint
+rejects goals until activated. Thorp's `LookAtPose` turns with the `spin` behavior; `GetPosesAroundTable` discards poses
+on obstacles with the global costmap's `get_cost` service, checking the pose's cell rather than Noetic's footprint
 shrunk by 10 cm, as pickup poses are under the table's eaves; `TableAsObstacle`, `ClearTableAccess` and
-`RestoreTableAccess` call the semantic layer services; `MakePickupPlan` is the pickup planner, in C++, keeping its
-travel optimized order rather than sorting it again by object count as Noetic did (a TODO there questioned it);
-`PoseAsPath` makes a straight path from a start pose, for docking. `cleanup_table` validates the table in front when
-given none, so the `cleanup_table` app runs it as is.
+`RestoreTableAccess` call the semantic layer services; `PlanPickupLocations` is the pickup planner, in C++, keeping its
+travel optimized order rather than sorting it again by object count as Noetic did (a TODO there questioned it), and
+showing the plan on RViz as Noetic's did, on the executive's `pickup_plan` and `pickup_poses`; `PoseAsPath` makes a
+straight path from a start pose, for docking. `cleanup_table` validates the table in front when given none, so the
+`cleanup_table` app runs it as is.
+
+Exploration calls the exploration planner's services: `SegmentRooms`, `PlanRoomSequence` and `PlanRoomExploration` pass
+only room ids and poses, as the planner keeps the map and the rooms, instead of Noetic's map images on the blackboard.
+`full_coverage_planner` plans the whole map at once with `PlanRoomExploration`, instead of `GetPath`'s Spiral-STC
+coverage path, and both exploration trees drive through the poses planned with `follow_waypoints`, as on Noetic, so the
+camera looks where the robot goes rather than along the planned headings. `TableVisited` asks the global costmap's
+semantic layer for a table `TableAsObstacle` marked overlapping the one detected. `validate_table` goes on with the
+table it's given if detecting it again, after turning to face it, misses, as a far or small table can be at the
+detection limit; that livelocked `object_gatherer`, the table detected while exploring and missed once in front.
+`attach_to_table` fails if docking takes over a minute, and `object_gatherer` goes on exploring if a table's cleanup
+fails.
 
 Nodes calling actions derive from Nav2's `BtActionNode`, with their servers' names as `server_name` defaults; the
 runner puts Nav2's timeouts on the blackboard: `server_timeout` half a tick and `wait_for_service_timeout` 5 s, 60 s
@@ -318,18 +338,18 @@ With the manipulation and perception stacks up (`object_manip.launch.py executiv
 running tree's action or subtree as an RViz overlay text, on `rviz/executive_progress_overlay`, and `groot/thorp.btproj`
 opens the ported trees on Groot2.
 
-Ported: the runner, `bt_server`, the JSON blackboard, the ROS logger, the manipulation, perception, list, blackboard
-and parameter nodes, the user commands and drag and drop nodes, the navigation and tables nodes, the `manipulation`,
-`perception`, `navigation`, `tables`, `pickup_objects`, `object_manip`, `patrol_2_points`, `cleanup_table` and
-`test_server` trees, the tests and the executive visualization. Removed, replaced as described or by Nav2's nodes:
-`add_object_to_tray`, `clear_gripper`, `go_to_pose`, `exe_path`, `smooth_path`, `recovery`, `clear_costmaps`,
-`use_named_config` and `clear_rail_markers`; `pickup_object` reports the object it attached from the planning
-scene, as Noetic's gripper busy service did. Pending ROS 1 files:
+Ported: the runner, `bt_server`, the JSON blackboard, the ROS logger, the manipulation, perception, list, blackboard and
+parameter nodes, the user commands and drag and drop nodes, the navigation, tables and exploration nodes, the
+`manipulation`, `perception`, `navigation`, `tables`, `exploration`, `pickup_objects`, `object_manip`,
+`patrol_2_points`, `cleanup_table`, `explore_house`, `object_gatherer` and `test_server` trees, the tests and the
+executive visualization. Removed, replaced as described or by Nav2's nodes: `add_object_to_tray`, `clear_gripper`,
+`go_to_pose`, `exe_path`, `smooth_path`, `recovery`, `clear_costmaps`, `use_named_config`, `clear_rail_markers` and
+`get_path`; `pickup_object` reports the object it attached from the planning scene, as Noetic's gripper busy service
+did. Pending ROS 1 files:
 
 | Files | Block |
 |-------|-------|
 | `bumper_pressed`, `switch_safety_controller` | real robot |
-| `get_path`, `table_visited`, `segment_rooms`, `plan_room_sequence`, `plan_room_exploration`; `bt/exploration.xml`, `bt/explore_house.xml`, `bt/object_gatherer.xml` | 9c |
 | `cannon_control`, `cannon_has_ammo`, `monitor_objects`, `follow_pose`, `target_reachable`; `bt/cat_hunter.xml` | 9d |
 
 ### thorp_apps
@@ -337,16 +357,22 @@ scene, as Noetic's gripper busy service did. Pending ROS 1 files:
 `launch/includes/apps_common.launch.py` starts the simulation (Gazebo only, until the real robot's bringup is ported)
 and the executive: `bt_runner` with the app's tree (`executive:=bt`, the default), or `bt_server` (`executive:=llm`).
 With `viz_executive`, the executive's running node shows on RViz, and Groot2 starts, if installed in `~/Groot2`, to
-monitor the tree; it isn't respawned, as Noetic's was. SMACH executives and video recording aren't ported.
-`param/apps_config.yaml` is a ROS 2 parameters file for whichever node runs the app. `pickup_objects.launch.py` adds a
-static `map` to `odom` transform (no map server), the objects spawner, perception, manipulation and RViz, through
-`launch/includes/tabletop_manip.launch.py`, shared with `object_manip.launch.py`. `object_manip` shuts everything down
-on the exit command, as on Noetic. Both use `thorp_bringup`'s `rviz/manipulation.rviz`, with the user commands panel.
-`patrol_2_points.launch.py` and `cleanup_table.launch.py` add Nav2 and navigation's RViz through
-`launch/includes/navigation.launch.py`, on the playground world: the patrol between two of its open areas, around its
-obstacles; the cleanup on the random table and objects of `tabletop_manip.launch.py`, without its static map. The
-executive's includes are scoped, as their `params_file` argument would otherwise reach Nav2's launch. Pending: the other
-apps' ROS 1 launch files and `resources/movie_scripts`, with their blocks.
+monitor the tree; it isn't respawned, as Noetic's was. It also starts RViz, with the MoveIt plugin, showing the
+`thorp_bringup` configuration each app passes as `rviz_config` (`rviz:=false` to skip it); the included launch files
+start none, as launch arguments are global: a default in an include can't override the app's `rviz`. SMACH executives
+and video recording aren't ported. `param/apps_config.yaml` is a ROS 2 parameters file for whichever node runs the app.
+`pickup_objects.launch.py` adds a static `map` to `odom` transform (no map server), the objects spawner, perception and
+manipulation, through `launch/includes/tabletop_manip.launch.py`, shared with `object_manip.launch.py`. `object_manip`
+shuts everything down on the exit command, as on Noetic. Both show `manipulation.rviz`, with the user commands panel.
+`patrol_2_points.launch.py` and `cleanup_table.launch.py` add Nav2 through `launch/includes/navigation.launch.py`, on
+the playground world: the patrol between two of its open areas, around its obstacles; the cleanup on the random table
+and objects of `tabletop_manip.launch.py`, without its static map; they show `navigation.rviz` and `gathering.rviz`.
+`explore_house.launch.py` and `object_gatherer.launch.py` add the exploration planner, on the fun house world, with
+Thorp starting at its center: the first covers the house with the Kinect's field of view, as default, showing
+`exploration.rviz`; the second with the Xtion's, that detects the tables, and spawns random tables with random objects
+(`fun_house_objects`) and runs perception and manipulation, showing `gathering.rviz`. Noetic's object gatherer ran on
+the small house world, not ported. The executive's includes are scoped, as their `params_file` argument would otherwise
+reach Nav2's launch. Pending: the other apps' ROS 1 launch files and `resources/movie_scripts`, with their blocks.
 
 ### thorp_costmap_layers
 
@@ -358,34 +384,52 @@ clearing keeps the objects. Dropped with the ROS 1 implementation: its pluggable
 handful of objects), dynamic reconfigure, forcing a costmap update, the debug markers, and the Python client, clearing
 script and test.
 
+### thorp_exploration
+
+The exploration planner (`nodes/exploration_planner.py`, with the algorithms in the `thorp_exploration` Python module)
+replaces `ipa_coverage_planning`, with simpler algorithms, on numpy, SciPy and OpenCV: rooms are seeded by eroding the
+free space until regions split off below a maximum area, and grown back over it, as ipa's morphological segmentation;
+rooms are ordered by nearest neighbor, improved with 2-opt, on path lengths over the free space, instead of Concorde's
+exact solution; and each room's viewpoints are chosen greedily, each time the pose whose camera field of view sees the
+most cells not seen yet, with walls blocking the view, until seeing 95% of what can be seen, instead of ipa's convex
+set-cover program. The fields of view are Noetic's, for the Kinect or the Xtion. `test/test_planner.py` checks the
+planner on the `simple_rooms` and `fun_house` maps.
+
 ### thorp_rviz_plugins
 
 The user commands panel (`thorp_rviz_plugins/UserCommands`) replaces `jsk_rviz_plugins`' robot command buttons: its
 buttons, set in the RViz configuration as a list of name, icon and command, publish the command on the `user_command`
-topic. Pending: the ROS 1 navigation tools (clear costmaps and cancel navigation buttons), with Block 9b.
+topic. The clear costmaps tool (`thorp_rviz_plugins/ClearCostmapTool`) is a toolbar button calling both Nav2 costmaps'
+`clear_entirely` services. The cancel navigation tool and the tools' overlay messages are dropped: Nav2's RViz panel
+cancels navigation.
 
 ### thorp_bringup
 
 Ported: `param/cmd_vel_mux.yaml` (was `vel_multiplexer.yaml`, now for `twist_mux`), the Kinect and Xtion depth to laser
 scan parameters, `rviz/navigation.rviz` (based on Nav2's default view) and `rviz/manipulation.rviz` (based on MoveIt's,
 plus the objects' interactive markers, the user command and executive overlays and the user commands panel, with the
-`rviz/icons`). `scripts/user_commands.py` and `rviz/user_commands.yaml` are replaced by the user commands panel and
-`ReadUserCommands`. Everything else is pending: real robot launch files and drivers, other RViz configurations, scripts
-and the docker image.
+`rviz/icons`). The other RViz configurations are built on those two, with Noetic's displays on the Jazzy topics:
+`exploration.rviz`, `gathering.rviz`, `hunting.rviz`, `perception.rviz`, `view_all.rviz` and `view_model.rviz`. Their
+displays for dropped packages (Move Base Flex planners, RAIL, COB, ORK, the Senz3D and external cameras, the semantic
+map) are left out, and `hunting.rviz`'s detector displays wait for Block 9d. `hunting.movie.rviz` waits for video
+recording, as its camera animation needs `rviz_animated_view_controller`, with no Jazzy release.
+`scripts/user_commands.py` and `rviz/user_commands.yaml` are replaced by the user commands panel and
+`ReadUserCommands`. Everything else is pending: real robot launch files and drivers, scripts and the docker image.
 
 ### thorp_navigation
 
 Ported: `navigation.launch.py`, with Nav2 in place of Move Base Flex and the Noetic arguments (localization `amcl`,
 `static` or `gazebo`, map, initial pose, velocity smoothing), `param/nav2.yaml` and the maps, except `small_house`
-(symlinks to a `small_house_world` package checkout). Velocity commands keep the Noetic topics: navigation, through
-the velocity smoother if enabled, into `cmd_vel_mux/input/navigation`; `twist_mux` uses unstamped velocities, as
-Nav2 and the Kobuki base. The controller runs at 20 Hz instead of Noetic's 15, as MPPI needs a control period no longer
-than its model step. For docking at tables, a precise controller (`PreciseFollowPath`, Regulated Pure Pursuit, slow and
-turning in place) and goal checker (`precise_goal_checker`, Noetic's 3.5 cm and 0.05 rad) replace the
-`precise_controlling` named configuration; the executive picks them per `follow_path` goal. As the controller server
-rejects goals naming no goal checker when it has more than one, `bt_navigator` runs `behavior_trees/`: Nav2's default
-trees, selecting also the goal checker, the general one by default. Both costmaps have the semantic layer, before
-inflation. Pending ROS 1 files:
+(symlinks to a `small_house_world` package checkout). Velocity commands keep the Noetic topics: navigation, through the
+velocity smoother if enabled, into `cmd_vel_mux/input/navigation`; `twist_mux` uses unstamped velocities, as Nav2 and
+the Kobuki base. The controller runs at 20 Hz instead of Noetic's 15, as MPPI needs a control period no longer than its
+model step. For docking at tables, a precise controller (`PreciseFollowPath`, Regulated Pure Pursuit, slow and turning
+in place) and goal checker (`precise_goal_checker`, Noetic's 3.5 cm and 0.05 rad) replace the `precise_controlling`
+named configuration; it steers for a point beyond the end of the path (`interpolate_curvature_after_goal`), as steering
+for a goal a few centimeters off its heading made it circle around it; the executive picks them per `follow_path` goal.
+As the controller server rejects goals naming no goal checker when it has more than one, `bt_navigator` runs
+`behavior_trees/`: Nav2's default trees, selecting also the goal checker, the general one by default. Both costmaps have
+the semantic layer, before inflation. Pending ROS 1 files:
 
 | Files | Block |
 |-------|-------|
@@ -405,23 +449,24 @@ Dropped with Move Base Flex: `param/move_base_flex/`, `launch/includes/move_base
 
 ### thorp_simulation
 
-Ported: `thorp_gazebo.launch.py` and `navigation.launch.py`, the `empty` and `playground` worlds, the Gazebo models, the
-ROS / Gazebo bridge configuration, the controllers configuration and `gazebo_ground_truth`, now fed by Gazebo's
-odometry publisher. `thorp_gazebo.launch.py` also runs what Noetic's `sim_common.launch.xml` and
-`thorp_gazebo.launch.xml` did: velocity commands multiplexer and depth image and point cloud to laser scan.
-`spawn_gazebo_models.py` populates the world with tables and objects through Gazebo's create service, bridged to ROS
-with the remove and set pose services: the playground modes (`playground_fixed`, `playground_cubes`, `playground_rows`,
-`playground_random`) put a table in front of the robot, and `fun_house_objects` spawns random tables with objects in
-open spaces of any map, checked on Nav2's global costmap instead of Move Base Flex's check pose service. Objects are
-placed relative to their tables by the script, as Gazebo can't place them relative to a model created on the same
-step. Its `-d` option, to delete previously spawned models, is dropped; it didn't work on Noetic. Pending ROS 1 files:
+Ported: `thorp_gazebo.launch.py` and `navigation.launch.py`, the `empty`, `playground` and `fun_house` worlds (its house
+from `turtlebot3_gazebo`), the Gazebo models, the ROS / Gazebo bridge configuration, the controllers configuration and
+`gazebo_ground_truth`, now fed by Gazebo's odometry publisher. `thorp_gazebo.launch.py` also runs what Noetic's
+`sim_common.launch.xml` and `thorp_gazebo.launch.xml` did: velocity commands multiplexer and depth image and point cloud
+to laser scan. `spawn_gazebo_models.py` populates the world with tables and objects through Gazebo's create service,
+bridged to ROS with the remove and set pose services: the playground modes (`playground_fixed`, `playground_cubes`,
+`playground_rows`, `playground_random`) put a table in front of the robot, and `fun_house_objects` spawns random tables
+with objects in open spaces of any map, checked on Nav2's global costmap instead of Move Base Flex's check pose service.
+Objects are placed relative to their tables by the script, as Gazebo can't place them relative to a model created on the
+same step. Its `-d` option, to delete previously spawned models, is dropped; it didn't work on Noetic. Pending ROS 1
+files:
 
 | Files | Block |
 |-------|-------|
 | Bumper and cliff point clouds in `thorp_gazebo.launch.xml` | real robot |
-| `spawn_gazebo_models.py` cats (with the rocket) and `small_house_objects` modes | 9, with the small house world |
+| `spawn_gazebo_models.py` cats (with the rocket) mode | 9d |
+| `spawn_gazebo_models.py` `small_house_objects` mode, `small_house` Gazebo world | when needed |
 | `src/gazebo_camera_control*.cpp`, `nodes/` (cats controller, model markers, movie director) | 9 |
-| `fun_house` and `small_house` Gazebo worlds | when needed |
 | Stage and STDR launch files, worlds and robot configurations (no Jazzy release of either simulator) | undecided |
 | `scripts/gazebo_link_state.py` (`gz model -m thorp -l <link> -p` shows the same) | undecided |
 
@@ -504,3 +549,9 @@ Differences with the Noetic simulation:
   up.
 - On the playground, the patrol's first leg stalled in testing: the controller aborted with "Failed to make progress"
   until Nav2's recoveries got it moving. It looks like MPPI tuning, not the trees.
+- In an `object_gatherer` run, one docking in ten made no progress, and the progress checker aborted it: on a 0.62 m
+  table side split into 3 pickup locations. Maybe a table leg blocks the robot near a corner, as `GetPosesAroundTable`
+  only checks the pose's own cell on the costmap, the pickup poses being under the table's eaves; not confirmed.
+- Tray slots are 3.5 cm apart, and objects on the tray stay in the planning scene, so placing next to a wide object
+  (a cross, say) often fails: a gripper finger, or opening the gripper, collides with it. In an `object_gatherer` run,
+  7 of 12 placements failed planning like this.
