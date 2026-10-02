@@ -2,12 +2,14 @@ import numpy as np
 from numpy import pi
 from numbers import Number
 
+import threading
 import time
 
 import rclpy
 import tf2_ros
 import tf2_geometry_msgs
 from rclpy.duration import Duration
+from rclpy.executors import SingleThreadedExecutor
 from rclpy.time import Time
 from tf_transformations import quaternion_from_euler, euler_from_quaternion
 
@@ -454,11 +456,22 @@ class TF2(metaclass=Singleton):
         self.__buff__ = tf2_ros.Buffer(node=node())
         # the listener gets its own node, spun on a dedicated thread; spinning ours there would take it
         # from the application's executor
-        self.__list__ = tf2_ros.TransformListener(self.__buff__, None, spin_thread=True)
+        self.__list__ = tf2_ros.TransformListener(self.__buff__, None)
+        threading.Thread(target=self.__spin_listener__, daemon=True).start()
         self.__stbc__ = tf2_ros.StaticTransformBroadcaster(node())
         # wait until we get the first tf msg
         while rclpy.ok() and not self.__buff__.all_frames_as_string():
             time.sleep(0.001)
+
+    def __spin_listener__(self):
+        """ Spin the listener's node until shutdown, that raises RCLError instead if it comes between two waits """
+        executor = SingleThreadedExecutor()
+        executor.add_node(self.__list__.node)
+        try:
+            executor.spin()
+        except Exception:
+            if rclpy.ok():
+                raise
 
     def transform_pose(self, pose_in, frame_from, frame_to, timeout=Duration(seconds=2.0)):
         """
