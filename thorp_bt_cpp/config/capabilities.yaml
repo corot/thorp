@@ -195,6 +195,22 @@ capabilities:
       expect: succeeded
       timeout: 60
 
+  finish_manipulation:
+    description: >
+      Rest the arm, then remove from the planning scene every object but those on the tray,
+      table included. For wrapping up after manipulating at a table. An object still in the
+      gripper stays attached; clear_gripper first to drop it.
+    status: ok
+    stack: [manipulation]
+    invalidates: [objects_detected]
+    inputs: {}
+    outputs:
+      error: {type: int, when: failure, description: "error code from move_group moving the arm to rest"}
+    test:
+      inputs: {}
+      expect: succeeded
+      timeout: 60
+
   # ---------------------------------------------------------------------- perception -------
 
   detect_objects:
