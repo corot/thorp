@@ -555,3 +555,5 @@ Differences with the Noetic simulation:
 - Tray slots are 3.5 cm apart, and objects on the tray stay in the planning scene, so placing next to a wide object
   (a cross, say) often fails: a gripper finger, or opening the gripper, collides with it. In an `object_gatherer` run,
   7 of 12 placements failed planning like this.
+- `move_group` segfaults on Ctrl-C, in `TrajectoryExecutionManager`'s destructor: MoveIt's
+  https://github.com/moveit/moveit2/issues/3680, with a fix in https://github.com/moveit/moveit2/pull/3828 (open).
