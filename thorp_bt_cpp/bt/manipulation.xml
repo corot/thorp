@@ -79,4 +79,16 @@
       </ForceSuccess>
     </Sequence>
   </BehaviorTree>
+
+  <!--
+    Rest the arm and remove from the planning scene everything but the objects on the tray.
+    The arm moves first, so it still avoids the objects it is about to forget.
+  -->
+  <BehaviorTree ID="finish_manipulation">
+    <Sequence>
+      <SetArmConfig configuration="resting"
+                    error="{error}"/>
+      <ClearPlanningScene keep_tray="true"/>
+    </Sequence>
+  </BehaviorTree>
 </root>
