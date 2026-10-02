@@ -22,6 +22,7 @@ import sys
 from math import pi, copysign, cos, sin, sqrt
 
 import rclpy
+from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from rclpy.qos import QoSDurabilityPolicy, QoSProfile
 
@@ -285,7 +286,7 @@ def main():
     random.seed()
     try:
         node.spawn(args[1], '-l' in args[2:])
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, ExternalShutdownException):
         pass
     finally:
         node.destroy_node()

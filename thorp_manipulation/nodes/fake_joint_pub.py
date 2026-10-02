@@ -9,6 +9,7 @@ Port of turtlebot_arm_bringup's fake_joint_pub.py, from https://github.com/corot
 
 import rclpy
 from rclpy.duration import Duration
+from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
 
@@ -37,7 +38,7 @@ def main():
     node = FakeJointPub()
     try:
         rclpy.spin(node)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, ExternalShutdownException):
         pass
     finally:
         node.destroy_node()

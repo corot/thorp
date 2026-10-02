@@ -7,6 +7,7 @@ Author:
 """
 
 import rclpy
+from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 
 from rviz_2d_overlay_msgs.msg import OverlayText
@@ -43,7 +44,7 @@ def main():
     node = ShowBTNodeOnRViz()
     try:
         rclpy.spin(node)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, ExternalShutdownException):
         pass
     finally:
         node.destroy_node()

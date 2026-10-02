@@ -7,6 +7,7 @@ Objects exist only in the planning scene, so on simulation the gripper closes on
 
 import rclpy
 from rclpy.action import ActionClient
+from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 
 from geometry_msgs.msg import PoseStamped
@@ -79,7 +80,7 @@ def main():
     node = TestPickAndPlace()
     try:
         node.pick_and_place()
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, ExternalShutdownException):
         pass
     finally:
         node.destroy_node()
