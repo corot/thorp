@@ -1,0 +1,9 @@
+# Source dependencies with no Jazzy release, pinned to a commit; import them into src/third_party:
+#   vcs import ../third_party < thorp-jazzy.repos
+repositories:
+  # YOLO object detection, 3D and tracking, for the cat hunter's detector; its build creates its own Python virtual
+  # environment with uv, if installed, for Ultralytics and PyTorch
+  yolo_ros:
+    type: git
+    url: https://github.com/mgonzs13/yolo_ros.git
+    version: c6d29ce65da555b125517db6ac53729320422b2b

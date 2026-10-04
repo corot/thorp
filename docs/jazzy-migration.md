@@ -27,7 +27,7 @@ The `jazzy` branch is the ROS 2 port of Thorp. The `noetic` branch keeps the ROS
 ```text
 ~/colcon_ws/thorp/
   src/thorp/          # this repository, jazzy branch
-  src/third_party/    # source dependencies from thorp-jazzy.repos (none yet)
+  src/third_party/    # source dependencies from thorp-jazzy.repos
 ```
 
 Build:
@@ -35,10 +35,15 @@ Build:
 ```bash
 cd ~/colcon_ws/thorp
 source /opt/ros/jazzy/setup.bash
-rosdep install --from-paths src --ignore-src -r -y
+vcs import src/third_party < src/thorp/thorp-jazzy.repos
+rosdep install --from-paths src --ignore-src -r -y --skip-keys "python3-torchvision-pip python3-ultralytics-pip"
 colcon build --symlink-install
 source install/setup.bash
 ```
+
+`yolo_ros` needs `uv` (`pipx install uv`): its build creates a Python virtual environment in its source tree, with
+the PyTorch and Ultralytics versions it pins, and points its nodes at it, so no other node sees them. Hence rosdep skips
+the pip keys it declares for them.
 
 ## Blocks
 
