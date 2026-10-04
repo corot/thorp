@@ -1,4 +1,5 @@
-# Source dependencies with no Jazzy release, pinned to a commit; import them into src/third_party:
+# Source dependencies with no Jazzy release, pinned to a commit unless they are Thorp's own forks; import them into
+# src/third_party:
 #   vcs import ../third_party < thorp-jazzy.repos
 repositories:
   # YOLO object detection, 3D and tracking, for the cat hunter's detector; its build creates its own Python virtual
@@ -7,8 +8,8 @@ repositories:
     type: git
     url: https://github.com/mgonzs13/yolo_ros.git
     version: c6d29ce65da555b125517db6ac53729320422b2b
-  # The small house Gazebo world and its map, ported to Gazebo Harmonic on the ros2 branch
+  # The small house Gazebo world and its map, ported to Gazebo Harmonic; Thorp's fork, so it follows its branch
   aws_robomaker_small_house_world:
     type: git
     url: https://github.com/corot/aws-robomaker-small-warehouse-world.git
-    version: eabff1fa6a670a4fb1d667e0fde3112f9c0e77ee
+    version: ros2
