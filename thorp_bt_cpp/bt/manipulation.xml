@@ -4,10 +4,7 @@
     <Sequence>
       <ForceSuccess>
         <Sequence>
-          <Fallback>
-            <ObjectAttached attached_object="{attached_object}"/>
-            <GripperBusy/>
-          </Fallback>
+          <ObjectAttached attached_object="{attached_object}"/>
           <SubTree ID="clear_gripper"/>
         </Sequence>
       </ForceSuccess>
