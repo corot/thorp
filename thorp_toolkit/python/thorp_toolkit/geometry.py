@@ -457,7 +457,10 @@ class TF2(metaclass=Singleton):
         # the listener gets its own node, spun on a dedicated thread; spinning ours there would take it
         # from the application's executor
         self.__list__ = tf2_ros.TransformListener(self.__buff__, None)
-        threading.Thread(target=self.__spin_listener__, daemon=True).start()
+        self.__thread__ = threading.Thread(target=self.__spin_listener__, daemon=True)
+        self.__thread__.start()
+        # the executor stops spinning on shutdown, but a thread still running on exit can abort the process
+        node().context.on_shutdown(lambda: self.__thread__.join(1.0))
         self.__stbc__ = tf2_ros.StaticTransformBroadcaster(node())
         # wait until we get the first tf msg
         while rclpy.ok() and not self.__buff__.all_frames_as_string():
