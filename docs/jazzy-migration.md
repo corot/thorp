@@ -425,16 +425,16 @@ recording, as its camera animation needs `rviz_animated_view_controller`, with n
 
 Ported: `navigation.launch.py`, with Nav2 in place of Move Base Flex and the Noetic arguments (localization `amcl`,
 `static` or `gazebo`, map, initial pose, velocity smoothing), `param/nav2.yaml` and the maps, except `small_house`
-(symlinks to a `small_house_world` package checkout). Velocity commands keep the Noetic topics: navigation, through the
-velocity smoother if enabled, into `cmd_vel_mux/input/navigation`; `twist_mux` uses unstamped velocities, as Nav2 and
-the Kobuki base. The controller runs at 20 Hz instead of Noetic's 15, as MPPI needs a control period no longer than its
-model step. For docking at tables, a precise controller (`PreciseFollowPath`, Regulated Pure Pursuit, slow and turning
-in place) and goal checker (`precise_goal_checker`, Noetic's 3.5 cm and 0.05 rad) replace the `precise_controlling`
-named configuration; it steers for a point beyond the end of the path (`interpolate_curvature_after_goal`), as steering
-for a goal a few centimeters off its heading made it circle around it; the executive picks them per `follow_path` goal.
-As the controller server rejects goals naming no goal checker when it has more than one, `bt_navigator` runs
-`behavior_trees/`: Nav2's default trees, selecting also the goal checker, the general one by default. Both costmaps have
-the semantic layer, before inflation. Pending ROS 1 files:
+(symlinks into the `aws_robomaker_small_house_world` checkout in `src/third_party`, not installed). Velocity commands
+keep the Noetic topics: navigation, through the velocity smoother if enabled, into `cmd_vel_mux/input/navigation`;
+`twist_mux` uses unstamped velocities, as Nav2 and the Kobuki base. The controller runs at 20 Hz instead of Noetic's 15,
+as MPPI needs a control period no longer than its model step. For docking at tables, a precise controller
+(`PreciseFollowPath`, Regulated Pure Pursuit, slow and turning in place) and goal checker (`precise_goal_checker`,
+Noetic's 3.5 cm and 0.05 rad) replace the `precise_controlling` named configuration; it steers for a point beyond the
+end of the path (`interpolate_curvature_after_goal`), as steering for a goal a few centimeters off its heading made it
+circle around it; the executive picks them per `follow_path` goal. As the controller server rejects goals naming no goal
+checker when it has more than one, `bt_navigator` runs `behavior_trees/`: Nav2's default trees, selecting also the goal
+checker, the general one by default. Both costmaps have the semantic layer, before inflation. Pending ROS 1 files:
 
 | Files | Block |
 |-------|-------|
