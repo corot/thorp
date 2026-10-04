@@ -2,6 +2,10 @@
 <root BTCPP_format="4">
   <include path="explore_house.xml"/>
 
+  <!--
+    Explore the house looking for cats, and hunt each one seen: approach it, and fire the cannon at it while following
+    it. Ends when the ammo or the exploration does.
+  -->
   <BehaviorTree ID="cat_hunter">
     <KeepRunningUntilFailure>
       <Sequence>
@@ -11,37 +15,11 @@
           <ForceFailure>
             <SubTree ID="explore_house"/>
           </ForceFailure>
-          <MonitorObjects tracked_object_pose="{tracked_object_pose}"
-                          tracked_object="{tracked_object}"
-                          topic_name="tracked_objects"
-                          target_objects="cat, dog, horse"
-                          timeout="0.0"
-                          max_delay="0.0"/>
+          <MonitorTarget target_pose="{target_pose}"/>
         </Parallel>
+        <!-- A target lost while approaching it is left; exploring goes on -->
         <IfThenElse>
-          <WhileDoElse>
-            <Sequence>
-              <GetRobotPose robot_pose="{robot_pose}"
-                            error="{error}"
-                            timeout="1"/>
-              <Inverter>
-                <TargetReachable robot_pose="{robot_pose}"
-                                 max_angle="1.5"
-                                 target_pose="{tracked_object_pose}"
-                                 max_dist="1.5"/>
-              </Inverter>
-            </Sequence>
-            <FollowPose name="ApporachTarget"
-                        error="{follow_error}"
-                        stop_at_distance="true"
-                        feedback="{follow_feedback}"
-                        target_distance="1.0"
-                        exec_time_limit="25"
-                        no_pose_timeout="5.0"
-                        action_name="pose_follower/follow"
-                        server_timeout="5.0"/>
-            <AlwaysSuccess/>
-          </WhileDoElse>
+          <SubTree ID="approach_target"/>
           <SubTree ID="hunt_cat"/>
           <AlwaysSuccess/>
         </IfThenElse>
@@ -49,50 +27,64 @@
     </KeepRunningUntilFailure>
   </BehaviorTree>
 
+  <!--
+    Follow the target until it is within the cannon's sight, checking that on its latest pose. Fails if the target
+    gets lost, or isn't within sight after 25 seconds.
+  -->
+  <BehaviorTree ID="approach_target">
+    <Parallel failure_count="1"
+              success_count="1">
+      <ForceFailure>
+        <FollowObject max_duration="25"
+                      error="{follow_error}"/>
+      </ForceFailure>
+      <RetryUntilSuccessful num_attempts="-1">
+        <Sequence>
+          <MonitorTarget target_pose="{target_pose}"/>
+          <GetRobotPose robot_pose="{robot_pose}"
+                        error="{error}"
+                        timeout="1"/>
+          <TargetReachable robot_pose="{robot_pose}"
+                           target_pose="{target_pose}"
+                           max_dist="1.5"
+                           max_angle="1.5"/>
+        </Sequence>
+      </RetryUntilSuccessful>
+    </Parallel>
+  </BehaviorTree>
+
+  <!--
+    Follow the target, aiming and firing at it whenever it is close and in front. Ends when the target is not seen for
+    half a second, as when toppled, or there's no ammo left.
+  -->
   <BehaviorTree ID="hunt_cat">
     <Parallel failure_count="1"
               success_count="1">
       <ForceSuccess>
-        <FollowPose error="{follow_error}"
-                    stop_at_distance="false"
-                    feedback="{follow_feedback}"
-                    target_distance="0.8"
-                    exec_time_limit="25"
-                    no_pose_timeout="1.0"
-                    action_name="pose_follower/follow"
-                    server_timeout="5.000000"/>
+        <FollowObject error="{follow_error}"/>
       </ForceSuccess>
       <RetryUntilSuccessful num_attempts="-1">
         <IfThenElse>
           <Sequence>
             <CannonHasAmmo/>
-            <MonitorObjects name="TargetVisible"
-                            tracked_object_pose="{tracked_object_pose}"
-                            tracked_object="{tracked_object}"
-                            topic_name="tracked_objects"
-                            target_objects="cat, dog, horse"
-                            timeout="0.2"
-                            max_delay="0.0"/>
+            <MonitorTarget name="TargetVisible"
+                           target_pose="{target_pose}"
+                           timeout="0.5"/>
           </Sequence>
           <Sequence>
             <GetRobotPose robot_pose="{robot_pose}"
                           error="{error}"
                           timeout="1"/>
             <TargetReachable robot_pose="{robot_pose}"
-                             max_angle="0.2"
-                             target_pose="{tracked_object_pose}"
-                             max_dist="1.0"/>
-            <AimCannon angle="{cannon_tilt_angle}"
-                       target_pose="{tracked_object_pose}"
-                       robot_pose="{robot_pose}"/>
-            <TiltCannon angle="{cannon_tilt_angle}"
-                        service_name="cannon_command"
-                        timeout="1"/>
-            <FireCannon shots="1"
-                        service_name="cannon_command"
-                        timeout="1"/>
+                             target_pose="{target_pose}"
+                             max_dist="1.0"
+                             max_angle="0.2"/>
+            <AimCannon target_pose="{target_pose}"
+                       angle="{cannon_tilt_angle}"/>
+            <TiltCannon angle="{cannon_tilt_angle}"/>
+            <FireCannon shots="1"/>
             <Sleep msec="1000"/>
-            <AlwaysFailure _description="Replace with failing on exhausted ammo"/>
+            <AlwaysFailure _description="Keep hunting while the target is visible"/>
           </Sequence>
           <AlwaysSuccess/>
         </IfThenElse>

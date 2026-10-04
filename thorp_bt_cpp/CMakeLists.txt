@@ -36,6 +36,7 @@ find_package(thorp_toolkit REQUIRED)
 
 # Custom behavior tree nodes; listed one by one, as the package is ported in stages
 set(BT_NODES
+  src/bt/actions/cannon_control.cpp
   src/bt/actions/clear_list.cpp
   src/bt/actions/clear_octomap.cpp
   src/bt/actions/clear_planning_scene.cpp
@@ -45,6 +46,7 @@ set(BT_NODES
   src/bt/actions/detect_tables.cpp
   src/bt/actions/drag_and_drop.cpp
   src/bt/actions/expand_pickup_location.cpp
+  src/bt/actions/follow_object.cpp
   src/bt/actions/get_closest_pose.cpp
   src/bt/actions/get_from_list.cpp
   src/bt/actions/get_list_front.cpp
@@ -52,6 +54,7 @@ set(BT_NODES
   src/bt/actions/get_robot_pose.cpp
   src/bt/actions/list_slicing.cpp
   src/bt/actions/look_at_pose.cpp
+  src/bt/actions/monitor_target.cpp
   src/bt/actions/move_gripper.cpp
   src/bt/actions/next_pose_on_tray.cpp
   src/bt/actions/pickup_object.cpp
@@ -75,6 +78,7 @@ set(BT_NODES
   src/bt/actions/transform_pose.cpp
   src/bt/conditions/are_same_pose.cpp
   src/bt/conditions/camera_fov_clear.cpp
+  src/bt/conditions/cannon_has_ammo.cpp
   src/bt/conditions/gripper_busy.cpp
   src/bt/conditions/in_blackboard.cpp
   src/bt/conditions/is_bool_true.cpp
@@ -83,6 +87,7 @@ set(BT_NODES
   src/bt/conditions/objects_detected.cpp
   src/bt/conditions/table_valid_size.cpp
   src/bt/conditions/table_visited.cpp
+  src/bt/conditions/target_reachable.cpp
   src/bt/conditions/tray_full.cpp
   src/bt/controls/recover_and_retry.cpp
   src/bt/decorators/for_each.cpp
@@ -147,11 +152,8 @@ install(FILES config/capabilities.yaml
         DESTINATION share/${PROJECT_NAME}/config
 )
 
-# Trees ported to ROS 2; listed one by one, as the package is ported in stages
-install(FILES bt/cleanup_table.xml bt/exploration.xml bt/explore_house.xml bt/manipulation.xml bt/navigation.xml
-              bt/object_gatherer.xml bt/object_manip.xml bt/patrol_2_points.xml bt/perception.xml bt/pickup_objects.xml
-              bt/tables.xml bt/test_capabilities.xml bt/test_server.xml
-        DESTINATION share/${PROJECT_NAME}/bt
+install(DIRECTORY bt
+        DESTINATION share/${PROJECT_NAME}
 )
 
 ament_package()

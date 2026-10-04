@@ -1,5 +1,9 @@
 <root BTCPP_format="4">
     <TreeNodesModel>
+        <Action ID="AimCannon">
+            <output_port name="angle" type="float"/>
+            <input_port name="target_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+        </Action>
         <Condition ID="AreSamePose">
             <input_port name="pose2" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="pose1" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
@@ -18,6 +22,7 @@
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
             <input_port name="service_name" type="std::string" default="xtion_fov_analyzer/check_clear">name of the ROS service</input_port>
         </Condition>
+        <Condition ID="CannonHasAmmo"/>
         <Action ID="ClearOctomap">
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
             <input_port name="service_name" type="std::string" default="clear_octomap">name of the ROS service</input_port>
@@ -60,9 +65,22 @@
             <output_port name="approach_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="pickup_location" type="thorp_msgs::msg::PickupLocation_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
+        <Action ID="FireCannon">
+            <input_port name="shots" type="unsigned int" default="1">Shots to fire, up to 6</input_port>
+            <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
+            <input_port name="service_name" type="std::string" default="cannon_command">name of the ROS service</input_port>
+        </Action>
         <Condition ID="FloatInBlackboard">
             <input_port name="key" type="float"/>
         </Condition>
+        <Action ID="FollowObject">
+            <input_port name="pose_topic" type="std::string" default="target_object_pose">Topic with the object's pose</input_port>
+            <input_port name="tracked_frame" type="std::string" default="">Object's TF frame, if no pose topic is given</input_port>
+            <input_port name="max_duration" type="double" default="0.000000">Seconds to follow the object; forever if 0</input_port>
+            <output_port name="error" type="int"/>
+            <input_port name="server_timeout" type="std::chrono::milliseconds"/>
+            <input_port name="server_name" type="std::string">Action server name</input_port>
+        </Action>
         <Action ID="FollowPath">
             <input_port name="path" type="nav_msgs::msg::Path_&lt;std::allocator&lt;void&gt; &gt;">Path to follow</input_port>
             <input_port name="controller_id" type="std::string"/>
@@ -123,6 +141,11 @@
             <output_port name="error" type="int"/>
             <input_port name="server_timeout" type="std::chrono::milliseconds"/>
             <input_port name="server_name" type="std::string">Action server name</input_port>
+        </Action>
+        <Action ID="MonitorTarget">
+            <output_port name="target_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="timeout" type="double" default="0.000000">Seconds to wait for a target; forever if &lt;= 0</input_port>
+            <input_port name="topic_name" type="std::string" default="target_object_pose">Target pose topic</input_port>
         </Action>
         <Action ID="MoveGripper">
             <input_port name="position" type="double" default="-0.360000">gripper_joint angle</input_port>
@@ -313,6 +336,17 @@
             <input_port name="table_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="table" type="moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Condition>
+        <Condition ID="TargetReachable">
+            <input_port name="target_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="max_angle" type="double"/>
+            <input_port name="robot_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="max_dist" type="double"/>
+        </Condition>
+        <Action ID="TiltCannon">
+            <input_port name="angle" type="float">Tilt angle, in degrees; 0 is horizontal</input_port>
+            <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
+            <input_port name="service_name" type="std::string" default="cannon_command">name of the ROS service</input_port>
+        </Action>
         <Action ID="TrackProgress">
             <output_port name="next_waypoint" type="unsigned long"/>
             <inout_port name="waypoints" type="std::vector&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>

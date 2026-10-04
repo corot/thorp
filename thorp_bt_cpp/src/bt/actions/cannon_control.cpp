@@ -1,57 +1,61 @@
+#include <algorithm>
+#include <cmath>
+
 #include <behaviortree_cpp/action_node.h>
 
 #include "thorp_bt_cpp/node_common.hpp"
 #include "thorp_bt_cpp/ros_service_node.hpp"
 
+#include <thorp_msgs/srv/cannon_command.hpp>
+
 #include <thorp_toolkit/geometry.hpp>
 #include <thorp_toolkit/tf2.hpp>
 namespace ttk = thorp::toolkit;
 
-#include <thorp_msgs/CannonCommand.h>
-
 namespace thorp::bt::actions
 {
-
+/**
+ * Calculate the cannon tilt angle, in degrees, to aim at the target, clipped to the cannon's range.
+ */
 class AimCannon : public BT::SyncActionNode
 {
 public:
-  AimCannon(const std::string& name, const BT::NodeConfig& config)
-    : BT::SyncActionNode(name, config), tf2_(ttk::TF2::instance())
+  AimCannon(const std::string& name, const BT::NodeConfig& config) : BT::SyncActionNode(name, config)
   {
   }
 
   static BT::PortsList providedPorts()
   {
-    return { BT::InputPort<geometry_msgs::PoseStamped>("robot_pose"),
-             BT::InputPort<geometry_msgs::PoseStamped>("target_pose"), BT::OutputPort<float>("angle") };
+    return { BT::InputPort<geometry_msgs::msg::PoseStamped>("target_pose"),  //
+             BT::OutputPort<float>("angle") };
   }
 
 private:
   BT::NodeStatus tick() override
   {
-    geometry_msgs::PoseStamped robot_pose = requireInput<geometry_msgs::PoseStamped>(*this, "robot_pose");
-    geometry_msgs::PoseStamped target_pose = requireInput<geometry_msgs::PoseStamped>(*this, "target_pose");
-    geometry_msgs::PoseStamped target_pose_cannon_rf;
-    if (tf2_.transformPose("cannon_shaft_link", target_pose, target_pose_cannon_rf, ros::Duration(0.1)))
+    const auto target_pose = requireInput<geometry_msgs::msg::PoseStamped>(*this, "target_pose");
+    geometry_msgs::msg::PoseStamped target_pose_cannon_rf;
+    if (!ttk::TF2::instance().transformPose("cannon_shaft_link", target_pose, target_pose_cannon_rf,
+                                            tf2::durationFromSec(0.1)))
     {
-      double adjacent = target_pose_cannon_rf.pose.position.x;
-      double opposite = target_pose_cannon_rf.pose.position.z;
-      float aim_angle = ttk::toDeg(std::atan(opposite / adjacent));
-      float tilt_angle = std::max(std::min(aim_angle, +18.0f), -18.0f);
-      ROS_INFO_NAMED(name(), "Target at %.1f degrees (clipped to %.1f)", aim_angle, tilt_angle);
-      setOutput("angle", tilt_angle);
-      return BT::NodeStatus::SUCCESS;
+      RCLCPP_ERROR(logger(*this), "Unable to transform target pose into 'cannon_shaft_link' frame");
+      return BT::NodeStatus::FAILURE;
     }
-    ROS_ERROR_STREAM_NAMED(name(), "Unable to transform target pose into 'cannon_shaft_link' frame");
-    return BT::NodeStatus::FAILURE;
+    const double adjacent = target_pose_cannon_rf.pose.position.x;
+    const double opposite = target_pose_cannon_rf.pose.position.z;
+    const auto aim_angle = static_cast<float>(ttk::toDeg(std::atan(opposite / adjacent)));
+    const float tilt_angle = std::clamp(aim_angle, -MAX_TILT, +MAX_TILT);
+    RCLCPP_INFO(logger(*this), "Target at %.1f degrees (clipped to %.1f)", aim_angle, tilt_angle);
+    setOutput("angle", tilt_angle);
+    return BT::NodeStatus::SUCCESS;
   }
 
-  ttk::TF2& tf2_;
+  static constexpr float MAX_TILT = 18.0f;
 
   BT_REGISTER_NODE(AimCannon);
 };
 
-class CannonCommand : public BT::RosServiceNode<thorp_msgs::CannonCommand, BT::SyncActionNode>
+class CannonCommand : public BT::RosServiceNode<thorp_msgs::srv::CannonCommand, BT::SyncActionNode>
 {
 public:
   CannonCommand(const std::string& name, const BT::NodeConfig& conf)
@@ -61,7 +65,6 @@ public:
 
   static BT::PortsList providedPorts()
   {
-    // overwrite service_name with a default value
     BT::PortsList ports = BT::RosServiceNode<ServiceType, ParentType>::providedPorts();
     ports["service_name"].setDefaultValue("cannon_command");
     return ports;
@@ -70,10 +73,10 @@ public:
 private:
   BT::NodeStatus onResponse(const ResponseType& response) override
   {
-    if (response.error.code == thorp_msgs::ThorpError::SUCCESS)
+    if (response.error.code == thorp_msgs::msg::ThorpError::SUCCESS)
       return BT::NodeStatus::SUCCESS;
 
-    ROS_ERROR_STREAM(name() << ": " << response.error.text);
+    RCLCPP_ERROR(logger(*this), "%s", response.error.text.c_str());
     return BT::NodeStatus::FAILURE;
   }
 };
@@ -88,14 +91,14 @@ public:
   static BT::PortsList providedPorts()
   {
     BT::PortsList ports = CannonCommand::providedPorts();
-    ports.insert({ BT::InputPort<float>("angle") });
+    ports.insert(BT::InputPort<float>("angle", "Tilt angle, in degrees; 0 is horizontal"));
     return ports;
   }
 
 private:
   void sendRequest(RequestType& request) override
   {
-    request.action = ServiceType::Request::TILT;
+    request.action = RequestType::TILT;
     request.angle = requireInput<float>(*this, "angle");
   }
 
@@ -112,15 +115,15 @@ public:
   static BT::PortsList providedPorts()
   {
     BT::PortsList ports = CannonCommand::providedPorts();
-    ports.insert({ BT::InputPort<uint32_t>("shots") });
+    ports.insert(BT::InputPort<unsigned int>("shots", 1, "Shots to fire, up to 6"));
     return ports;
   }
 
 private:
   void sendRequest(RequestType& request) override
   {
-    request.action = ServiceType::Request::FIRE;
-    request.shots = requireInput<uint32_t>(*this, "shots");
+    request.action = RequestType::FIRE;
+    request.shots = requireInput<unsigned int>(*this, "shots");
   }
 
   BT_REGISTER_NODE(FireCannon);

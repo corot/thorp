@@ -58,7 +58,8 @@
 #              with their reason, so the gap stays visible.
 #
 # stack: what must already be running for the tree to do anything
-#   none | navigation | manipulation | perception | exploration (the exploration planner)
+#   none | navigation | manipulation | perception | exploration (the exploration planner) |
+#   target_detection (YOLO and the target tracker)
 #
 # test: read only by the test suite; the agent side ignores this block.
 #   inputs_from: where an input comes from, when it should be a real value rather than one
@@ -432,16 +433,14 @@ capabilities:
 
   cat_hunter:
     description: >
-      Explore the house looking for cats, and when one is seen, approach and fire the cannon
-      at it until the ammo runs out.
+      Explore the house looking for cats, and hunt each one seen: approach it, and fire the
+      cannon at it while following it. Ends when the ammo or the exploration does.
     kind: app
     status: ok
-    stack: [navigation, perception]
+    stack: [navigation, exploration, target_detection]
     inputs: {}
     outputs:
-      tracked_object: {type: cob_perception_msgs::Detection, when: maybe, description: "what was spotted (not serializable yet)"}
-      tracked_object_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "where it was spotted"}
-      robot_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "robot pose at the last check"}
+      target_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "where the last target was spotted"}
     test:
       inputs: {}
       expect: runs
@@ -482,24 +481,51 @@ capabilities:
       cancel_after: 30
       timeout: 300   # runs until commanded to exit; expected to be canceled
 
-  hunt_cat:
+  approach_target:
     description: >
-      The attack half of cat_hunter: follow the tracked target, aim and fire while it stays
-      visible and there is ammo left.
+      The approach half of cat_hunter: follow the target the tracker sees until it is within
+      1.5 m and 1.5 rad of the robot's heading. Fails if the target gets lost, or isn't that
+      close after 25 seconds.
     status: ok
-    stack: [navigation, perception]
+    stack: [navigation, target_detection]
     needs: {target_in_view: look_at_pose}
     invalidates: [at_a_table, objects_detected]
     inputs: {}
     outputs:
-      cannon_tilt_angle: {type: float, when: maybe, description: "angle the cannon was tilted to"}
-      tracked_object_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "where the target was last seen"}
+      target_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "where the target was last seen"}
+      robot_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "robot pose at the last check"}
+      error: {type: int, when: failure, description: "error code from reading the robot pose"}
+      follow_error: {type: int, when: failure, description: "opennav_following's error code"}
     test:
       inputs: {}
       setup:
         - subtree: look_at_pose    # the cat is to the left, and the camera is fixed
           inputs: {pose: "-0.5;1.5;0.0;map"}
-      # 'any' because the FollowPose sits under a ForceSuccess: the tree succeeds having seen
+      expect: any
+      timeout: 120
+
+  hunt_cat:
+    description: >
+      The attack half of cat_hunter: follow the target the tracker sees, aiming and firing the
+      cannon whenever it is within 1.0 m and 0.2 rad of the robot's heading. Ends when the
+      target is not seen for half a second, as when toppled, or there's no ammo left.
+    status: ok
+    stack: [navigation, target_detection]
+    needs: {target_in_view: look_at_pose}
+    invalidates: [at_a_table, objects_detected]
+    inputs: {}
+    outputs:
+      cannon_tilt_angle: {type: float, when: maybe, description: "angle the cannon was tilted to"}
+      target_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "where the target was last seen"}
+      robot_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "robot pose at the last check"}
+      error: {type: int, when: failure, description: "error code from reading the robot pose"}
+      follow_error: {type: int, when: maybe, description: "opennav_following's error code, if it lost the target"}
+    test:
+      inputs: {}
+      setup:
+        - subtree: look_at_pose    # the cat is to the left, and the camera is fixed
+          inputs: {pose: "-0.5;1.5;0.0;map"}
+      # 'any' because the following sits under a ForceSuccess: the tree succeeds having seen
       # nothing, and only cannon_tilt_angle tells the two apart
       expect: any
       expect_outputs: [cannon_tilt_angle]

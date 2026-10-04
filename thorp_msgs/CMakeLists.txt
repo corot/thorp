@@ -21,7 +21,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   action/DetectObjects.action
   action/DetectTables.action
   action/DragAndDrop.action
-  action/FollowPose.action
   action/PickupObject.action
   action/PlaceObject.action
   action/RunSubtree.action

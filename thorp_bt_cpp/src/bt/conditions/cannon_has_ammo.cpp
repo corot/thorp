@@ -1,8 +1,10 @@
+#include <atomic>
+
 #include <behaviortree_cpp/condition_node.h>
 
 #include "thorp_bt_cpp/node_common.hpp"
 
-#include <std_msgs/UInt16.h>
+#include <std_msgs/msg/u_int16.hpp>
 
 namespace thorp::bt::conditions
 {
@@ -16,18 +18,20 @@ class CannonHasAmmo : public BT::ConditionNode
 public:
   CannonHasAmmo(const std::string& name, const BT::NodeConfig& config) : BT::ConditionNode(name, config)
   {
-    sub_ = ros::NodeHandle().subscribe("cannon_ctrl/shots_left", 1, &CannonHasAmmo::callback, this);
+    sub_ = rosNode(*this)->create_subscription<std_msgs::msg::UInt16>(
+        "cannon_ctrl/shots_left", rclcpp::QoS(1).transient_local(),
+        [this](const std_msgs::msg::UInt16::ConstSharedPtr msg) { callback(*msg); });
   }
 
 private:
-  bool has_ammo_ = true;
-  ros::Subscriber sub_;
+  std::atomic<bool> has_ammo_ = true;  // bt_server receives messages on another thread than the one ticking the tree
+  rclcpp::Subscription<std_msgs::msg::UInt16>::SharedPtr sub_;
 
-  void callback(const std_msgs::UInt16& msg)
+  void callback(const std_msgs::msg::UInt16& msg)
   {
     if (has_ammo_ = msg.data; !has_ammo_)
     {
-      ROS_INFO_ONCE("Cannon ammunition exhausted");
+      RCLCPP_INFO_ONCE(logger(*this), "Cannon ammunition exhausted");
     }
   }
 

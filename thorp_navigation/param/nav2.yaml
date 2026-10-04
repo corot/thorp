@@ -383,7 +383,7 @@ following_server:
     base_frame: base_footprint
     fixed_frame: odom
     odom_topic: /odom
-    desired_distance: 1.0
+    desired_distance: 0.8  # the cat hunter's firing distance, within the cannon's reach
     detection_timeout: 2.0
     controller_frequency: 20.0
     controller:
