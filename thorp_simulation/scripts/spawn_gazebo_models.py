@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 
 """
-Populate the Gazebo world with tables and objects:
+Populate the Gazebo world with tables and objects, or cats:
  - playground_fixed: a table with a sample of objects at reachable locations, in front of the robot
  - playground_cubes: a table with cubes at reachable locations, ready to stack
  - playground_rows: a table with 5 rows of 8 cubes
  - playground_random: a random table with random objects, in front of the robot
  - fun_house_objects: random tables with random objects, in open spaces of the map (any map, despite the
    name); needs navigation running
+ - cats: cats for the hunter, in open spaces of the map, and the rocket for the cannon; needs navigation running
 Usage:
     ros2 run thorp_simulation spawn_gazebo_models.py <mode> [-l]
-    -l: place random tables at preferred locations
+    -l: place random tables or cats at preferred locations
 Author:
     Jorge Santos
 """
@@ -89,8 +90,13 @@ PLAYGROUND_CUBES = [('cube 1', 'cube', (-0.14, -0.16, 0.5, 0.0, 0.0, 1.1)),
 N_ROWS_OF_CUBES = [('cube ' + str(i), 'cube',
                     (((i // 8) - 2) / 10, ((i % 8) - 4) / 18.0, 0.45, 0.0, 0.0, 0.0)) for i in range(40)]
 
+cats = [{'name': 'cat_black', 'count': 3},
+        {'name': 'cat_orange', 'count': 3}]
+
 SURFS_MIN_DIST = 1.5
 OBJS_MIN_DIST = 0.08
+CATS_MIN_DIST = 3.0
+CATS_CLEARANCE = 0.3
 
 PREFERRED_LOCATIONS = [(12.5, 7.5),
                        (8.4, 9.6),
@@ -105,7 +111,7 @@ class ModelsSpawner(Node):
         self.spawned = {o: 0 for o in objects}
         models_path = os.path.join(get_package_share_directory('thorp_simulation'), 'worlds', 'gazebo', 'models')
         self.models = {}
-        for model in objects + [s['name'] for s in surfaces]:
+        for model in objects + [s['name'] for s in surfaces] + [c['name'] for c in cats] + ['rocket']:
             with open(os.path.join(models_path, model, 'model.sdf')) as f:
                 self.models[model] = f.read()
         self.spawn_client = self.create_client(SpawnEntity, '/world/default/create')
@@ -251,12 +257,47 @@ class ModelsSpawner(Node):
                     self.spawn_objects(surf, surf_index + 10, pose)
                 surf_index += 1
 
+    def spawn_cats(self, use_preferred_locs=False):
+        # random locations within the map, away from each other and from the robot, and in open space
+        grid = self.wait_for_map('map')
+        min_x = grid.info.origin.position.x
+        min_y = grid.info.origin.position.y
+        max_x = min_x + grid.info.width * grid.info.resolution
+        max_y = min_y + grid.info.height * grid.info.resolution
+        self.costmap = self.wait_for_map('global_costmap/costmap')
+        robot_pose = TF2().transform_pose(None, 'base_footprint', 'map')
+
+        added_poses = []
+        for cat in cats:
+            cat_index = 0
+            while cat_index < cat['count'] and rclpy.ok():
+                if use_preferred_locs:
+                    x, y = random.choice(PREFERRED_LOCATIONS)
+                else:
+                    x = random.uniform(min_x, max_x)
+                    y = random.uniform(min_y, max_y)
+                pose = create_2d_pose(x, y, random.uniform(-pi, +pi))
+                if any(distance_2d(pose, p) < CATS_MIN_DIST for p in added_poses + [robot_pose]):
+                    continue
+                if self.close_to_obstacle(x, y, CATS_CLEARANCE):
+                    continue
+
+                added_poses.append(pose)
+                model_name = cat['name'] + '_' + str(cat_index)
+                if self.spawn_model(model_name, cat['name'], pose):
+                    self.get_logger().info(f"Spawned {model_name} at {pose2d2str(pose)}")
+                cat_index += 1
+
     def spawn(self, mode, use_preferred_locs):
         self.get_logger().info(f"Spawning {mode} in {'preferred' if use_preferred_locs else 'random'} locations")
         if mode == 'fun_house_objects':
             self.spawn_surfaces(use_preferred_locs)
             self.get_logger().info("Spawned objects:\n  " +
                                    '\n  '.join(f'{k}: {v}' for k, v in self.spawned.items()))
+        elif mode == 'cats':
+            self.spawn_cats(use_preferred_locs)
+            # the cannon places the rocket at its muzzle when firing; until then, out of sight
+            self.spawn_model('rocket', 'rocket', create_3d_pose(-10.0, -10.0, 0.03, 0.0, 0.0, 0.0))
         elif mode == 'playground_random':  # random objects over a random table
             surface = random.choice(surfaces)
             surf_name = surface['name']
@@ -279,7 +320,7 @@ def main():
     args = rclpy.utilities.remove_ros_args(sys.argv)
     if len(args) < 2:
         print("Usage: spawn_gazebo_models.py playground_fixed | playground_cubes | playground_rows | "
-              "playground_random | fun_house_objects [-l]")
+              "playground_random | fun_house_objects | cats [-l]")
         sys.exit(-1)
     rclpy.init()
     node = ModelsSpawner()

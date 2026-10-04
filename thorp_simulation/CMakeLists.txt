@@ -25,7 +25,7 @@ install(TARGETS gazebo_ground_truth
         DESTINATION lib/${PROJECT_NAME}
 )
 
-install(PROGRAMS scripts/spawn_gazebo_models.py
+install(PROGRAMS scripts/spawn_gazebo_models.py nodes/cats_controller.py
         DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -33,7 +33,7 @@ install(FILES launch/thorp_gazebo.launch.py launch/navigation.launch.py
         DESTINATION share/${PROJECT_NAME}/launch
 )
 
-install(FILES param/gz_bridge.yaml param/controllers.yaml
+install(FILES param/gz_bridge.yaml param/cats_bridge.yaml param/controllers.yaml
         DESTINATION share/${PROJECT_NAME}/param
 )
 

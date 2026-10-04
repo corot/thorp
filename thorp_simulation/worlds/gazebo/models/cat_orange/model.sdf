@@ -14,7 +14,7 @@
       <visual name="visual">
         <geometry>
           <mesh>
-            <uri>model://cat_orange/meshes/Cat_v1_l3.obj</uri>
+            <uri>model://cat_orange/meshes/cat_orange.obj</uri>
             <scale>0.01 0.01 0.01</scale>
           </mesh>
         </geometry>
@@ -32,15 +32,12 @@
         <mass>4</mass>
         <pose>0 0 0.2 0 0 0</pose>
       </inertial>
-      <sensor name="body_contact_sensor" type='contact'>
+      <sensor name="body_contact_sensor" type="contact">
         <always_on>true</always_on>
         <contact>
           <collision>collision</collision>
+          <topic>/cats/contacts</topic>
         </contact>
-        <plugin name='body_contact_sensor_plugin' filename='libgazebo_ros_bumper.so'>
-          <bumperTopicName>gazebo/contacts</bumperTopicName>
-          <frameName>world</frameName>
-        </plugin>
       </sensor>
     </link>
     <joint name="head_joint" type="fixed">
@@ -67,15 +64,12 @@
         <mass>0.25</mass>
       </inertial>
       <pose>0.155 0 0.3 0 0 0</pose>
-      <sensor name="head_contact_sensor" type='contact'>
+      <sensor name="head_contact_sensor" type="contact">
         <always_on>true</always_on>
         <contact>
           <collision>collision</collision>
+          <topic>/cats/contacts</topic>
         </contact>
-        <plugin name='head_contact_sensor_plugin' filename='libgazebo_ros_bumper.so'>
-          <bumperTopicName>gazebo/contacts</bumperTopicName>
-          <frameName>world</frameName>
-        </plugin>
       </sensor>
     </link>
     <joint name="front_legs_joint" type="fixed">
@@ -128,5 +122,11 @@
       </inertial>
       <pose>-0.14 0 0.07 0 0 0</pose>
     </link>
+    <!-- The pose of every cat on one topic, named after each, for the cats controller -->
+    <plugin filename="gz-sim-odometry-publisher-system" name="gz::sim::systems::OdometryPublisher">
+      <dimensions>3</dimensions>
+      <odom_publish_frequency>10</odom_publish_frequency>
+      <odom_topic>/cats/odometry</odom_topic>
+    </plugin>
   </model>
 </sdf>

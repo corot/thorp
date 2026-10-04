@@ -1,0 +1,15 @@
+# ros_gz_bridge configuration for the cats controller
+
+# Contacts of all the cats' contact sensors, published on every simulation step while touching anything
+- ros_topic_name: /cats/contacts
+  gz_topic_name: /cats/contacts
+  ros_type_name: ros_gz_interfaces/msg/Contacts
+  gz_type_name: gz.msgs.Contacts
+  direction: GZ_TO_ROS
+
+# Poses of all the cats, on the world frame, with each cat's name in the child frame
+- ros_topic_name: /cats/odometry
+  gz_topic_name: /cats/odometry
+  ros_type_name: nav_msgs/msg/Odometry
+  gz_type_name: gz.msgs.Odometry
+  direction: GZ_TO_ROS
