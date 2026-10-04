@@ -66,8 +66,8 @@ the pip keys it declares for them.
 | 9a | Behavior trees framework on BehaviorTree.CPP 4 (runner, `bt_server`, JSON blackboard), manipulation and perception capabilities; `object_manip` and `pickup_objects` apps | done |
 | 9b | Navigation capabilities on Nav2, semantic costmap layer, pickup planner; `patrol_2_points` and `cleanup_table` apps | done |
 | 9c | Exploration: coverage planning and room segmentation; `explore_house` and `object_gatherer` apps | done |
-| 9d | Cat hunter: object detection replacing COB, cats models and controller | in progress |
-| 9e | LLM agent (`thorp_agent`) | |
+| 9d | Cat hunter: object detection replacing COB, cats models and controller; `cat_hunter` app | done |
+| 9e | LLM agent (`thorp_agent`) | next |
 
 Block 3 onwards will be refined as we get there.
 
@@ -578,6 +578,10 @@ Differences with the Noetic simulation:
   (a cross, say) often fails: a gripper finger, or opening the gripper, collides with it. In an `object_gatherer` run,
   7 of 12 placements failed planning like this.
 - The cat hunter's rockets topple a cat only when they hit its side: in a test world, a hit along its length tilted it
-  1 degree. Following a cat, Thorp mostly shoots its rear, so in a 2.5-minute `cat_hunter` run 90 shots toppled none.
+  1 degree. Following a cat, Thorp mostly shoots its rear, so in a 20-minute `cat_hunter` run 132 shots toppled none.
+  Toppling is left to physics, as on Noetic.
+- In that run, a cat ended up outside the house, 70 m away. Gazebo's physics doesn't push a teleported cat out of a
+  wall, so a cat crosses one if it misses the contact; in 8 minutes without the robot, no cat left the house, so maybe
+  the robot or a rocket pushed it through. Not confirmed.
 - `move_group` segfaults on Ctrl-C, in `TrajectoryExecutionManager`'s destructor: MoveIt's
   https://github.com/moveit/moveit2/issues/3680, with a fix in https://github.com/moveit/moveit2/pull/3828 (open).
