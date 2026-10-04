@@ -63,9 +63,9 @@
         </visual>
       </link>
     </model>
-    <!-- The house, from turtlebot3_gazebo -->
+    <!-- turtlebot3_gazebo's house, edited for Thorp -->
     <include>
-      <uri>model://turtlebot3_house</uri>
+      <uri>model://fun_house</uri>
       <pose>7.4 5.6 0 0 0 0</pose>
     </include>
   </world>

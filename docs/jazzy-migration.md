@@ -454,17 +454,17 @@ Dropped with Move Base Flex: `param/move_base_flex/`, `launch/includes/move_base
 
 ### thorp_simulation
 
-Ported: `thorp_gazebo.launch.py` and `navigation.launch.py`, the `empty`, `playground` and `fun_house` worlds (its house
-from `turtlebot3_gazebo`), the Gazebo models, the ROS / Gazebo bridge configuration, the controllers configuration and
-`gazebo_ground_truth`, now fed by Gazebo's odometry publisher. `thorp_gazebo.launch.py` also runs what Noetic's
-`sim_common.launch.xml` and `thorp_gazebo.launch.xml` did: velocity commands multiplexer and depth image and point cloud
-to laser scan. `spawn_gazebo_models.py` populates the world with tables and objects through Gazebo's create service,
-bridged to ROS with the remove and set pose services: the playground modes (`playground_fixed`, `playground_cubes`,
-`playground_rows`, `playground_random`) put a table in front of the robot, and `fun_house_objects` spawns random tables
-with objects in open spaces of any map, checked on Nav2's global costmap instead of Move Base Flex's check pose service.
-Objects are placed relative to their tables by the script, as Gazebo can't place them relative to a model created on the
-same step. Its `-d` option, to delete previously spawned models, is dropped; it didn't work on Noetic. Pending ROS 1
-files:
+Ported: `thorp_gazebo.launch.py` and `navigation.launch.py`, the `empty`, `playground` and `fun_house` worlds (its
+house, the `fun_house` model, is Thorp's edit of `turtlebot3_gazebo`'s, with that package's textures), the Gazebo
+models, the ROS / Gazebo bridge configuration, the controllers configuration and `gazebo_ground_truth`, now fed by
+Gazebo's odometry publisher. `thorp_gazebo.launch.py` also runs what Noetic's `sim_common.launch.xml` and
+`thorp_gazebo.launch.xml` did: velocity commands multiplexer and depth image and point cloud to laser scan.
+`spawn_gazebo_models.py` populates the world with tables and objects through Gazebo's create service, bridged to ROS
+with the remove and set pose services: the playground modes (`playground_fixed`, `playground_cubes`, `playground_rows`,
+`playground_random`) put a table in front of the robot, and `fun_house_objects` spawns random tables with objects in
+open spaces of any map, checked on Nav2's global costmap instead of Move Base Flex's check pose service. Objects are
+placed relative to their tables by the script, as Gazebo can't place them relative to a model created on the same step.
+Its `-d` option, to delete previously spawned models, is dropped; it didn't work on Noetic. Pending ROS 1 files:
 
 | Files | Block |
 |-------|-------|

@@ -1,5 +1,5 @@
 <sdf version='1.6'>
-  <model name='turtlebot3_house'>
+  <model name='fun_house'>
     <link name='Wall_101'>
       <pose frame=''>-0.05 3.1 0 0 0 -1.5708</pose>
       <self_collide>0</self_collide>
@@ -12,10 +12,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Bricks</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/bricks.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -92,10 +93,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Bricks</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/bricks.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -112,10 +114,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Bricks</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/bricks.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -132,10 +135,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Bricks</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/bricks.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -322,10 +326,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Bricks</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/bricks.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -342,10 +347,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Bricks</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/bricks.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -362,10 +368,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Bricks</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/bricks.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -552,10 +559,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -572,10 +580,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -707,10 +716,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -787,10 +797,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -867,10 +878,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -887,10 +899,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -907,10 +920,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -927,10 +941,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -947,10 +962,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -967,10 +983,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -987,10 +1004,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -1397,10 +1415,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -1477,10 +1496,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -1497,10 +1517,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -1517,10 +1538,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -1537,10 +1559,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -1782,10 +1805,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -1802,10 +1826,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -1822,10 +1847,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -1842,10 +1868,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -1862,10 +1889,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -1882,10 +1910,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -2237,10 +2266,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -2317,10 +2347,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -2397,10 +2428,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Bricks</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/bricks.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -2477,10 +2509,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Bricks</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/bricks.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -2497,10 +2530,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Bricks</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/bricks.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -2517,10 +2551,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Bricks</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/bricks.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -2707,10 +2742,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -2787,10 +2823,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -2867,10 +2904,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -2947,10 +2985,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Bricks</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/bricks.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -2967,10 +3006,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Bricks</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/bricks.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -2987,10 +3027,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Bricks</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/bricks.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -3007,10 +3048,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Bricks</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/bricks.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -3027,10 +3069,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Bricks</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/bricks.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -3047,10 +3090,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Bricks</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/bricks.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -3402,10 +3446,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -3422,10 +3467,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -3442,10 +3488,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -3462,10 +3509,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Wood</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -3707,10 +3755,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Bricks</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/bricks.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -3727,10 +3776,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Bricks</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/bricks.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -3747,10 +3797,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Bricks</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/bricks.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -3937,10 +3988,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Bricks</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/bricks.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -3957,10 +4009,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Bricks</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/bricks.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -3977,10 +4030,11 @@
           </box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Bricks</name>
-          </script>
+          <pbr>
+            <metal>
+              <albedo_map>model://turtlebot3_house/textures/bricks.png</albedo_map>
+            </metal>
+          </pbr>
           <ambient>1 1 1 1</ambient>
           <diffuse>1 1 1 1</diffuse>
           <specular>0.2 0.2 0.2 1</specular>
@@ -4172,11 +4226,18 @@
             </mesh>
           </geometry>
           <material>
-            <script>
-              <uri>model://mailbox/materials/scripts</uri>
-              <uri>model://mailbox/materials/textures</uri>
-              <name>Mailbox/Diffuse</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://mailbox/materials/textures/Mailbox_Diffuse.png</albedo_map>
+                <roughness_map>model://mailbox/materials/textures/Mailbox_Spec.png</roughness_map>
+                <roughness>0.8</roughness>
+                <metalness>0.0</metalness>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <inertial>
@@ -4216,10 +4277,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='left_side'>
@@ -4238,10 +4304,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='right_side'>
@@ -4260,10 +4331,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='bottom'>
@@ -4282,10 +4358,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='top'>
@@ -4304,10 +4385,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='low_shelf'>
@@ -4326,10 +4412,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='high_shelf'>
@@ -4348,10 +4439,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
       </link>
@@ -4379,10 +4475,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='left_side'>
@@ -4401,10 +4502,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='right_side'>
@@ -4423,10 +4529,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='bottom'>
@@ -4445,10 +4556,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='top'>
@@ -4467,10 +4583,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='low_shelf'>
@@ -4489,10 +4610,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='high_shelf'>
@@ -4511,10 +4637,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
       </link>
@@ -4542,10 +4673,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='left_side'>
@@ -4564,10 +4700,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='right_side'>
@@ -4586,10 +4727,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='bottom'>
@@ -4608,10 +4754,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='top'>
@@ -4630,10 +4781,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='low_shelf'>
@@ -4652,10 +4808,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='high_shelf'>
@@ -4674,10 +4835,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
       </link>
@@ -4714,10 +4880,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='cabinet_bottom_plate_geom_cabinet_back_plate'>
@@ -4736,10 +4907,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='cabinet_bottom_plate_geom_cabinet_left_plate'>
@@ -4758,10 +4934,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='cabinet_bottom_plate_geom_cabinet_middle_plate'>
@@ -4780,10 +4961,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='cabinet_bottom_plate_geom_cabinet_right_plate'>
@@ -4802,10 +4988,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='cabinet_bottom_plate_geom_cabinet_top_plate'>
@@ -4824,10 +5015,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
       </link>
@@ -4864,10 +5060,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='cabinet_bottom_plate_geom_cabinet_back_plate'>
@@ -4886,10 +5087,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='cabinet_bottom_plate_geom_cabinet_left_plate'>
@@ -4908,10 +5114,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='cabinet_bottom_plate_geom_cabinet_middle_plate'>
@@ -4930,10 +5141,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='cabinet_bottom_plate_geom_cabinet_right_plate'>
@@ -4952,10 +5168,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='cabinet_bottom_plate_geom_cabinet_top_plate'>
@@ -4974,10 +5195,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
       </link>
@@ -5014,10 +5240,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='cabinet_bottom_plate_geom_cabinet_back_plate'>
@@ -5036,10 +5267,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='cabinet_bottom_plate_geom_cabinet_left_plate'>
@@ -5058,10 +5294,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='cabinet_bottom_plate_geom_cabinet_middle_plate'>
@@ -5080,10 +5321,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='cabinet_bottom_plate_geom_cabinet_right_plate'>
@@ -5102,10 +5348,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='cabinet_bottom_plate_geom_cabinet_top_plate'>
@@ -5124,10 +5375,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
       </link>
@@ -5222,10 +5478,15 @@
             </box>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Wood</name>
-            </script>
+            <pbr>
+              <metal>
+                <albedo_map>model://turtlebot3_house/textures/wood.png</albedo_map>
+              </metal>
+            </pbr>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <emissive>0 0 0 1</emissive>
           </material>
         </visual>
         <collision name='front_left_leg'>
@@ -5246,10 +5507,9 @@
             </cylinder>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Grey</name>
-            </script>
+            <ambient>0.3 0.3 0.3 1.0</ambient>
+            <diffuse>0.7 0.7 0.7 1.0</diffuse>
+            <specular>0.01 0.01 0.01 1.0</specular>
           </material>
         </visual>
         <collision name='front_right_leg'>
@@ -5270,10 +5530,9 @@
             </cylinder>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Grey</name>
-            </script>
+            <ambient>0.3 0.3 0.3 1.0</ambient>
+            <diffuse>0.7 0.7 0.7 1.0</diffuse>
+            <specular>0.01 0.01 0.01 1.0</specular>
           </material>
         </visual>
         <collision name='back_right_leg'>
@@ -5294,10 +5553,9 @@
             </cylinder>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Grey</name>
-            </script>
+            <ambient>0.3 0.3 0.3 1.0</ambient>
+            <diffuse>0.7 0.7 0.7 1.0</diffuse>
+            <specular>0.01 0.01 0.01 1.0</specular>
           </material>
         </visual>
         <collision name='back_left_leg'>
@@ -5318,10 +5576,9 @@
             </cylinder>
           </geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Grey</name>
-            </script>
+            <ambient>0.3 0.3 0.3 1.0</ambient>
+            <diffuse>0.7 0.7 0.7 1.0</diffuse>
+            <specular>0.01 0.01 0.01 1.0</specular>
           </material>
         </visual>
       </link>
