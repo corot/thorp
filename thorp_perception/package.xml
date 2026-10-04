@@ -43,6 +43,8 @@
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
   <exec_depend>thorp_description</exec_depend>
+  <exec_depend>yolo_bringup</exec_depend>
+  <exec_depend>yolo_msgs</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

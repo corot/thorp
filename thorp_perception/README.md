@@ -10,6 +10,12 @@
 
 `xtion_fov_analyzer.py` tells whether something close blocks the Xtion field of view.
 
+`target_detection.launch.py` detects the cat hunter's targets on the Kinect: [yolo_ros](https://github.com/mgonzs13/yolo_ros)
+detects and tracks objects on its images, and locates them with its depth images; `target_tracker.py` picks the
+target among the detections of the target classes (`cat`, `dog` and `horse`, as YOLO can take a cat seen from behind
+for a dog), keeping the same one while detected, or else the nearest, and publishes its pose on `odom` as
+`target_object_pose`. The YOLO weights go to `~/.cache/thorp`, where Ultralytics downloads its own models if missing.
+
 ## Code origin
 
 The segmentation and template matching are rewritten from Thorp's forks of two GT-RAIL packages, both BSD licensed:

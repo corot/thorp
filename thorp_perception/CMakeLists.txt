@@ -64,11 +64,11 @@ install(TARGETS object_detection
         DESTINATION lib/${PROJECT_NAME}
 )
 
-install(PROGRAMS nodes/xtion_fov_analyzer.py
+install(PROGRAMS nodes/target_tracker.py nodes/xtion_fov_analyzer.py
         DESTINATION lib/${PROJECT_NAME}
 )
 
-install(FILES launch/perception.launch.py
+install(FILES launch/perception.launch.py launch/target_detection.launch.py
         DESTINATION share/${PROJECT_NAME}/launch
 )
 
