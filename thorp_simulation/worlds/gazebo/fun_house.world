@@ -1,10 +1,10 @@
 <?xml version="1.0" ?>
 <sdf version="1.10">
   <world name="default">
-    <physics name="1ms" type="dart">
-      <max_step_size>0.001</max_step_size>
+    <physics name="2ms" type="dart">
+      <max_step_size>0.002</max_step_size>
       <real_time_factor>1</real_time_factor>
-      <real_time_update_rate>1000</real_time_update_rate>
+      <real_time_update_rate>500</real_time_update_rate>
     </physics>
 
     <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
