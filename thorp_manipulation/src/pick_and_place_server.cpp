@@ -108,6 +108,34 @@ geometry_msgs::msg::Vector3Stamped gripperDirection(double x)
   return direction;
 }
 
+/**
+ * Fixed target poses for the gripper, spawned with it open, so the motion that reaches them opens it on the way.
+ */
+class OpenGripperPoses : public mtc::stages::FixedCartesianPoses
+{
+public:
+  using FixedCartesianPoses::FixedCartesianPoses;
+
+  void compute() override
+  {
+    if (upstream_solutions_.empty())
+      return;
+
+    planning_scene::PlanningScenePtr scene = upstream_solutions_.pop()->end()->scene()->diff();
+    moveit::core::RobotState& state = scene->getCurrentStateNonConst();
+    state.setToDefaultValues(state.getJointModelGroup(GRIPPER_GROUP), "open");
+    state.update();
+    for (geometry_msgs::msg::PoseStamped pose : properties().get<std::vector<geometry_msgs::msg::PoseStamped>>("poses"))
+    {
+      if (pose.header.frame_id.empty())
+        pose.header.frame_id = scene->getPlanningFrame();
+      mtc::InterfaceState target(scene);
+      target.properties().set("target_pose", pose);
+      spawn(std::move(target), 0.0);
+    }
+  }
+};
+
 }  // namespace
 
 PickAndPlaceServer::PickAndPlaceServer(const rclcpp::Node::SharedPtr& node,
@@ -291,17 +319,17 @@ int32_t PickAndPlaceServer::pickup(const PickupObject::Goal& goal, const Feedbac
               object_size.x() * 100, object_size.y() * 100, object_size.z() * 100, opening * 100);
 
   mtc::Task task = makeTask("pickup " + goal.object_name, scene);
-  auto open_gripper = std::make_unique<mtc::stages::MoveTo>("open gripper", interpolation_planner_);
-  open_gripper->setGroup(GRIPPER_GROUP);
-  open_gripper->setGoal("open");
-  open_gripper->setTrajectoryExecutionInfo(executedBy(GRIPPER_CONTROLLER));
-  mtc::Stage* open_gripper_stage = open_gripper.get();
-  task.add(std::move(open_gripper));
+  mtc::Stage* current_state_stage = task[0];
 
+  // The grasp poses come with the gripper open, so this opens it while moving the arm, merging both motions into a
+  // single trajectory; if they can't be merged, it opens the gripper first
   auto move_to_pick = std::make_unique<mtc::stages::Connect>(
-      "move to pick", mtc::stages::Connect::GroupPlannerVector{ { ARM_GROUP, sampling_planner_ } });
+      "move to pick", mtc::stages::Connect::GroupPlannerVector{ { GRIPPER_GROUP, interpolation_planner_ },
+                                                                { ARM_GROUP, sampling_planner_ } });
   move_to_pick->setTimeout(5.0);
-  move_to_pick->setTrajectoryExecutionInfo(executedBy(ARM_CONTROLLER));
+  mtc::TrajectoryExecutionInfo arm_and_gripper = executedBy(ARM_CONTROLLER);
+  arm_and_gripper.controller_names.push_back(GRIPPER_CONTROLLER);
+  move_to_pick->setTrajectoryExecutionInfo(arm_and_gripper);
   move_to_pick->properties().configureInitFrom(mtc::Stage::PARENT);
   task.add(std::move(move_to_pick));
 
@@ -318,10 +346,10 @@ int32_t PickAndPlaceServer::pickup(const PickupObject::Goal& goal, const Feedbac
     pick->insert(std::move(stage));
   }
   {
-    auto generator = std::make_unique<mtc::stages::FixedCartesianPoses>("grasp poses");
+    auto generator = std::make_unique<OpenGripperPoses>("grasp poses");
     for (const auto& pose : grasp_poses)
       generator->addPose(pose);
-    generator->setMonitoredStage(open_gripper_stage);
+    generator->setMonitoredStage(current_state_stage);
     auto stage = std::make_unique<mtc::stages::ComputeIK>("grasp pose IK", std::move(generator));
     stage->setMaxIKSolutions(4);
     stage->setMinSolutionDistance(0.5);
@@ -332,7 +360,7 @@ int32_t PickAndPlaceServer::pickup(const PickupObject::Goal& goal, const Feedbac
   }
   {
     // The gripper can touch the object and its support surface while grasping and retreating; not before, as the
-    // grasp pose IK takes its planning scene from the open gripper stage
+    // grasp pose IK takes its planning scene from the current state stage
     auto stage = std::make_unique<mtc::stages::ModifyPlanningScene>("allow gripper contacts");
     stage->allowCollisions(goal.object_name, gripper_links_, true);
     if (!goal.support_surf.empty())

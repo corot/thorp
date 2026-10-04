@@ -26,6 +26,12 @@
         <joint name="gripper_static_joint" />
         <joint name="gripper_joint" />
     </group>
+    <!-- Not for planning: ExecuteTaskSolution needs a group with all the joints of the trajectories it executes, and the
+         pickup task merges arm and gripper motions -->
+    <group name="arm_with_gripper">
+        <group name="arm" />
+        <group name="gripper" />
+    </group>
     <!--GROUP STATES: Purpose: Define a named state for a particular group, in terms of joint values. This is useful to define states like 'folded arms'-->
     <group_state name="right_up" group="arm">
         <joint name="arm_elbow_flex_joint" value="0" />
