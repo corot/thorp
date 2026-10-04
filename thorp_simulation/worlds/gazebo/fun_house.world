@@ -32,7 +32,8 @@
         <scene>scene</scene>
         <ambient_light>0.4 0.4 0.4</ambient_light>
         <background_color>0.8 0.8 0.8</background_color>
-        <camera_pose>3 5.6 10 0 1.2 0</camera_pose>
+        <!-- The whole house, from the south, looking at the entrance -->
+        <camera_pose>7.5 -4.8 9.8 0 0.76 1.5708</camera_pose>
       </plugin>
 
       <!-- Plugins that add functionality to the scene -->

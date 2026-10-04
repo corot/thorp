@@ -1,4 +1,3 @@
-# Based on nav2_bringup nav2_default_view.rviz (Apache 2.0 license), with Thorp topics
 Panels:
   - Class: rviz_common/Displays
     Help Height: 0
@@ -9,7 +8,7 @@ Panels:
         - /TF1/Frames1
         - /TF1/Tree1
       Splitter Ratio: 0.5833333134651184
-    Tree Height: 287
+    Tree Height: 151
   - Class: rviz_common/Selection
     Name: Selection
   - Class: rviz_common/Tool Properties
@@ -25,7 +24,7 @@ Panels:
   - Class: nav2_rviz_plugins/Navigation 2
     Name: Navigation 2
 Visualization Manager:
-  Class: ''
+  Class: ""
   Displays:
     - Alpha: 0.5
       Cell Size: 1
@@ -48,7 +47,7 @@ Visualization Manager:
     - Alpha: 1
       Class: rviz_default_plugins/RobotModel
       Collision Enabled: false
-      Description File: ''
+      Description File: ""
       Description Source: Topic
       Description Topic:
         Depth: 5
@@ -62,19 +61,573 @@ Visualization Manager:
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
-        Link Tree Style: ''
+        Link Tree Style: Links in Alphabetic Order
+        arm_base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        arm_elbow_F10_0_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_elbow_F10_1_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_elbow_F10_2_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_elbow_F3_0_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_elbow_flex_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_elbow_flex_servo_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_mount_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_shoulder_F10_0_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_shoulder_F10_1_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_shoulder_F10_2_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_shoulder_F3_0_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_shoulder_lift_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_shoulder_lift_servo_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_shoulder_pan_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_shoulder_pan_servo_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_wrist_F3_0_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_wrist_flex_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        arm_wrist_flex_servo_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        base_footprint:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_servo_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_shaft_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube1_hollow_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube1_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube2_hollow_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube2_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube3_hollow_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube3_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube4_hollow_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube4_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube5_hollow_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube5_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube6_hollow_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cannon_tube6_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        caster_back_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        caster_front_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        cliff_sensor_front_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        cliff_sensor_left_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        cliff_sensor_right_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        gripper_active_finger_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gripper_active_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gripper_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        gripper_servo_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gripper_static_finger_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gripper_static_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gyro_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        ir_arm_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        ir_cannon_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        ir_l155_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        ir_l180_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        ir_r155_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        ir_r180_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        kinect_depth_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        kinect_depth_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        kinect_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        kinect_rgb_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        kinect_rgb_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        opencm_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        plate_bottom_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        plate_middle_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        plate_top_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_0_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_10_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_11_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_12_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_13_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_14_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_15_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_1_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_2_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_3_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_4_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_bottom_5_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_kinect_0_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_kinect_1_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_middle_0_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_middle_11_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_middle_16_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_middle_17_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_middle_1_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_middle_21_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_middle_2_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_middle_3_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_top_0_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_top_10_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_top_12_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_top_1_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_top_20_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_top_22_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_top_2_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        pole_top_3_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_0_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_m18_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_m36_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_m54_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_m72_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_m90_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_p18_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_p36_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_p54_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_p72_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        s_p90_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        senz3d_mount_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        sonars_mount_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        tray_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wheel_left_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wheel_right_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        xtion_depth_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        xtion_depth_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        xtion_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        xtion_mount_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        xtion_rgb_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        xtion_rgb_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
       Mass Properties:
         Inertia: false
         Mass: false
       Name: RobotModel
-      TF Prefix: ''
+      TF Prefix: ""
       Update Interval: 0
       Value: true
       Visual Enabled: true
     - Class: rviz_default_plugins/TF
       Enabled: false
-      Filter (blacklist): ''
-      Filter (whitelist): ''
+      Filter (blacklist): ""
+      Filter (whitelist): ""
       Frame Timeout: 15
       Frames:
         All Enabled: true
@@ -83,7 +636,8 @@ Visualization Manager:
       Show Arrows: true
       Show Axes: true
       Show Names: false
-      Tree: {}
+      Tree:
+        {}
       Update Interval: 0
       Value: false
     - Alpha: 1
@@ -366,7 +920,7 @@ Visualization Manager:
           Value: true
       Enabled: false
       Name: IR sensors
-    - Alpha: 1.0
+    - Alpha: 1
       Binary representation: false
       Binary threshold: 100
       Class: rviz_default_plugins/Map
@@ -405,7 +959,7 @@ Visualization Manager:
         Reliability Policy: Best Effort
         Value: /particle_cloud
       Value: true
-    - Alpha: 0.3
+    - Alpha: 0.30000001192092896
       Binary representation: false
       Binary threshold: 100
       Class: rviz_default_plugins/Map
@@ -456,7 +1010,7 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /plan
       Value: true
-    - Alpha: 0.7
+    - Alpha: 0.699999988079071
       Binary representation: false
       Binary threshold: 100
       Class: rviz_default_plugins/Map
@@ -525,11 +1079,11 @@ Visualization Manager:
         - Class: rviz_default_plugins/MarkerArray
           Enabled: true
           Name: Rooms
-          Namespaces: {}
+          Namespaces:
+            {}
           Topic:
             Depth: 1
             Durability Policy: Transient Local
-            Filter size: 10
             History Policy: Keep Last
             Reliability Policy: Reliable
             Value: /exploration/rooms
@@ -537,11 +1091,13 @@ Visualization Manager:
         - Class: rviz_default_plugins/MarkerArray
           Enabled: true
           Name: Viewpoints
-          Namespaces: {}
+          Namespaces:
+            fields_of_view: true
+            tour: true
+            viewpoints: true
           Topic:
             Depth: 1
             Durability Policy: Transient Local
-            Filter size: 10
             History Policy: Keep Last
             Reliability Policy: Reliable
             Value: /exploration/viewpoints
@@ -549,11 +1105,11 @@ Visualization Manager:
         - Class: rviz_default_plugins/MarkerArray
           Enabled: true
           Name: Waypoints
-          Namespaces: {}
+          Namespaces:
+            gp_marker: true
           Topic:
             Depth: 5
             Durability Policy: Volatile
-            Filter size: 10
             History Policy: Keep Last
             Reliability Policy: Reliable
             Value: /explore_house/waypoints
@@ -562,9 +1118,18 @@ Visualization Manager:
       Name: Exploration
     - Class: rviz_common/Group
       Displays:
-        - Class: rviz_2d_overlay_plugins/TextOverlay
+        - Align Bottom: false
+          Background Alpha: 0.800000011920929
+          Background Color: 0; 0; 0
+          Class: rviz_2d_overlay_plugins/TextOverlay
           Enabled: true
+          Foreground Alpha: 0.800000011920929
+          Foreground Color: 25; 255; 240
+          Invert Shadow: false
           Name: Millage
+          Overtake BG Color Properties: false
+          Overtake FG Color Properties: false
+          Overtake Position Properties: false
           Topic:
             Depth: 1
             Durability Policy: Volatile
@@ -572,11 +1137,29 @@ Visualization Manager:
             Reliability Policy: Reliable
             Value: /rviz/millage_overlay
           Value: true
+          font: DejaVu Sans Mono
+          height: 128
+          hor_alignment: left
+          hor_dist: 0
+          line width: 2
+          text size: 12
+          ver_alignment: top
+          ver_dist: 0
+          width: 128
       Enabled: true
       Name: Dashboard
-    - Class: rviz_2d_overlay_plugins/TextOverlay
+    - Align Bottom: false
+      Background Alpha: 0.800000011920929
+      Background Color: 0; 0; 0
+      Class: rviz_2d_overlay_plugins/TextOverlay
       Enabled: true
+      Foreground Alpha: 0.800000011920929
+      Foreground Color: 25; 255; 240
+      Invert Shadow: false
       Name: Executive
+      Overtake BG Color Properties: false
+      Overtake FG Color Properties: false
+      Overtake Position Properties: false
       Topic:
         Depth: 1
         Durability Policy: Volatile
@@ -584,6 +1167,15 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /rviz/executive_progress_overlay
       Value: true
+      font: DejaVu Sans Mono
+      height: 128
+      hor_alignment: left
+      hor_dist: 0
+      line width: 2
+      text size: 12
+      ver_alignment: top
+      ver_dist: 0
+      width: 128
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -632,26 +1224,27 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 40
+      Scale: 92.11019897460938
       Target Frame: <Fixed Frame>
       Value: TopDownOrtho (rviz_default_plugins)
-      X: 7.5
-      Y: 5.5
-    Saved: null
+      X: 7.56566047668457
+      Y: 5.60894775390625
+    Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 893
+  Height: 1043
   Hide Left Dock: false
   Hide Right Dock: false
   Navigation 2:
     collapsed: false
+  QMainWindow State: 000000ff00000000fd0000000100000000000001c9000003b5fc0200000004fb000000100044006900730070006c006100790073010000003f000000d7000000cc00fffffffb0000001200530065006c0065006300740069006f006e00000001110000005d0000005d00fffffffc0000011c000000d4000000c80100001efa000000000100000002fb0000000a005600690065007700730100000000000001c90000010000fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000000ffffffff0000009b00fffffffb00000018004e0061007600690067006100740069006f006e0020003201000001f6000001fe000001f800ffffff000005b1000003b500000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Tool Properties:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1610
-  X: 1091
-  Y: 222
+  Width: 1920
+  X: 1920
+  Y: 0

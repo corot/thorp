@@ -37,12 +37,9 @@ install(FILES param/gz_bridge.yaml param/cats_bridge.yaml param/controllers.yaml
         DESTINATION share/${PROJECT_NAME}/param
 )
 
-install(FILES worlds/gazebo/empty.world worlds/gazebo/fun_house.world worlds/gazebo/playground.world
-        DESTINATION share/${PROJECT_NAME}/worlds/gazebo
-)
-
-install(DIRECTORY worlds/gazebo/models
-        DESTINATION share/${PROJECT_NAME}/worlds/gazebo
+# small_house.world is a symlink into the aws_robomaker_small_house_world checkout in src/third_party
+install(DIRECTORY worlds/gazebo
+        DESTINATION share/${PROJECT_NAME}/worlds
 )
 
 ament_package()

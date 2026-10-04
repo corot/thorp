@@ -134,7 +134,7 @@ plans swaths over field polygons, without room segmentation nor sequencing.
 | thorp_rviz_plugins | migrated (see below) |
 | thorp_perception | partial: tables and objects detection, camera field of view check (see below) |
 | thorp_navigation | partial: Nav2 configuration, trees and launch, maps, velocity display (see below) |
-| thorp_simulation | partial: Gazebo Harmonic launch, worlds but `small_house`, controllers and navigation (see below) |
+| thorp_simulation | partial: Gazebo Harmonic launch, worlds, controllers and navigation (see below) |
 | thorp_toolkit | partial: core C++ and Python modules (see below) |
 | thorp_boards, thorp_mbf_plugins, thorp_smach | ROS 1 (ignored) |
 
@@ -382,7 +382,7 @@ and objects of `tabletop_manip.launch.py`, without its static map; they show `na
 Thorp starting at its center: the first covers the house with the Kinect's field of view, as default, showing
 `exploration.rviz`; the second with the Xtion's, that detects the tables, and spawns random tables with random objects
 (`fun_house_objects`) and runs perception and manipulation, showing `gathering.rviz`. Noetic's object gatherer ran on
-the small house world, not ported. `cat_hunter.launch.py` adds the exploration planner, on the Kinect's field of view,
+the small house world. `cat_hunter.launch.py` adds the exploration planner, on the Kinect's field of view,
 and target detection, on the fun house world too, and on simulation the cats, with their bridge and controller; it
 shows `hunting.rviz`. The executive's includes are scoped, as their `params_file` argument would otherwise
 reach Nav2's launch. Pending: the other apps' ROS 1 launch files and `resources/movie_scripts`, with their blocks.
@@ -432,8 +432,8 @@ recording, as its camera animation needs `rviz_animated_view_controller`, with n
 ### thorp_navigation
 
 Ported: `navigation.launch.py`, with Nav2 in place of Move Base Flex and the Noetic arguments (localization `amcl`,
-`static` or `gazebo`, map, initial pose, velocity smoothing), `param/nav2.yaml` and the maps, except `small_house`
-(symlinks into the `aws_robomaker_small_house_world` checkout in `src/third_party`, not installed). Velocity commands
+`static` or `gazebo`, map, initial pose, velocity smoothing), `param/nav2.yaml` and the maps; `small_house`'s are
+symlinks into the `aws_robomaker_small_house_world` checkout in `src/third_party`. Velocity commands
 keep the Noetic topics: navigation, through the velocity smoother if enabled, into `cmd_vel_mux/input/navigation`;
 `twist_mux` uses unstamped velocities, as Nav2 and the Kobuki base. The controller runs at 20 Hz instead of Noetic's 15,
 as MPPI needs a control period no longer than its model step. For docking at tables, a precise controller
@@ -463,10 +463,12 @@ Dropped with Move Base Flex: `param/move_base_flex/`, `launch/includes/move_base
 ### thorp_simulation
 
 Ported: `thorp_gazebo.launch.py` and `navigation.launch.py`, the `empty`, `playground` and `fun_house` worlds (its
-house, the `fun_house` model, is Thorp's edit of `turtlebot3_gazebo`'s, with that package's textures), the Gazebo
+house, the `fun_house` model, is Thorp's edit of `turtlebot3_gazebo`'s, with that package's textures), the
+`small_house` world (a symlink into the `aws_robomaker_small_house_world` checkout in `src/third_party`), the Gazebo
 models, the ROS / Gazebo bridge configuration, the controllers configuration and `gazebo_ground_truth`, now fed by
-Gazebo's odometry publisher. `thorp_gazebo.launch.py` also runs what Noetic's `sim_common.launch.xml` and
-`thorp_gazebo.launch.xml` did: velocity commands multiplexer and depth image and point cloud to laser scan.
+Gazebo's odometry publisher. The `empty`, `playground` and `fun_house` worlds step the physics every 2 ms, as DART's
+contacts at 1 kHz halved the real time factor. `thorp_gazebo.launch.py` also runs what Noetic's `sim_common.launch.xml`
+and `thorp_gazebo.launch.xml` did: velocity commands multiplexer and depth image and point cloud to laser scan.
 `spawn_gazebo_models.py` populates the world with tables and objects through Gazebo's create service, bridged to ROS
 with the remove and set pose services: the playground modes (`playground_fixed`, `playground_cubes`, `playground_rows`,
 `playground_random`) put a table in front of the robot, and `fun_house_objects` spawns random tables with objects in
@@ -487,7 +489,7 @@ the cats from RViz, is dropped: Gazebo's GUI moves models. Pending ROS 1 files:
 | Files | Block |
 |-------|-------|
 | Bumper and cliff point clouds in `thorp_gazebo.launch.xml` | real robot |
-| `spawn_gazebo_models.py` `small_house_objects` mode, `small_house` Gazebo world | when needed |
+| `spawn_gazebo_models.py` `small_house_objects` mode | when needed |
 | `src/gazebo_camera_control*.cpp`, `nodes/movie_director.py`: video recording | undecided |
 | Stage and STDR launch files, worlds and robot configurations (no Jazzy release of either simulator) | undecided |
 | `scripts/gazebo_link_state.py` (`gz model -m thorp -l <link> -p` shows the same) | undecided |

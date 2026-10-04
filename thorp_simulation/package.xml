@@ -48,6 +48,8 @@
   <exec_depend>thorp_cannon</exec_depend>
   <!-- the fun house world's house model -->
   <exec_depend>turtlebot3_gazebo</exec_depend>
+  <!-- the small house world and its models -->
+  <exec_depend>aws_robomaker_small_house_world</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

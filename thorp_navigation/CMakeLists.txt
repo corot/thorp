@@ -23,7 +23,6 @@ install(DIRECTORY behavior_trees
 # small_house map files are symlinks into the aws_robomaker_small_house_world checkout in src/third_party
 install(DIRECTORY maps
         DESTINATION share/${PROJECT_NAME}
-        PATTERN "small_house.*" EXCLUDE
 )
 
 ament_package()
