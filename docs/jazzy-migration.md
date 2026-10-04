@@ -66,7 +66,7 @@ the pip keys it declares for them.
 | 9a | Behavior trees framework on BehaviorTree.CPP 4 (runner, `bt_server`, JSON blackboard), manipulation and perception capabilities; `object_manip` and `pickup_objects` apps | done |
 | 9b | Navigation capabilities on Nav2, semantic costmap layer, pickup planner; `patrol_2_points` and `cleanup_table` apps | done |
 | 9c | Exploration: coverage planning and room segmentation; `explore_house` and `object_gatherer` apps | done |
-| 9d | Cat hunter: object detection replacing COB, cats models and controller | next |
+| 9d | Cat hunter: object detection replacing COB, cats models and controller | in progress |
 | 9e | LLM agent (`thorp_agent`) | |
 
 Block 3 onwards will be refined as we get there.
@@ -157,8 +157,8 @@ dropped, as ROS 2 rejects its lowercase constants. `DetectTables.action` is new:
 use of RAIL segmentation to find tables, returning them as collision objects. So are the exploration planner's
 services, `SegmentRooms`, `PlanRoomSequence` and `PlanRoomExploration`, with the `Room` message, in place of
 `ipa_building_msgs`' actions. The interfaces of the servers the port drops are removed: `MakePickupPlan` (with
-`PickupPlan`), `MoveToTarget`, `UserCommand`, the tray services and `ConnectWaypoints`. `FollowPose.action` waits for
-Block 9d's `follow_pose`, that may use `opennav_following`'s action instead.
+`PickupPlan`), `MoveToTarget`, `UserCommand`, the tray services, `ConnectWaypoints` and `FollowPose`, as the cat hunter
+follows its targets with `opennav_following`'s `FollowObject` action.
 
 ### thorp_perception
 
@@ -178,12 +178,18 @@ dead RAIL code, and running all in one node drops the RAIL messages, the segment
 matching action. The README records the source commits and licenses. Only what Thorp used is kept: a single crop box
 instead of segmentation zones, the table as the largest quadrilateral in the surface's convex hull (now centered on
 that quadrilateral rather than on the points' bounding box), and the 2D non-linear ICP; RAIL's color features,
-images, markers and object recognition fields are dropped. ORK and YOLO pipelines are dropped too. Pending ROS 1
-files:
+images, markers and object recognition fields are dropped. The ORK and darknet YOLO pipelines are dropped too.
+
+`target_detection.launch.py`, for the cat hunter, replaces the COB pipeline: `yolo_ros`, a source dependency, detects
+and tracks objects on the Kinect images, with YOLO11m, and locates them with its depth images, on `base_footprint`, as
+it transforms them with the latest transform; `target_tracker.py` picks the target among the cats, dogs and horses
+detected (YOLO can take a cat seen from behind for a dog), keeping the same one while detected, or else the nearest, and
+publishes its pose on `odom` as `target_object_pose`, as Noetic's `object_tracking.py` did. Its predicted pose is
+dropped: `opennav_following` filters the pose itself. The YOLO weights go to `~/.cache/thorp`, where Ultralytics
+downloads its own models if missing. Pending ROS 1 files:
 
 | Files | Block |
 |-------|-------|
-| COB object detection: `config/cob`, `nodes/object_tracking.py` | 9 |
 | `scripts/generate_meshes.*`, `scripts/parametric_star.scad`: offline OpenSCAD tools that made the object meshes | undecided |
 
 ### thorp_toolkit
@@ -217,8 +223,8 @@ planning scene objects on it, for the executive and perception) and `visualizati
 simulation it tilts the cannon with `cannon_joint_controller`, and fires by publishing `std_msgs/Bool` on
 `arbotix/cannon_trigger` (it was an `arbotix_msgs/Digital`), bridged to Gazebo. `thorp_cannon_system`, a Gazebo
 Harmonic system, replaces the Gazebo Classic plugin: while the trigger is on, it places the `rocket` model at the
-cannon muzzle and launches it at the speed the configured force gives it in one simulation step. Firing needs a model
-named `rocket` in the world; the cats mode of `spawn_gazebo_models.py` and the cats controller spawn it (Block 9).
+cannon muzzle and launches it at the speed the configured force gives it in one simulation step (22 m/s). Firing needs a
+model named `rocket` in the world, that the cats mode of `spawn_gazebo_models.py` spawns.
 
 ### thorp_manipulation
 
@@ -344,18 +350,18 @@ running tree's action or subtree as an RViz overlay text, on `rviz/executive_pro
 opens the ported trees on Groot2.
 
 Ported: the runner, `bt_server`, the JSON blackboard, the ROS logger, the manipulation, perception, list, blackboard and
-parameter nodes, the user commands and drag and drop nodes, the navigation, tables and exploration nodes, the
-`manipulation`, `perception`, `navigation`, `tables`, `exploration`, `pickup_objects`, `object_manip`,
-`patrol_2_points`, `cleanup_table`, `explore_house`, `object_gatherer` and `test_server` trees, the tests and the
-executive visualization. Removed, replaced as described or by Nav2's nodes: `add_object_to_tray`, `clear_gripper`,
-`go_to_pose`, `exe_path`, `smooth_path`, `recovery`, `clear_costmaps`, `use_named_config`, `clear_rail_markers` and
-`get_path`; `pickup_object` reports the object it attached from the planning scene, as Noetic's gripper busy service
-did. Pending ROS 1 files:
+parameter nodes, the user commands and drag and drop nodes, the navigation, tables, exploration and cat hunter nodes,
+all the trees, the tests and the executive visualization. `FollowObject` sends `opennav_following`'s goals, in place of
+Noetic's pose follower, at the following server's distance, 0.8 m, both to approach a target and to hunt it (Noetic
+approached at 1.0 m); `MonitorTarget` waits for a fresh pose from the target tracker, replacing `MonitorObjects` on
+COB's detections, so the approach checks the target's reach on its latest pose. Removed, replaced as described or by
+Nav2's nodes: `add_object_to_tray`, `clear_gripper`, `go_to_pose`, `exe_path`, `smooth_path`, `recovery`,
+`clear_costmaps`, `use_named_config`, `clear_rail_markers` and `get_path`; `pickup_object` reports the object it
+attached from the planning scene, as Noetic's gripper busy service did. Pending ROS 1 files:
 
 | Files | Block |
 |-------|-------|
 | `bumper_pressed`, `switch_safety_controller` | real robot |
-| `cannon_control`, `cannon_has_ammo`, `monitor_objects`, `follow_pose`, `target_reachable`; `bt/cat_hunter.xml` | 9d |
 
 ### thorp_apps
 
@@ -376,7 +382,9 @@ and objects of `tabletop_manip.launch.py`, without its static map; they show `na
 Thorp starting at its center: the first covers the house with the Kinect's field of view, as default, showing
 `exploration.rviz`; the second with the Xtion's, that detects the tables, and spawns random tables with random objects
 (`fun_house_objects`) and runs perception and manipulation, showing `gathering.rviz`. Noetic's object gatherer ran on
-the small house world, not ported. The executive's includes are scoped, as their `params_file` argument would otherwise
+the small house world, not ported. `cat_hunter.launch.py` adds the exploration planner, on the Kinect's field of view,
+and target detection, on the fun house world too, and on simulation the cats, with their bridge and controller; it
+shows `hunting.rviz`. The executive's includes are scoped, as their `params_file` argument would otherwise
 reach Nav2's launch. Pending: the other apps' ROS 1 launch files and `resources/movie_scripts`, with their blocks.
 
 ### thorp_costmap_layers
@@ -416,7 +424,7 @@ plus the objects' interactive markers, the user command and executive overlays a
 `rviz/icons`). The other RViz configurations are built on those two, with Noetic's displays on the Jazzy topics:
 `exploration.rviz`, `gathering.rviz`, `hunting.rviz`, `perception.rviz`, `view_all.rviz` and `view_model.rviz`. Their
 displays for dropped packages (Move Base Flex planners, RAIL, COB, ORK, the Senz3D and external cameras, the semantic
-map) are left out, and `hunting.rviz`'s detector displays wait for Block 9d. `hunting.movie.rviz` waits for video
+map) are left out; `hunting.rviz` shows YOLO's 3D boxes and debug image instead. `hunting.movie.rviz` waits for video
 recording, as its camera animation needs `rviz_animated_view_controller`, with no Jazzy release.
 `scripts/user_commands.py` and `rviz/user_commands.yaml` are replaced by the user commands panel and
 `ReadUserCommands`. Everything else is pending: real robot launch files and drivers, scripts and the docker image.
@@ -464,14 +472,23 @@ with the remove and set pose services: the playground modes (`playground_fixed`,
 `playground_random`) put a table in front of the robot, and `fun_house_objects` spawns random tables with objects in
 open spaces of any map, checked on Nav2's global costmap instead of Move Base Flex's check pose service. Objects are
 placed relative to their tables by the script, as Gazebo can't place them relative to a model created on the same step.
-Its `-d` option, to delete previously spawned models, is dropped; it didn't work on Noetic. Pending ROS 1 files:
+Its `-d` option, to delete previously spawned models, is dropped; it didn't work on Noetic. The `cats` mode spawns 3
+black and 3 orange cats in open spaces, 3 m apart, and the cannon's `rocket`.
+
+The cat models carry contact sensors, all publishing on `/cats/contacts` through the world's Contact system (loaded by
+the `fun_house` world), and an odometry publisher, with each cat's pose on `/cats/odometry`, named after it: the world's
+pose stream loses the names when bridged. Gazebo ignores the contact sensors' update rate, so they publish on every
+step while touching. Each model has its own mesh, material and texture file names, as Gazebo rendered both cats with
+the textures loaded first. `cats_controller.py` is ported with Noetic's design, on those topics, bridged by
+`param/cats_bridge.yaml`, and Gazebo's set pose service: the cats prowl by small teleports, turning away from what they
+touch, stop for a moment when hit by a rocket, and go out of the house when toppled. `nodes/model_markers.py`, to move
+the cats from RViz, is dropped: Gazebo's GUI moves models. Pending ROS 1 files:
 
 | Files | Block |
 |-------|-------|
 | Bumper and cliff point clouds in `thorp_gazebo.launch.xml` | real robot |
-| `spawn_gazebo_models.py` cats (with the rocket) mode | 9d |
 | `spawn_gazebo_models.py` `small_house_objects` mode, `small_house` Gazebo world | when needed |
-| `src/gazebo_camera_control*.cpp`, `nodes/` (cats controller, model markers, movie director) | 9 |
+| `src/gazebo_camera_control*.cpp`, `nodes/movie_director.py`: video recording | undecided |
 | Stage and STDR launch files, worlds and robot configurations (no Jazzy release of either simulator) | undecided |
 | `scripts/gazebo_link_state.py` (`gz model -m thorp -l <link> -p` shows the same) | undecided |
 
@@ -560,5 +577,7 @@ Differences with the Noetic simulation:
 - Tray slots are 3.5 cm apart, and objects on the tray stay in the planning scene, so placing next to a wide object
   (a cross, say) often fails: a gripper finger, or opening the gripper, collides with it. In an `object_gatherer` run,
   7 of 12 placements failed planning like this.
+- The cat hunter's rockets topple a cat only when they hit its side: in a test world, a hit along its length tilted it
+  1 degree. Following a cat, Thorp mostly shoots its rear, so in a 2.5-minute `cat_hunter` run 90 shots toppled none.
 - `move_group` segfaults on Ctrl-C, in `TrajectoryExecutionManager`'s destructor: MoveIt's
   https://github.com/moveit/moveit2/issues/3680, with a fix in https://github.com/moveit/moveit2/pull/3828 (open).
