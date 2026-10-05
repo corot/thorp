@@ -40,8 +40,11 @@
     reach_first_pose, for a caller that has already decided where it wants to be.
   -->
   <BehaviorTree ID="goto_pose">
-    <NavigateToPose goal="{pose}"
-                    error_code_id="{nav_error}"/>
+    <Sequence>
+      <PublishPose pose="{pose}"/>
+      <NavigateToPose goal="{pose}"
+                      error_code_id="{nav_error}"/>
+    </Sequence>
   </BehaviorTree>
 
   <!--

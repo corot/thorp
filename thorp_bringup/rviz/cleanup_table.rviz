@@ -2195,6 +2195,26 @@ Visualization Manager:
             Reliability Policy: Reliable
             Value: /plan
           Value: true
+        - Alpha: 1
+          Axes Length: 1
+          Axes Radius: 0.1
+          Class: rviz_default_plugins/Pose
+          Color: 0; 170; 255
+          Enabled: true
+          Head Length: 0.15
+          Head Radius: 0.06
+          Name: Navigation Goal
+          Shaft Length: 0.3
+          Shaft Radius: 0.025
+          Shape: Arrow
+          Topic:
+            Depth: 1
+            Durability Policy: Transient Local
+            Filter size: 10
+            History Policy: Keep Last
+            Reliability Policy: Reliable
+            Value: /bt_server/nav_goal
+          Value: true
         - Alpha: 0.699999988079071
           Binary representation: false
           Binary threshold: 100

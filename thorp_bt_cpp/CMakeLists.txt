@@ -64,6 +64,7 @@ set(BT_NODES
   src/bt/actions/plan_room_sequence.cpp
   src/bt/actions/pop_from_list.cpp
   src/bt/actions/pose_as_path.cpp
+  src/bt/actions/publish_pose.cpp
   src/bt/actions/push_to_list.cpp
   src/bt/actions/read_ros_param.cpp
   src/bt/actions/read_user_commands.cpp

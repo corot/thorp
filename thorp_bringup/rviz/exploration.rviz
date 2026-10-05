@@ -7,8 +7,9 @@ Panels:
         - /Global Options1
         - /TF1/Frames1
         - /TF1/Tree1
+        - /Path1
       Splitter Ratio: 0.5833333134651184
-    Tree Height: 151
+    Tree Height: 171
   - Class: rviz_common/Selection
     Name: Selection
   - Class: rviz_common/Tool Properties
@@ -1010,6 +1011,26 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /plan
       Value: true
+    - Alpha: 1
+      Axes Length: 1
+      Axes Radius: 0.1
+      Class: rviz_default_plugins/Pose
+      Color: 0; 170; 255
+      Enabled: true
+      Head Length: 0.15
+      Head Radius: 0.06
+      Name: Navigation Goal
+      Shaft Length: 0.3
+      Shaft Radius: 0.025
+      Shape: Arrow
+      Topic:
+        Depth: 1
+        Durability Policy: Transient Local
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /bt_server/nav_goal
+      Value: true
     - Alpha: 0.699999988079071
       Binary representation: false
       Binary threshold: 100
@@ -1176,6 +1197,47 @@ Visualization Manager:
       ver_alignment: top
       ver_dist: 0
       width: 128
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: true
+      Name: MarkerArray
+      Namespaces:
+        Candidate Trajectories: true
+        Optimal Trajectory: true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /trajectories
+      Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz_default_plugins/Path
+      Color: 245; 194; 17
+      Enabled: true
+      Head Diameter: 0.30000001192092896
+      Head Length: 0.20000000298023224
+      Length: 0.30000001192092896
+      Line Style: Billboards
+      Line Width: 0.05000000074505806
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.10000000149011612
+      Shaft Length: 0.10000000149011612
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /transformed_global_plan
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -1233,18 +1295,18 @@ Visualization Manager:
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 1043
+  Height: 1131
   Hide Left Dock: false
   Hide Right Dock: false
   Navigation 2:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000100000000000001c9000003b5fc0200000004fb000000100044006900730070006c006100790073010000003f000000d7000000cc00fffffffb0000001200530065006c0065006300740069006f006e00000001110000005d0000005d00fffffffc0000011c000000d4000000c80100001efa000000000100000002fb0000000a005600690065007700730100000000000001c90000010000fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000000ffffffff0000009b00fffffffb00000018004e0061007600690067006100740069006f006e0020003201000001f6000001fe000001f800ffffff000005b1000003b500000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000100000000000001c90000040dfc0200000004fb000000100044006900730070006c006100790073010000003f000000eb000000cc00fffffffb0000001200530065006c0065006300740069006f006e00000001110000005d0000005d00fffffffc00000130000000e8000000c80100001efa000000000100000002fb0000000a005600690065007700730100000000000001c90000010000fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000000ffffffff0000009b00fffffffb00000018004e0061007600690067006100740069006f006e00200032010000021e0000022e000001f800ffffff0000056f0000040d00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Tool Properties:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1920
-  X: 1920
-  Y: 0
+  Width: 1854
+  X: 66
+  Y: 32
