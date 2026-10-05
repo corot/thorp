@@ -50,7 +50,7 @@ the pip keys it declares for them.
 | # | Block | Status |
 |---|-------|--------|
 | 1 | Workspace bootstrap: branch, `COLCON_IGNORE` on every ROS 1 package, this document | done |
-| 2 | `thorp_description`: robot model identical to Noetic's, RViz viewer | done |
+| 2 | `thorp_description`: robot model identical to Noetic's (but `tray_link`, see `thorp_bt_cpp`), RViz viewer | done |
 | 3 | Gazebo Harmonic: spawn Thorp, diff drive, joint states, Kinect, Xtion, sonars and IR sensors | done |
 | 4 | Arm in simulation: `ros2_control`, trajectory and gripper controllers | done |
 | 5 | `thorp_msgs`, `thorp_toolkit`; `thorp_cannon`, with a Gazebo Harmonic firing system | done |
@@ -322,8 +322,10 @@ Noetic's housekeeping services, and the servers for user commands and drag and d
   at the drop position, plus `placing_height_on_table`.
 - The tray has no state: `NextPoseOnTray` and `TrayFull` find the free slots from the planning scene objects on it.
   Placing poses are the gripper's, so the pose on the tray is raised by the held object's height, over
-  `placing_height_on_tray` (0.01 m over the tray frame, at the bottom of its 2 mm base). Noetic placed the gripper at a
+  `placing_height_on_tray` (8 mm over the tray frame, on the surface of its 2 mm base). Noetic placed the gripper at a
   fixed 3 cm, lower than the tops of the 3.2 cm objects once on the tray; MoveIt 1's place allowed touching the tray.
+  `tray_link` is on the surface of the tray's base, 2 mm higher than on Noetic, where it was at its bottom: an object
+  resting at the frame would be inside the base, and the robot in collision.
 
 `bt_server` runs one goal at a time, and is free again before it reports a goal's result, so a caller can send the
 next goal as soon as it has it. Both executives take parameters the trees read at any time, declared or not. A node

@@ -127,20 +127,21 @@
 
 
   <!-- Tray for gathering objects -->
-  <!-- Dimensions: 150x150x15 mm; mesh base is at z=0 relative to tray_link (we can -->
-  <!-- ignore thickness, as it's only 2mm). It's supported by two middle stack poles -->
+  <!-- Dimensions: 150x150x15 mm; tray_link is on the surface of the mesh's 2 mm thick base, where objects rest. -->
+  <!-- It's supported by two middle stack poles -->
   <xacro:stack_middle_pole parent="plate_top_link" number="16" x_loc="0.015" y_loc="-0.0585" z_loc="${0.047/2}" roll="${M_PI}"/>
   <xacro:stack_middle_pole parent="plate_top_link" number="17" x_loc="0.015" y_loc="-0.1265" z_loc="${0.047/2}" roll="${M_PI}"/>
   <xacro:property name="tray_depth" value="0.015"/>
   <xacro:property name="tray_side" value="0.15"/>
+  <xacro:property name="tray_base" value="0.002"/>
   <joint name="tray_joint" type="fixed">
-    <origin xyz="0.015 -0.0925 ${0.006/2 + 0.0508}" rpy="0.0 0.0 0.0"/>
+    <origin xyz="0.015 -0.0925 ${0.006/2 + 0.0508 + tray_base}" rpy="0.0 0.0 0.0"/>
     <parent link="plate_top_link"/>
     <child link="tray_link"/>
   </joint>
   <link name="tray_link">
     <visual>
-      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <origin xyz="0.0 0.0 ${-tray_base}" rpy="0.0 0.0 0.0"/>
       <geometry>
         <mesh filename="package://thorp_description/meshes/tray.stl" scale="${M_SCALE} ${M_SCALE} ${M_SCALE}"/>
       </geometry>
@@ -149,12 +150,12 @@
       </material>
     </visual>
     <collision>
-      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <origin xyz="0.0 0.0 ${-tray_base}" rpy="0.0 0.0 0.0"/>
       <geometry>
         <mesh filename="package://thorp_description/meshes/tray.stl" scale="${M_SCALE} ${M_SCALE} ${M_SCALE}"/>
       </geometry>
     </collision>
-    <xacro:box_inertia length="${tray_side}" width="${tray_side}" height="${tray_depth}" mass="0.040" z="${tray_depth/2}"/>
+    <xacro:box_inertia length="${tray_side}" width="${tray_side}" height="${tray_depth}" mass="0.040" z="${tray_depth/2 - tray_base}"/>
   </link>
 
 
