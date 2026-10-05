@@ -56,6 +56,15 @@ private:
     goal_ = moveit_msgs::action::MoveGroup::Goal();
     goal_.request.group_name = state->second.first;
     goal_.request.goal_constraints.push_back(constraints);
+    // The OMPL configuration's default planner; unnamed, MoveIt warns as OMPL doesn't report it
+    goal_.request.pipeline_id = "ompl";
+    goal_.request.planner_id = "RRTConnect";
+    // Workspace bounds only matter to planar or floating joints, that the arm lacks; MoveIt warns if there are none
+    goal_.request.workspace_parameters.header.frame_id = "base_footprint";
+    goal_.request.workspace_parameters.min_corner.x = goal_.request.workspace_parameters.min_corner.y =
+        goal_.request.workspace_parameters.min_corner.z = -1.0;
+    goal_.request.workspace_parameters.max_corner.x = goal_.request.workspace_parameters.max_corner.y =
+        goal_.request.workspace_parameters.max_corner.z = 1.0;
     goal_.request.allowed_planning_time = 5.0;
     goal_.request.num_planning_attempts = 1;
     goal_.request.max_velocity_scaling_factor = 1.0;

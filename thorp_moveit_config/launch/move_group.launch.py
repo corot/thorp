@@ -18,6 +18,9 @@ def launch_setup(context):
     config = thorp_moveit_config(LaunchConfiguration('simulation').perform(context))
     return [
         Node(package='moveit_ros_move_group', executable='move_group', output='screen', respawn=True,
+             # The controller manager logs its controllers list on every lookup, several times per trajectory
+             arguments=['--ros-args', '--log-level',
+                        'move_group.moveit.moveit.plugins.simple_controller_manager:=warn'],
              parameters=[config.to_dict(),
                          {'use_sim_time': LaunchConfiguration('use_sim_time'),
                           'allow_trajectory_execution': True,

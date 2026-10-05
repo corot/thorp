@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <chrono>
 #include <map>
+#include <set>
 #include <sstream>
 #include <thread>
 
@@ -32,6 +33,9 @@ const std::string ARM_GROUP = "arm";
 const std::string GRIPPER_GROUP = "gripper";
 const std::string GRIPPER_LINK = "gripper_link";
 const std::string GRIPPER_JOINT = "gripper_joint";
+// As in moveit_controllers.yaml, so MTC needn't guess which one executes each trajectory
+const std::string ARM_CONTROLLER = "arm_controller";
+const std::string GRIPPER_CONTROLLER = "gripper_controller";
 
 // Straight gripper motions before and after grasping and releasing objects: minimum and desired distances
 constexpr double PICK_APPROACH_MIN = 0.025;
@@ -55,6 +59,47 @@ double yaw(const Eigen::Isometry3d& pose)
   return std::atan2(pose.linear()(1, 0), pose.linear()(0, 0));
 }
 
+mtc::TrajectoryExecutionInfo executedBy(const std::string& controller)
+{
+  mtc::TrajectoryExecutionInfo info;
+  info.controller_names = { controller };
+  return info;
+}
+
+/**
+ * Pairs in contact where the stages without solutions failed, as MTC's comments say only that a state collides: the
+ * last waypoint of each failed trajectory, where MTC's planners stop on a collision, or else the failure's own state,
+ * as the current state's.
+ */
+std::set<std::string> failureContacts(const mtc::Task& task)
+{
+  std::set<std::string> pairs;
+  task.stages()->traverseRecursively([&pairs](const mtc::Stage& stage, unsigned int) {
+    if (!stage.solutions().empty())
+      return true;
+    for (const auto& failure : stage.failures())
+    {
+      const mtc::InterfaceState* interface_state = failure->start() ? failure->start() : failure->end();
+      if (!interface_state)
+        continue;
+      const auto& scene = interface_state->scene();
+      const auto* sub_trajectory = dynamic_cast<const mtc::SubTrajectory*>(failure.get());
+      const bool has_waypoints =
+          sub_trajectory && sub_trajectory->trajectory() && !sub_trajectory->trajectory()->empty();
+      collision_detection::CollisionRequest request;
+      request.contacts = true;
+      request.max_contacts = 10;
+      collision_detection::CollisionResult result;
+      scene->checkCollision(request, result,
+                            has_waypoints ? sub_trajectory->trajectory()->getLastWayPoint() : scene->getCurrentState());
+      for (const auto& [names, contacts] : result.contacts)
+        pairs.insert(stage.name() + ": " + names.first + " - " + names.second);
+    }
+    return true;
+  });
+  return pairs;
+}
+
 geometry_msgs::msg::Vector3Stamped gripperDirection(double x)
 {
   geometry_msgs::msg::Vector3Stamped direction;
@@ -65,7 +110,9 @@ geometry_msgs::msg::Vector3Stamped gripperDirection(double x)
 
 }  // namespace
 
-PickAndPlaceServer::PickAndPlaceServer(const rclcpp::Node::SharedPtr& node) : node_(node)
+PickAndPlaceServer::PickAndPlaceServer(const rclcpp::Node::SharedPtr& node,
+                                       const rclcpp::Node::SharedPtr& planning_node)
+  : node_(node)
 {
   arm_ref_frame_ = param<std::string>(node_, "arm_ref_frame", "arm_base_link");
   operation_plane_frame_ = param<std::string>(node_, "operation_plane_frame", "arm_shoulder_lift_servo_link");
@@ -85,7 +132,13 @@ PickAndPlaceServer::PickAndPlaceServer(const rclcpp::Node::SharedPtr& node) : no
     throw std::runtime_error("Failed to load the robot model");
   gripper_links_ = robot_model_->getJointModelGroup(GRIPPER_GROUP)->getLinkModelNamesWithCollisionGeometry();
 
-  sampling_planner_ = std::make_shared<mtc::solvers::PipelinePlanner>(node_, "ompl");
+  sampling_planner_ = std::make_shared<mtc::solvers::PipelinePlanner>(planning_node, "ompl", "RRTConnect");
+  // Workspace bounds only matter to planar or floating joints, that the arm lacks; MoveIt warns if there are none
+  moveit_msgs::msg::WorkspaceParameters workspace;
+  workspace.header.frame_id = robot_model_->getModelFrame();
+  workspace.min_corner.x = workspace.min_corner.y = workspace.min_corner.z = -1.0;
+  workspace.max_corner.x = workspace.max_corner.y = workspace.max_corner.z = 1.0;
+  sampling_planner_->properties().set("workspace_parameters", workspace);
   interpolation_planner_ = std::make_shared<mtc::solvers::JointInterpolationPlanner>();
   cartesian_planner_ = std::make_shared<mtc::solvers::CartesianPath>();
   cartesian_planner_->setStepSize(0.005);
@@ -241,12 +294,14 @@ int32_t PickAndPlaceServer::pickup(const PickupObject::Goal& goal, const Feedbac
   auto open_gripper = std::make_unique<mtc::stages::MoveTo>("open gripper", interpolation_planner_);
   open_gripper->setGroup(GRIPPER_GROUP);
   open_gripper->setGoal("open");
+  open_gripper->setTrajectoryExecutionInfo(executedBy(GRIPPER_CONTROLLER));
   mtc::Stage* open_gripper_stage = open_gripper.get();
   task.add(std::move(open_gripper));
 
   auto move_to_pick = std::make_unique<mtc::stages::Connect>(
       "move to pick", mtc::stages::Connect::GroupPlannerVector{ { ARM_GROUP, sampling_planner_ } });
   move_to_pick->setTimeout(5.0);
+  move_to_pick->setTrajectoryExecutionInfo(executedBy(ARM_CONTROLLER));
   move_to_pick->properties().configureInitFrom(mtc::Stage::PARENT);
   task.add(std::move(move_to_pick));
 
@@ -255,6 +310,7 @@ int32_t PickAndPlaceServer::pickup(const PickupObject::Goal& goal, const Feedbac
   pick->properties().configureInitFrom(mtc::Stage::PARENT, { "eef", "group" });
   {
     auto stage = std::make_unique<mtc::stages::MoveRelative>("approach object", cartesian_planner_);
+    stage->setTrajectoryExecutionInfo(executedBy(ARM_CONTROLLER));
     stage->properties().configureInitFrom(mtc::Stage::PARENT, { "group" });
     stage->setIKFrame(GRIPPER_LINK);
     stage->setMinMaxDistance(PICK_APPROACH_MIN, PICK_APPROACH_MAX);
@@ -285,6 +341,7 @@ int32_t PickAndPlaceServer::pickup(const PickupObject::Goal& goal, const Feedbac
   }
   {
     auto stage = std::make_unique<mtc::stages::MoveTo>("close gripper", interpolation_planner_);
+    stage->setTrajectoryExecutionInfo(executedBy(GRIPPER_CONTROLLER));
     stage->setGroup(GRIPPER_GROUP);
     stage->setGoal(std::map<std::string, double>{ { GRIPPER_JOINT, gripper_model_.angle(opening) } });
     pick->insert(std::move(stage));
@@ -298,6 +355,7 @@ int32_t PickAndPlaceServer::pickup(const PickupObject::Goal& goal, const Feedbac
   }
   {
     auto stage = std::make_unique<mtc::stages::MoveRelative>("retreat", cartesian_planner_);
+    stage->setTrajectoryExecutionInfo(executedBy(ARM_CONTROLLER));
     stage->properties().configureInitFrom(mtc::Stage::PARENT, { "group" });
     stage->setIKFrame(GRIPPER_LINK);
     stage->setMinMaxDistance(PICK_APPROACH_MIN, PICK_APPROACH_MAX);
@@ -356,6 +414,7 @@ int32_t PickAndPlaceServer::place(const PlaceObject::Goal& goal, const Feedback&
   auto move_to_place = std::make_unique<mtc::stages::Connect>(
       "move to place", mtc::stages::Connect::GroupPlannerVector{ { ARM_GROUP, sampling_planner_ } });
   move_to_place->setTimeout(5.0);
+  move_to_place->setTrajectoryExecutionInfo(executedBy(ARM_CONTROLLER));
   move_to_place->properties().configureInitFrom(mtc::Stage::PARENT);
   task.add(std::move(move_to_place));
 
@@ -364,6 +423,7 @@ int32_t PickAndPlaceServer::place(const PlaceObject::Goal& goal, const Feedback&
   place->properties().configureInitFrom(mtc::Stage::PARENT, { "eef", "group" });
   {
     auto stage = std::make_unique<mtc::stages::MoveRelative>("approach place", cartesian_planner_);
+    stage->setTrajectoryExecutionInfo(executedBy(ARM_CONTROLLER));
     stage->properties().configureInitFrom(mtc::Stage::PARENT, { "group" });
     stage->setIKFrame(GRIPPER_LINK);
     stage->setMinMaxDistance(PLACE_APPROACH_MIN, PLACE_APPROACH_MAX);
@@ -398,6 +458,7 @@ int32_t PickAndPlaceServer::place(const PlaceObject::Goal& goal, const Feedback&
     robot_model_->getJointModelGroup(GRIPPER_GROUP)->getVariableDefaultPositions("open", open);
     const double held = gripper_model_.opening(scene->getCurrentState().getVariablePosition(GRIPPER_JOINT));
     auto stage = std::make_unique<mtc::stages::MoveTo>("open gripper", interpolation_planner_);
+    stage->setTrajectoryExecutionInfo(executedBy(GRIPPER_CONTROLLER));
     stage->setGroup(GRIPPER_GROUP);
     stage->setGoal(std::map<std::string, double>{
         { GRIPPER_JOINT, std::max(gripper_model_.angle(held + RELEASE_MARGIN), open[GRIPPER_JOINT]) } });
@@ -412,6 +473,7 @@ int32_t PickAndPlaceServer::place(const PlaceObject::Goal& goal, const Feedback&
   }
   {
     auto stage = std::make_unique<mtc::stages::MoveRelative>("retreat", cartesian_planner_);
+    stage->setTrajectoryExecutionInfo(executedBy(ARM_CONTROLLER));
     stage->properties().configureInitFrom(mtc::Stage::PARENT, { "group" });
     stage->setIKFrame(GRIPPER_LINK);
     stage->setMinMaxDistance(PLACE_APPROACH_MIN, PLACE_APPROACH_MAX);
@@ -536,6 +598,8 @@ int32_t PickAndPlaceServer::run(mtc::Task& task, const Feedback& feedback, const
     task.explainFailure(explanation);
     RCLCPP_ERROR(node_->get_logger(), "Task '%s' planning failed:\n%s", task.name().c_str(),
                  explanation.str().c_str());
+    for (const std::string& pair : failureContacts(task))
+      RCLCPP_ERROR(node_->get_logger(), "In collision at %s", pair.c_str());
     return MoveItErrorCodes::PLANNING_FAILED;
   }
   const mtc::SolutionBase& solution = *task.solutions().front();

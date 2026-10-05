@@ -33,7 +33,7 @@ namespace thorp::manipulation
 class PickAndPlaceServer
 {
 public:
-  explicit PickAndPlaceServer(const rclcpp::Node::SharedPtr& node);
+  PickAndPlaceServer(const rclcpp::Node::SharedPtr& node, const rclcpp::Node::SharedPtr& planning_node);
   ~PickAndPlaceServer();
 
 private:

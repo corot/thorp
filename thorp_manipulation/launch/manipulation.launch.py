@@ -28,6 +28,8 @@ def launch_setup(context):
                                                    'use_sim_time': LaunchConfiguration('use_sim_time')}.items()),
         # Not renamed, as launch renames all the nodes in the process, also MoveIt Task Constructor's own nodes
         Node(package='thorp_manipulation', executable='manipulation_node', output='screen', respawn=True,
+             # its planning node logs each planning step
+             arguments=['--ros-args', '--log-level', 'manipulation_planning:=warn'],
              parameters=[config.to_dict(),
                          os.path.join(get_package_share_directory('thorp_manipulation'), 'param', params_file),
                          {'use_sim_time': LaunchConfiguration('use_sim_time')}]),
