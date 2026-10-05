@@ -1,4 +1,3 @@
-# Based on nav2_bringup nav2_default_view.rviz (Apache 2.0 license), with Thorp topics
 Panels:
   - Class: rviz_common/Displays
     Help Height: 0
@@ -6,10 +5,9 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /TF1/Frames1
         - /TF1/Tree1
       Splitter Ratio: 0.5833333134651184
-    Tree Height: 287
+    Tree Height: 312
   - Class: rviz_common/Selection
     Name: Selection
   - Class: rviz_common/Tool Properties
@@ -82,41 +80,443 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
+        arm_base_link:
+          Value: false
+        arm_elbow_F10_0_link:
+          Value: false
+        arm_elbow_F10_1_link:
+          Value: false
+        arm_elbow_F10_2_link:
+          Value: false
+        arm_elbow_F3_0_link:
+          Value: false
+        arm_elbow_flex_link:
+          Value: false
+        arm_elbow_flex_servo_link:
+          Value: false
+        arm_mount_link:
+          Value: false
+        arm_shoulder_F10_0_link:
+          Value: false
+        arm_shoulder_F10_1_link:
+          Value: false
+        arm_shoulder_F10_2_link:
+          Value: false
+        arm_shoulder_F3_0_link:
+          Value: false
+        arm_shoulder_lift_link:
+          Value: false
+        arm_shoulder_lift_servo_link:
+          Value: false
+        arm_shoulder_pan_link:
+          Value: false
+        arm_shoulder_pan_servo_link:
+          Value: false
+        arm_wrist_F3_0_link:
+          Value: false
+        arm_wrist_flex_link:
+          Value: false
+        arm_wrist_flex_servo_link:
+          Value: false
         base_footprint:
           Value: true
         base_link:
-          Value: true
-        base_scan:
-          Value: true
-        camera_depth_frame:
-          Value: true
-        camera_depth_optical_frame:
-          Value: true
-        camera_link:
-          Value: true
-        camera_rgb_frame:
-          Value: true
-        camera_rgb_optical_frame:
-          Value: true
-        caster_back_left_link:
-          Value: true
-        caster_back_right_link:
-          Value: true
-        imu_link:
+          Value: false
+        cannon_link:
+          Value: false
+        cannon_servo_link:
+          Value: false
+        cannon_shaft_link:
+          Value: false
+        cannon_tube1_hollow_link:
+          Value: false
+        cannon_tube1_link:
+          Value: false
+        cannon_tube2_hollow_link:
+          Value: false
+        cannon_tube2_link:
+          Value: false
+        cannon_tube3_hollow_link:
+          Value: false
+        cannon_tube3_link:
+          Value: false
+        cannon_tube4_hollow_link:
+          Value: false
+        cannon_tube4_link:
+          Value: false
+        cannon_tube5_hollow_link:
+          Value: false
+        cannon_tube5_link:
+          Value: false
+        cannon_tube6_hollow_link:
+          Value: false
+        cannon_tube6_link:
+          Value: false
+        caster_back_link:
+          Value: false
+        caster_front_link:
+          Value: false
+        cliff_sensor_front_link:
+          Value: false
+        cliff_sensor_left_link:
+          Value: false
+        cliff_sensor_right_link:
+          Value: false
+        gripper_active_finger_link:
+          Value: false
+        gripper_active_link:
+          Value: false
+        gripper_link:
+          Value: false
+        gripper_servo_link:
+          Value: false
+        gripper_static_finger_link:
+          Value: false
+        gripper_static_link:
+          Value: false
+        gyro_link:
+          Value: false
+        ir_arm_link:
+          Value: false
+        ir_cannon_link:
+          Value: false
+        ir_l155_link:
+          Value: false
+        ir_l180_link:
+          Value: false
+        ir_r155_link:
+          Value: false
+        ir_r180_link:
+          Value: false
+        kinect_depth_frame:
+          Value: false
+        kinect_depth_optical_frame:
+          Value: false
+        kinect_link:
+          Value: false
+        kinect_rgb_frame:
+          Value: false
+        kinect_rgb_optical_frame:
+          Value: false
+        map:
           Value: true
         odom:
           Value: true
+        opencm_link:
+          Value: false
+        plate_bottom_link:
+          Value: false
+        plate_middle_link:
+          Value: false
+        plate_top_link:
+          Value: false
+        pole_bottom_0_link:
+          Value: false
+        pole_bottom_10_link:
+          Value: false
+        pole_bottom_11_link:
+          Value: false
+        pole_bottom_12_link:
+          Value: false
+        pole_bottom_13_link:
+          Value: false
+        pole_bottom_14_link:
+          Value: false
+        pole_bottom_15_link:
+          Value: false
+        pole_bottom_1_link:
+          Value: false
+        pole_bottom_2_link:
+          Value: false
+        pole_bottom_3_link:
+          Value: false
+        pole_bottom_4_link:
+          Value: false
+        pole_bottom_5_link:
+          Value: false
+        pole_kinect_0_link:
+          Value: false
+        pole_kinect_1_link:
+          Value: false
+        pole_middle_0_link:
+          Value: false
+        pole_middle_11_link:
+          Value: false
+        pole_middle_16_link:
+          Value: false
+        pole_middle_17_link:
+          Value: false
+        pole_middle_1_link:
+          Value: false
+        pole_middle_21_link:
+          Value: false
+        pole_middle_2_link:
+          Value: false
+        pole_middle_3_link:
+          Value: false
+        pole_top_0_link:
+          Value: false
+        pole_top_10_link:
+          Value: false
+        pole_top_12_link:
+          Value: false
+        pole_top_1_link:
+          Value: false
+        pole_top_20_link:
+          Value: false
+        pole_top_22_link:
+          Value: false
+        pole_top_2_link:
+          Value: false
+        pole_top_3_link:
+          Value: false
+        s_0_link:
+          Value: false
+        s_m18_link:
+          Value: false
+        s_m36_link:
+          Value: false
+        s_m54_link:
+          Value: false
+        s_m72_link:
+          Value: false
+        s_m90_link:
+          Value: false
+        s_p18_link:
+          Value: false
+        s_p36_link:
+          Value: false
+        s_p54_link:
+          Value: false
+        s_p72_link:
+          Value: false
+        s_p90_link:
+          Value: false
+        senz3d_mount_link:
+          Value: false
+        sonars_mount_link:
+          Value: false
+        tray_link:
+          Value: false
         wheel_left_link:
-          Value: true
+          Value: false
         wheel_right_link:
-          Value: true
+          Value: false
+        xtion_depth_frame:
+          Value: false
+        xtion_depth_optical_frame:
+          Value: false
+        xtion_link:
+          Value: false
+        xtion_mount_link:
+          Value: false
+        xtion_rgb_frame:
+          Value: false
+        xtion_rgb_optical_frame:
+          Value: false
       Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: false
       Tree:
-        {}
+        map:
+          odom:
+            base_footprint:
+              base_link:
+                caster_back_link:
+                  {}
+                caster_front_link:
+                  {}
+                cliff_sensor_front_link:
+                  {}
+                cliff_sensor_left_link:
+                  {}
+                cliff_sensor_right_link:
+                  {}
+                gyro_link:
+                  {}
+                ir_l155_link:
+                  {}
+                ir_l180_link:
+                  {}
+                ir_r155_link:
+                  {}
+                ir_r180_link:
+                  {}
+                kinect_rgb_frame:
+                  kinect_depth_frame:
+                    kinect_depth_optical_frame:
+                      {}
+                  kinect_link:
+                    {}
+                  kinect_rgb_optical_frame:
+                    {}
+                plate_bottom_link:
+                  {}
+                plate_middle_link:
+                  {}
+                plate_top_link:
+                  arm_base_link:
+                    arm_shoulder_pan_servo_link:
+                      arm_shoulder_pan_link:
+                        arm_shoulder_lift_servo_link:
+                          arm_shoulder_lift_link:
+                            arm_shoulder_F10_0_link:
+                              arm_shoulder_F10_1_link:
+                                arm_shoulder_F10_2_link:
+                                  arm_shoulder_F3_0_link:
+                                    arm_elbow_flex_servo_link:
+                                      arm_elbow_flex_link:
+                                        arm_elbow_F10_0_link:
+                                          arm_elbow_F10_1_link:
+                                            arm_elbow_F10_2_link:
+                                              arm_elbow_F3_0_link:
+                                                arm_wrist_flex_servo_link:
+                                                  arm_wrist_flex_link:
+                                                    arm_wrist_F3_0_link:
+                                                      gripper_servo_link:
+                                                        gripper_active_link:
+                                                          gripper_active_finger_link:
+                                                            {}
+                                                        gripper_static_link:
+                                                          gripper_static_finger_link:
+                                                            {}
+                                                    gripper_link:
+                                                      {}
+                    ir_arm_link:
+                      {}
+                    pole_bottom_10_link:
+                      {}
+                    pole_bottom_11_link:
+                      {}
+                    pole_bottom_12_link:
+                      {}
+                    pole_bottom_13_link:
+                      {}
+                    pole_bottom_14_link:
+                      {}
+                    pole_bottom_15_link:
+                      {}
+                  arm_mount_link:
+                    cannon_servo_link:
+                      cannon_shaft_link:
+                        cannon_link:
+                          cannon_tube1_hollow_link:
+                            {}
+                          cannon_tube1_link:
+                            {}
+                          cannon_tube2_hollow_link:
+                            {}
+                          cannon_tube2_link:
+                            {}
+                          cannon_tube3_hollow_link:
+                            {}
+                          cannon_tube3_link:
+                            {}
+                          cannon_tube4_hollow_link:
+                            {}
+                          cannon_tube4_link:
+                            {}
+                          cannon_tube5_hollow_link:
+                            {}
+                          cannon_tube5_link:
+                            {}
+                          cannon_tube6_hollow_link:
+                            {}
+                          cannon_tube6_link:
+                            {}
+                          ir_cannon_link:
+                            {}
+                  opencm_link:
+                    {}
+                  pole_middle_16_link:
+                    {}
+                  pole_middle_17_link:
+                    {}
+                  pole_top_10_link:
+                    {}
+                  pole_top_20_link:
+                    {}
+                  senz3d_mount_link:
+                    pole_middle_11_link:
+                      {}
+                    pole_middle_21_link:
+                      {}
+                    pole_top_12_link:
+                      {}
+                    pole_top_22_link:
+                      {}
+                    xtion_mount_link:
+                      xtion_rgb_frame:
+                        xtion_depth_frame:
+                          xtion_depth_optical_frame:
+                            {}
+                        xtion_link:
+                          {}
+                        xtion_rgb_optical_frame:
+                          {}
+                  tray_link:
+                    {}
+                pole_bottom_0_link:
+                  {}
+                pole_bottom_1_link:
+                  {}
+                pole_bottom_2_link:
+                  {}
+                pole_bottom_3_link:
+                  {}
+                pole_bottom_4_link:
+                  {}
+                pole_bottom_5_link:
+                  {}
+                pole_kinect_0_link:
+                  {}
+                pole_kinect_1_link:
+                  {}
+                pole_middle_0_link:
+                  {}
+                pole_middle_1_link:
+                  {}
+                pole_middle_2_link:
+                  {}
+                pole_middle_3_link:
+                  {}
+                pole_top_0_link:
+                  {}
+                pole_top_1_link:
+                  {}
+                pole_top_2_link:
+                  {}
+                pole_top_3_link:
+                  {}
+                sonars_mount_link:
+                  s_0_link:
+                    {}
+                  s_m18_link:
+                    {}
+                  s_m36_link:
+                    {}
+                  s_m54_link:
+                    {}
+                  s_m72_link:
+                    {}
+                  s_m90_link:
+                    {}
+                  s_p18_link:
+                    {}
+                  s_p36_link:
+                    {}
+                  s_p54_link:
+                    {}
+                  s_p72_link:
+                    {}
+                  s_p90_link:
+                    {}
+                wheel_left_link:
+                  {}
+                wheel_right_link:
+                  {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -525,9 +925,18 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /waypoints
       Value: true
-    - Class: rviz_2d_overlay_plugins/TextOverlay
+    - Align Bottom: false
+      Background Alpha: 0.800000011920929
+      Background Color: 0; 0; 0
+      Class: rviz_2d_overlay_plugins/TextOverlay
       Enabled: true
+      Foreground Alpha: 0.800000011920929
+      Foreground Color: 25; 255; 240
+      Invert Shadow: false
       Name: Velocity
+      Overtake BG Color Properties: false
+      Overtake FG Color Properties: false
+      Overtake Position Properties: false
       Topic:
         Depth: 1
         Durability Policy: Volatile
@@ -535,9 +944,27 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /rviz/millage_overlay
       Value: true
-    - Class: rviz_2d_overlay_plugins/TextOverlay
+      font: DejaVu Sans Mono
+      height: 128
+      hor_alignment: left
+      hor_dist: 0
+      line width: 2
+      text size: 12
+      ver_alignment: top
+      ver_dist: 0
+      width: 128
+    - Align Bottom: false
+      Background Alpha: 0.800000011920929
+      Background Color: 0; 0; 0
+      Class: rviz_2d_overlay_plugins/TextOverlay
       Enabled: true
+      Foreground Alpha: 0.800000011920929
+      Foreground Color: 25; 255; 240
+      Invert Shadow: false
       Name: Executive
+      Overtake BG Color Properties: false
+      Overtake FG Color Properties: false
+      Overtake Position Properties: false
       Topic:
         Depth: 1
         Durability Policy: Volatile
@@ -545,6 +972,15 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /rviz/executive_progress_overlay
       Value: true
+      font: DejaVu Sans Mono
+      height: 128
+      hor_alignment: left
+      hor_dist: 0
+      line width: 2
+      text size: 12
+      ver_alignment: top
+      ver_dist: 0
+      width: 128
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -582,7 +1018,7 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: -0.0008007669821381569
+      Angle: 0
       Class: rviz_default_plugins/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
@@ -592,23 +1028,23 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 54
+      Scale: 108.03849029541016
       Target Frame: <Fixed Frame>
       Value: TopDownOrtho (rviz_default_plugins)
-      X: -5.409999847412109
-      Y: 0
+      X: -1.3791821002960205
+      Y: -1.6657174825668335
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
   Docking:
     collapsed: false
-  Height: 893
+  Height: 1131
   Hide Left Dock: false
   Hide Right Dock: false
   Navigation 2:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd00000004000000000000015600000327fc020000000afb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb000000100044006900730070006c006100790073010000003b0000015a000000c700fffffffb00000018004e0061007600690067006100740069006f006e00200032010000019b000001c7000001c700fffffffb0000001e005200650061006c00730065006e0073006500430061006d00650072006100000002c6000000c10000002800ffffff000000010000014700000327fc0200000005fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003b00000143000000a000fffffffb0000000e0044006f0063006b0069006e006701000001840000011e0000011e00fffffffb0000001000530065006c006500630074006f007201000002a8000000ba000000ba00fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004420000003efc0100000002fb0000000800540069006d00650100000000000004420000000000000000fb0000000800540069006d00650100000000000004500000000000000000000003a10000032700000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000400000000000001560000040dfc020000000afb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005d00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb000000100044006900730070006c006100790073010000003f00000178000000cc00fffffffb00000018004e0061007600690067006100740069006f006e0020003201000001bd0000028f000001f800fffffffb0000001e005200650061006c00730065006e0073006500430061006d00650072006100000002c6000000c10000001700ffffff00000001000001470000040dfc0200000005fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003f00000121000000a900fffffffb0000000e0044006f0063006b0069006e00670100000166000001cd0000016200fffffffb0000001000530065006c006500630074006f0072010000033900000113000000d300fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004420000003efc0100000002fb0000000800540069006d00650100000000000004420000000000000000fb0000000800540069006d00650100000000000004500000000000000000000004950000040d00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   RealsenseCamera:
     collapsed: false
   Selection:
@@ -619,6 +1055,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1610
-  X: 1091
-  Y: 222
+  Width: 1854
+  X: 66
+  Y: 32

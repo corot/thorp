@@ -77,25 +77,33 @@ controller_server:
       stateful: true
       xy_goal_tolerance: 0.035
       yaw_goal_tolerance: 0.05
-    # MPPI replaces Noetic's TEB; velocity and acceleration limits come from TEB and the velocity smoother
+    # MPPI replaces Noetic's TEB; velocity limits come from TEB, and acceleration limits from TurtleBot's velocity
+    # smoother. A rotation shim turns to the goal's heading once at the goal's position, as MPPI turns very slowly
+    # there; it doesn't turn toward new paths, as then MPPI keeps turning past it and they fight each other
     FollowPath:
-      plugin: nav2_mppi_controller::MPPIController
-      time_steps: 56
-      model_dt: 0.05
+      plugin: nav2_rotation_shim_controller::RotationShimController
+      primary_controller: nav2_mppi_controller::MPPIController
+      angular_dist_threshold: 0.8
+      rotate_to_goal_heading: true
+      rotate_to_heading_angular_vel: 1.0
+      max_angular_accel: 2.0
+      time_steps: 10
+      model_dt: 0.25
       batch_size: 2000
       ax_max: 0.5
       ax_min: -0.5
-      az_max: 1.0
+      az_max: 2.0
       vx_std: 0.2
       wz_std: 0.4
       vx_max: 0.7
       vx_min: -0.1  # conservative, as we only have four IR sensors pointing backward
       wz_max: 2.0
       iteration_count: 1
-      prune_distance: 1.7
+      prune_distance: 2.5
       transform_tolerance: 0.1
       temperature: 0.3
       gamma: 0.015
+      max_robot_pose_search_dist: 0.1
       motion_model: DiffDrive
       visualize: true
       regenerate_noises: true
@@ -114,7 +122,7 @@ controller_server:
         cost_weight: 5.0
         threshold_to_consider: 1.4
       GoalAngleCritic:
-        enabled: true
+        enabled: false  # rely on shim controller
         cost_power: 1
         cost_weight: 3.0
         threshold_to_consider: 0.5
@@ -122,7 +130,7 @@ controller_server:
         enabled: true
         cost_power: 1
         cost_weight: 5.0
-        threshold_to_consider: 0.5
+        threshold_to_consider: 0.1
       CostCritic:
         enabled: true
         cost_power: 1
@@ -157,13 +165,12 @@ controller_server:
         max_angle_to_furthest: 1.0
         mode: 0
 
-# Costmaps: static map (global only), sonars and IR range sensors, obstacles from the depth cameras, inflation.
-# The semantic layer comes with its own block
-    # Docking at tables, along a straight path to the pickup pose: slow and exact, turning in place to the path's
-    # heading and then to the goal's, as Noetic's precise_controlling configuration of TEB
+    # Docking at tables, along a straight path to the pickup pose: exact, turning in place to the path's heading and
+    # then to the goal's, as Noetic's precise_controlling configuration of TEB. MPPI can't dock, as it keeps off the
+    # inflated cost around the table, where the pickup pose is
     PreciseFollowPath:
       plugin: nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController
-      desired_linear_vel: 0.15
+      desired_linear_vel: 0.25
       lookahead_dist: 0.15
       min_lookahead_dist: 0.1
       max_lookahead_dist: 0.3
@@ -171,11 +178,11 @@ controller_server:
       transform_tolerance: 0.5
       use_rotate_to_heading: true
       rotate_to_heading_min_angle: 0.3
-      rotate_to_heading_angular_vel: 1.0
-      max_angular_accel: 1.0
+      rotate_to_heading_angular_vel: 1.5
+      max_angular_accel: 2.0
       use_regulated_linear_velocity_scaling: false
       use_cost_regulated_linear_velocity_scaling: false  # the table is close by design
-      approach_velocity_scaling_dist: 0.2
+      approach_velocity_scaling_dist: 0.1
       min_approach_linear_velocity: 0.05
       # steer for a point beyond the end of the path, along its last segment; steering for the goal itself, a few
       # centimeters off the robot's heading, makes it circle around the goal without ever reaching its tolerance
@@ -367,6 +374,24 @@ planner_server:
       use_astar: false
       allow_unknown: false
 
+    Smac2D:
+      plugin: "nav2_smac_planner::SmacPlanner2D"
+      downsample_costmap: false
+      downsampling_factor: 1
+      tolerance: 0.5
+      allow_unknown: true
+      max_iterations: 1000000
+      max_on_approach_iterations: 1000
+      max_planning_time: 5.0
+      cost_travel_multiplier: 2.0
+      use_final_approach_orientation: false
+      smoother:
+        max_iterations: 100
+        w_smooth: 0.3
+        w_data: 0.2
+        tolerance: 1.0e-4
+        do_refinement: false
+
 # Smooths paths, e.g. those computed through waypoints with compute_path_through_poses
 smoother_server:
   ros__parameters:
@@ -387,7 +412,7 @@ following_server:
     detection_timeout: 2.0
     controller_frequency: 20.0
     controller:
-      v_linear_max: 0.7  # Noetic's follow smoother limits
+      v_linear_max: 0.7
       v_angular_max: 2.0
       use_collision_detection: false
 

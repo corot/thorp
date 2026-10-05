@@ -27,7 +27,7 @@ def generate_launch_description():
         DeclareLaunchArgument('start_delay', default_value='0.0'),
         DeclareLaunchArgument('rviz', default_value='true'),
         DeclareLaunchArgument('world_name', default_value='fun_house'),
-        DeclareLaunchArgument('localization', default_value='amcl', description='amcl, static or gazebo'),
+        DeclareLaunchArgument('localization', default_value='gazebo', description='amcl, static or gazebo'),
         DeclareLaunchArgument('initial_pose_x', default_value='8.5'),
         DeclareLaunchArgument('initial_pose_y', default_value='6.0'),
         DeclareLaunchArgument('initial_pose_a', default_value='0.0'),

@@ -68,15 +68,16 @@ objects = ['wood_cube_2_5cm',
            'cross',
            'clover']
 
-# a sample of objects mostly at reachable locations
+# a sample of objects mostly at reachable locations; the cross, circle and pentagon face the arm docked at the
+# table, to be grasped across their wide side
 PLAYGROUND_OBJS = [('square',    'square',    (-0.22,  0.15,  0.5, 0.0, 0.0, 0.4)),
-                   ('cross',     'cross',     (-0.06,  0.15,  0.5, 0.0, 0.0, 0.75)),
-                   ('circle',    'circle',    (0.03,   0.12,  0.5, 0.0, 0.0, 1.15)),
+                   ('cross',     'cross',     (-0.06,  0.15,  0.5, 0.0, 0.0, 1.95)),
+                   ('circle',    'circle',    (-0.06,  0.04,  0.5, 0.0, 0.0, 1.61)),
                    ('cube',      'cube',      (0.01,   0.1,   0.5, 0.0, 0.0, 0.85)),
                    ('triangle',  'triangle',  (-0.13,  0.1,   0.5, 0.0, 0.0, 0.1)),
                    ('star',      'star',      (-0.17,  0.017, 0.5, 0.0, 0.0, 0.2)),
                    ('clover',    'clover',    (-0.11, -0.037, 0.5, 0.0, 0.0, 1.4)),
-                   ('pentagon',  'pentagon',  (-0.07, -0.14,  0.5, 0.0, 0.0, 0.15)),
+                   ('pentagon',  'pentagon',  (-0.12, -0.10,  0.5, 0.0, 0.0, 1.08)),
                    ('rectangle', 'rectangle', (-0.16, -0.16,  0.5, 0.0, 0.0, 1.1))]
 
 # cubes at reachable locations, ready to stack
