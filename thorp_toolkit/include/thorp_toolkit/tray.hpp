@@ -74,6 +74,24 @@ public:
     return free_slots;
   }
 
+  /**
+   * Pose of an object fallen onto the tray where it was released: level on the tray's surface, keeping its position
+   * and yaw.
+   * @param object Planning scene object, or anything with a header and a pose at its center
+   * @param height Object's height
+   * @return The pose on the tray frame, if the object's pose can be transformed to it
+   */
+  template <typename Object>
+  std::optional<geometry_msgs::msg::PoseStamped> restingPose(const Object& object, double height) const
+  {
+    geometry_msgs::msg::PoseStamped pose;
+    pose.header = object.header;
+    pose.pose = object.pose;
+    if (!TF2::instance().transformPose(link_, pose, pose))
+      return std::nullopt;
+    return createPose(pose.pose.position.x, pose.pose.position.y, height / 2.0, 0.0, 0.0, yaw(pose), link_);
+  }
+
 private:
   /**
    * Index of the slot an object is on, if it's on the tray: within its sides, from slightly below its base to well

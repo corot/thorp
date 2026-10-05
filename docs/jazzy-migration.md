@@ -324,6 +324,8 @@ Noetic's housekeeping services, and the servers for user commands and drag and d
   Placing poses are the gripper's, so the pose on the tray is raised by the held object's height, over
   `placing_height_on_tray` (8 mm over the tray frame, on the surface of its 2 mm base). Noetic placed the gripper at a
   fixed 3 cm, lower than the tops of the 3.2 cm objects once on the tray; MoveIt 1's place allowed touching the tray.
+  After placing, `SettleOnTray` lets the object fall onto the tray in the planning scene, as Noetic's `AddObjectToTray`
+  did, but where it was released: level on the surface, keeping its position and yaw, instead of aligned on its slot.
   `tray_link` is on the surface of the tray's base, 2 mm higher than on Noetic, where it was at its bottom: an object
   resting at the frame would be inside the base, and the robot in collision.
 
@@ -579,8 +581,9 @@ Differences with the Noetic simulation:
   table side split into 3 pickup locations. Maybe a table leg blocks the robot near a corner, as `GetPosesAroundTable`
   only checks the pose's own cell on the costmap, the pickup poses being under the table's eaves; not confirmed.
 - Tray slots are 3.5 cm apart, and objects on the tray stay in the planning scene, so placing next to a wide object
-  (a cross, say) often fails: a gripper finger, or opening the gripper, collides with it. In an `object_gatherer` run,
-  7 of 12 placements failed planning like this.
+  (a cross, say) often fails: a gripper finger, opening the gripper, or the held object itself, collides with it. In an
+  `object_gatherer` run, 7 of 12 placements failed planning like this; in a `cleanup_table` run with objects settled
+  on the tray, 1 of 7, a cube next to a cross.
 - The cat hunter's rockets topple a cat only when they hit its side: in a test world, a hit along its length tilted it
   1 degree. Following a cat, Thorp mostly shoots its rear, so in a 20-minute `cat_hunter` run 132 shots toppled none.
   Toppling is left to physics, as on Noetic.

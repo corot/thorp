@@ -314,6 +314,9 @@
             <output_port name="output" type="unsigned int"/>
             <input_port name="input" type="unsigned int"/>
         </Action>
+        <Action ID="SettleOnTray">
+            <input_port name="object_name" type="std::string"/>
+        </Action>
         <Action ID="Spin">
             <input_port name="spin_dist" type="double" default="1.570000">Spin distance</input_port>
             <input_port name="time_allowance" type="double" default="10.000000">Allowed time for spinning</input_port>

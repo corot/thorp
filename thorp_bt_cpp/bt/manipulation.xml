@@ -61,6 +61,7 @@
                       timeout="100"/>
         <NextPoseOnTray pose_on_tray="{pose_on_tray}"/>
       </RecoverAndRetry>
+      <SettleOnTray object_name="{object_name}"/>
     </Sequence>
   </BehaviorTree>
 

@@ -73,6 +73,7 @@ set(BT_NODES
   src/bt/actions/select_next_target.cpp
   src/bt/actions/set_arm_config.cpp
   src/bt/actions/set_blackboard.cpp
+  src/bt/actions/settle_on_tray.cpp
   src/bt/actions/table_as_obstacle.cpp
   src/bt/actions/track_progress.cpp
   src/bt/actions/transform_pose.cpp

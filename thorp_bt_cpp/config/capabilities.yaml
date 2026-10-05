@@ -159,7 +159,8 @@ capabilities:
   place_on_tray:
     description: >
       Place the held object on the robot's own tray, on the next free slot, found from the
-      objects already on the tray in the planning scene.
+      objects already on the tray in the planning scene; there, the placed object then lies
+      level on the tray, where it fell.
     status: ok
     stack: [manipulation]
     needs: {holding_object: pickup_object}
