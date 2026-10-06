@@ -1,11 +1,5 @@
 <!--
-  This Behavior Tree replans the global path periodically at 1 Hz and it also has
-  recovery actions specific to planning / control as well as general system issues.
-  This will be continuous if a kinematically valid planner is selected.
-
-  Nav2's default tree (nav2_bt_navigator's navigate_to_pose_w_replanning_and_recovery.xml), with the MPPI
-  controller, and selecting also FollowPath's goal checker, as the controller server has more than one: the general
-  one, unless another is published on goal_checker_selector.
+  Nav2's navigate_to_pose_w_replanning_and_recovery.xml, defaulting to MPPI, Smac 2D and the general goal checker.
 -->
 <root BTCPP_format="4" main_tree_to_execute="MainTree">
   <BehaviorTree ID="MainTree">

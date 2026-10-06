@@ -1,16 +1,7 @@
 <!--
-  This Behavior Tree replans the global path periodically every 3 seconds through an array of poses continuously
-   and it also has recovery actions specific to planning / control as well as general system issues.
-
-  Nav2's default tree (nav2_bt_navigator's navigate_through_poses_w_replanning_and_recovery.xml), with the RPP
-  controller, as MPPI gets stuck where a path turns back on itself, as into a dead end to a pose and back, and
-  selecting also FollowPath's goal checker, as the controller server has more than one: the general one, unless
-  another is published on goal_checker_selector. The path through the poses is smoothed, as it turns sharply at each
-  pose, where the paths between them meet. Poses passed within 0.5 m are dropped, as the executive's waypoints
-  reached, at 10 Hz, but the path only gets replanned without them every 3 seconds: a path replanned right after
-  dropping one cuts straight to the next pose, and RPP turns in place toward it. A path that can't be planned, even
-  after clearing the global costmap, fails the navigation without further recoveries: a pose is likely unreachable,
-  and the executive skips it.
+  Nav2's navigate_through_poses_w_replanning_and_recovery.xml, defaulting to RPP, Smac 2D and the general goal
+  checker. Passed poses are dropped at 10 Hz, and the path is replanned and smoothed every 3 seconds. A path that
+  can't be planned fails without recoveries, so the executive can skip the unreachable pose.
 -->
 <root BTCPP_format="4" main_tree_to_execute="MainTree">
   <BehaviorTree ID="MainTree">

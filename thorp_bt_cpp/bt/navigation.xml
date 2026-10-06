@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root BTCPP_format="4">
   <!--
-    Go through a list of waypoints with Nav2's navigate_through_poses, dropping the waypoints passed by within Nav2's
-    distance to drop them; only the last one's heading is reached. After a failure, as Nav2 fails if it can't plan the
-    path to any of them, it goes to the next waypoint alone, skipping it if unreachable, and resumes from the one after.
+    Go through a list of waypoints with Nav2's navigate_through_poses, reaching only the last one's heading. If that
+    fails, go to the next waypoint alone, skipping it if unreachable, and resume from the one after.
   -->
   <BehaviorTree ID="follow_waypoints">
     <Sequence>
