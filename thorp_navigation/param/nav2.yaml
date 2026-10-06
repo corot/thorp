@@ -62,7 +62,7 @@ controller_server:
     failure_tolerance: 0.3
     progress_checker_plugins: [progress_checker]
     goal_checker_plugins: [general_goal_checker, precise_goal_checker]
-    controller_plugins: [FollowPath, PreciseFollowPath]
+    controller_plugins: [MPPI, RPP]
     progress_checker:
       plugin: nav2_controller::SimpleProgressChecker
       required_movement_radius: 0.1  # as Noetic oscillation_distance and oscillation_timeout
@@ -80,7 +80,7 @@ controller_server:
     # MPPI replaces Noetic's TEB; velocity limits come from TEB, and acceleration limits from TurtleBot's velocity
     # smoother. A rotation shim turns to the goal's heading once at the goal's position, as MPPI turns very slowly
     # there; it doesn't turn toward new paths, as then MPPI keeps turning past it and they fight each other
-    FollowPath:
+    MPPI:
       plugin: nav2_rotation_shim_controller::RotationShimController
       primary_controller: nav2_mppi_controller::MPPIController
       angular_dist_threshold: 0.8
@@ -109,7 +109,7 @@ controller_server:
       regenerate_noises: true
       TrajectoryVisualizer:
         trajectory_step: 5
-        time_step: 3
+        time_step: 1
       critics: [ConstraintCritic, CostCritic, GoalCritic, GoalAngleCritic, PathAlignCritic, PathFollowCritic,
                 PathAngleCritic, PreferForwardCritic]
       ConstraintCritic:
@@ -165,24 +165,27 @@ controller_server:
         max_angle_to_furthest: 1.0
         mode: 0
 
-    # Docking at tables, along a straight path to the pickup pose: exact, turning in place to the path's heading and
-    # then to the goal's, as Noetic's precise_controlling configuration of TEB. MPPI can't dock, as it keeps off the
-    # inflated cost around the table, where the pickup pose is
-    PreciseFollowPath:
+    # Following waypoints and docking at tables: it tracks the path in order, where MPPI loses it if it turns back on
+    # itself near the robot, and keeps off the inflated cost around the table, where the pickup pose is. Docking goes
+    # straight to the pickup pose, turning in place to the path's heading and then to the goal's, as Noetic's
+    # precise_controlling configuration of TEB
+    RPP:
       plugin: nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController
-      desired_linear_vel: 0.25
-      lookahead_dist: 0.15
-      min_lookahead_dist: 0.1
-      max_lookahead_dist: 0.3
-      use_velocity_scaled_lookahead_dist: false
+      desired_linear_vel: 0.5
+      use_velocity_scaled_lookahead_dist: true
+      lookahead_time: 1.5
+      lookahead_dist: 0.6
+      min_lookahead_dist: 0.15
+      max_lookahead_dist: 0.9
+      max_robot_pose_search_dist: 1.0  # not to take a nearby stretch of a path turning back on itself
       transform_tolerance: 0.5
       use_rotate_to_heading: true
-      rotate_to_heading_min_angle: 0.3
+      rotate_to_heading_min_angle: 0.5
       rotate_to_heading_angular_vel: 1.5
       max_angular_accel: 2.0
-      use_regulated_linear_velocity_scaling: false
-      use_cost_regulated_linear_velocity_scaling: false  # the table is close by design
-      approach_velocity_scaling_dist: 0.1
+      use_regulated_linear_velocity_scaling: true
+      use_cost_regulated_linear_velocity_scaling: false  # the table is close by design when docking
+      approach_velocity_scaling_dist: 0.3
       min_approach_linear_velocity: 0.05
       # steer for a point beyond the end of the path, along its last segment; steering for the goal itself, a few
       # centimeters off the robot's heading, makes it circle around the goal without ever reaching its tolerance
@@ -365,10 +368,10 @@ map_server:
 planner_server:
   ros__parameters:
     expected_planner_frequency: 1.0  # Noetic replanned every second
-    planner_plugins: [GridBased]
+    planner_plugins: [Smac2D, NavFn]
     costmap_update_timeout: 1.0
-    # NavFn replaces Noetic's GlobalPlanner and NavfnPlanner
-    GridBased:
+    # Smac 2D, the navigator trees' default, and NavFn replace Noetic's GlobalPlanner and NavfnPlanner
+    NavFn:
       plugin: nav2_navfn_planner::NavfnPlanner
       tolerance: 0.0
       use_astar: false

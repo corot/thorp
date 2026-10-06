@@ -598,7 +598,8 @@ capabilities:
   follow_waypoints:
     description: >
       Go through a list of waypoints in order, as Nav2's navigate_through_poses plans them,
-      resuming from the next waypoint not passed yet whenever it fails.
+      resuming from the next waypoint not passed yet whenever it fails. Only the last
+      waypoint's heading is reached; the others are just driven through.
     status: ok
     stack: [navigation]
     invalidates: [at_a_table, objects_detected]

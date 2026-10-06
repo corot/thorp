@@ -29,6 +29,9 @@ public:
   size_t reachedWaypoint() const;
 
 private:
+  /** Show the reached waypoints solid, the rest semi-transparent, and the next one as big as the reaching distance */
+  void showWaypoints();
+
   std::vector<geometry_msgs::msg::PoseStamped> waypoints_;
   double reached_threshold_;
   size_t next_wp_;

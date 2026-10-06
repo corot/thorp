@@ -24,13 +24,7 @@ void ProgressTracker::init(const std::vector<geometry_msgs::msg::PoseStamped>& w
   min_dist_ = std::numeric_limits<double>::infinity();
   waypoints_ = waypoints;
   reached_threshold_ = reached_threshold;
-
-  // Visualize semi-transparent waypoints; will become solid once reached_
-  for (const auto& wp : waypoints_)
-  {
-    viz_.addDiscMarker(wp, 0.2, makeColor(0, 0, 1.0, 0.25));
-  }
-  viz_.publishMarkers();
+  showWaypoints();
 }
 
 void ProgressTracker::reset()
@@ -57,8 +51,6 @@ void ProgressTracker::updatePose(const geometry_msgs::msg::PoseStamped& robot_po
   double dist = distance2D(robot_pose, waypoints_[next_wp_]);
   if (reached_ && dist > min_dist_)
   {
-    viz_.addDiscMarker(waypoints_[next_wp_], 0.2, makeColor(0, 0, 1.0, 1.0));
-    viz_.publishMarkers();
     next_wp_ += 1;
 
     if (next_wp_ < waypoints_.size())
@@ -66,6 +58,7 @@ void ProgressTracker::updatePose(const geometry_msgs::msg::PoseStamped& robot_po
       // go for the next waypoint
       reached_ = false;
       min_dist_ = std::numeric_limits<double>::infinity();
+      showWaypoints();
     }
     else
     {
@@ -81,6 +74,18 @@ void ProgressTracker::updatePose(const geometry_msgs::msg::PoseStamped& robot_po
   {
     reached_ = true;
   }
+}
+
+void ProgressTracker::showWaypoints()
+{
+  // one marker per waypoint, so they keep their ids and RViz updates them in place
+  viz_.clearMarkers();
+  for (size_t i = 0; i < waypoints_.size(); ++i)
+  {
+    const double diameter = i == next_wp_ ? 2.0 * reached_threshold_ : 0.2;
+    viz_.addDiscMarker(waypoints_[i], diameter, makeColor(0, 0, 1.0, i < next_wp_ ? 1.0 : 0.25));
+  }
+  viz_.publishMarkers();
 }
 
 size_t ProgressTracker::nextWaypoint() const

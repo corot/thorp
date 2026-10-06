@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root BTCPP_format="4">
   <!--
-    Go through a list of waypoints: to the first one reachable, and then through the rest with Nav2's
-    navigate_through_poses, dropping the waypoints passed by, so after a failure it resumes from the next one.
+    Go through a list of waypoints with Nav2's navigate_through_poses, dropping the waypoints passed by within Nav2's
+    distance to drop them; only the last one's heading is reached. After a failure, as Nav2 fails if it can't plan the
+    path to any of them, it goes to the next waypoint alone, skipping it if unreachable, and resumes from the one after.
   -->
   <BehaviorTree ID="follow_waypoints">
     <Sequence>
-      <SubTree ID="reach_first_pose"
-               poses="{waypoints}"/>
       <RetryUntilSuccessful num_attempts="-1">
         <Fallback>
           <Parallel failure_count="1"
@@ -18,7 +17,7 @@
               <GetRobotPose timeout="1"
                             error="{error}"
                             robot_pose="{robot_pose}"/>
-              <TrackProgress reached_threshold="1"
+              <TrackProgress reached_threshold="0.5"
                              robot_pose="{robot_pose}"
                              next_waypoint="{next_waypoint}"
                              waypoints="{waypoints}"/>
@@ -27,6 +26,10 @@
           <Sequence>
             <SubTree ID="reach_first_pose"
                      poses="{waypoints}"/>
+            <ForceSuccess>
+              <PopPoseFromList element="{next_pose}"
+                               list="{waypoints}"/>
+            </ForceSuccess>
             <IsPoseListEmpty list="{waypoints}"/>
           </Sequence>
         </Fallback>
@@ -35,10 +38,6 @@
     </Sequence>
   </BehaviorTree>
 
-  <!--
-    Drive to one pose, with no list and no retrying: the single pose counterpart of
-    reach_first_pose, for a caller that has already decided where it wants to be.
-  -->
   <BehaviorTree ID="goto_pose">
     <Sequence>
       <PublishPose pose="{pose}"/>

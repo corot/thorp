@@ -58,7 +58,7 @@
                   path="{path}"/>
       <Timeout msec="60000">
         <FollowPath path="{path}"
-                    controller_id="PreciseFollowPath"
+                    controller_id="RPP"
                     goal_checker_id="precise_goal_checker"
                     error_code_id="{nav_error}"/>
       </Timeout>
