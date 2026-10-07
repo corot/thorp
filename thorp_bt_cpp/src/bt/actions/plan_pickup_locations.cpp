@@ -27,7 +27,8 @@ namespace thorp::bt::actions
  * Group the objects on a table into pickup locations, the poses around it from where the arm reaches them, and sort
  * the locations to visit as few as possible, travelling the least: a pickup plan. Each object is picked from the
  * location where it's closest to the arm. Shows the plan on RViz: the pickup poses on ~/pickup_poses, and on
- * ~/pickup_plan each location's arm reach, labeled with its order, name and objects count, and its objects' names.
+ * ~/pickup_plan each location's arm reach, labeled with its visiting order out of all and its objects count, and its
+ * objects' names, in the location's color.
  */
 class PlanPickupLocations : public BT::SyncActionNode
 {
@@ -106,9 +107,10 @@ private:
 
     const auto plan = removeDuplicates(bestOrder(robot_pose, locations));
     std::ostringstream summary;
-    for (const auto& location : plan)
+    for (size_t i = 0; i < plan.size(); ++i)
     {
-      summary << " " << location.name << " (";
+      const auto& location = plan[i];
+      summary << " " << i + 1 << " (";
       for (const auto& object : location.objects)
         summary << (&object == &location.objects.front() ? "" : ", ") << object.name;
       summary << ")";
@@ -132,13 +134,14 @@ private:
       markers_.addDiscMarker(location.arm_pose, max_reach * 2.0, color);
       auto label_pose = location.arm_pose;
       label_pose.pose.position.z += 0.15;
-      const auto label = std::to_string(i + 1) + " " + location.name + " " + std::to_string(location.objects.size());
+      const auto label = std::to_string(i + 1) + "/" + std::to_string(plan.size()) + " (" +
+                         std::to_string(location.objects.size()) + ")";
       markers_.addTextMarker(label_pose, label, 0.2, color);
       for (const auto& object : location.objects)
       {
         auto object_pose = object.pose;
         object_pose.pose.position.z += 0.05;
-        markers_.addTextMarker(object_pose, location.name + " " + object.name, 0.1, color);
+        markers_.addTextMarker(object_pose, object.name, 0.1, color);
       }
       poses.poses.push_back(location.pickup_pose.pose);
       poses.poses.back().position.z += 0.025;  // over the costmap, so it can be seen
