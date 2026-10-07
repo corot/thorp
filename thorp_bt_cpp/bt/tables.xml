@@ -33,7 +33,7 @@
       <GetClosestPose poses="{pickup_poses}"
                       target_pose="{robot_pose}"
                       closest_pose="{pickup_pose}"/>
-      <SubTree ID="attach_to_table"
+      <SubTree ID="reach_table"
                table="{table}"
                pose="{pickup_pose}"
                error="{error}"
@@ -46,7 +46,7 @@
     on the local costmap, so the controller doesn't take it as an obstacle. Docking that can't reach the pickup pose's
     tolerance fails after a minute, as the progress checker never stops a robot that keeps moving around the goal.
   -->
-  <BehaviorTree ID="attach_to_table">
+  <BehaviorTree ID="reach_table">
     <Sequence>
       <ClearTableAccess table="{table}"
                         table_pose="{pose}"/>
@@ -66,11 +66,11 @@
   </BehaviorTree>
 
   <!--
-    Back straight out from the table the robot is parked against. attach_to_table drives in
+    Back straight out from the table the robot is parked against. reach_table drives in
     head-on, so backing up moves away from the table; it retreats as far as the pickup
     planner's detach poses do, far enough to navigate around the table again.
   -->
-  <BehaviorTree ID="detach_from_table">
+  <BehaviorTree ID="leave_table">
     <Sequence>
       <ReadDoubleParam param_name="pickup_dist_to_table"
                        output_key="{pickup_dist_to_table}"/>
@@ -199,12 +199,12 @@
                                       pickup_pose="{pickup_pose}"/>
                 <NavigateToPose goal="{approach_pose}"
                                 error_code_id="{nav_error}"/>
-                <SubTree ID="attach_to_table"
+                <SubTree ID="reach_table"
                          table="{table}"
                          pose="{pickup_pose}"/>
                 <SubTree ID="pickup_objects"/>
                 <ClearPlanningScene keep_tray="true"/>
-                <SubTree ID="detach_from_table"/>
+                <SubTree ID="leave_table"/>
               </Sequence>
             </ForEachPickupLocation>
           </Sequence>

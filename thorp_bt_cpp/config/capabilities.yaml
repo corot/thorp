@@ -257,8 +257,8 @@ capabilities:
       arm to reach what is on it: finds the table, works out where to stand and docks there
       precisely, under the table's eaves. The step before picking from or placing on a table. It finds the
       table itself, so it takes no arguments; from inspect_table's viewing pose it sees the
-      table better than from further back. Its pickup_pose is what attach_to_table takes to go
-      back in after detach_from_table.
+      table better than from further back. Its pickup_pose is what reach_table takes to go
+      back in after leave_table.
     status: ok
     stack: [navigation, perception]
     invalidates: [objects_detected]
@@ -266,12 +266,12 @@ capabilities:
     outputs:
       table: {type: moveit_msgs::msg::CollisionObject, description: "the table it parked against"}
       table_pose: {type: geometry_msgs::msg::PoseStamped, description: "where that table is, in the map frame"}
-      pickup_pose: {type: geometry_msgs::msg::PoseStamped, description: "the pose it parked at, for attach_to_table"}
+      pickup_pose: {type: geometry_msgs::msg::PoseStamped, description: "the pose it parked at, for reach_table"}
       error: {type: int, when: failure, description: "error code from reading the robot pose"}
       nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's follow_path, docking"}
     test:
       inputs: {}
-      expect: any          # the same attach as attach_to_table, which the scene can defeat
+      expect: any          # the same docking as reach_table, which the scene can defeat
       timeout: 180
 
   inspect_table:
@@ -295,10 +295,10 @@ capabilities:
       expect: any
       timeout: 300
 
-  attach_to_table:
+  reach_table:
     description: >
       Dock head-on at a table, precisely and under its eaves, at approach_table's pickup_pose. approach_table already ends this way; use this to go back
-      in after detach_from_table without detecting the table again.
+      in after leave_table without detecting the table again.
     status: ok
     stack: [navigation, perception]
     invalidates: [objects_detected]
@@ -317,7 +317,7 @@ capabilities:
       expect: any
       timeout: 180
 
-  detach_from_table:
+  leave_table:
     description: >
       Back straight out from the table the robot is parked against, far enough to navigate
       around it again, and restore the table's costmap footprint. Takes
@@ -673,7 +673,7 @@ not_capabilities:
     than crash the server, and one that supplies it checks a json array seeds a pose list.
   test_server_local_offset: >
     Test fixture: a TransformPose offset along the pose's own axes, which is how
-    detach_from_table backs out.
+    leave_table backs out.
   test_server_table: >
     Test fixture: TableValidSize reads only a table's width and depth, so whether it passes
     says whether those fields survived being seeded from json.
