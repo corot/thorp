@@ -436,8 +436,20 @@ int32_t PickAndPlaceServer::place(const PlaceObject::Goal& goal, const Feedback&
   if (int32_t error = makeTargetPoses(*scene, place_pose.translation(), gripper_poses); error != ThorpError::SUCCESS)
     return error;
 
+  std::vector<std::string> placing_links = gripper_links_;
+  placing_links.push_back(object_name);
+
   mtc::Task task = makeTask("place " + object_name, scene);
-  mtc::Stage* current_state_stage = task[0];
+  mtc::Stage* place_scene_stage = task[0];
+  if (!goal.allowed_touch_objects.empty())
+  {
+    // The gripper and the object can touch them during the whole placement, as the place pose IK takes its planning
+    // scene from here
+    auto stage = std::make_unique<mtc::stages::ModifyPlanningScene>("allow touching objects");
+    stage->allowCollisions(goal.allowed_touch_objects, placing_links, true);
+    place_scene_stage = stage.get();
+    task.add(std::move(stage));
+  }
 
   auto move_to_place = std::make_unique<mtc::stages::Connect>(
       "move to place", mtc::stages::Connect::GroupPlannerVector{ { ARM_GROUP, sampling_planner_ } });
@@ -462,7 +474,7 @@ int32_t PickAndPlaceServer::place(const PlaceObject::Goal& goal, const Feedback&
     auto generator = std::make_unique<mtc::stages::FixedCartesianPoses>("place poses");
     for (const auto& pose : gripper_poses)
       generator->addPose(pose);
-    generator->setMonitoredStage(current_state_stage);
+    generator->setMonitoredStage(place_scene_stage);
     auto stage = std::make_unique<mtc::stages::ComputeIK>("place pose IK", std::move(generator));
     stage->setMaxIKSolutions(4);
     stage->setMinSolutionDistance(0.5);
@@ -474,7 +486,7 @@ int32_t PickAndPlaceServer::place(const PlaceObject::Goal& goal, const Feedback&
   if (!goal.support_surf.empty())
   {
     // The gripper and the object can touch the support surface while releasing and retreating; not before, as the
-    // place pose IK takes its planning scene from the current state, so place poses need some clearance
+    // place pose IK takes its planning scene from before the move to place, so place poses need some clearance
     auto stage = std::make_unique<mtc::stages::ModifyPlanningScene>("allow support contacts");
     stage->allowCollisions(goal.support_surf, gripper_links_, true);
     stage->allowCollisions(object_name, goal.support_surf, true);
@@ -516,6 +528,8 @@ int32_t PickAndPlaceServer::place(const PlaceObject::Goal& goal, const Feedback&
       stage->allowCollisions(goal.support_surf, gripper_links_, false);
       stage->allowCollisions(object_name, goal.support_surf, false);
     }
+    if (!goal.allowed_touch_objects.empty())
+      stage->allowCollisions(goal.allowed_touch_objects, placing_links, false);
     place->insert(std::move(stage));
   }
   task.add(std::move(place));

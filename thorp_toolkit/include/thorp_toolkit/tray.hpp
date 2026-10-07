@@ -36,6 +36,11 @@ public:
     slots_y_ = static_cast<int>(std::round(side_y / slot_ + 0.1));
   }
 
+  const std::string& link() const
+  {
+    return link_;
+  }
+
   size_t capacity() const
   {
     return slots_x_ * slots_y_;

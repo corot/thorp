@@ -3,6 +3,7 @@
 string object_name
 string support_surf
 geometry_msgs/PoseStamped place_pose
+string[] allowed_touch_objects  # objects the gripper and the held object can touch while placing, as those on the tray
 
 ---
 

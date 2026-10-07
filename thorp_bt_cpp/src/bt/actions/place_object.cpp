@@ -3,8 +3,10 @@
 #include <nav2_behavior_tree/bt_action_node.hpp>
 
 #include "thorp_bt_cpp/node_common.hpp"
+#include "thorp_bt_cpp/planning_scene.hpp"
 
 #include <thorp_msgs/action/place_object.hpp>
+#include <thorp_toolkit/tray.hpp>
 
 namespace thorp::bt::actions
 {
@@ -36,6 +38,22 @@ private:
     goal_.object_name = requireInput<std::string>(*this, "object_name");
     goal_.support_surf = requireInput<std::string>(*this, "support_surf");
     goal_.place_pose = requireInput<geometry_msgs::msg::PoseStamped>(*this, "place_pose");
+    // Tray slots are tight, so placing on it can touch the objects already there
+    goal_.allowed_touch_objects.clear();
+    const thorp::toolkit::Tray tray;
+    if (goal_.support_surf == tray.link())
+    {
+      std::vector<moveit_msgs::msg::CollisionObject> on_tray;
+      for (const auto& [name, object] : planningScene().getObjects())
+      {
+        if (!tray.onTray(object))
+          continue;
+        on_tray.push_back(object);
+        goal_.allowed_touch_objects.push_back(name);
+      }
+      RCLCPP_INFO_EXPRESSION(logger(*this), !on_tray.empty(), "Objects on the tray we can touch: %s",
+                             objectIds(on_tray).c_str());
+    }
   }
 
   void on_wait_for_result(std::shared_ptr<const ActionType::Feedback> feedback) override
