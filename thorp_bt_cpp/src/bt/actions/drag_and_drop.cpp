@@ -17,8 +17,8 @@ namespace thorp::bt::actions
 {
 /**
  * Wait for the user to drag and drop a tabletop object on RViz, through the move_objects interactive markers, and
- * return its name, and its pickup and place poses. The place pose is the gripper's, as the place action takes it:
- * the object's top once resting at the drop position, placing_height_on_table above.
+ * return its name, and its pickup and place poses. The place pose is the object's, as the place action takes it:
+ * its center once resting at the drop position, placing_height_on_table above.
  */
 class DragAndDrop : public BT::StatefulActionNode
 {
@@ -49,7 +49,6 @@ private:
   // us holding its own lock, so we never call it holding ours
   std::mutex mutex_;
   std::optional<Drop> drop_;
-  std::map<std::string, double> heights_;
   geometry_msgs::msg::Pose drag_start_;
 
   BT::NodeStatus onStart() override
@@ -62,9 +61,6 @@ private:
     {
       std::lock_guard<std::mutex> lock(mutex_);
       drop_.reset();
-      heights_.clear();
-      for (const auto& [id, object] : objects)
-        heights_[id] = objectHeight(object);
     }
     markers_.clear();
     for (const auto& [id, object] : objects)
@@ -117,8 +113,7 @@ private:
       drop.pickup_pose.header = drop.place_pose.header = feedback->header;
       drop.pickup_pose.pose = drag_start_;
       drop.place_pose.pose = feedback->pose;
-      drop.place_pose.pose.position.z +=
-          heights_[feedback->marker_name] / 2.0 + rosNode(*this)->get_parameter_or("placing_height_on_table", 0.005);
+      drop.place_pose.pose.position.z += rosNode(*this)->get_parameter_or("placing_height_on_table", 0.005);
       drop_ = drop;
     }
   }

@@ -70,7 +70,7 @@ class TestPickAndPlace(Node):
         place_pose = PoseStamped()
         place_pose.header.frame_id = 'base_footprint'
         place_pose.pose.position.x, place_pose.pose.position.y = 0.26, -0.08
-        place_pose.pose.position.z = TABLE_HEIGHT + CUBE_SIDE + 0.005
+        place_pose.pose.position.z = TABLE_HEIGHT + CUBE_SIDE / 2.0 + 0.005
         place_pose.pose.orientation.w = 1.0
         self.run(self._place, PlaceObject.Goal(object_name='cube', support_surf='table', place_pose=place_pose))
 

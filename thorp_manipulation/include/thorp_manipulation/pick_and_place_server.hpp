@@ -76,6 +76,8 @@ private:
   rclcpp::Node::SharedPtr node_;
   moveit::core::RobotModelConstPtr robot_model_;
   std::vector<std::string> gripper_links_;
+  // Corners of the open gripper links' bounding boxes, relative to the gripper link
+  std::vector<Eigen::Vector3d> open_gripper_corners_;
 
   moveit::task_constructor::solvers::PipelinePlannerPtr sampling_planner_;
   moveit::task_constructor::solvers::JointInterpolationPlannerPtr interpolation_planner_;

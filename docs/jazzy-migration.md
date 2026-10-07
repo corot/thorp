@@ -235,12 +235,17 @@ capability; its feedback is the stage being executed (`planning`, `open gripper`
 `close gripper`, `retreat`...). Canceling a goal stops planning or execution. Objects to pick must be in the planning
 scene; they are attached to `gripper_link` on pickup, and detached on place. Grasp and place poses are Noetic's: yaw
 towards the target, pitch from the distance and height, with small pitch variations as alternatives, plus the real
-arm's compensations (backlash, gripper asymmetry, distance fall short) as parameters. The gripper closes to the object
-side across it minus `tightening`, converted into a `gripper_joint` angle with Noetic's one-sided gripper model;
-`max_effort` is ignored, as `move_group` sends its controller's fixed maximum effort. Place poses are gripper targets,
-as on Noetic, and need some clearance over the support surface: contacts with it are allowed only after the place pose
-IK. To release the object, the gripper opens only 1.5 cm wider than it, not to hit objects around, as those already on
-the tray. Tasks plan from the measured state with its velocities cleared and its positions clamped to the joint limits:
+arm's compensations (backlash, gripper asymmetry, distance fall short) as parameters. Grasps aim at the object's widest
+section across the fingers, found on its mesh, as for circles and crosses it's at mid height; they are raised if needed
+to keep the open gripper 5 mm over the support surface. Noetic grasped objects by their top. The gripper closes to the
+object side across it minus `tightening`, converted into a `gripper_joint` angle with Noetic's one-sided gripper model;
+`max_effort` is ignored, as `move_group` sends its controller's fixed maximum effort. Place poses are the object's, so
+the gripper target is offset by where the gripper holds it, except across the fingers, as the arm, lacking a roll joint,
+only reaches poses yawed toward their position; Noetic's place poses were gripper targets. They need some clearance over
+the support surface: contacts with it are allowed only after the place pose IK, while those with `allowed_touch_objects`
+are allowed for the whole placement. To release the object, the gripper opens only 1.5 cm wider than it, not to hit
+objects around, as those already on the tray. Tasks plan from the measured state with its velocities cleared and its
+positions clamped to the joint limits:
 MTC checks the start state bounds, velocities included, and pickups failed now and then with the start state out of
 bounds, just after closing the gripper. On shutdown, a goal being executed stops waiting for its result, so the node
 exits cleanly.
@@ -318,11 +323,12 @@ Noetic's housekeeping services, and the servers for user commands and drag and d
   panel publishes them, instead of serving `jsk_rviz_plugins`' command service; it still echoes them as an overlay
   text, on `rviz/user_command`.
 - `DragAndDrop` serves the `move_objects` interactive markers itself, instead of calling a drag and drop action server
-  in `thorp_manipulation`. Its place pose is the gripper's, as the place action takes it: the object's top once resting
-  at the drop position, plus `placing_height_on_table`.
+  in `thorp_manipulation`. Its place pose is the object's center once resting at the drop position, plus
+  `placing_height_on_table`.
 - The tray has no state: `NextPoseOnTray` and `TrayFull` find the free slots from the planning scene objects on it.
-  Placing poses are the gripper's, so the pose on the tray is raised by the held object's height, over
-  `placing_height_on_tray` (8 mm over the tray frame, on the surface of its 2 mm base). Noetic placed the gripper at a
+  Placing poses are the object's, so the pose on the tray is raised by half the held object's height, over
+  `placing_height_on_tray` (1 cm over the tray frame, on the surface of its 2 mm base). `PlaceObject` passes the
+  objects already on the tray as `allowed_touch_objects`, as slots are tight. Noetic placed the gripper at a
   fixed 3 cm, lower than the tops of the 3.2 cm objects once on the tray; MoveIt 1's place allowed touching the tray.
   After placing, `SettleOnTray` lets the object fall onto the tray in the planning scene, as Noetic's `AddObjectToTray`
   did, but where it was released: level on the surface, keeping its position and yaw, instead of aligned on its slot.

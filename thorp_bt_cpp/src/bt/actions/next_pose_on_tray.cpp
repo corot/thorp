@@ -8,8 +8,8 @@
 namespace thorp::bt::actions
 {
 /**
- * Pose to place the object in the gripper on the next free slot of the tray. Placing poses are the gripper's, that
- * grasps objects by their top, so the pose is raised by the object's height.
+ * Pose to place the object in the gripper on the next free slot of the tray. Placing poses are the object's, so the
+ * slot pose is raised by half the object's height, to its center.
  *
  * @return  SUCCESS with the pose, FAILURE if the tray is full
  */
@@ -37,7 +37,7 @@ private:
     geometry_msgs::msg::PoseStamped pose = free_slots.front();
     const auto attached_objects = planningScene().getAttachedObjects();
     if (!attached_objects.empty())
-      pose.pose.position.z += objectHeight(attached_objects.begin()->second.object);
+      pose.pose.position.z += objectHeight(attached_objects.begin()->second.object) / 2.0;
     setOutput("pose_on_tray", pose);
     return BT::NodeStatus::SUCCESS;
   }

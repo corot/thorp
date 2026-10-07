@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <limits>
 #include <map>
 #include <set>
 #include <sstream>
@@ -44,6 +45,10 @@ constexpr double PLACE_APPROACH_MIN = 0.01;
 constexpr double PLACE_APPROACH_MAX = 0.05;
 // Opening the gripper this much wider than the held object releases it
 constexpr double RELEASE_MARGIN = 0.015;
+// Object vertices this close to its widest extent across the fingers belong to its widest section
+constexpr double WIDEST_SECTION_MARGIN = 0.002;
+// Height of the open gripper over the surface supporting the object to grasp
+constexpr double SUPPORT_CLEARANCE = 0.005;
 
 template <typename T>
 T param(const rclcpp::Node::SharedPtr& node, const std::string& name, const T& default_value)
@@ -108,6 +113,65 @@ geometry_msgs::msg::Vector3Stamped gripperDirection(double x)
   return direction;
 }
 
+std::vector<Eigen::Vector3d> boxCorners(const Eigen::Vector3d& center, const Eigen::Vector3d& half_size)
+{
+  std::vector<Eigen::Vector3d> corners;
+  for (int i = 0; i < 8; ++i)
+    corners.push_back(center + Eigen::Vector3d((i & 1 ? 1 : -1) * half_size.x(), (i & 2 ? 1 : -1) * half_size.y(),
+                                               (i & 4 ? 1 : -1) * half_size.z()));
+  return corners;
+}
+
+/**
+ * Height of an object's widest section across the gripper fingers, where they close on it: the middle of its vertices
+ * farthest to both sides along the fingers' closing axis. Shapes other than meshes count as their bounding boxes.
+ * @param shape The object's shape
+ * @param pose The shape's pose
+ * @param closing_axis The fingers' closing axis, horizontal, on the same frame as the pose
+ */
+double widestSectionHeight(const shapes::Shape& shape, const Eigen::Isometry3d& pose,
+                           const Eigen::Vector3d& closing_axis)
+{
+  std::vector<Eigen::Vector3d> vertices;
+  if (shape.type == shapes::MESH)
+  {
+    const auto& mesh = static_cast<const shapes::Mesh&>(shape);
+    for (unsigned int i = 0; i < mesh.vertex_count; ++i)
+      vertices.push_back(pose *
+                         Eigen::Vector3d(mesh.vertices[3 * i], mesh.vertices[3 * i + 1], mesh.vertices[3 * i + 2]));
+  }
+  else
+  {
+    const Eigen::Vector3d half_size = shapes::computeShapeExtents(&shape) / 2.0;
+    for (const Eigen::Vector3d& corner : boxCorners(Eigen::Vector3d::Zero(), half_size))
+      vertices.push_back(pose * corner);
+  }
+
+  double min_extent = std::numeric_limits<double>::max();
+  double max_extent = std::numeric_limits<double>::lowest();
+  for (const Eigen::Vector3d& vertex : vertices)
+  {
+    min_extent = std::min(min_extent, vertex.dot(closing_axis));
+    max_extent = std::max(max_extent, vertex.dot(closing_axis));
+  }
+  double min_side_height = 0.0, max_side_height = 0.0;
+  int min_side_count = 0, max_side_count = 0;
+  for (const Eigen::Vector3d& vertex : vertices)
+  {
+    if (vertex.dot(closing_axis) < min_extent + WIDEST_SECTION_MARGIN)
+    {
+      min_side_height += vertex.z();
+      ++min_side_count;
+    }
+    if (vertex.dot(closing_axis) > max_extent - WIDEST_SECTION_MARGIN)
+    {
+      max_side_height += vertex.z();
+      ++max_side_count;
+    }
+  }
+  return (min_side_height / min_side_count + max_side_height / max_side_count) / 2.0;
+}
+
 /**
  * Fixed target poses for the gripper, spawned with it open, so the motion that reaches them opens it on the way.
  */
@@ -159,6 +223,18 @@ PickAndPlaceServer::PickAndPlaceServer(const rclcpp::Node::SharedPtr& node,
   if (!robot_model_)
     throw std::runtime_error("Failed to load the robot model");
   gripper_links_ = robot_model_->getJointModelGroup(GRIPPER_GROUP)->getLinkModelNamesWithCollisionGeometry();
+  moveit::core::RobotState open_gripper(robot_model_);
+  open_gripper.setToDefaultValues();
+  open_gripper.setToDefaultValues(robot_model_->getJointModelGroup(GRIPPER_GROUP), "open");
+  open_gripper.update();
+  const Eigen::Isometry3d to_gripper_link = open_gripper.getGlobalLinkTransform(GRIPPER_LINK).inverse();
+  for (const std::string& name : gripper_links_)
+  {
+    const moveit::core::LinkModel* link = robot_model_->getLinkModel(name);
+    for (const Eigen::Vector3d& corner :
+         boxCorners(link->getCenteredBoundingBoxOffset(), link->getShapeExtentsAtOrigin() / 2.0))
+      open_gripper_corners_.push_back(to_gripper_link * open_gripper.getGlobalLinkTransform(link) * corner);
+  }
 
   sampling_planner_ = std::make_shared<mtc::solvers::PipelinePlanner>(planning_node, "ompl", "RRTConnect");
   // Workspace bounds only matter to planar or floating joints, that the arm lacks; MoveIt warns if there are none
@@ -305,18 +381,39 @@ int32_t PickAndPlaceServer::pickup(const PickupObject::Goal& goal, const Feedbac
     return ThorpError::OBJECT_SIZE_NOT_FOUND;
   }
 
-  // Grasp the object from its top center; we assume objects are made of a single shape
+  // Grasp the object across its widest section, but with the open gripper clear of the support surface, and never
+  // above its top; we assume objects are made of a single shape, centered on their pose
   Eigen::Vector3d object_size = shapes::computeShapeExtents(object->shapes_.front().get());
-  Eigen::Isometry3d object_pose = scene->getFrameTransform(arm_ref_frame_).inverse() * object->pose_;
-  Eigen::Vector3d grasp_point = object_pose.translation() + Eigen::Vector3d(0.0, 0.0, object_size.z() / 2.0);
+  const Eigen::Isometry3d to_arm_base = scene->getFrameTransform(arm_ref_frame_).inverse();
+  Eigen::Isometry3d object_pose = to_arm_base * object->pose_;
+  const double top = object_pose.translation().z() + object_size.z() / 2.0;
+  const double base = top - object_size.z();
+  Eigen::Vector3d grasp_point(object_pose.translation().x(), object_pose.translation().y(), top);
   std::vector<geometry_msgs::msg::PoseStamped> grasp_poses;
   if (int32_t error = makeTargetPoses(*scene, grasp_point, grasp_poses); error != ThorpError::SUCCESS)
     return error;
   Eigen::Isometry3d grasp_pose;
   tf2::fromMsg(grasp_poses.front().pose, grasp_pose);
+  // All the grasp poses have the same yaw, and the fingers close along the gripper's y axis
+  const double lowering = top - widestSectionHeight(*object->shapes_.front(),
+                                                    to_arm_base * object->global_shape_poses_.front(),
+                                                    grasp_pose.linear().col(1));
+  for (auto& pose : grasp_poses)
+  {
+    Eigen::Isometry3d gripper;
+    tf2::fromMsg(pose.pose, gripper);
+    gripper.translation().z() -= lowering;
+    double lowest = std::numeric_limits<double>::max();
+    for (const Eigen::Vector3d& corner : open_gripper_corners_)
+      lowest = std::min(lowest, (gripper * corner).z());
+    gripper.translation().z() += std::min(std::max(base + SUPPORT_CLEARANCE - lowest, 0.0), lowering);
+    pose.pose = tf2::toMsg(gripper);
+  }
+  tf2::fromMsg(grasp_poses.front().pose, grasp_pose);
   double opening = graspOpening(yaw(grasp_pose), yaw(object_pose), tf2::toMsg2(object_size), goal.tightening);
-  RCLCPP_INFO(node_->get_logger(), "Object size %.1f x %.1f x %.1f cm; gripper opening %.1f cm",
-              object_size.x() * 100, object_size.y() * 100, object_size.z() * 100, opening * 100);
+  RCLCPP_INFO(node_->get_logger(), "Object size %.1f x %.1f x %.1f cm; grasp %.1f cm over its base, opening %.1f cm",
+              object_size.x() * 100, object_size.y() * 100, object_size.z() * 100,
+              (grasp_pose.translation().z() - base) * 100, opening * 100);
 
   mtc::Task task = makeTask("pickup " + goal.object_name, scene);
   mtc::Stage* current_state_stage = task[0];
@@ -435,6 +532,17 @@ int32_t PickAndPlaceServer::place(const PlaceObject::Goal& goal, const Feedback&
   std::vector<geometry_msgs::msg::PoseStamped> gripper_poses;
   if (int32_t error = makeTargetPoses(*scene, place_pose.translation(), gripper_poses); error != ThorpError::SUCCESS)
     return error;
+  // The place pose is the object's, so the gripper goes where it puts the object there, as it holds it; but not across
+  // the fingers, as the arm, lacking a roll joint, only reaches poses yawed toward their position
+  Eigen::Vector3d held_object = attached_bodies.front()->getPose().translation();
+  held_object.y() = 0.0;
+  for (auto& pose : gripper_poses)
+  {
+    Eigen::Isometry3d gripper;
+    tf2::fromMsg(pose.pose, gripper);
+    gripper.translation() -= gripper.linear() * held_object;
+    pose.pose = tf2::toMsg(gripper);
+  }
 
   std::vector<std::string> placing_links = gripper_links_;
   placing_links.push_back(object_name);
