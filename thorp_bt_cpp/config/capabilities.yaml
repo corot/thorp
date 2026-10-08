@@ -195,17 +195,32 @@ capabilities:
       expect: succeeded
       timeout: 60
 
+  stow_arm:
+    description: >
+      Fold the arm into its stowed pose, out of the camera's view, while half-closing the
+      gripper unless it holds an object. For driving around, or to clear the camera's view
+      before detecting objects.
+    status: ok
+    stack: [manipulation]
+    inputs: {}
+    outputs:
+      error: {type: int, when: failure, description: "error code from move_group moving the arm to stow"}
+    test:
+      inputs: {}
+      expect: succeeded
+      timeout: 60
+
   finish_manipulation:
     description: >
-      Rest the arm, then remove from the planning scene every object but those on the tray,
-      table included. For wrapping up after manipulating at a table. An object still in the
-      gripper stays attached; clear_gripper first to drop it.
+      Stow the arm as stow_arm does, then remove from the planning scene every object but
+      those on the tray, table included. For wrapping up after manipulating at a table. An
+      object still in the gripper stays attached; clear_gripper first to drop it.
     status: ok
     stack: [manipulation]
     invalidates: [objects_detected]
     inputs: {}
     outputs:
-      error: {type: int, when: failure, description: "error code from move_group moving the arm to rest"}
+      error: {type: int, when: failure, description: "error code from move_group moving the arm to stow"}
     test:
       inputs: {}
       expect: succeeded
@@ -660,7 +675,7 @@ capabilities:
 # mean a capability nobody ever told the agent about.
 not_capabilities:
   test_reset_scene: >
-    Test fixture: empties the gripper, rests the arm and clears the planning scene, for
+    Test fixture: empties the gripper, stows the arm and clears the planning scene, for
     test_capabilities.py to start every test from the same robot state.
   test_server: >
     Test fixture: transforms a pose and reads back four parameters, exercising bt_server's

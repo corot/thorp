@@ -249,7 +249,7 @@ def reset_scene(runner, initial_model_poses):
 
     Two parts. The robot's, through bt_server's test_reset_scene tree: the gripper empty, first,
     as an object MoveIt believes attached survives everything else, and then pickups fail on it;
-    the arm resting, out of the camera's view; and MoveIt's planning scene empty, for the next
+    the arm stowed, out of the camera's view; and MoveIt's planning scene empty, for the next
     detect_objects to fill it from what the camera can actually see. Then the world's, on
     simulation: every model back to its pose at the start of the session, so the objects are
     back on the table, and Thorp at its start, what navigation follows only with Gazebo's ground

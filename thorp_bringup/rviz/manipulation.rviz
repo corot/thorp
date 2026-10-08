@@ -29,7 +29,7 @@ Panels:
         Name: clear gripper
       - Command: fold
         Icon: package://thorp_bringup/rviz/icons/fold.png
-        Name: fold arm
+        Name: stow arm
     Class: thorp_rviz_plugins/UserCommands
     Name: User Commands
     Topic: /user_command

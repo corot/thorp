@@ -1,4 +1,4 @@
-# Octomap from the Xtion depth images; disabled, as the octomap gets voxels in contact with the resting gripper,
+# Octomap from the Xtion depth images; disabled, as the octomap gets voxels in contact with the stowed gripper,
 # making every planning request start in collision (see the known issues in the migration doc)
 sensors: []
 # xtion:

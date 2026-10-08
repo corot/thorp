@@ -4,7 +4,7 @@ Pickup and place tabletop objects, as the user drags and drops them on RViz.
 
 Requirements:
 - Perception and manipulation
-- User commands from RViz's User Commands panel: start, stop, reset, exit, clear gripper and fold arm
+- User commands from RViz's User Commands panel: start, stop, reset, exit, clear gripper and stow arm
 """
 
 from launch import LaunchDescription
