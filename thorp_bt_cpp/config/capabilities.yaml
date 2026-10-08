@@ -146,9 +146,9 @@ capabilities:
       error: {type: int, when: failure, description: "error code from the place action; 0 when it worked"}
     test:
       # A clear spot on the near edge of the table; the nearest object, the star, is 8 cm further in.
-      # The square's center once on the table (0.47 m high), 5 mm above. In the map frame, so it stays
+      # The square's center once on the table (0.47 m high), 8 mm above. In the map frame, so it stays
       # put while the setup chain drives the robot to the table.
-      inputs: {object_name: "square 1", place_pose: "0.2;0.0;0.49;0.0;0.0;0.0;map"}
+      inputs: {object_name: "square 1", place_pose: "0.2;0.0;0.494;0.0;0.0;0.0;map"}
       setup:
         - {subtree: approach_table}
         - {subtree: detect_objects}
