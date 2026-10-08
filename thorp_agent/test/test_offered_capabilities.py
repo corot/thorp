@@ -178,36 +178,19 @@ def test_bad_arguments_go_back_to_the_model():
     assert not sent
 
 
-def test_states_reach_the_agent(document, specs):
+def test_errors_reach_the_agent(document, specs):
     """
-    The point of declaring states: an agent that cannot read what a capability needs, what it leaves behind and what
-    it breaks has no way to tell a precondition it has already met from one it still has to.
+    What an agent has instead of declared preconditions: the errors a capability fails with when the world says it
+    can't, each with what it means, so a failure tells the agent what to do next.
     """
     offered = capabilities.offered(document)
-    by_state = capabilities.establishers(document)
-    assert by_state, 'no capability establishes any state -- has `needs` gone away?'
-
+    declaring = 0
     for spec in specs:
-        declared = offered[spec['name']]
-        for state in declared.get('needs') or {}:
-            assert state in spec['description'], "{} doesn't say it needs {}".format(spec['name'], state)
-        for state in declared.get('invalidates') or []:
-            assert state in spec['description'], "{} doesn't say it breaks {}".format(spec['name'], state)
-        for state, by in by_state.items():
-            if spec['name'] in by:
-                assert state in spec['description'], "{} establishes {} and doesn't say so".format(spec['name'], state)
-
-
-def test_where_an_argument_comes_from_is_shown(document, specs):
-    offered = capabilities.offered(document)
-    sourced = 0
-    for spec in specs:
-        for field, meta in (offered[spec['name']].get('inputs') or {}).items():
-            for ref in (meta or {}).get('from') or []:
-                sourced += 1
-                assert ref in spec['args'][field]['description'], (
-                    "{}.{} doesn't say it comes from {}".format(spec['name'], field, ref))
-    assert sourced, 'no input declares where it comes from'
+        for code, meaning in (offered[spec['name']].get('errors') or {}).items():
+            declaring += 1
+            assert '{} ({})'.format(code, ' '.join(str(meaning).split())) in spec['description'], (
+                "{} doesn't say it fails with {}".format(spec['name'], code))
+    assert declaring, 'no capability declares its errors -- has `errors` gone away?'
 
 
 def test_observation_is_offered_as_a_tool():

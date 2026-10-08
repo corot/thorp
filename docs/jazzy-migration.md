@@ -427,19 +427,19 @@ it shows `bt_server.rviz`: `cleanup_table.rviz` plus the target displays. Noetic
 ### thorp_agent
 
 Ported from the `bt_server` branch, on ROSA and LangChain as there: each capability in `thorp_bt_cpp`'s
-`config/capabilities.yaml` that isn't an app nor blocked becomes a tool sending a `RunSubtree` goal to `bt_server`, and
-every result carries what the planning scene says the robot holds and has around, and whether a target is in view. The
-gripper reading Noetic took from Gazebo's grasp events is dropped, as nothing reports it without closing the gripper.
-Tool arguments take poses as strings or in the object form calls return, and arguments not matching a tool's schema go
-back to the model instead of ending the conversation. ROSA and LangChain have no Jazzy packages: they are pip packages
-for the system Python, in the user site (see the package's README); Noetic needed a Python 3.9 virtual environment. The
-prompts describe the LLM playground (`thorp_apps`' `llm_playground.launch.py`). With OpenRouter's `openai/gpt-5-mini` on
-the LLM playground, it stowed an object from the table on the tray (inspect, approach and detect, pick up, place on the
-tray), and hunted the cat (look at it, approach it, hunt it). `look_at_pose` ends two seconds after turning, as the
-agent otherwise read `target_in_view` before the detections caught up with the camera. The prompts also say that
-perception only sees what is close in front, that a table capability failing with no error code found no table, and to
-carry on with a goal rather than stop to ask: with them, it got back to the table on its own, from 2.7 m away and from
-facing the cat.
+`config/capabilities.yaml` that isn't an app nor blocked becomes a tool sending a `RunSubtree` goal to `bt_server`,
+described by its inputs, outputs and the errors it fails with, and every result carries what the planning scene says the
+robot holds and has around, and whether a target is in view. The gripper reading Noetic took from Gazebo's grasp events
+is dropped, as nothing reports it without closing the gripper. Tool arguments take poses as strings or in the object
+form calls return, and arguments not matching a tool's schema go back to the model instead of ending the conversation.
+ROSA and LangChain have no Jazzy packages: they are pip packages for the system Python, in the user site (see the
+package's README); Noetic needed a Python 3.9 virtual environment. The prompts describe the LLM playground
+(`thorp_apps`' `llm_playground.launch.py`). With OpenRouter's `openai/gpt-5-mini` on the LLM playground, it stowed an
+object from the table on the tray (inspect, approach and detect, pick up, place on the tray), and hunted the cat (look
+at it, approach it, hunt it). `look_at_pose` ends two seconds after turning, as the agent otherwise read
+`target_in_view` before the detections caught up with the camera. The prompts also say that perception only sees what is
+close in front, that a table capability failing with no error code found no table, and to carry on with a goal rather
+than stop to ask: with them, it got back to the table on its own, from 2.7 m away and from facing the cat.
 
 ### thorp_costmap_layers
 

@@ -2,13 +2,12 @@
 What is true of the robot right now, read rather than remembered.
 
 Anything that moves the robot is a behavior tree, declared in capabilities.yaml and run through bt_server. What is here
-is the other half: observations, which touch nothing and answer whether the states that file names actually hold. They
-ride on every capability result, so knowing where things stand costs the agent no call of its own.
+is the other half: observations, which touch nothing and answer what holds now. They ride on every capability result,
+so knowing where things stand costs the agent no call of its own.
 
-One state in the glossary has no reading behind it. Nothing reports "the robot is parked against a table", so
-at_a_table stays an assumption from whatever approach_table last did, and anybody who pushes the robot invalidates it
-silently. Whether the gripper is closed on something isn't read either: only closing it tells, as the trees' gripper
-check does, and an observation changes nothing.
+Nothing here reports "the robot is parked against a table", so that stays an assumption from whatever approach_table
+last did, and anybody who pushes the robot invalidates it silently. Whether the gripper is closed on something isn't
+read either: only closing it tells, as the trees' gripper check does, and an observation changes nothing.
 """
 
 from geometry_msgs.msg import PoseStamped
