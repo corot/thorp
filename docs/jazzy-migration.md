@@ -43,7 +43,7 @@ source install/setup.bash
 
 `yolo_ros` needs `uv` (`pipx install uv`): its build creates a Python virtual environment in its source tree, with
 the PyTorch and Ultralytics versions it pins, and points its nodes at it, so no other node sees them. Hence rosdep skips
-the pip keys it declares for them.
+the pip keys it declares for them. `thorp_agent` needs ROSA and LangChain, installed with pip as its README says.
 
 ## Blocks
 
@@ -67,7 +67,7 @@ the pip keys it declares for them.
 | 9b | Navigation capabilities on Nav2, semantic costmap layer, pickup planner; `patrol_2_points` and `cleanup_table` apps | done |
 | 9c | Exploration: coverage planning and room segmentation; `explore_house` and `object_gatherer` apps | done |
 | 9d | Cat hunter: object detection replacing COB, cats models and controller; `cat_hunter` app | done |
-| 9e | LLM agent (`thorp_agent`) | next |
+| 9e | LLM agent (`thorp_agent`) | ported; untested with a real model |
 
 Block 3 onwards will be refined as we get there.
 
@@ -136,6 +136,7 @@ plans swaths over field polygons, without room segmentation nor sequencing.
 | thorp_navigation | partial: Nav2 configuration, trees and launch, maps, velocity display (see below) |
 | thorp_simulation | partial: Gazebo Harmonic launch, worlds, controllers and navigation (see below) |
 | thorp_toolkit | partial: core C++ and Python modules (see below) |
+| thorp_agent | migrated (see below) |
 | thorp_boards, thorp_mbf_plugins, thorp_smach | ROS 1 (ignored) |
 
 ### thorp_moveit_config
@@ -396,6 +397,19 @@ the small house world. `cat_hunter.launch.py` adds the exploration planner, on t
 and target detection, on the fun house world too, and on simulation the cats, with their bridge and controller; it
 shows `hunting.rviz`. The executive's includes are scoped, as their `params_file` argument would otherwise
 reach Nav2's launch. Pending: the other apps' ROS 1 launch files and `resources/movie_scripts`, with their blocks.
+
+### thorp_agent
+
+Ported from the `bt_server` branch, on ROSA and LangChain as there: each capability in `thorp_bt_cpp`'s
+`config/capabilities.yaml` that isn't an app nor blocked becomes a tool sending a `RunSubtree` goal to `bt_server`, and
+every result carries what the planning scene says the robot holds and has around, and whether a target is in view. The
+gripper reading Noetic took from Gazebo's grasp events is dropped, as nothing reports it without closing the gripper.
+Tool arguments take poses as strings or in the object form calls return, and arguments not matching a tool's schema go
+back to the model instead of ending the conversation. ROSA and LangChain have no Jazzy packages: they are pip packages
+for the system Python, in the user site (see the package's README); Noetic needed a Python 3.9 virtual environment.
+The prompts describe the playground world, as `cleanup_table.launch.py executive:=llm` runs it with navigation,
+manipulation and perception. Verified without a model: the unit tests, and the ROSA executor with a scripted model
+chaining the tabletop capabilities on `bt_server`; no run with a real model yet.
 
 ### thorp_costmap_layers
 
