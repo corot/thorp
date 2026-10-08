@@ -27,11 +27,21 @@ from thorp_agent.world import World
 def main():
     rclpy.init()
     node = rclpy.create_node('thorp_agent')
-    # Tools run on this thread, waiting on futures the executor completes on its own
+    # Tools run on this thread, waiting on futures the executor completes on its own; it stops spinning before
+    # rclpy shuts down, as a process exiting while it spins aborts
     executor = MultiThreadedExecutor()
     executor.add_node(node)
-    threading.Thread(target=executor.spin, daemon=True).start()
+    spinner = threading.Thread(target=executor.spin)
+    spinner.start()
+    try:
+        talk(node)
+    finally:
+        executor.shutdown()
+        spinner.join()
+        node.destroy_node()
 
+
+def talk(node):
     path = node.declare_parameter('capabilities', '').value or os.path.join(
         get_package_share_directory('thorp_bt_cpp'), 'config', 'capabilities.yaml')
     dry_run = node.declare_parameter('dry_run', False).value
