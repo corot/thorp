@@ -41,12 +41,12 @@ class WorldNode(Node):
         self.robot_frame = self.declare_parameter('robot_frame', 'base_footprint').value
         self.arm_frame = self.declare_parameter('arm_frame', 'arm_base_link').value
         self.max_arm_reach = self.declare_parameter('max_arm_reach', 0.3).value
-        self.at_table_distance = self.declare_parameter('at_table_distance', 0.3).value
         self.tf_timeout = Duration(seconds=self.declare_parameter('tf_timeout', 0.5).value)
         self.world_file = os.path.expanduser(self.declare_parameter('world_file', '').value)
         self.world = World(object_tolerance=self.declare_parameter('object_tolerance', 0.05).value,
                            table_tolerance=self.declare_parameter('table_tolerance', 0.3).value,
-                           table_area_ratio=self.declare_parameter('table_area_ratio', 0.8).value)
+                           table_area_ratio=self.declare_parameter('table_area_ratio', 0.8).value,
+                           at_table_distance=self.declare_parameter('at_table_distance', 0.3).value)
 
         # its own thread, as lookups at a detection's stamp wait for transforms from within service callbacks
         self.tf_buffer = Buffer()
@@ -82,8 +82,12 @@ class WorldNode(Node):
         if tables:
             response.table_ids = self.world.observe_tables(tables, self.stamp_of(request.tables[0].header))
         if surface is not None:
+            try:
+                robot = to_pose(self.frame_on_map(self.robot_frame, request.surface.header.stamp))
+            except TransformException:
+                robot = None  # objects not seen then can't be told missing
             response.surface_id, response.object_ids = \
-                self.world.observe_objects(surface, objects, self.stamp_of(request.surface.header))
+                self.world.observe_objects(surface, objects, self.stamp_of(request.surface.header), robot)
         response.success = True
         self.publish()
         return response
@@ -124,14 +128,14 @@ class WorldNode(Node):
         response.reachable = [False] * len(entities)
         response.success = True
         try:
-            robot = to_pose(self.to_map_now(self.robot_frame))
-            arm = to_pose(self.to_map_now(self.arm_frame))
+            robot = to_pose(self.frame_on_map(self.robot_frame))
+            arm = to_pose(self.frame_on_map(self.arm_frame))
         except TransformException as e:
             response.message = f'no robot pose, so no relations: {e}'
             return response
         response.reachable = [e.kind == OBJECT and self.world.within_reach(e.id, arm, self.max_arm_reach)
                               for e in entities]
-        response.at_table = self.world.table_at(robot, self.at_table_distance) or ''
+        response.at_table = self.world.table_at(robot) or ''
         return response
 
     def save(self, request, response):
@@ -157,9 +161,12 @@ class WorldNode(Node):
                                                     timeout=self.tf_timeout)
         return do_transform_pose_stamped(PoseStamped(header=header, pose=pose), transform)
 
-    def to_map_now(self, frame):
+    def frame_on_map(self, frame, stamp=None):
+        """Where a frame is on the map frame, at stamp; now if not given."""
         pose = PoseStamped()
         pose.header.frame_id = frame
+        if stamp is not None:
+            pose.header.stamp = stamp
         pose.pose.orientation.w = 1.0
         return self.to_map(pose.header, pose.pose)
 

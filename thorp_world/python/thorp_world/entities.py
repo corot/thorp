@@ -20,7 +20,7 @@ BELIEVED = 'believed'  # a skill left it so, as far as it knows
 # statuses
 OK = 'ok'
 DISTURBED = 'disturbed'  # a skill touched it without the intended result, so it may have moved
-MISSING = 'missing'  # not seen where it was, on a table in view
+MISSING = 'missing'  # not seen where it was, from at its table
 
 
 @dataclass

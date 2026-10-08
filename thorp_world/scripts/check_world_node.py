@@ -80,7 +80,7 @@ check(f'cube in map at ({cube.pose.pose.position.x:.3f}, {cube.pose.pose.positio
       cube.support == 'table 1')
 check(f'reachable: cube {by_id["cube 1"][1]}, star {by_id["star 1"][1]} (0.21 and 0.46 m from the arm)',
       by_id['cube 1'][1] and not by_id['star 1'][1])
-check(f'not docked yet: {response.at_table!r}', response.at_table == '')
+check(f'at the table, undocked, as 0.175 m from it: {response.at_table!r}', response.at_table == 'table 1')
 
 check('dock at table 1', call(UpdateWorld, 'world/update',
                               UpdateWorld.Request(effect=UpdateWorld.Request.DOCKED, table_id='table 1')).success)
@@ -91,7 +91,7 @@ check(f'picking an unknown object is refused: {bad.message!r}', not bad.success 
 
 response = call(QueryWorld, 'world/query', QueryWorld.Request(support='gripper'))
 check(f'holding: {[e.id for e in response.entities]} ({response.entities[0].provenance}), '
-      f'docked at {response.at_table!r}',
+      f'at {response.at_table!r}',
       [e.id for e in response.entities] == ['cube 1'] and response.entities[0].provenance == 'believed' and
       not response.entities[0].has_pose and response.at_table == 'table 1')
 
@@ -106,8 +106,8 @@ for _ in range(50):
         break
 state = received.get('state')
 check(f'latched state: {len(state.entities) if state else None} entities, '
-      f'docked at {state.at_table if state else None!r}',
-      state is not None and len(state.entities) == 3 and state.at_table == 'table 1')
+      f'docked at {state.docked_at if state else None!r}',
+      state is not None and len(state.entities) == 3 and state.docked_at == 'table 1')
 markers = received.get('markers')
 check(f'markers: {len(markers.markers) if markers else None} (delete all, then box and label for table and star)',
       markers is not None and len(markers.markers) == 5)

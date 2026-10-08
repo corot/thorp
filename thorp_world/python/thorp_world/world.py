@@ -17,16 +17,18 @@ class World:
     entities already known so that each keeps its id; skills update it with the effects they believe they had.
     """
 
-    def __init__(self, object_tolerance=0.05, table_tolerance=0.3, table_area_ratio=0.8):
+    def __init__(self, object_tolerance=0.05, table_tolerance=0.3, table_area_ratio=0.8, at_table_distance=0.3):
         """
         :param object_tolerance: how far from where it was a redetected object can be, to be the same one
         :param table_tolerance: how far off a known table's footprint a redetected table's center can be
         :param table_area_ratio: a known table takes an observation's pose and size only if its area is at least
           this ratio of the current one, as partial views give smaller tables
+        :param at_table_distance: how far from a table's edge the robot can be, to be at it
         """
         self.object_tolerance = object_tolerance
         self.table_tolerance = table_tolerance
         self.table_area_ratio = table_area_ratio
+        self.at_table_distance = at_table_distance
         self.docked_at = None
         self._entities = {}
 
@@ -64,11 +66,11 @@ class World:
             ids.append(table.id)
         return ids
 
-    def observe_objects(self, surface, observations, stamp):
+    def observe_objects(self, surface, observations, stamp, robot_pose=None):
         """
-        Record objects seen at stamp on a table, surface. Each keeps the id of the known object of its type at about
-        the same place, or gets a new one. Objects known on that table, where the observed surface covers, that were
-        not seen become missing.
+        Record objects seen at stamp on a table, surface. Each keeps the id of the known object at about the same
+        place, or gets a new one. Seen from robot_pose at that table, objects known on it, where the observed surface
+        covers, that were not seen become missing; from further away, detection misses objects that are there.
         :return: the table's id, and the objects' ids in the observations' order
         """
         table_id = self.observe_tables([surface], stamp)[0]
@@ -78,11 +80,13 @@ class World:
             if entity is None:
                 entity = Entity(self._new_id(obs.type), OBJECT, obs.type, tuple(obs.size))
                 self._entities[entity.id] = entity
-            entity.pose, entity.size, entity.color = copy.copy(obs.pose), tuple(obs.size), obs.color
+            entity.pose, entity.color = copy.copy(obs.pose), obs.color
             entity.support, entity.slot = table_id, None
             entity.provenance, entity.stamp, entity.status = OBSERVED, stamp, OK
             ids.append(entity.id)
 
+        if robot_pose is None or self.table_at(robot_pose) != table_id:
+            return table_id, ids
         # Compared with the surface as observed, not the table as known: a partial view says nothing of the rest
         seen = Entity('', TABLE, surface.type, tuple(surface.size),
                       pose=Pose(surface.pose.x, surface.pose.y, surface.pose.z, surface.pose.yaw))
@@ -111,8 +115,8 @@ class World:
 
     def mark_lost(self, object_id, stamp):
         """
-        The object left the gripper, for somewhere unknown, as when the gripper is cleared. Nothing changes for an object
-        not believed in the gripper, as one a failed pickup left on its table.
+        The object left the gripper, for somewhere unknown, as when the gripper is cleared. Nothing changes for an
+        object not believed in the gripper, as one a failed pickup left on its table.
         """
         if self._object(object_id).support == GRIPPER:
             self._set(object_id, stamp, pose=None, support=None, slot=None, status=MISSING)
@@ -125,17 +129,17 @@ class World:
     def undock(self):
         self.docked_at = None
 
-    def table_at(self, robot_pose, max_distance=0.3):
+    def table_at(self, robot_pose):
         """
-        The table the robot is at: the one it docked at, if it's still that close to it, or else the closest one that
-        close, as the robot may stand at a table without docking, as in front of the bench's.
+        The table the robot is at: the one it docked at, if it's still within at_table_distance, or else the closest
+        one that close, as the robot may stand at a table without docking, as in front of the bench's.
         """
         docked = self._entities.get(self.docked_at)
-        if docked is not None and distance_to_table(docked, robot_pose.x, robot_pose.y) <= max_distance:
+        if docked is not None and distance_to_table(docked, robot_pose.x, robot_pose.y) <= self.at_table_distance:
             return docked.id
         nearby = [(distance_to_table(t, robot_pose.x, robot_pose.y), t.id)
                   for t in self._entities.values() if t.kind == TABLE]
-        nearby = [n for n in nearby if n[0] <= max_distance]
+        nearby = [n for n in nearby if n[0] <= self.at_table_distance]
         return min(nearby)[1] if nearby else None
 
     def within_reach(self, object_id, arm_pose, reach):
@@ -181,10 +185,14 @@ class World:
         return best
 
     def _match_object(self, obs, exclude):
+        """
+        The known object closest to an observation, within object_tolerance, whatever type the observation gives:
+        detection sometimes misidentifies an object, and the object keeps the type it was first seen as.
+        """
         best, best_distance = None, None
         for entity in self._entities.values():
             # carried objects have no pose to compare, and aren't on the table being looked at anyway
-            if entity.kind != OBJECT or entity.type != obs.type or entity.id in exclude or entity.pose is None:
+            if entity.kind != OBJECT or entity.id in exclude or entity.pose is None:
                 continue
             distance = planar_distance(entity.pose, obs.pose)
             if distance <= self.object_tolerance and (best is None or distance < best_distance):

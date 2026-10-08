@@ -11,6 +11,7 @@ import pytest
 from thorp_world import (BELIEVED, DISTURBED, GRIPPER, MISSING, OBSERVED, OK, TRAY, Observation, Pose, World)
 
 TABLE_SIZE = (0.55, 0.55, 0.02)
+AT_TABLE = Pose(0.03, 0.0)  # 0.145 m from table()'s near edge
 
 
 def table(x=0.45, y=0.0, yaw=0.0, size=TABLE_SIZE):
@@ -46,11 +47,14 @@ def test_an_object_far_from_any_known_one_is_new(world):
     assert ids == ['cube 1', 'cube 2']
 
 
-def test_an_object_of_another_type_is_not_the_same_one(world):
+def test_an_object_identified_as_another_type_keeps_its_id_and_type(world):
     world.observe_objects(table(), [cube(0.3, 0.0)], stamp=1.0)
-    star = Observation('star', Pose(0.3, 0.0, 0.49), (0.03, 0.03, 0.01), 'red')
+    star = Observation('star', Pose(0.31, 0.0, 0.49), (0.03, 0.03, 0.01), 'red')
     _, ids = world.observe_objects(table(), [star], stamp=2.0)
-    assert ids == ['star 1']
+    assert ids == ['cube 1']
+    seen = world.get('cube 1')
+    assert (seen.type, seen.size, seen.color) == ('cube', (0.025, 0.025, 0.025), 'red')
+    assert seen.pose.x == pytest.approx(0.31)
 
 
 def test_redetected_tables_keep_their_ids(world):
@@ -79,15 +83,25 @@ def test_objects_not_seen_where_the_view_covered_go_missing(world):
     world.observe_objects(table(), [cube(0.3, 0.0), cube(0.6, 0.2)], stamp=1.0)
     # a partial view of the near half only: the far cube may still be there
     near_half = table(0.31, 0.0, size=(0.27, 0.55, 0.02))
-    world.observe_objects(near_half, [], stamp=2.0)
+    world.observe_objects(near_half, [], stamp=2.0, robot_pose=AT_TABLE)
     assert world.get('cube 1').status == MISSING
     assert world.get('cube 1').stamp == 1.0, "a missing object keeps when it was last seen"
     assert world.get('cube 2').status == OK
 
 
+def test_only_a_view_from_at_the_table_tells_objects_missing(world):
+    world.observe_objects(table(), [cube(0.3, 0.0)], stamp=1.0)
+    world.observe_objects(table(), [], stamp=2.0, robot_pose=Pose(-0.5, 0.0))
+    assert world.get('cube 1').status == OK, "seen from 0.675 m away, it may just have been missed"
+    world.observe_objects(table(), [], stamp=3.0)
+    assert world.get('cube 1').status == OK, "nor from nowhere known"
+    world.observe_objects(table(), [], stamp=4.0, robot_pose=AT_TABLE)
+    assert world.get('cube 1').status == MISSING
+
+
 def test_a_missing_object_seen_again_gets_its_id_back(world):
     world.observe_objects(table(), [cube(0.3, 0.0)], stamp=1.0)
-    world.observe_objects(table(), [], stamp=2.0)
+    world.observe_objects(table(), [], stamp=2.0, robot_pose=AT_TABLE)
     _, ids = world.observe_objects(table(), [cube(0.3, 0.0)], stamp=3.0)
     assert ids == ['cube 1'] and world.get('cube 1').status == OK
 
@@ -97,7 +111,7 @@ def test_carried_objects_are_neither_matched_nor_missing(world):
     world.mark_picked('cube 1', stamp=2.0)
     world.mark_stowed('cube 2', stamp=3.0, slot=4)
     # another cube where the picked one was is another object
-    _, ids = world.observe_objects(table(), [cube(0.3, 0.0)], stamp=4.0)
+    _, ids = world.observe_objects(table(), [cube(0.3, 0.0)], stamp=4.0, robot_pose=AT_TABLE)
     assert ids == ['cube 3']
     assert world.get('cube 1').support == GRIPPER and world.get('cube 1').status == OK
     assert world.get('cube 2').support == TRAY and world.get('cube 2').slot == 4
@@ -144,7 +158,7 @@ def test_effects_on_unknown_entities_are_refused(world):
 def test_the_robot_is_at_a_table_when_close_to_it(world):
     world.observe_tables([table(), table(0.45, 0.6)], stamp=1.0)
     # table 1's near edge is at x 0.175
-    assert world.table_at(Pose(0.03, 0.0)) == 'table 1'
+    assert world.table_at(AT_TABLE) == 'table 1'
     assert world.table_at(Pose(-0.5, 0.0)) is None
     # between both, at the one docked at rather than the closest
     world.dock('table 2')

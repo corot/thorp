@@ -12,16 +12,18 @@ passed from one call to the next, and the agent can reason on what is where with
 - Support: what an object rests on, a table id, `gripper` or `tray` (with a slot). Carried objects have no pose, as
   the robot moves them.
 - Provenance: `observed` (a detection saw it so) or `believed` (a skill left it so), with the stamp of when.
-- Status: `ok`, `disturbed` (a skill touched it without the intended result) or `missing` (not seen where it was, on a
-  table in view).
+- Status: `ok`, `disturbed` (a skill touched it without the intended result) or `missing` (not seen where it was, from
+  at its table).
 - The robot: only what TF can't tell, the table it's docked at.
 - Relations, derived on query: an object's support; whether it's within reach of the arm's base; the table the robot
   is at: the one it docked at if it's still close to it, or else the closest one that close.
 
-Observations are matched against what is known: an object is the known object of its type closest to it, within a
-tolerance; a table, the known table its center falls on. A table's pose and size are replaced only by views at least
-about as large, as partial views give smaller tables. Objects known on a table become missing only where the observed
-surface covers them.
+Observations are matched against what is known: an object is the known object closest to it, within a tolerance,
+whatever type detection gives it this time, as it sometimes misidentifies one; the object keeps the type it was first
+seen as. A table is the known table its center falls on. A table's pose and size are replaced only by views at least
+about as large, as partial views give smaller tables. Objects known on a table become missing only when a detection
+from at that table doesn't see them, and only where the observed surface covers them: from further away, as from
+`inspect_table`'s viewing pose, detection misses objects that are there.
 
 ## Node
 
