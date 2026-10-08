@@ -67,7 +67,7 @@ the pip keys it declares for them. `thorp_agent` needs ROSA and LangChain, insta
 | 9b | Navigation capabilities on Nav2, semantic costmap layer, pickup planner; `patrol_2_points` and `cleanup_table` apps | done |
 | 9c | Exploration: coverage planning and room segmentation; `explore_house` and `object_gatherer` apps | done |
 | 9d | Cat hunter: object detection replacing COB, cats models and controller; `cat_hunter` app | done |
-| 9e | LLM agent (`thorp_agent`) | ported; untested with a real model |
+| 9e | LLM agent (`thorp_agent`) | done |
 
 Block 3 onwards will be refined as we get there.
 
@@ -413,9 +413,10 @@ gripper reading Noetic took from Gazebo's grasp events is dropped, as nothing re
 Tool arguments take poses as strings or in the object form calls return, and arguments not matching a tool's schema go
 back to the model instead of ending the conversation. ROSA and LangChain have no Jazzy packages: they are pip packages
 for the system Python, in the user site (see the package's README); Noetic needed a Python 3.9 virtual environment. The
-prompts describe the LLM playground (`thorp_apps`' `llm_playground.launch.py`). Verified without a model: the unit
-tests, and the ROSA executor with a scripted model chaining the tabletop capabilities on `bt_server`; no run with a real
-model yet.
+prompts describe the LLM playground (`thorp_apps`' `llm_playground.launch.py`). With OpenRouter's `openai/gpt-5-mini` on
+the LLM playground, it stowed an object from the table on the tray (inspect, approach and detect, pick up, place on the
+tray), and hunted the cat (look at it, approach it, hunt it). `look_at_pose` ends two seconds after turning, as the
+agent otherwise read `target_in_view` before the detections caught up with the camera.
 
 ### thorp_costmap_layers
 
