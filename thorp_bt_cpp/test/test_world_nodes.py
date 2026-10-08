@@ -12,13 +12,34 @@ nothing else uses, as the static transforms would reach any simulation there:
     python3 -m pytest test/test_world_nodes.py -v
 """
 
+import os
+
 import pytest
 from action_msgs.msg import GoalStatus
+from rcl_interfaces.msg import ParameterType
+from rclpy.parameter_client import AsyncParameterClient
 from std_srvs.srv import Trigger
 
 from thorp_msgs.msg import ThorpError
 
 from conftest import status_name
+
+WORLD = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'world.yaml')
+
+
+@pytest.fixture(scope='module', autouse=True)
+def on_the_test_world(runner):
+    """Skip the lot beside a robot, as on a test session of capabilities: the world isn't test/world.yaml there."""
+    parameters = AsyncParameterClient(runner.node, '/world')
+    if not parameters.wait_for_services(timeout_sec=5.0):
+        pytest.fail('thorp_world is not running')
+    future = parameters.get_parameters(['world_file'])
+    assert runner.wait(future, 5.0), "reading thorp_world's world_file timed out"
+    value = future.result().values[0]
+    world_file = value.string_value if value.type == ParameterType.PARAMETER_STRING else ''
+    if not world_file or os.path.realpath(os.path.expanduser(world_file)) != os.path.realpath(WORLD):
+        pytest.skip(f"thorp_world runs on '{world_file}', not on test/world.yaml beside the static transforms the "
+                    "docstring tells")
 
 
 @pytest.fixture(autouse=True)

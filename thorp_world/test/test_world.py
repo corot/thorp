@@ -195,3 +195,12 @@ def test_the_world_survives_a_save_and_a_load(world, tmp_path):
     assert loaded.docked_at == 'table 1'
     _, ids = loaded.observe_objects(table(), [cube(0.3, 0.0)], stamp=3.0)
     assert ids == ['cube 1'], "loaded entities are matched as any other"
+
+
+def test_a_file_that_is_no_world_is_refused(world, tmp_path):
+    world.observe_objects(table(), [cube(0.3, 0.0)], stamp=1.0)
+    path = tmp_path / 'playground.sdf'
+    path.write_text('<sdf version="1.9"><world name="default"/></sdf>\n')
+    with pytest.raises(ValueError):
+        world.load(path)
+    assert [e.id for e in world.entities()] == ['table 1', 'cube 1'], 'and the world stays as it was'

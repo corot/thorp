@@ -171,7 +171,10 @@ class World:
 
     def load(self, path):
         with open(path) as f:
-            self.from_dict(yaml.safe_load(f) or {})
+            data = yaml.safe_load(f) or {}
+        if not isinstance(data, dict) or not isinstance(data.get('entities') or [], list):
+            raise ValueError(f"'{path}' is not a world file")
+        self.from_dict(data)
 
     def _match_table(self, pose, exclude):
         best, best_distance = None, None

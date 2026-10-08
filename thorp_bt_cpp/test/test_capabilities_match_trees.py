@@ -37,12 +37,21 @@ import pytest
 import yaml
 
 from ament_index_python.packages import get_package_share_directory
+from thorp_msgs.msg import ThorpError
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SOURCE_BT_DIR = os.path.join(HERE, os.pardir, "bt")
 BT_DIR = os.path.join(get_package_share_directory("thorp_bt_cpp"), "bt")
 CAPABILITIES = os.path.join(HERE, os.pardir, "config", "capabilities.yaml")
 NODE_MODELS = os.path.join(SOURCE_BT_DIR, "node_models.xml")
+
+# The codes thorp_world's tree nodes fail with when the world says no. SERVER_NOT_AVAILABLE, for a world not running,
+# is no capability's to declare.
+WORLD_ERRORS = {
+    "GetTable": {"TABLE_NOT_FOUND"},
+    "GetCurrentTable": {"NOT_AT_TABLE"},
+    "ObjectPickable": {"OBJECT_NOT_FOUND", "OBJECT_NOT_ON_TABLE", "NOT_AT_TABLE", "OUT_OF_REACH"},
+}
 
 
 def source_trees():
@@ -173,7 +182,10 @@ def subtree_keys(node, callee):
 
 
 def derive_interfaces():
-    """tree id -> {'inputs': {key: type}, 'outputs': {key: type}, 'reads': {key: type}, 'file': path}."""
+    """
+    tree id -> {'inputs': {key: type}, 'outputs': {key: type}, 'reads': {key: type}, 'file': path,
+                'nodes': the node ids in the tree itself, 'all_nodes': those and the ones in the trees it calls}.
+    """
     directions = port_directions()
     trees = {}
     for path in sorted(glob(os.path.join(BT_DIR, "*.xml"))):
@@ -189,10 +201,15 @@ def derive_interfaces():
             return interfaces[tree_id]
         assert tree_id in trees, "a <SubTree> calls '{}', which no file under bt/ defines".format(tree_id)
         tree, path = trees[tree_id]
-        read, produced = {}, {}
+        read, produced, nodes, all_nodes = {}, {}, set(), set()
         for node in tree.iter():
             if node.tag == "BehaviorTree":
                 continue
+            if node.tag == "SubTree":
+                all_nodes |= derive(node.get("ID"))["all_nodes"]
+            else:
+                nodes.add(node.tag)
+                all_nodes.add(node.tag)
             node_reads, node_writes = subtree_keys(node, derive(node.get("ID"))) \
                 if node.tag == "SubTree" else node_keys(node, directions)
             for key, type_ in node_reads.items():
@@ -206,6 +223,8 @@ def derive_interfaces():
             "outputs": produced,
             "reads": read,
             "file": path,
+            "nodes": nodes,
+            "all_nodes": all_nodes,
         }
         return interfaces[tree_id]
 
@@ -322,6 +341,32 @@ def test_declared_types_match_the_ports(capability_name, declared, derived, port
                     capability_name, section, key, entry.get("type"), expected))
 
 
+def test_declared_errors_are_error_codes(capability_name, declared):
+    """`errors` names codes the error outputs carry: ThorpError's constants."""
+    for name in declared["capabilities"][capability_name].get("errors") or {}:
+        assert isinstance(getattr(ThorpError, name, None), int), (
+            "{}: errors names {}, which is no ThorpError code".format(capability_name, name))
+
+
+def test_declared_errors_match_the_world_checks(capability_name, declared, derived, ported):
+    """
+    The codes a tree's world checks fail with are declared, and no world code is declared that no node in it fails
+    with. Only the tree's own checks have to be: a tree calling others may handle what they fail with, as
+    cleanup_table gives up on an object out of reach and goes on with the next.
+    """
+    interface = derived[capability_name]
+    errors = set(declared["capabilities"][capability_name].get("errors") or {})
+    own = set().union(*(WORLD_ERRORS.get(node, set()) for node in interface["nodes"]))
+    possible = set().union(*(WORLD_ERRORS.get(node, set()) for node in interface["all_nodes"]))
+
+    undeclared = own - errors
+    assert not undeclared, "{}: its world checks fail with {}, which errors doesn't name".format(
+        capability_name, sorted(undeclared))
+    invented = (errors & set().union(*WORLD_ERRORS.values())) - possible
+    assert not invented, "{}: errors names {}, which no world check in the tree fails with".format(
+        capability_name, sorted(invented))
+
+
 def test_setup_steps_are_callable_capabilities(capability_name, declared):
     """
     A `setup` step is a real goal the test suite will send, and `inputs_from` is a real lookup
@@ -347,114 +392,16 @@ def test_setup_steps_are_callable_capabilities(capability_name, declared):
 
     check_call(capability_name, spec, test, seen, "the capability itself")
 
+    for step in steps:
+        unknown = set(step.get("unless") or {}) - {"at_table"}
+        assert not unknown, "{}: setup step '{}' has unless conditions the suite can't check: {}".format(
+            capability_name, step.get("as") or step.get("subtree"), sorted(unknown))
+
     declared_outputs = set(spec.get("outputs") or {})
     for key in test.get("expect_outputs") or []:
         assert key in declared_outputs, (
             "{}: expect_outputs names {}, which isn't a declared output".format(
                 capability_name, key))
-
-
-def establishers(caps):
-    """state -> the capabilities that establish it, read off by inverting every `needs`."""
-    by_state = {}
-    for spec in caps.values():
-        for state, capability in (spec.get("needs") or {}).items():
-            by_state.setdefault(state, set()).add(capability)
-    return by_state
-
-
-def test_states_are_declared_and_reachable(declared):
-    """
-    A state is a promise that some capability can put the robot into it. One that nothing
-    establishes is a precondition the agent can read and never satisfy, and a name missing from
-    the glossary means nothing to it at all.
-    """
-    caps, states = declared["capabilities"], declared.get("states") or {}
-
-    for name, spec in caps.items():
-        for state, by in (spec.get("needs") or {}).items():
-            assert state in states, "{} needs '{}', which no state declares".format(name, state)
-            assert by in caps, "{} says '{}' comes from '{}', which is not a capability".format(
-                name, state, by)
-        for state in spec.get("invalidates") or []:
-            assert state in states, "{} invalidates '{}', which no state declares".format(name, state)
-
-    unreachable = set(states) - set(establishers(caps))
-    assert not unreachable, (
-        "states nothing establishes, so nothing can satisfy them: {}".format(sorted(unreachable)))
-
-
-def test_input_sources_name_real_outputs(capability_name, declared):
-    """`from` is what tells the agent where a value comes from; a stale one sends it nowhere."""
-    caps = declared["capabilities"]
-    for key, entry in (caps[capability_name].get("inputs") or {}).items():
-        for ref in (entry or {}).get("from") or []:
-            source, _, output = ref.partition(".")
-            assert source in caps, "{}.{}: '{}' is not a capability".format(
-                capability_name, key, source)
-            assert output in (caps[source].get("outputs") or {}), (
-                "{}.{}: {} declares no output '{}'".format(capability_name, key, source, output))
-
-
-def test_declarations_account_for_the_setup_chain(capability_name, declared):
-    """
-    The setup chains were written by hand against the real robot and they pass, so they are the
-    evidence that `needs` and `from` are right. The two are held against each other here rather
-    than generated from each other: two accounts of the same knowledge only cross-check while
-    both are written down.
-
-    A setup step earns its place one of two ways -- it produces a value a later step consumes,
-    or it leaves the robot in a state this capability needs, directly or through one of the
-    capabilities that establish those states. place_on_tray needs only a held object, but
-    getting one held means a table to pick from. Any other step is one the agent will never
-    know to take.
-    """
-    caps = declared["capabilities"]
-    spec = caps[capability_name]
-    test = spec.get("test") or {}
-    steps = test.get("setup") or []
-    if not steps:
-        return
-
-    subtree_of = {(step.get("as") or step["subtree"]): step["subtree"] for step in steps}
-    needs = spec.get("needs") or {}
-    consumed = set()
-
-    for block in steps + [test]:
-        # whose inputs this block is filling: a setup step's own, or the capability's
-        target = caps[subtree_of.get(block.get("subtree"), capability_name)] \
-            if block is not test else spec
-        for key, ref in (block.get("inputs_from") or {}).items():
-            consumed.add(ref[0])
-            sources = ((target.get("inputs") or {}).get(key) or {}).get("from")
-            if sources is None:
-                continue
-            supplied = "{}.{}".format(subtree_of.get(ref[0], ref[0]), ref[1])
-            assert supplied in sources, (
-                "{}: the test fills {} from {}, which that input's `from` doesn't list "
-                "({})".format(capability_name, key, supplied, sources))
-
-    staging = set()
-    pending = list(needs.values())
-    while pending:
-        capability = pending.pop()
-        if capability in staging:
-            continue
-        staging.add(capability)
-        pending += list((caps[capability].get("needs") or {}).values())
-
-    for step in steps:
-        if (step.get("as") or step["subtree"]) in consumed:
-            continue
-        assert step["subtree"] in staging, (
-            "{}: setup runs '{}' and nothing uses what it returns, so it is there for the state "
-            "it leaves behind -- say which, in `needs`".format(capability_name, step["subtree"]))
-
-    staged = {step["subtree"] for step in steps}
-    for state, by in needs.items():
-        assert by in staged, (
-            "{}: needs '{}' from {}, but the setup chain never runs it".format(
-                capability_name, state, by))
 
 
 def check_call(capability_name, target_spec, block, available, what):

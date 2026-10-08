@@ -40,8 +40,8 @@ int32 SERVER_NOT_AVAILABLE=-215
 int32 OBJECT_NOT_ATTACHED=-220
 int32 OBJECT_ATTACHED=-221
 int32 NO_POSE_TIMEOUT=-222
-int32 NOT_AT_TABLE=-230         # the robot isn't docked at the table the action needs
-int32 OUT_OF_REACH=-231         # the object is beyond the arm's reach from where the robot is docked
+int32 NOT_AT_TABLE=-230         # the robot isn't at the table the action needs
+int32 OUT_OF_REACH=-231         # the object is beyond the arm's reach from where the robot is
 int32 OBJECT_NOT_ON_TABLE=-232  # the object is carried, or missing from where it was seen
 
 int32  code

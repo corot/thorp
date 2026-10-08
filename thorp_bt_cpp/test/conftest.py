@@ -22,7 +22,7 @@ Then, from the package directory:
     python3 -m pytest test/ -v
     python3 -m pytest test/test_bt_server.py -v
     python3 -m pytest test/ -v -k pickup
-    python3 -m pytest test/ -v --stack manipulation,perception --given at_a_table
+    python3 -m pytest test/ -v --stack manipulation,perception --world test/playground.yaml
 """
 
 import json
@@ -42,12 +42,15 @@ from ament_index_python.packages import get_package_share_directory
 from rclpy.action import ActionClient
 from rclpy.parameter import Parameter
 from rclpy.parameter_client import AsyncParameterClient
+from rcl_interfaces.msg import ParameterType
 
 from geometry_msgs.msg import Pose
 from nav2_msgs.srv import ClearEntireCostmap
 from ros_gz_interfaces.msg import Entity
 from ros_gz_interfaces.srv import SetEntityPose
+from std_srvs.srv import Trigger
 from thorp_msgs.action import RunSubtree
+from thorp_msgs.srv import QueryWorld
 
 STATUS_NAMES = {
     GoalStatus.STATUS_UNKNOWN: "UNKNOWN",
@@ -84,11 +87,11 @@ def pytest_addoption(parser):
                      help="comma separated list of stacks that are actually running "
                           "(none,navigation,manipulation,perception,exploration,target_detection). "
                           "Capabilities needing anything not listed here are skipped rather than failed.")
-    parser.addoption("--given", default="",
-                     help="comma separated list of states (see capabilities.yaml) the world "
-                          "already provides, e.g. at_a_table on the playground world, where the "
-                          "robot starts in front of the table. Setup steps establishing only "
-                          "given states are skipped, and so are the stacks they need.")
+    parser.addoption("--world", default="",
+                     help="thorp_world file to start every test from, e.g. test/playground.yaml for "
+                          "the playground's fixed objects, so the ids the tests name are those of "
+                          "the objects on the table. Without it, tests start from whatever the "
+                          "world knows.")
     parser.addoption("--capabilities", default=None, help="path to capabilities.yaml")
     parser.addoption("--apps", action="store_true",
                      help="also exercise the entries marked `kind: app`. They are skipped by "
@@ -100,12 +103,6 @@ def pytest_addoption(parser):
 @pytest.fixture(scope="session")
 def available_stacks(request):
     raw = request.config.getoption("--stack")
-    return {s.strip() for s in raw.split(",") if s.strip()}
-
-
-@pytest.fixture(scope="session")
-def given_states(request):
-    raw = request.config.getoption("--given")
     return {s.strip() for s in raw.split(",") if s.strip()}
 
 
@@ -243,7 +240,62 @@ def initial_model_poses(ros_node):
 
 
 @pytest.fixture(scope="session")
-def reset_scene(runner, initial_model_poses):
+def world(request, runner):
+    """
+    A function loading --world's file into thorp_world, as the world every test starts from; one doing nothing
+    without --world. It points thorp_world's world_file parameter at the file, and back where it was at the end of
+    the session, reloading that, as thorp_world saves there too.
+    """
+    path = request.config.getoption("--world")
+    if not path:
+        yield lambda: None
+        return
+    path = os.path.abspath(path)
+    assert os.path.exists(path), "no world file '{}'".format(path)
+    parameters = AsyncParameterClient(runner.node, "/world")
+    load = runner.node.create_client(Trigger, "/world/load")
+    if not parameters.wait_for_services(timeout_sec=5.0) or not load.wait_for_service(timeout_sec=5.0):
+        pytest.fail("--world given, but thorp_world isn't running")
+
+    def set_world_file(value):
+        results = parameters.set_parameters([Parameter("world_file", value=value)])
+        assert runner.wait(results, 5.0), "setting thorp_world's world_file timed out"
+        assert results.result().results[0].successful, results.result().results[0].reason
+
+    def load_world():
+        future = load.call_async(Trigger.Request())
+        assert runner.wait(future, 5.0), "loading the world timed out"
+        assert future.result().success, future.result().message
+
+    current = parameters.get_parameters(["world_file"])
+    assert runner.wait(current, 5.0), "reading thorp_world's world_file timed out"
+    previous = current.result().values[0]
+    previous = previous.string_value if previous.type == ParameterType.PARAMETER_STRING else ""
+    set_world_file(path)
+    load_world()
+    yield load_world
+    set_world_file(previous)
+    if previous:
+        runner.wait(load.call_async(Trigger.Request()), 5.0)
+
+
+@pytest.fixture(scope="session")
+def initial_world(world, runner):
+    """
+    What thorp_world says at the start of the session, the state every test starts from again: the table the robot is
+    at, if any, as `unless: {at_table: ...}` in a setup step checks. Empty without thorp_world.
+    """
+    query = runner.node.create_client(QueryWorld, "/world/query")
+    if not query.wait_for_service(timeout_sec=2.0):
+        return {}
+    future = query.call_async(QueryWorld.Request())
+    if not runner.wait(future, 5.0):
+        return {}
+    return {"at_table": future.result().at_table}
+
+
+@pytest.fixture(scope="session")
+def reset_scene(runner, initial_model_poses, world):
     """
     Put the world back to how it started, as a function to call once the test knows it will use the robot.
 
@@ -255,7 +307,7 @@ def reset_scene(runner, initial_model_poses):
     back on the table, and Thorp at its start, what navigation follows only with Gazebo's ground
     truth localization; and with navigation, its costmaps cleared of what they marked before
     the jump. The sleep is for physics: objects put back need a moment to settle
-    before a detection of them means anything.
+    before a detection of them means anything. And last, thorp_world's: back to --world's file.
 
     A function rather than a fixture doing the reset, deliberately: a fixture runs before the
     test body, which means before the body has decided whether it is going to skip. The caller
@@ -270,22 +322,22 @@ def reset_scene(runner, initial_model_poses):
         state, out, result = runner.run("test_reset_scene", inputs={}, timeout=60)
         if state != GoalStatus.STATUS_SUCCEEDED or not result.success:
             print("--> resetting the robot failed: {}".format(out or status_name(state)))
-        if not initial_model_poses or not set_pose.wait_for_service(timeout_sec=2.0):
-            return
-        for name, pose in initial_model_poses.items():
-            request = SetEntityPose.Request()
-            request.entity.name = name
-            request.entity.type = Entity.MODEL
-            request.pose = pose
-            future = set_pose.call_async(request)
-            if not runner.wait(future, 5.0) or not future.result().success:
-                print("--> putting {} back failed".format(name))
-        for costmap in ("local", "global"):
-            clear = runner.node.create_client(
-                ClearEntireCostmap, "/{0}_costmap/clear_entirely_{0}_costmap".format(costmap))
-            if clear.wait_for_service(timeout_sec=1.0):
-                runner.wait(clear.call_async(ClearEntireCostmap.Request()), 5.0)
-        time.sleep(1.0)
+        if initial_model_poses and set_pose.wait_for_service(timeout_sec=2.0):
+            for name, pose in initial_model_poses.items():
+                request = SetEntityPose.Request()
+                request.entity.name = name
+                request.entity.type = Entity.MODEL
+                request.pose = pose
+                future = set_pose.call_async(request)
+                if not runner.wait(future, 5.0) or not future.result().success:
+                    print("--> putting {} back failed".format(name))
+            for costmap in ("local", "global"):
+                clear = runner.node.create_client(
+                    ClearEntireCostmap, "/{0}_costmap/clear_entirely_{0}_costmap".format(costmap))
+                if clear.wait_for_service(timeout_sec=1.0):
+                    runner.wait(clear.call_async(ClearEntireCostmap.Request()), 5.0)
+            time.sleep(1.0)
+        world()
 
     yield reset
     if used:

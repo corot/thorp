@@ -34,7 +34,7 @@ from at that table doesn't see them, and only where the observed surface covers 
 | `world/observe` | `thorp_msgs/ObserveWorld` | Detections report tables, or a surface with the objects on it, as the collision objects they produce, on any frame; the world transforms them to `map` at their stamp, matches them and returns their ids. |
 | `world/update` | `thorp_msgs/UpdateWorld` | Skills report an effect: an object picked, placed, stowed, disturbed or lost from the gripper; the robot docked or undocked. Unknown ids are refused. |
 | `world/query` | `thorp_msgs/QueryWorld` | Entities filtered by ids, kind, support or status, with each one's reachability from the arm's base (`arm_frame`, `max_arm_reach`) and the table the robot is at (`at_table_distance`). |
-| `world/save`, `world/load` | `std_srvs/Trigger` | To and from `world_file`, also loaded on start if it exists. |
+| `world/save`, `world/load` | `std_srvs/Trigger` | To and from `world_file`, also loaded on start if it exists. The parameter can change at any time: the capability tests point it at the world they start from. |
 | `world/state` | `thorp_msgs/WorldState` | Everything known, latched, whenever it changes. |
 | `world/markers` | `visualization_msgs/MarkerArray` | Tables and objects on a table, labeled with their ids: gray if missing or disturbed, faded if only believed. |
 
@@ -63,7 +63,7 @@ a ROS domain nothing else uses: static transforms published beside a simulation 
 | 3 | Perception reports to it, and names objects with its ids; the planning scene's table keeps the name `table` until the skills take table ids | done |
 | 4a | Tree nodes: `GetTable`, `GetCurrentTable`, `ObjectPickable` (failing with `OBJECT_NOT_FOUND`, `OBJECT_NOT_ON_TABLE`, `NOT_AT_TABLE` or `OUT_OF_REACH`) and `UpdateWorld`; `test_world_nodes.py` runs them against `test/world.yaml` | done |
 | 4b | Table and manipulation skills take ids, check them on the world and report their effects; the planning scene's table takes its world id | done |
-| 4c | `capabilities.yaml` drops `states`, `needs`, `invalidates` and `from`, and gains `errors`; tests start from a preloaded world instead of `--given` | |
+| 4c | `capabilities.yaml` drops `states`, `needs`, `invalidates` and `from`, and gains `errors`; tests start from a preloaded world instead of `--given` | done |
 | 4d | `PlanPickupLocations`, the semantic layer and `TableVisited` read the world | |
 | 5 | Agent on ROS 2 (ROSA): world tools, world summary, world changes in skill results | |
 

@@ -19,11 +19,12 @@ well, and reading that absence as a broken promise would fail on the good outcom
 
 Trees needing a stack you haven't declared with --stack are skipped, as are those marked
 `status: blocked` and those not ported to ROS 2 yet, so the suite reports the gaps instead of
-hiding them. States the world already provides, declared with --given, spare the setup steps
-that would establish them. From the package directory:
+hiding them. With --world, every test starts from that thorp_world file; and a setup step
+`unless` the robot is at a table is spared when the session starts with it there. From the
+package directory:
 
     python3 -m pytest test/test_capabilities.py -v
-    python3 -m pytest test/test_capabilities.py -v --stack manipulation,perception --given at_a_table
+    python3 -m pytest test/test_capabilities.py -v --stack manipulation,perception --world test/playground.yaml
     python3 -m pytest test/test_capabilities.py -v -k pickup_object
 """
 
@@ -105,22 +106,25 @@ def step_label(step):
     return step.get("as") or step["subtree"]
 
 
-def establishes(name, capabilities):
-    """The states a capability establishes: those other capabilities say they need it for."""
-    return {state for spec in capabilities.values()
-            for state, establisher in (spec.get("needs") or {}).items() if establisher == name}
-
-
-def setup_steps(spec, capabilities, given=frozenset()):
+def setup_steps(spec, capabilities, world_at_start):
     """
     (name, its spec, the step as written) for each step of a capability's setup, but those
-    only establishing states the world already provides.
+    `unless` what thorp_world said at the start of the session, that every test starts from.
     """
     for step in (spec.get("test") or {}).get("setup") or []:
-        states = establishes(step["subtree"], capabilities)
-        if states and states <= given:
+        unless = step.get("unless") or {}
+        if unless and all(world_at_start.get(key) == value for key, value in unless.items()):
             continue
         yield step["subtree"], capabilities.get(step["subtree"], {}), step
+
+
+def world_at_start(spec, request):
+    """
+    What thorp_world said at the start of the session, when some setup step depends on it; asked only then, so that
+    capabilities skipped for other reasons need no robot running.
+    """
+    steps = (spec.get("test") or {}).get("setup") or []
+    return request.getfixturevalue("initial_world") if any(step.get("unless") for step in steps) else {}
 
 
 def resolve_inputs(block, produced):
@@ -158,7 +162,7 @@ def resolve_inputs(block, produced):
 
 
 @pytest.fixture(autouse=True)
-def runnable(capability, available_stacks, given_states, capabilities, request):
+def runnable(capability, available_stacks, capabilities, request):
     """
     Whether this capability can be exercised at all, decided before anything touches the robot.
 
@@ -176,8 +180,8 @@ def runnable(capability, available_stacks, given_states, capabilities, request):
         pytest.skip("blocked: {}".format(" ".join(spec.get("blocked", "no reason given").split())))
 
     trees = installed_trees()
-    not_ported = [tree for tree in [name] + [step for step, _, _ in setup_steps(spec, capabilities, given_states)]
-                  if tree not in trees]
+    steps = list(setup_steps(spec, capabilities, world_at_start(spec, request)))
+    not_ported = [tree for tree in [name] + [step for step, _, _ in steps] if tree not in trees]
     if not_ported:
         pytest.skip("not ported to ROS 2 yet: {}".format(", ".join(not_ported)))
 
@@ -186,7 +190,7 @@ def runnable(capability, available_stacks, given_states, capabilities, request):
     # perception. Rolling them together means an incomplete --stack skips with a reason rather
     # than failing halfway through the precondition.
     needed = set(spec.get("stack", ["none"]))
-    for _, step_spec, _ in setup_steps(spec, capabilities, given_states):
+    for _, step_spec, _ in steps:
         needed |= set(step_spec.get("stack", ["none"]))
     needed -= {"none"}
     missing = needed - available_stacks
@@ -208,7 +212,7 @@ def clean_scene(runnable, reset_scene):
     reset_scene()
 
 
-def test_capability(runner, capability, capabilities, given_states):
+def test_capability(runner, capability, capabilities, request):
     name, spec = capability
 
     # Put the robot in the state this capability assumes. These calls go through the same
@@ -219,7 +223,7 @@ def test_capability(runner, capability, capabilities, given_states):
     # detected for it to pick up" are different findings, and a red test that means the second
     # one teaches you to ignore red tests.
     produced = {}
-    for step_name, step_spec, step in setup_steps(spec, capabilities, given_states):
+    for step_name, step_spec, step in setup_steps(spec, capabilities, world_at_start(spec, request)):
         try:
             step_inputs = resolve_inputs(step, produced)
         except LookupError as e:

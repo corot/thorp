@@ -6,12 +6,15 @@ Services, under the node's name:
 - observe (thorp_msgs/ObserveWorld): detections report what they saw, and get the ids of what they saw
 - update (thorp_msgs/UpdateWorld): skills report their effects
 - query (thorp_msgs/QueryWorld): what is known, with the relations that depend on where the robot is
-- save, load (std_srvs/Trigger): to and from world_file, also loaded on start if it exists
+- save, load (std_srvs/Trigger): to and from world_file, also loaded on start if it exists; the parameter can change
+  at any time, as tests do to load a world to start from
 
 Topics, latched: state (thorp_msgs/WorldState) and markers (visualization_msgs/MarkerArray), whenever it changes.
 """
 
 import os
+
+import yaml
 
 import rclpy
 from rclpy.duration import Duration
@@ -42,7 +45,7 @@ class WorldNode(Node):
         self.arm_frame = self.declare_parameter('arm_frame', 'arm_base_link').value
         self.max_arm_reach = self.declare_parameter('max_arm_reach', 0.3).value
         self.tf_timeout = Duration(seconds=self.declare_parameter('tf_timeout', 0.5).value)
-        self.world_file = os.path.expanduser(self.declare_parameter('world_file', '').value)
+        self.declare_parameter('world_file', '')
         self.world = World(object_tolerance=self.declare_parameter('object_tolerance', 0.05).value,
                            table_tolerance=self.declare_parameter('table_tolerance', 0.3).value,
                            table_area_ratio=self.declare_parameter('table_area_ratio', 0.8).value,
@@ -62,9 +65,10 @@ class WorldNode(Node):
         self.create_service(Trigger, '~/save', self.save)
         self.create_service(Trigger, '~/load', self.load)
 
-        if self.world_file and os.path.exists(self.world_file):
-            self.world.load(self.world_file)
-            self.get_logger().info(f"Loaded {len(self.world.entities())} entities from '{self.world_file}'")
+        world_file = self.world_file()
+        if world_file and os.path.exists(world_file):
+            self.world.load(world_file)
+            self.get_logger().info(f"Loaded {len(self.world.entities())} entities from '{world_file}'")
         self.publish()
 
     def observe(self, request, response):
@@ -139,21 +143,34 @@ class WorldNode(Node):
         return response
 
     def save(self, request, response):
-        if not self.world_file:
+        world_file = self.world_file()
+        if not world_file:
             response.success, response.message = False, 'no world_file parameter to save to'
             return response
-        self.world.save(self.world_file)
-        response.success, response.message = True, f'saved to {self.world_file}'
+        try:
+            self.world.save(world_file)
+        except OSError as e:
+            response.success, response.message = False, f"cannot save to '{world_file}': {e}"
+            return response
+        response.success, response.message = True, f'saved to {world_file}'
         return response
 
     def load(self, request, response):
-        if not self.world_file or not os.path.exists(self.world_file):
-            response.success, response.message = False, f"no world file '{self.world_file}' to load"
+        world_file = self.world_file()
+        if not world_file or not os.path.exists(world_file):
+            response.success, response.message = False, f"no world file '{world_file}' to load"
             return response
-        self.world.load(self.world_file)
-        response.success, response.message = True, f'loaded from {self.world_file}'
+        try:
+            self.world.load(world_file)
+        except (OSError, ValueError, yaml.YAMLError) as e:
+            response.success, response.message = False, f"cannot load '{world_file}': {e}"
+            return response
+        response.success, response.message = True, f'loaded from {world_file}'
         self.publish()
         return response
+
+    def world_file(self):
+        return os.path.expanduser(self.get_parameter('world_file').value)
 
     def to_map(self, header, pose):
         """A pose on the map frame, as it was when stamped; the latest transform if not stamped."""

@@ -1,0 +1,116 @@
+# The playground with its fixed objects (object_type:=fixed), as the capability tests start from it: each object
+# named by what it is, where detection from the robot's start sees it. Detection misidentifies most of these
+# upright shapes, and doesn't see the square from there, as too close to the table's edge; objects keep these ids
+# all the same, as the world matches them by place.
+docked_at: null
+entities:
+- id: table 1
+  kind: table
+  type: table
+  size: [0.547, 0.543, 0.001]
+  color: white
+  pose: {x: 0.458, y: 0.002, z: 0.47, yaw: 1.5708}
+  support: null
+  slot: null
+  provenance: observed
+  stamp: 0.0
+  status: ok
+- id: square 1
+  kind: object
+  type: square
+  size: [0.033, 0.011, 0.03]
+  color: green
+  pose: {x: 0.238, y: 0.15, z: 0.49, yaw: 0.4}
+  support: table 1
+  slot: null
+  provenance: observed
+  stamp: 0.0
+  status: ok
+- id: cross 1
+  kind: object
+  type: cross
+  size: [0.036, 0.012, 0.033]
+  color: gray
+  pose: {x: 0.398, y: 0.15, z: 0.489, yaw: -1.19}
+  support: table 1
+  slot: null
+  provenance: observed
+  stamp: 0.0
+  status: ok
+- id: circle 1
+  kind: object
+  type: circle
+  size: [0.033, 0.011, 0.03]
+  color: blue
+  pose: {x: 0.398, y: 0.039, z: 0.488, yaw: -1.53}
+  support: table 1
+  slot: null
+  provenance: observed
+  stamp: 0.0
+  status: ok
+- id: cube 1
+  kind: object
+  type: cube
+  size: [0.034, 0.011, 0.03]
+  color: blue
+  pose: {x: 0.467, y: 0.099, z: 0.488, yaw: 0.84}
+  support: table 1
+  slot: null
+  provenance: observed
+  stamp: 0.0
+  status: ok
+- id: triangle 1
+  kind: object
+  type: triangle
+  size: [0.025, 0.011, 0.024]
+  color: purple
+  pose: {x: 0.329, y: 0.101, z: 0.484, yaw: 0.1}
+  support: table 1
+  slot: null
+  provenance: observed
+  stamp: 0.0
+  status: ok
+- id: star 1
+  kind: object
+  type: star
+  size: [0.018, 0.011, 0.03]
+  color: red
+  pose: {x: 0.288, y: 0.018, z: 0.487, yaw: 0.2}
+  support: table 1
+  slot: null
+  provenance: observed
+  stamp: 0.0
+  status: ok
+- id: clover 1
+  kind: object
+  type: clover
+  size: [0.032, 0.011, 0.029]
+  color: red
+  pose: {x: 0.348, y: -0.036, z: 0.487, yaw: 1.4}
+  support: table 1
+  slot: null
+  provenance: observed
+  stamp: 0.0
+  status: ok
+- id: pentagon 1
+  kind: object
+  type: pentagon
+  size: [0.027, 0.011, 0.024]
+  color: purple
+  pose: {x: 0.338, y: -0.099, z: 0.484, yaw: 1.06}
+  support: table 1
+  slot: null
+  provenance: observed
+  stamp: 0.0
+  status: ok
+- id: rectangle 1
+  kind: object
+  type: rectangle
+  size: [0.032, 0.011, 0.029]
+  color: red
+  pose: {x: 0.298, y: -0.159, z: 0.487, yaw: 1.11}
+  support: table 1
+  slot: null
+  provenance: observed
+  stamp: 0.0
+  status: ok

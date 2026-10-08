@@ -31,15 +31,11 @@
 # An input marked `optional: true` may be left out: the tree reads it when given and otherwise
 # produces it itself, typically from a parameter. The drift test holds it to exactly that.
 #
-# An input's `from` lists the capability outputs that can supply it, as capability.output. More
-# than one means the choice is the caller's.
-#
-# `needs` and `invalidates` are the other half of that, for what a capability assumes about the
-# world rather than about its arguments. `needs` maps a state to the capability that establishes
-# it; which capability establishes a state is read off by inverting that, so nothing declares it
-# twice. `invalidates` lists the states this capability breaks. Between them an agent can work
-# out what a run left standing instead of redoing everything, which is the difference between
-# picking a second cube in two calls and in six.
+# `errors` names the codes (thorp_msgs/ThorpError) a capability fails with when thorp_world
+# says it can't do what it was asked, and what each means: pickup_object of an object on a table
+# the robot isn't at fails with NOT_AT_TABLE, and approaching that table is what it takes. What
+# holds now -- where each object is, which table the robot is at, what is within reach -- is
+# the world's to tell, so capabilities declare no preconditions of their own.
 #
 # kind:
 #   capability - a step an agent can ask for. The default, so it is left off.
@@ -61,20 +57,24 @@
 #   none | navigation | manipulation | perception | exploration (the exploration planner) |
 #   target_detection (YOLO and the target tracker)
 #
-# test: read only by the test suite; the agent side ignores this block.
+# test: read only by the test suite; the agent side ignores this block. Every test starts from
+# the scene as the session found it, and with --world, from the world thorp_world knows loaded
+# from that file, so the ids the tests name are those of the objects on the table.
 #   inputs_from: where an input comes from, when it should be a real value rather than one
-#     someone typed in: {table_id: [detect_table, table_id]} takes the table detect_table found, and
-#     a third element indexes a list, so [cover_in_one_tour, coverage_waypoints, 0] is the
-#     first waypoint of a coverage path. Usable on the test's own inputs and on any setup
-#     step's. This is the same threading an agent does by hand between two goals, so a chain
-#     expressible here is one ROSA can be asked to follow.
+#     someone typed in: {pose: [approach_table, pickup_pose]} takes the pose approach_table
+#     parked at, and a third element indexes a list, so [cover_in_one_tour,
+#     coverage_waypoints, 0] is the first waypoint of a coverage path. Usable on the test's own
+#     inputs and on any setup step's. This is the same threading an agent does by hand between
+#     two goals, so a chain expressible here is one ROSA can be asked to follow.
 #   setup: capabilities to call first, in order, to put the robot in the state this one
 #     assumes. pickup_object needs something detected to pick; place_object needs the gripper
 #     holding it. Written as capability calls rather than staged behind the robot's back, so
 #     the precondition is stated in the same vocabulary the agent would reach it with, and a
 #     step that fails SKIPS the test instead of failing it -- "this capability is broken" and
 #     "the world wasn't ready for it" are different findings and shouldn't look alike. The
-#     stacks a setup step needs count toward the ones this capability needs.
+#     stacks a setup step needs count toward the ones this capability needs. A step with
+#     `unless: {at_table: <table id>}` is left out when the session starts with the robot at that
+#     table, as on the playground's tabletop launch, and so are the stacks it needs.
 #   expect: succeeded | failed | any | runs
 #     `any` means the physical outcome depends on the scene and isn't asserted -- the contract
 #     (goal served, requested outputs returned, types right) is still checked either way.
@@ -82,27 +82,6 @@
 #     or a Repeat with no cycle count): the test lets one run for `cancel_after` seconds, then
 #     cancels and checks it was still going and had produced something. Without this they'd
 #     just hit their timeout and be reported as failures.
-
-# Facts about the world that capabilities depend on and change. `observed` says how the agent
-# can tell whether one holds right now: a state the agent cannot check is one it can only assume
-# from what it has already done, which survives a sequence of capability calls and does not
-# survive anybody touching the robot. Only declare a state some capability genuinely requires --
-# pickup_object clears the gripper itself, so an empty gripper is not one of these.
-states:
-  at_a_table:
-    means: the robot is parked against a table, close enough for the arm to reach what is on it
-    observed: no
-  objects_detected:
-    means: >
-      the objects on the surface in front of the robot are in the planning scene, under the
-      names detect_objects gave them
-    observed: the planning scene
-  holding_object:
-    means: the gripper holds an object
-    observed: the planning scene, and the gripper itself
-  target_in_view:
-    means: the tracker is publishing a pose for something to chase
-    observed: the target tracker
 
 capabilities:
 
@@ -116,19 +95,22 @@ capabilities:
       records it in the gripper, or as disturbed if the pickup failed.
     status: ok
     stack: [manipulation]
-    needs: {at_a_table: approach_table, objects_detected: detect_objects}
-    invalidates: [objects_detected]
     inputs:
-      object_name: {type: string, from: [detect_objects.objects], description: "id of the object to pick, as thorp_world knows it: 'cube 1'"}
+      object_name: {type: string, description: "id of the object to pick, as thorp_world knows it: 'cube 1'"}
       tightening: {type: float, optional: true, description: "extra gripper closure past contact, in meters; leave it out to use the gripper's configured value"}
     outputs:
-      error: {type: int, when: failure, description: "why it failed: OBJECT_NOT_FOUND, OBJECT_NOT_ON_TABLE, NOT_AT_TABLE or OUT_OF_REACH from checking the object against the world, or else the pickup action's error code"}
+      error: {type: int, when: failure, description: "why it failed: one of errors, or else the pickup action's error code"}
       attached_object: {type: string, description: "object now attached to the gripper, if any"}
       max_effort: {type: float, description: "gripper effort used, read from the gripper_max_effort parameter"}
+    errors:
+      OBJECT_NOT_FOUND: thorp_world knows no object by that id
+      OBJECT_NOT_ON_TABLE: the object is in the gripper or on the tray, or missing from where it was last seen
+      NOT_AT_TABLE: the object is on a table the robot isn't at; approach_table that table first
+      OUT_OF_REACH: the object is on the robot's table, but beyond the arm's reach from where the robot is
     test:
-      inputs: {object_name: "square 1"}
+      inputs: {object_name: "star 1"}
       setup:
-        - {subtree: approach_table}
+        - {subtree: approach_table, inputs: {table_id: "table 1"}, unless: {at_table: "table 1"}}
         - {subtree: detect_objects}
       # The scene on this bench is fixed, so "did the pickup work" has a right answer.
       expect: succeeded
@@ -140,22 +122,22 @@ capabilities:
       at, and record it there in thorp_world.
     status: ok
     stack: [manipulation]
-    needs: {holding_object: pickup_object, at_a_table: approach_table}
-    invalidates: [holding_object, objects_detected]
     inputs:
-      object_name: {type: string, from: [pickup_object.attached_object], description: "name of the object being placed"}
+      object_name: {type: string, description: "id of the object in the gripper, as pickup_object reports it in attached_object"}
       place_pose: {type: geometry_msgs::msg::PoseStamped, description: "where the object's center goes, as 'x;y;yaw;frame' or 'x;y;z;roll;pitch;yaw;frame'; z is the surface height plus half the object's height, plus a few millimeters, and the short form leaves z at 0, which is the floor"}
     outputs:
-      error: {type: int, when: failure, description: "NOT_AT_TABLE when the robot isn't at a table, or else the place action's error code"}
+      error: {type: int, when: failure, description: "why it failed: one of errors, or else the place action's error code"}
+    errors:
+      NOT_AT_TABLE: the robot isn't at a table; approach_table one first
     test:
-      # A clear spot on the near edge of the table; the nearest object, the star, is 8 cm further in.
-      # The square's center once on the table (0.47 m high), 8 mm above. In the map frame, so it stays
-      # put while the setup chain drives the robot to the table.
-      inputs: {object_name: "square 1", place_pose: "0.2;0.0;0.494;0.0;0.0;0.0;map"}
+      # A clear spot on the near edge of the table, 8 cm short of where the star was picked; z is
+      # the star's center once there, on the 0.47 m high table, 8 mm above. In the map frame, so it
+      # stays put while the setup chain drives the robot to the table.
+      inputs: {object_name: "star 1", place_pose: "0.2;0.0;0.494;0.0;0.0;0.0;map"}
       setup:
-        - {subtree: approach_table}
+        - {subtree: approach_table, inputs: {table_id: "table 1"}, unless: {at_table: "table 1"}}
         - {subtree: detect_objects}
-        - {subtree: pickup_object, inputs: {object_name: "square 1"}}
+        - {subtree: pickup_object, inputs: {object_name: "star 1"}}
       expect: any
       timeout: 120
 
@@ -167,19 +149,17 @@ capabilities:
       thorp_world records it on that slot.
     status: ok
     stack: [manipulation]
-    needs: {holding_object: pickup_object}
-    invalidates: [holding_object]
     inputs:
-      object_name: {type: string, from: [pickup_object.attached_object], description: "name of the object to stow on the tray"}
+      object_name: {type: string, description: "id of the object in the gripper, to stow on the tray"}
     outputs:
       error: {type: int, when: failure, description: "error code from the place action; 0 when it worked"}
       pose_on_tray: {type: geometry_msgs::msg::PoseStamped, description: "slot the object was placed in"}
     test:
-      inputs: {object_name: "square 1"}
+      inputs: {object_name: "star 1"}
       setup:
-        - {subtree: approach_table}
+        - {subtree: approach_table, inputs: {table_id: "table 1"}, unless: {at_table: "table 1"}}
         - {subtree: detect_objects}
-        - {subtree: pickup_object, inputs: {object_name: "square 1"}}
+        - {subtree: pickup_object, inputs: {object_name: "star 1"}}
       expect: any
       timeout: 120
 
@@ -191,7 +171,6 @@ capabilities:
       thorp_world takes an object it believed in the gripper as missing.
     status: ok
     stack: [manipulation]
-    invalidates: [holding_object]
     inputs: {}
     outputs:
       attached_object: {type: string, when: maybe, description: "the object that was attached, if any"}
@@ -222,7 +201,6 @@ capabilities:
       object still in the gripper stays attached; clear_gripper first to drop it.
     status: ok
     stack: [manipulation]
-    invalidates: [objects_detected]
     inputs: {}
     outputs:
       error: {type: int, when: failure, description: "error code from move_group moving the arm to stow"}
@@ -284,7 +262,7 @@ capabilities:
     status: ok
     stack: [navigation, perception]
     inputs:
-      table_id: {type: string, optional: true, from: [detect_table.table_id, inspect_table.table_id], description: "id of the table to park against; leave it out to take the one in front"}
+      table_id: {type: string, optional: true, description: "id of the table to park against; leave it out to take the one in front"}
     outputs:
       table_id: {type: string, description: "the id of the table it parked against"}
       table: {type: moveit_msgs::msg::CollisionObject, description: "that table"}
@@ -292,8 +270,10 @@ capabilities:
       pickup_pose: {type: geometry_msgs::msg::PoseStamped, description: "the pose it parked at, for reach_table"}
       objects: {type: std::vector<moveit_msgs::msg::CollisionObject>, description: "the objects on the table, each as id and color; empty when there are none"}
       surface: {type: moveit_msgs::msg::CollisionObject, description: "the surface they were found on, as id and color"}
-      error: {type: int, when: failure, description: "TABLE_NOT_FOUND for a table_id the world doesn't know, or an error code from reading the robot pose"}
+      error: {type: int, when: failure, description: "why it failed: one of errors, or else a code from reading the robot pose"}
       nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's navigate_to_pose or follow_path, docking"}
+    errors:
+      TABLE_NOT_FOUND: thorp_world knows no table by that id
     test:
       inputs: {}
       expect: any          # the same docking as reach_table, which the scene can defeat
@@ -308,9 +288,8 @@ capabilities:
       approach_table before picking one.
     status: ok
     stack: [navigation, perception]
-    invalidates: [at_a_table]
     inputs:
-      table_id: {type: string, optional: true, from: [detect_table.table_id, approach_table.table_id], description: "id of the table to inspect; leave it out to take the one in front"}
+      table_id: {type: string, optional: true, description: "id of the table to inspect; leave it out to take the one in front"}
     outputs:
       table_id: {type: string, description: "the table's id in thorp_world"}
       table: {type: moveit_msgs::msg::CollisionObject, description: "the table, as seen from the viewing pose"}
@@ -318,8 +297,11 @@ capabilities:
       inspect_pose: {type: geometry_msgs::msg::PoseStamped, description: "the viewing pose it looked from"}
       objects: {type: std::vector<moveit_msgs::msg::CollisionObject>, description: "the objects on the table, each as id and color; empty when there are none"}
       surface: {type: moveit_msgs::msg::CollisionObject, description: "the surface they were found on, as id and color"}
+      error: {type: int, when: failure, description: "why it failed: one of errors, or else a code from reading the robot pose"}
+    errors:
+      TABLE_NOT_FOUND: thorp_world knows no table by that id
     test:
-      inputs: {}
+      inputs: {table_id: "table 1"}
       expect: any
       timeout: 300
 
@@ -352,19 +334,21 @@ capabilities:
       approach_table returned, without detecting the table again.
     status: ok
     stack: [navigation, perception]
-    invalidates: [objects_detected]
     inputs:
-      table_id: {type: string, from: [approach_table.table_id], description: "id of the table to dock at"}
-      pose: {type: geometry_msgs::msg::PoseStamped, from: [approach_table.pickup_pose], description: "pose to dock at"}
+      table_id: {type: string, description: "id of the table to dock at"}
+      pose: {type: geometry_msgs::msg::PoseStamped, description: "pose to dock at: the pickup_pose approach_table returned"}
     outputs:
-      error: {type: int, when: failure, description: "TABLE_NOT_FOUND for a table_id the world doesn't know, or an error code from reading the robot pose"}
+      error: {type: int, when: failure, description: "why it failed: one of errors, or else a code from reading the robot pose"}
       nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's follow_path"}
+    errors:
+      TABLE_NOT_FOUND: thorp_world knows no table by that id
     test:
       # Goes back in from where approach_table parked, so this checks the goal's contract; the
       # drive itself is what approach_table's own test exercises.
+      inputs: {table_id: "table 1"}
       setup:
-        - {subtree: approach_table}
-      inputs_from: {table_id: [approach_table, table_id], pose: [approach_table, pickup_pose]}
+        - {subtree: approach_table, inputs: {table_id: "table 1"}}
+      inputs_from: {pose: [approach_table, pickup_pose]}
       expect: any
       timeout: 180
 
@@ -375,16 +359,16 @@ capabilities:
       arguments: it backs out along the way the robot is facing.
     status: ok
     stack: [navigation]
-    needs: {at_a_table: approach_table}
-    invalidates: [at_a_table, objects_detected]
     inputs: {}
     outputs:
-      error: {type: int, when: failure, description: "NOT_AT_TABLE when the robot isn't at a table"}
+      error: {type: int, when: failure, description: "why it failed: one of errors"}
       nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's backup behavior"}
+    errors:
+      NOT_AT_TABLE: the robot isn't at a table, so there is none to leave
     test:
       inputs: {}
       setup:
-        - {subtree: approach_table}
+        - {subtree: approach_table, inputs: {table_id: "table 1"}, unless: {at_table: "table 1"}}
       expect: any
       timeout: 180
 
@@ -394,7 +378,6 @@ capabilities:
       recording it in thorp_world.
     status: ok
     stack: [navigation, perception]
-    invalidates: [at_a_table, objects_detected]
     inputs: {}
     outputs:
       table_id: {type: string, description: "the table's id in thorp_world"}
@@ -415,19 +398,17 @@ capabilities:
       there.
     status: ok
     stack: [navigation, manipulation, perception]
-    invalidates: [at_a_table, objects_detected, holding_object]
     inputs:
-      table_id: {type: string, optional: true, from: [detect_table.table_id, inspect_table.table_id, approach_table.table_id], description: "id of the table to clear; leave it out to take the one in front"}
+      table_id: {type: string, optional: true, description: "id of the table to clear; leave it out to take the one in front"}
       given_up_count: {type: unsigned int, description: "objects abandoned so far; 0 to start"}
     outputs:
       pickup_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "pose the last pickup was attempted from"}
       error: {type: int, when: maybe, description: "error code from the last action"}
       nav_error: {type: uint16_t, when: maybe, description: "error code from the last Nav2 action"}
+    errors:
+      TABLE_NOT_FOUND: thorp_world knows no table by that id
     test:
-      inputs: {given_up_count: 0}
-      setup:
-        - {subtree: detect_table}
-      inputs_from: {table_id: [detect_table, table_id]}
+      inputs: {table_id: "table 1", given_up_count: 0}
       expect: any
       timeout: 900
 
@@ -442,7 +423,6 @@ capabilities:
       have several candidate poses and only care that one of them works.
     status: ok
     stack: [navigation]
-    invalidates: [at_a_table, objects_detected]
     inputs:
       pose: {type: geometry_msgs::msg::PoseStamped, description: "where to drive to, as 'x;y;yaw;frame'"}
     outputs:
@@ -461,7 +441,6 @@ capabilities:
       the detections have caught up with the camera.
     status: ok
     stack: [navigation]
-    invalidates: [at_a_table, objects_detected]
     inputs:
       pose: {type: geometry_msgs::msg::PoseStamped, description: "what to face; only its position matters"}
     outputs:
@@ -496,7 +475,6 @@ capabilities:
       another), or else with the one the exploration_method parameter selects.
     status: ok
     stack: [navigation, exploration]
-    invalidates: [at_a_table, objects_detected]
     inputs:
       exploration_method: {type: string, optional: true, description: "cover_in_one_tour or cover_room_by_room; leave it out to use the configured one"}
     outputs:
@@ -564,8 +542,6 @@ capabilities:
       close after 25 seconds.
     status: ok
     stack: [navigation, target_detection]
-    needs: {target_in_view: look_at_pose}
-    invalidates: [at_a_table, objects_detected]
     inputs: {}
     outputs:
       target_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "where the target was last seen"}
@@ -588,8 +564,6 @@ capabilities:
       cannon leveled.
     status: ok
     stack: [navigation, target_detection]
-    needs: {target_in_view: look_at_pose}
-    invalidates: [at_a_table, objects_detected]
     inputs: {}
     outputs:
       cannon_tilt_angle: {type: float, when: maybe, description: "angle the cannon was tilted to"}
@@ -614,7 +588,6 @@ capabilities:
       where the robot stands, and drive through them. Resumes the poses left, if any.
     status: ok
     stack: [navigation, exploration]
-    invalidates: [at_a_table, objects_detected]
     inputs: {}
     outputs:
       coverage_waypoints: {type: std::vector<geometry_msgs::msg::PoseStamped>, description: "the poses left to drive through; empty once done"}
@@ -632,7 +605,6 @@ capabilities:
       through them. Resumes the rooms and poses left, if any.
     status: ok
     stack: [navigation, exploration]
-    invalidates: [at_a_table, objects_detected]
     inputs: {}
     outputs:
       rooms: {type: std::vector<unsigned int>, when: maybe, description: "ids of the rooms segmented"}
@@ -659,7 +631,6 @@ capabilities:
       one works.
     status: ok
     stack: [navigation]
-    invalidates: [at_a_table, objects_detected]
     inputs:
       poses: {type: std::vector<geometry_msgs::msg::PoseStamped>, description: "candidate poses, tried in order, each as 'x;y;yaw;frame'"}
     outputs:
@@ -678,9 +649,8 @@ capabilities:
       waypoint's heading is reached; the others are just driven through.
     status: ok
     stack: [navigation]
-    invalidates: [at_a_table, objects_detected]
     inputs:
-      waypoints: {type: std::vector<geometry_msgs::msg::PoseStamped>, from: [cover_in_one_tour.coverage_waypoints, cover_room_by_room.coverage_waypoints], description: "waypoints to follow in order, each as 'x;y;yaw;frame'"}
+      waypoints: {type: std::vector<geometry_msgs::msg::PoseStamped>, description: "waypoints to follow in order, each as 'x;y;yaw;frame', as cover_in_one_tour and cover_room_by_room return them in coverage_waypoints"}
     outputs:
       next_waypoint: {type: unsigned long, when: maybe, description: "index of the waypoint being driven to"}
       robot_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "robot pose while following"}
@@ -696,8 +666,6 @@ capabilities:
       recording the ones that keep failing.
     status: ok
     stack: [manipulation, perception]
-    needs: {at_a_table: approach_table, objects_detected: detect_objects}
-    invalidates: [objects_detected, holding_object]
     inputs:
       failures: {type: "std::map<std::string, uint32_t>", description: "per-object failure counts so far; {} to start"}
       given_up_count: {type: unsigned int, description: "objects abandoned so far; 0 to start"}
@@ -707,7 +675,7 @@ capabilities:
     test:
       inputs: {failures: {}, given_up_count: 0}
       setup:
-        - {subtree: approach_table}
+        - {subtree: approach_table, inputs: {table_id: "table 1"}, unless: {at_table: "table 1"}}
         - {subtree: detect_objects}
       expect: any
       timeout: 600
