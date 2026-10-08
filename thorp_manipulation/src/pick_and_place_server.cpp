@@ -634,7 +634,9 @@ int32_t PickAndPlaceServer::place(const PlaceObject::Goal& goal, const Feedback&
     if (!goal.support_surf.empty())
     {
       stage->allowCollisions(goal.support_surf, gripper_links_, false);
-      stage->allowCollisions(object_name, goal.support_surf, false);
+      // Skip if the object has been placed on the tray
+      if (!robot_model_->hasLinkModel(goal.support_surf))
+        stage->allowCollisions(object_name, goal.support_surf, false);
     }
     if (!goal.allowed_touch_objects.empty())
       stage->allowCollisions(goal.allowed_touch_objects, placing_links, false);
