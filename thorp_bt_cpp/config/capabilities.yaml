@@ -402,7 +402,8 @@ capabilities:
       Turn on the spot until the robot is facing a given pose, without going anywhere. The
       camera has about a 57 degree field of view and is fixed to the base, so anything to the
       side or behind has to be turned toward before a perception capability can see it. Prefer
-      it over goto_pose when only the heading is wrong.
+      it over goto_pose when only the heading is wrong. It ends two seconds after turning, once
+      the detections have caught up with the camera.
     status: ok
     stack: [navigation]
     invalidates: [at_a_table, objects_detected]

@@ -57,6 +57,8 @@
       <LookAtPose robot_pose="{robot_pose}"
                   target_pose="{pose}"
                   error="{error}"/>
+      <!-- Detections lag the camera by a second or two, so what the robot now faces is seen when this ends -->
+      <Sleep msec="2000"/>
     </Sequence>
   </BehaviorTree>
 
