@@ -56,11 +56,13 @@ A Claude.ai subscription does not include API access: a `THORP_AGENT_PROVIDER=an
 
 ## Running it
 
-Start an app with `bt_server` as its executive, so all the trees are offered and none runs on its own.
-`cleanup_table` brings up navigation, manipulation and perception on the playground world, which the prompts describe:
+Start the LLM playground, the scene the prompts describe: navigation, manipulation, perception and target detection on
+the playground world, with a fixed sample of objects on its table and a still cat, and `bt_server` offering all the
+trees, none running on its own. Any other app also runs `bt_server` with `executive:=llm`, but on a scene the prompts
+don't describe.
 
 ```bash
-ros2 launch thorp_apps cleanup_table.launch.py executive:=llm
+ros2 launch thorp_apps llm_playground.launch.py
 ```
 
 Then talk to the robot:

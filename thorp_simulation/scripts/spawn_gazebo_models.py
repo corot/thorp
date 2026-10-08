@@ -9,6 +9,7 @@ Populate the Gazebo world with tables and objects, or cats:
  - fun_house_objects: random tables with random objects, in open spaces of the map (any map, despite the
    name); needs navigation running
  - cats: cats for the hunter, in open spaces of the map, and the rocket for the cannon; needs navigation running
+ - playground_cat: a still cat beside the robot's start on the playground, and the rocket for the cannon
 Usage:
     ros2 run thorp_simulation spawn_gazebo_models.py <mode> [-l]
     -l: place random tables or cats at preferred locations
@@ -90,6 +91,9 @@ PLAYGROUND_CUBES = [('cube 1', 'cube', (-0.14, -0.16, 0.5, 0.0, 0.0, 1.1)),
 # 5 rows of 8 cubes tightly spaced; tailored for lack table
 N_ROWS_OF_CUBES = [('cube ' + str(i), 'cube',
                     (((i // 8) - 2) / 10, ((i % 8) - 4) / 18.0, 0.45, 0.0, 0.0, 0.0)) for i in range(40)]
+
+# a cat to the left of the robot's start on the playground, 1.5 m away
+PLAYGROUND_CAT = ('cat_orange_0', 'cat_orange', (-0.5, 1.5, 0.0))
 
 cats = [{'name': 'cat_black', 'count': 3},
         {'name': 'cat_orange', 'count': 3}]
@@ -289,6 +293,10 @@ class ModelsSpawner(Node):
                     self.get_logger().info(f"Spawned {model_name} at {pose2d2str(pose)}")
                 cat_index += 1
 
+    def spawn_rocket(self):
+        # the cannon places the rocket at its muzzle when firing; until then, out of sight
+        self.spawn_model('rocket', 'rocket', create_3d_pose(-10.0, -10.0, 0.03, 0.0, 0.0, 0.0))
+
     def spawn(self, mode, use_preferred_locs):
         self.get_logger().info(f"Spawning {mode} in {'preferred' if use_preferred_locs else 'random'} locations")
         if mode == 'fun_house_objects':
@@ -297,8 +305,12 @@ class ModelsSpawner(Node):
                                    '\n  '.join(f'{k}: {v}' for k, v in self.spawned.items()))
         elif mode == 'cats':
             self.spawn_cats(use_preferred_locs)
-            # the cannon places the rocket at its muzzle when firing; until then, out of sight
-            self.spawn_model('rocket', 'rocket', create_3d_pose(-10.0, -10.0, 0.03, 0.0, 0.0, 0.0))
+            self.spawn_rocket()
+        elif mode == 'playground_cat':
+            name, model, pose = PLAYGROUND_CAT
+            if self.spawn_model(name, model, create_2d_pose(*pose)):
+                self.get_logger().info(f"Spawned {name} at {pose2d2str(create_2d_pose(*pose))}")
+            self.spawn_rocket()
         elif mode == 'playground_random':  # random objects over a random table
             surface = random.choice(surfaces)
             surf_name = surface['name']
@@ -321,7 +333,7 @@ def main():
     args = rclpy.utilities.remove_ros_args(sys.argv)
     if len(args) < 2:
         print("Usage: spawn_gazebo_models.py playground_fixed | playground_cubes | playground_rows | "
-              "playground_random | fun_house_objects | cats [-l]")
+              "playground_random | fun_house_objects | cats [-l] | playground_cat")
         sys.exit(-1)
     rclpy.init()
     node = ModelsSpawner()

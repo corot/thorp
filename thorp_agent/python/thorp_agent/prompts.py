@@ -39,10 +39,10 @@ PROMPTS = RobotSystemPrompts(
         'Never invent a pose, a table or an object name. If you no longer have a value a call needs, get it again '
         "from the capability that produces it, or say you don't have it."),
     about_your_environment=(
-        'The playground is an 11.5 x 9.7 m map, x from -7.2 to 4.3 and y from -6.3 to 3.4, with one table at '
-        '(0.45, 0) carrying some objects, a bookshelf 1.5 m to the left of the table, and a jersey barrier, a '
-        'cylinder, a dumpster and a big cube farther away. There are no walls. The robot starts at (-0.5, 0), facing '
-        'the table.'),
+        'The playground is an 11.5 x 9.7 m map, x from -7.2 to 4.3 and y from -6.3 to 3.4, with no walls. The robot '
+        'starts at (-0.5, 0), facing a table at (0.45, 0) that carries some objects; a cat sits still 1.5 m to the '
+        "robot's left, at (-0.5, 1.5), beside a bookshelf. A jersey barrier, a cylinder, a dumpster and a big cube "
+        'stand farther away.'),
     about_your_capabilities=(
         "Poses are given as 'x;y;yaw;frame', and 'map' is the frame you want unless you have a reason otherwise. "
         'Everything handed back to you is already in the map frame.'),

@@ -395,8 +395,12 @@ Thorp starting at its center: the first covers the house with the Kinect's field
 (`fun_house_objects`) and runs perception and manipulation, showing `gathering.rviz`. Noetic's object gatherer ran on
 the small house world. `cat_hunter.launch.py` adds the exploration planner, on the Kinect's field of view,
 and target detection, on the fun house world too, and on simulation the cats, with their bridge and controller; it
-shows `hunting.rviz`. The executive's includes are scoped, as their `params_file` argument would otherwise
-reach Nav2's launch. Pending: the other apps' ROS 1 launch files and `resources/movie_scripts`, with their blocks.
+shows `hunting.rviz`. The executive's includes are scoped, as their `params_file` argument would otherwise reach Nav2's
+launch. `llm_playground.launch.py` is the scene for the LLM agent and the capability tests: the playground with the
+fixed objects on its table, Thorp half a meter short of it, and a still cat 1.5 m to its left (`playground_cat`, with
+the cannon's rocket), with navigation, perception, manipulation and target detection, and `bt_server` as executive; it
+shows `bt_server.rviz`: `cleanup_table.rviz` plus the target displays. Noetic's detected the cat with COB. Pending:
+`stack_all_cubes.launch` and `resources/movie_scripts`, with their blocks.
 
 ### thorp_agent
 
@@ -406,10 +410,10 @@ every result carries what the planning scene says the robot holds and has around
 gripper reading Noetic took from Gazebo's grasp events is dropped, as nothing reports it without closing the gripper.
 Tool arguments take poses as strings or in the object form calls return, and arguments not matching a tool's schema go
 back to the model instead of ending the conversation. ROSA and LangChain have no Jazzy packages: they are pip packages
-for the system Python, in the user site (see the package's README); Noetic needed a Python 3.9 virtual environment.
-The prompts describe the playground world, as `cleanup_table.launch.py executive:=llm` runs it with navigation,
-manipulation and perception. Verified without a model: the unit tests, and the ROSA executor with a scripted model
-chaining the tabletop capabilities on `bt_server`; no run with a real model yet.
+for the system Python, in the user site (see the package's README); Noetic needed a Python 3.9 virtual environment. The
+prompts describe the LLM playground (`thorp_apps`' `llm_playground.launch.py`). Verified without a model: the unit
+tests, and the ROSA executor with a scripted model chaining the tabletop capabilities on `bt_server`; no run with a real
+model yet.
 
 ### thorp_costmap_layers
 

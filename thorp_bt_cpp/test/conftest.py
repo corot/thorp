@@ -15,6 +15,7 @@ job and these just connect to it:
 
     ros2 run thorp_bt_cpp bt_server_node
     ros2 launch thorp_apps object_manip.launch.py executive:=llm
+    ros2 launch thorp_apps llm_playground.launch.py   # every stack the capabilities need
 
 Then, from the package directory:
 
