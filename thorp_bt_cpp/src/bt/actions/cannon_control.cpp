@@ -15,7 +15,8 @@ namespace ttk = thorp::toolkit;
 namespace thorp::bt::actions
 {
 /**
- * Calculate the cannon tilt angle, in degrees, to aim at the target, clipped to the cannon's range.
+ * Calculate the cannon tilt angle, in degrees, to aim at the target, clipped to the range where the cannon doesn't
+ * touch the robot.
  */
 class AimCannon : public BT::SyncActionNode
 {
@@ -44,12 +45,15 @@ private:
     const double adjacent = target_pose_cannon_rf.pose.position.x;
     const double opposite = target_pose_cannon_rf.pose.position.z;
     const auto aim_angle = static_cast<float>(ttk::toDeg(std::atan(opposite / adjacent)));
-    const float tilt_angle = std::clamp(aim_angle, -MAX_TILT, +MAX_TILT);
+    const float tilt_angle = std::clamp(aim_angle, MIN_TILT, MAX_TILT);
     RCLCPP_INFO(logger(*this), "Target at %.1f degrees (clipped to %.1f)", aim_angle, tilt_angle);
     setOutput("angle", tilt_angle);
     return BT::NodeStatus::SUCCESS;
   }
 
+  // At its lower limit, -18 degrees, the cannon touches the top plate: Gazebo jams it there, and MoveIt sees the
+  // robot in collision, so it plans no manipulation
+  static constexpr float MIN_TILT = -17.0f;
   static constexpr float MAX_TILT = 18.0f;
 
   BT_REGISTER_NODE(AimCannon);

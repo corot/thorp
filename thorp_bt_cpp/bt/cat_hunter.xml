@@ -55,40 +55,51 @@
 
   <!--
     Follow the target, aiming and firing at it whenever it is close and in front. Ends when the target is not seen for
-    half a second, as when toppled, or there's no ammo left.
+    half a second, as when toppled, or there's no ammo left, with the cannon leveled.
   -->
   <BehaviorTree ID="hunt_cat">
-    <Parallel failure_count="1"
-              success_count="1">
-      <ForceSuccess>
-        <FollowObject error="{follow_error}"/>
-      </ForceSuccess>
-      <RetryUntilSuccessful num_attempts="-1">
-        <IfThenElse>
-          <Sequence>
-            <CannonHasAmmo/>
-            <MonitorTarget name="TargetVisible"
-                           target_pose="{target_pose}"
-                           timeout="0.5"/>
-          </Sequence>
-          <Sequence>
-            <GetRobotPose robot_pose="{robot_pose}"
-                          error="{error}"
-                          timeout="1"/>
-            <TargetReachable robot_pose="{robot_pose}"
-                             target_pose="{target_pose}"
-                             max_dist="1.0"
-                             max_angle="0.2"/>
-            <AimCannon target_pose="{target_pose}"
-                       angle="{cannon_tilt_angle}"/>
-            <TiltCannon angle="{cannon_tilt_angle}"/>
-            <FireCannon shots="1"/>
-            <Sleep msec="1000"/>
-            <AlwaysFailure _description="Keep hunting while the target is visible"/>
-          </Sequence>
-          <AlwaysSuccess/>
-        </IfThenElse>
-      </RetryUntilSuccessful>
-    </Parallel>
+    <!-- Leveled however the hunt ends: tilted down, the cannon collides with the top plate in MoveIt's model,
+         and manipulation can't plan -->
+    <Fallback>
+      <Sequence>
+        <Parallel failure_count="1"
+                  success_count="1">
+          <ForceSuccess>
+            <FollowObject error="{follow_error}"/>
+          </ForceSuccess>
+          <RetryUntilSuccessful num_attempts="-1">
+            <IfThenElse>
+              <Sequence>
+                <CannonHasAmmo/>
+                <MonitorTarget name="TargetVisible"
+                               target_pose="{target_pose}"
+                               timeout="0.5"/>
+              </Sequence>
+              <Sequence>
+                <GetRobotPose robot_pose="{robot_pose}"
+                              error="{error}"
+                              timeout="1"/>
+                <TargetReachable robot_pose="{robot_pose}"
+                                 target_pose="{target_pose}"
+                                 max_dist="1.0"
+                                 max_angle="0.2"/>
+                <AimCannon target_pose="{target_pose}"
+                           angle="{cannon_tilt_angle}"/>
+                <TiltCannon angle="{cannon_tilt_angle}"/>
+                <FireCannon shots="1"/>
+                <Sleep msec="1000"/>
+                <AlwaysFailure _description="Keep hunting while the target is visible"/>
+              </Sequence>
+              <AlwaysSuccess/>
+            </IfThenElse>
+          </RetryUntilSuccessful>
+        </Parallel>
+        <TiltCannon angle="0"/>
+      </Sequence>
+      <Sequence>
+        <TiltCannon angle="0"/>
+        <AlwaysFailure/>
+      </Sequence>
+    </Fallback>
   </BehaviorTree>
 </root>

@@ -525,7 +525,8 @@ capabilities:
     description: >
       The attack half of cat_hunter: follow the target the tracker sees, aiming and firing the
       cannon whenever it is within 1.0 m and 0.2 rad of the robot's heading. Ends when the
-      target is not seen for half a second, as when toppled, or there's no ammo left.
+      target is not seen for half a second, as when toppled, or there's no ammo left, with the
+      cannon leveled.
     status: ok
     stack: [navigation, target_detection]
     needs: {target_in_view: look_at_pose}
