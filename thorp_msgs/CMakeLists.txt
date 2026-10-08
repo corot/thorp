@@ -10,6 +10,7 @@ find_package(moveit_msgs REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   msg/BTNodeStatus.msg
   msg/ObjectToPickup.msg
+  msg/ObjectsInReach.msg
   msg/PickupLocation.msg
   msg/Room.msg
   msg/ThorpError.msg
@@ -20,6 +21,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   srv/ObserveWorld.srv
   srv/PlanRoomExploration.srv
   srv/PlanRoomSequence.srv
+  srv/QueryReach.srv
   srv/QueryWorld.srv
   srv/SegmentRooms.srv
   srv/SetNamedConfig.srv

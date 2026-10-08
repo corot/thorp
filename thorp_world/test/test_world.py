@@ -173,6 +173,20 @@ def test_losing_an_object_not_in_the_gripper_changes_nothing(world):
     assert world.get('cube 1').support == 'table 1' and world.get('cube 1').pose is not None
 
 
+def test_inspecting_a_table_is_remembered(world, tmp_path):
+    world.observe_tables([table()], stamp=1.0)
+    assert world.get('table 1').inspected is None, 'seen, but not looked over'
+    world.mark_inspected('table 1', stamp=2.0)
+    assert world.get('table 1').inspected == 2.0
+    with pytest.raises(KeyError):
+        world.mark_inspected('table 9', stamp=3.0)
+    path = tmp_path / 'world.yaml'
+    world.save(path)
+    loaded = World()
+    loaded.load(path)
+    assert loaded.get('table 1').inspected == 2.0
+
+
 def test_reach_is_measured_from_the_arm(world):
     world.observe_objects(table(), [cube(0.3, 0.0), cube(0.6, 0.2)], stamp=1.0)
     world.mark_picked('cube 2', stamp=2.0)
@@ -180,6 +194,21 @@ def test_reach_is_measured_from_the_arm(world):
     assert world.within_reach('cube 1', arm, reach=0.3)
     assert not world.within_reach('cube 1', arm, reach=0.15)
     assert not world.within_reach('cube 2', arm, reach=10.0), "a carried object isn't on a table to reach"
+
+
+def test_reach_from_elsewhere_is_of_the_objects_on_that_table(world):
+    world.observe_objects(table(), [cube(0.3, 0.0), cube(0.4, 0.1), cube(0.6, 0.2)], stamp=1.0)
+    world.observe_objects(table(2.0, 0.0), [cube(2.0, 0.0)], stamp=1.0)
+    world.observe_objects(table(), [cube(0.3, 0.0), cube(0.6, 0.2)], stamp=2.0, robot_pose=AT_TABLE)
+    assert world.get('cube 2').status == MISSING
+    # the arm by the table's near edge: cube 2 would be in reach, but it isn't there
+    reached = world.reachable_from('table 1', Pose(0.2, 0.05), reach=0.3)
+    assert [object_id for object_id, _ in reached] == ['cube 1']
+    assert reached[0][1] == pytest.approx(math.hypot(0.1, 0.05))
+    assert [object_id for object_id, _ in world.reachable_from('table 1', Pose(0.5, 0.1), reach=0.3)] == \
+        ['cube 3', 'cube 1'], 'closest first'
+    with pytest.raises(KeyError):
+        world.reachable_from('table 9', Pose(0.2, 0.05), reach=0.3)
 
 
 def test_the_world_survives_a_save_and_a_load(world, tmp_path):

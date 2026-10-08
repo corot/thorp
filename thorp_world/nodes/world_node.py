@@ -6,6 +6,7 @@ Services, under the node's name:
 - observe (thorp_msgs/ObserveWorld): detections report what they saw, and get the ids of what they saw
 - update (thorp_msgs/UpdateWorld): skills report their effects
 - query (thorp_msgs/QueryWorld): what is known, with the relations that depend on where the robot is
+- reach (thorp_msgs/QueryReach): which objects on a table the arm would reach with the robot elsewhere
 - save, load (std_srvs/Trigger): to and from world_file, also loaded on start if it exists; the parameter can change
   at any time, as tests do to load a world to start from
 
@@ -23,14 +24,14 @@ from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 from rclpy.time import Time
 
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, TransformStamped
 from std_srvs.srv import Trigger
 from tf2_geometry_msgs import do_transform_pose_stamped
 from tf2_ros import Buffer, TransformException, TransformListener
 from visualization_msgs.msg import Marker, MarkerArray
 
-from thorp_msgs.msg import WorldState
-from thorp_msgs.srv import ObserveWorld, QueryWorld, UpdateWorld
+from thorp_msgs.msg import ObjectsInReach, ObjectToPickup, WorldState
+from thorp_msgs.srv import ObserveWorld, QueryReach, QueryWorld, UpdateWorld
 from thorp_toolkit.visualization import Visualization
 
 from thorp_world import OBJECT, OBSERVED, OK, TABLE, World
@@ -62,6 +63,7 @@ class WorldNode(Node):
         self.create_service(ObserveWorld, '~/observe', self.observe)
         self.create_service(UpdateWorld, '~/update', self.update)
         self.create_service(QueryWorld, '~/query', self.query)
+        self.create_service(QueryReach, '~/reach', self.reach)
         self.create_service(Trigger, '~/save', self.save)
         self.create_service(Trigger, '~/load', self.load)
 
@@ -114,6 +116,8 @@ class WorldNode(Node):
                 self.world.undock()
             elif request.effect == UpdateWorld.Request.LOST:
                 self.world.mark_lost(request.object_id, now)
+            elif request.effect == UpdateWorld.Request.INSPECTED:
+                self.world.mark_inspected(request.table_id, now)
             else:
                 raise ValueError(f'unknown effect {request.effect}')
         except (KeyError, ValueError, TransformException) as e:
@@ -140,6 +144,41 @@ class WorldNode(Node):
         response.reachable = [e.kind == OBJECT and self.world.within_reach(e.id, arm, self.max_arm_reach)
                               for e in entities]
         response.at_table = self.world.table_at(robot) or ''
+        return response
+
+    def reach(self, request, response):
+        response.reach = self.max_arm_reach - request.margin
+        try:
+            arm_on_robot = self.tf_buffer.lookup_transform(self.robot_frame, self.arm_frame, Time(),
+                                                           timeout=self.tf_timeout)
+            robot_poses = [self.to_map(p.header, p.pose) for p in request.robot_poses]
+        except TransformException as e:
+            response.success, response.message = False, f'cannot put the arm where the robot would be: {e}'
+            return response
+        # the arm's base on the robot, to put where the robot would be
+        offset, arm = arm_on_robot.transform, PoseStamped()
+        arm.pose.position.x, arm.pose.position.y, arm.pose.position.z = \
+            offset.translation.x, offset.translation.y, offset.translation.z
+        arm.pose.orientation = offset.rotation
+        try:
+            for robot_pose in robot_poses:
+                robot = TransformStamped(header=robot_pose.header, child_frame_id=self.robot_frame)
+                position = robot_pose.pose.position
+                robot.transform.translation.x, robot.transform.translation.y = position.x, position.y
+                robot.transform.translation.z = position.z
+                robot.transform.rotation = robot_pose.pose.orientation
+                arm_pose = do_transform_pose_stamped(arm, robot)
+                in_reach = ObjectsInReach(robot_pose=robot_pose, arm_pose=arm_pose)
+                for object_id, distance in self.world.reachable_from(request.table_id, to_pose(arm_pose),
+                                                                     response.reach):
+                    in_reach.objects.append(ObjectToPickup(name=object_id, distance=distance,
+                                                           pose=to_msg(self.world.get(object_id), self.map_frame).pose))
+                response.in_reach.append(in_reach)
+        except KeyError as e:
+            response.success, response.message = False, str(e).strip('"')
+            response.in_reach = []
+            return response
+        response.success = True
         return response
 
     def save(self, request, response):

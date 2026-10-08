@@ -1,5 +1,3 @@
-#include <cmath>
-
 #include <behaviortree_cpp/action_node.h>
 
 #include "thorp_bt_cpp/node_common.hpp"
@@ -35,9 +33,7 @@ private:
     obstacle.operation = thorp_costmap_layers::msg::Object::ADD;
     obstacle.type = "obstacle";
     obstacle.pose = requireInput<geometry_msgs::msg::PoseStamped>(*this, "table_pose");
-    // detect_table names every table "table"; its position tells them apart
-    obstacle.name = table.id + "_" + std::to_string(std::lround(obstacle.pose.pose.position.x)) + "_" +
-                    std::to_string(std::lround(obstacle.pose.pose.position.y));
+    obstacle.name = table.id;
     obstacle.dimensions.x = table.primitives.at(0).dimensions.at(SolidPrimitive::BOX_X);
     obstacle.dimensions.y = table.primitives.at(0).dimensions.at(SolidPrimitive::BOX_Y);
     const bool marked = updateSemanticLayer(rosNode(*this), "local", { obstacle }) &&

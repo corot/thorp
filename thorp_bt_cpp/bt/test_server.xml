@@ -121,6 +121,11 @@
 
   <BehaviorTree ID="test_world_update">
     <UpdateWorld effect="{effect}"
-                 object_id="{object_id}"/>
+                 object_id="{object_id}"
+                 table_id="{table_id}"/>
+  </BehaviorTree>
+
+  <BehaviorTree ID="test_world_visited">
+    <TableVisited table_id="{table_id}"/>
   </BehaviorTree>
 </root>

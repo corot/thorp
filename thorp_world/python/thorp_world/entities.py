@@ -53,3 +53,4 @@ class Entity:
     provenance: str = OBSERVED
     stamp: float = 0.0  # when last observed, or last changed by a skill
     status: str = OK
+    inspected: Optional[float] = None  # tables: when the robot last looked one over

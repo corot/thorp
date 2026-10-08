@@ -282,10 +282,10 @@ capabilities:
   inspect_table:
     description: >
       Look a table over from a viewing pose on its side nearest to the robot, and report it and
-      the objects on it, recording them in thorp_world: the table the world knows as table_id,
-      or the one in front if none is given. Fails when no table is in view or it isn't a usable
-      size. The objects keep their ids from here on, but the viewing pose is outside arm reach:
-      approach_table before picking one.
+      the objects on it, recording them in thorp_world, and the table as inspected: the table the
+      world knows as table_id, or the one in front if none is given. Fails when no table is in
+      view or it isn't a usable size. The objects keep their ids from here on, but the viewing
+      pose is outside arm reach: approach_table before picking one.
     status: ok
     stack: [navigation, perception]
     inputs:
@@ -375,7 +375,7 @@ capabilities:
   validate_table:
     description: >
       Look a detected table over from a viewpoint and decide whether it is a usable size,
-      recording it in thorp_world.
+      recording it in thorp_world as inspected, usable or not.
     status: ok
     stack: [navigation, perception]
     inputs: {}
@@ -502,8 +502,8 @@ capabilities:
 
   object_gatherer:
     description: >
-      Explore the house, and for every table found, validate it and clear the objects from it
-      onto the tray.
+      Explore the house, and for every table found that thorp_world doesn't know as inspected,
+      validate it and clear the objects from it onto the tray.
     kind: app
     status: ok
     stack: [navigation, manipulation, perception, exploration]
@@ -713,6 +713,8 @@ not_capabilities:
     Test fixture: ObjectPickable, against test/world.yaml.
   test_world_update: >
     Test fixture: UpdateWorld, against test/world.yaml.
+  test_world_visited: >
+    Test fixture: TableVisited, against test/world.yaml.
   test_server_counts: >
     Test fixture: bumps a count in a map and writes it back, to check a map round-trips.
   aim_at_cats: >

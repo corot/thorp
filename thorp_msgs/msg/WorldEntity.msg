@@ -22,3 +22,4 @@ int32 slot                      # on the tray; -1 otherwise
 string provenance               # OBSERVED (a detection saw it so) or BELIEVED (a skill left it so)
 builtin_interfaces/Time stamp   # when last observed, or last changed by a skill
 string status                   # OK, DISTURBED (touched without the intended result) or MISSING (not seen where it was)
+builtin_interfaces/Time inspected  # tables: when the robot last looked one over; zero if never

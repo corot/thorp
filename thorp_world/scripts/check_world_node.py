@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-Exercise a running thorp_world node: observe in base_footprint, update, query relations, save and load. It expects
-the robot at (1, 2) on the map facing +y, and the arm base 0.1 m ahead of it; on a ROS domain nothing else uses:
+Exercise a running thorp_world node: observe in base_footprint, update, query relations and reach, save and load.
+It expects the robot at (1, 2) on the map facing +y, and the arm base 0.1 m ahead of it; on a ROS domain nothing else
+uses:
 
     export ROS_DOMAIN_ID=61 ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
     ros2 node list --no-daemon  # must print nothing
@@ -21,10 +22,11 @@ import sys
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
+from geometry_msgs.msg import PoseStamped
 from moveit_msgs.msg import CollisionObject
 from std_srvs.srv import Trigger
 from thorp_msgs.msg import WorldState
-from thorp_msgs.srv import ObserveWorld, QueryWorld, UpdateWorld
+from thorp_msgs.srv import ObserveWorld, QueryReach, QueryWorld, UpdateWorld
 from visualization_msgs.msg import MarkerArray
 
 rclpy.init()
@@ -55,6 +57,14 @@ def detected(name, x, y, z, size, color):
     return obj
 
 
+def map_pose(x, y, yaw):
+    pose = PoseStamped()
+    pose.header.frame_id = 'map'
+    pose.pose.position.x, pose.pose.position.y = x, y
+    pose.pose.orientation.z, pose.pose.orientation.w = math.sin(yaw / 2.0), math.cos(yaw / 2.0)
+    return pose
+
+
 def yaw(q):
     return math.atan2(2.0 * (q.w * q.z + q.x * q.y), 1.0 - 2.0 * (q.y * q.y + q.z * q.z))
 
@@ -80,6 +90,18 @@ check(f'cube in map at ({cube.pose.pose.position.x:.3f}, {cube.pose.pose.positio
       cube.support == 'table 1')
 check(f'reachable: cube {by_id["cube 1"][1]}, star {by_id["star 1"][1]} (0.21 and 0.46 m from the arm)',
       by_id['cube 1'][1] and not by_id['star 1'][1])
+
+# from the far side of the table, facing -y, the arm base is at (1.1, 2.8): 0.25 m from the star
+request = QueryReach.Request(table_id='table 1', robot_poses=[map_pose(1.0, 2.0, math.pi / 2),
+                                                               map_pose(1.1, 2.9, -math.pi / 2)])
+reach = call(QueryReach, 'world/reach', request)
+reached = [[o.name for o in in_reach.objects] for in_reach in reach.in_reach]
+arm = reach.in_reach[1].arm_pose.pose.position if len(reach.in_reach) == 2 else None
+check(f'reach from here and from the far side: {reached}, the arm there at '
+      f'({arm.x if arm else 0.0:.3f}, {arm.y if arm else 0.0:.3f})',
+      reach.success and reached == [['cube 1'], ['star 1']] and abs(arm.x - 1.1) < 1e-3 and abs(arm.y - 2.8) < 1e-3)
+bad = call(QueryReach, 'world/reach', QueryReach.Request(table_id='table 9', robot_poses=[map_pose(1.0, 2.0, 0.0)]))
+check(f'reach on an unknown table is refused: {bad.message!r}', not bad.success and 'table 9' in bad.message)
 check(f'at the table, undocked, as 0.175 m from it: {response.at_table!r}', response.at_table == 'table 1')
 
 check('dock at table 1', call(UpdateWorld, 'world/update',

@@ -1,0 +1,11 @@
+# Which objects on a table the arm reaches with the robot at each of some poses: those not missing within the arm's
+# reach (thorp_world's max_arm_reach, less margin) of its base
+
+string table_id
+geometry_msgs/PoseStamped[] robot_poses  # on any frame
+float64 margin                           # how much short of max_arm_reach, for poses reached with some tolerance
+---
+bool success
+string message
+float64 reach                            # max_arm_reach less margin
+ObjectsInReach[] in_reach                # per robot pose, in the same order

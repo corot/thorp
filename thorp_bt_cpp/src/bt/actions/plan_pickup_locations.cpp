@@ -9,11 +9,11 @@
 #include <behaviortree_cpp/action_node.h>
 
 #include "thorp_bt_cpp/node_common.hpp"
+#include "thorp_bt_cpp/ros_service_node.hpp"
 
 #include <geometry_msgs/msg/pose_array.hpp>
-#include <moveit_msgs/msg/collision_object.hpp>
 #include <thorp_msgs/msg/pickup_location.hpp>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <thorp_msgs/srv/query_reach.hpp>
 
 #include <thorp_toolkit/common.hpp>
 #include <thorp_toolkit/geometry.hpp>
@@ -24,81 +24,67 @@ namespace ttk = thorp::toolkit;
 namespace thorp::bt::actions
 {
 /**
- * Group the objects on a table into pickup locations, the poses around it from where the arm reaches them, and sort
- * the locations to visit as few as possible, travelling the least: a pickup plan. Each object is picked from the
- * location where it's closest to the arm. Shows the plan on RViz: the pickup poses on ~/pickup_poses, and on
- * ~/pickup_plan each location's arm reach, labeled with its visiting order out of all and its objects count, and its
- * objects' names, in the location's color.
+ * Group the objects thorp_world knows on a table into pickup locations, the poses around it from where the arm
+ * reaches them, as the world tells reach, and sort the locations to visit as few as possible, travelling the least: a
+ * pickup plan. Each object is picked from the location where it's closest to the arm. Shows the plan on RViz: the
+ * pickup poses on ~/pickup_poses, and on ~/pickup_plan each location's arm reach, labeled with its visiting order out
+ * of all and its objects count, and its objects' names, in the location's color.
  */
-class PlanPickupLocations : public BT::SyncActionNode
+class PlanPickupLocations : public BT::RosServiceNode<thorp_msgs::srv::QueryReach, BT::SyncActionNode>
 {
 public:
-  PlanPickupLocations(const std::string& name, const BT::NodeConfig& config)
-    : BT::SyncActionNode(name, config), markers_("pickup_plan", 0.0)
+  PlanPickupLocations(const std::string& name, const BT::NodeConfig& conf)
+    : RosServiceNode<ServiceType, ParentType>(name, conf), markers_("pickup_plan", 0.0)
   {
     poses_pub_ = rosNode(*this)->create_publisher<geometry_msgs::msg::PoseArray>("~/pickup_poses", 1);
   }
 
   static BT::PortsList providedPorts()
   {
-    return { BT::InputPort<geometry_msgs::msg::PoseStamped>("robot_pose"),                 //
-             BT::InputPort<std::vector<geometry_msgs::msg::PoseStamped>>("pickup_poses"),  //
-             BT::InputPort<std::vector<moveit_msgs::msg::CollisionObject>>("objects"),     //
-             BT::OutputPort<std::vector<thorp_msgs::msg::PickupLocation>>("pickup_plan") };
+    BT::PortsList ports = BT::RosServiceNode<ServiceType, ParentType>::providedPorts();
+    ports["service_name"].setDefaultValue("world/reach");
+    ports.insert({ BT::InputPort<std::string>("table_id", "the table whose objects to pick"),   //
+                   BT::InputPort<geometry_msgs::msg::PoseStamped>("robot_pose"),                 //
+                   BT::InputPort<std::vector<geometry_msgs::msg::PoseStamped>>("pickup_poses"),  //
+                   BT::OutputPort<std::vector<thorp_msgs::msg::PickupLocation>>("pickup_plan") });
+    return ports;
   }
 
 private:
   using Location = thorp_msgs::msg::PickupLocation;
 
-  BT::NodeStatus tick() override
+  void sendRequest(RequestType& request) override
   {
+    request.table_id = requireInput<std::string>(*this, "table_id");
+    request.robot_poses = requireInput<std::vector<geometry_msgs::msg::PoseStamped>>(*this, "pickup_poses");
+    // pickup poses are reached with some tolerance, so the arm may end a bit farther from the objects
+    request.margin = rosNode(*this)->get_parameter_or("tight_dist_tolerance", 0.0);
+  }
+
+  BT::NodeStatus onResponse(const ResponseType& response) override
+  {
+    if (!response.success)
+    {
+      RCLCPP_ERROR(logger(*this), "No objects in reach to plan for: %s", response.message.c_str());
+      return BT::NodeStatus::FAILURE;
+    }
     auto node = rosNode(*this);
-    const std::string arm_frame = node->get_parameter_or<std::string>("pickup_planning_frame", "arm_base_link");
     const double pickup_dist = node->get_parameter_or("pickup_dist_to_table", 0.15);
     const double approach_offset = pickup_dist - node->get_parameter_or("approach_dist_to_table", 0.35);
     const double detach_offset = pickup_dist - node->get_parameter_or("detach_dist_from_table", 0.45);
-    // pickup poses are reached with some tolerance, so the arm may end a bit farther from the objects
-    const double max_reach =
-        node->get_parameter_or("max_arm_reach", 0.3) - node->get_parameter_or("tight_dist_tolerance", 0.0);
-
     const auto robot_pose = toMap(requireInput<geometry_msgs::msg::PoseStamped>(*this, "robot_pose"));
-    geometry_msgs::msg::TransformStamped base_to_arm;
-    if (!ttk::TF2::instance().lookupTransform("base_footprint", arm_frame, base_to_arm))
-      throw BT::RuntimeError(name(), ": cannot get the arm pose on the robot");
-    std::vector<std::pair<std::string, geometry_msgs::msg::PoseStamped>> objects;
-    for (const auto& object : requireInput<std::vector<moveit_msgs::msg::CollisionObject>>(*this, "objects"))
-    {
-      geometry_msgs::msg::PoseStamped pose;
-      pose.header = object.header;
-      pose.pose = object.pose;
-      objects.emplace_back(object.id, toMap(pose));
-    }
 
-    // A location for each pickup pose reaching some object, with the objects sorted by distance to the arm
+    // A location for each pickup pose reaching some object, with the objects closest to the arm first
     std::vector<Location> locations;
-    for (const auto& pickup_pose : requireInput<std::vector<geometry_msgs::msg::PoseStamped>>(*this, "pickup_poses"))
+    for (const auto& in_reach : response.in_reach)
     {
-      Location location;
-      location.pickup_pose = toMap(pickup_pose);
-      location.arm_pose.header = location.pickup_pose.header;
-      location.arm_pose.pose = composeWith(location.pickup_pose, base_to_arm);
-      for (const auto& [id, pose] : objects)
-      {
-        const double distance = ttk::distance2D(pose, location.arm_pose);
-        if (distance <= max_reach)
-        {
-          thorp_msgs::msg::ObjectToPickup object;
-          object.name = id;
-          object.distance = distance;
-          object.pose = pose;
-          location.objects.push_back(object);
-        }
-      }
-      if (location.objects.empty())
+      if (in_reach.objects.empty())
         continue;
-      std::sort(location.objects.begin(), location.objects.end(),
-                [](const auto& a, const auto& b) { return a.distance < b.distance; });
+      Location location;
       location.name = std::to_string(locations.size() + 1);
+      location.pickup_pose = in_reach.robot_pose;
+      location.arm_pose = in_reach.arm_pose;
+      location.objects = in_reach.objects;
       location.distance = ttk::distance2D(location.pickup_pose, robot_pose);
       location.approach_pose = translated(location.pickup_pose, approach_offset);
       location.detach_pose = translated(location.pickup_pose, detach_offset);
@@ -117,7 +103,7 @@ private:
     }
     RCLCPP_INFO(logger(*this), "Pickup plan of %zu locations, %.2f m to travel:%s", plan.size(),
                 travelled(robot_pose, plan), summary.str().c_str());
-    showPlan(plan, max_reach);
+    showPlan(plan, response.reach);
     setOutput("pickup_plan", plan);
     return BT::NodeStatus::SUCCESS;
   }
@@ -156,18 +142,6 @@ private:
     if (!ttk::TF2::instance().transformPose("map", pose, map_pose))
       throw BT::RuntimeError(name(), ": cannot transform pose from ", pose.header.frame_id, " to map");
     return map_pose;
-  }
-
-  /** The pose of a frame given relative to the robot, when the robot is at pose */
-  static geometry_msgs::msg::Pose composeWith(const geometry_msgs::msg::PoseStamped& pose,
-                                              const geometry_msgs::msg::TransformStamped& relative)
-  {
-    tf2::Transform robot, offset;
-    tf2::fromMsg(pose.pose, robot);
-    tf2::fromMsg(relative.transform, offset);
-    geometry_msgs::msg::Pose composed;
-    tf2::toMsg(robot * offset, composed);
-    return composed;
   }
 
   /** The pose moved along its own x axis */

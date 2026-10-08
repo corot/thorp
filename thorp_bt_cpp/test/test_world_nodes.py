@@ -99,6 +99,15 @@ def test_an_effect_changes_what_the_world_says(runner):
     assert not succeeded and out['error'] == ThorpError.OBJECT_NOT_ON_TABLE
 
 
+def test_a_table_is_visited_once_inspected(runner):
+    succeeded, _ = run(runner, 'test_world_visited', table_id='table 1')
+    assert not succeeded, 'seen, but not looked over'
+    succeeded, _ = run(runner, 'test_world_update', effect='inspected', table_id='table 1')
+    assert succeeded
+    succeeded, _ = run(runner, 'test_world_visited', table_id='table 1')
+    assert succeeded
+
+
 def test_an_effect_on_an_unknown_object_fails(runner):
     succeeded, _ = run(runner, 'test_world_update', effect='picked', object_id='cube 9')
     assert not succeeded

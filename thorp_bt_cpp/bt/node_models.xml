@@ -224,9 +224,11 @@
         </Action>
         <Action ID="PlanPickupLocations">
             <output_port name="pickup_plan" type="std::vector&lt;thorp_msgs::msg::PickupLocation_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;thorp_msgs::msg::PickupLocation_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
-            <input_port name="objects" type="std::vector&lt;moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
             <input_port name="pickup_poses" type="std::vector&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
             <input_port name="robot_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="table_id" type="std::string">the table whose objects to pick</input_port>
+            <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
+            <input_port name="service_name" type="std::string" default="world/reach">name of the ROS service</input_port>
         </Action>
         <Action ID="PlanRoomExploration">
             <output_port name="coverage_waypoints" type="std::vector&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
@@ -372,8 +374,9 @@
             <input_port name="table" type="moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Condition>
         <Condition ID="TableVisited">
-            <input_port name="table_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <input_port name="table" type="moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="table_id" type="std::string"/>
+            <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
+            <input_port name="service_name" type="std::string" default="world/query">name of the ROS service</input_port>
         </Condition>
         <Condition ID="TargetReachable">
             <input_port name="target_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
@@ -405,10 +408,10 @@
         </Action>
         <Condition ID="TrayFull"/>
         <Action ID="UpdateWorld">
-            <input_port name="table_id" type="std::string">placed on or docked at</input_port>
+            <input_port name="table_id" type="std::string">placed on, docked at or inspected</input_port>
             <input_port name="pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;">where placed</input_port>
             <input_port name="object_id" type="std::string">picked, placed, stowed, disturbed or lost</input_port>
-            <input_port name="effect" type="std::string">picked, placed, stowed, disturbed, lost, docked or undocked</input_port>
+            <input_port name="effect" type="std::string">picked, placed, stowed, disturbed, lost, docked, undocked or inspected</input_port>
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
             <input_port name="slot" type="int" default="-1">tray slot stowed on</input_port>
             <input_port name="service_name" type="std::string" default="world/update">name of the ROS service</input_port>

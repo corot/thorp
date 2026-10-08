@@ -13,7 +13,7 @@ from moveit_msgs.msg import CollisionObject
 from shape_msgs.msg import SolidPrimitive
 
 from thorp_msgs.msg import WorldEntity
-from thorp_world import GRIPPER, OBJECT, Entity, Pose
+from thorp_world import GRIPPER, OBJECT, TABLE, Entity, Pose
 from thorp_world.conversions import (object_type, quaternion_of, to_msg, to_observation, to_seconds, to_time,
                                      yaw_of)
 
@@ -71,6 +71,13 @@ def test_an_entity_on_a_table_has_a_map_pose():
     msg = to_msg(Entity('cube 1', OBJECT, 'cube', (0.025,) * 3, 'white', Pose(0.3, 0.1, 0.49, 1.0), 'table 1'), 'map')
     assert msg.has_pose and msg.pose.header.frame_id == 'map'
     assert msg.pose.pose.position.x == pytest.approx(0.3) and yaw_of(msg.pose.pose.orientation) == pytest.approx(1.0)
+
+
+def test_a_table_never_inspected_has_a_zero_stamp_for_it():
+    table = Entity('table 1', TABLE, 'table', (0.55, 0.55, 0.02), 'white', Pose(0.45, 0.0, 0.47, 0.0))
+    assert to_seconds(to_msg(table, 'map').inspected) == 0.0
+    table.inspected = 7.5
+    assert to_seconds(to_msg(table, 'map').inspected) == pytest.approx(7.5)
 
 
 def test_poses_are_plain_floats_even_from_numpy_ones():

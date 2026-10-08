@@ -60,7 +60,8 @@ def to_pose(map_pose):
 def to_msg(entity: Entity, map_frame):
     msg = WorldEntity(id=entity.id, kind=entity.kind, type=entity.type, color=entity.color,
                       support=entity.support or '', slot=-1 if entity.slot is None else entity.slot,
-                      provenance=entity.provenance, stamp=to_time(entity.stamp), status=entity.status)
+                      provenance=entity.provenance, stamp=to_time(entity.stamp), status=entity.status,
+                      inspected=to_time(entity.inspected or 0.0))
     msg.size = Vector3(x=float(entity.size[0]), y=float(entity.size[1]), z=float(entity.size[2]))
     msg.has_pose = entity.pose is not None
     if entity.pose is not None:

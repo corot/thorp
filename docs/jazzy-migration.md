@@ -298,7 +298,8 @@ The runner waits for Nav2 to be active before ticking, when `lifecycle_manager_n
 rejects goals until activated. Thorp's `LookAtPose` turns with the `spin` behavior; `GetPosesAroundTable` discards poses
 on obstacles with the global costmap's `get_cost` service, checking the pose's cell rather than Noetic's footprint
 shrunk by 10 cm, as pickup poses are under the table's eaves; `TableAsObstacle`, `ClearTableAccess` and
-`RestoreTableAccess` call the semantic layer services; `PlanPickupLocations` is the pickup planner, in C++, keeping its
+`RestoreTableAccess` call the semantic layer services; `PlanPickupLocations` is the pickup planner, in C++, grouping the
+objects `thorp_world` knows on the table by what the world says the arm reaches from each pickup pose, and keeping its
 travel optimized order rather than sorting it again by object count as Noetic did (a TODO there questioned it), and
 showing the plan on RViz as Noetic's did, on the executive's `pickup_plan` and `pickup_poses`; `PoseAsPath` makes a
 straight path from a start pose, for docking. `cleanup_table` validates the table in front when given none, so the
@@ -308,13 +309,13 @@ Exploration calls the exploration planner's services: `SegmentRooms`, `PlanRoomS
 only room ids and poses, as the planner keeps the map and the rooms, instead of Noetic's map images on the blackboard.
 `cover_in_one_tour` plans a single tour over the whole map with `PlanRoomExploration`, instead of `GetPath`'s Spiral-STC
 coverage path, and both exploration trees drive through the poses planned with `follow_waypoints`, as on Noetic, so the
-camera looks where the robot goes rather than along the planned headings. `TableVisited` asks the global costmap's
-semantic layer for a table `TableAsObstacle` marked overlapping the one detected. `validate_table` goes on with the
-table it's given if detecting it again, after turning to face it, misses, as a far or small table can be at the
-detection limit; that livelocked `object_gatherer`, the table detected while exploring and missed once in front.
-`reach_table` fails if docking takes over a minute, and `object_gatherer` goes on exploring if a table's cleanup fails.
-`go_to_table`, new, drives to the viewing pose of a known table, as `validate_table` does once it has one: the agent's
-table capabilities only find a table close in front.
+camera looks where the robot goes rather than along the planned headings. `TableVisited` asks `thorp_world` whether the
+robot looked the table over, as `validate_table` reports. `validate_table` goes on with the table it's given if
+detecting it again, after turning to face it, misses, as a far or small table can be at the detection limit; that
+livelocked `object_gatherer`, the table detected while exploring and missed once in front. `reach_table` fails if
+docking takes over a minute, and `object_gatherer` goes on exploring if a table's cleanup fails. `go_to_table`, new,
+drives to the viewing pose of a table `thorp_world` knows, as `validate_table` does once it has one: the agent's table
+capabilities only find a table close in front.
 
 Nodes calling actions derive from Nav2's `BtActionNode`, with their servers' names as `server_name` defaults; the
 runner puts Nav2's timeouts on the blackboard: `server_timeout` half a tick and `wait_for_service_timeout` 5 s, 60 s

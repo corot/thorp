@@ -22,13 +22,14 @@
                             table_pose="{table_pose}"
                             table_id="{table_id}"/>
               <Inverter>
-                <TableVisited table="{table}"
-                              table_pose="{table_pose}"/>
+                <TableVisited table_id="{table_id}"/>
               </Inverter>
             </Sequence>
           </RetryUntilSuccessful>
         </Parallel>
-        <!-- A table that can't be cleaned up is left as it is; validation marked it visited, so exploring goes on -->
+        <!--
+          A table that can't be cleaned up is left as it is; validation recorded it inspected, so exploring goes on
+        -->
         <IfThenElse>
           <SubTree ID="validate_table"
                    table="{table}"

@@ -121,6 +121,10 @@ class World:
         if self._object(object_id).support == GRIPPER:
             self._set(object_id, stamp, pose=None, support=None, slot=None, status=MISSING)
 
+    def mark_inspected(self, table_id, stamp):
+        """The robot looked the table over."""
+        self._table(table_id).inspected = stamp
+
     def dock(self, table_id):
         """The robot is parked against a table."""
         self._table(table_id)
@@ -146,6 +150,16 @@ class World:
         """Whether an object on a table is closer than reach to the arm's base."""
         entity = self._object(object_id)
         return entity.pose is not None and planar_distance(entity.pose, arm_pose) <= reach
+
+    def reachable_from(self, table_id, arm_pose, reach):
+        """
+        The objects on a table closer than reach to the arm's base, were it at arm_pose, as (id, distance) pairs,
+        closest first. Missing objects aren't where they were seen, so not there to reach.
+        """
+        self._table(table_id)
+        found = sorted((planar_distance(e.pose, arm_pose), e.id) for e in self._entities.values()
+                       if e.kind == OBJECT and e.support == table_id and e.pose is not None and e.status != MISSING)
+        return [(object_id, distance) for distance, object_id in found if distance <= reach]
 
     def to_dict(self):
         entities = []
