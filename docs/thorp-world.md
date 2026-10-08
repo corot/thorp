@@ -67,7 +67,7 @@ a ROS domain nothing else uses: static transforms published beside a simulation 
 | 4a | Tree nodes: `GetTable`, `GetCurrentTable`, `ObjectPickable` (failing with `OBJECT_NOT_FOUND`, `OBJECT_NOT_ON_TABLE`, `NOT_AT_TABLE` or `OUT_OF_REACH`) and `UpdateWorld`; `test_world_nodes.py` runs them against `test/world.yaml` | done |
 | 4b | Table and manipulation skills take ids, check them on the world and report their effects; the planning scene's table takes its world id | done |
 | 4c | `capabilities.yaml` drops `states`, `needs`, `invalidates` and `from`, and gains `errors`; tests start from a preloaded world instead of `--given` | done |
-| 4d | `PlanPickupLocations` asks the world for reach, and `TableVisited` whether a table was inspected; the semantic layer stays apart for now || done |
+| 4d | `PlanPickupLocations` asks the world for reach, and `TableVisited` whether a table was inspected; the semantic layer stays apart for now | done |
 | 5 | Agent on ROS 2 (ROSA): world tools, world summary, world changes in skill results | |
 
 The work happens on the `thorp_world` branch, in a worktree with its own colcon workspace over the main one's install:
