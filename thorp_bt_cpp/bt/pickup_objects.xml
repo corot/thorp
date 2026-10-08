@@ -52,9 +52,9 @@
                                      target_name="{object_name}"/>
               </IfThenElse>
             </Sequence>
-            <SetArmConfig error="{error}"
-                          configuration="resting"
-                          _post="already_detected=false"/>
+            <SubTree ID="stow_arm"
+                     error="{error}"
+                     _post="already_detected=false"/>
           </RecoverAndRetry>
         </KeepRunningUntilFailure>
       </Sequence>

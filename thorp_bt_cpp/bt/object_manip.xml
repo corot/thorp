@@ -46,8 +46,8 @@
                            output_key="user_command"/>
           </Sequence>
           <Sequence>
-            <SetArmConfig configuration="resting"
-                          error="{error}"/>
+            <SubTree ID="stow_arm"
+                     error="{error}"/>
             <SetBlackboard value=""
                            output_key="user_command"/>
           </Sequence>

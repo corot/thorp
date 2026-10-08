@@ -321,6 +321,8 @@ Noetic's housekeeping services, and the servers for user commands and drag and d
 - `GripperBusy` closes the gripper to 0.45 rad: it holds something if it stalls short of 0.42.
 - `ObjectAttached`, `DetachObject` and `ClearPlanningScene` use MoveIt's planning scene interface; clearing the
   gripper is a `clear_gripper` subtree (open, then detach and remove whatever was attached).
+- Noetic's `FoldArm` state is a `stow_arm` subtree: the arm to the `stowed` named state, formerly `resting`, while
+  half-closing the gripper, unless it holds something.
 - `SetArmConfig` sends `move_group` a joint goal from the SRDF named states, read from `robot_description_semantic`.
 - `ReadUserCommands` takes the commands from the `user_command` topic (`std_msgs/String`), as the RViz user commands
   panel publishes them, instead of serving `jsk_rviz_plugins`' command service; it still echoes them as an overlay
@@ -542,12 +544,12 @@ Differences with the Noetic simulation:
   `max_range + 1` when nothing is in range. IR sensors use three rays, to report their field of view.
 - The center sonar publishes on `mobile_base/sensors/sonars/p0`, as ROS 2 names can't start with a digit.
 - Point clouds are created from the depth images by `depth_image_proc`, as Gazebo's use the camera link axes.
-- Arm, gripper and cannon servos use `ros2_control` on Gazebo (`gz_ros2_control`), starting on the resting pose.
+- Arm, gripper and cannon servos use `ros2_control` on Gazebo (`gz_ros2_control`), starting on the stowed pose.
   `gz_ros2_control` turns position commands into joint velocities proportional to the error; its gain is raised to 1.0,
   as with the default 0.1 the arm lags MoveIt trajectories beyond the controller tolerances. Even so, under load the
   shoulder lift occasionally lags more than Noetic's 0.1 rad path tolerance, so `arm_controller` has no path tolerance
   in simulation; goals must still be reached within 0.1 rad. It starts from the measured joint positions, as its
-  command interfaces start at 0 instead of the resting pose, and accepts trajectories ending with tiny velocities, as
+  command interfaces start at 0 instead of the stowed pose, and accepts trajectories ending with tiny velocities, as
   MoveIt Task Constructor's Cartesian paths do.
   `arm_controller` provides the same `arm_controller/follow_joint_trajectory` action; `gripper_controller` provides
   `gripper_controller/gripper_cmd`, taking `gripper_joint` angles; the cannon position controller is
@@ -577,7 +579,7 @@ Differences with the Noetic simulation:
   controller. A proper fix would be an option in `ros_gz_bridge` to report `max_range` instead
   (https://github.com/gazebosim/ros_gz/blob/jazzy/ros_gz_bridge/src/convert/sensor_msgs.cpp#L556); reported upstream
   in https://github.com/gazebosim/ros_gz/issues/959.
-- MoveIt's Xtion octomap gets voxels in contact with the resting gripper, so every planning request starts in collision.
+- MoveIt's Xtion octomap gets voxels in contact with the stowed gripper, so every planning request starts in collision.
   The raw depth images are right (the gripper is closer than the near clipping distance, so it's not in them) and the
   self-filter renders the robot in place, so the voxels come from elsewhere; the octomap sensor is disabled until it's
   investigated with the manipulation servers or perception.
@@ -590,8 +592,8 @@ Differences with the Noetic simulation:
   (0.85 degrees) while the arm rests: its center of mass must be behind the wheels. TF assumes a level base, so
   points seen by the cameras are about 9 mm off at the tables distance (farther and lower); the tilt goes away when
   the arm reaches forward. Detection and grasping still work.
-- In simulation, `xtion_fov_analyzer.py` reports the field of view blocked with the arm resting: the Xtion sees
-  something at 0.37-0.40 m just above the cropped bottom of the image, probably the resting arm, as the simulated
+- In simulation, `xtion_fov_analyzer.py` reports the field of view blocked with the arm stowed: the Xtion sees
+  something at 0.37-0.40 m just above the cropped bottom of the image, probably the stowed arm, as the simulated
   depth near clip is 0.35 m (0.45 m on the real camera). Maybe related to the octomap issue above.
 - MoveIt's `PlanningSceneInterface::getKnownObjectNamesInROI` takes the collision objects' shape poses, relative to
   the object pose, as absolute, so it misses objects placed with a pose; `object_detection` checks the objects' poses

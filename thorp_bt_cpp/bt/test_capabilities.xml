@@ -6,15 +6,15 @@
   <include path="manipulation.xml"/>
 
   <!--
-    The robot side of the reset before each capability test: the gripper empty, the arm resting, out of the camera's
+    The robot side of the reset before each capability test: the gripper empty, the arm stowed, out of the camera's
     view, and the planning scene empty, for the next detection to fill it with what the camera sees. The test puts
     the objects back in place on Gazebo.
   -->
   <BehaviorTree ID="test_reset_scene">
     <Sequence>
       <SubTree ID="clear_gripper"/>
-      <SetArmConfig configuration="resting"
-                    error="{error}"/>
+      <SubTree ID="stow_arm"
+               error="{error}"/>
       <ClearPlanningScene keep_tray="false"/>
     </Sequence>
   </BehaviorTree>

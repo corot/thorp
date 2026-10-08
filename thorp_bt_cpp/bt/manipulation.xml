@@ -79,13 +79,29 @@
   </BehaviorTree>
 
   <!--
-    Rest the arm and remove from the planning scene everything but the objects on the tray.
+    Stow the arm, and at once half-close the gripper, unless it holds something: 0.07 rad is a 2.5 cm opening, with the
+    fingers parallel, as Noetic's FoldArm left them.
+  -->
+  <BehaviorTree ID="stow_arm">
+    <Parallel failure_count="1"
+              success_count="2">
+      <SetArmConfig configuration="stowed"
+                    error="{error}"/>
+      <Fallback>
+        <ObjectAttached attached_object="{attached_object}"/>
+        <MoveGripper position="0.07"/>
+      </Fallback>
+    </Parallel>
+  </BehaviorTree>
+
+  <!--
+    Stow the arm and remove from the planning scene everything but the objects on the tray.
     The arm moves first, so it still avoids the objects it is about to forget.
   -->
   <BehaviorTree ID="finish_manipulation">
     <Sequence>
-      <SetArmConfig configuration="resting"
-                    error="{error}"/>
+      <SubTree ID="stow_arm"
+               error="{error}"/>
       <ClearPlanningScene keep_tray="true"/>
     </Sequence>
   </BehaviorTree>

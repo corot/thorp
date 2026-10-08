@@ -31,7 +31,7 @@ arm_controller:
     command_interfaces: [position]
     state_interfaces: [position, velocity]
     # start from the measured joint positions, not from the command interfaces, that start at 0 instead of the
-    # initial resting pose
+    # initial stowed pose
     set_last_command_interface_value_as_state_on_activation: false
     # Cartesian paths planned by MoveIt Task Constructor can end with tiny velocities, as -5e-4 rad/s
     allow_nonzero_velocity_at_trajectory_end: true
