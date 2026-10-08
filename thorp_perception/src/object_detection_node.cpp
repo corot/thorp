@@ -529,7 +529,7 @@ private:
     marker.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
     marker.action = visualization_msgs::msg::Marker::ADD;
     marker.text = object.id;
-    marker.scale.z = 0.035;
+    marker.scale.x = marker.scale.z = 0.035;  // x is RViz's space width; left at zero, a space is about 1 m wide
     marker.color = color;
     marker.pose = object.pose;
     marker.pose.position.z += 0.05;

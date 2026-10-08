@@ -185,6 +185,7 @@ visualization_msgs::msg::Marker Visualization::createTextMarker(const geometry_m
   marker.text = text;
   marker.color = color;
   marker.scale.z = size;
+  marker.scale.x = size;  // RViz's space width; left at zero, a space is about 1 m wide
   return marker;
 }
 

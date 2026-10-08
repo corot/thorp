@@ -203,6 +203,7 @@ class Visualization(metaclass=Singleton):
         marker.text = text
         marker.color = cls.make_color(color)
         marker.scale.z = float(size)
+        marker.scale.x = float(size)  # RViz's space width; left at zero, a space is about 1 m wide
         return marker
 
     @classmethod
