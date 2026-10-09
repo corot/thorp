@@ -2,11 +2,13 @@
  * Author: Jorge Santos
  */
 
+#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <cmath>
 #include <condition_variable>
 #include <iomanip>
+#include <limits>
 #include <map>
 #include <mutex>
 #include <set>
@@ -168,7 +170,7 @@ visualization_msgs::msg::Marker makeOutline(const Surface& surface, const std_ms
     geometry_msgs::msg::Point point;
     point.x = surface.corners[i % surface.corners.size()].x();
     point.y = surface.corners[i % surface.corners.size()].y();
-    point.z = surface.centroid.z();
+    point.z = surface.height(surface.corners[i % surface.corners.size()]);
     marker.points.push_back(point);
   }
   return marker;
@@ -307,12 +309,16 @@ private:
     table.id = "table";
     table.header = header;
     table.operation = CollisionObject::ADD;
-    table.pose = makePose(surface.center.x(), surface.center.y(), surface.centroid.z(), surface.yaw);
+    table.pose = makePose(surface.center.x(), surface.center.y(), surface.height(surface.center), surface.yaw);
     table.primitives.resize(1);
     table.primitives[0].type = shape_msgs::msg::SolidPrimitive::BOX;
     table.primitives[0].dimensions = { surface.length, surface.width, TABLE_THICKNESS };
+    // The box lies on the surface plane, while the table pose stays level for those navigating around it
+    Eigen::Quaterniond level(Eigen::AngleAxisd(surface.yaw, Eigen::Vector3d::UnitZ()));
+    Eigen::Quaterniond tilt =
+        Eigen::Quaterniond::FromTwoVectors(Eigen::Vector3d::UnitZ(), surface.plane.head<3>().cast<double>());
     table.primitive_poses.resize(1);
-    table.primitive_poses[0].orientation.w = 1.0;
+    table.primitive_poses[0].orientation = tf2::toMsg(level.inverse() * tilt * level);
     table.type.db = metadata(surface.length, surface.width, TABLE_THICKNESS, meanColor(*surface.cloud));
     return table;
   }
@@ -338,7 +344,7 @@ private:
       markers.markers.push_back(makeOutline(*surface, header));
       markers_pub_->publish(markers);
       RCLCPP_INFO(node_->get_logger(), "Table of %.2f x %.2f m detected at [%.2f, %.2f, %.2f]", surface->length,
-                  surface->width, surface->center.x(), surface->center.y(), surface->centroid.z());
+                  surface->width, surface->center.x(), surface->center.y(), surface->height(surface->center));
     }
     else
     {
@@ -464,24 +470,30 @@ private:
       rejection = "size";
       return std::nullopt;
     }
-    // Objects must rest on the table; others are probably table parts or the gripper after picking or placing
-    if (std::abs(min_pt.z - surface.centroid.z()) > OBJECT_ON_TABLE_TOLERANCE)
+    float base = std::numeric_limits<float>::max();
+    float top = std::numeric_limits<float>::lowest();
+    for (const auto& point : cluster.points)
     {
-      RCLCPP_WARN(node_->get_logger(), "Object at [%.2f, %.2f, %.2f] discarded: base %.3f m away from the table",
-                  center.x(), center.y(), center.z(), min_pt.z - surface.centroid.z());
+      base = std::min(base, surface.distance(point.getVector3fMap()));
+      top = std::max(top, surface.distance(point.getVector3fMap()));
+    }
+    // Objects must rest on the table; others are probably table parts or the gripper after picking or placing
+    if (base > OBJECT_ON_TABLE_TOLERANCE)
+    {
+      RCLCPP_WARN(node_->get_logger(), "Object at [%.2f, %.2f, %.2f] discarded: base %.3f m over the table",
+                  center.x(), center.y(), center.z(), base);
       std::ostringstream text;
-      text << std::fixed << std::setprecision(3) << std::showpos << "off the table, "
-           << min_pt.z - surface.centroid.z();
+      text << std::fixed << std::setprecision(3) << "off the table, +" << base;
       rejection = text.str();
       return std::nullopt;
     }
 
-    // Templates' origin is at their base center; we give no initial orientation, as the cluster's is only
-    // meaningful for elongated objects
+    // Templates' origin is at their base center, which we put on the table; we give no initial orientation, as the
+    // cluster's is only meaningful for elongated objects
     auto cluster_xyz = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
     pcl::copyPointCloud(cluster, *cluster_xyz);
     Eigen::Isometry3f initial_estimate = Eigen::Isometry3f::Identity();
-    initial_estimate.translation() = Eigen::Vector3f(center.x(), center.y(), min_pt.z);
+    initial_estimate.translation() = Eigen::Vector3f(center.x(), center.y(), surface.height(center.head<2>()));
     TemplateMatch match = matcher_->match(cluster_xyz, initial_estimate);
     if (match.error > max_matching_error_)
     {
@@ -501,7 +513,7 @@ private:
     pcl::getMinMax3D(aligned, aligned_min, aligned_max);
     double length = std::max(aligned_max.x - aligned_min.x, aligned_max.y - aligned_min.y);
     double width = std::min(aligned_max.x - aligned_min.x, aligned_max.y - aligned_min.y);
-    double height = size.z();
+    double height = top;
 
     CollisionObject object;
     object.header = header;
@@ -564,9 +576,9 @@ private:
     }
     std::set<std::string> names =
         objectsInVolume(Eigen::Vector3d(min.x() - redetect_tolerance_, min.y() - redetect_tolerance_,
-                                        surface.centroid.z() - redetect_tolerance_),
+                                        surface.height(surface.center) - redetect_tolerance_),
                         Eigen::Vector3d(max.x() + redetect_tolerance_, max.y() + redetect_tolerance_,
-                                        surface.centroid.z() + tabletop_volume_height_));
+                                        surface.height(surface.center) + tabletop_volume_height_));
     if (names.empty())
       return names;
     for (const auto& [name, object] : planning_scene_.getObjects({ names.begin(), names.end() }))

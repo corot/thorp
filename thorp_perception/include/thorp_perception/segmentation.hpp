@@ -33,16 +33,29 @@ struct SegmentationParams
 
 /**
  * Horizontal support surface, as the largest quadrilateral inscribed in its convex hull.
+ * Heights over it are measured from its plane, as the cloud's frame z axis can be tilted to it.
  */
 struct Surface
 {
   PointCloud::Ptr cloud;
-  Eigen::Vector3f centroid;    // of the surface points
+  Eigen::Vector4f plane;       // a, b, c, d of ax + by + cz + d = 0, with (a, b, c) the unit normal, pointing up
   Eigen::Vector2f center;      // of the quadrilateral
   double yaw;                  // of the quadrilateral's longest side
   double length;               // longest side
   double width;                // longer of the two shortest sides
   std::vector<Eigen::Vector2f> corners;
+
+  /// Distance from a point to the surface plane, positive above it
+  float distance(const Eigen::Vector3f& point) const
+  {
+    return plane.head<3>().dot(point) + plane[3];
+  }
+
+  /// Height of the surface plane at a point of the xy plane
+  float height(const Eigen::Vector2f& point) const
+  {
+    return -(plane[0] * point.x() + plane[1] * point.y() + plane[3]) / plane[2];
+  }
 };
 
 /**
@@ -62,7 +75,7 @@ std::optional<Surface> findSurface(const PointCloud::ConstPtr& cloud, const Segm
                                    double min_side, std::string& error);
 
 /**
- * Extract the clusters of points above a surface, as separate clouds.
+ * Extract the clusters of points above a surface plane, as separate clouds.
  */
 std::vector<PointCloud::Ptr> extractClusters(const PointCloud::ConstPtr& cloud, const Surface& surface,
                                              const SegmentationParams& params);

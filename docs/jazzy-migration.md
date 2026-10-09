@@ -169,10 +169,12 @@ identifies each object by matching it with a 2D ICP against the templates in `me
 redetected objects and removing those no longer on the table, but those on the tray, that can be over the table's volume
 when docked under its eaves (it reads the tray geometry, `thorp_description`'s `tray.yaml`, as the executive does);
 `object_detection/detect_tables` (`thorp_msgs/DetectTables`) only segments the table, if its shortest side reaches a
-minimum. Tables and objects are collision objects: tables are boxes with x along their longest side; objects carry their
-template mesh, and their size and color name as JSON in `type.db`, as on the `bt_server` branch. For debugging, it
-publishes the table and the clusters as point clouds, the table's outline, and why each rejected cluster was rejected.
-`xtion_fov_analyzer.py` is ported too.
+minimum. Heights are measured from the fitted table plane rather than along the z axis of `base_footprint`, which
+needn't be perpendicular to the table (see the Kobuki tilt in the differences with the Noetic simulation). Tables and
+objects are collision objects: tables are boxes with x along their longest side, lying on the table plane, but with a
+level pose; objects carry their template mesh, and their size and color name as JSON in `type.db`, as on the `bt_server`
+branch. For debugging, it publishes the table and the clusters as point clouds, the table's outline, and why each
+rejected cluster was rejected. `xtion_fov_analyzer.py` is ported too.
 
 The segmentation and template matching are rewritten into `thorp_perception` from Thorp's forks of
 `rail_segmentation` and `rail_mesh_icp`, instead of porting the forks as source dependencies: the forks carry much
@@ -592,7 +594,8 @@ Differences with the Noetic simulation:
 - The simulated Kobuki rests tilted back on its back caster, 2 mm above the ground in the model, by 0.015 rad
   (0.85 degrees) while the arm rests: its center of mass must be behind the wheels. TF assumes a level base, so
   points seen by the cameras are about 9 mm off at the tables distance (farther and lower); the tilt goes away when
-  the arm reaches forward. Detection and grasping still work.
+  the arm reaches forward. Tables slope 0.014 rad on `base_footprint`, which `object_detection` absorbs by measuring
+  heights from the table plane. Detection and grasping still work.
 - In simulation, `xtion_fov_analyzer.py` reports the field of view blocked with the arm stowed: the Xtion sees
   something at 0.37-0.40 m just above the cropped bottom of the image, probably the stowed arm, as the simulated
   depth near clip is 0.35 m (0.45 m on the real camera). Maybe related to the octomap issue above.

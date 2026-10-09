@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <cmath>
 
-#include <pcl/common/centroid.h>
 #include <pcl/features/normal_3d_omp.h>
 #include <pcl/filters/crop_box.h>
 #include <pcl/filters/extract_indices.h>
@@ -84,9 +83,11 @@ std::optional<Surface> findSurface(const PointCloud::ConstPtr& cloud, const Segm
   extract.setInputCloud(cloud);
   extract.setIndices(inliers);
   extract.filter(*surface.cloud);
-  Eigen::Vector4f centroid;
-  pcl::compute3DCentroid(*surface.cloud, centroid);
-  surface.centroid = centroid.head<3>();
+  // SACSegmentation refits the plane to all its inliers
+  surface.plane = Eigen::Map<const Eigen::Vector4f>(coefficients.values.data());
+  surface.plane /= surface.plane.head<3>().norm();
+  if (surface.plane[2] < 0.0f)
+    surface.plane = -surface.plane;
 
   // Table shape: the largest quadrilateral inscribed in the surface points' convex hull, on the xy plane
   auto projected = std::make_shared<PointCloud>(*surface.cloud);
@@ -132,7 +133,7 @@ std::vector<PointCloud::Ptr> extractClusters(const PointCloud::ConstPtr& cloud, 
 {
   auto above_surface = std::make_shared<pcl::Indices>();
   for (size_t i = 0; i < cloud->size(); ++i)
-    if ((*cloud)[i].z > surface.centroid.z() + SURFACE_REMOVAL_PADDING)
+    if (surface.distance((*cloud)[i].getVector3fMap()) > SURFACE_REMOVAL_PADDING)
       above_surface->push_back(static_cast<int>(i));
 
   std::vector<pcl::PointIndices> clusters_indices;
