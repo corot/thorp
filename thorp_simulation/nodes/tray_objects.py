@@ -17,9 +17,11 @@ from rclpy.time import Time
 from tf2_ros import Buffer, TransformException, TransformListener
 
 from gz.msgs10.boolean_pb2 import Boolean
+from gz.msgs10.empty_pb2 import Empty
 from gz.msgs10.entity_pb2 import Entity
 from gz.msgs10.entity_plugin_v_pb2 import EntityPlugin_V
 from gz.msgs10.pose_v_pb2 import Pose_V
+from gz.msgs10.scene_pb2 import Scene
 from gz.transport13 import Node as GzNode
 
 ROBOT_MODEL = 'thorp'
@@ -27,7 +29,9 @@ ROBOT_MODEL = 'thorp'
 PARENT_LINK = 'base_footprint'
 CHILD_LINK = 'link'  # the only link of Thorp's object models
 
-MAX_HEIGHT_OVER_TRAY = 0.06  # object centers over the tray surface, as the tallest objects are 5 cm
+# Height of the objects' origins over the tray surface; generous, just to tell them from those far below or above
+MIN_HEIGHT_OVER_TRAY = -0.02
+MAX_HEIGHT_OVER_TRAY = 0.1
 FOOTPRINT_MARGIN = 0.01  # objects can slightly overhang the tray's slots
 MIN_GRIPPER_DISTANCE = 0.06  # the gripper has released the object and moved away
 STILL_TIME = 0.5  # seconds the object must stay still on the tray
@@ -60,6 +64,8 @@ class TrayObjects(Node):
         self.poses = {}  # model name: (id, (x, y, z, qx, qy, qz, qw)) on the world frame
         self.candidates = {}  # model name: (time first seen still on the tray, position on the robot frame)
         self.fixed = set()
+        self.models = set()  # names of the world's models; the poses topic also has some other entities
+        self.others = set()
 
         self.gz_node = GzNode()
         topic = f'/world/{self.world}/pose/info'
@@ -90,15 +96,18 @@ class TrayObjects(Node):
             gripper = self.lookup('gripper_link')
         except TransformException:
             return
+        if not poses.keys() <= self.models | self.others:
+            self.update_models(poses.keys())
         robot_id, robot = poses[ROBOT_MODEL]
         now = self.get_clock().now()
         for name, (_, pose) in poses.items():
-            if name == ROBOT_MODEL or name in self.fixed:
+            if name == ROBOT_MODEL or name in self.fixed or name not in self.models:
                 continue
             position = to_robot_frame(pose, robot)
             dx, dy, dz = (position[i] - self.tray[i] for i in range(3))
             on_tray = (abs(dx) <= self.tray_half_x and abs(dy) <= self.tray_half_y and
-                       0.0 <= dz <= MAX_HEIGHT_OVER_TRAY and math.dist(position, gripper) >= MIN_GRIPPER_DISTANCE)
+                       MIN_HEIGHT_OVER_TRAY <= dz <= MAX_HEIGHT_OVER_TRAY and
+                       math.dist(position, gripper) >= MIN_GRIPPER_DISTANCE)
             if not on_tray:
                 self.candidates.pop(name, None)
                 continue
@@ -108,6 +117,12 @@ class TrayObjects(Node):
             self.candidates[name] = (since, first)
             if (now - since).nanoseconds * 1e-9 >= STILL_TIME:
                 self.fix(robot_id, name)
+
+    def update_models(self, names):
+        ok, scene = self.gz_node.request(f'/world/{self.world}/scene/info', Empty(), Empty, Scene, 1000)
+        if ok:
+            self.models = {model.name for model in scene.model}
+            self.others = set(names) - self.models
 
     def fix(self, robot_id, name):
         """ Add a DetachableJoint system to Thorp's model, fixing the object to it where it is """
@@ -122,14 +137,16 @@ class TrayObjects(Node):
         plugin.innerxml = (f'<parent_link>{PARENT_LINK}</parent_link><child_model>{name}</child_model>'
                            f'<child_link>{CHILD_LINK}</child_link><detach_topic>{topic}/detach</detach_topic>'
                            f'<attach_topic>{topic}/attach</attach_topic><output_topic>{topic}/state</output_topic>')
+        # Requested only once: the reply can go missing with the system added anyway, and a second joint between the
+        # same models crashes the physics
+        self.fixed.add(name)
+        self.candidates.pop(name, None)
         service = f'/world/{self.world}/entity/system/add'
         ok, response = self.gz_node.request(service, request, EntityPlugin_V, Boolean, 1000)
         if ok and response.data:
-            self.fixed.add(name)
-            self.candidates.pop(name, None)
             self.get_logger().info(f'{name} fixed to the tray')
         else:
-            self.get_logger().error(f'Fixing {name} to the tray failed')
+            self.get_logger().warning(f'Fixing {name} to the tray not confirmed; not retrying')
 
 
 def main():
