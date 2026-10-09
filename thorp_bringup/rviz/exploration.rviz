@@ -1265,7 +1265,7 @@ Visualization Manager:
             Filter size: 10
             History Policy: Keep Last
             Reliability Policy: Reliable
-            Value: /bt_server/nav_goal
+            Value: /explore_house/nav_goal
           Value: true
         - Alpha: 0.699999988079071
           Binary representation: false

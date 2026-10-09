@@ -1997,7 +1997,7 @@ Visualization Manager:
           Name: Reachable table side poses
           Shaft Length: 0.23000000417232513
           Shaft Radius: 0.009999999776482582
-          Shape: Arrow (Flat)
+          Shape: Arrow (3D)
           Topic:
             Depth: 5
             Durability Policy: Volatile
@@ -2018,7 +2018,7 @@ Visualization Manager:
           Name: Blocked table side poses
           Shaft Length: 0.23000000417232513
           Shaft Radius: 0.009999999776482582
-          Shape: Arrow (Flat)
+          Shape: Arrow (3D)
           Topic:
             Depth: 5
             Durability Policy: Volatile
@@ -2032,14 +2032,14 @@ Visualization Manager:
           Axes Length: 0.30000001192092896
           Axes Radius: 0.009999999776482582
           Class: rviz_default_plugins/PoseArray
-          Color: 255; 25; 0
+          Color: 0; 0; 255
           Enabled: true
           Head Length: 0.07000000029802322
           Head Radius: 0.029999999329447746
           Name: Pick up poses
           Shaft Length: 0.23000000417232513
           Shaft Radius: 0.009999999776482582
-          Shape: Arrow (Flat)
+          Shape: Arrow (3D)
           Topic:
             Depth: 5
             Durability Policy: Volatile
@@ -2213,7 +2213,7 @@ Visualization Manager:
             Filter size: 10
             History Policy: Keep Last
             Reliability Policy: Reliable
-            Value: /bt_server/nav_goal
+            Value: /cleanup_table/nav_goal
           Value: true
         - Alpha: 0.699999988079071
           Binary representation: false

@@ -474,7 +474,7 @@ Visualization Manager:
         Filter size: 10
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /bt_server/nav_goal
+        Value: /cat_hunter/nav_goal
       Value: true
     - Alpha: 0.7
       Binary representation: false
