@@ -12,6 +12,7 @@
 #include <shape_msgs/msg/solid_primitive.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
+#include <thorp_toolkit/common.hpp>
 #include <thorp_toolkit/geometry.hpp>
 #include <thorp_toolkit/tf2.hpp>
 namespace ttk = thorp::toolkit;
@@ -31,9 +32,10 @@ public:
     auto node = rosNode(*this);
     max_arm_reach_ = node->get_parameter_or("max_arm_reach", 0.3);
     min_pickup_side_ = node->get_parameter_or("table_min_pickup_side", 0.35);
-    auto qos = rclcpp::QoS(1).transient_local();
-    valid_poses_pub_ = node->create_publisher<geometry_msgs::msg::PoseArray>("~/valid_poses_around_table", qos);
-    blocked_poses_pub_ = node->create_publisher<geometry_msgs::msg::PoseArray>("~/blocked_poses_around_table", qos);
+    valid_poses_pub_ =
+        node->create_publisher<geometry_msgs::msg::PoseArray>("~/valid_poses_around_table", ttk::LATCHED);
+    blocked_poses_pub_ =
+        node->create_publisher<geometry_msgs::msg::PoseArray>("~/blocked_poses_around_table", ttk::LATCHED);
   }
 
   static BT::PortsList providedPorts()

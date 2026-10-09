@@ -4,6 +4,8 @@
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
+#include <thorp_toolkit/common.hpp>
+
 namespace thorp::bt::actions
 {
 /**
@@ -33,8 +35,7 @@ private:
     const auto topic = requireInput<std::string>(*this, "topic");
     if (!publisher_ || topic != topic_)
     {
-      publisher_ =
-          rosNode(*this)->create_publisher<geometry_msgs::msg::PoseStamped>(topic, rclcpp::QoS(1).transient_local());
+      publisher_ = rosNode(*this)->create_publisher<geometry_msgs::msg::PoseStamped>(topic, toolkit::LATCHED);
       topic_ = topic;
     }
     publisher_->publish(pose);

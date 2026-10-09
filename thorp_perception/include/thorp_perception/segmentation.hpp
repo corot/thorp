@@ -28,7 +28,6 @@ struct SegmentationParams
   Eigen::Vector3f crop_max{ 2.5f, 1.0f, 0.6f };
   int min_surface_size = 10000;  // points
   int min_cluster_size = 200;    // points
-  int max_cluster_size = 10000;  // points
   double cluster_tolerance = 0.005;
 };
 

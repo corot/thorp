@@ -111,6 +111,69 @@ double yaw(const Eigen::Isometry3f& pose)
   return std::atan2(pose.linear()(1, 0), pose.linear()(0, 0));
 }
 
+sensor_msgs::msg::PointCloud2 toMsg(const PointCloud& cloud, const std_msgs::msg::Header& header)
+{
+  sensor_msgs::msg::PointCloud2 msg;
+  pcl::toROSMsg(cloud, msg);
+  msg.header = header;
+  return msg;
+}
+
+/// All the clusters in one cloud, with each point labeled with its cluster's index
+sensor_msgs::msg::PointCloud2 toMsg(const std::vector<PointCloud::Ptr>& clusters, const std_msgs::msg::Header& header)
+{
+  pcl::PointCloud<pcl::PointXYZRGBL> labeled;
+  for (size_t i = 0; i < clusters.size(); ++i)
+    for (const auto& point : clusters[i]->points)
+      labeled.emplace_back(point.x, point.y, point.z, point.r, point.g, point.b, static_cast<std::uint32_t>(i));
+  sensor_msgs::msg::PointCloud2 msg;
+  pcl::toROSMsg(labeled, msg);
+  msg.header = header;
+  return msg;
+}
+
+visualization_msgs::msg::Marker makeLabel(const std::string& ns, int id, const std::string& text,
+                                          const std_msgs::msg::ColorRGBA& color, const std_msgs::msg::Header& header,
+                                          double x, double y, double z)
+{
+  visualization_msgs::msg::Marker marker;
+  marker.header = header;
+  marker.ns = ns;
+  marker.id = id;
+  marker.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
+  marker.action = visualization_msgs::msg::Marker::ADD;
+  marker.text = text;
+  marker.scale.x = marker.scale.z = 0.035;  // x is RViz's space width; left at zero, a space is about 1 m wide
+  marker.color = color;
+  marker.pose.position.x = x;
+  marker.pose.position.y = y;
+  marker.pose.position.z = z;
+  marker.pose.orientation.w = 1.0;
+  return marker;
+}
+
+/// The surface's quadrilateral, as a closed line
+visualization_msgs::msg::Marker makeOutline(const Surface& surface, const std_msgs::msg::Header& header)
+{
+  visualization_msgs::msg::Marker marker;
+  marker.header = header;
+  marker.ns = "table";
+  marker.type = visualization_msgs::msg::Marker::LINE_STRIP;
+  marker.action = visualization_msgs::msg::Marker::ADD;
+  marker.scale.x = 0.02;
+  marker.color = toolkit::makeColor(1.0f, 1.0f, 0.0f);
+  marker.pose.orientation.w = 1.0;
+  for (size_t i = 0; i <= surface.corners.size(); ++i)
+  {
+    geometry_msgs::msg::Point point;
+    point.x = surface.corners[i % surface.corners.size()].x();
+    point.y = surface.corners[i % surface.corners.size()].y();
+    point.z = surface.centroid.z();
+    marker.points.push_back(point);
+  }
+  return marker;
+}
+
 }  // namespace
 
 /**
@@ -132,13 +195,13 @@ public:
     segmentation_.crop_max = Eigen::Vector3d(crop_max[0], crop_max[1], crop_max[2]).cast<float>();
     segmentation_.min_surface_size = param(node_, "min_surface_size", segmentation_.min_surface_size);
     segmentation_.min_cluster_size = param(node_, "min_cluster_size", segmentation_.min_cluster_size);
-    segmentation_.max_cluster_size = param(node_, "max_cluster_size", segmentation_.max_cluster_size);
     segmentation_.cluster_tolerance = param(node_, "cluster_tolerance", segmentation_.cluster_tolerance);
     IcpParams icp;
     icp.iterations = param(node_, "icp.iterations", icp.iterations);
     icp.max_distance = param(node_, "icp.max_distance", icp.max_distance);
     icp.transformation_epsilon = param(node_, "icp.transformation_epsilon", icp.transformation_epsilon);
     icp.fitness_epsilon = param(node_, "icp.fitness_epsilon", icp.fitness_epsilon);
+    max_cluster_size_ = param(node_, "max_cluster_size", 10000);
     max_matching_error_ = param(node_, "max_matching_error", 4e-6);
     redetect_tolerance_ = param(node_, "redetect_tolerance", 0.01);
     tabletop_volume_height_ = param(node_, "tabletop_volume_height", 0.2);
@@ -147,7 +210,9 @@ public:
     matcher_ = std::make_unique<TemplateMatcher>(param(node_, "templates_path", meshes_path_), icp);
     RCLCPP_INFO(node_->get_logger(), "Loaded %zu object templates", matcher_->size());
 
-    markers_pub_ = node_->create_publisher<visualization_msgs::msg::MarkerArray>("~/markers", 1);
+    markers_pub_ = node_->create_publisher<visualization_msgs::msg::MarkerArray>("~/markers", toolkit::LATCHED);
+    table_pub_ = node_->create_publisher<sensor_msgs::msg::PointCloud2>("~/table", toolkit::LATCHED);
+    clusters_pub_ = node_->create_publisher<sensor_msgs::msg::PointCloud2>("~/clusters", toolkit::LATCHED);
     // Reliable, as the cloud publisher; with Cyclone DDS, a best effort subscription gets none of these ~10 MB clouds
     cloud_sub_ = node_->create_subscription<sensor_msgs::msg::PointCloud2>(
         "cloud", rclcpp::QoS(1), [this](sensor_msgs::msg::PointCloud2::ConstSharedPtr msg) {
@@ -268,6 +333,10 @@ private:
     if (surface)
     {
       result->tables.push_back(makeTable(*surface, header));
+      table_pub_->publish(toMsg(*surface->cloud, header));
+      visualization_msgs::msg::MarkerArray markers;
+      markers.markers.push_back(makeOutline(*surface, header));
+      markers_pub_->publish(markers);
       RCLCPP_INFO(node_->get_logger(), "Table of %.2f x %.2f m detected at [%.2f, %.2f, %.2f]", surface->length,
                   surface->width, surface->center.x(), surface->center.y(), surface->centroid.z());
     }
@@ -302,6 +371,7 @@ private:
       return;
     }
     result->surface = makeTable(*surface, header);
+    table_pub_->publish(toMsg(*surface->cloud, header));
     std::vector<CollisionObject> scene_objects{ result->surface };
     std::vector<ObjectColor> colors{ objectColor(result->surface.id, meanColor(*surface->cloud)) };
 
@@ -313,9 +383,12 @@ private:
       taken_names.insert(name);
 
     std::vector<PointCloud::Ptr> clusters = extractClusters(cloud, *surface, segmentation_);
+    clusters_pub_->publish(toMsg(clusters, header));
     RCLCPP_INFO(node_->get_logger(), "%zu objects plus table segmented in %.2f seconds", clusters.size(),
                 (node_->now() - start).seconds());
     visualization_msgs::msg::MarkerArray markers;
+    markers.markers.emplace_back().action = visualization_msgs::msg::Marker::DELETEALL;
+    markers.markers.push_back(makeOutline(*surface, header));
     for (const auto& cluster : clusters)
     {
       if (goal_handle->is_canceling())
@@ -323,14 +396,26 @@ private:
         goal_handle->canceled(result);
         return;
       }
-      std::optional<CollisionObject> object = identifyObject(*cluster, *surface, header, taken_names);
+      const int marker_id = static_cast<int>(markers.markers.size());
+      std::string rejection;
+      std::optional<CollisionObject> object = identifyObject(*cluster, *surface, header, taken_names, rejection);
       if (!object)
+      {
+        PointT min_pt, max_pt;
+        pcl::getMinMax3D(*cluster, min_pt, max_pt);
+        markers.markers.push_back(makeLabel("rejected", marker_id, rejection, toolkit::makeColor(1.0f, 0.2f, 0.2f),
+                                            header, (min_pt.x + max_pt.x) / 2.0, (min_pt.y + max_pt.y) / 2.0,
+                                            (min_pt.z + max_pt.z) / 2.0 + 0.05));
         continue;
+      }
       taken_names.insert(object->id);
       result->objects.push_back(*object);
       scene_objects.push_back(*object);
       colors.push_back(objectColor(object->id, meanColor(*cluster)));
-      markers.markers.push_back(makeLabel(*object, colors.back().color, static_cast<int>(markers.markers.size())));
+      // The planning scene doesn't show object names, so we label them
+      markers.markers.push_back(makeLabel("labels", marker_id, object->id, colors.back().color, header,
+                                          object->pose.position.x, object->pose.position.y,
+                                          object->pose.position.z + 0.05));
     }
 
     // Remove the objects previously detected on the table but not now; the redetected ones get replaced
@@ -354,20 +439,29 @@ private:
 
   /**
    * Identify a cluster's type by template matching, and make a collision object with its template's mesh.
+   * @param rejection Why the cluster isn't an object, in a few words
    * @return The object, or nothing if it has an impossible size or pose, or doesn't match any template
    */
   std::optional<CollisionObject> identifyObject(const PointCloud& cluster, const Surface& surface,
                                                 const std_msgs::msg::Header& header,
-                                                const std::set<std::string>& taken_names)
+                                                const std::set<std::string>& taken_names, std::string& rejection)
   {
     PointT min_pt, max_pt;
     pcl::getMinMax3D(cluster, min_pt, max_pt);
     Eigen::Vector3f size = max_pt.getVector3fMap() - min_pt.getVector3fMap();
     Eigen::Vector3f center = (max_pt.getVector3fMap() + min_pt.getVector3fMap()) / 2.0f;
+    if (cluster.size() > static_cast<size_t>(max_cluster_size_))
+    {
+      RCLCPP_WARN(node_->get_logger(), "Object at [%.2f, %.2f, %.2f] discarded: %zu points, over %d", center.x(),
+                  center.y(), center.z(), cluster.size(), max_cluster_size_);
+      rejection = "size";
+      return std::nullopt;
+    }
     if (size.minCoeff() < MIN_OBJECT_SIZE || size.maxCoeff() > MAX_OBJECT_SIZE)
     {
       RCLCPP_WARN(node_->get_logger(), "Object at [%.2f, %.2f, %.2f] discarded: size %.3f x %.3f x %.3f", center.x(),
                   center.y(), center.z(), size.x(), size.y(), size.z());
+      rejection = "size";
       return std::nullopt;
     }
     // Objects must rest on the table; others are probably table parts or the gripper after picking or placing
@@ -375,6 +469,10 @@ private:
     {
       RCLCPP_WARN(node_->get_logger(), "Object at [%.2f, %.2f, %.2f] discarded: base %.3f m away from the table",
                   center.x(), center.y(), center.z(), min_pt.z - surface.centroid.z());
+      std::ostringstream text;
+      text << std::fixed << std::setprecision(3) << std::showpos << "off the table, "
+           << min_pt.z - surface.centroid.z();
+      rejection = text.str();
       return std::nullopt;
     }
 
@@ -390,6 +488,9 @@ private:
       RCLCPP_INFO(node_->get_logger(), "Object at [%.2f, %.2f, %.2f] discarded: best match, %s, error %.2f > %.2f",
                   center.x(), center.y(), center.z(), match.name.c_str(), match.error * 1e6,
                   max_matching_error_ * 1e6);
+      std::ostringstream text;
+      text << std::fixed << std::setprecision(2) << match.name << "? " << match.error * 1e6;
+      rejection = text.str();
       return std::nullopt;
     }
 
@@ -409,7 +510,10 @@ private:
                            match.pose.translation().z() + height / 2.0, yaw(match.pose));
     const shape_msgs::msg::Mesh* mesh = templateMesh(match.name);
     if (!mesh)
+    {
+      rejection = "no " + match.name + " mesh";
       return std::nullopt;
+    }
     object.meshes.push_back(*mesh);
     object.mesh_poses.resize(1);
     object.mesh_poses[0].position.z = -height / 2.0;  // meshes' origin is at their base
@@ -518,25 +622,6 @@ private:
     return color;
   }
 
-  // The planning scene doesn't show object names, so we label them
-  static visualization_msgs::msg::Marker makeLabel(const CollisionObject& object, const std_msgs::msg::ColorRGBA& color,
-                                                   int id)
-  {
-    visualization_msgs::msg::Marker marker;
-    marker.header = object.header;
-    marker.ns = "labels";
-    marker.id = id;
-    marker.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
-    marker.action = visualization_msgs::msg::Marker::ADD;
-    marker.text = object.id;
-    marker.scale.x = marker.scale.z = 0.035;  // x is RViz's space width; left at zero, a space is about 1 m wide
-    marker.color = color;
-    marker.pose = object.pose;
-    marker.pose.position.z += 0.05;
-    marker.lifetime = rclcpp::Duration(10s);
-    return marker;
-  }
-
   rclcpp::Node::SharedPtr node_;
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
@@ -547,6 +632,8 @@ private:
 
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr cloud_sub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr markers_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr table_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr clusters_pub_;
   rclcpp_action::Server<DetectObjects>::SharedPtr objects_server_;
   rclcpp_action::Server<DetectTables>::SharedPtr tables_server_;
   std::atomic<bool> busy_{ false };
@@ -559,6 +646,7 @@ private:
   std::string output_frame_;
   std::string meshes_path_;
   SegmentationParams segmentation_;
+  int max_cluster_size_;
   double max_matching_error_;
   double redetect_tolerance_;
   double tabletop_volume_height_;

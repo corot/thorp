@@ -10,6 +10,8 @@
 #include <moveit_msgs/action/move_group.hpp>
 #include <std_msgs/msg/string.hpp>
 
+#include <thorp_toolkit/common.hpp>
+
 namespace thorp::bt::actions
 {
 /**
@@ -108,7 +110,7 @@ private:
     rclcpp::SubscriptionOptions options;
     options.callback_group = callback_group;
     auto sub = node->create_subscription<std_msgs::msg::String>(
-        "robot_description_semantic", rclcpp::QoS(1).transient_local(),
+        "robot_description_semantic", toolkit::LATCHED,
         [&srdf](const std_msgs::msg::String::ConstSharedPtr msg) { srdf = msg->data; }, options);
     const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(10);
     while (srdf.empty() && rclcpp::ok() && std::chrono::steady_clock::now() < deadline)

@@ -16,6 +16,11 @@ namespace thorp::toolkit
 {
 
 /**
+ * @brief QoS of a latched topic: subscribers joining later still get its last message
+ */
+inline const rclcpp::QoS LATCHED = rclcpp::QoS(1).transient_local();
+
+/**
  * @brief Initialize the toolkit with the node its singletons and functions use to access ROS.
  * Call once, before using anything else that needs a node.
  * @param node the application's node

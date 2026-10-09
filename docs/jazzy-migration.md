@@ -170,8 +170,9 @@ redetected objects and removing those no longer on the table, but those on the t
 when docked under its eaves (it reads the tray geometry, `thorp_description`'s `tray.yaml`, as the executive does);
 `object_detection/detect_tables` (`thorp_msgs/DetectTables`) only segments the table, if its shortest side reaches a
 minimum. Tables and objects are collision objects: tables are boxes with x along their longest side; objects carry their
-template mesh, and their size and color name as JSON in `type.db`, as on the `bt_server` branch. `xtion_fov_analyzer.py`
-is ported too.
+template mesh, and their size and color name as JSON in `type.db`, as on the `bt_server` branch. For debugging, it
+publishes the table and the clusters as point clouds, the table's outline, and why each rejected cluster was rejected.
+`xtion_fov_analyzer.py` is ported too.
 
 The segmentation and template matching are rewritten into `thorp_perception` from Thorp's forks of
 `rail_segmentation` and `rail_mesh_icp`, instead of porting the forks as source dependencies: the forks carry much
@@ -179,7 +180,7 @@ dead RAIL code, and running all in one node drops the RAIL messages, the segment
 matching action. The README records the source commits and licenses. Only what Thorp used is kept: a single crop box
 instead of segmentation zones, the table as the largest quadrilateral in the surface's convex hull (now centered on
 that quadrilateral rather than on the points' bounding box), and the 2D non-linear ICP; RAIL's color features,
-images, markers and object recognition fields are dropped. The ORK and darknet YOLO pipelines are dropped too.
+images and object recognition fields are dropped. The ORK and darknet YOLO pipelines are dropped too.
 
 `target_detection.launch.py`, for the cat hunter, replaces the COB pipeline: `yolo_ros`, a source dependency, detects
 and tracks objects on the Kinect images, with YOLO11m, and locates them with its depth images, on `base_footprint`, as

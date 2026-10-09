@@ -141,7 +141,6 @@ std::vector<PointCloud::Ptr> extractClusters(const PointCloud::ConstPtr& cloud, 
   kd_tree->setInputCloud(cloud, above_surface);
   clustering.setClusterTolerance(params.cluster_tolerance);
   clustering.setMinClusterSize(params.min_cluster_size);
-  clustering.setMaxClusterSize(params.max_cluster_size);
   clustering.setSearchMethod(kd_tree);
   clustering.setInputCloud(cloud);
   clustering.setIndices(above_surface);

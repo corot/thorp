@@ -6,6 +6,8 @@
 
 #include <std_msgs/msg/u_int16.hpp>
 
+#include <thorp_toolkit/common.hpp>
+
 namespace thorp::bt::conditions
 {
 /**
@@ -19,7 +21,7 @@ public:
   CannonHasAmmo(const std::string& name, const BT::NodeConfig& config) : BT::ConditionNode(name, config)
   {
     sub_ = rosNode(*this)->create_subscription<std_msgs::msg::UInt16>(
-        "cannon_ctrl/shots_left", rclcpp::QoS(1).transient_local(),
+        "cannon_ctrl/shots_left", toolkit::LATCHED,
         [this](const std_msgs::msg::UInt16::ConstSharedPtr msg) { callback(*msg); });
   }
 

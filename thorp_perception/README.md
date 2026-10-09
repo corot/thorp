@@ -8,6 +8,12 @@
 - `object_detection/detect_tables` action (`thorp_msgs/DetectTables`): segments the table in front of the robot,
   if its shortest side reaches the given minimum.
 
+For RViz, each detection publishes the table's points on `~/table`, and every cluster over it on `~/clusters`, as
+point clouds; `~/clusters` adds a `label` field with each point's cluster index, to color them by cluster. `~/markers`
+carries the table's outline and a label per cluster: the object's name, or why it was rejected (`size`,
+`off the table` or the best match and its error, as `cube? 4.67`). All three are latched, and the markers last until
+the next detection replaces them.
+
 `xtion_fov_analyzer.py` tells whether something close blocks the Xtion field of view.
 
 `target_detection.launch.py` detects the cat hunter's targets on the Kinect: [yolo_ros](https://github.com/mgonzs13/yolo_ros)
