@@ -105,6 +105,11 @@ def generate_launch_description():
         Node(package='ros_gz_bridge', executable='parameter_bridge', name='gz_bridge',
              parameters=[{'config_file': PathJoinSubstitution([sim_share, 'param', 'gz_bridge.yaml'])}, sim_time]),
 
+        # Objects resting on the tray get fixed to Thorp, so they don't join its contacts solving
+        Node(package='thorp_simulation', executable='tray_objects.py', output='screen',
+             parameters=[PathJoinSubstitution([FindPackageShare('thorp_description'), 'config', 'tray.yaml']),
+                         sim_time]),
+
         # Controllers run on Gazebo's controller manager, available once Thorp is spawned
         Node(package='controller_manager', executable='spawner', output='screen',
              arguments=['joint_state_broadcaster', 'arm_controller', 'gripper_controller',

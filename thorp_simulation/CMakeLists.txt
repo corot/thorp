@@ -25,7 +25,7 @@ install(TARGETS gazebo_ground_truth
         DESTINATION lib/${PROJECT_NAME}
 )
 
-install(PROGRAMS scripts/spawn_gazebo_models.py nodes/cats_controller.py
+install(PROGRAMS scripts/spawn_gazebo_models.py nodes/cats_controller.py nodes/tray_objects.py
         DESTINATION lib/${PROJECT_NAME}
 )
 
