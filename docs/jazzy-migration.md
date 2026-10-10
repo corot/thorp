@@ -488,10 +488,12 @@ as MPPI needs a control period no longer than its model step. For docking at tab
 (`Graceful`, Nav2's graceful controller, slow) and goal checker (`precise_goal_checker`, Noetic's 3.5 cm and 0.05 rad)
 replace most of the `precise_controlling` named configuration; the graceful control law converges on the pickup pose's
 position and heading together, so the robot arrives facing the table without turning in place under it, from wherever
-MPPI left it at the approach pose. It stops once the remaining path is shorter than the goal checker's tolerance, so
-about 3 cm short of the pickup pose. The executive picks them per `follow_path` goal. As the controller server rejects
-goals naming no goal
-checker when it has more than one, `bt_navigator` runs `behavior_trees/`: Nav2's default trees, selecting also the goal
+MPPI left it at the approach pose. The goal checker stops it about 3 cm short of the pickup pose. Graceful turns in
+place once the path left from its closest pose is shorter than the goal tolerance, and only turns from then on; so
+`PoseAsPath` spaces the docking path's poses back from the goal, as poses spaced from the start left a short last
+segment that made it turn in place still out of the tolerance, oscillating until the docking timed out. The executive
+picks them per `follow_path` goal. As the controller server rejects goals naming no goal checker when it has more than
+one, `bt_navigator` runs `behavior_trees/`: Nav2's default trees, selecting also the goal
 checker, the general one by default. Both costmaps have the semantic layer, before inflation. Pending ROS 1 files:
 
 | Files | Block |

@@ -72,7 +72,7 @@ private:
   };
 
   /** Run the goal's subtree, discarding it before returning the result to report. */
-  std::pair<Outcome, RunSubtree::Result::SharedPtr> execute(const std::shared_ptr<GoalHandle> goal_handle);
+  std::pair<Outcome, RunSubtree::Result::SharedPtr> execute(const std::shared_ptr<GoalHandle>& goal_handle);
 };
 
 }  // namespace thorp::bt

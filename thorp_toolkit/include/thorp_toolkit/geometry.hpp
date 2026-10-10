@@ -271,13 +271,13 @@ inline bool xAligned(const geometry_msgs::msg::Pose& pose)
  */
 inline bool sameFrame(const std::string& frame_a, const std::string& frame_b)
 {
-  if (frame_a.length() == 0 && frame_b.length() == 0)
+  if (frame_a.empty() && frame_b.empty())
   {
     RCLCPP_WARN(logger(), "Comparing two empty frame ids (considered as the same frame)");
     return true;
   }
 
-  if (frame_a.length() == 0 || frame_b.length() == 0)
+  if (frame_a.empty() || frame_b.empty())
   {
     RCLCPP_WARN(logger(), "Comparing %s%s with an empty frame id (considered as different frames)",
              frame_a.c_str(), frame_b.c_str());

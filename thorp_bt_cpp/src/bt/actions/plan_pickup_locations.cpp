@@ -205,6 +205,7 @@ private:
     do
     {
       std::vector<Location> candidate;
+      candidate.reserve(order.size());
       for (const size_t i : order)
         candidate.push_back(locations[i]);
       skipRedundant(candidate);

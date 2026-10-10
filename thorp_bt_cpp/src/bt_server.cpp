@@ -90,7 +90,8 @@ void Server::start()
 {
   as_ = rclcpp_action::create_server<RunSubtree>(
       node_, "~/run_subtree",
-      [this](const rclcpp_action::GoalUUID&, std::shared_ptr<const RunSubtree::Goal> goal) {
+      [this](const rclcpp_action::GoalUUID&, const std::shared_ptr<const RunSubtree::Goal>& goal)
+      {
         if (busy_.exchange(true))
         {
           RCLCPP_ERROR_STREAM(node_->get_logger(), "Rejecting subtree '" << goal->subtree << "': already running one");
@@ -98,8 +99,9 @@ void Server::start()
         }
         return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
       },
-      [](const std::shared_ptr<GoalHandle>) { return rclcpp_action::CancelResponse::ACCEPT; },
-      [this](const std::shared_ptr<GoalHandle> goal_handle) {
+      [](const std::shared_ptr<GoalHandle>&) { return rclcpp_action::CancelResponse::ACCEPT; },
+      [this](const std::shared_ptr<GoalHandle>& goal_handle)
+      {
         // The previous goal's thread has finished, as goals are accepted only when not busy
         if (goal_thread_.joinable())
           goal_thread_.join();
@@ -136,7 +138,7 @@ Server::~Server()
 }
 
 std::pair<Server::Outcome, thorp_msgs::action::RunSubtree::Result::SharedPtr>
-Server::execute(const std::shared_ptr<GoalHandle> goal_handle)
+Server::execute(const std::shared_ptr<GoalHandle>& goal_handle)
 {
   const auto goal = goal_handle->get_goal();
   auto result = std::make_shared<RunSubtree::Result>();
@@ -193,7 +195,7 @@ Server::execute(const std::shared_ptr<GoalHandle> goal_handle)
   const bool report_new_entries = goal->output_keys.empty();
   const std::set<std::string> keys_before_run = report_new_entries ? valuedKeys(*blackboard) : std::set<std::string>{};
 
-  auto collectOutputs = [&]
+  auto collect_outputs = [&]
   {
     return report_new_entries ? newEntriesToJson(*blackboard, keys_before_run) :
                                 entriesToJson(*blackboard, goal->output_keys);
@@ -216,7 +218,7 @@ Server::execute(const std::shared_ptr<GoalHandle> goal_handle)
         RCLCPP_WARN_STREAM(node_->get_logger(), "Subtree '" << goal->subtree << "' preempted");
         tree->haltTree();
         result->success = false;
-        result->json = collectOutputs().dump();
+        result->json = collect_outputs().dump();
         return { Outcome::CANCELED, result };
       }
 
@@ -254,7 +256,7 @@ Server::execute(const std::shared_ptr<GoalHandle> goal_handle)
   }
 
   result->success = status == BT::NodeStatus::SUCCESS;
-  result->json = collectOutputs().dump();
+  result->json = collect_outputs().dump();
   RCLCPP_INFO_STREAM(node_->get_logger(), "Subtree '" << goal->subtree << "' completed with status "
                                                        << BT::toStr(status) << ", output " << result->json);
   return { Outcome::SUCCEEDED, result };

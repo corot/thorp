@@ -12,8 +12,8 @@
 namespace thorp::toolkit
 {
 
-char ___buffers___[10][256];
-int ___next_buffer___ = -1;
+char BUFFERS[10][256];
+int NEXT_BUFFER = -1;
 
 namespace
 {
@@ -229,9 +229,10 @@ std::string toStr3D(const tf2::Stamped<tf2::Transform>& pose)
 
 const char* toCStr3D(const geometry_msgs::msg::Vector3& vector)
 {
-  ++___next_buffer___; ___next_buffer___ %= 10;
-  snprintf(___buffers___[___next_buffer___], sizeof(___buffers___[0]), "%.2f, %.2f, %.2f", vector.x, vector.y, vector.z);
-  return ___buffers___[___next_buffer___];
+  ++NEXT_BUFFER;
+  NEXT_BUFFER %= 10;
+  snprintf(BUFFERS[NEXT_BUFFER], sizeof(BUFFERS[0]), "%.2f, %.2f, %.2f", vector.x, vector.y, vector.z);
+  return BUFFERS[NEXT_BUFFER];
 }
 
 const char* toCStr3D(const geometry_msgs::msg::Vector3Stamped& vector)
@@ -241,9 +242,10 @@ const char* toCStr3D(const geometry_msgs::msg::Vector3Stamped& vector)
 
 const char* toCStr2D(const geometry_msgs::msg::Point& point)
 {
-  ++___next_buffer___; ___next_buffer___ %= 10;
-  snprintf(___buffers___[___next_buffer___], sizeof(___buffers___[0]), "%.2f, %.2f", point.x, point.y);
-  return ___buffers___[___next_buffer___];
+  ++NEXT_BUFFER;
+  NEXT_BUFFER %= 10;
+  snprintf(BUFFERS[NEXT_BUFFER], sizeof(BUFFERS[0]), "%.2f, %.2f", point.x, point.y);
+  return BUFFERS[NEXT_BUFFER];
 }
 
 const char* toCStr2D(const geometry_msgs::msg::PointStamped& point)
@@ -253,9 +255,10 @@ const char* toCStr2D(const geometry_msgs::msg::PointStamped& point)
 
 const char* toCStr3D(const geometry_msgs::msg::Point& point)
 {
-  ++___next_buffer___; ___next_buffer___ %= 10;
-  snprintf(___buffers___[___next_buffer___], sizeof(___buffers___[0]), "%.2f, %.2f, %.2f", point.x, point.y, point.z);
-  return ___buffers___[___next_buffer___];
+  ++NEXT_BUFFER;
+  NEXT_BUFFER %= 10;
+  snprintf(BUFFERS[NEXT_BUFFER], sizeof(BUFFERS[0]), "%.2f, %.2f, %.2f", point.x, point.y, point.z);
+  return BUFFERS[NEXT_BUFFER];
 }
 
 const char* toCStr3D(const geometry_msgs::msg::PointStamped& point)
@@ -265,9 +268,10 @@ const char* toCStr3D(const geometry_msgs::msg::PointStamped& point)
 
 const char* toCStr2D(const geometry_msgs::msg::Pose& pose)
 {
-  ++___next_buffer___; ___next_buffer___ %= 10;
-  snprintf(___buffers___[___next_buffer___], sizeof(___buffers___[0]), "%.2f, %.2f, %.2f", pose.position.x, pose.position.y, yaw(pose));
-  return ___buffers___[___next_buffer___];
+  ++NEXT_BUFFER;
+  NEXT_BUFFER %= 10;
+  snprintf(BUFFERS[NEXT_BUFFER], sizeof(BUFFERS[0]), "%.2f, %.2f, %.2f", pose.position.x, pose.position.y, yaw(pose));
+  return BUFFERS[NEXT_BUFFER];
 }
 
 const char* toCStr2D(const geometry_msgs::msg::PoseStamped& pose)
@@ -277,17 +281,20 @@ const char* toCStr2D(const geometry_msgs::msg::PoseStamped& pose)
 
 const char* toCStr2D(const tf2::Stamped<tf2::Transform>& pose)
 {
-  ++___next_buffer___; ___next_buffer___ %= 10;
-  snprintf(___buffers___[___next_buffer___], sizeof(___buffers___[0]), "%.2f, %.2f, %.2f", pose.getOrigin().x(), pose.getOrigin().y(), yaw(pose));
-  return ___buffers___[___next_buffer___];
+  ++NEXT_BUFFER;
+  NEXT_BUFFER %= 10;
+  snprintf(BUFFERS[NEXT_BUFFER], sizeof(BUFFERS[0]), "%.2f, %.2f, %.2f", pose.getOrigin().x(), pose.getOrigin().y(),
+           yaw(pose));
+  return BUFFERS[NEXT_BUFFER];
 }
 
 const char* toCStr3D(const geometry_msgs::msg::Pose& pose)
 {
-  ++___next_buffer___; ___next_buffer___ %= 10;
-  snprintf(___buffers___[___next_buffer___], sizeof(___buffers___[0]), "%.2f, %.2f, %.2f,  %.2f, %.2f, %.2f",
-          pose.position.x, pose.position.y, pose.position.z, roll(pose), pitch(pose), yaw(pose));
-  return ___buffers___[___next_buffer___];
+  ++NEXT_BUFFER;
+  NEXT_BUFFER %= 10;
+  snprintf(BUFFERS[NEXT_BUFFER], sizeof(BUFFERS[0]), "%.2f, %.2f, %.2f,  %.2f, %.2f, %.2f", pose.position.x,
+           pose.position.y, pose.position.z, roll(pose), pitch(pose), yaw(pose));
+  return BUFFERS[NEXT_BUFFER];
 }
 
 const char* toCStr3D(const geometry_msgs::msg::PoseStamped& pose)
@@ -297,10 +304,11 @@ const char* toCStr3D(const geometry_msgs::msg::PoseStamped& pose)
 
 const char* toCStr3D(const tf2::Stamped<tf2::Transform>& pose)
 {
-  ++___next_buffer___; ___next_buffer___ %= 10;
-  snprintf(___buffers___[___next_buffer___], sizeof(___buffers___[0]), "%.2f, %.2f, %.2f,  %.2f, %.2f, %.2f",
-          pose.getOrigin().x(), pose.getOrigin().y(), pose.getOrigin().z(), roll(pose), pitch(pose), yaw(pose));
-  return ___buffers___[___next_buffer___];
+  ++NEXT_BUFFER;
+  NEXT_BUFFER %= 10;
+  snprintf(BUFFERS[NEXT_BUFFER], sizeof(BUFFERS[0]), "%.2f, %.2f, %.2f,  %.2f, %.2f, %.2f", pose.getOrigin().x(),
+           pose.getOrigin().y(), pose.getOrigin().z(), roll(pose), pitch(pose), yaw(pose));
+  return BUFFERS[NEXT_BUFFER];
 }
 
 bool clipSegment(double edge_left, double edge_right, double edge_bottom, double edge_top,

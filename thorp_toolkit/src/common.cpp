@@ -17,12 +17,12 @@ namespace thorp::toolkit
 namespace
 {
 // weak, so the toolkit doesn't extend the node's lifetime
-rclcpp::Node::WeakPtr toolkit_node;
+rclcpp::Node::WeakPtr TOOLKIT_NODE;
 }  // namespace
 
 void init(const rclcpp::Node::SharedPtr& node)
 {
-  toolkit_node = node;
+  TOOLKIT_NODE = node;
   // release the singletons using the node before the context shuts down; otherwise they would be destroyed
   // after main returns, when the middleware is already gone
   node->get_node_base_interface()->get_context()->add_pre_shutdown_callback([]() { TF2::destroy(); });
@@ -30,7 +30,7 @@ void init(const rclcpp::Node::SharedPtr& node)
 
 rclcpp::Node::SharedPtr node()
 {
-  auto node = toolkit_node.lock();
+  auto node = TOOLKIT_NODE.lock();
   if (!node)
   {
     throw std::runtime_error("thorp_toolkit not initialized; call thorp::toolkit::init(node) first");
@@ -40,7 +40,7 @@ rclcpp::Node::SharedPtr node()
 
 rclcpp::Logger logger()
 {
-  auto node = toolkit_node.lock();
+  auto node = TOOLKIT_NODE.lock();
   return node ? node->get_logger() : rclcpp::get_logger("thorp_toolkit");
 }
 
@@ -68,22 +68,16 @@ std_msgs::msg::ColorRGBA randomColor(unsigned int seed, float alpha)
 std_msgs::msg::ColorRGBA namedColor(const std::string& color_name, float alpha)
 {
   // every name colorName can return, so the two remain inverses of each other
-  static const std::map<std::string, std_msgs::msg::ColorRGBA> color_map = {
-    { "black", makeColor(0.0f, 0.0f, 0.0f) },
-    { "gray", makeColor(0.5f, 0.5f, 0.5f) },
-    { "light gray", makeColor(0.75f, 0.75f, 0.75f) },
-    { "white", makeColor(1.0f, 1.0f, 1.0f) },
-    { "red", makeColor(1.0f, 0.0f, 0.0f) },
-    { "orange", makeColor(1.0f, 0.65f, 0.0f) },
-    { "yellow", makeColor(1.0f, 1.0f, 0.0f) },
-    { "green", makeColor(0.0f, 1.0f, 0.0f) },
-    { "cyan", makeColor(0.0f, 1.0f, 1.0f) },
-    { "blue", makeColor(0.0f, 0.0f, 1.0f) },
-    { "purple", makeColor(0.5f, 0.0f, 0.5f) },
-    { "pink", makeColor(1.0f, 0.75f, 0.8f) },
+  static const std::map<std::string, std_msgs::msg::ColorRGBA> COLOR_MAP = {
+    { "black", makeColor(0.0f, 0.0f, 0.0f) },         { "gray", makeColor(0.5f, 0.5f, 0.5f) },
+    { "light gray", makeColor(0.75f, 0.75f, 0.75f) }, { "white", makeColor(1.0f, 1.0f, 1.0f) },
+    { "red", makeColor(1.0f, 0.0f, 0.0f) },           { "orange", makeColor(1.0f, 0.65f, 0.0f) },
+    { "yellow", makeColor(1.0f, 1.0f, 0.0f) },        { "green", makeColor(0.0f, 1.0f, 0.0f) },
+    { "cyan", makeColor(0.0f, 1.0f, 1.0f) },          { "blue", makeColor(0.0f, 0.0f, 1.0f) },
+    { "purple", makeColor(0.5f, 0.0f, 0.5f) },        { "pink", makeColor(1.0f, 0.75f, 0.8f) },
     { "beige", makeColor(0.96f, 0.96f, 0.86f) }
   };
-  std_msgs::msg::ColorRGBA color = color_map.at(color_name);
+  std_msgs::msg::ColorRGBA color = COLOR_MAP.at(color_name);
   color.a = alpha;
   return color;
 }

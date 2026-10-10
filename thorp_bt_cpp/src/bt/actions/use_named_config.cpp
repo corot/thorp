@@ -26,8 +26,8 @@ public:
 private:
   BT::NodeStatus onStart() override
   {
-    return setConfig(requireInput<std::string>(*this, "config_name")) ? BT::NodeStatus::RUNNING
-                                                                       : BT::NodeStatus::FAILURE;
+    return setConfig(requireInput<std::string>(*this, "config_name")) ? BT::NodeStatus::RUNNING :
+                                                                        BT::NodeStatus::FAILURE;
   }
 
   BT::NodeStatus onRunning() override
@@ -47,8 +47,7 @@ private:
   {
     thorp_msgs::srv::SetNamedConfig::Request request;
     request.name = config_name;
-    const auto response =
-        callService<thorp_msgs::srv::SetNamedConfig>(rosNode(*this), "/named_configs/set", request);
+    const auto response = callService<thorp_msgs::srv::SetNamedConfig>(rosNode(*this), "/named_configs/set", request);
     if (response && !response->success)
     {
       RCLCPP_ERROR(logger(*this), "%s", response->message.c_str());

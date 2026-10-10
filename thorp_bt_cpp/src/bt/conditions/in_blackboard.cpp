@@ -22,7 +22,7 @@ public:
   }
 
 private:
-  virtual BT::NodeStatus tick() override
+  BT::NodeStatus tick() override
   {
     return getInput<T>("key") ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
   }

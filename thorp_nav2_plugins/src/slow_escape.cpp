@@ -61,11 +61,11 @@ void SlowEscape::onConfigure()
   local_.frame = local_frame_;
   local_.costmap = std::make_unique<nav2_costmap_2d::CostmapSubscriber>(node, local_costmap_topic);
   local_.footprint = std::make_unique<nav2_costmap_2d::FootprintSubscriber>(node, local_footprint_topic, *tf_,
-                                                                             robot_base_frame_, transform_tolerance_);
+                                                                            robot_base_frame_, transform_tolerance_);
   global_.frame = global_frame_;
   global_.costmap = std::make_unique<nav2_costmap_2d::CostmapSubscriber>(node, global_costmap_topic);
   global_.footprint = std::make_unique<nav2_costmap_2d::FootprintSubscriber>(node, global_footprint_topic, *tf_,
-                                                                              robot_base_frame_, transform_tolerance_);
+                                                                             robot_base_frame_, transform_tolerance_);
 
   // Activated right away, as the behavior only runs while the server is active
   plan_pub_ = node->create_publisher<nav_msgs::msg::Path>(behavior_name_ + "/plan", 1);
@@ -83,9 +83,9 @@ nav2_behaviors::ResultStatus SlowEscape::onRun(const std::shared_ptr<const Actio
 {
   error_msg_.clear();
   if (command->mode > Action::Goal::OUT_TO_FREE_SPACE || command->clearance < 0.0 || command->max_distance <= 0.0)
-    return fail(Action::Result::INVALID_INPUT,
-                "Invalid goal: mode " + std::to_string(command->mode) + ", clearance " +
-                    std::to_string(command->clearance) + ", max distance " + std::to_string(command->max_distance));
+    return fail(Action::Result::INVALID_INPUT, "Invalid goal: mode " + std::to_string(command->mode) + ", clearance " +
+                                                   std::to_string(command->clearance) + ", max distance " +
+                                                   std::to_string(command->max_distance));
   mode_ = command->mode;
   max_distance_ = command->max_distance;
   const rclcpp::Duration time_allowance(command->time_allowance);
@@ -167,9 +167,9 @@ nav2_behaviors::ResultStatus SlowEscape::onCycleUpdate()
 
   // Stagnating, we project commands for longer, so they reach poses whose cost differs
   const double time_step = vel_projection_time_ * (1.0 + stagnated_ * 0.2);
-  const auto deadline = std::chrono::steady_clock::now() +
-                        std::chrono::duration_cast<std::chrono::steady_clock::duration>(
-                            std::chrono::duration<double>(PLANNING_TIME_SHARE / cycle_frequency_));
+  const auto deadline =
+      std::chrono::steady_clock::now() + std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+                                             std::chrono::duration<double>(PLANNING_TIME_SHARE / cycle_frequency_));
   double new_cost;
   std::vector<Command> new_commands;
   nav_msgs::msg::Path path;
@@ -238,7 +238,7 @@ SlowEscape::PlanResult SlowEscape::makePlan(nav2_costmap_2d::Costmap2D& costmap,
   {
     Pose2D pose;
     Command command;
-    int linear;   // command steps, to tell a command that reverts the previous one
+    int linear;  // command steps, to tell a command that reverts the previous one
     int angular;
     int depth;
     int previous;

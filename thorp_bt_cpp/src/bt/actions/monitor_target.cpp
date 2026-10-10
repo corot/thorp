@@ -42,7 +42,8 @@ private:
     {
       sub_ = rosNode(*this)->create_subscription<geometry_msgs::msg::PoseStamped>(
           requireInput<std::string>(*this, "topic_name"), 1,
-          [this](const geometry_msgs::msg::PoseStamped::ConstSharedPtr msg) {
+          [this](const geometry_msgs::msg::PoseStamped::ConstSharedPtr& msg)
+          {
             std::lock_guard<std::mutex> lock(mutex_);
             target_pose_ = *msg;
           });

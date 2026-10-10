@@ -116,6 +116,7 @@ geometry_msgs::msg::Vector3Stamped gripperDirection(double x)
 std::vector<Eigen::Vector3d> boxCorners(const Eigen::Vector3d& center, const Eigen::Vector3d& half_size)
 {
   std::vector<Eigen::Vector3d> corners;
+  corners.reserve(8);
   for (int i = 0; i < 8; ++i)
     corners.push_back(center + Eigen::Vector3d((i & 1 ? 1 : -1) * half_size.x(), (i & 2 ? 1 : -1) * half_size.y(),
                                                (i & 4 ? 1 : -1) * half_size.z()));
@@ -809,17 +810,16 @@ int32_t PickAndPlaceServer::run(mtc::Task& task, const Feedback& feedback, const
   RCLCPP_INFO(node_->get_logger(), "Executing task '%s' (cost %.3f)", task.name().c_str(), solution.cost());
   report_stage_from(0);
   auto options = rclcpp_action::Client<ExecuteTaskSolution>::SendGoalOptions();
-  options.feedback_callback = [report_stage_from](auto,
-                                                  const std::shared_ptr<const ExecuteTaskSolution::Feedback> execution) {
-    report_stage_from(execution->sub_id + 1);
-  };
+  options.feedback_callback =
+      [report_stage_from](auto, const std::shared_ptr<const ExecuteTaskSolution::Feedback>& execution)
+  { report_stage_from(execution->sub_id + 1); };
   auto goal_future = execute_client_->async_send_goal(goal, options);
   if (goal_future.wait_for(5s) != std::future_status::ready || !goal_future.get())
   {
     RCLCPP_ERROR(node_->get_logger(), "Task '%s' execution goal rejected", task.name().c_str());
     return MoveItErrorCodes::FAILURE;
   }
-  auto goal_handle = goal_future.get();
+  const auto& goal_handle = goal_future.get();
   auto result_future = execute_client_->async_get_result(goal_handle);
   while (result_future.wait_for(100ms) != std::future_status::ready)
   {

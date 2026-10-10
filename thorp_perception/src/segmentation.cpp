@@ -104,6 +104,7 @@ std::optional<Surface> findSurface(const PointCloud::ConstPtr& cloud, const Segm
     return std::nullopt;
   }
   std::vector<Eigen::Vector2f> polygon;
+  polygon.reserve(hull.points.size());
   for (const auto& point : hull.points)
     polygon.emplace_back(point.x, point.y);
   surface.corners = largestQuadrilateral(polygon);
@@ -148,6 +149,7 @@ std::vector<PointCloud::Ptr> extractClusters(const PointCloud::ConstPtr& cloud, 
   clustering.extract(clusters_indices);
 
   std::vector<PointCloud::Ptr> clusters;
+  clusters.reserve(clusters_indices.size());
   for (const auto& indices : clusters_indices)
     clusters.push_back(std::make_shared<PointCloud>(*cloud, indices.indices));
   return clusters;

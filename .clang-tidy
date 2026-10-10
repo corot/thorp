@@ -1,6 +1,8 @@
 ---
 Checks:          '-*,
                   performance-*,
+                  -performance-avoid-endl,
+                  -performance-enum-size,
                   llvm-namespace-comment,
                   modernize-redundant-void-arg,
                   modernize-use-nullptr,
@@ -16,8 +18,8 @@ Checks:          '-*,
                   readability-make-member-function-const,
                   readability-non-const-parameter,
                   '
-HeaderFilterRegex: ''
-AnalyzeTemporaryDtors: false
+# Own headers only, right under include/<package>/, as other packages' and generated ones also are in include dirs
+HeaderFilterRegex: '.*/thorp_[a-z_]+/include/thorp_[a-z_]+/[^/]+\.(h|hpp)$'
 CheckOptions:
   - key:             llvm-namespace-comment.ShortNamespaceLines
     value:           '10'

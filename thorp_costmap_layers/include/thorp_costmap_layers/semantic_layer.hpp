@@ -59,10 +59,10 @@ private:
     std::array<double, 4> bounding_box;  ///< min x, min y, max x, max y on the fixed frame
   };
 
-  void updateObjects(const std::shared_ptr<srv::UpdateObjects::Request> request,
-                     std::shared_ptr<srv::UpdateObjects::Response> response);
-  void queryObjects(const std::shared_ptr<srv::QueryObjects::Request> request,
-                    std::shared_ptr<srv::QueryObjects::Response> response);
+  void updateObjects(const std::shared_ptr<srv::UpdateObjects::Request>& request,
+                     const std::shared_ptr<srv::UpdateObjects::Response>& response);
+  void queryObjects(const std::shared_ptr<srv::QueryObjects::Request>& request,
+                    const std::shared_ptr<srv::QueryObjects::Response>& response);
 
   /** The object's rectangle, padded as its type says, on the fixed frame; none if its pose can't be transformed */
   std::optional<Object> makeObject(const msg::Object& msg, const ObjectType& type) const;

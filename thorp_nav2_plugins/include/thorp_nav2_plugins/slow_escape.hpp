@@ -84,8 +84,8 @@ private:
    */
   PlanResult makePlan(nav2_costmap_2d::Costmap2D& costmap, const std::vector<geometry_msgs::msg::Point>& footprint,
                       const Pose2D& start, double time_step, double prev_cost,
-                      std::chrono::steady_clock::time_point deadline, double& new_cost,
-                      std::vector<Command>& commands, nav_msgs::msg::Path& path);
+                      std::chrono::steady_clock::time_point deadline, double& new_cost, std::vector<Command>& commands,
+                      nav_msgs::msg::Path& path);
 
   /// Whether no cell under the footprint is lethal, nor inscribed if escaping to free space
   bool escaped(nav2_costmap_2d::Costmap2D& costmap, const std::vector<geometry_msgs::msg::Point>& footprint,

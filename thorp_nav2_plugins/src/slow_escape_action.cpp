@@ -77,8 +77,7 @@ public:
 
 BT_REGISTER_NODES(factory)
 {
-  BT::NodeBuilder builder = [](const std::string& name, const BT::NodeConfiguration& config) {
-    return std::make_unique<thorp::nav2_plugins::SlowEscapeAction>(name, "slow_escape", config);
-  };
+  BT::NodeBuilder builder = [](const std::string& name, const BT::NodeConfiguration& config)
+  { return std::make_unique<thorp::nav2_plugins::SlowEscapeAction>(name, "slow_escape", config); };
   factory.registerBuilder<thorp::nav2_plugins::SlowEscapeAction>("SlowEscape", builder);
 }

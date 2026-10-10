@@ -219,7 +219,7 @@ public:
     cloud_sub_ = node_->create_subscription<sensor_msgs::msg::PointCloud2>(
         "cloud", rclcpp::QoS(1), [this](sensor_msgs::msg::PointCloud2::ConstSharedPtr msg) {
           std::lock_guard<std::mutex> lock(cloud_mutex_);
-          cloud_ = msg;
+          cloud_ = std::move(msg);
           cloud_receipt_ = std::chrono::steady_clock::now();
           cloud_received_.notify_all();
         });
@@ -234,8 +234,8 @@ private:
   using GoalHandle = rclcpp_action::ServerGoalHandle<Action>;
 
   template <typename Action>
-  typename rclcpp_action::Server<Action>::SharedPtr
-  createServer(const std::string& name, void (ObjectDetectionServer::*execute)(std::shared_ptr<GoalHandle<Action>>))
+  typename rclcpp_action::Server<Action>::SharedPtr createServer(
+      const std::string& name, void (ObjectDetectionServer::*execute)(const std::shared_ptr<GoalHandle<Action>>&))
   {
     return rclcpp_action::create_server<Action>(
         node_, name,
@@ -323,7 +323,7 @@ private:
     return table;
   }
 
-  void detectTables(std::shared_ptr<GoalHandle<DetectTables>> goal_handle)
+  void detectTables(const std::shared_ptr<GoalHandle<DetectTables>>& goal_handle)
   {
     auto result = std::make_shared<DetectTables::Result>();
     std::string error;
@@ -353,7 +353,7 @@ private:
     goal_handle->succeed(result);
   }
 
-  void detectObjects(std::shared_ptr<GoalHandle<DetectObjects>> goal_handle)
+  void detectObjects(const std::shared_ptr<GoalHandle<DetectObjects>>& goal_handle)
   {
     const rclcpp::Time start = node_->now();
     auto result = std::make_shared<DetectObjects::Result>();

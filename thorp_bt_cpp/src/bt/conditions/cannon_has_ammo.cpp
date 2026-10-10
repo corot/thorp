@@ -22,7 +22,7 @@ public:
   {
     sub_ = rosNode(*this)->create_subscription<std_msgs::msg::UInt16>(
         "cannon_ctrl/shots_left", toolkit::LATCHED,
-        [this](const std_msgs::msg::UInt16::ConstSharedPtr msg) { callback(*msg); });
+        [this](const std_msgs::msg::UInt16::ConstSharedPtr& msg) { callback(*msg); });
   }
 
 private:

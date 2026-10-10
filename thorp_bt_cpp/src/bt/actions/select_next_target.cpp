@@ -78,7 +78,7 @@ private:
               [](const auto& a, const auto& b) { return std::get<1>(a) < std::get<1>(b); });
 
     auto failures = getInput<std::map<std::string, uint32_t>>("failures");
-    auto failures_count = [&](std::string target)
+    auto failures_count = [&](const std::string& target)
     {
       if (!failures)
         return 0u;

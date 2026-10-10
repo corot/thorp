@@ -94,6 +94,8 @@ void SemanticLayer::onInitialize()
   matchSize();
   current_ = true;
 
+  // rclcpp matches service callbacks by their exact parameter types
+  // NOLINTBEGIN(performance-unnecessary-value-param)
   update_srv_ = node->create_service<srv::UpdateObjects>(
       "~/" + name_ + "/update_objects",
       [this](const std::shared_ptr<srv::UpdateObjects::Request> request,
@@ -104,10 +106,11 @@ void SemanticLayer::onInitialize()
       [this](const std::shared_ptr<srv::QueryObjects::Request> request,
              std::shared_ptr<srv::QueryObjects::Response> response) { queryObjects(request, response); },
       rclcpp::ServicesQoS(), callback_group_);
+  // NOLINTEND(performance-unnecessary-value-param)
 }
 
-void SemanticLayer::updateObjects(const std::shared_ptr<srv::UpdateObjects::Request> request,
-                                  std::shared_ptr<srv::UpdateObjects::Response> response)
+void SemanticLayer::updateObjects(const std::shared_ptr<srv::UpdateObjects::Request>& request,
+                                  const std::shared_ptr<srv::UpdateObjects::Response>& response)
 {
   using srv::UpdateObjects;
   response->code = UpdateObjects::Response::SUCCESS;
@@ -156,8 +159,8 @@ void SemanticLayer::updateObjects(const std::shared_ptr<srv::UpdateObjects::Requ
   }
 }
 
-void SemanticLayer::queryObjects(const std::shared_ptr<srv::QueryObjects::Request> request,
-                                 std::shared_ptr<srv::QueryObjects::Response> response)
+void SemanticLayer::queryObjects(const std::shared_ptr<srv::QueryObjects::Request>& request,
+                                 const std::shared_ptr<srv::QueryObjects::Response>& response)
 {
   std::lock_guard<std::mutex> lock(mutex_);
   for (const auto& [name, object] : objects_)
@@ -273,6 +276,7 @@ void SemanticLayer::updateCosts(nav2_costmap_2d::Costmap2D& master_grid, int min
 
   std::lock_guard<std::mutex> lock(mutex_);
   std::vector<const Object*> objects;
+  objects.reserve(objects_.size());
   for (const auto& [name, object] : objects_)
     objects.push_back(&object);
   std::stable_sort(objects.begin(), objects.end(), [this](const Object* a, const Object* b) {

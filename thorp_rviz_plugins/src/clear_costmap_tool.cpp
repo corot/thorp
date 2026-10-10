@@ -18,8 +18,9 @@ void ClearCostmapTool::onInitialize()
   setName("Clear Costmaps");
   auto node = context_->getRosNodeAbstraction().lock()->get_raw_node();
   logger_ = node->get_logger();
-  for (const std::string costmap : { "global_costmap", "local_costmap" })
-    clients_.push_back(node->create_client<ClearCostmap>("/" + costmap + "/clear_entirely_" + costmap));
+  for (const char* service :
+       { "/global_costmap/clear_entirely_global_costmap", "/local_costmap/clear_entirely_local_costmap" })
+    clients_.push_back(node->create_client<ClearCostmap>(service));
 }
 
 void ClearCostmapTool::activate()
@@ -32,7 +33,9 @@ void ClearCostmapTool::activate()
       RCLCPP_ERROR(logger_, "Can't clear the costmap: service %s not available", service.c_str());
       continue;
     }
+    // rclcpp matches client callbacks by their exact parameter types
     client->async_send_request(std::make_shared<ClearCostmap::Request>(),
+                               // NOLINTNEXTLINE(performance-unnecessary-value-param)
                                [this, service](rclcpp::Client<ClearCostmap>::SharedFuture)
                                { RCLCPP_INFO(logger_, "Costmap cleared by %s", service.c_str()); });
   }

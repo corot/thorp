@@ -25,7 +25,7 @@ public:
     auto node = rosNode(*this);
     feedback_pub_ = node->create_publisher<rviz_2d_overlay_msgs::msg::OverlayText>("rviz/user_command", 1);
     command_sub_ = node->create_subscription<std_msgs::msg::String>(
-        "user_command", 1, [this](const std_msgs::msg::String::ConstSharedPtr msg) { userCommandCB(msg->data); });
+        "user_command", 1, [this](const std_msgs::msg::String::ConstSharedPtr& msg) { userCommandCB(msg->data); });
   }
 
   static BT::PortsList providedPorts()
@@ -52,8 +52,8 @@ private:
       return BT::NodeStatus::SUCCESS;
     }
 
-    constexpr auto TOP_OFFSET = 20;
-    constexpr auto TEXT_SIZE = 12;
+    static constexpr auto TOP_OFFSET = 20;
+    static constexpr auto TEXT_SIZE = 12;
     const auto valid_commands = requireInput<std::vector<std::string>>(*this, "valid_commands");
     if (std::find(valid_commands.begin(), valid_commands.end(), user_command) == valid_commands.end())
     {

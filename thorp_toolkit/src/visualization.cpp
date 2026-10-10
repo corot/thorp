@@ -83,6 +83,7 @@ void Visualization::addLineMarker(const std::vector<geometry_msgs::msg::PoseStam
                                   const std_msgs::msg::ColorRGBA& color)
 {
   std::vector<geometry_msgs::msg::Point> points;
+  points.reserve(poses.size());
   for (const auto& pose : poses)
   {
     points.push_back(pose.pose.position);
@@ -112,7 +113,7 @@ visualization_msgs::msg::Marker Visualization::createMeshMarker(const geometry_m
   marker.type = visualization_msgs::msg::Marker::MESH_RESOURCE;
   marker.mesh_resource = mesh_file;
   marker.ns = ns;
-  marker.scale.x = (scale.size() > 0) ? scale[0] : 1.0;
+  marker.scale.x = !scale.empty() ? scale[0] : 1.0;
   marker.scale.y = (scale.size() > 1) ? scale[1] : 1.0;
   marker.scale.z = (scale.size() > 2) ? scale[2] : 1.0;
   marker.color = color;
