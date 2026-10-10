@@ -36,6 +36,10 @@ private:
     {
       TreeNode* child_node = children_nodes_[current_child_idx_];
       const BT::NodeStatus child_status = child_node->executeTick();
+      // A finished child stays active until reset, so ticking it again wouldn't restart it, as action nodes
+      // would report their previous result instead of sending a new goal
+      if (child_status == BT::NodeStatus::SUCCESS || child_status == BT::NodeStatus::FAILURE)
+        haltChild(current_child_idx_);
 
       if (current_child_idx_ == 0)
       {
@@ -93,6 +97,7 @@ private:
             last_recovery_run_ = current_child_idx_;
             current_child_idx_++;
           }
+          break;
 
           case BT::NodeStatus::RUNNING:
           {
