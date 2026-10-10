@@ -236,6 +236,9 @@
         <Condition ID="PoseInBlackboard">
             <input_port name="key" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Condition>
+        <Condition ID="PoseOnTray">
+            <input_port name="pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+        </Condition>
         <Action ID="PoseListSlicing">
             <input_port name="end" type="unsigned long"/>
             <input_port name="start" type="unsigned long"/>

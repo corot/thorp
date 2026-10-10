@@ -499,7 +499,8 @@ capabilities:
   object_manip:
     description: >
       Interactive tabletop loop: waits for a user command, then detects objects and drags,
-      picks and places whichever one was chosen.
+      picks and places whichever one was chosen; dropped over the tray, it goes on its next
+      free slot.
     kind: app
     status: ok
     stack: [manipulation, perception]

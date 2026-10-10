@@ -396,7 +396,8 @@ start none, as launch arguments are global: a default in an include can't overri
 and video recording aren't ported. `param/apps_config.yaml` is a ROS 2 parameters file for whichever node runs the app.
 `pickup_objects.launch.py` adds a static `map` to `odom` transform (no map server), the objects spawner, perception and
 manipulation, through `launch/includes/tabletop_manip.launch.py`, shared with `object_manip.launch.py`. `object_manip`
-shuts everything down on the exit command, as on Noetic. Both show `manipulation.rviz`, with the user commands panel.
+shuts everything down on the exit command, as on Noetic; an object dropped over the tray goes on its next free slot,
+through `place_on_tray`. Both show `manipulation.rviz`, with the user commands panel.
 `patrol_2_points.launch.py` and `cleanup_table.launch.py` add Nav2 through `launch/includes/navigation.launch.py`, on
 the playground world: the patrol between two of its open areas, around its obstacles; the cleanup on the random table
 and objects of `tabletop_manip.launch.py`, without its static map; they show `navigation.rviz` and `gathering.rviz`.

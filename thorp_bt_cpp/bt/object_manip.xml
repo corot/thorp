@@ -29,10 +29,16 @@
                        object_name="{object_name}"
                        tightening="{tightening}"
                        error="{error}"/>
-              <SubTree ID="place_object"
-                       object_name="{object_name}"
-                       place_pose="{place_pose}"
-                       error="{error}"/>
+              <IfThenElse>
+                <PoseOnTray pose="{place_pose}"/>
+                <SubTree ID="place_on_tray"
+                         object_name="{object_name}"
+                         error="{error}"/>
+                <SubTree ID="place_object"
+                         object_name="{object_name}"
+                         place_pose="{place_pose}"
+                         error="{error}"/>
+              </IfThenElse>
             </Sequence>
           </ForceSuccess>
           <SetBlackboard value=""
