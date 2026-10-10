@@ -340,6 +340,8 @@ Noetic's housekeeping services, and the servers for user commands and drag and d
   `placing_height_on_tray` (1 cm over the tray frame, on the surface of its 2 mm base). `PlaceObject` passes the
   objects already on the tray as `allowed_touch_objects`, as slots are tight. Noetic placed the gripper at a
   fixed 3 cm, lower than the tops of the 3.2 cm objects once on the tray; MoveIt 1's place allowed touching the tray.
+  Allowed touches can still stall the arm against an object on the tray, or one the scene has elsewhere, so
+  `place_on_tray` retries on the next free slot, with `NextPoseOnTray`'s `after` input, rather than on the same one.
   After placing, `SettleOnTray` lets the object fall onto the tray in the planning scene, as Noetic's `AddObjectToTray`
   did, but where it was released: level on the surface, keeping its position and yaw, instead of aligned on its slot.
   `tray_link` is on the surface of the tray's base, 2 mm higher than on Noetic, where it was at its bottom: an object

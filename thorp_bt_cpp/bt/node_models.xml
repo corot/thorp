@@ -167,6 +167,7 @@
             <input_port name="server_name" type="std::string">Action server name</input_port>
         </Action>
         <Action ID="NextPoseOnTray">
+            <input_port name="after" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;">a pose on a slot, as this node outputs</input_port>
             <output_port name="pose_on_tray" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Condition ID="ObjectAttached">

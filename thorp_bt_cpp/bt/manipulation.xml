@@ -59,7 +59,8 @@
                      error="{error}"/>
         <ClearOctomap service_name="clear_octomap"
                       timeout="100"/>
-        <NextPoseOnTray pose_on_tray="{pose_on_tray}"/>
+        <NextPoseOnTray after="{pose_on_tray}"
+                        pose_on_tray="{pose_on_tray}"/>
       </RecoverAndRetry>
       <SettleOnTray object_name="{object_name}"/>
     </Sequence>
