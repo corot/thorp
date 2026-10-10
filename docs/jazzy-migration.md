@@ -547,7 +547,10 @@ with the remove and set pose services: the playground modes (`playground_fixed`,
 `playground_random`) put a table in front of the robot, and `fun_house_objects` spawns random tables with objects in
 open spaces of any map, checked on Nav2's global costmap instead of Move Base Flex's check pose service. Objects are
 placed relative to their tables by the script, as Gazebo can't place them relative to a model created on the same step.
-Its `-d` option, to delete previously spawned models, is dropped; it didn't work on Noetic. The `cats` mode spawns 3
+Its `-d` option, to delete previously spawned models, is dropped; it didn't work on Noetic. `fill_tray.py`, new, fills
+the tray, in Gazebo and in the planning scene, with one object per slot but on the last rows, as if placed there, to
+test placing on a nearly full tray; its hidden objects, heavy and only in Gazebo, make placing stall on the first free
+slots. The `cats` mode spawns 3
 black and 3 orange cats in open spaces, 3 m apart, and the cannon's `rocket`.
 
 The cat models carry contact sensors, all publishing on `/cats/contacts` through the world's Contact system (loaded by
