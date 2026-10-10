@@ -398,7 +398,7 @@ and video recording aren't ported. `param/apps_config.yaml` is a ROS 2 parameter
 manipulation, through `launch/includes/tabletop_manip.launch.py`, shared with `object_manip.launch.py`. `object_manip`
 shuts everything down on the exit command, as on Noetic; an object dropped over the tray goes on its next free slot,
 through `place_on_tray`. Both show `manipulation.rviz`, with the user commands panel.
-`patrol_2_points.launch.py` and `cleanup_table.launch.py` add Nav2 through `launch/includes/navigation.launch.py`, on
+`patrol_2_points.launch.py` and `cleanup_table.launch.py` add Nav2, `thorp_navigation`'s `navigation.launch.py`, on
 the playground world: the patrol between two of its open areas, around its obstacles; the cleanup on the random table
 and objects of `tabletop_manip.launch.py`, without its static map; they show `navigation.rviz` and `gathering.rviz`.
 `explore_house.launch.py` and `object_gatherer.launch.py` add the exploration planner, on the fun house world, with
@@ -459,16 +459,16 @@ cancels navigation.
 
 ### thorp_bringup
 
-Ported: `param/cmd_vel_mux.yaml` (was `vel_multiplexer.yaml`, now for `twist_mux`), the Kinect and Xtion depth to laser
-scan parameters, `rviz/navigation.rviz` (based on Nav2's default view) and `rviz/manipulation.rviz` (based on MoveIt's,
-plus the objects' interactive markers, the user command and executive overlays and the user commands panel, with the
-`rviz/icons`). The other RViz configurations are built on those two, with Noetic's displays on the Jazzy topics:
-`exploration.rviz`, `gathering.rviz`, `hunting.rviz`, `perception.rviz`, `view_all.rviz` and `view_model.rviz`. Their
-displays for dropped packages (Move Base Flex planners, RAIL, COB, ORK, the Senz3D and external cameras, the semantic
-map) are left out; `hunting.rviz` shows YOLO's 3D boxes and debug image instead. `hunting.movie.rviz` waits for video
-recording, as its camera animation needs `rviz_animated_view_controller`, with no Jazzy release.
-`scripts/user_commands.py` and `rviz/user_commands.yaml` are replaced by the user commands panel and
-`ReadUserCommands`. Everything else is pending: real robot launch files and drivers, scripts and the docker image.
+Ported: `param/twist_mux.yaml` (was `vel_multiplexer.yaml`, for Noetic's `cmd_vel_mux`), the Kinect and Xtion depth to
+laser scan parameters, `rviz/navigation.rviz` (based on Nav2's default view) and `rviz/manipulation.rviz` (based on
+MoveIt's, plus the objects' interactive markers, the user command and executive overlays and the user commands panel,
+with the `rviz/icons`). The other RViz configurations are built on those two, with Noetic's displays on the Jazzy
+topics: `exploration.rviz`, `gathering.rviz`, `hunting.rviz`, `perception.rviz`, `view_all.rviz` and `view_model.rviz`.
+Their displays for dropped packages (Move Base Flex planners, RAIL, COB, ORK, the Senz3D and external cameras, the
+semantic map) are left out; `hunting.rviz` shows YOLO's 3D boxes and debug image instead. `hunting.movie.rviz` waits for
+video recording, as its camera animation needs `rviz_animated_view_controller`, with no Jazzy release.
+`scripts/user_commands.py` and `rviz/user_commands.yaml` are replaced by the user commands panel and `ReadUserCommands`.
+Everything else is pending: real robot launch files and drivers, scripts and the docker image.
 
 `nodes/named_configs.py` replaces Noetic's `thorp_toolkit` `reconfigure` and `alternative_config`: named configurations,
 sets of other nodes' parameters for the executive to use while doing something special. Each one is a YAML file in
@@ -483,32 +483,36 @@ for the parameters their dynamic parameters callback handles, so check each new 
 ### thorp_navigation
 
 Ported: `navigation.launch.py`, with Nav2 in place of Move Base Flex and the Noetic arguments (localization `amcl`,
-`static` or `gazebo`, map, initial pose, velocity smoothing), `param/nav2.yaml` and the maps; `small_house`'s are
-symlinks into the `aws_robomaker_small_house_world` checkout in `src/third_party`. Velocity commands
-keep the Noetic topics: navigation, through the velocity smoother if enabled, into `cmd_vel_mux/input/navigation`;
-`twist_mux` uses unstamped velocities, as Nav2 and the Kobuki base. The controller runs at 20 Hz instead of Noetic's 15,
-as MPPI needs a control period no longer than its model step. For docking at tables, a precise controller
-(`Graceful`, Nav2's graceful controller, slow) and goal checker (`precise_goal_checker`, Noetic's 3.5 cm and 0.05 rad)
-replace most of the `precise_controlling` named configuration; the graceful control law converges on the pickup pose's
-position and heading together, so the robot arrives facing the table without turning in place under it, from wherever
-MPPI left it at the approach pose. The goal checker stops it about 3 cm short of the pickup pose. Graceful turns in
-place once the path left from its closest pose is shorter than the goal tolerance, and only turns from then on; so
-`PoseAsPath` spaces the docking path's poses back from the goal, as poses spaced from the start left a short last
-segment that made it turn in place still out of the tolerance, oscillating until the docking timed out. The executive
-picks them per `follow_path` goal. As the controller server rejects goals naming no goal checker when it has more than
-one, `bt_navigator` runs `behavior_trees/`: Nav2's default trees, selecting also the goal
-checker, the general one by default. Both costmaps have the semantic layer, before inflation. Pending ROS 1 files:
+`static` or `gazebo`, map, initial pose), `param/nav2.yaml`, `param/velocity_smoother.yaml` and the maps;
+`small_house`'s are symlinks into the `aws_robomaker_small_house_world` checkout in `src/third_party`. Velocity commands
+go to the multiplexer, `twist_mux`, on `<source>/cmd_vel` topics, replacing Noetic's `cmd_vel_mux/input/<source>`:
+navigation and following through their velocity smoothers (`navigation_smoother` and `following_smoother`), from
+`<source>/cmd_vel` to `<source>/cmd_vel_smoothed`; the smoothers, started with navigation, share
+`param/velocity_smoother.yaml` and publish at 50 Hz, as they send commands on a timer. `twist_mux` uses unstamped
+velocities, as Nav2 and the Kobuki base. The controller runs at 20 Hz instead of Noetic's 15, as MPPI needs a control
+period no longer than its model step. For docking at tables, a precise controller (`Graceful`, Nav2's graceful
+controller, slow) and goal checker (`precise_goal_checker`, Noetic's 3.5 cm and 0.05 rad) replace most of the
+`precise_controlling` named configuration; the graceful control law converges on the pickup pose's position and heading
+together, so the robot arrives facing the table without turning in place under it, from wherever MPPI left it at the
+approach pose. The goal checker stops it about 3 cm short of the pickup pose. Graceful turns in place once the path left
+from its closest pose is shorter than the goal tolerance, and only turns from then on; so `PoseAsPath` spaces the
+docking path's poses back from the goal, as poses spaced from the start left a short last segment that made it turn in
+place still out of the tolerance, oscillating until the docking timed out. The executive picks them per `follow_path`
+goal. As the controller server rejects goals naming no goal checker when it has more than one, `bt_navigator` runs
+`behavior_trees/`: Nav2's default trees, selecting also the goal checker, the general one by default. Both costmaps have
+the semantic layer, before inflation. Pending ROS 1 files:
 
 | Files | Block |
 |-------|-------|
 | Robot pose saving (`thorp_toolkit`'s `save_pose_node`): Nav2's AMCL doesn't keep its pose across restarts | real robot |
 
 Replaced by Nav2 packages: the pose follower (`src/pose_follower.cpp`, `cfg/Follower.cfg`, `param/pose_follower.yaml`)
-by `opennav_following`'s `follow_object` action, with the desired distance and detection timeout as its parameters instead
-of per goal, and without stopping at the distance (goals end on `max_duration` or cancel); following commands go to
-`cmd_vel_mux/input/following`. The waypoints path (`src/waypoints_path.cpp`, `param/waypoints_path.yaml` and its
-`ConnectWaypoints` service) by the planner's `compute_path_through_poses` and the smoother server's `smooth_path`.
-`nodes/show_velocity.py` is ported, displayed by `navigation.rviz` with `rviz_2d_overlay_plugins`.
+by `opennav_following`'s `follow_object` action, with the desired distance and detection timeout as its parameters
+instead of per goal, and without stopping at the distance (goals end on `max_duration` or cancel); following commands go
+through their own velocity smoother, as the following controller doesn't limit accelerations. The waypoints path
+(`src/waypoints_path.cpp`, `param/waypoints_path.yaml` and its `ConnectWaypoints` service) by the planner's
+`compute_path_through_poses` and the smoother server's `smooth_path`. `nodes/show_velocity.py` is ported, displayed by
+`navigation.rviz` with `rviz_2d_overlay_plugins`.
 
 Dropped with Move Base Flex: `param/move_base_flex/`, `launch/includes/move_base_flex.launch.xml`,
 `nodes/mbf_simple_goal_relay.py` (Nav2 takes RViz goals itself) and the MBF test scripts in `scripts/test/`. The

@@ -151,7 +151,7 @@ def generate_launch_description():
                                                    remappings=[('cloud_in', 'depth_registered/points')])]),
 
         # Velocity commands multiplexer
-        Node(package='twist_mux', executable='twist_mux', name='cmd_vel_mux', output='screen',
-             parameters=[PathJoinSubstitution([bringup_share, 'param', 'cmd_vel_mux.yaml']), sim_time],
+        Node(package='twist_mux', executable='twist_mux', name='twist_mux', output='screen',
+             parameters=[PathJoinSubstitution([bringup_share, 'param', 'twist_mux.yaml']), sim_time],
              remappings=[('cmd_vel_out', '/mobile_base/commands/velocity')]),
     ])

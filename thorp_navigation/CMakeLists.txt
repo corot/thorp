@@ -12,7 +12,7 @@ install(FILES launch/navigation.launch.py
         DESTINATION share/${PROJECT_NAME}/launch
 )
 
-install(FILES param/nav2.yaml
+install(FILES param/nav2.yaml param/velocity_smoother.yaml
         DESTINATION share/${PROJECT_NAME}/param
 )
 

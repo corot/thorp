@@ -46,9 +46,9 @@ def generate_launch_description():
                               'viz_executive': LaunchConfiguration('viz_executive'),
                               'start_delay': LaunchConfiguration('start_delay'), **initial_pose}.items()),
         IncludeLaunchDescription(
-            PathJoinSubstitution([includes, 'navigation.launch.py']),
-            launch_arguments={'simulation': simulation,
-                              'world_name': LaunchConfiguration('world_name'),
+            PathJoinSubstitution([FindPackageShare('thorp_navigation'), 'launch', 'navigation.launch.py']),
+            launch_arguments={'use_sim_time': simulation,
+                              'map_name': LaunchConfiguration('world_name'),
                               'localization': LaunchConfiguration('localization'), **initial_pose}.items()),
         IncludeLaunchDescription(
             PathJoinSubstitution([FindPackageShare('thorp_exploration'), 'launch', 'exploration.launch.py']),

@@ -4,7 +4,7 @@ project(thorp_bringup)
 find_package(ament_cmake REQUIRED)
 
 # Parameters shared by the real robot and simulation; listed one by one, as the package is only partially ported
-install(FILES param/cmd_vel_mux.yaml
+install(FILES param/twist_mux.yaml
         DESTINATION share/${PROJECT_NAME}/param
 )
 install(DIRECTORY param/named_configs

@@ -2,8 +2,8 @@
 Thorp navigation:
 - Nav2: planner, controller, smoother, behaviors and BT navigator, taking goals from RViz
 - object following
+- velocity smoothers for both, in front of their velocity multiplexer inputs
 - velocity and travelled distance display
-- velocity smoother
 - geometric map
 - localization: AMCL, static or Gazebo ground truth
 """
@@ -18,6 +18,10 @@ from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
 
+# Velocity smoother: the source whose <source>/cmd_vel it smooths into <source>/cmd_vel_smoothed, a multiplexer input
+SMOOTHERS = {'navigation_smoother': 'navigation', 'following_smoother': 'following'}
+
+
 def behavior_tree(navigator):
     """ bt_navigator's tree for navigate_to_pose or navigate_through_poses """
     return os.path.join(get_package_share_directory('thorp_navigation'), 'behavior_trees', f'navigate_{navigator}.xml')
@@ -25,21 +29,18 @@ def behavior_tree(navigator):
 
 def launch_setup(context):
     localization = LaunchConfiguration('localization').perform(context)
-    smooth_velocity = LaunchConfiguration('smooth_velocity').perform(context) == 'true'
     initial_pose = [float(LaunchConfiguration(f'initial_pose_{c}').perform(context)) for c in 'xya']
 
     params_file = LaunchConfiguration('params_file')
     map_file = LaunchConfiguration('map_file')
     common_params = [params_file, {'use_sim_time': LaunchConfiguration('use_sim_time')}]
 
-    # Velocity commands go to the multiplexer navigation input, through the velocity smoother if enabled
-    nav_cmd_vel = '/vel_smoother/raw_cmd_vel' if smooth_velocity else '/cmd_vel_mux/input/navigation'
-    cmd_vel_remap = [('cmd_vel', nav_cmd_vel)]
+    cmd_vel_remap = [('cmd_vel', '/navigation/cmd_vel')]
+    smoother_params = [PathJoinSubstitution([FindPackageShare('thorp_navigation'), 'param', 'velocity_smoother.yaml']),
+                       {'use_sim_time': LaunchConfiguration('use_sim_time')}]
 
     navigation_nodes = ['controller_server', 'planner_server', 'smoother_server', 'behavior_server', 'bt_navigator',
-                        'following_server']
-    if smooth_velocity:
-        navigation_nodes.append('velocity_smoother')
+                        'following_server', *SMOOTHERS]
     localization_nodes = ['map_server']
     if localization == 'amcl':
         localization_nodes.append('amcl')
@@ -58,9 +59,13 @@ def launch_setup(context):
              respawn=True, parameters=common_params + [{'default_nav_to_pose_bt_xml': behavior_tree('to_pose'),
                                                        'default_nav_through_poses_bt_xml':
                                                            behavior_tree('through_poses')}]),
-        # Following goes to its own multiplexer input, as Noetic's pose follower
+        # Following goes through its own smoother to its own multiplexer input
         Node(package='opennav_following', executable='opennav_following', name='following_server', output='screen',
-             respawn=True, parameters=common_params, remappings=[('cmd_vel', '/cmd_vel_mux/input/following')]),
+             respawn=True, parameters=common_params, remappings=[('cmd_vel', '/following/cmd_vel')]),
+        *[Node(package='nav2_velocity_smoother', executable='velocity_smoother', name=name, output='screen',
+               respawn=True, parameters=smoother_params,
+               remappings=[('cmd_vel', f'/{source}/cmd_vel'), ('cmd_vel_smoothed', f'/{source}/cmd_vel_smoothed')])
+          for name, source in SMOOTHERS.items()],
         Node(package='nav2_lifecycle_manager', executable='lifecycle_manager', name='lifecycle_manager_navigation',
              output='screen', parameters=[{'use_sim_time': LaunchConfiguration('use_sim_time'),
                                            'autostart': True, 'node_names': navigation_nodes}]),
@@ -76,12 +81,6 @@ def launch_setup(context):
              output='screen', parameters=[{'use_sim_time': LaunchConfiguration('use_sim_time'),
                                            'autostart': True, 'node_names': localization_nodes}]),
     ]
-
-    if smooth_velocity:
-        actions.append(
-            Node(package='nav2_velocity_smoother', executable='velocity_smoother', name='velocity_smoother',
-                 output='screen', respawn=True, parameters=common_params,
-                 remappings=[('cmd_vel', nav_cmd_vel), ('cmd_vel_smoothed', '/cmd_vel_mux/input/navigation')]))
 
     if localization == 'amcl':
         actions.append(
@@ -109,8 +108,6 @@ def launch_setup(context):
 def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument('localization', default_value='amcl', description='amcl, static or gazebo'),
-        DeclareLaunchArgument('smooth_velocity', default_value='true',
-                              description='Smooth navigation velocity commands'),
         DeclareLaunchArgument('use_sim_time', default_value='false'),
         DeclareLaunchArgument('params_file',
                               default_value=PathJoinSubstitution([FindPackageShare('thorp_navigation'), 'param',

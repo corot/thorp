@@ -469,17 +469,3 @@ behavior_server:
     max_rotational_vel: 1.0
     min_rotational_vel: 0.4
     rotational_acc_lim: 3.2
-
-velocity_smoother:
-  ros__parameters:
-    smoothing_frequency: 20.0
-    scale_velocities: false
-    feedback: OPEN_LOOP
-    max_velocity: [0.7, 0.0, 3.3]
-    min_velocity: [-0.7, 0.0, -3.3]
-    max_accel: [0.6, 0.0, 2.0]
-    max_decel: [-0.8, 0.0, -3.0]  # braking harder tilts the robot forward
-    odom_topic: /odom
-    odom_duration: 0.1
-    deadband_velocity: [0.0, 0.0, 0.0]
-    velocity_timeout: 1.0

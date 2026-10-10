@@ -49,9 +49,9 @@ def generate_launch_description():
                               'object_type': LaunchConfiguration('object_type'),
                               'static_map': 'false'}.items()),
         IncludeLaunchDescription(
-            PathJoinSubstitution([includes, 'navigation.launch.py']),
-            launch_arguments={'simulation': simulation,
-                              'world_name': 'playground',
+            PathJoinSubstitution([FindPackageShare('thorp_navigation'), 'launch', 'navigation.launch.py']),
+            launch_arguments={'use_sim_time': simulation,
+                              'map_name': 'playground',
                               'localization': LaunchConfiguration('localization'),
                               **initial_pose}.items()),
     ])

@@ -38,7 +38,6 @@ def generate_launch_description():
             PythonLaunchDescriptionSource(PathJoinSubstitution([FindPackageShare('thorp_navigation'), 'launch',
                                                                 'navigation.launch.py'])),
             launch_arguments={'use_sim_time': 'true',
-                              'smooth_velocity': 'false',
                               'map_name': LaunchConfiguration('world_name'),
                               'localization': LaunchConfiguration('localization'), **initial_pose}.items()),
 

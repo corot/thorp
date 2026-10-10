@@ -1,0 +1,15 @@
+# Velocity smoothers' limits, the same for every velocity commands source they smooth
+
+/**:
+  ros__parameters:
+    smoothing_frequency: 50.0  # commands go out on this timer, so they wait up to a period
+    scale_velocities: false
+    feedback: OPEN_LOOP
+    max_velocity: [0.7, 0.0, 3.3]
+    min_velocity: [-0.7, 0.0, -3.3]
+    max_accel: [0.6, 0.0, 2.0]
+    max_decel: [-0.8, 0.0, -3.0]  # braking harder tilts the robot forward
+    odom_topic: /odom
+    odom_duration: 0.1
+    deadband_velocity: [0.0, 0.0, 0.0]
+    velocity_timeout: 1.0

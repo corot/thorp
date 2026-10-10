@@ -1,4 +1,5 @@
-# Configuration for the velocity commands multiplexer (twist_mux) inputs, keeping the Noetic topics.
+# Configuration for the velocity commands multiplexer (twist_mux) inputs: each source's commands on <source>/cmd_vel,
+# or <source>/cmd_vel_smoothed for those going through a velocity smoother.
 #
 # Individual input configuration:
 #   topic:          The topic that provides cmd_vel messages
@@ -10,30 +11,26 @@
     use_stamped: false  # Twist, as Nav2 and the Kobuki base use
     topics:
       safety_controller:  # Safe reactive controller
-        topic:    /cmd_vel_mux/input/safety_controller
+        topic:    /safety_controller/cmd_vel
         timeout:  0.2
         priority: 10
       teleoperation:
-        topic:    /cmd_vel_mux/input/teleoperation
+        topic:    /teleoperation/cmd_vel
         timeout:  1.0
         priority: 8
       special_task:  # Thorp tasks control
-        topic:    /cmd_vel_mux/input/special_task
+        topic:    /special_task/cmd_vel
         timeout:  1.0
         priority: 6
       auto_docking:  # Auto-dock control
-        topic:    /cmd_vel_mux/input/auto_docking
+        topic:    /auto_docking/cmd_vel
         timeout:  1.0
         priority: 5
-      servoing:  # Visual servoing
-        topic:    /cmd_vel_mux/input/servoing
-        timeout:  1.0
-        priority: 4
       following:  # Pose following
-        topic:    /cmd_vel_mux/input/following
+        topic:    /following/cmd_vel_smoothed
         timeout:  1.0
         priority: 3
       navigation:
-        topic:    /cmd_vel_mux/input/navigation
+        topic:    /navigation/cmd_vel_smoothed
         timeout:  1.0
         priority: 2
