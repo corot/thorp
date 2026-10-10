@@ -1,7 +1,8 @@
 <!--
   Nav2's navigate_through_poses_w_replanning_and_recovery.xml, defaulting to RPP, Smac 2D and the general goal
   checker. Passed poses are dropped at 10 Hz, and the path is replanned and smoothed every 3 seconds. A path that
-  can't be planned fails without recoveries, so the executive can skip the unreachable pose.
+  can't be planned fails without recoveries, so the executive can skip the unreachable pose, unless the robot starts in
+  an obstacle. Recoveries include slow escapes after clearing the costmaps.
 -->
 <root BTCPP_format="4" main_tree_to_execute="MainTree">
   <BehaviorTree ID="MainTree">
@@ -34,7 +35,10 @@
         </RecoveryNode>
       </PipelineSequence>
       <Sequence>
-        <WouldAControllerRecoveryHelp error_code="{follow_path_error_code}"/>
+        <Fallback>
+          <WouldAControllerRecoveryHelp error_code="{follow_path_error_code}"/>
+          <AreErrorCodesPresent error_code="{compute_path_error_code}" error_codes_to_check="305"/>  <!-- START_OCCUPIED -->
+        </Fallback>
         <ReactiveFallback name="RecoveryFallback">
           <GoalUpdated/>
           <RoundRobin name="RecoveryActions">
@@ -42,6 +46,8 @@
               <ClearEntireCostmap name="ClearLocalCostmap-Subtree" service_name="local_costmap/clear_entirely_local_costmap"/>
               <ClearEntireCostmap name="ClearGlobalCostmap-Subtree" service_name="global_costmap/clear_entirely_global_costmap"/>
             </Sequence>
+            <SlowEscape name="EscapeDistance" mode="distance" max_distance="0.2" time_allowance="10.0" error_code_id="{escape_error_code}"/>
+            <SlowEscape name="OutToFreeSpace" mode="out_to_free_space" max_distance="1.0" time_allowance="15.0" error_code_id="{escape_error_code}"/>
             <Spin spin_dist="1.57" error_code_id="{spin_error_code}"/>
             <Wait wait_duration="5.0"/>
             <BackUp backup_dist="0.30" backup_speed="0.15" error_code_id="{backup_error_code}"/>

@@ -1,0 +1,6 @@
+<library path="thorp_slow_escape_behavior">
+  <class name="thorp_nav2_plugins::SlowEscape" type="thorp::nav2_plugins::SlowEscape"
+         base_class_type="nav2_core::Behavior">
+    <description>Escapes slowly from obstacles and their inflation, following the costmaps' cost gradient down</description>
+  </class>
+</library>

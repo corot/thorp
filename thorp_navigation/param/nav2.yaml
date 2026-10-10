@@ -51,6 +51,7 @@ bt_navigator:
     navigate_through_poses:
       plugin: nav2_bt_navigator::NavigateThroughPosesNavigator
     error_code_names: [compute_path_error_code, follow_path_error_code]
+    plugin_lib_names: [thorp_slow_escape_action_bt_node]
 
 controller_server:
   ros__parameters:
@@ -446,7 +447,7 @@ behavior_server:
     local_footprint_topic: local_costmap/published_footprint
     global_footprint_topic: global_costmap/published_footprint
     cycle_frequency: 10.0
-    behavior_plugins: [spin, backup, drive_on_heading, wait]
+    behavior_plugins: [spin, backup, drive_on_heading, wait, slow_escape]
     spin:
       plugin: nav2_behaviors::Spin
     backup:
@@ -455,6 +456,11 @@ behavior_server:
       plugin: nav2_behaviors::DriveOnHeading
     wait:
       plugin: nav2_behaviors::Wait
+    # Slow escape recovery: out of where the planner or the controller can't move the robot
+    slow_escape:
+      plugin: thorp_nav2_plugins::SlowEscape
+      v_max: 0.1
+      w_max: 0.15
     local_frame: odom
     global_frame: map
     robot_base_frame: base_footprint

@@ -1,0 +1,28 @@
+# Move slowly down the costmaps' cost gradient, to get out of where the planner or the controller can't.
+# DISTANCE moves up to max_distance; the other modes stop as soon as the footprint, padded by clearance, covers no
+# lethal cell (OUT_OF_COLLISION), or no lethal nor inscribed cell (OUT_TO_FREE_SPACE), on both costmaps, and fail if
+# they travel max_distance first.
+uint8 DISTANCE=0
+uint8 OUT_OF_COLLISION=1
+uint8 OUT_TO_FREE_SPACE=2
+
+uint8 mode
+float32 clearance  # meters
+float32 max_distance  # meters
+builtin_interfaces/Duration time_allowance
+---
+uint16 NONE=0
+uint16 UNKNOWN=790
+uint16 TIMEOUT=791
+uint16 TF_ERROR=792
+uint16 INVALID_INPUT=793
+uint16 NO_COSTMAP=794
+uint16 STUCK=795  # no command lowers the cost
+uint16 TOO_FAR=796  # max_distance travelled without escaping
+
+builtin_interfaces/Duration total_elapsed_time
+float32 distance_traveled
+uint16 error_code
+string error_msg
+---
+float32 distance_traveled

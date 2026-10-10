@@ -74,8 +74,8 @@ Block 3 onwards will be refined as we get there.
 Navigation uses Nav2 only; Move Base Flex is dropped, with whatever depends on it (`thorp_mbf_plugins`, MBF actions
 and plugins configuration in `thorp_navigation`). The executive will use Nav2's own interfaces (`navigate_to_pose`,
 `compute_path_to_pose`, `follow_path`, behaviors and the costmaps' `get_cost` service). MPPI replaces TEB, which has no
-Jazzy release, and Nav2's standard behaviors replace `SlowEscapeRecovery` until the executive shows whether they are
-enough.
+Jazzy release. `SlowEscapeRecovery` is ported as a Nav2 behavior, in `thorp_nav2_plugins`, as Nav2's behaviors can't
+move a robot out of an obstacle.
 
 The semantic costmap layer (`thorp_costmap_layers`) is only used by the executive, to mark tables as obstacles in both
 costmaps (the scans can't see their eaves) and to clear an approach area in front of them in the local costmap. It's
@@ -136,6 +136,7 @@ plans swaths over field polygons, without room segmentation nor sequencing.
 | thorp_rviz_plugins | migrated (see below) |
 | thorp_perception | partial: tables and objects detection, camera field of view check (see below) |
 | thorp_navigation | partial: Nav2 configuration, trees and launch, maps, velocity display (see below) |
+| thorp_nav2_plugins | new: `thorp_mbf_plugins`' slow escape, as a Nav2 behavior (see below) |
 | thorp_simulation | partial: Gazebo Harmonic launch, worlds, controllers and navigation (see below) |
 | thorp_toolkit | partial: core C++ and Python modules (see below) |
 | thorp_agent | migrated (see below) |
@@ -496,7 +497,6 @@ checker, the general one by default. Both costmaps have the semantic layer, befo
 | Files | Block |
 |-------|-------|
 | Robot pose saving (`thorp_toolkit`'s `save_pose_node`): Nav2's AMCL doesn't keep its pose across restarts | real robot |
-| `src/pose_servoing.cpp`, `src/visual_servoing.cpp` (not built on Noetic either) | undecided |
 
 Replaced by Nav2 packages: the pose follower (`src/pose_follower.cpp`, `cfg/Follower.cfg`, `param/pose_follower.yaml`)
 by `opennav_following`'s `follow_object` action, with the desired distance and detection timeout as its parameters instead
@@ -507,7 +507,27 @@ of per goal, and without stopping at the distance (goals end on `max_duration` o
 
 Dropped with Move Base Flex: `param/move_base_flex/`, `launch/includes/move_base_flex.launch.xml`,
 `nodes/mbf_simple_goal_relay.py` (Nav2 takes RViz goals itself) and the MBF test scripts in `scripts/test/`. The
-`virtual` obstacle source is dropped too; nothing published it.
+`virtual` obstacle source is dropped too; nothing published it, and so are `src/pose_servoing.cpp` and
+`src/visual_servoing.cpp`, not built on Noetic either. `thorp_navigation` has no C++: Thorp's Nav2 plugins go in
+`thorp_nav2_plugins`.
+
+### thorp_nav2_plugins
+
+`SlowEscape`, a behavior server plugin ported from `thorp_mbf_plugins`' `SlowEscapeRecovery`, gets the robot out of
+where the planner and the controller can't move it. Nav2's behaviors can't: `BackUp`, `DriveOnHeading` and `Spin` check
+for collision from the robot's current pose, so a footprint already on lethal cells fails at once, and clearing the
+costmaps doesn't remove what the semantic layer and the static map mark. Every cycle, a best-first search over slow
+velocity commands (0.1 m/s and 0.15 rad/s) scores the poses they lead to by the summed cost of the local costmap cells
+under the footprint, with unknown, inscribed and lethal cells weighing 100, 10 and 1000 times more, and the robot
+follows the cheapest sequence found. Its `slow_escape` action (`thorp_nav2_plugins/SlowEscape`) takes Noetic's three
+variants as a mode: `DISTANCE`, down the gradient up to a distance; `OUT_OF_COLLISION` and `OUT_TO_FREE_SPACE`, until
+the footprint, padded by a clearance, covers no lethal cell, or no lethal nor inscribed cell, on both costmaps. The
+search runs in the cycle, within half of its period, instead of on a thread of its own; Noetic's bumper handling, never
+fed, is dropped.
+
+`thorp_slow_escape_action_bt_node` is its `SlowEscape` BT node, for `bt_navigator`. Both navigation trees run Noetic's
+`move_base` recoveries after clearing the costmaps: a 0.2 m `distance` escape, then `out_to_free_space`, up to 1 m.
+Recoveries also run when the planner reports the start occupied, which neither Nav2 condition for recoveries accepts.
 
 ### thorp_simulation
 
