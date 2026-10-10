@@ -41,16 +41,23 @@ private:
     path.header = pose.header;
     if (auto start = getInput<geometry_msgs::msg::PoseStamped>("start"))
     {
-      // Poses every STEP on the way, heading to the goal, as path followers need dense paths
+      // The start and poses every STEP back from the goal, heading to it, as path followers need dense paths.
+      // Spaced from the goal, as Graceful stops driving once the path from its closest pose is shorter than the goal
+      // tolerance: with a tolerance under STEP and over STEP / 2, that's only once within the tolerance of the goal
       if (!ttk::TF2::instance().transformPose(pose.header.frame_id, *start, *start))
         throw BT::RuntimeError(name(), ": cannot transform start pose to ", pose.header.frame_id);
       const double length = ttk::distance2D(start->pose, pose.pose);
       const double heading = std::atan2(pose.pose.position.y - start->pose.position.y,
                                         pose.pose.position.x - start->pose.position.x);
-      for (double d = 0.0; d < length; d += STEP)
+      path.poses.push_back(ttk::createPose(start->pose.position.x, start->pose.position.y, heading,
+                                           pose.header.frame_id));
+      for (int i = static_cast<int>(std::ceil(length / STEP)) - 1; i > 0; --i)
+      {
+        const double d = length - i * STEP;
         path.poses.push_back(ttk::createPose(start->pose.position.x + d * std::cos(heading),
                                              start->pose.position.y + d * std::sin(heading), heading,
                                              pose.header.frame_id));
+      }
     }
     path.poses.push_back(pose);
     setOutput("path", path);
