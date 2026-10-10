@@ -1,0 +1,5 @@
+# Use a named configuration, or restore the default one with an empty name
+string name
+---
+bool success
+string message

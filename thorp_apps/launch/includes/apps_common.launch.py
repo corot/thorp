@@ -2,6 +2,7 @@
 Nodes common to all apps:
 - Thorp robot, simulated on Gazebo; the real robot's bringup is not ported yet
 - executive: the app's behavior tree (bt), or bt_server offering all trees as capabilities (llm)
+- named configurations, for the executive to use while doing something special
 - optional executive visualization: the running node on RViz, and Groot2 if installed in ~/Groot2
 - RViz, with the app's configuration
 """
@@ -73,6 +74,8 @@ def generate_launch_description():
                                   'use_sim_time': LaunchConfiguration('use_sim_time')}.items(),
                 condition=IfCondition(PythonExpression(["'", executive, "' == 'llm'"]))),
         ]),
+
+        Node(package='thorp_bringup', executable='named_configs.py', output='screen'),
 
         # The tree's running node on RViz, and the whole tree on Groot2, monitoring bt_runner's publisher (port 1667)
         Node(package='thorp_bt_cpp', executable='show_bt_node_on_rviz.py', output='screen', respawn=True,

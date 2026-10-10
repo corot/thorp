@@ -87,7 +87,9 @@ Block 9b moves the executive's navigation to Nav2's actions, using `nav2_behavio
 waypoints, its remaining poses dropping the passed ones; `follow_path` for docking at a table, straight to the pickup
 pose; and the behaviors `spin` for turning to face a pose and `backup` for leaving a table. Noetic's named
 configurations, that reconfigured TEB at runtime, become plugins chosen per goal: a precise controller and goal checker,
-for docking at tables. The trees drop the bumper and safety controller nodes until the real robot, and the RAIL markers
+for docking at tables. Named configurations remain for parameters no goal can choose, through `UseNamedConfig` and
+`thorp_bringup`'s `named_configs.py`. The trees drop the bumper and safety controller nodes until the real robot, and
+the RAIL markers
 clearing. `patrol_2_points` runs on the playground world, instead of Stage's maze, and a new `cleanup_table` app picks
 the objects around the playground table.
 
@@ -121,7 +123,7 @@ plans swaths over field polygons, without room segmentation nor sequencing.
 
 | Package | Status |
 |---------|--------|
-| thorp_bringup | partial: velocity multiplexer and depth to scan parameters, RViz configs (see below) |
+| thorp_bringup | partial: velocity multiplexer and depth to scan parameters, RViz configs, named configurations (see below) |
 | thorp_description | migrated |
 | thorp_moveit_config | migrated (see below) |
 | thorp_msgs | migrated |
@@ -211,7 +213,6 @@ planning scene objects on it, for the executive and perception) and `visualizati
 
 | Files | First consumer | Block |
 |-------|----------------|-------|
-| `reconfigure`, `alternative_config` (C++ and Python), `test_reconfigure.py` | navigation | 6 |
 | `nodes/save_pose_node.cpp` | real robot navigation | real robot |
 | `planning_scene` (C++ and Python); `simulation` (`waitForObjectsSpawning`) | tray manager, BT runner | 9 |
 | `point_tracker.py` | object tracking | 9 |
@@ -374,7 +375,7 @@ Noetic's pose follower, at the following server's distance, 0.8 m, both to appro
 approached at 1.0 m); `MonitorTarget` waits for a fresh pose from the target tracker, replacing `MonitorObjects` on
 COB's detections, so the approach checks the target's reach on its latest pose. Removed, replaced as described or by
 Nav2's nodes: `add_object_to_tray`, `clear_gripper`, `go_to_pose`, `exe_path`, `smooth_path`, `recovery`,
-`clear_costmaps`, `use_named_config`, `clear_rail_markers` and `get_path`; `pickup_object` reports the object it
+`clear_costmaps`, `clear_rail_markers` and `get_path`; `pickup_object` reports the object it
 attached from the planning scene, as Noetic's gripper busy service did. Pending ROS 1 files:
 
 | Files | Block |
@@ -465,6 +466,16 @@ recording, as its camera animation needs `rviz_animated_view_controller`, with n
 `scripts/user_commands.py` and `rviz/user_commands.yaml` are replaced by the user commands panel and
 `ReadUserCommands`. Everything else is pending: real robot launch files and drivers, scripts and the docker image.
 
+`nodes/named_configs.py` replaces Noetic's `thorp_toolkit` `reconfigure` and `alternative_config`: named configurations,
+sets of other nodes' parameters for the executive to use while doing something special. Each one is a YAML file in
+`param/named_configs`, named after it, mapping absolute node names to nested parameter trees; `precise_controlling.yaml`
+is rewritten for Nav2. The node serves `/named_configs/set` (`thorp_msgs/SetNamedConfig`; an empty name restores the
+default configuration) and publishes the one in use, latched, on `/named_configs/active`. One is in use at a time: using
+another restores the parameters it doesn't set, as read before setting them the first time; a failure restores the
+default configuration. The `UseNamedConfig` BT node uses one while running and restores the default when halted, so it
+runs in parallel with the actions that need it. `apps_common.launch.py` starts the node. Nodes accept new values only
+for the parameters their dynamic parameters callback handles, so check each new parameter's effect once.
+
 ### thorp_navigation
 
 Ported: `navigation.launch.py`, with Nav2 in place of Move Base Flex and the Noetic arguments (localization `amcl`,
@@ -473,10 +484,12 @@ symlinks into the `aws_robomaker_small_house_world` checkout in `src/third_party
 keep the Noetic topics: navigation, through the velocity smoother if enabled, into `cmd_vel_mux/input/navigation`;
 `twist_mux` uses unstamped velocities, as Nav2 and the Kobuki base. The controller runs at 20 Hz instead of Noetic's 15,
 as MPPI needs a control period no longer than its model step. For docking at tables, a precise controller
-(`PreciseFollowPath`, Regulated Pure Pursuit, slow and turning in place) and goal checker (`precise_goal_checker`,
-Noetic's 3.5 cm and 0.05 rad) replace the `precise_controlling` named configuration; it steers for a point beyond the
-end of the path (`interpolate_curvature_after_goal`), as steering for a goal a few centimeters off its heading made it
-circle around it; the executive picks them per `follow_path` goal. As the controller server rejects goals naming no goal
+(`Graceful`, Nav2's graceful controller, slow) and goal checker (`precise_goal_checker`, Noetic's 3.5 cm and 0.05 rad)
+replace most of the `precise_controlling` named configuration; the graceful control law converges on the pickup pose's
+position and heading together, so the robot arrives facing the table without turning in place under it, from wherever
+MPPI left it at the approach pose. It stops once the remaining path is shorter than the goal checker's tolerance, so
+about 3 cm short of the pickup pose. The executive picks them per `follow_path` goal. As the controller server rejects
+goals naming no goal
 checker when it has more than one, `bt_navigator` runs `behavior_trees/`: Nav2's default trees, selecting also the goal
 checker, the general one by default. Both costmaps have the semantic layer, before inflation. Pending ROS 1 files:
 

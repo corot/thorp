@@ -18,6 +18,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   srv/PlanRoomExploration.srv
   srv/PlanRoomSequence.srv
   srv/SegmentRooms.srv
+  srv/SetNamedConfig.srv
   action/DetectObjects.action
   action/DetectTables.action
   action/DragAndDrop.action

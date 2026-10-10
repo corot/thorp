@@ -1,34 +1,7 @@
-move_base_flex/GlobalPlanner:
-  orientation_mode: 7  # bidirectional, as we can also move backward
+# Docking at tables, along with the precise controller and goal checker the executive picks for it
 
-move_base_flex/TEBPlanner:
-  # reduce velocity, increase precision, and allow slowly drive backward
-  max_vel_x: 0.2
-  max_vel_theta: 2.0
-  max_vel_x_backwards: 0.1
-  acc_lim_x: 0.2
-  acc_lim_theta: 0.5
-  control_look_ahead_poses: 1
-  weight_kinematics_forward_drive: 50.0
-
-  # make the robot less scared about obstacles and less obsessed with speed
-  min_obstacle_dist: 0.187  # physical robot radius + 1 cm
-  inflation_dist: 0.6
-  costmap_obstacles_behind_robot_dist: 0.75
-  weight_max_vel_x: 1.0
-  weight_obstacle: 10.0
-  weight_inflation: 0.1
-  weight_optimaltime: 1.0
-  weight_shortest_path: 1.0
-
-  # strict goal reached criteria
-  xy_goal_tolerance: 0.035
-  yaw_goal_tolerance: 0.05
-
-move_base_flex/local_costmap:
-  update_frequency: 10.0
-  publish_frequency: 2.0
-  width: 2
-  height: 2
-  resolution: 0.01
-  robot_radius: 0.177  # inflate costmap with physical robot radius + 1 cm of padding (unneeded for TEB)
+# no padding around the robot, so it can get as close to the table as the pickup pose requires
+/local_costmap/local_costmap:
+  footprint_padding: 0.0
+/global_costmap/global_costmap:
+  footprint_padding: 0.0

@@ -372,6 +372,9 @@
             <input_port name="x" type="double"/>
         </Action>
         <Condition ID="TrayFull"/>
+        <Action ID="UseNamedConfig">
+            <input_port name="config_name" type="std::string"/>
+        </Action>
     </TreeNodesModel>
 </root>
 

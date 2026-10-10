@@ -14,6 +14,12 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>ament_index_python</exec_depend>
+  <exec_depend>rcl_interfaces</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>python3-yaml</exec_depend>
+  <exec_depend>thorp_msgs</exec_depend>
   <exec_depend>twist_mux</exec_depend>
   <exec_depend>depthimage_to_laserscan</exec_depend>
   <exec_depend>pointcloud_to_laserscan</exec_depend>

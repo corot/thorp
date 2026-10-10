@@ -78,6 +78,7 @@ set(BT_NODES
   src/bt/actions/table_as_obstacle.cpp
   src/bt/actions/track_progress.cpp
   src/bt/actions/transform_pose.cpp
+  src/bt/actions/use_named_config.cpp
   src/bt/conditions/are_same_pose.cpp
   src/bt/conditions/camera_fov_clear.cpp
   src/bt/conditions/cannon_has_ammo.cpp
