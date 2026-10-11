@@ -543,22 +543,22 @@ Recoveries also run when the planner reports the start occupied, which neither N
 ### thorp_simulation
 
 Ported: `thorp_gazebo.launch.py` and `navigation.launch.py`, the `empty`, `playground` and `fun_house` worlds (its
-house, the `fun_house` model, is Thorp's edit of `turtlebot3_gazebo`'s, with that package's textures), the
-`small_house` world (a symlink into the `aws_robomaker_small_house_world` checkout in `src/third_party`), the Gazebo
-models, the ROS / Gazebo bridge configuration, the controllers configuration and `gazebo_ground_truth`, now fed by
-Gazebo's odometry publisher. The `empty`, `playground` and `fun_house` worlds step the physics every 2 ms, as DART's
-contacts at 1 kHz halved the real time factor. `thorp_gazebo.launch.py` also runs what Noetic's `sim_common.launch.xml`
-and `thorp_gazebo.launch.xml` did: velocity commands multiplexer and depth image and point cloud to laser scan.
-`spawn_gazebo_models.py` populates the world with tables and objects through Gazebo's create service, bridged to ROS
-with the remove and set pose services: the playground modes (`playground_fixed`, `playground_cubes`, `playground_rows`,
-`playground_random`) put a table in front of the robot, and `fun_house_objects` spawns random tables with objects in
-open spaces of any map, checked on Nav2's global costmap instead of Move Base Flex's check pose service. Objects are
-placed relative to their tables by the script, as Gazebo can't place them relative to a model created on the same step.
-Its `-d` option, to delete previously spawned models, is dropped; it didn't work on Noetic. `fill_tray.py`, new, fills
-the tray, in Gazebo and in the planning scene, with one object per slot but on the last rows, as if placed there, to
-test placing on a nearly full tray; its hidden objects, heavy and only in Gazebo, make placing stall on the first free
-slots. The `cats` mode spawns 3
-black and 3 orange cats in open spaces, 3 m apart, and the cannon's `rocket`.
+house, the `fun_house` model, is Thorp's edit of `turtlebot3_gazebo`'s, with that package's textures and its upper left
+door narrowed by 30 cm, so the room segmentation tells apart the rooms it joins), the `small_house` world (a symlink
+into the `aws_robomaker_small_house_world` checkout in `src/third_party`), the Gazebo models, the ROS / Gazebo bridge
+configuration, the controllers configuration and `gazebo_ground_truth`, now fed by Gazebo's odometry publisher. The
+`empty`, `playground` and `fun_house` worlds step the physics every 2 ms, as DART's contacts at 1 kHz halved the real
+time factor. `thorp_gazebo.launch.py` also runs what Noetic's `sim_common.launch.xml` and `thorp_gazebo.launch.xml` did:
+velocity commands multiplexer and depth image and point cloud to laser scan. `spawn_gazebo_models.py` populates the
+world with tables and objects through Gazebo's create service, bridged to ROS with the remove and set pose services: the
+playground modes (`playground_fixed`, `playground_cubes`, `playground_rows`, `playground_random`) put a table in front
+of the robot, and `fun_house_objects` spawns random tables with objects in open spaces of any map, checked on Nav2's
+global costmap instead of Move Base Flex's check pose service. Objects are placed relative to their tables by the
+script, as Gazebo can't place them relative to a model created on the same step. Its `-d` option, to delete previously
+spawned models, is dropped; it didn't work on Noetic. `fill_tray.py`, new, fills the tray, in Gazebo and in the planning
+scene, with one object per slot but on the last rows, as if placed there, to test placing on a nearly full tray; its
+hidden objects, heavy and only in Gazebo, make placing stall on the first free slots. The `cats` mode spawns 3 black and
+3 orange cats in open spaces, 3 m apart, and the cannon's `rocket`.
 
 The cat models carry contact sensors, all publishing on `/cats/contacts` through the world's Contact system (loaded by
 the `fun_house` world), and an odometry publisher, with each cat's pose on `/cats/odometry`, named after it: the world's

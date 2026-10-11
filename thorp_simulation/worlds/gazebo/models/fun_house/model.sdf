@@ -4002,10 +4002,10 @@
         <transparency>0</transparency>
       </visual>
       <visual name='Wall_99_Visual_2'>
-        <pose frame=''>0.615786 0 2.25 0 -0 0</pose>
+        <pose frame=''>0.465786 0 2.25 0 -0 0</pose>
         <geometry>
           <box>
-            <size>1.61621 0.15 0.5</size>
+            <size>1.31621 0.15 0.5</size>
           </box>
         </geometry>
         <material>
@@ -4023,10 +4023,10 @@
         <transparency>0</transparency>
       </visual>
       <visual name='Wall_99_Visual_1'>
-        <pose frame=''>1.83695 0 1.25 0 -0 0</pose>
+        <pose frame=''>1.686955 0 1.25 0 -0 0</pose>
         <geometry>
           <box>
-            <size>0.826108 0.15 2.5</size>
+            <size>1.126108 0.15 2.5</size>
           </box>
         </geometry>
         <material>
@@ -4101,10 +4101,10 @@
       <collision name='Wall_99_Collision_1'>
         <laser_retro>0</laser_retro>
         <max_contacts>10</max_contacts>
-        <pose frame=''>1.83695 0 1.25 0 -0 0</pose>
+        <pose frame=''>1.686955 0 1.25 0 -0 0</pose>
         <geometry>
           <box>
-            <size>0.826108 0.15 2.5</size>
+            <size>1.126108 0.15 2.5</size>
           </box>
         </geometry>
         <surface>
@@ -4156,10 +4156,10 @@
       <collision name='Wall_99_Collision_2'>
         <laser_retro>0</laser_retro>
         <max_contacts>10</max_contacts>
-        <pose frame=''>0.615786 0 2.25 0 -0 0</pose>
+        <pose frame=''>0.465786 0 2.25 0 -0 0</pose>
         <geometry>
           <box>
-            <size>1.61621 0.15 0.5</size>
+            <size>1.31621 0.15 0.5</size>
           </box>
         </geometry>
         <surface>
