@@ -79,7 +79,9 @@ def segment_rooms(grid, area_min, area_max, step=0.05):
     """
     Label the free space into rooms (0 for no room), returning the labels and the rooms count. The free space is
     eroded until regions split off below area_max, each seeding a room, and the seeds are grown back over it. So
-    area_max bounds a room's eroded area, smaller than the room's. Rooms smaller than area_min merge into a neighbor.
+    area_max bounds a room's eroded area, smaller than the room's. A seed whose region keeps eroding into several
+    parts of at least area_min, as two rooms joined by a wide door, seeds a room in each of them. Rooms smaller than
+    area_min merge into a neighbor.
     """
     cell_area = grid.resolution ** 2
     seeds = np.zeros(grid.shape, np.uint16)
@@ -87,6 +89,15 @@ def segment_rooms(grid, area_min, area_max, step=0.05):
     for threshold in np.arange(step, grid.clearance.max(), step):
         n, regions = cv2.connectedComponents((grid.clearance > threshold).astype(np.uint8), connectivity=8)
         sizes = np.bincount(regions.ravel(), minlength=n)
+        for seed in np.unique(seeds[seeds > 0]):
+            parts = np.unique(regions[(seeds == seed) & (regions > 0)])
+            parts = [part for part in parts if sizes[part] * cell_area >= area_min]
+            if len(parts) > 1:
+                seeds[seeds == seed] = 0
+                seeds[regions == parts[0]] = seed
+                for part in parts[1:]:
+                    count += 1
+                    seeds[regions == part] = count
         seeded = set(np.unique(regions[seeds > 0]))
         for region in range(1, n):
             if region not in seeded and sizes[region] * cell_area <= area_max:

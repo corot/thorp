@@ -49,6 +49,19 @@ def test_segment_simple_rooms(simple_rooms):
     assert areas[6] > 30.0
 
 
+def test_segment_rooms_joined_by_wide_door():
+    # rooms of 4 x 4 and 2.4 x 4 m, joined by a door wide enough for them to erode below the largest area together
+    res = 0.05
+    cells = lambda m: int(round(m / res))  # noqa: E731
+    data = np.full((cells(4.3), cells(6.85)), 100, np.int8)
+    data[cells(0.15):cells(4.15), cells(0.15):cells(4.15)] = 0
+    data[cells(0.15):cells(4.15), cells(4.3):cells(6.7)] = 0
+    data[cells(1.4):cells(2.6), cells(4.15):cells(4.3)] = 0
+    labels, count = segment_rooms(Grid(data, res, (0.0, 0.0)), 2.0, 20.0)
+    assert count == 2
+    assert labels[cells(2.0), cells(2.0)] != labels[cells(2.0), cells(5.5)]
+
+
 def test_segment_fun_house():
     grid = load_map('fun_house')
     labels, count = segment_rooms(grid, 2.0, 20.0)

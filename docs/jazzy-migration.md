@@ -444,12 +444,14 @@ script and test.
 
 The exploration planner (`nodes/exploration_planner.py`, with the algorithms in the `thorp_exploration` Python module)
 replaces `ipa_coverage_planning`, with simpler algorithms, on numpy, SciPy and OpenCV: rooms are seeded by eroding the
-free space until regions split off below a maximum area, and grown back over it, as ipa's morphological segmentation;
+free space until regions split off below a maximum area, and grown back over it, as ipa's morphological segmentation,
+and a seeded region that keeps eroding into big enough parts, as two rooms joined by a wide door, re-seeds each part;
 rooms are ordered by nearest neighbor, improved with 2-opt, on path lengths over the free space, instead of Concorde's
 exact solution; and each room's viewpoints are chosen greedily, each time the pose whose camera field of view sees the
 most cells not seen yet, with walls blocking the view, until seeing 95% of what can be seen, instead of ipa's convex
-set-cover program. The fields of view are Noetic's, for the Kinect or the Xtion. `test/test_planner.py` checks the
-planner on the `simple_rooms` and `fun_house` maps.
+set-cover program. The fields of view are Noetic's, for the Kinect or the Xtion. The rooms markers show the room ids,
+and the order to visit them once planned. `test/test_planner.py` checks the planner on the `simple_rooms` and
+`fun_house` maps, and on rooms joined by a wide door.
 
 ### thorp_rviz_plugins
 

@@ -7,7 +7,8 @@ exploration:
 
     clearance: 0.25            # minimum distance to obstacles to travel through, in meters
     viewpoint_clearance: 0.4   # minimum distance to obstacles of the planned poses
-    room_area_min: 2.0         # rooms smaller than this, in square meters, merge into a neighbor
+    room_area_min: 2.0         # rooms smaller than this, in square meters, merge into a neighbor; a room eroding into
+                               # parts of at least this size splits into a room for each
     room_area_max: 20.0        # the largest eroded area of a room: bigger regions keep eroding, looking for doors
     viewpoint_spacing: 0.3     # distance between candidate poses
     headings: 8                # candidate headings on each candidate pose

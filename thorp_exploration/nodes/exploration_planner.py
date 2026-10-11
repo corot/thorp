@@ -2,7 +2,8 @@
 
 """
 Exploration planner: segments the map into rooms, and plans the rooms' sequence and the poses from where the camera
-sees all of a room, or of the whole map. Shows the rooms and the last poses planned as markers.
+sees all of a room, or of the whole map. Shows the rooms, numbered in the order to visit them once planned, and the
+last poses planned as markers.
 """
 
 import math
@@ -87,6 +88,7 @@ class ExplorationPlanner(Node):
                 response.sequence = self.planner.plan_room_sequence(self.start_point(request.start), rooms)
                 response.success = True
                 self.get_logger().info(f"Room sequence: {list(response.sequence)}")
+                self.publish_rooms(list(response.sequence))
                 if len(response.sequence) < len(rooms):
                     self.get_logger().warn(f"Rooms not reachable: {sorted(set(rooms) - set(response.sequence))}")
             except ValueError as e:
@@ -145,7 +147,8 @@ class ExplorationPlanner(Node):
         marker.color = ColorRGBA(r=color[0], g=color[1], b=color[2], a=color[3])
         return marker
 
-    def publish_rooms(self):
+    def publish_rooms(self, sequence=None):
+        """ The rooms, labeled with their ids, or with their order in the sequence to visit them if given """
         grid, labels = self.planner.grid, self.planner.labels
         markers = MarkerArray(markers=[Marker(action=Marker.DELETEALL)])
         for room, (area, (x, y)) in self.planner.rooms.items():
@@ -155,7 +158,10 @@ class ExplorationPlanner(Node):
             cells.points = [Point(x=px, y=py) for px, py in (grid.to_point(r, c) for r, c in zip(rows, cols))]
             label = self.marker('room_ids', room, Marker.TEXT_VIEW_FACING, (0.0, 0.0, 0.5), (0.0, 0.0, 0.0, 1.0))
             label.pose.position = Point(x=x, y=y, z=0.3)
-            label.text = str(room)
+            if sequence is None:
+                label.text = str(room)
+            else:
+                label.text = str(sequence.index(room) + 1) if room in sequence else '-'
             markers.markers += [cells, label]
         self.rooms_pub.publish(markers)
 
