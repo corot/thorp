@@ -27,11 +27,11 @@ namespace thorp::cannon
 
 /**
  * Simulate Thorp's cannon firing: while the trigger topic is true, shoot the rocket model at the given rate of
- * fire, placing it at the cannon muzzle and launching it along the axis of fire. The launch speed is the one
- * that shoot_force would give the rocket if applied during one simulation step.
- * Each shot takes three steps, as physics applies link velocity commands on every step while they exist, rotated
- * by the model pose before any pose command: place the rocket at the muzzle, stopped; command the launch velocity;
- * remove the velocity commands, so the rocket flies freely.
+ * fire, placing it muzzle_offset along the axis of fire from the cannon link and launching it along that axis. The
+ * launch speed is the one that shoot_force would give the rocket if applied during one simulation step. Each shot takes
+ * three steps, as physics applies link velocity commands on every step while they exist, rotated by the model pose
+ * before any pose command: place the rocket at the muzzle, stopped; command the launch velocity; remove the velocity
+ * commands, so the rocket flies freely.
  */
 class CannonSystem : public gz::sim::System, public gz::sim::ISystemConfigure, public gz::sim::ISystemPreUpdate
 {
@@ -44,6 +44,7 @@ public:
     std::string axis_of_fire = sdf->Get<std::string>("axis_of_fire", "x").first;
     rate_of_fire_ = sdf->Get<double>("rate_of_fire", rate_of_fire_).first;
     shoot_force_ = sdf->Get<double>("shoot_force", shoot_force_).first;
+    muzzle_offset_ = sdf->Get<double>("muzzle_offset", muzzle_offset_).first;
     rocket_model_name_ = sdf->Get<std::string>("rocket_model", rocket_model_name_).first;
     std::string cannon_link_name = sdf->Get<std::string>("cannon_link", "cannon_link").first;
     std::string trigger_topic = sdf->Get<std::string>("trigger_topic", "/arbotix/cannon_trigger").first;
@@ -51,8 +52,8 @@ public:
     cannon_link_ = model_.LinkByName(ecm, cannon_link_name);
     if (cannon_link_ == gz::sim::kNullEntity)
     {
-      gzerr << "Cannon link " << cannon_link_name << " not found in model " << model_.Name(ecm)
-            << "; cannon disabled" << std::endl;
+      gzerr << "Cannon link " << cannon_link_name << " not found in model " << model_.Name(ecm) << "; cannon disabled"
+            << std::endl;
       return;
     }
 
@@ -136,7 +137,8 @@ private:
 
     // displace to the cannon muzzle, oriented as the cannon, and stop it
     gz::math::Pose3d cannon_pose = gz::sim::worldPose(cannon_link_, ecm);
-    rocket_model_.SetWorldPoseCmd(ecm, cannon_pose * gz::math::Pose3d(0.05, 0.0, 0.0, 0.0, 0.0, 0.0));
+    rocket_model_.SetWorldPoseCmd(
+        ecm, cannon_pose * gz::math::Pose3d(direction_of_fire_ * muzzle_offset_, gz::math::Quaterniond::Identity));
     rocket_link_.SetLinearVelocity(ecm, gz::math::Vector3d::Zero);
     rocket_link_.SetAngularVelocity(ecm, gz::math::Vector3d::Zero);
     return true;
@@ -173,6 +175,7 @@ private:
   // Shooting configuration
   std::atomic<bool> firing_{ false };
   double shoot_force_ = 100.0;
+  double muzzle_offset_ = 0.05;
   double rate_of_fire_ = 18.18;  // Hz, or 0.055s between shots
   double last_shot_time_ = -1.0;
   gz::math::Vector3d direction_of_fire_ = gz::math::Vector3d::UnitX;

@@ -228,8 +228,10 @@ planning scene objects on it, for the executive and perception) and `visualizati
 `cannon_ctrl.py` supports only simulation: the real cannon is commanded through the arbotix board, not ported yet. On
 simulation it tilts the cannon with `cannon_joint_controller`, and fires by publishing `std_msgs/Bool` on
 `arbotix/cannon_trigger` (it was an `arbotix_msgs/Digital`), bridged to Gazebo. `thorp_cannon_system`, a Gazebo
-Harmonic system, replaces the Gazebo Classic plugin: while the trigger is on, it places the `rocket` model at the
-cannon muzzle and launches it at the speed the configured force gives it in one simulation step (22 m/s). Firing needs a
+Harmonic system, replaces the Gazebo Classic plugin: while the trigger is on, it places the `rocket` model 10 cm along
+the cannon's axis, and launches it at the speed the configured force gives it in one simulation step (22 m/s). The
+rocket, a 3 cm radius sphere, starts clear of the top plate even with the cannon at its lowest; 5 cm away, as on
+Noetic, it started inside the plate when aiming low, and pushed the robot forward as it launched. Firing needs a
 model named `rocket` in the world, that the cats mode of `spawn_gazebo_models.py` spawns. At its lower limit, -18
 degrees, the cannon touches the top plate, and Gazebo jams it there; `AimCannon` aims no lower than -17, and
 `hunt_cat` levels the cannon when it ends, as MoveIt sees the robot in collision otherwise.

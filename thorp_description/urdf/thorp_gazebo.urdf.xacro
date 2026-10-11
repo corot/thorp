@@ -188,7 +188,10 @@
       <cannon_link>cannon_link</cannon_link>
       <axis_of_fire>x</axis_of_fire>
       <rate_of_fire>18.18</rate_of_fire>
-      <shoot_force>2200</shoot_force>
+      <!-- 22 m/s for the 0.1 kg rocket over the worlds' 2 ms step -->
+      <shoot_force>1100</shoot_force>
+      <!-- The rocket, a 3 cm radius sphere, starts clear of the top plate even with the cannon at its lowest -->
+      <muzzle_offset>0.1</muzzle_offset>
       <rocket_model>rocket</rocket_model>
       <trigger_topic>/arbotix/cannon_trigger</trigger_topic>
     </plugin>
@@ -196,7 +199,7 @@
 
   <!-- Fake range sensor to see where the cannon is pointing to -->
   <xacro:thorp_sim_ranger name="ir_cannon" link="ir_cannon_link" topic="/mobile_base/sensors/infrared/cannon"
-                          h_samples="3" h_fov="0.001" v_samples="1" v_min="0.0" v_max="0.0"
+                          h_samples="3" h_fov="0.01" v_samples="1" v_min="0.0" v_max="0.0"
                           min_range="0.1" max_range="5.0" noise="0.0" visualize="true"/>
 
   <!-- Gazebo configuration for other structural parts -->
