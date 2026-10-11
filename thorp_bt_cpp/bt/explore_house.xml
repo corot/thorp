@@ -2,15 +2,21 @@
 <root BTCPP_format="4">
   <include path="exploration.xml"/>
 
-  <!-- Explore the whole house, with the strategy the exploration_method parameter selects -->
+  <!-- Explore the whole house, with the given strategy or else the exploration_method parameter's; fails on others -->
   <BehaviorTree ID="explore_house">
     <Sequence>
-      <ReadStringParam param_name="exploration_method"
-                       output_key="{exploration_method}"/>
-      <SubTree ID="full_coverage_planner"
-               _skipIf="exploration_method != 'full_coverage_planner'"/>
-      <SubTree ID="per_room_coverage"
-               _skipIf="exploration_method != 'per_room_coverage'"/>
+      <Fallback>
+        <StringInBlackboard key="{exploration_method}"/>
+        <ReadStringParam param_name="exploration_method"
+                         output_key="{exploration_method}"/>
+      </Fallback>
+      <Switch2 variable="{exploration_method}"
+               case_1="cover_in_one_tour"
+               case_2="cover_room_by_room">
+        <SubTree ID="cover_in_one_tour"/>
+        <SubTree ID="cover_room_by_room"/>
+        <AlwaysFailure/>
+      </Switch2>
     </Sequence>
   </BehaviorTree>
 </root>

@@ -130,7 +130,7 @@ def resolve_inputs(block, produced):
 
     `inputs_from` is what lets a chain run on real values instead of numbers someone typed in.
     `{table: [detect_table, table]}` means "the table detect_table found", and a third element
-    indexes into a list, so `[full_coverage_planner, coverage_waypoints, 0]` is the first
+    indexes into a list, so `[cover_in_one_tour, coverage_waypoints, 0]` is the first
     waypoint of a coverage path. This is exactly the threading an agent does by hand -- take a
     field out of one result, put it in the next goal -- so a chain that works here is one ROSA
     can follow, and one that can't be expressed here probably can't be asked of ROSA either.

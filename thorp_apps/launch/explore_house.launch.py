@@ -1,6 +1,6 @@
 """
 Thorp's explore house app:
-Explore the whole house, with the camera seeing all of it, room by room or all at once, as the exploration_method
+Explore the whole house, with the camera seeing all of it, in one tour or room by room, as the exploration_method
 parameter selects.
 
 Requirements:

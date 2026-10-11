@@ -303,7 +303,7 @@ straight path from a start pose, for docking. `cleanup_table` validates the tabl
 
 Exploration calls the exploration planner's services: `SegmentRooms`, `PlanRoomSequence` and `PlanRoomExploration` pass
 only room ids and poses, as the planner keeps the map and the rooms, instead of Noetic's map images on the blackboard.
-`full_coverage_planner` plans the whole map at once with `PlanRoomExploration`, instead of `GetPath`'s Spiral-STC
+`cover_in_one_tour` plans a single tour over the whole map with `PlanRoomExploration`, instead of `GetPath`'s Spiral-STC
 coverage path, and both exploration trees drive through the poses planned with `follow_waypoints`, as on Noetic, so the
 camera looks where the robot goes rather than along the planned headings. `TableVisited` asks the global costmap's
 semantic layer for a table `TableAsObstacle` marked overlapping the one detected. `validate_table` goes on with the

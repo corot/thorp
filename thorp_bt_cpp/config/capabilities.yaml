@@ -64,7 +64,7 @@
 # test: read only by the test suite; the agent side ignores this block.
 #   inputs_from: where an input comes from, when it should be a real value rather than one
 #     someone typed in: {table: [detect_table, table]} takes the table detect_table found, and
-#     a third element indexes a list, so [full_coverage_planner, coverage_waypoints, 0] is the
+#     a third element indexes a list, so [cover_in_one_tour, coverage_waypoints, 0] is the
 #     first waypoint of a coverage path. Usable on the test's own inputs and on any setup
 #     step's. This is the same threading an agent does by hand between two goals, so a chain
 #     expressible here is one ROSA can be asked to follow.
@@ -451,14 +451,16 @@ capabilities:
 
   explore_house:
     description: >
-      Cover the whole map, using whichever strategy the exploration_method parameter selects
-      (full_coverage_planner or per_room_coverage).
+      Cover the whole map with the given strategy, cover_in_one_tour (a single tour of camera
+      poses over the whole map) or cover_room_by_room (a tour for each room, one room after
+      another), or else with the one the exploration_method parameter selects.
     status: ok
     stack: [navigation, exploration]
     invalidates: [at_a_table, objects_detected]
-    inputs: {}
+    inputs:
+      exploration_method: {type: string, optional: true, description: "cover_in_one_tour or cover_room_by_room; leave it out to use the configured one"}
     outputs:
-      exploration_method: {type: string, description: "strategy actually used, from the parameter"}
+      exploration_method: {type: string, description: "strategy actually used"}
     test:
       inputs: {}
       expect: any
@@ -566,10 +568,10 @@ capabilities:
       expect_outputs: [cannon_tilt_angle]
       timeout: 300
 
-  full_coverage_planner:
+  cover_in_one_tour:
     description: >
-      Plan the poses from where the camera sees the whole map, from where the robot stands, and
-      drive through them. Resumes the poses left, if any.
+      Cover the whole map in one tour: plan the poses from where the camera sees all of it, from
+      where the robot stands, and drive through them. Resumes the poses left, if any.
     status: ok
     stack: [navigation, exploration]
     invalidates: [at_a_table, objects_detected]
@@ -583,11 +585,11 @@ capabilities:
       expect: any
       timeout: 900
 
-  per_room_coverage:
+  cover_room_by_room:
     description: >
-      Segment the map into rooms and order them from where the robot stands; then, for each room,
-      plan the poses from where the camera sees all of it and drive through them. Resumes the
-      rooms and poses left, if any.
+      Cover the whole map room by room: segment it into rooms and order them from where the robot
+      stands; then, for each room, plan the poses from where the camera sees all of it and drive
+      through them. Resumes the rooms and poses left, if any.
     status: ok
     stack: [navigation, exploration]
     invalidates: [at_a_table, objects_detected]
@@ -638,7 +640,7 @@ capabilities:
     stack: [navigation]
     invalidates: [at_a_table, objects_detected]
     inputs:
-      waypoints: {type: std::vector<geometry_msgs::msg::PoseStamped>, from: [full_coverage_planner.coverage_waypoints, per_room_coverage.coverage_waypoints], description: "waypoints to follow in order, each as 'x;y;yaw;frame'"}
+      waypoints: {type: std::vector<geometry_msgs::msg::PoseStamped>, from: [cover_in_one_tour.coverage_waypoints, cover_room_by_room.coverage_waypoints], description: "waypoints to follow in order, each as 'x;y;yaw;frame'"}
     outputs:
       next_waypoint: {type: unsigned long, when: maybe, description: "index of the waypoint being driven to"}
       robot_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "robot pose while following"}

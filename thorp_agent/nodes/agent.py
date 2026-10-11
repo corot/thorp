@@ -56,7 +56,7 @@ def talk(node):
     world = None if dry_run else World(node)
     runner = SubtreeRunner(node, action_name=action, dry_run=dry_run, world=world)
     # Each capability's own test timeout is what the suite found it needs, so reuse it rather than inventing a
-    # number: per_room_coverage wants 900 s and detect_table wants 30
+    # number: cover_room_by_room wants 900 s and detect_table wants 30
     document = capabilities.load(path)
     timeouts = {name: (spec.get('test') or {}).get('timeout', 300)
                 for name, spec in capabilities.offered(document).items()}

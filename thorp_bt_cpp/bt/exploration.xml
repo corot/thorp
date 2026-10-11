@@ -3,10 +3,10 @@
   <include path="navigation.xml"/>
 
   <!--
-    Explore the whole map at once: plan the poses from where the camera sees all of it, from where the robot stands,
+    Cover the whole map in one tour: plan the poses from where the camera sees all of it, from where the robot stands,
     and follow them as waypoints. Resumes the waypoints left, if any.
   -->
-  <BehaviorTree ID="full_coverage_planner">
+  <BehaviorTree ID="cover_in_one_tour">
     <Sequence>
       <Fallback>
         <Inverter>
@@ -27,11 +27,11 @@
   </BehaviorTree>
 
   <!--
-    Explore the map room by room: segment it into rooms and order them from where the robot stands; then, for each
+    Cover the whole map room by room: segment it into rooms and order them from where the robot stands; then, for each
     room, plan the poses from where the camera sees all of it and follow them as waypoints. Resumes the rooms and
     waypoints left, if any.
   -->
-  <BehaviorTree ID="per_room_coverage">
+  <BehaviorTree ID="cover_room_by_room">
     <Sequence>
       <Fallback>
         <Inverter>

@@ -2,7 +2,7 @@
 /**:
   ros__parameters:
     # exploration
-    exploration_method: full_coverage_planner
+    exploration_method: cover_in_one_tour
     wp_reached_threshold: 1.0  # we consider a waypoint reached when we pass by at least this distance
 
     # navigation
