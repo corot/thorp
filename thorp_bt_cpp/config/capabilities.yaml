@@ -699,3 +699,9 @@ not_capabilities:
     says whether those fields survived being seeded from json.
   test_server_counts: >
     Test fixture: bumps a count in a map and writes it back, to check a map round-trips.
+  aim_at_cats: >
+    Debugging app: the cat hunter without exploring nor firing, to watch it follow cats and aim
+    the cannon at them. Endless, and of no use to the agent, that hunts with hunt_cat.
+  aim_at_cat: >
+    The half of aim_at_cats that follows a cat and aims at it: hunt_cat without firing, which
+    the agent has no reason to want.

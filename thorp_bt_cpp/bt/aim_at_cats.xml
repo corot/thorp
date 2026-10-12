@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="4">
+  <include path="cat_hunter.xml"/>
+
+  <!--
+    The cat hunter without exploring nor firing, to see how it follows and aims: wait for a cat to be seen, approach it
+    and keep aiming the cannon at it while following it, until it gets lost; then wait for the next one.
+  -->
+  <BehaviorTree ID="aim_at_cats">
+    <KeepRunningUntilFailure>
+      <Sequence>
+        <MonitorTarget target_pose="{target_pose}"/>
+        <!-- A target lost while approaching it is left -->
+        <IfThenElse>
+          <SubTree ID="approach_target"/>
+          <SubTree ID="aim_at_cat"/>
+          <AlwaysSuccess/>
+        </IfThenElse>
+      </Sequence>
+    </KeepRunningUntilFailure>
+  </BehaviorTree>
+
+  <!--
+    hunt_cat without firing: follow the target, aiming the cannon at it whenever it is close and in front. Ends when the
+    target is not seen for half a second, with the cannon leveled.
+  -->
+  <BehaviorTree ID="aim_at_cat">
+    <Fallback>
+      <Sequence>
+        <Parallel failure_count="1"
+                  success_count="1">
+          <ForceSuccess>
+            <FollowObject error="{follow_error}"/>
+          </ForceSuccess>
+          <RetryUntilSuccessful num_attempts="-1">
+            <IfThenElse>
+              <MonitorTarget name="TargetVisible"
+                             target_pose="{target_pose}"
+                             timeout="0.5"/>
+              <Sequence>
+                <GetRobotPose robot_pose="{robot_pose}"
+                              error="{error}"
+                              timeout="1"/>
+                <TargetReachable robot_pose="{robot_pose}"
+                                 target_pose="{target_pose}"
+                                 max_dist="1.0"
+                                 max_angle="0.2"/>
+                <AimCannon target_pose="{target_pose}"
+                           angle="{cannon_tilt_angle}"/>
+                <TiltCannon angle="{cannon_tilt_angle}"/>
+                <Sleep msec="200"/>
+                <AlwaysFailure _description="Keep aiming while the target is visible"/>
+              </Sequence>
+              <AlwaysSuccess/>
+            </IfThenElse>
+          </RetryUntilSuccessful>
+        </Parallel>
+        <TiltCannon angle="0"/>
+      </Sequence>
+      <Sequence>
+        <TiltCannon angle="0"/>
+        <AlwaysFailure/>
+      </Sequence>
+    </Fallback>
+  </BehaviorTree>
+</root>

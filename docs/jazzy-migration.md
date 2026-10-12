@@ -408,12 +408,14 @@ Thorp starting at its center: the first covers the house with the Kinect's field
 `exploration.rviz`; the second with the Xtion's, that detects the tables, and spawns random tables with random objects
 (`fun_house_objects`) and runs perception and manipulation, showing `gathering.rviz`. Noetic's object gatherer ran on
 the small house world. `cat_hunter.launch.py` adds the exploration planner, on the Kinect's field of view,
-and target detection, on the fun house world too, and on simulation the cats, with their bridge and controller; it
-shows `hunting.rviz`. The executive's includes are scoped, as their `params_file` argument would otherwise reach Nav2's
-launch. `llm_playground.launch.py` is the scene for the LLM agent and the capability tests: the playground with the
-fixed objects on its table, Thorp half a meter short of it, and a still cat 1.5 m to its left (`playground_cat`, with
-the cannon's rocket), with navigation, perception, manipulation and target detection, and `bt_server` as executive; it
-shows `bt_server.rviz`: `cleanup_table.rviz` plus the target displays. Noetic's detected the cat with COB. Pending:
+and target detection, on the fun house world too, and on simulation the cats, with their bridge and controller; it shows
+`hunting.rviz`. `aim_at_cats.launch.py`, new, is the cat hunter for watching it follow and aim: the cats stay still, and
+Thorp, without exploring, waits for one to come into view, then approaches it and keeps aiming the cannon at it while
+following it, without firing. The executive's includes are scoped, as their `params_file` argument would otherwise reach
+Nav2's launch. `llm_playground.launch.py` is the scene for the LLM agent and the capability tests: the playground with
+the fixed objects on its table, Thorp half a meter short of it, and a still cat 1.5 m to its left (`playground_cat`,
+with the cannon's rocket), with navigation, perception, manipulation and target detection, and `bt_server` as executive;
+it shows `bt_server.rviz`: `cleanup_table.rviz` plus the target displays. Noetic's detected the cat with COB. Pending:
 `stack_all_cubes.launch` and `resources/movie_scripts`, with their blocks.
 
 ### thorp_agent
