@@ -26,6 +26,7 @@ import yaml
 from ament_index_python.packages import get_package_share_directory
 from nav_msgs.msg import OccupancyGrid
 from rclpy.duration import Duration
+from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
 from rclpy.time import Time
@@ -227,11 +228,13 @@ def main():
     node = CoverageMonitor(args)
     try:
         rclpy.spin(node)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, ExternalShutdownException):
         pass
-    node.save()
-    node.destroy_node()
-    rclpy.try_shutdown()
+    finally:
+        # however it ends, as a signal can also interrupt the executor while it's waiting
+        node.save()
+        node.destroy_node()
+        rclpy.try_shutdown()
 
 
 if __name__ == '__main__':
