@@ -73,7 +73,6 @@ install(FILES python/thorp_toolkit/__init__.py
               python/thorp_toolkit/geometry.py
               python/thorp_toolkit/progress_tracker.py
               python/thorp_toolkit/singleton.py
-              python/thorp_toolkit/spatial_hash.py
               python/thorp_toolkit/tachometer.py
               python/thorp_toolkit/transform.py
               python/thorp_toolkit/visualization.py

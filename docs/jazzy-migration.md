@@ -208,18 +208,17 @@ Applications must give the toolkit their node once, with `thorp::toolkit::init(n
 `rviz_2d_overlay_msgs`, and Python functions raise `ValueError` on invalid inputs and `RuntimeError` on TF failures,
 instead of `rospy.ROSException`.
 
-Ported: C++ `common`, `geometry`, `math`, `parameters`, `progress_tracker`, `tf2`, `tray` (the tray's slots, from the
-planning scene objects on it, for the executive and perception) and `visualization`; Python `common`, `decorators`,
-`geometry`, `progress_tracker`, `singleton`, `spatial_hash`, `tachometer`, `transform` and `visualization`, with
-`test_progress_tracker`. Pending ROS 1 files, ported with their first consumer:
+Ported: C++ `common`, `geometry`, `math`, `parameters`, `progress_tracker`, `simulation`, `tf2`, `tray` (the tray's
+slots, from the planning scene objects on it, for the executive and perception) and `visualization`; Python `common`,
+`decorators`, `geometry`, `progress_tracker`, `singleton`, `tachometer`, `transform` and `visualization`, with
+`test_progress_tracker`. The planning scene, point tracker, semantic map and spatial hash modules are dropped, unused:
+the executive and perception use MoveIt's planning scene interfaces, and the semantic map was for SMACH states. Pending
+ROS 1 files, ported with their first consumer:
 
 | Files | First consumer | Block |
 |-------|----------------|-------|
 | `nodes/save_pose_node.cpp` | real robot navigation | real robot |
-| `planning_scene` (C++ and Python); `simulation` (`waitForObjectsSpawning`) | tray manager, BT runner | 9 |
-| `point_tracker.py` | object tracking | 9 |
-| `kobuki_base` (bumper names), `semantic_map.py`, `test_semantic_map.py` | BT conditions, smach states | 9 |
-| `spatial_hash.hpp` | none: an unused draft with a `main`; perception and costmap layers have their own | undecided |
+| `kobuki_base` (bumper names) | `bumper_pressed` BT condition | real robot |
 | Python `pause_gazebo` and `resume_gazebo` | none | undecided |
 
 `wait_for_mbf` is dropped with Move Base Flex, and `setup.py` goes when the package is complete.
@@ -473,7 +472,13 @@ Their displays for dropped packages (Move Base Flex planners, RAIL, COB, ORK, th
 semantic map) are left out; `hunting.rviz` shows YOLO's 3D boxes and debug image instead. `hunting.movie.rviz` waits for
 video recording, as its camera animation needs `rviz_animated_view_controller`, with no Jazzy release.
 `scripts/user_commands.py` and `rviz/user_commands.yaml` are replaced by the user commands panel and `ReadUserCommands`.
-Everything else is pending: real robot launch files and drivers, scripts and the docker image.
+`launch/view_model.launch`, `moveit.launch`, `navigation.launch`, `object_rec.launch` and `thorp_viz.launch` are
+replaced by the ROS 2 launch files of `thorp_description`, `thorp_moveit_config`, `thorp_navigation` and
+`thorp_perception`. `scripts/aliencontrol.py`, a copy of the `aliencontrol` package, and `gripper_cmd.py` (`ros2 action
+send_goal` does the same) are dropped, and so are the Senz3D driver's launch file and parameters. The arm only launch
+files, `launch/calibrate.launch` (the Xtion to arm calibration) and `test_arm.launch`, with the fake wheel joints
+publisher they run, `scripts/fake_joint_pub.py`, are left to the real robot block, to port from the `noetic` branch.
+Everything else is pending: real robot launch files and drivers, `scripts/fake_servos_srv.py` and the docker image.
 
 `nodes/named_configs.py` replaces Noetic's `thorp_toolkit` `reconfigure` and `alternative_config`: named configurations,
 sets of other nodes' parameters for the executive to use while doing something special. Each one is a YAML file in
@@ -558,10 +563,12 @@ playground modes (`playground_fixed`, `playground_cubes`, `playground_rows`, `pl
 of the robot, and `fun_house_objects` spawns random tables with objects in open spaces of any map, checked on Nav2's
 global costmap instead of Move Base Flex's check pose service. Objects are placed relative to their tables by the
 script, as Gazebo can't place them relative to a model created on the same step. Its `-d` option, to delete previously
-spawned models, is dropped; it didn't work on Noetic. `fill_tray.py`, new, fills the tray, in Gazebo and in the planning
-scene, with one object per slot but on the last rows, as if placed there, to test placing on a nearly full tray; its
-hidden objects, heavy and only in Gazebo, make placing stall on the first free slots. The `cats` mode spawns 3 black and
-3 orange cats in open spaces, 3 m apart, and the cannon's `rocket`.
+spawned models, is dropped; it didn't work on Noetic. The Stage and STDR simulations are dropped, with no Jazzy release
+of either simulator, and so is `scripts/gazebo_link_state.py`: `gz model -m thorp -l <link> -p` shows the same.
+`fill_tray.py`, new, fills the tray, in Gazebo and in the planning scene, with one object per slot but on the last rows,
+as if placed there, to test placing on a nearly full tray; its hidden objects, heavy and only in Gazebo, make placing
+stall on the first free slots. The `cats` mode spawns 3 black and 3 orange cats in open spaces, 3 m apart, and the
+cannon's `rocket`.
 
 The cat models carry contact sensors, all publishing on `/cats/contacts` through the world's Contact system (loaded by
 the `fun_house` world), and an odometry publisher, with each cat's pose on `/cats/odometry`, named after it: the world's
@@ -574,11 +581,9 @@ the cats from RViz, is dropped: Gazebo's GUI moves models. Pending ROS 1 files:
 
 | Files | Block |
 |-------|-------|
-| Bumper and cliff point clouds in `thorp_gazebo.launch.xml` | real robot |
+| Bumper and cliff point clouds, in Noetic's `launch/includes/thorp_gazebo.launch.xml` | real robot |
 | `spawn_gazebo_models.py` `small_house_objects` mode | when needed |
 | `src/gazebo_camera_control*.cpp`, `nodes/movie_director.py`: video recording | undecided |
-| Stage and STDR launch files, worlds and robot configurations (no Jazzy release of either simulator) | undecided |
-| `scripts/gazebo_link_state.py` (`gz model -m thorp -l <link> -p` shows the same) | undecided |
 
 ## Simulation on Gazebo Harmonic
 
