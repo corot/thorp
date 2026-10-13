@@ -12,6 +12,6 @@
 -->
 <launch>
   <node pkg="thorp_boards" type="arduino_node" name="arduino_node" output="screen" respawn="true">
-    <rosparam file="$(find thorp_boards)/param/arduino.yaml" command="load"/>
+    <rosparam file="$(find thorp_boards)/config/arduino.yaml" command="load"/>
   </node>
 </launch>

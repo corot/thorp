@@ -36,7 +36,7 @@ def launch_setup(context):
     common_params = [params_file, {'use_sim_time': LaunchConfiguration('use_sim_time')}]
 
     cmd_vel_remap = [('cmd_vel', '/navigation/cmd_vel')]
-    smoother_params = [PathJoinSubstitution([FindPackageShare('thorp_navigation'), 'param', 'velocity_smoother.yaml']),
+    smoother_params = [PathJoinSubstitution([FindPackageShare('thorp_navigation'), 'config', 'velocity_smoother.yaml']),
                        {'use_sim_time': LaunchConfiguration('use_sim_time')}]
 
     navigation_nodes = ['controller_server', 'planner_server', 'smoother_server', 'behavior_server', 'bt_navigator',
@@ -110,7 +110,7 @@ def generate_launch_description():
         DeclareLaunchArgument('localization', default_value='amcl', description='amcl, static or gazebo'),
         DeclareLaunchArgument('use_sim_time', default_value='false'),
         DeclareLaunchArgument('params_file',
-                              default_value=PathJoinSubstitution([FindPackageShare('thorp_navigation'), 'param',
+                              default_value=PathJoinSubstitution([FindPackageShare('thorp_navigation'), 'config',
                                                                   'nav2.yaml']),
                               description='Nav2 parameters file'),
 

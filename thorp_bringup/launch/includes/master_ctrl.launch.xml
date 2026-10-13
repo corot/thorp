@@ -7,7 +7,7 @@
   <!-- Velocity smoother nodelet; we must provide the absolute name of nodelet manager, as we can be in an application namespace -->
   <node pkg="nodelet" type="nodelet" name="special_tasks_velocity_smoother" output="screen" respawn="true"
         args="load yocs_velocity_smoother/VelocitySmootherNodelet /mobile_base_nodelet_manager">
-    <rosparam file="$(find thorp_bringup)/param/vel_smoother.yaml" command="load"/>
+    <rosparam file="$(find thorp_bringup)/config/vel_smoother.yaml" command="load"/>
     <remap from="special_tasks_velocity_smoother/smooth_cmd_vel" to="/cmd_vel_mux/input/special_task"/>
     <remap from="special_tasks_velocity_smoother/robot_cmd_vel" to="/mobile_base/commands/velocity"/>
     <remap from="special_tasks_velocity_smoother/odometry" to="/odom"/>
@@ -22,9 +22,9 @@
     <param name="play_sounds" value="true"/>
     <param name="debug_mode" value="$(arg debug_mode)"/>
     
-    <rosparam file="$(find thorp_bringup)/param/nav_watchdog.yaml" command="load"/>
-    <rosparam file="$(find thorp_bringup)/param/navigator.yaml" command="load"/>
-    <rosparam file="$(find thorp_bringup)/param/ar_markers.yaml" command="load"/>
+    <rosparam file="$(find thorp_bringup)/config/nav_watchdog.yaml" command="load"/>
+    <rosparam file="$(find thorp_bringup)/config/navigator.yaml" command="load"/>
+    <rosparam file="$(find thorp_bringup)/config/ar_markers.yaml" command="load"/>
 
     <!-- Incoming remaps -->
     <remap from="new_goal"      to="move_base_simple/goal"/>

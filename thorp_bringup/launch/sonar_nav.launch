@@ -11,7 +11,7 @@
 
   <!--  ** Turtlebot 2 move base with custom tweaks ***  -->
   <include file="$(find turtlebot_navigation)/launch/includes/move_base.launch.xml">
-    <arg name="custom_param_file" value="$(find thorp_bringup)/param/custom_move_base.yaml"/>
+    <arg name="custom_param_file" value="$(find thorp_bringup)/config/custom_move_base.yaml"/>
   </include>
 
   <!--
@@ -22,7 +22,7 @@
      - we use a bigger costmap than that of the local planner
      - replan every second, as global costmap changes
   -->
-  <rosparam file="$(find thorp_bringup)/param/global_dynamic_costmap.yaml" command="load"/>
+  <rosparam file="$(find thorp_bringup)/config/global_dynamic_costmap.yaml" command="load"/>
   <param name="move_base/global_costmap/obstacle_layer/observation_sources" value="bump"/>
   <param name="move_base/local_costmap/obstacle_layer/observation_sources" value="bump"/>
   <param name="move_base/planner_frequency" value="1.0"/>

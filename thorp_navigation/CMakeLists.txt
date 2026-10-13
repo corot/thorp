@@ -12,8 +12,8 @@ install(FILES launch/navigation.launch.py
         DESTINATION share/${PROJECT_NAME}/launch
 )
 
-install(FILES param/nav2.yaml param/velocity_smoother.yaml
-        DESTINATION share/${PROJECT_NAME}/param
+install(FILES config/nav2.yaml config/velocity_smoother.yaml
+        DESTINATION share/${PROJECT_NAME}/config
 )
 
 install(DIRECTORY behavior_trees

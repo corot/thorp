@@ -3,7 +3,7 @@ project(thorp_apps)
 
 find_package(ament_cmake REQUIRED)
 
-install(DIRECTORY launch param resources
+install(DIRECTORY launch config resources
         DESTINATION share/${PROJECT_NAME}
 )
 

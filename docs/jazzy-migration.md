@@ -270,7 +270,7 @@ files:
 
 | Files | Block |
 |-------|-------|
-| Real robot servos: `param/controllers.yaml`, `launch/includes/controllers.launch.xml`, `nodes/dynamixel_*.py`, and their use in `launch/includes/arm.launch.xml`; `fake_servos_srv.py` from `thorp_bringup` on simulation | real robot |
+| Real robot servos: `config/controllers.yaml`, `launch/includes/controllers.launch.xml`, `nodes/dynamixel_*.py`, and their use in `launch/includes/arm.launch.xml`; `fake_servos_srv.py` from `thorp_bringup` on simulation | real robot |
 
 The tray manager, the drag and drop server (`interactive_manip_server.cpp`) and the pickup planner
 (`pickup_planner_server.py`) are replaced by `thorp_bt_cpp`'s tray, `DragAndDrop` and `PlanPickupLocations` nodes. MTC
@@ -396,7 +396,7 @@ With `viz_executive`, the executive's running node shows on RViz, and Groot2 sta
 monitor the tree; it isn't respawned, as Noetic's was. It also starts RViz, with the MoveIt plugin, showing the
 `thorp_bringup` configuration each app passes as `rviz_config` (`rviz:=false` to skip it); the included launch files
 start none, as launch arguments are global: a default in an include can't override the app's `rviz`. SMACH executives
-and video recording aren't ported. `param/apps_config.yaml` is a ROS 2 parameters file for whichever node runs the app.
+and video recording aren't ported. `config/apps_config.yaml` is a ROS 2 parameters file for whichever node runs the app.
 `pickup_objects.launch.py` adds a static `map` to `odom` transform (no map server), the objects spawner, perception and
 manipulation, through `launch/includes/tabletop_manip.launch.py`, shared with `object_manip.launch.py`. `object_manip`
 shuts everything down on the exit command, as on Noetic; an object dropped over the tray goes on its next free slot,
@@ -466,7 +466,7 @@ cancels navigation.
 
 ### thorp_bringup
 
-Ported: `param/twist_mux.yaml` (was `vel_multiplexer.yaml`, for Noetic's `cmd_vel_mux`), the Kinect and Xtion depth to
+Ported: `config/twist_mux.yaml` (was `vel_multiplexer.yaml`, for Noetic's `cmd_vel_mux`), the Kinect and Xtion depth to
 laser scan parameters, `rviz/navigation.rviz` (based on Nav2's default view) and `rviz/manipulation.rviz` (based on
 MoveIt's, plus the objects' interactive markers, the user command and executive overlays and the user commands panel,
 with the `rviz/icons`). The other RViz configurations are built on those two, with Noetic's displays on the Jazzy
@@ -485,23 +485,23 @@ Everything else is pending: real robot launch files and drivers, `scripts/fake_s
 
 `nodes/named_configs.py` replaces Noetic's `thorp_toolkit` `reconfigure` and `alternative_config`: named configurations,
 sets of other nodes' parameters for the executive to use while doing something special. Each one is a YAML file in
-`param/named_configs`, named after it, mapping absolute node names to nested parameter trees; `precise_controlling.yaml`
-is rewritten for Nav2. The node serves `/named_configs/set` (`thorp_msgs/SetNamedConfig`; an empty name restores the
-default configuration) and publishes the one in use, latched, on `/named_configs/active`. One is in use at a time: using
-another restores the parameters it doesn't set, as read before setting them the first time; a failure restores the
-default configuration. The `UseNamedConfig` BT node uses one while running and restores the default when halted, so it
-runs in parallel with the actions that need it. `apps_common.launch.py` starts the node. Nodes accept new values only
-for the parameters their dynamic parameters callback handles, so check each new parameter's effect once.
+`config/named_configs`, named after it, mapping absolute node names to nested parameter trees;
+`precise_controlling.yaml` is rewritten for Nav2. The node serves `/named_configs/set` (`thorp_msgs/SetNamedConfig`; an
+empty name restores the default configuration) and publishes the one in use, latched, on `/named_configs/active`. One is
+in use at a time: using another restores the parameters it doesn't set, as read before setting them the first time; a
+failure restores the default configuration. The `UseNamedConfig` BT node uses one while running and restores the default
+when halted, so it runs in parallel with the actions that need it. `apps_common.launch.py` starts the node. Nodes accept
+new values only for the parameters their dynamic parameters callback handles, so check each new parameter's effect once.
 
 ### thorp_navigation
 
 Ported: `navigation.launch.py`, with Nav2 in place of Move Base Flex and the Noetic arguments (localization `amcl`,
-`static` or `gazebo`, map, initial pose), `param/nav2.yaml`, `param/velocity_smoother.yaml` and the maps;
+`static` or `gazebo`, map, initial pose), `config/nav2.yaml`, `config/velocity_smoother.yaml` and the maps;
 `small_house`'s are symlinks into the `aws_robomaker_small_house_world` checkout in `src/third_party`. Velocity commands
 go to the multiplexer, `twist_mux`, on `<source>/cmd_vel` topics, replacing Noetic's `cmd_vel_mux/input/<source>`:
 navigation and following through their velocity smoothers (`navigation_smoother` and `following_smoother`), from
 `<source>/cmd_vel` to `<source>/cmd_vel_smoothed`; the smoothers, started with navigation, share
-`param/velocity_smoother.yaml` and publish at 50 Hz, as they send commands on a timer. `twist_mux` uses unstamped
+`config/velocity_smoother.yaml` and publish at 50 Hz, as they send commands on a timer. `twist_mux` uses unstamped
 velocities, as Nav2 and the Kobuki base. The controller runs at 20 Hz instead of Noetic's 15, as MPPI needs a control
 period no longer than its model step. For docking at tables, a precise controller (`Graceful`, Nav2's graceful
 controller, slow) and goal checker (`precise_goal_checker`, Noetic's 3.5 cm and 0.05 rad) replace most of the
@@ -578,7 +578,7 @@ the `fun_house` world), and an odometry publisher, with each cat's pose on `/cat
 pose stream loses the names when bridged. Gazebo ignores the contact sensors' update rate, so they publish on every
 step while touching. Each model has its own mesh, material and texture file names, as Gazebo rendered both cats with
 the textures loaded first. `cats_controller.py` is ported with Noetic's design, on those topics, bridged by
-`param/cats_bridge.yaml`, and Gazebo's set pose service: the cats prowl by small teleports, turning away from what they
+`config/cats_bridge.yaml`, and Gazebo's set pose service: the cats prowl by small teleports, turning away from what they
 touch, stop for a moment when hit by a rocket, and go out of the house when toppled. `nodes/model_markers.py`, to move
 the cats from RViz, is dropped: Gazebo's GUI moves models. Pending ROS 1 files:
 

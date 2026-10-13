@@ -72,7 +72,7 @@ def generate_launch_description():
              arguments=['playground_cat'], parameters=[{'use_sim_time': simulation}],
              condition=IfCondition(simulation)),
         Node(package='ros_gz_bridge', executable='parameter_bridge', name='cats_bridge', output='screen',
-             parameters=[{'config_file': PathJoinSubstitution([FindPackageShare('thorp_simulation'), 'param',
+             parameters=[{'config_file': PathJoinSubstitution([FindPackageShare('thorp_simulation'), 'config',
                                                                'cats_bridge.yaml']),
                           'use_sim_time': simulation}],
              condition=IfCondition(simulation)),

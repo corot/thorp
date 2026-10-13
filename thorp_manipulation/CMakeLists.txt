@@ -61,9 +61,9 @@ install(FILES launch/includes/arm.launch.py
         DESTINATION share/${PROJECT_NAME}/launch/includes
 )
 
-install(FILES param/pick_and_place.yaml
-              param/pick_and_place_gazebo.yaml
-        DESTINATION share/${PROJECT_NAME}/param
+install(FILES config/pick_and_place.yaml
+              config/pick_and_place_gazebo.yaml
+        DESTINATION share/${PROJECT_NAME}/config
 )
 
 ament_package()

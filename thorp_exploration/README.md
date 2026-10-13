@@ -12,5 +12,5 @@ apps. On the map received on `map`, it offers these services:
   or of the whole map, in the order to visit them traveling the least.
 
 It shows the rooms and the last poses planned, with the camera's field of view on each, as markers on `~/rooms` and
-`~/viewpoints`. `launch/exploration.launch.py` runs it for the Kinect or Xtion camera; `param/exploration.yaml` has the
+`~/viewpoints`. `launch/exploration.launch.py` runs it for the Kinect or Xtion camera; `config/exploration.yaml` has the
 fields of view and the planning parameters. On Noetic, `ipa_coverage_planning` did this job.

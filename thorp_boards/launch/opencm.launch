@@ -15,7 +15,7 @@
   <arg name="simulation" default="false"/>
 
   <node pkg="arbotix_python" type="arbotix_driver" name="arbotix" output="screen" respawn="false">
-    <rosparam file="$(find thorp_boards)/param/opencm.yaml" command="load" />
+    <rosparam file="$(find thorp_boards)/config/opencm.yaml" command="load" />
     <param name="sim" value="$(arg simulation)"/>
   </node>
 

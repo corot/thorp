@@ -1,7 +1,7 @@
 <launch>
   <arg name="dynamixel_namespace" value="/" />
 
-  <rosparam ns="$(arg dynamixel_namespace)" file="$(find thorp_manipulation)/param/controllers.yaml" command="load"/>
+  <rosparam ns="$(arg dynamixel_namespace)" file="$(find thorp_manipulation)/config/controllers.yaml" command="load"/>
 
   <!-- Start the Dynamixel low-level driver manager with parameters -->
   <node ns="$(arg dynamixel_namespace)"

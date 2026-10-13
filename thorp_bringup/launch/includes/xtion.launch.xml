@@ -35,7 +35,7 @@
   <group ns="$(arg camera_name)" if="$(arg scan_processing)">
     <node pkg="nodelet" type="nodelet" name="pointcloud_to_laserscan"
           args="load pointcloud_to_laserscan/pointcloud_to_laserscan_nodelet $(arg camera_name)_nodelet_manager">
-      <rosparam file="$(find thorp_bringup)/param/xtion/pointcloud_to_laserscan.yaml" command="load"/>
+      <rosparam file="$(find thorp_bringup)/config/xtion/pointcloud_to_laserscan.yaml" command="load"/>
       <remap from="cloud_in" to="depth_registered/points"/>
     </node>
   </group>

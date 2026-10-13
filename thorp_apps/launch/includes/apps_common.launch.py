@@ -26,7 +26,7 @@ def generate_launch_description():
     visualize_bt = PythonExpression(["'", LaunchConfiguration('viz_executive'), "' == 'true' and '", executive,
                                      "' == 'bt'"])
     # Into whichever node runs the app: bt_runner, or bt_server for the LLM executive
-    apps_config = PathJoinSubstitution([FindPackageShare('thorp_apps'), 'param', 'apps_config.yaml'])
+    apps_config = PathJoinSubstitution([FindPackageShare('thorp_apps'), 'config', 'apps_config.yaml'])
     return LaunchDescription([
         DeclareLaunchArgument('app_name'),
         DeclareLaunchArgument('simulator', default_value='gazebo', choices=['gazebo']),

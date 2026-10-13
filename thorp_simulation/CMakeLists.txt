@@ -34,8 +34,8 @@ install(FILES launch/thorp_gazebo.launch.py launch/navigation.launch.py
         DESTINATION share/${PROJECT_NAME}/launch
 )
 
-install(FILES param/gz_bridge.yaml param/cats_bridge.yaml param/controllers.yaml
-        DESTINATION share/${PROJECT_NAME}/param
+install(FILES config/gz_bridge.yaml config/cats_bridge.yaml config/controllers.yaml
+        DESTINATION share/${PROJECT_NAME}/config
 )
 
 # small_house.world is a symlink into the aws_robomaker_small_house_world checkout in src/third_party

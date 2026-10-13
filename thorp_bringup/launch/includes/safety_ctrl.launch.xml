@@ -5,7 +5,7 @@
   <!-- Velocity smoother nodelet; we must provide the absolute name of nodelet manager, as we can be in an application namespace -->
   <node pkg="nodelet" type="nodelet" name="safety_ctrl_velocity_smoother" output="screen" respawn="true"
         args="load yocs_velocity_smoother/VelocitySmootherNodelet /mobile_base_nodelet_manager">
-    <rosparam file="$(find thorp_bringup)/param/vel_smoother.yaml" command="load"/>
+    <rosparam file="$(find thorp_bringup)/config/vel_smoother.yaml" command="load"/>
     <param name="accel_lim_v"  value="0.5"/>
     <param name="decel_factor" value="3.0"/>  <!-- Make breaking almost unsmoothed so bumper and cliff sensors do their job -->
 

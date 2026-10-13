@@ -31,7 +31,7 @@ def launch_setup(context):
              # its planning node logs each planning step
              arguments=['--ros-args', '--log-level', 'manipulation_planning:=warn'],
              parameters=[config.to_dict(),
-                         os.path.join(get_package_share_directory('thorp_manipulation'), 'param', params_file),
+                         os.path.join(get_package_share_directory('thorp_manipulation'), 'config', params_file),
                          {'use_sim_time': LaunchConfiguration('use_sim_time')}]),
     ]
 

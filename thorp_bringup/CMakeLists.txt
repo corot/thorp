@@ -4,17 +4,17 @@ project(thorp_bringup)
 find_package(ament_cmake REQUIRED)
 
 # Parameters shared by the real robot and simulation; listed one by one, as the package is only partially ported
-install(FILES param/twist_mux.yaml
-        DESTINATION share/${PROJECT_NAME}/param
+install(FILES config/twist_mux.yaml
+        DESTINATION share/${PROJECT_NAME}/config
 )
-install(DIRECTORY param/named_configs
-        DESTINATION share/${PROJECT_NAME}/param
+install(DIRECTORY config/named_configs
+        DESTINATION share/${PROJECT_NAME}/config
 )
-install(FILES param/kinect/depthimage_to_laserscan.yaml
-        DESTINATION share/${PROJECT_NAME}/param/kinect
+install(FILES config/kinect/depthimage_to_laserscan.yaml
+        DESTINATION share/${PROJECT_NAME}/config/kinect
 )
-install(FILES param/xtion/pointcloud_to_laserscan.yaml
-        DESTINATION share/${PROJECT_NAME}/param/xtion
+install(FILES config/xtion/pointcloud_to_laserscan.yaml
+        DESTINATION share/${PROJECT_NAME}/config/xtion
 )
 
 install(PROGRAMS nodes/named_configs.py

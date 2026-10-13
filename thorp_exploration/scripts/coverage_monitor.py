@@ -39,7 +39,7 @@ from thorp_exploration.planner import Camera, Grid, Roadmap
 
 def field_of_view(camera):
     """ The camera's field of view polygon, from the exploration planner's parameters """
-    path = os.path.join(get_package_share_directory('thorp_exploration'), 'param', 'exploration.yaml')
+    path = os.path.join(get_package_share_directory('thorp_exploration'), 'config', 'exploration.yaml')
     params = yaml.safe_load(open(path))['exploration']['ros__parameters']
     fov = params[camera + '_field_of_view']
     return list(zip(fov[0::2], fov[1::2])), params

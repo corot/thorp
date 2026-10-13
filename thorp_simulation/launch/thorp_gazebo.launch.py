@@ -36,7 +36,7 @@ def generate_launch_description():
 
     sim_share = FindPackageShare('thorp_simulation')
     xacro_file = PathJoinSubstitution([FindPackageShare('thorp_description'), 'urdf', 'thorp.urdf.xacro'])
-    controllers_file = PathJoinSubstitution([sim_share, 'param', 'controllers.yaml'])
+    controllers_file = PathJoinSubstitution([sim_share, 'config', 'controllers.yaml'])
     robot_description = ParameterValue(Command(['xacro ', xacro_file, ' simulation:=true',
                                                 ' ros2_control_params:=', controllers_file]), value_type=str)
     sim_time = {'use_sim_time': True}
@@ -103,7 +103,7 @@ def generate_launch_description():
                         '-Y', LaunchConfiguration('initial_pose_a')]),
 
         Node(package='ros_gz_bridge', executable='parameter_bridge', name='gz_bridge',
-             parameters=[{'config_file': PathJoinSubstitution([sim_share, 'param', 'gz_bridge.yaml'])}, sim_time]),
+             parameters=[{'config_file': PathJoinSubstitution([sim_share, 'config', 'gz_bridge.yaml'])}, sim_time]),
 
         # Objects resting on the tray get fixed to Thorp, so they don't join its contacts solving
         Node(package='thorp_simulation', executable='tray_objects.py', output='screen',
@@ -137,7 +137,7 @@ def generate_launch_description():
                                     ComposableNode(package='depthimage_to_laserscan',
                                                    plugin='depthimage_to_laserscan::DepthImageToLaserScanROS',
                                                    name='depthimage_to_laserscan', namespace='kinect',
-                                                   parameters=[PathJoinSubstitution([bringup_share, 'param', 'kinect',
+                                                   parameters=[PathJoinSubstitution([bringup_share, 'config', 'kinect',
                                                                                      'depthimage_to_laserscan.yaml']),
                                                                sim_time],
                                                    remappings=[('depth', 'depth_registered/image_raw'),
@@ -145,13 +145,13 @@ def generate_launch_description():
                                     ComposableNode(package='pointcloud_to_laserscan',
                                                    plugin='pointcloud_to_laserscan::PointCloudToLaserScanNode',
                                                    name='pointcloud_to_laserscan', namespace='xtion',
-                                                   parameters=[PathJoinSubstitution([bringup_share, 'param', 'xtion',
+                                                   parameters=[PathJoinSubstitution([bringup_share, 'config', 'xtion',
                                                                                      'pointcloud_to_laserscan.yaml']),
                                                                sim_time],
                                                    remappings=[('cloud_in', 'depth_registered/points')])]),
 
         # Velocity commands multiplexer
         Node(package='twist_mux', executable='twist_mux', name='twist_mux', output='screen',
-             parameters=[PathJoinSubstitution([bringup_share, 'param', 'twist_mux.yaml']), sim_time],
+             parameters=[PathJoinSubstitution([bringup_share, 'config', 'twist_mux.yaml']), sim_time],
              remappings=[('cmd_vel_out', '/mobile_base/commands/velocity')]),
     ])

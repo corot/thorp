@@ -56,7 +56,7 @@ class NamedConfigs(Node):
 
     def __init__(self):
         super().__init__('named_configs')
-        default_path = os.path.join(get_package_share_directory('thorp_bringup'), 'param', 'named_configs')
+        default_path = os.path.join(get_package_share_directory('thorp_bringup'), 'config', 'named_configs')
         path = self.declare_parameter('path', default_path).value
         self.configs = {}  # configuration name: {node name: {parameter name: YAML value}}
         for file_name in sorted(os.listdir(path)):
