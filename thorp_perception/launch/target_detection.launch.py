@@ -17,7 +17,7 @@ def generate_launch_description():
     use_sim_time = LaunchConfiguration('use_sim_time')
     return LaunchDescription([
         DeclareLaunchArgument('use_sim_time', default_value='false'),
-        DeclareLaunchArgument('yolo_model', default_value=os.path.expanduser('~/.cache/thorp/yolo11m.pt'),
+        DeclareLaunchArgument('yolo_model', default_value=os.path.expanduser('~/.cache/thorp/yolo11m-seg.pt'),
                               description="YOLO weights; Ultralytics' own models get downloaded there if missing"),
         DeclareLaunchArgument('yolo_device', default_value='cuda:0', description='cuda:N or cpu'),
 
@@ -31,6 +31,8 @@ def generate_launch_description():
                                   'threshold': '0.5',
                                   'use_tracking': 'True',
                                   'use_3d': 'True',
+                                  # oriented 3D boxes, on the segmentation masks' points
+                                  'enable_orientation': 'True',
                                   'use_debug': 'True',
                                   'input_image_topic': '/kinect/rgb/image_raw',
                                   'input_depth_topic': '/kinect/depth_registered/image_raw',

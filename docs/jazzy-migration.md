@@ -189,12 +189,13 @@ that quadrilateral rather than on the points' bounding box), and the 2D non-line
 images and object recognition fields are dropped. The ORK and darknet YOLO pipelines are dropped too.
 
 `target_detection.launch.py`, for the cat hunter, replaces the COB pipeline: `yolo_ros`, a source dependency, detects
-and tracks objects on the Kinect images, with YOLO11m, and locates them with its depth images, on `base_footprint`, as
-it transforms them with the latest transform; `target_tracker.py` picks the target among the cats, dogs and horses
-detected (YOLO can take a cat seen from behind for a dog), keeping the same one while detected, or else the nearest, and
-publishes its pose on `odom` as `target_object_pose`, as Noetic's `object_tracking.py` did. Its predicted pose is
-dropped: `opennav_following` filters the pose itself. The YOLO weights go to `~/.cache/thorp`, where Ultralytics
-downloads its own models if missing. Pending ROS 1 files:
+and tracks objects on the Kinect images, with YOLO11m's segmentation model, and locates them with its depth images
+within their masks, as oriented 3D boxes, on `base_footprint`, as it transforms them with the latest transform;
+`target_tracker.py` picks the target among the cats, dogs and horses detected (YOLO can take a cat seen from behind for
+a dog), keeping the same one while detected, or else the nearest, and publishes its pose on `odom`, upright with the
+box's heading, as `target_object_pose`, as Noetic's `object_tracking.py` did. Its predicted pose is dropped:
+`opennav_following` filters the pose itself. The YOLO weights go to `~/.cache/thorp`, where Ultralytics downloads its
+own models if missing. Pending ROS 1 files:
 
 | Files | Block |
 |-------|-------|

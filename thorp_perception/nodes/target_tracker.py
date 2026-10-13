@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 """
-Target tracker: picks the object to hunt among YOLO's 3D detections of the target classes, and publishes its pose on
-the fixed frame, for following and aiming at it. It keeps the same target while it's detected, or else picks the
+Target tracker: picks the object to hunt among YOLO's 3D detections of the target classes, and publishes its pose on the
+fixed frame, upright, for following and aiming at it. It keeps the same target while it's detected, or else picks the
 nearest one. Detections must be on a robot frame, as distances are measured from its origin.
 """
 
@@ -17,7 +17,7 @@ from geometry_msgs.msg import PoseStamped
 from yolo_msgs.msg import DetectionArray
 
 from thorp_toolkit.common import init
-from thorp_toolkit.geometry import TF2, point2d2str
+from thorp_toolkit.geometry import TF2, point2d2str, quaternion_msg_from_yaw, yaw
 
 
 class TargetTracker(Node):
@@ -55,9 +55,13 @@ class TargetTracker(Node):
         pose.pose = target.bbox3d.center
         try:
             # on the image's time, as the robot moves while detecting
-            self.target_pub.publish(TF2().transform_pose(pose, None, self.fixed_frame, Duration(seconds=0.2)))
+            pose = TF2().transform_pose(pose, None, self.fixed_frame, Duration(seconds=0.2))
         except RuntimeError as e:
             self.get_logger().warning(str(e), throttle_duration_sec=1.0)
+            return
+        # upright, keeping only the box's heading, as the box tilts with the object's visible surface
+        pose.pose.orientation = quaternion_msg_from_yaw(yaw(pose))
+        self.target_pub.publish(pose)
 
 
 def main():
