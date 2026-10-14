@@ -101,6 +101,29 @@
     </Sequence>
   </BehaviorTree>
 
+  <!--
+    Drive to the viewing pose of a known table: the closest of those facing each of its sides, outside arm reach. From
+    there the table is in view, for detecting, inspecting or approaching it.
+  -->
+  <BehaviorTree ID="go_to_table">
+    <Sequence>
+      <ReadDoubleParam param_name="approach_dist_to_table"
+                       output_key="{approach_dist_to_table}"/>
+      <GetPosesAroundTable distance="{approach_dist_to_table}"
+                           table="{table}"
+                           table_pose="{table_pose}"
+                           table_side_poses="{approach_poses}"/>
+      <GetRobotPose timeout="1"
+                    error="{error}"
+                    robot_pose="{robot_pose}"/>
+      <GetClosestPose poses="{approach_poses}"
+                      target_pose="{robot_pose}"
+                      closest_pose="{inspect_pose}"/>
+      <NavigateToPose goal="{inspect_pose}"
+                      error_code_id="{nav_error}"/>
+    </Sequence>
+  </BehaviorTree>
+
   <BehaviorTree ID="validate_table">
     <Sequence>
       <GetRobotPose timeout="1"
@@ -129,17 +152,12 @@
                       table_pose="{table_pose}"/>
         <PoseInBlackboard key="{table_pose}"/>
       </Fallback>
-      <ReadDoubleParam param_name="approach_dist_to_table"
-                       output_key="{approach_dist_to_table}"/>
-      <GetPosesAroundTable distance="{approach_dist_to_table}"
-                           table="{table}"
-                           table_pose="{table_pose}"
-                           table_side_poses="{approach_poses}"/>
-      <GetClosestPose poses="{approach_poses}"
-                      target_pose="{robot_pose}"
-                      closest_pose="{inspect_pose}"/>
-      <NavigateToPose goal="{inspect_pose}"
-                      error_code_id="{nav_error}"/>
+      <SubTree ID="go_to_table"
+               table="{table}"
+               table_pose="{table_pose}"
+               inspect_pose="{inspect_pose}"
+               error="{error}"
+               nav_error="{nav_error}"/>
       <DetectTables table="{table}"
                     table_pose="{table_pose}"/>
       <TableAsObstacle table="{table}"

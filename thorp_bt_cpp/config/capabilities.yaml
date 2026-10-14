@@ -252,7 +252,8 @@ capabilities:
       Only one surface is reported, however many are in view, and it always comes
       back named "table" -- the name carries no information here, unlike detect_objects. This
       is the step that tells you a table is there and where to stand relative to it; it does
-      not move the robot, and it fails when nothing in view is a large enough surface.
+      not move the robot, and it fails when nothing in view is a large enough surface. It only
+      sees a table close in front; for one known but farther away, go_to_table first.
     status: ok
     stack: [perception]
     inputs: {}
@@ -272,8 +273,9 @@ capabilities:
       arm to reach what is on it: finds the table, works out where to stand and docks there
       precisely, under the table's eaves. The step before picking from or placing on a table. It finds the
       table itself, so it takes no arguments; from inspect_table's viewing pose it sees the
-      table better than from further back. Its pickup_pose is what reach_table takes to go
-      back in after leave_table.
+      table better than from further back. It only finds a table close in front; for one
+      known but farther away, go_to_table first. Its pickup_pose is what reach_table takes
+      to go back in after leave_table.
     status: ok
     stack: [navigation, perception]
     invalidates: [objects_detected]
@@ -293,8 +295,9 @@ capabilities:
     description: >
       Look over the table in front of the robot from a viewing pose on its nearest side, and
       report the table and the objects on it. Fails when no table is in view or it isn't a
-      usable size. The viewing pose is outside arm reach: to pick one of these objects,
-      approach_table and then detect_objects, whose names are the ones pickup_object takes.
+      usable size; for a table known but not close in front, go_to_table first. The viewing
+      pose is outside arm reach: to pick one of these objects, approach_table and then
+      detect_objects, whose names are the ones pickup_object takes.
     status: ok
     stack: [navigation, perception]
     invalidates: [at_a_table]
@@ -307,6 +310,29 @@ capabilities:
       surface: {type: moveit_msgs::msg::CollisionObject, description: "the surface they were found on, as name and color"}
     test:
       inputs: {}
+      expect: any
+      timeout: 300
+
+  go_to_table:
+    description: >
+      Drive to the viewing pose of a table detected earlier: facing its side nearest the robot,
+      just outside arm reach. detect_table, inspect_table, approach_table and cleanup_table
+      only find a table close in front of the robot; when it isn't, come here first, with the
+      table an earlier call returned.
+    status: ok
+    stack: [navigation]
+    invalidates: [at_a_table, objects_detected]
+    inputs:
+      table: {type: moveit_msgs::msg::CollisionObject, from: [detect_table.table, approach_table.table, inspect_table.table], description: "table to go to; name, pose and size"}
+      table_pose: {type: geometry_msgs::msg::PoseStamped, from: [detect_table.table_pose, approach_table.table_pose, inspect_table.table_pose], description: "pose of that table"}
+    outputs:
+      inspect_pose: {type: geometry_msgs::msg::PoseStamped, description: "the viewing pose it drove to"}
+      error: {type: int, when: failure, description: "error code from reading the robot pose"}
+      nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's navigate_to_pose"}
+    test:
+      setup:
+        - {subtree: detect_table}
+      inputs_from: {table: [detect_table, table], table_pose: [detect_table, table_pose]}
       expect: any
       timeout: 300
 
@@ -371,7 +397,8 @@ capabilities:
     description: >
       Clear every reachable object from one table onto the tray, working through a planned
       sequence of pickup locations around it. With no table given, it takes the one in front,
-      as validate_table does.
+      as validate_table does. Either way it looks for the objects from where the robot stands,
+      so start it close in front of the table: go_to_table gets there.
     status: ok
     stack: [navigation, manipulation, perception]
     invalidates: [at_a_table, objects_detected, holding_object]

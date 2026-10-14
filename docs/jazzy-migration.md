@@ -310,8 +310,9 @@ camera looks where the robot goes rather than along the planned headings. `Table
 semantic layer for a table `TableAsObstacle` marked overlapping the one detected. `validate_table` goes on with the
 table it's given if detecting it again, after turning to face it, misses, as a far or small table can be at the
 detection limit; that livelocked `object_gatherer`, the table detected while exploring and missed once in front.
-`reach_table` fails if docking takes over a minute, and `object_gatherer` goes on exploring if a table's cleanup
-fails.
+`reach_table` fails if docking takes over a minute, and `object_gatherer` goes on exploring if a table's cleanup fails.
+`go_to_table`, new, drives to the viewing pose of a known table, as `validate_table` does once it has one: the agent's
+table capabilities only find a table close in front.
 
 Nodes calling actions derive from Nav2's `BtActionNode`, with their servers' names as `server_name` defaults; the
 runner puts Nav2's timeouts on the blackboard: `server_timeout` half a tick and `wait_for_service_timeout` 5 s, 60 s
