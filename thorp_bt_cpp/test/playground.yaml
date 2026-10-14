@@ -51,7 +51,7 @@ entities:
   kind: object
   type: cube
   size: [0.034, 0.011, 0.03]
-  color: blue
+  color: gray
   pose: {x: 0.467, y: 0.099, z: 0.488, yaw: 0.84}
   support: table 1
   slot: null
@@ -84,7 +84,7 @@ entities:
   kind: object
   type: clover
   size: [0.032, 0.011, 0.029]
-  color: red
+  color: green
   pose: {x: 0.348, y: -0.036, z: 0.487, yaw: 1.4}
   support: table 1
   slot: null
@@ -106,7 +106,7 @@ entities:
   kind: object
   type: rectangle
   size: [0.032, 0.011, 0.029]
-  color: red
+  color: yellow
   pose: {x: 0.298, y: -0.159, z: 0.487, yaw: 1.11}
   support: table 1
   slot: null

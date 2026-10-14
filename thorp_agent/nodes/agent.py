@@ -3,8 +3,8 @@
 """
 A ROSA agent with Thorp's behavior trees as its tools.
 
-Talk to the robot in English; every capability the agent reaches for is a subtree that bt_server runs. Ctrl-D or
-'quit' to leave.
+Talk to the robot in English; every capability the agent reaches for is a subtree that bt_server runs. Each request
+reaches the agent after a summary of what thorp_world knows then. Ctrl-D or 'quit' to leave.
 
     ros2 run thorp_agent agent.py
     ros2 run thorp_agent agent.py --ros-args -p dry_run:=true         # show the goals, send nothing
@@ -19,7 +19,7 @@ import rclpy
 from ament_index_python.packages import get_package_share_directory
 from rclpy.executors import ExternalShutdownException, MultiThreadedExecutor
 
-from thorp_agent import capabilities, llm, tools
+from thorp_agent import capabilities, knowledge, llm, tools
 from thorp_agent.runner import DEFAULT_ACTION, SubtreeRunner
 from thorp_agent.world import World
 
@@ -67,7 +67,7 @@ def talk(node):
     agent = ThorpAgent(ros_version=2,
                        llm=llm.make(),
                        tools=(tools.build(specs, runner.run, timeouts) +
-                              ([tools.observer(world.observe)] if world else [])),
+                              ([tools.observer(world.observe), tools.world_query(world.known)] if world else [])),
                        prompts=PROMPTS,
                        # ROSA sets the model's streaming itself, and reports token usage only without it
                        streaming=False,
@@ -77,7 +77,7 @@ def talk(node):
                        verbose=verbose)
 
     if question:
-        print(agent.invoke(question))
+        print(agent.invoke(request(question, world)))
         return
 
     print('Thorp is listening{}. Ctrl-D to quit.'.format(' (dry run)' if dry_run else ''))
@@ -91,9 +91,16 @@ def talk(node):
         if not said:
             continue
         try:
-            print(agent.invoke(said))
+            print(agent.invoke(request(said, world)))
         except Exception as e:  # a bad key, a rate limit, a tool blowing up mid-chain
             print('agent failed: {}: {}'.format(type(e).__name__, e))
+
+
+def request(said, world):
+    """The operator's words, after what thorp_world knows now, so each turn starts from the world as it is"""
+    if world is None:
+        return said
+    return 'What thorp_world knows now:\n{}\n\nThe operator says: {}'.format(knowledge.summary(world.known()), said)
 
 
 if __name__ == '__main__':

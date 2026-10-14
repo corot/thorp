@@ -14,10 +14,14 @@ Two rules decide what an agent is offered. Anything marked `kind: app` is withhe
 run until canceled, and a model that starts one has no way to get the robot back. Anything marked `status: blocked` is
 withheld too, since a tool known not to work only teaches a model that its tools are unreliable.
 
-The important thing the agent is told, repeatedly, is that every call builds a fresh tree with an empty blackboard.
-Nothing carries over. Picking something off a table is several calls (detect the table, approach it, detect objects,
-pick one), with the agent passing each result into the next call itself. Poses and detected tables round-trip through
-`bt_server`'s JSON unchanged, so it can do that by quoting values verbatim.
+What carries over between calls is `thorp_world`, the world model detections and skills keep: every table and object
+seen, by an id such as `table 1` or `cube 3`, with where each is, whether the arm reaches it from where the robot is,
+and which table the robot is at. The capabilities take those ids, and they last: an object detected again keeps its
+id. Each request reaches the agent after a summary of the world, each result lists what the call changed in it
+(`world_changes`), and the `query_world` tool gives it in full. Picking something off a table is then two calls:
+approach the table, and pick the object, both by id. Nothing else carries over, as every call builds a fresh tree with
+an empty blackboard: a pose a call returned goes into the next verbatim, as `bt_server`'s JSON round-trips poses
+unchanged.
 
 Every result carries an `observed` block, read from the robot rather than remembered: what the gripper holds and what
 the planning scene contains, from `move_group`, and whether the target tracker sees a target. Whether the gripper is
@@ -81,9 +85,9 @@ the same arguments, but gives the node no stdin.
 this package owns: that every offered capability survives the trip into a tool, that no app leaks through, that every
 argument type has a rendering, and that a capability taking a pose tells the model how to write one.
 
-The table a detected surface comes back as is declared field by field rather than left a free-form object, since it's
-the value the whole chain turns on: the model gets a shape to copy instead of a blob to paraphrase. That puts `$ref` in
-the tool schema, which OpenAI-shaped APIs accept and Gemini's native function declarations do not.
+A pose taken in the object form calls return is declared field by field rather than left a free-form object: the
+model gets a shape to copy instead of a blob to paraphrase. That puts `$ref` in the tool schema, which OpenAI-shaped
+APIs accept and Gemini's native function declarations do not.
 
 ```bash
 cd ~/colcon_ws/thorp/src/thorp/thorp_agent && python3 -m pytest test/ -v

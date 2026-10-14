@@ -10,7 +10,7 @@ from rclpy.action import ActionClient
 
 from thorp_msgs.action import RunSubtree
 
-from . import errors
+from . import errors, knowledge
 
 DEFAULT_ACTION = '/bt_server/run_subtree'
 
@@ -61,14 +61,16 @@ class SubtreeRunner(object):
             self.node.get_logger().info('[dry run] {} {}'.format(subtree, goal.json))
             return {'succeeded': True, 'dry_run': True, 'outputs': {}}
 
+        before = self.world.known() if self.world else None
         handle = wait(self.client.send_goal_async(goal), 10.0)
         if handle is None or not handle.accepted:
-            return self.observed({'succeeded': False, 'refused': True, 'error': 'bt_server did not accept the goal'})
+            return self.observed({'succeeded': False, 'refused': True, 'error': 'bt_server did not accept the goal'},
+                                 before)
         response = wait(handle.get_result_async(), timeout)
         if response is None:
             wait(handle.cancel_goal_async(), 5.0)
             return self.observed({'succeeded': False,
-                                  'error': 'no result after {}s; the goal was canceled'.format(timeout)})
+                                  'error': 'no result after {}s; the goal was canceled'.format(timeout)}, before)
 
         result = response.result
         if response.status == GoalStatus.STATUS_ABORTED:
@@ -76,17 +78,22 @@ class SubtreeRunner(object):
             # says which, so hand that straight back.
             detail = json.loads(result.json) if result.json else {}
             return self.observed({'succeeded': False, 'refused': True,
-                                  'error': detail.get('error', 'the goal was refused')})
+                                  'error': detail.get('error', 'the goal was refused')}, before)
 
         outputs = errors.annotate(json.loads(result.json) if result.json else {}, self.error_names)
         return self.observed({'succeeded': bool(result.success),
                               'state': _STATE_NAMES.get(response.status, str(response.status)),
-                              'outputs': outputs})
+                              'outputs': outputs}, before)
 
-    def observed(self, result):
-        """Adds what the robot looks like now. A failed run is when it matters most."""
+    def observed(self, result, before=None):
+        """
+        Adds what the robot looks like now, and what changed in thorp_world since before the run. A failed run is when
+        it matters most.
+        """
         if self.world:
             result['observed'] = self.world.observe()
+            if before is not None:
+                result['world_changes'] = knowledge.changes(before, self.world.known())
         return result
 
 

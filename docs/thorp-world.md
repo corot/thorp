@@ -53,7 +53,7 @@ a ROS domain nothing else uses: static transforms published beside a simulation 
 | Tray | The planning scene stays the truth of which slots are free, as the tray moves with the robot; the world mirrors what each slot holds, as place skills report. |
 | Behavior trees | `GetTable`, `GetCurrentTable`, `ObjectPickable` and `TableVisited` read it, and `PlanPickupLocations` its reach; `UpdateWorld` reports skills' effects, on success and failure. The table and manipulation skills take ids: `approach_table`, `inspect_table` and `cleanup_table` an optional `table_id`, `reach_table` a `table_id` and `pickup_object` an object's; they fail with `TABLE_NOT_FOUND`, `OBJECT_NOT_FOUND`, `OBJECT_NOT_ON_TABLE`, `NOT_AT_TABLE` or `OUT_OF_REACH` when the world disagrees. |
 | Semantic costmap layer | Apart for now: the table nodes mark tables as obstacles and clear a table's access through its services. Reading `world/state` instead is for later: docking needs the access cleared before the world learns of the dock, and the side to clear is the pickup pose's, which the world doesn't keep. |
-| LLM agent | Skills take ids; a `query_world` tool, a world summary with each request and the world changes with each skill result. |
+| LLM agent | `thorp_agent`: skills take ids; each request reaches the model after a summary of the world (the robot's table, gripper and tray, and each table with its objects, their colors, status and reach); each capability result lists what the call changed (`world_changes`: an object picked, stowed or found, a table inspected, the robot at another table, what the arm reaches now); and a `query_world` tool gives the world in full. |
 | RViz | `world/markers`, labeled with the ids; faded if only believed, gray if missing or disturbed. |
 | Simulation | A checker compares `world/state` with Gazebo's model poses, telling perception errors from reasoning errors. |
 
@@ -68,7 +68,7 @@ a ROS domain nothing else uses: static transforms published beside a simulation 
 | 4b | Table and manipulation skills take ids, check them on the world and report their effects; the planning scene's table takes its world id | done |
 | 4c | `capabilities.yaml` drops `states`, `needs`, `invalidates` and `from`, and gains `errors`; tests start from a preloaded world instead of `--given` | done |
 | 4d | `PlanPickupLocations` asks the world for reach, and `TableVisited` whether a table was inspected; the semantic layer stays apart for now | done |
-| 5 | Agent on ROS 2 (ROSA): world tools, world summary, world changes in skill results | |
+| 5 | Agent on ROS 2 (ROSA): world tools, world summary, world changes in skill results | done; untested with a real model |
 
 The work happens on the `thorp_world` branch, in a worktree with its own colcon workspace over the main one's install:
 

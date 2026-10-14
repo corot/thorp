@@ -2,22 +2,23 @@
 What is true of the robot right now, read rather than remembered.
 
 Anything that moves the robot is a behavior tree, declared in capabilities.yaml and run through bt_server. What is here
-is the other half: observations, which touch nothing and answer what holds now. They ride on every capability result,
-so knowing where things stand costs the agent no call of its own.
-
-Nothing here reports "the robot is parked against a table", so that stays an assumption from whatever approach_table
-last did, and anybody who pushes the robot invalidates it silently. Whether the gripper is closed on something isn't
-read either: only closing it tells, as the trees' gripper check does, and an observation changes nothing.
+is the other half: observations, which touch nothing and answer what holds now, and what thorp_world knows of the
+tables and objects around. They ride on every capability result, so knowing where things stand costs the agent no call
+of its own. Whether the gripper is closed on something isn't read: only closing it tells, as the trees' gripper check
+does, and an observation changes nothing.
 """
 
 from geometry_msgs.msg import PoseStamped
 from moveit_msgs.msg import PlanningSceneComponents
 from moveit_msgs.srv import GetPlanningScene
 
+from thorp_msgs.srv import QueryWorld
+
 from .runner import wait
 
 PLANNING_SCENE = '/get_planning_scene'
 TARGET_TOPIC = 'target_object_pose'
+WORLD_QUERY = '/world/query'
 
 # How recently the tracker must have published for the target to count as still in view. The follower gives up after
 # 5 s of silence, so this is the shorter of the two answers.
@@ -33,9 +34,10 @@ class World(object):
     seen, which are different answers and the agent should be able to tell them apart.
     """
 
-    def __init__(self, node, scene_service=PLANNING_SCENE, target_topic=TARGET_TOPIC):
+    def __init__(self, node, scene_service=PLANNING_SCENE, target_topic=TARGET_TOPIC, world_query=WORLD_QUERY):
         self.node = node
         self.scene = node.create_client(GetPlanningScene, scene_service)
+        self.world_query = node.create_client(QueryWorld, world_query)
         self.target_heard = None
         node.create_subscription(PoseStamped, target_topic, self._target_heard, 1)
 
@@ -48,6 +50,17 @@ class World(object):
             seen['scene_objects'] = sorted(o.id for o in scene.world.collision_objects)
         seen['target_in_view'] = self._target_fresh(TARGET_FRESH_FOR)
         return seen
+
+    def known(self):
+        """What thorp_world knows now, as knowledge.py takes it; None if it isn't running."""
+        if not self.world_query.wait_for_service(timeout_sec=2.0):
+            return None
+        response = wait(self.world_query.call_async(QueryWorld.Request()), 5.0)
+        if response is None or not response.success:
+            self.node.get_logger().warn('cannot query thorp_world')
+            return None
+        entities = {e.id: _entity(e, reachable) for e, reachable in zip(response.entities, response.reachable)}
+        return {'at_table': response.at_table or None, 'entities': entities}
 
     def _target_heard(self, _):
         self.target_heard = self.node.get_clock().now()
@@ -68,3 +81,12 @@ class World(object):
             self.node.get_logger().warn('cannot read the planning scene')
             return None
         return response.scene
+
+
+def _entity(entity, reachable):
+    position = entity.pose.pose.position
+    return {'kind': entity.kind, 'type': entity.type, 'color': entity.color,
+            'pose': {'x': round(position.x, 3), 'y': round(position.y, 3)} if entity.has_pose else None,
+            'support': entity.support or None, 'slot': entity.slot if entity.slot >= 0 else None,
+            'status': entity.status, 'provenance': entity.provenance,
+            'inspected': bool(entity.inspected.sec or entity.inspected.nanosec), 'reachable': bool(reachable)}

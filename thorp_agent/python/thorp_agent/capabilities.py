@@ -14,8 +14,7 @@ import yaml
 # for a model to emit without mistakes, but also taken in the object form calls return, as bt_server's seeding
 # accepts both and values are passed back verbatim.
 POSE = 'geometry_msgs::msg::PoseStamped'
-# A single collision object is always a table: bt_server writes one as its name, size, color and pose, and reads it
-# back as a box. Tabletop objects only come in lists, as their names and colors.
+# Collision objects come in lists, as their ids and colors
 COLLISION_OBJECT = 'moveit_msgs::msg::CollisionObject'
 
 TYPES = {
@@ -34,7 +33,6 @@ TYPES = {
                    'an earlier call returned it. Frames other than map are rarely what you want'),
     'std::vector<' + POSE + '>': ('array-of-pose', "poses, each as 'x;y;yaw;frame' or as an earlier call "
                                                    'returned it'),
-    COLLISION_OBJECT: ('table', 'as returned by an earlier call: pass the whole value back unchanged'),
     'std::vector<' + COLLISION_OBJECT + '>': ('array-of-object', 'one name and color per object'),
     'std::map<std::string, unsigned int>': ('counts', None),
     'std::map<std::string, uint32_t>': ('counts', None),
@@ -45,7 +43,7 @@ TYPES = {
 # Every kind TYPES can name. tools.py has to render each one, and a kind with no rendering would silently become a
 # string, which the model then sends where an object was wanted.
 KINDS = {'boolean', 'integer', 'number', 'string', 'object', 'pose',
-         'array-of-string', 'array-of-integer', 'array-of-object', 'array-of-pose', 'table', 'counts'}
+         'array-of-string', 'array-of-integer', 'array-of-object', 'array-of-pose', 'counts'}
 
 
 def load(path: str) -> Dict[str, Any]:

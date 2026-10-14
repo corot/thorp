@@ -137,20 +137,6 @@ def test_optional_inputs_can_be_left_out_and_are_not_sent():
     assert sent == {'a': 'x'}
 
 
-def test_a_table_goes_back_as_bt_server_wrote_it():
-    """The detected table is passed back whole, so what the tool sends must be the shape bt_server reads."""
-    pytest.importorskip('langchain_core')
-    from thorp_agent import tools
-    spec = {'name': 't', 'description': 'a test tool taking a table', 'outputs': [],
-            'args': {'table': {'type': capabilities.COLLISION_OBJECT, 'optional': False, 'description': 'a table'}}}
-    table = {'name': 'table', 'depth': 0.5, 'width': 0.8, 'height': 0.47, 'color': 'brown',
-             'pose': {'x': 0.45, 'y': 0.0, 'z': 0.47, 'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0, 'frame': 'map'}}
-    sent = {}
-    tool = tools.build([spec], lambda name, inputs, **_: sent.update(inputs) or {})[0]
-    tool.invoke({'table': table})
-    assert sent == {'table': table}
-
-
 def test_a_pose_goes_back_as_a_call_returned_it_or_as_a_string():
     """bt_server seeds both forms, and a pose passed back verbatim is the object form a call returned."""
     pytest.importorskip('langchain_core')
@@ -201,6 +187,17 @@ def test_observation_is_offered_as_a_tool():
     tool = tools.observer(lambda: {'holding': 'cube 1', 'target_in_view': False})
     assert tool.name == 'robot_status'
     assert json.loads(tool.invoke({})) == {'holding': 'cube 1', 'target_in_view': False}
+
+
+def test_the_world_is_offered_as_a_tool():
+    """Not a capability either: it reads thorp_world, and runs no tree."""
+    pytest.importorskip('langchain_core')
+    from thorp_agent import tools
+
+    known = {'at_table': 'table 1', 'entities': {}}
+    tool = tools.world_query(lambda: known)
+    assert tool.name == 'query_world'
+    assert json.loads(tool.invoke({})) == known
 
 
 def test_error_codes_get_their_names():

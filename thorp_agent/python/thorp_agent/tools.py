@@ -26,23 +26,6 @@ class Pose(BaseModel):
     frame: str = 'map'
 
 
-class Table(BaseModel):
-    """
-    A detected table, spelled out rather than left as a free-form object.
-
-    This is the value the whole chain turns on: detect_table returns it and the table capabilities take it back.
-    Declaring the fields gives the model a shape to copy instead of a blob to paraphrase, and keeps the schema
-    acceptable to providers that reject an object with no declared properties.
-    """
-
-    name: str
-    depth: float
-    width: float
-    height: float
-    color: str = ''
-    pose: Pose
-
-
 PY_TYPES = {
     'boolean': bool,
     'integer': int,
@@ -54,7 +37,6 @@ PY_TYPES = {
     'array-of-integer': List[int],
     'array-of-object': List[Dict[str, Any]],
     'array-of-pose': List[Union[str, Pose]],
-    'table': Table,
     'counts': Dict[str, int],
 }
 
@@ -120,6 +102,25 @@ def observer(observe: Callable[[], Dict[str, Any]], name: str = 'robot_status') 
 
     invoke.__name__ = name
     return StructuredTool.from_function(func=invoke, name=name, description=OBSERVE)
+
+
+QUERY_WORLD = ('What thorp_world knows now: every table and object by its id, where each is (on a table, in the '
+               'gripper, on the tray, or lost), its color and status (ok, disturbed or missing, and whether seen there '
+               'or only believed), whether the arm reaches it from where the robot is, which tables were inspected, '
+               'and which table the robot is at. The ids are what the capabilities take. Reads only, so it is safe at '
+               'any time; each request already starts with a summary of it.')
+
+
+def world_query(known: Callable[[], Optional[Dict[str, Any]]], name: str = 'query_world') -> StructuredTool:
+    """
+    thorp_world's knowledge in full, beyond the summary each request starts with. Like the observer, it runs no tree.
+    """
+
+    def invoke():
+        return json.dumps(known(), sort_keys=True)
+
+    invoke.__name__ = name
+    return StructuredTool.from_function(func=invoke, name=name, description=QUERY_WORLD)
 
 
 def _one(spec: Dict[str, Any], call, timeout: float) -> StructuredTool:
