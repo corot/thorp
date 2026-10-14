@@ -312,17 +312,16 @@ capabilities:
       close in front of the robot; when it isn't, come here first.
     status: ok
     stack: [navigation]
-    invalidates: [at_a_table, objects_detected]
     inputs:
-      table_id: {type: string, from: [detect_table.table_id, approach_table.table_id, inspect_table.table_id], description: "id of the table to go to"}
+      table_id: {type: string, description: "id of the table to go to"}
     outputs:
       inspect_pose: {type: geometry_msgs::msg::PoseStamped, description: "the viewing pose it drove to"}
-      error: {type: int, when: failure, description: "TABLE_NOT_FOUND for a table_id the world doesn't know, or an error code from reading the robot pose"}
+      error: {type: int, when: failure, description: "why it failed: one of errors, or else a code from reading the robot pose"}
       nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's navigate_to_pose"}
+    errors:
+      TABLE_NOT_FOUND: thorp_world knows no table by that id
     test:
-      setup:
-        - {subtree: detect_table}
-      inputs_from: {table_id: [detect_table, table_id]}
+      inputs: {table_id: "table 1"}
       expect: any
       timeout: 300
 
