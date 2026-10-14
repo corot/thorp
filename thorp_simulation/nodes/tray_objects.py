@@ -5,9 +5,8 @@ each of them. Otherwise, objects on the tray join Thorp's whole body in DART's c
 more with every object. An object rests on the tray when it's within the tray's footprint, just over its surface, with
 the gripper away and still for a while.
 
-The ~/release service (std_srvs/Trigger) detaches them all, as for moving them elsewhere, as tests resetting the scene
-do. A released object is fixed again, through its joint system's attach topic, once it has left the tray and come to
-rest on it again.
+The ~/release service (std_srvs/Trigger) detaches them all, so they can be moved freely. A released object is fixed
+again, through its joint system's attach topic, once it has left the tray and come to rest on it again.
 """
 
 import math

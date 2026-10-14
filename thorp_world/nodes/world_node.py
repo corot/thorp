@@ -8,7 +8,7 @@ Services, under the node's name:
 - query (thorp_msgs/QueryWorld): what is known, with the relations that depend on where the robot is
 - reach (thorp_msgs/QueryReach): which objects on a table the arm would reach with the robot elsewhere
 - save, load (std_srvs/Trigger): to and from world_file, also loaded on start if it exists; the parameter can change
-  at any time, as tests do to load a world to start from
+  at any time
 
 Topics, latched: state (thorp_msgs/WorldState) and markers (visualization_msgs/MarkerArray), whenever it changes.
 """

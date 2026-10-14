@@ -43,7 +43,7 @@ public:
   {
     BT::PortsList ports = BT::RosServiceNode<ServiceType, ParentType>::providedPorts();
     ports["service_name"].setDefaultValue("world/reach");
-    ports.insert({ BT::InputPort<std::string>("table_id", "the table whose objects to pick"),   //
+    ports.insert({ BT::InputPort<std::string>("table_id", "the table whose objects to pick"),    //
                    BT::InputPort<geometry_msgs::msg::PoseStamped>("robot_pose"),                 //
                    BT::InputPort<std::vector<geometry_msgs::msg::PoseStamped>>("pickup_poses"),  //
                    BT::OutputPort<std::vector<thorp_msgs::msg::PickupLocation>>("pickup_plan") });

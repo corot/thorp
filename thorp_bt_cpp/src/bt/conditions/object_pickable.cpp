@@ -29,7 +29,7 @@ public:
   {
     BT::PortsList ports = BT::RosServiceNode<ServiceType, ParentType>::providedPorts();
     ports["service_name"].setDefaultValue("world/query");
-    ports.insert({ BT::InputPort<std::string>("object_id"),                     //
+    ports.insert({ BT::InputPort<std::string>("object_id"),                        //
                    BT::OutputPort<std::string>("table_id", "the object's table"),  //
                    BT::OutputPort<int>("error") });
     return ports;

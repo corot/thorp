@@ -18,8 +18,7 @@ namespace thorp::bt::actions
 class UpdateWorld : public BT::RosServiceNode<thorp_msgs::srv::UpdateWorld, BT::SyncActionNode>
 {
 public:
-  UpdateWorld(const std::string& name, const BT::NodeConfig& conf)
-    : RosServiceNode<ServiceType, ParentType>(name, conf)
+  UpdateWorld(const std::string& name, const BT::NodeConfig& conf) : RosServiceNode<ServiceType, ParentType>(name, conf)
   {
   }
 
@@ -28,7 +27,7 @@ public:
     BT::PortsList ports = BT::RosServiceNode<ServiceType, ParentType>::providedPorts();
     ports["service_name"].setDefaultValue("world/update");
     ports.insert({ BT::InputPort<std::string>("effect", "picked, placed, stowed, disturbed, lost, docked, undocked or "
-                                                         "inspected"),
+                                                        "inspected"),
                    BT::InputPort<std::string>("object_id", "picked, placed, stowed, disturbed or lost"),
                    BT::InputPort<std::string>("table_id", "placed on, docked at or inspected"),
                    BT::InputPort<geometry_msgs::msg::PoseStamped>("pose", "where placed"),
@@ -39,14 +38,15 @@ public:
 private:
   void sendRequest(RequestType& request) override
   {
-    static const std::map<std::string, uint8_t> effects = {
-      { "picked", RequestType::PICKED },       { "placed", RequestType::PLACED }, { "stowed", RequestType::STOWED },
-      { "disturbed", RequestType::DISTURBED }, { "lost", RequestType::LOST },     { "docked", RequestType::DOCKED },
-      { "undocked", RequestType::UNDOCKED },   { "inspected", RequestType::INSPECTED }
+    static const std::map<std::string, uint8_t> EFFECTS = {
+      { "picked", RequestType::PICKED },     { "placed", RequestType::PLACED },
+      { "stowed", RequestType::STOWED },     { "disturbed", RequestType::DISTURBED },
+      { "lost", RequestType::LOST },         { "docked", RequestType::DOCKED },
+      { "undocked", RequestType::UNDOCKED }, { "inspected", RequestType::INSPECTED }
     };
     const std::string effect = requireInput<std::string>(*this, "effect");
-    const auto it = effects.find(effect);
-    if (it == effects.end())
+    const auto it = EFFECTS.find(effect);
+    if (it == EFFECTS.end())
       throw BT::RuntimeError(name(), ": unknown effect '", effect, "'");
     request.effect = it->second;
     request.object_id = getInput<std::string>("object_id").value_or("");

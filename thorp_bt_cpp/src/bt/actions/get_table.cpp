@@ -49,7 +49,7 @@ private:
   {
     if (response.entities.empty())
     {
-      RCLCPP_WARN(logger(*this), "No table '%s'", request_id().c_str());
+      RCLCPP_WARN(logger(*this), "No table '%s'", tableId().c_str());
       setOutput("error", static_cast<int>(ThorpError::TABLE_NOT_FOUND));
       return BT::NodeStatus::FAILURE;
     }
@@ -78,7 +78,7 @@ private:
     return BT::NodeStatus::FAILURE;
   }
 
-  std::string request_id() const
+  std::string tableId() const
   {
     return getInput<std::string>("table_id").value_or("");
   }

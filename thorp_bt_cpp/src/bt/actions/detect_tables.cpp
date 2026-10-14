@@ -25,8 +25,8 @@ public:
 
   static BT::PortsList providedPorts()
   {
-    return providedBasicPorts({ BT::OutputPort<moveit_msgs::msg::CollisionObject>("table"),         //
-                                BT::OutputPort<geometry_msgs::msg::PoseStamped>("table_pose"),        //
+    return providedBasicPorts({ BT::OutputPort<moveit_msgs::msg::CollisionObject>("table"),     //
+                                BT::OutputPort<geometry_msgs::msg::PoseStamped>("table_pose"),  //
                                 BT::OutputPort<std::string>("table_id", "as thorp_world calls it") });
   }
 

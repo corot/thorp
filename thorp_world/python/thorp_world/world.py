@@ -136,7 +136,7 @@ class World:
     def table_at(self, robot_pose):
         """
         The table the robot is at: the one it docked at, if it's still within at_table_distance, or else the closest
-        one that close, as the robot may stand at a table without docking, as in front of the bench's.
+        one that close, as the robot may stand at a table without docking.
         """
         docked = self._entities.get(self.docked_at)
         if docked is not None and distance_to_table(docked, robot_pose.x, robot_pose.y) <= self.at_table_distance:

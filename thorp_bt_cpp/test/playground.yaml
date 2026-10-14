@@ -1,7 +1,6 @@
 # The playground with its fixed objects (object_type:=fixed), as the capability tests start from it: each object
-# named by what it is, where detection from the robot's start sees it. Detection misidentifies most of these
-# upright shapes, and doesn't see the square from there, as too close to the table's edge; objects keep these ids
-# all the same, as the world matches them by place.
+# named by what it is, where detection sees it. Objects keep these ids whatever type detection gives them, as the
+# world matches them by place.
 docked_at: null
 entities:
 - id: table 1
