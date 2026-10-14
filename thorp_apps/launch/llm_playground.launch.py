@@ -34,8 +34,8 @@ def generate_launch_description():
         DeclareLaunchArgument('viz_executive', default_value='false'),
         DeclareLaunchArgument('start_delay', default_value='0.0'),
         DeclareLaunchArgument('rviz', default_value='true'),
+        DeclareLaunchArgument('world_name', default_value='empty'),
         DeclareLaunchArgument('localization', default_value='gazebo', description='amcl, static or gazebo'),
-        # Far enough to approach the table, and close enough to detect it
         DeclareLaunchArgument('initial_pose_x', default_value='-0.5'),
         DeclareLaunchArgument('initial_pose_y', default_value='0.0'),
         DeclareLaunchArgument('initial_pose_a', default_value='0.0'),
@@ -47,7 +47,7 @@ def generate_launch_description():
                               'rviz': LaunchConfiguration('rviz'),
                               'rviz_config': 'bt_server.rviz',
                               'simulator': simulator,
-                              'world_name': 'playground',
+                              'world_name': LaunchConfiguration('world_name'),
                               'gui': LaunchConfiguration('gui'),
                               'executive': LaunchConfiguration('executive'),
                               'viz_executive': LaunchConfiguration('viz_executive'),
@@ -60,7 +60,7 @@ def generate_launch_description():
         IncludeLaunchDescription(
             PathJoinSubstitution([FindPackageShare('thorp_navigation'), 'launch', 'navigation.launch.py']),
             launch_arguments={'use_sim_time': simulation,
-                              'map_name': 'playground',
+                              'map_name': LaunchConfiguration('world_name'),
                               'localization': LaunchConfiguration('localization'),
                               **initial_pose}.items()),
         IncludeLaunchDescription(
