@@ -303,11 +303,12 @@ def reset_scene(runner, initial_model_poses, world):
     as an object MoveIt believes attached survives everything else, and then pickups fail on it;
     the arm stowed, out of the camera's view; and MoveIt's planning scene empty, for the next
     detect_objects to fill it from what the camera can actually see. Then the world's, on
-    simulation: every model back to its pose at the start of the session, so the objects are
-    back on the table, and Thorp at its start, what navigation follows only with Gazebo's ground
-    truth localization; and with navigation, its costmaps cleared of what they marked before
-    the jump. The sleep is for physics: objects put back need a moment to settle
-    before a detection of them means anything. And last, thorp_world's: back to --world's file.
+    simulation: the objects fixed to the tray released, and every model back to its pose at the
+    start of the session, so the objects are back on the table, and Thorp at its start, what
+    navigation follows only with Gazebo's ground truth localization; and with navigation, its
+    costmaps cleared of what they marked before the jump. The sleep is for physics: objects put
+    back need a moment to settle before a detection of them means anything. And last,
+    thorp_world's: back to --world's file.
 
     A function rather than a fixture doing the reset, deliberately: a fixture runs before the
     test body, which means before the body has decided whether it is going to skip. The caller
@@ -315,6 +316,7 @@ def reset_scene(runner, initial_model_poses, world):
     end of the session, to leave it as the session found it, ready for the next one.
     """
     set_pose = runner.node.create_client(SetEntityPose, "/world/default/set_pose")
+    release_tray = runner.node.create_client(Trigger, "/tray_objects/release")
     used = []
 
     def reset():
@@ -323,6 +325,11 @@ def reset_scene(runner, initial_model_poses, world):
         if state != GoalStatus.STATUS_SUCCEEDED or not result.success:
             print("--> resetting the robot failed: {}".format(out or status_name(state)))
         if initial_model_poses and set_pose.wait_for_service(timeout_sec=2.0):
+            # objects fixed to Thorp's tray don't move otherwise
+            if release_tray.wait_for_service(timeout_sec=1.0):
+                future = release_tray.call_async(Trigger.Request())
+                if not runner.wait(future, 5.0) or not future.result().success:
+                    print("--> releasing the objects on the tray failed")
             for name, pose in initial_model_poses.items():
                 request = SetEntityPose.Request()
                 request.entity.name = name

@@ -4,6 +4,10 @@ Fix the objects resting on Thorp's tray to Thorp in Gazebo, by adding a Detachab
 each of them. Otherwise, objects on the tray join Thorp's whole body in DART's contact solving, slowing the simulation
 more with every object. An object rests on the tray when it's within the tray's footprint, just over its surface, with
 the gripper away and still for a while.
+
+The ~/release service (std_srvs/Trigger) detaches them all, as for moving them elsewhere, as tests resetting the scene
+do. A released object is fixed again, through its joint system's attach topic, once it has left the tray and come to
+rest on it again.
 """
 
 import math
@@ -14,6 +18,7 @@ from rclpy.duration import Duration
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from rclpy.time import Time
+from std_srvs.srv import Trigger
 from tf2_ros import Buffer, TransformException, TransformListener
 
 from gz.msgs10.boolean_pb2 import Boolean
@@ -64,6 +69,8 @@ class TrayObjects(Node):
         self.poses = {}  # model name: (id, (x, y, z, qx, qy, qz, qw)) on the world frame
         self.candidates = {}  # model name: (time first seen still on the tray, position on the robot frame)
         self.fixed = set()
+        self.released = set()  # detached, but not yet off the tray
+        self.joints = {}  # model name: attach and detach publishers of its joint system on Thorp's model
         self.models = set()  # names of the world's models; the poses topic also has some other entities
         self.others = set()
 
@@ -72,6 +79,7 @@ class TrayObjects(Node):
         if not self.gz_node.subscribe(Pose_V, topic, self.poses_cb):
             raise RuntimeError(f'Subscribing to {topic} failed')
         self.create_timer(0.2, self.check)
+        self.create_service(Trigger, '~/release', self.release)
         self.get_logger().info('Fixing the objects resting on the tray to Thorp')
 
     def poses_cb(self, msg):
@@ -110,6 +118,9 @@ class TrayObjects(Node):
                        math.dist(position, gripper) >= MIN_GRIPPER_DISTANCE)
             if not on_tray:
                 self.candidates.pop(name, None)
+                self.released.discard(name)
+                continue
+            if name in self.released:
                 continue
             since, first = self.candidates.get(name, (now, position))
             if math.dist(position, first) > STILL_TOLERANCE:
@@ -124,8 +135,26 @@ class TrayObjects(Node):
             self.models = {model.name for model in scene.model}
             self.others = set(names) - self.models
 
+    def release(self, request, response):
+        """ Detach the objects fixed to the tray """
+        for name in self.fixed:
+            self.joints[name][1].publish(Empty())
+        response.success = True
+        response.message = f'released {", ".join(sorted(self.fixed)) or "nothing"}'
+        self.get_logger().info(response.message.capitalize())
+        self.released |= self.fixed
+        self.fixed.clear()
+        self.candidates.clear()
+        return response
+
     def fix(self, robot_id, name):
-        """ Add a DetachableJoint system to Thorp's model, fixing the object to it where it is """
+        """ Fix the object to Thorp where it is: by attaching its joint system again, or adding one to Thorp's model """
+        self.fixed.add(name)
+        self.candidates.pop(name, None)
+        if name in self.joints:
+            self.joints[name][0].publish(Empty())
+            self.get_logger().info(f'{name} fixed to the tray again')
+            return
         request = EntityPlugin_V()
         request.entity.id = robot_id
         request.entity.type = Entity.MODEL
@@ -139,8 +168,8 @@ class TrayObjects(Node):
                            f'<attach_topic>{topic}/attach</attach_topic><output_topic>{topic}/state</output_topic>')
         # Requested only once: the reply can go missing with the system added anyway, and a second joint between the
         # same models crashes the physics
-        self.fixed.add(name)
-        self.candidates.pop(name, None)
+        self.joints[name] = (self.gz_node.advertise(f'{topic}/attach', Empty),
+                             self.gz_node.advertise(f'{topic}/detach', Empty))
         service = f'/world/{self.world}/entity/system/add'
         ok, response = self.gz_node.request(service, request, EntityPlugin_V, Boolean, 1000)
         if ok and response.data:

@@ -33,6 +33,7 @@
   <exec_depend>python3-yaml</exec_depend>
   <exec_depend>rclpy</exec_depend>
   <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>std_srvs</exec_depend>
   <exec_depend>gz_transport_vendor</exec_depend>
   <exec_depend>gz_msgs_vendor</exec_depend>
   <exec_depend>rclcpp_components</exec_depend>
