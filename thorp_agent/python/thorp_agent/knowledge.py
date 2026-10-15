@@ -1,18 +1,28 @@
 """
 What thorp_world knows, put for the agent: a summary to start each request from, and what a capability call changed.
 
-Plain data in, text out, so it can be tested without ROS. A snapshot is what world.py reads from world/query:
-{'at_table': a table id or None, 'entities': {id: entity}}, each entity a dict with kind, type, color, pose ({x, y} or
-None), support (a table id, 'gripper', 'tray' or None), slot, status, provenance, inspected and reachable.
+Plain data in, text out, so it can be tested without ROS. A snapshot is what world.py reads from world/query and TF:
+{'robot': {x, y, yaw} or None, 'at_table': a table id or None, 'entities': {id: entity}}, each entity a dict with kind,
+type, color, pose ({x, y, z, yaw} or None), size ([x, y, z] in its own frame, z up), support (a table id, 'gripper',
+'tray' or None), slot, status, provenance, inspected and reachable.
 """
 
 import json
+import math
 from typing import Any, Dict, List, Optional
 
 GRIPPER = 'gripper'
 TRAY = 'tray'
 OK = 'ok'
 BELIEVED = 'believed'
+
+# A place pose is checked for collisions before the object is lowered onto the table, so it must clear the top
+PLACE_CLEARANCE = 0.01
+# Smaller robot moves than these aren't worth telling
+MOVED_DISTANCE = 0.05
+MOVED_YAW = 0.1
+# How close to an axis the robot's heading must be to be named by it
+AXIS_TOLERANCE = math.radians(15)
 
 
 def summary(snapshot: Optional[Dict[str, Any]]) -> str:
@@ -23,17 +33,20 @@ def summary(snapshot: Optional[Dict[str, Any]]) -> str:
     tables = sorted(i for i, e in entities.items() if e['kind'] == 'table')
     objects = {i: e for i, e in entities.items() if e['kind'] == 'object'}
 
-    lines = ['Robot: at {}.'.format(snapshot['at_table']) if snapshot.get('at_table') else 'Robot: at no table.']
+    at_table = snapshot.get('at_table')
+    lines = ['Robot: {}; {}.'.format(_robot(snapshot.get('robot')), 'at ' + at_table if at_table else 'at no table')]
     held = sorted(i for i, e in objects.items() if e['support'] == GRIPPER)
-    lines.append('Gripper: {}.'.format(', '.join(held) if held else 'empty'))
+    lines.append('Gripper: {}.'.format(', '.join(i + _held(objects[i], at_table, entities.get(at_table)) for i in held)
+                                       if held else 'empty'))
     stowed = sorted((i for i, e in objects.items() if e['support'] == TRAY),
                     key=lambda i: (objects[i]['slot'] is None, objects[i]['slot'] or 0, i))
     lines.append('Tray: {}.'.format(', '.join(_on_tray(i, objects[i]['slot']) for i in stowed) if stowed else 'empty'))
     for table in tables:
         known = entities[table]
         on_it = sorted(i for i, e in objects.items() if e['support'] == table)
-        lines.append('{} at ({:.2f}, {:.2f}), {}: {}.'.format(
-            table, known['pose']['x'], known['pose']['y'], 'inspected' if known['inspected'] else 'not inspected',
+        lines.append('{} at ({:.2f}, {:.2f}){}, {}: {}.'.format(
+            table, known['pose']['x'], known['pose']['y'], _extent(known),
+            'inspected' if known['inspected'] else 'not inspected',
             ', '.join(_described(i, objects[i]) for i in on_it) if on_it else 'no objects known'))
     lost = sorted(i for i, e in objects.items() if e['support'] is None)
     if lost:
@@ -46,6 +59,8 @@ def changes(before: Optional[Dict[str, Any]], after: Optional[Dict[str, Any]]) -
     if before is None or after is None:
         return []
     said = []
+    if _moved(before.get('robot'), after.get('robot')):
+        said.append('the robot moved to {}'.format(_pose2d(after['robot'])))
     if before.get('at_table') != after.get('at_table'):
         said.append('the robot is now at {}'.format(after['at_table']) if after.get('at_table') else
                     'the robot left {}'.format(before['at_table']))
@@ -61,7 +76,9 @@ def changes(before: Optional[Dict[str, Any]], after: Optional[Dict[str, Any]]) -
                 said.append('{} inspected'.format(entity_id))
             continue
         if (entity['support'], entity['slot']) != (was['support'], was['slot']):
-            said.append('{}: {} -> {}'.format(entity_id, _where(was), _where(entity)))
+            table_id = after.get('at_table')
+            held = _held(entity, table_id, new.get(table_id)) if entity['support'] == GRIPPER else ''
+            said.append('{}: {} -> {}{}'.format(entity_id, _where(was), _where(entity), held or _at(entity)))
         elif entity['status'] != was['status']:
             status = 'seen again' if entity['status'] == OK else 'now ' + entity['status']
             said.append('{} {}'.format(entity_id, status))
@@ -90,8 +107,70 @@ def call_line(subtree: str, inputs: Dict[str, Any], result: Dict[str, Any]) -> s
     return line
 
 
+def _robot(pose):
+    if pose is None:
+        return 'pose unknown'
+    yaw = pose['yaw']
+    return 'at {}, facing {} with {} to its left'.format(_pose2d(pose), _direction(yaw),
+                                                         _direction(yaw + math.pi / 2.0))
+
+
+def _pose2d(pose):
+    return '({:.2f}, {:.2f}), yaw {:.2f}'.format(pose['x'], pose['y'], pose['yaw'])
+
+
+def _direction(angle):
+    """The map axis an angle points along, if it is close to one, or else its unit vector"""
+    for axis, name in ((0.0, '+x'), (math.pi / 2.0, '+y'), (math.pi, '-x'), (-math.pi / 2.0, '-y')):
+        if abs(math.remainder(angle - axis, 2.0 * math.pi)) < AXIS_TOLERANCE:
+            return name
+    return '({:.2f}, {:.2f})'.format(math.cos(angle), math.sin(angle))
+
+
+def _moved(was, now):
+    if was is None or now is None:
+        return False
+    return (math.hypot(now['x'] - was['x'], now['y'] - was['y']) > MOVED_DISTANCE or
+            abs(math.remainder(now['yaw'] - was['yaw'], 2.0 * math.pi)) > MOVED_YAW)
+
+
+def _extent(table):
+    """The map area a table covers and the height of its top, as far as its pose and size are known"""
+    size, pose = table.get('size'), table['pose']
+    if not size or 'z' not in pose:
+        return ''
+    c, s = math.cos(pose['yaw']), math.sin(pose['yaw'])
+    xs = [pose['x'] + c * dx - s * dy for dx in (-size[0] / 2, size[0] / 2) for dy in (-size[1] / 2, size[1] / 2)]
+    ys = [pose['y'] + s * dx + c * dy for dx in (-size[0] / 2, size[0] / 2) for dy in (-size[1] / 2, size[1] / 2)]
+    return ', spanning x {:.2f} to {:.2f} and y {:.2f} to {:.2f}, top at z {:.3f}'.format(
+        min(xs), max(xs), min(ys), max(ys), _top(table))
+
+
+def _top(table):
+    return table['pose']['z'] + table['size'][2] / 2.0
+
+
+def _held(entity, table_id, table):
+    """A note on an object in the gripper: its height, and the z that rests it on the table the robot is at"""
+    size = entity.get('size')
+    if not size:
+        return ''
+    note = '{:.1f} cm tall'.format(size[2] * 100)
+    if table and table.get('size') and 'z' in table['pose']:
+        note += '; to place it on {}, its z is {:.3f}'.format(table_id, _top(table) + size[2] / 2.0 + PLACE_CLEARANCE)
+    return ' ({})'.format(note)
+
+
+def _at(entity):
+    return ' at ({:.2f}, {:.2f})'.format(entity['pose']['x'], entity['pose']['y']) if entity.get('pose') else ''
+
+
 def _described(entity_id, entity):
     notes = [entity['color']] if entity.get('color') else []
+    if entity.get('pose'):
+        notes.append(_at(entity).strip())
+    if entity.get('size'):
+        notes.append('{:.1f} x {:.1f} x {:.1f} cm'.format(*(side * 100 for side in entity['size'])))
     if entity['status'] != OK:
         notes.append(entity['status'])
     elif entity['provenance'] == BELIEVED:
@@ -117,4 +196,4 @@ def _found(entity_id, entity):
     if entity['kind'] == 'table':
         return '{} found at ({:.2f}, {:.2f}){}'.format(entity_id, entity['pose']['x'], entity['pose']['y'],
                                                        ', and inspected' if entity['inspected'] else '')
-    return '{} found on {}'.format(entity_id, entity['support'] or 'nothing known')
+    return '{} found on {}{}'.format(entity_id, entity['support'] or 'nothing known', _at(entity))

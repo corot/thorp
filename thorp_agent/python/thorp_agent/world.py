@@ -8,10 +8,14 @@ of its own. Whether the gripper is closed on something isn't read: only closing 
 does, and an observation changes nothing.
 """
 
+import math
+
 from geometry_msgs.msg import PoseStamped
 from moveit_msgs.msg import PlanningSceneComponents
 from moveit_msgs.srv import GetPlanningScene
 
+from rclpy.time import Time
+from tf2_ros import Buffer, TransformException, TransformListener
 from thorp_msgs.srv import QueryWorld
 
 from .runner import wait
@@ -19,6 +23,8 @@ from .runner import wait
 PLANNING_SCENE = '/get_planning_scene'
 TARGET_TOPIC = 'target_object_pose'
 WORLD_QUERY = '/world/query'
+MAP_FRAME = 'map'
+ROBOT_FRAME = 'base_footprint'
 
 # How recently the tracker must have published for the target to count as still in view. The follower gives up after
 # 5 s of silence, so this is the shorter of the two answers.
@@ -38,6 +44,9 @@ class World(object):
         self.node = node
         self.scene = node.create_client(GetPlanningScene, scene_service)
         self.world_query = node.create_client(QueryWorld, world_query)
+        # listening from the start, so the robot's pose is there by the first request
+        self.tf_buffer = Buffer()
+        self.tf_listener = TransformListener(self.tf_buffer, node)
         self.target_heard = None
         node.create_subscription(PoseStamped, target_topic, self._target_heard, 1)
 
@@ -60,7 +69,16 @@ class World(object):
             self.node.get_logger().warn('cannot query thorp_world')
             return None
         entities = {e.id: _entity(e, reachable) for e, reachable in zip(response.entities, response.reachable)}
-        return {'at_table': response.at_table or None, 'entities': entities}
+        return {'robot': self._robot_pose(), 'at_table': response.at_table or None, 'entities': entities}
+
+    def _robot_pose(self):
+        """Where the robot is on the map, as {x, y, yaw}; None if the transform isn't there"""
+        try:
+            transform = self.tf_buffer.lookup_transform(MAP_FRAME, ROBOT_FRAME, Time())
+        except TransformException:
+            return None
+        t, q = transform.transform.translation, transform.transform.rotation
+        return {'x': round(t.x, 3), 'y': round(t.y, 3), 'yaw': round(_yaw(q), 3)}
 
     def _target_heard(self, _):
         self.target_heard = self.node.get_clock().now()
@@ -83,10 +101,16 @@ class World(object):
         return response.scene
 
 
+def _yaw(q):
+    return math.atan2(2.0 * (q.w * q.z + q.x * q.y), 1.0 - 2.0 * (q.y * q.y + q.z * q.z))
+
+
 def _entity(entity, reachable):
     position = entity.pose.pose.position
-    return {'kind': entity.kind, 'type': entity.type, 'color': entity.color,
-            'pose': {'x': round(position.x, 3), 'y': round(position.y, 3)} if entity.has_pose else None,
+    pose = {'x': round(position.x, 3), 'y': round(position.y, 3), 'z': round(position.z, 3),
+            'yaw': round(_yaw(entity.pose.pose.orientation), 3)} if entity.has_pose else None
+    return {'kind': entity.kind, 'type': entity.type, 'color': entity.color, 'pose': pose,
+            'size': [round(entity.size.x, 3), round(entity.size.y, 3), round(entity.size.z, 3)],
             'support': entity.support or None, 'slot': entity.slot if entity.slot >= 0 else None,
             'status': entity.status, 'provenance': entity.provenance,
             'inspected': bool(entity.inspected.sec or entity.inspected.nanosec), 'reachable': bool(reachable)}

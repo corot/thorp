@@ -23,6 +23,7 @@
   <exec_depend>moveit_msgs</exec_depend>
   <exec_depend>nav2_msgs</exec_depend>
   <exec_depend>thorp_msgs</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
   <exec_depend>thorp_bt_cpp</exec_depend>
   <exec_depend>python3-yaml</exec_depend>
 

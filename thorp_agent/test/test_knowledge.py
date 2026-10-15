@@ -5,6 +5,7 @@ What the agent is told of thorp_world: the summary each request starts with, and
 """
 
 import copy
+import math
 import os
 import sys
 
@@ -14,18 +15,20 @@ from thorp_agent import knowledge  # noqa: E402
 
 
 def table(x, y, inspected=False):
-    return {'kind': 'table', 'type': 'table', 'color': 'white', 'pose': {'x': x, 'y': y}, 'support': None,
-            'slot': None, 'status': 'ok', 'provenance': 'observed', 'inspected': inspected, 'reachable': False}
+    return {'kind': 'table', 'type': 'table', 'color': 'white', 'pose': {'x': x, 'y': y, 'z': 0.475, 'yaw': 1.571},
+            'size': [0.55, 0.5, 0.002], 'support': None, 'slot': None, 'status': 'ok', 'provenance': 'observed',
+            'inspected': inspected, 'reachable': False}
 
 
 def thing(support, color='red', status='ok', provenance='observed', slot=None, reachable=False, type_='cube'):
-    pose = {'x': 0.3, 'y': 0.0} if support not in ('gripper', 'tray', None) else None
-    return {'kind': 'object', 'type': type_, 'color': color, 'pose': pose, 'support': support, 'slot': slot,
-            'status': status, 'provenance': provenance, 'inspected': False, 'reachable': reachable}
+    pose = {'x': 0.3, 'y': 0.0, 'z': 0.49, 'yaw': 0.0} if support not in ('gripper', 'tray', None) else None
+    return {'kind': 'object', 'type': type_, 'color': color, 'pose': pose, 'size': [0.025, 0.025, 0.026],
+            'support': support, 'slot': slot, 'status': status, 'provenance': provenance, 'inspected': False,
+            'reachable': reachable}
 
 
 def playground():
-    return {'at_table': 'table 1',
+    return {'robot': {'x': 0.03, 'y': 0.0, 'yaw': 0.01}, 'at_table': 'table 1',
             'entities': {'table 1': table(0.45, 0.0, inspected=True), 'table 2': table(3.0, 2.0),
                          'cube 1': thing('table 1', 'gray', reachable=True),
                          'star 1': thing('table 1', 'red', status='missing'),
@@ -36,12 +39,32 @@ def playground():
 def test_the_summary_says_where_everything_is():
     said = knowledge.summary(playground())
     assert said.splitlines() == [
-        'Robot: at table 1.',
+        'Robot: at (0.03, 0.00), yaw 0.01, facing +x with +y to its left; at table 1.',
         'Gripper: empty.',
         'Tray: square 1 (slot 2).',
-        'table 1 at (0.45, 0.00), inspected: clover 1 (green, believed, not seen there), cube 1 (gray, within reach), '
-        'star 1 (red, missing).',
-        'table 2 at (3.00, 2.00), not inspected: no objects known.']
+        'table 1 at (0.45, 0.00), spanning x 0.20 to 0.70 and y -0.28 to 0.28, top at z 0.476, inspected: '
+        'clover 1 (green, at (0.30, 0.00), 2.5 x 2.5 x 2.6 cm, believed, not seen there), '
+        'cube 1 (gray, at (0.30, 0.00), 2.5 x 2.5 x 2.6 cm, within reach), '
+        'star 1 (red, at (0.30, 0.00), 2.5 x 2.5 x 2.6 cm, missing).',
+        'table 2 at (3.00, 2.00), spanning x 2.75 to 3.25 and y 1.72 to 2.28, top at z 0.476, not inspected: '
+        'no objects known.']
+
+
+def test_the_held_object_comes_with_the_z_that_places_it_on_the_table_the_robot_is_at():
+    world = playground()
+    world['entities']['cube 1'] = thing('gripper', 'gray')
+    assert 'Gripper: cube 1 (2.6 cm tall; to place it on table 1, its z is 0.499).' in knowledge.summary(world)
+    world['at_table'] = None
+    assert 'Gripper: cube 1 (2.6 cm tall).' in knowledge.summary(world)
+
+
+def test_a_heading_off_the_axes_is_given_as_vectors():
+    world = playground()
+    world['robot'] = {'x': 1.0, 'y': 2.0, 'yaw': math.pi / 4}
+    assert knowledge.summary(world).splitlines()[0] == \
+        'Robot: at (1.00, 2.00), yaw 0.79, facing (0.71, 0.71) with (-0.71, 0.71) to its left; at table 1.'
+    world['robot'] = None
+    assert knowledge.summary(world).splitlines()[0] == 'Robot: pose unknown; at table 1.'
 
 
 def test_lost_objects_and_the_gripper_are_summarized_too():
@@ -50,7 +73,7 @@ def test_lost_objects_and_the_gripper_are_summarized_too():
     world['entities']['cube 1'] = thing('gripper', 'gray')
     world['entities']['star 1'] = thing(None, 'red', status='missing')
     said = knowledge.summary(world)
-    assert 'Robot: at no table.' in said and 'Gripper: cube 1.' in said
+    assert 'yaw 0.01, facing +x with +y to its left; at no table.' in said and 'Gripper: cube 1 (2.6 cm tall).' in said
     assert 'Lost, whereabouts unknown: star 1.' in said
 
 
@@ -63,7 +86,17 @@ def test_a_pickup_moves_the_object_to_the_gripper():
     before = playground()
     after = copy.deepcopy(before)
     after['entities']['cube 1'] = thing('gripper', 'gray')
-    assert knowledge.changes(before, after) == ['cube 1: table 1 -> gripper'], 'its reach goes without saying'
+    assert knowledge.changes(before, after) == [
+        'cube 1: table 1 -> gripper (2.6 cm tall; to place it on table 1, its z is 0.499)'], 'its reach goes unsaid'
+
+
+def test_a_place_tells_where_the_object_went():
+    before = playground()
+    before['entities']['cube 1'] = thing('gripper', 'gray')
+    after = copy.deepcopy(before)
+    after['entities']['cube 1'] = thing('table 1', 'gray')
+    after['entities']['cube 1']['pose'].update(x=0.25, y=0.12)
+    assert knowledge.changes(before, after) == ['cube 1: gripper -> table 1 at (0.25, 0.12)']
 
 
 def test_stowing_names_the_tray_slot():
@@ -76,15 +109,25 @@ def test_stowing_names_the_tray_slot():
 
 def test_approaching_a_table_tells_the_robot_is_there_and_what_it_reaches():
     before = playground()
+    before['robot'] = {'x': -0.5, 'y': 0.0, 'yaw': 0.0}
     before['at_table'] = None
     before['entities']['cube 1']['reachable'] = False
     after = copy.deepcopy(before)
+    after['robot'] = {'x': 0.03, 'y': 0.0, 'yaw': 0.01}
     after['at_table'] = 'table 1'
     after['entities']['cube 1']['reachable'] = True
     after['entities']['star 1']['status'] = 'ok'
     after['entities']['pentagon 1'] = thing('table 1', 'purple', type_='pentagon')
-    assert knowledge.changes(before, after) == ['the robot is now at table 1', 'pentagon 1 found on table 1',
-                                                'star 1 seen again', "within the arm's reach now: cube 1"]
+    assert knowledge.changes(before, after) == [
+        'the robot moved to (0.03, 0.00), yaw 0.01', 'the robot is now at table 1',
+        'pentagon 1 found on table 1 at (0.30, 0.00)', 'star 1 seen again', "within the arm's reach now: cube 1"]
+
+
+def test_small_robot_moves_go_unsaid():
+    before = playground()
+    after = copy.deepcopy(before)
+    after['robot'] = {'x': 0.06, 'y': 0.01, 'yaw': 0.05}
+    assert knowledge.changes(before, after) == []
 
 
 def test_inspections_new_tables_and_missing_objects_are_changes():
