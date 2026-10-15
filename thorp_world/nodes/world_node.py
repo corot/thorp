@@ -24,6 +24,7 @@ from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 from rclpy.time import Time
 
+from builtin_interfaces.msg import Time as TimeMsg
 from geometry_msgs.msg import PoseStamped, TransformStamped
 from std_srvs.srv import Trigger
 from tf2_geometry_msgs import do_transform_pose_stamped
@@ -239,6 +240,7 @@ class WorldNode(Node):
             if entity.pose is None:
                 continue
             msg = to_msg(entity, self.map_frame)
+            msg.pose.header.stamp = TimeMsg()  # the latest transform, whatever frame RViz shows them on
             color = self.color_of(entity)
             box = Visualization.create_geometry_primitive_marker(msg.pose, list(entity.size), color, Marker.CUBE,
                                                                  entity.kind + 's')
