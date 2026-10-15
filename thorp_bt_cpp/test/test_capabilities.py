@@ -62,6 +62,7 @@ SERIALIZED_AS = {
     # collision objects too, and come back as the fields the trees read, plus their color
     "moveit_msgs::msg::CollisionObject": dict,
     "std::vector<moveit_msgs::msg::CollisionObject>": list,
+    "thorp_msgs::msg::ThorpError": dict,
 }
 
 
@@ -99,6 +100,9 @@ def check_value(name, value, declared_type):
 
     if declared_type == "geometry_msgs::msg::PoseStamped":
         assert set(value) == POSE_FIELDS, "pose {} has fields {}".format(name, sorted(value))
+    if declared_type == "thorp_msgs::msg::ThorpError":
+        assert set(value) == {"code", "text"} and isinstance(value["code"], int), \
+            "error {}={!r} should be a code and a text".format(name, value)
 
 
 def step_label(step):

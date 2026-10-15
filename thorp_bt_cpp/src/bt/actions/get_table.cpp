@@ -1,5 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
+#include "thorp_bt_cpp/errors.hpp"
 #include "thorp_bt_cpp/node_common.hpp"
 #include "thorp_bt_cpp/ros_service_node.hpp"
 
@@ -34,7 +35,7 @@ public:
     ports.insert({ BT::InputPort<std::string>("table_id"),                         //
                    BT::OutputPort<CollisionObject>("table"),                       //
                    BT::OutputPort<geometry_msgs::msg::PoseStamped>("table_pose"),  //
-                   BT::OutputPort<int>("error") });
+                   BT::OutputPort<ThorpError>("error") });
     return ports;
   }
 
@@ -49,8 +50,9 @@ private:
   {
     if (response.entities.empty())
     {
-      RCLCPP_WARN(logger(*this), "No table '%s'", tableId().c_str());
-      setOutput("error", static_cast<int>(ThorpError::TABLE_NOT_FOUND));
+      const std::string text = "thorp_world knows no table '" + tableId() + "'";
+      RCLCPP_WARN(logger(*this), "%s", text.c_str());
+      setOutput("error", makeError(ThorpError::TABLE_NOT_FOUND, text));
       return BT::NodeStatus::FAILURE;
     }
     const WorldEntity& entity = response.entities.front();
@@ -74,7 +76,9 @@ private:
 
   BT::NodeStatus onFailedRequest(FailureCause failure) override
   {
-    setOutput("error", static_cast<int>(ThorpError::SERVER_NOT_AVAILABLE));
+    setOutput("error", makeError(ThorpError::SERVER_NOT_AVAILABLE,
+                                 "no answer from thorp_world's " +
+                                     getInput<std::string>("service_name").value_or("query service")));
     return BT::NodeStatus::FAILURE;
   }
 

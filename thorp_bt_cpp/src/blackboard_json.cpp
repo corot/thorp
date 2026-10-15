@@ -14,6 +14,7 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <moveit_msgs/msg/collision_object.hpp>
 #include <shape_msgs/msg/solid_primitive.hpp>
+#include <thorp_msgs/msg/thorp_error.hpp>
 
 #include <behaviortree_cpp/utils/demangle_util.h>
 
@@ -234,6 +235,11 @@ nlohmann::json anyToJson(const BT::Any& any)
   if (any.type() == typeid(moveit_msgs::msg::CollisionObject))
   {
     return collisionObjectToJson(any.cast<moveit_msgs::msg::CollisionObject>());
+  }
+  if (any.type() == typeid(thorp_msgs::msg::ThorpError))
+  {
+    const auto error = any.cast<thorp_msgs::msg::ThorpError>();
+    return nlohmann::json{ { "code", error.code }, { "text", error.text } };
   }
   return "<unsupported type: " + BT::demangle(any.type()) + ">";
 }

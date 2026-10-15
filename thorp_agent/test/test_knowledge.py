@@ -153,8 +153,11 @@ def test_a_call_line_tells_the_call_its_outcome_and_the_world_changes():
 
 
 def test_a_failed_call_line_says_why():
-    failed = {'succeeded': False, 'outputs': {'error': -230, 'error_name': 'NOT_AT_TABLE'}, 'world_changes': []}
+    failed = {'succeeded': False, 'world_changes': [],
+              'outputs': {'error': {'code': -230, 'name': 'NOT_AT_TABLE', 'text': "'cube 1' is on 'table 2'"}}}
     assert knowledge.call_line('pickup_object', {'object_name': 'cube 1'}, failed) == \
-        'pickup_object {"object_name": "cube 1"}: failed (NOT_AT_TABLE)'
+        'pickup_object {"object_name": "cube 1"}: failed (NOT_AT_TABLE: \'cube 1\' is on \'table 2\')'
+    driving = {'succeeded': False, 'outputs': {'nav_error': 104, 'nav_error_name': 'PATIENCE_EXCEEDED'}}
+    assert knowledge.call_line('reach_table', {}, driving) == 'reach_table {}: failed (PATIENCE_EXCEEDED)'
     refused = {'succeeded': False, 'refused': True, 'error': "missing input 'pose'"}
     assert knowledge.call_line('reach_table', {}, refused) == "reach_table {}: failed (missing input 'pose')"

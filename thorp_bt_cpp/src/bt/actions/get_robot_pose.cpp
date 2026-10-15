@@ -1,8 +1,9 @@
 #include <behaviortree_cpp/action_node.h>
 
+#include "thorp_bt_cpp/errors.hpp"
 #include "thorp_bt_cpp/node_common.hpp"
 
-#include <nav2_msgs/action/follow_path.hpp>
+#include <moveit_msgs/msg/move_it_error_codes.hpp>
 
 #include <thorp_toolkit/tf2.hpp>
 namespace ttk = thorp::toolkit;
@@ -19,8 +20,8 @@ public:
 
   static BT::PortsList providedPorts()
   {
-    return { BT::InputPort<double>("timeout"),  //
-             BT::OutputPort<int>("error"),      //
+    return { BT::InputPort<double>("timeout"),                      //
+             BT::OutputPort<thorp_msgs::msg::ThorpError>("error"),  //
              BT::OutputPort<geometry_msgs::msg::PoseStamped>("robot_pose") };
   }
 
@@ -42,8 +43,9 @@ private:
       return BT::NodeStatus::SUCCESS;
     }
 
-    RCLCPP_ERROR(logger(*this), "Could not get the current robot pose");
-    setOutput<int>("error", nav2_msgs::action::FollowPath::Result::TF_ERROR);
+    const std::string text = "cannot get the robot pose: no transform from base_footprint to map";
+    RCLCPP_ERROR(logger(*this), "%s", text.c_str());
+    setOutput("error", makeError(moveit_msgs::msg::MoveItErrorCodes::FRAME_TRANSFORM_FAILURE, text));
 
     return BT::NodeStatus::FAILURE;
   }

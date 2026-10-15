@@ -262,7 +262,10 @@ objects around, as those already on the tray. Tasks plan from the measured state
 positions clamped to the joint limits:
 MTC checks the start state bounds, velocities included, and pickups failed now and then with the start state out of
 bounds, just after closing the gripper. On shutdown, a goal being executed stops waiting for its result, so the node
-exits cleanly.
+exits cleanly. A failure comes with the most specific code that fits, `OUT_OF_REACH` for a target beyond the arm's
+reach, `GOAL_IN_COLLISION` or `NO_IK_SOLUTION` for a target pose with no collision-free or no IK solution at all, and
+`PLANNING_FAILED` for a motion that can't be planned, and with a one-line reason as its text: how far the target is,
+which pairs collide, which stage failed to execute.
 `scripts/test_pick_and_place.py` picks and places a cube on a table that exist only in the planning scene.
 
 The fake gripper joints state publisher (`fake_joint_pub.py`, from `turtlebot_arm_bringup`) and
@@ -294,7 +297,9 @@ subtree blackboards get the root's node and timeouts, as they see only their rem
 
 Navigation uses `nav2_behavior_tree`'s own nodes, loaded from its plugins: `NavigateToPose`, `NavigateThroughPoses`,
 `FollowPath`, `Spin` and `BackUp`, their builders wrapped to share the root entries with subtrees as Thorp's do. Their
-error codes, `uint16`, go to `{nav_error}` keys, as trees can't mix types on a key and Thorp's nodes write `int` errors.
+error codes, `uint16`, go to `{nav_error}` keys, as trees can't mix types on a key and Thorp's nodes write their errors
+as `thorp_msgs/ThorpError`: a code to act on, and a text saying in a line what failed, that `bt_server` returns as
+`{code, text}`.
 The runner waits for Nav2 to be active before ticking, when `lifecycle_manager_navigation` is running: `bt_navigator`
 rejects goals until activated. Thorp's `LookAtPose` turns with the `spin` behavior; `GetPosesAroundTable` discards poses
 on obstacles with the global costmap's `get_cost` service, checking the pose's cell rather than Noetic's footprint

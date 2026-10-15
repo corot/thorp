@@ -2,6 +2,7 @@
 
 #include <nav2_behavior_tree/bt_action_node.hpp>
 
+#include "thorp_bt_cpp/errors.hpp"
 #include "thorp_bt_cpp/node_common.hpp"
 
 #include <nav2_msgs/action/spin.hpp>
@@ -28,7 +29,7 @@ public:
   {
     return providedBasicPorts({ BT::InputPort<geometry_msgs::msg::PoseStamped>("robot_pose"),   //
                                 BT::InputPort<geometry_msgs::msg::PoseStamped>("target_pose"),  //
-                                BT::OutputPort<int>("error") });
+                                BT::OutputPort<thorp_msgs::msg::ThorpError>("error") });
   }
 
 private:
@@ -48,9 +49,10 @@ private:
 
   BT::NodeStatus on_aborted() override
   {
-    RCLCPP_ERROR(logger(*this), "Turning to face the target pose failed with error %d: %s",
-                 result_.result->error_code, result_.result->error_msg.c_str());
-    setOutput<int>("error", result_.result->error_code);
+    const std::string text = "turning to face the target pose failed" +
+                             (result_.result->error_msg.empty() ? "" : ": " + result_.result->error_msg);
+    RCLCPP_ERROR(logger(*this), "%s (error %d)", text.c_str(), result_.result->error_code);
+    setOutput("error", makeError(result_.result->error_code, text));
     return BT::NodeStatus::FAILURE;
   }
 

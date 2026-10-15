@@ -1,5 +1,6 @@
 #include <behaviortree_cpp/condition_node.h>
 
+#include "thorp_bt_cpp/errors.hpp"
 #include "thorp_bt_cpp/node_common.hpp"
 #include "thorp_bt_cpp/ros_service_node.hpp"
 
@@ -31,7 +32,7 @@ public:
     ports["service_name"].setDefaultValue("world/query");
     ports.insert({ BT::InputPort<std::string>("object_id"),                        //
                    BT::OutputPort<std::string>("table_id", "the object's table"),  //
-                   BT::OutputPort<int>("error") });
+                   BT::OutputPort<ThorpError>("error") });
     return ports;
   }
 
@@ -64,14 +65,16 @@ private:
 
   BT::NodeStatus onFailedRequest(FailureCause failure) override
   {
-    setOutput("error", static_cast<int>(ThorpError::SERVER_NOT_AVAILABLE));
+    setOutput("error", makeError(ThorpError::SERVER_NOT_AVAILABLE,
+                                 "no answer from thorp_world's " +
+                                     getInput<std::string>("service_name").value_or("query service")));
     return BT::NodeStatus::FAILURE;
   }
 
   BT::NodeStatus fail(int32_t error, const std::string& reason)
   {
     RCLCPP_WARN(logger(*this), "Can't pick: %s", reason.c_str());
-    setOutput("error", static_cast<int>(error));
+    setOutput("error", makeError(error, reason));
     return BT::NodeStatus::FAILURE;
   }
 

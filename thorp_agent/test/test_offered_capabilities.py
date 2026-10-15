@@ -212,9 +212,10 @@ def test_error_codes_get_their_names():
         PATIENCE_EXCEEDED = 104
 
     names = errors.table(ThorpError, FollowPathResult)
-    out = errors.annotate({'error': -210, 'follow_path_error': 104, 'count': 104, 'error_x': 3}, names)
-    assert out['error_name'] == 'INVALID_TARGET_POSE'
-    assert out['follow_path_error_name'] == 'PATIENCE_EXCEEDED'
+    out = errors.annotate({'error': {'code': -210, 'text': 'no pose'}, 'follow_path_error': 104, 'count': 104,
+                           'error_x': 3}, names)
+    assert out['error'] == {'code': -210, 'name': 'INVALID_TARGET_POSE', 'text': 'no pose'}
+    assert out['follow_path_error_name'] == 'PATIENCE_EXCEEDED', "Nav2's tree nodes give bare codes"
     assert 'count_name' not in out and 'error_x_name' not in out
 
 

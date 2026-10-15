@@ -5,8 +5,10 @@
 
 #include <nav2_behavior_tree/bt_action_node.hpp>
 
+#include "thorp_bt_cpp/errors.hpp"
 #include "thorp_bt_cpp/node_common.hpp"
 
+#include <moveit/utils/moveit_error_code.hpp>
 #include <moveit_msgs/action/move_group.hpp>
 #include <std_msgs/msg/string.hpp>
 
@@ -28,7 +30,7 @@ public:
   static BT::PortsList providedPorts()
   {
     return providedBasicPorts({ BT::InputPort<std::string>("configuration"),  //
-                                BT::OutputPort<int>("error") });
+                                BT::OutputPort<thorp_msgs::msg::ThorpError>("error") });
   }
 
 private:
@@ -84,9 +86,10 @@ private:
 
   BT::NodeStatus on_aborted() override
   {
-    RCLCPP_ERROR(logger(*this), "Error %d moving arm to %s", result_.result->error_code.val,
-                 requireInput<std::string>(*this, "configuration").c_str());
-    setOutput<int>("error", result_.result->error_code.val);
+    const std::string text = "cannot move the arm to '" + requireInput<std::string>(*this, "configuration") +
+                             "': " + moveit::core::errorCodeToString(result_.result->error_code);
+    RCLCPP_ERROR(logger(*this), "%s", text.c_str());
+    setOutput("error", makeError(result_.result->error_code.val, text));
     return BT::NodeStatus::FAILURE;
   }
 

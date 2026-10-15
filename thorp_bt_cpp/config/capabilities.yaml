@@ -37,6 +37,11 @@
 # holds now -- where each object is, which table the robot is at, what is within reach -- is
 # the world's to tell, so capabilities declare no preconditions of their own.
 #
+# An `error` output is a thorp_msgs/ThorpError: a code to act on, one of `errors` or else the
+# failing server's own (MoveIt's, Nav2's or Thorp's), and a text saying in a line what failed,
+# as how far out of reach a target is, or which objects collide. Nav2's own tree nodes report
+# their bare codes, as nav_error.
+#
 # kind:
 #   capability - a step an agent can ask for. The default, so it is left off.
 #   app        - a whole session's behavior rather than a step: it drives the robot until
@@ -99,7 +104,7 @@ capabilities:
       object_name: {type: string, description: "id of the object to pick, as thorp_world knows it: 'cube 1'"}
       tightening: {type: float, optional: true, description: "extra gripper closure past contact, in meters; leave it out to use the gripper's configured value"}
     outputs:
-      error: {type: int, when: failure, description: "why it failed: one of errors, or else the pickup action's error code"}
+      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed: one of errors, or else the pickup action's"}
       attached_object: {type: string, description: "object now attached to the gripper, if any"}
       max_effort: {type: float, description: "gripper effort used, read from the gripper_max_effort parameter"}
     errors:
@@ -126,7 +131,7 @@ capabilities:
       object_name: {type: string, description: "id of the object in the gripper, as pickup_object reports it in attached_object"}
       place_pose: {type: geometry_msgs::msg::PoseStamped, description: "where the object's center goes, as 'x;y;yaw;frame' or 'x;y;z;roll;pitch;yaw;frame'; z is the surface height plus half the object's height, plus a few millimeters, and the short form leaves z at 0, which is the floor"}
     outputs:
-      error: {type: int, when: failure, description: "why it failed: one of errors, or else the place action's error code"}
+      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed: one of errors, or else the place action's"}
     errors:
       NOT_AT_TABLE: the robot isn't at a table; approach_table one first
     test:
@@ -152,7 +157,7 @@ capabilities:
     inputs:
       object_name: {type: string, description: "id of the object in the gripper, to stow on the tray"}
     outputs:
-      error: {type: int, when: failure, description: "error code from the place action; 0 when it worked"}
+      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed, from the place action"}
       pose_on_tray: {type: geometry_msgs::msg::PoseStamped, description: "slot the object was placed in"}
     test:
       inputs: {object_name: "clover 1"}
@@ -188,7 +193,7 @@ capabilities:
     stack: [manipulation]
     inputs: {}
     outputs:
-      error: {type: int, when: failure, description: "error code from move_group moving the arm to stow"}
+      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why moving the arm to stow failed, from move_group"}
     test:
       inputs: {}
       expect: succeeded
@@ -203,7 +208,7 @@ capabilities:
     stack: [manipulation]
     inputs: {}
     outputs:
-      error: {type: int, when: failure, description: "error code from move_group moving the arm to stow"}
+      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why moving the arm to stow failed, from move_group"}
     test:
       inputs: {}
       expect: succeeded
@@ -270,7 +275,7 @@ capabilities:
       pickup_pose: {type: geometry_msgs::msg::PoseStamped, description: "the pose it parked at, for reach_table"}
       objects: {type: std::vector<moveit_msgs::msg::CollisionObject>, description: "the objects on the table, each as id and color; empty when there are none"}
       surface: {type: moveit_msgs::msg::CollisionObject, description: "the surface they were found on, as id and color"}
-      error: {type: int, when: failure, description: "why it failed: one of errors, or else a code from reading the robot pose"}
+      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed: one of errors, or else from reading the robot pose"}
       nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's navigate_to_pose or follow_path, docking"}
     errors:
       TABLE_NOT_FOUND: thorp_world knows no table by that id
@@ -297,7 +302,7 @@ capabilities:
       inspect_pose: {type: geometry_msgs::msg::PoseStamped, description: "the viewing pose it looked from"}
       objects: {type: std::vector<moveit_msgs::msg::CollisionObject>, description: "the objects on the table, each as id and color; empty when there are none"}
       surface: {type: moveit_msgs::msg::CollisionObject, description: "the surface they were found on, as id and color"}
-      error: {type: int, when: failure, description: "why it failed: one of errors, or else a code from reading the robot pose"}
+      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed: one of errors, or else from reading the robot pose"}
     errors:
       TABLE_NOT_FOUND: thorp_world knows no table by that id
     test:
@@ -316,7 +321,7 @@ capabilities:
       table_id: {type: string, description: "id of the table to go to"}
     outputs:
       inspect_pose: {type: geometry_msgs::msg::PoseStamped, description: "the viewing pose it drove to"}
-      error: {type: int, when: failure, description: "why it failed: one of errors, or else a code from reading the robot pose"}
+      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed: one of errors, or else from reading the robot pose"}
       nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's navigate_to_pose"}
     errors:
       TABLE_NOT_FOUND: thorp_world knows no table by that id
@@ -337,7 +342,7 @@ capabilities:
       table_id: {type: string, description: "id of the table to dock at"}
       pose: {type: geometry_msgs::msg::PoseStamped, description: "pose to dock at: the pickup_pose approach_table returned"}
     outputs:
-      error: {type: int, when: failure, description: "why it failed: one of errors, or else a code from reading the robot pose"}
+      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed: one of errors, or else from reading the robot pose"}
       nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's follow_path"}
     errors:
       TABLE_NOT_FOUND: thorp_world knows no table by that id
@@ -360,7 +365,7 @@ capabilities:
     stack: [navigation]
     inputs: {}
     outputs:
-      error: {type: int, when: failure, description: "why it failed: one of errors"}
+      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed: one of errors"}
       nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's backup behavior"}
     errors:
       NOT_AT_TABLE: the robot isn't at a table, so there is none to leave
@@ -402,7 +407,7 @@ capabilities:
       given_up_count: {type: unsigned int, description: "objects abandoned so far; 0 to start"}
     outputs:
       pickup_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "pose the last pickup was attempted from"}
-      error: {type: int, when: maybe, description: "error code from the last action"}
+      error: {type: thorp_msgs::msg::ThorpError, when: maybe, description: "why the last action failed"}
       nav_error: {type: uint16_t, when: maybe, description: "error code from the last Nav2 action"}
     errors:
       TABLE_NOT_FOUND: thorp_world knows no table by that id
@@ -444,7 +449,7 @@ capabilities:
       pose: {type: geometry_msgs::msg::PoseStamped, description: "what to face; only its position matters"}
     outputs:
       robot_pose: {type: geometry_msgs::msg::PoseStamped, description: "where the robot was before turning"}
-      error: {type: int, when: failure, description: "error code from reading the robot pose or from Nav2's spin behavior"}
+      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed, from reading the robot pose or from Nav2's spin behavior"}
     test:
       inputs: {pose: "-0.5;1.5;0.0;map"}    # the cat llm_playground spawns
       expect: succeeded
@@ -527,7 +532,7 @@ capabilities:
     outputs:
       object_name: {type: string, when: maybe, description: "object last operated on"}
       user_command: {type: string, description: "command last read from the user"}
-      error: {type: int, when: failure, description: "error code from the last manipulation action"}
+      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why the last manipulation action failed"}
     test:
       inputs: {}
       expect: runs
@@ -545,8 +550,8 @@ capabilities:
     outputs:
       target_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "where the target was last seen"}
       robot_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "robot pose at the last check"}
-      error: {type: int, when: failure, description: "error code from reading the robot pose"}
-      follow_error: {type: int, when: failure, description: "opennav_following's error code"}
+      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why reading the robot pose failed"}
+      follow_error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why following failed, from opennav_following"}
     test:
       inputs: {}
       setup:
@@ -568,8 +573,8 @@ capabilities:
       cannon_tilt_angle: {type: float, when: maybe, description: "angle the cannon was tilted to"}
       target_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "where the target was last seen"}
       robot_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "robot pose at the last check"}
-      error: {type: int, when: failure, description: "error code from reading the robot pose"}
-      follow_error: {type: int, when: maybe, description: "opennav_following's error code, if it lost the target"}
+      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why reading the robot pose failed"}
+      follow_error: {type: thorp_msgs::msg::ThorpError, when: maybe, description: "why following failed, from opennav_following, if it lost the target"}
     test:
       inputs: {}
       setup:
@@ -591,7 +596,7 @@ capabilities:
     outputs:
       coverage_waypoints: {type: std::vector<geometry_msgs::msg::PoseStamped>, description: "the poses left to drive through; empty once done"}
       robot_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "robot pose when planning started"}
-      error: {type: int, when: failure, description: "error code from getting the robot pose"}
+      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why reading the robot pose failed"}
     test:
       inputs: {}
       expect: any
@@ -670,7 +675,7 @@ capabilities:
       given_up_count: {type: unsigned int, description: "objects abandoned so far; 0 to start"}
     outputs:
       object_name: {type: string, when: maybe, description: "object last picked"}
-      error: {type: int, when: failure, description: "error code from the last action"}
+      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why the last action failed"}
     test:
       inputs: {failures: {}, given_up_count: 0}
       setup:

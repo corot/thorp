@@ -77,7 +77,8 @@ std::set<std::string> valuedKeys(const BT::Blackboard& blackboard);
  * Entries whose runtime type we know how to serialize are reported as their value: bool, the
  * integral and floating point types and std::string map onto their json counterparts, while
  * a geometry_msgs::Pose / PoseStamped (or a vector of the latter) becomes an object with
- * x/y/z, roll/pitch/yaw and, when stamped, frame. Any other type -- any of the other ROS
+ * x/y/z, roll/pitch/yaw and, when stamped, frame, and a thorp_msgs::ThorpError an object with
+ * its code and text. Any other type -- any of the other ROS
  * messages a node may write via setOutput<T> -- is reported as the string
  * "<unsupported type: TYPE_NAME>" rather than silently dropped, so it's obvious both that
  * something was left out and which type needs a case added in blackboard_json.cpp.

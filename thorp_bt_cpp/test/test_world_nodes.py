@@ -68,7 +68,8 @@ def test_a_table_comes_as_a_box_of_its_size_on_the_map(runner):
 
 def test_an_unknown_table_fails_with_table_not_found(runner):
     succeeded, out = run(runner, 'test_world_table', table_id='table 9')
-    assert not succeeded and out['error'] == ThorpError.TABLE_NOT_FOUND
+    assert not succeeded and out['error'] == {'code': ThorpError.TABLE_NOT_FOUND,
+                                              'text': "thorp_world knows no table 'table 9'"}
 
 
 def test_the_current_table_is_the_one_the_robot_is_at(runner):
@@ -84,7 +85,7 @@ def test_the_current_table_is_the_one_the_robot_is_at(runner):
 ])
 def test_unpickable_objects_say_why(runner, object_id, error):
     succeeded, out = run(runner, 'test_world_pickable', object_id=object_id)
-    assert not succeeded and out['error'] == error
+    assert not succeeded and out['error']['code'] == error and object_id in out['error']['text']
 
 
 def test_a_reachable_object_on_the_docked_table_is_pickable(runner):
@@ -96,7 +97,7 @@ def test_an_effect_changes_what_the_world_says(runner):
     succeeded, _ = run(runner, 'test_world_update', effect='picked', object_id='cube 1')
     assert succeeded
     succeeded, out = run(runner, 'test_world_pickable', object_id='cube 1')
-    assert not succeeded and out['error'] == ThorpError.OBJECT_NOT_ON_TABLE
+    assert not succeeded and out['error']['code'] == ThorpError.OBJECT_NOT_ON_TABLE
 
 
 def test_a_table_is_visited_once_inspected(runner):

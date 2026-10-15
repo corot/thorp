@@ -46,8 +46,15 @@ def ros_table():
 
 
 def annotate(outputs, names):
-    """Adds <key>_name beside each error output with a known code, and returns outputs"""
+    """
+    Names each error output's known code, and returns outputs: inside an error given as its code and text, and as
+    <key>_name beside a bare code, as Nav2's tree nodes give theirs
+    """
     for key, value in list(outputs.items()):
-        if (key == 'error' or key.endswith('_error')) and isinstance(value, int) and value in names:
+        if not (key == 'error' or key.endswith('_error')):
+            continue
+        if isinstance(value, dict) and isinstance(value.get('code'), int) and value['code'] in names:
+            value['name'] = names[value['code']]
+        elif isinstance(value, int) and not isinstance(value, bool) and value in names:
             outputs[key + '_name'] = names[value]
     return outputs

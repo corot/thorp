@@ -1,5 +1,6 @@
 #include <behaviortree_cpp/action_node.h>
 
+#include "thorp_bt_cpp/errors.hpp"
 #include "thorp_bt_cpp/node_common.hpp"
 #include "thorp_bt_cpp/ros_service_node.hpp"
 
@@ -28,7 +29,7 @@ public:
     BT::PortsList ports = BT::RosServiceNode<ServiceType, ParentType>::providedPorts();
     ports["service_name"].setDefaultValue("world/query");
     ports.insert({ BT::OutputPort<std::string>("table_id"),  //
-                   BT::OutputPort<int>("error") });
+                   BT::OutputPort<ThorpError>("error") });
     return ports;
   }
 
@@ -41,9 +42,9 @@ private:
   {
     if (response.at_table.empty())
     {
-      RCLCPP_WARN(logger(*this), "Not at any table%s%s", response.message.empty() ? "" : ": ",
-                  response.message.c_str());
-      setOutput("error", static_cast<int>(ThorpError::NOT_AT_TABLE));
+      const std::string text = "the robot is at no table" + (response.message.empty() ? "" : ": " + response.message);
+      RCLCPP_WARN(logger(*this), "%s", text.c_str());
+      setOutput("error", makeError(ThorpError::NOT_AT_TABLE, text));
       return BT::NodeStatus::FAILURE;
     }
     setOutput("table_id", response.at_table);
@@ -52,7 +53,9 @@ private:
 
   BT::NodeStatus onFailedRequest(FailureCause failure) override
   {
-    setOutput("error", static_cast<int>(ThorpError::SERVER_NOT_AVAILABLE));
+    setOutput("error", makeError(ThorpError::SERVER_NOT_AVAILABLE,
+                                 "no answer from thorp_world's " +
+                                     getInput<std::string>("service_name").value_or("query service")));
     return BT::NodeStatus::FAILURE;
   }
 

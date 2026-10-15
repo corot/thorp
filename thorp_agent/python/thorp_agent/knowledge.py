@@ -99,7 +99,14 @@ def call_line(subtree: str, inputs: Dict[str, Any], result: Dict[str, Any]) -> s
     if result.get('succeeded'):
         outcome = 'succeeded'
     else:
-        reason = outputs.get('error_name') or outputs.get('error') or result.get('error')
+        error = outputs.get('error')
+        if isinstance(error, dict):
+            reason = ': '.join(str(part) for part in (error.get('name') or error.get('code'), error.get('text'))
+                               if part)
+        else:
+            # a bare code, as Nav2's tree nodes give, under its own key
+            named = [outputs[key] for key in sorted(outputs) if key.endswith('error_name')]
+            reason = (named[0] if named else error) or result.get('error')
         outcome = 'failed ({})'.format(reason) if reason else 'failed'
     line = '{} {}: {}'.format(subtree, json.dumps(inputs or {}), outcome)
     if result.get('world_changes'):

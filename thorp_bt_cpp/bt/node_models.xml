@@ -78,7 +78,7 @@
             <input_port name="pose_topic" type="std::string" default="target_object_pose">Topic with the object's pose</input_port>
             <input_port name="tracked_frame" type="std::string" default="">Object's TF frame, if no pose topic is given</input_port>
             <input_port name="max_duration" type="double" default="0.000000">Seconds to follow the object; forever if 0</input_port>
-            <output_port name="error" type="int"/>
+            <output_port name="error" type="thorp_msgs::msg::ThorpError_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="server_timeout" type="std::chrono::milliseconds"/>
             <input_port name="server_name" type="std::string">Action server name</input_port>
         </Action>
@@ -101,7 +101,7 @@
             <input_port name="poses" type="std::vector&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
         </Action>
         <Action ID="GetCurrentTable">
-            <output_port name="error" type="int"/>
+            <output_port name="error" type="thorp_msgs::msg::ThorpError_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="table_id" type="std::string"/>
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
             <input_port name="service_name" type="std::string" default="world/query">name of the ROS service</input_port>
@@ -119,11 +119,11 @@
         </Action>
         <Action ID="GetRobotPose">
             <output_port name="robot_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <output_port name="error" type="int"/>
+            <output_port name="error" type="thorp_msgs::msg::ThorpError_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="timeout" type="double"/>
         </Action>
         <Action ID="GetTable">
-            <output_port name="error" type="int"/>
+            <output_port name="error" type="thorp_msgs::msg::ThorpError_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="table_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="table" type="moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="table_id" type="std::string"/>
@@ -153,7 +153,7 @@
         <Action ID="LookAtPose">
             <input_port name="robot_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="target_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <output_port name="error" type="int"/>
+            <output_port name="error" type="thorp_msgs::msg::ThorpError_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="server_timeout" type="std::chrono::milliseconds"/>
             <input_port name="server_name" type="std::string">Action server name</input_port>
         </Action>
@@ -189,7 +189,7 @@
             <output_port name="attached_object" type="std::string"/>
         </Condition>
         <Condition ID="ObjectPickable">
-            <output_port name="error" type="int"/>
+            <output_port name="error" type="thorp_msgs::msg::ThorpError_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="table_id" type="std::string">the object's table</output_port>
             <input_port name="object_id" type="std::string"/>
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
@@ -206,7 +206,7 @@
             <input_port name="support_surf" type="std::string"/>
             <input_port name="max_effort" type="float"/>
             <input_port name="tightening" type="float"/>
-            <output_port name="error" type="int"/>
+            <output_port name="error" type="thorp_msgs::msg::ThorpError_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="server_timeout" type="std::chrono::milliseconds"/>
             <input_port name="server_name" type="std::string">Action server name</input_port>
         </Action>
@@ -218,7 +218,7 @@
             <output_port name="feedback" type="std::optional&lt;thorp_msgs::action::PlaceObject_Feedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
             <input_port name="support_surf" type="std::string"/>
             <input_port name="place_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <output_port name="error" type="int"/>
+            <output_port name="error" type="thorp_msgs::msg::ThorpError_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="server_timeout" type="std::chrono::milliseconds"/>
             <input_port name="server_name" type="std::string">Action server name</input_port>
         </Action>
@@ -322,7 +322,7 @@
         </Action>
         <Action ID="SetArmConfig">
             <input_port name="configuration" type="std::string"/>
-            <output_port name="error" type="int"/>
+            <output_port name="error" type="thorp_msgs::msg::ThorpError_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="server_timeout" type="std::chrono::milliseconds"/>
             <input_port name="server_name" type="std::string">Action server name</input_port>
         </Action>

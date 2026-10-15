@@ -24,6 +24,7 @@
 #   int32 ROBOT_STATE_STALE=-23
 #   int32 SENSOR_INFO_STALE=-24
 #   int32 NO_IK_SOLUTION=-31
+# or, from a tree node wrapping a Nav2 action, that action's code,
 # or a Thorp-specific error:
 int32 SUCCESS=1
 int32 OBJECT_NOT_FOUND=-200

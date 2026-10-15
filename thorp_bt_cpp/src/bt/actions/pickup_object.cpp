@@ -23,11 +23,11 @@ public:
 
   static BT::PortsList providedPorts()
   {
-    return providedBasicPorts({ BT::InputPort<std::string>("object_name"),   //
-                                BT::InputPort<std::string>("support_surf"),  //
-                                BT::InputPort<float>("max_effort"),          //
-                                BT::InputPort<float>("tightening"),          //
-                                BT::OutputPort<int>("error"),                //
+    return providedBasicPorts({ BT::InputPort<std::string>("object_name"),             //
+                                BT::InputPort<std::string>("support_surf"),            //
+                                BT::InputPort<float>("max_effort"),                    //
+                                BT::InputPort<float>("tightening"),                    //
+                                BT::OutputPort<thorp_msgs::msg::ThorpError>("error"),  //
                                 BT::OutputPort<std::optional<ActionType::Feedback>>("feedback") });
   }
 
@@ -49,7 +49,7 @@ private:
   BT::NodeStatus on_aborted() override
   {
     RCLCPP_ERROR(logger(*this), "Error %d: %s", result_.result->error.code, result_.result->error.text.c_str());
-    setOutput<int>("error", result_.result->error.code);
+    setOutput("error", result_.result->error);
     return BT::NodeStatus::FAILURE;
   }
 
