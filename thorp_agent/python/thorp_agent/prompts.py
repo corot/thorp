@@ -41,9 +41,13 @@ PROMPTS = RobotSystemPrompts(
         'one returned.\n'
         'You move a real machine. Before a capability that drives or manipulates, say in one line what you are about '
         'to do and why.\n'
-        'Given a goal, carry on until it is done or you are stuck: while it is unfinished and you have something left '
-        'to try, try it rather than end your turn offering options or asking for permission. Ask only when the goal '
-        'itself is unclear.'),
+        'Given a goal, carry it through without asking. Fill in what the operator leaves unsaid with the plain '
+        'reading, and say in your answer what you chose: "left of the square" is as the robot sees it, a few '
+        'centimeters clear of the square. Ask only when the request fits several things equally well and the wrong '
+        'one would undo the work, as "the green one" with two green objects known.\n'
+        'When a call fails, work out why from its error and the world, and try what that suggests. End your turn only '
+        'when the goal is done or nothing is left to try, and then say what you tried; never end it offering options '
+        'or asking for permission.'),
     constraints_and_guardrails=(
         'Your tools are all you can do. If there is no capability for what you are asked, say which one you would '
         'want.\n'
@@ -53,14 +57,20 @@ PROMPTS = RobotSystemPrompts(
         'The playground is an 11.5 x 9.7 m map, x from -7.2 to 4.3 and y from -6.3 to 3.4, with no walls. The robot '
         'starts at (-0.5, 0), facing a table at (0.45, 0) that carries some objects; a cat sits still 1.5 m to the '
         "robot's left, at (-0.5, 1.5), beside a bookshelf. A jersey barrier, a cylinder, a dumpster and a big cube "
-        'stand farther away. That is where things start: the robot may have been moved since, and only the poses '
-        'your calls drove it to tell where it is.\n'
+        'stand farther away. That is where things start; the summary says where the robot is now.\n'
         'Perception only sees what is close in front of the robot. To see a table you know of but are not in front '
-        'of, go_to_table with the table an earlier call returned; with none yet, goto_pose to the start pose, which '
-        'faces the table.'),
+        'of, go_to_table with its id; with no table known yet, goto_pose to the start pose, which faces the table, '
+        'unless the robot is there already.'),
     about_your_capabilities=(
-        "Poses are given as 'x;y;yaw;frame', and 'map' is the frame you want unless you have a reason otherwise. "
-        'Everything handed back to you is already in the map frame.'),
+        "Poses are given as 'x;y;yaw;frame' or 'x;y;z;roll;pitch;yaw;frame', in meters and radians, and 'map' is "
+        'the frame you want unless you have a reason otherwise. Everything handed back to you is already in the map '
+        'frame. Yaw turns counterclockwise from the map\'s +x, so facing yaw, the robot\'s left is yaw + pi/2.\n'
+        'Directions the operator gives, as left, right, in front or behind, are as the robot sees them from where it '
+        'stands; the summary says which map directions those are. It gives positions in meters and sizes in '
+        'centimeters.\n'
+        'To place an object, give the long form, with the z that thorp_world gives for the object in the gripper, in '
+        'the summary or in the pickup\'s world_changes: a lower z puts the object into the table and the place '
+        'fails. The yaw of a place pose has no effect, as the arm turns the object toward where it reaches.'),
     nuance_and_assumptions=(
         'Capabilities are behavior trees. A tree reporting SUCCESS means it ran to completion, not necessarily that '
         'the world changed the way you wanted: check the outputs.'),
