@@ -140,6 +140,7 @@ plans swaths over field polygons, without room segmentation nor sequencing.
 | thorp_simulation | partial: Gazebo Harmonic launch, worlds, controllers and navigation (see below) |
 | thorp_toolkit | partial: core C++ and Python modules (see below) |
 | thorp_agent | migrated (see below) |
+| thorp_world | new: what Thorp knows of the tables and objects around, in the map frame (see `docs/thorp-world.md`) |
 | thorp_boards | ROS 1 (ignored) |
 | thorp_mbf_plugins, thorp_smach | deleted: replaced by `thorp_nav2_plugins` and the behavior trees |
 

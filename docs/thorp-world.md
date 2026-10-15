@@ -70,12 +70,11 @@ a ROS domain nothing else uses: static transforms published beside a simulation 
 | 4d | `PlanPickupLocations` asks the world for reach, and `TableVisited` whether a table was inspected; the semantic layer stays apart for now | done |
 | 5 | Agent on ROS 2 (ROSA): world tools, world summary, world changes in skill results | done; untested with a real model |
 
-The work happens on the `thorp_world` branch, in a worktree with its own colcon workspace over the main one's install:
+`thorp_world` builds with the rest of the workspace. Its own tests are the core's and the conversions'; the tree nodes'
+are `thorp_bt_cpp`'s `test/test_world_nodes.py`, and the agent's `thorp_agent`'s `test/test_knowledge.py`:
 
 ```bash
-cd ~/colcon_ws/thorp_world
-source /opt/ros/jazzy/setup.bash
-source ~/colcon_ws/thorp/install/setup.bash
-colcon build --symlink-install --packages-select thorp_world
+cd ~/colcon_ws/thorp
+source install/setup.bash
 colcon test --packages-select thorp_world && colcon test-result --verbose
 ```
