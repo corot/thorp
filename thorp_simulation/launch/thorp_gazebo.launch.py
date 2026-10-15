@@ -10,10 +10,11 @@ Thorp simulation on Gazebo Harmonic:
 """
 
 import os
+from math import atan2, cos, hypot, sin
 
 from launch import LaunchDescription
-from launch.actions import (DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription, SetEnvironmentVariable,
-                            Shutdown)
+from launch.actions import (DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription, OpaqueFunction,
+                            SetEnvironmentVariable, Shutdown)
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.conditions import IfCondition, UnlessCondition
 from launch.substitutions import Command, LaunchConfiguration, PathJoinSubstitution
@@ -27,6 +28,28 @@ from ros_gz_sim.actions.gzserver import GazeboRosPaths
 def shutdown_unless_shutting_down(event, context):
     """ Shut everything down when Gazebo exits, as when closing its window; a second shutdown makes launch fail """
     return None if context.is_shutdown else [Shutdown(reason='Gazebo exited')]
+
+
+# Gazebo GUI camera position relative to the robot's initial pose, on its frame
+GUI_CAMERA_OFFSET = (0.0, -4.0, 4.0)
+
+
+def gui_camera(context):
+    """ Point the Gazebo GUI camera at the robot's initial pose, from GUI_CAMERA_OFFSET, once the GUI is up """
+    x, y, a = (float(LaunchConfiguration(f'initial_pose_{c}').perform(context)) for c in 'xya')
+    dx, dy, dz = GUI_CAMERA_OFFSET
+    cam_x, cam_y = x + dx * cos(a) - dy * sin(a), y + dx * sin(a) + dy * cos(a)
+    yaw = atan2(y - cam_y, x - cam_x)
+    pitch = atan2(dz, hypot(x - cam_x, y - cam_y))  # looking down
+    qw, qx = cos(yaw / 2) * cos(pitch / 2), -sin(yaw / 2) * sin(pitch / 2)
+    qy, qz = cos(yaw / 2) * sin(pitch / 2), sin(yaw / 2) * cos(pitch / 2)
+    request = (f'pose: {{position: {{x: {cam_x}, y: {cam_y}, z: {dz}}}, '
+               f'orientation: {{x: {qx}, y: {qy}, z: {qz}, w: {qw}}}}}')
+    # The worlds keep Gazebo's default GUI, whose camera tracking plugin moves the camera on request
+    move = ('for i in $(seq 120); do gz service -l | grep -qx /gui/move_to/pose && break; sleep 1; done; '
+            'gz service -s /gui/move_to/pose --reqtype gz.msgs.GUICamera --reptype gz.msgs.Boolean --timeout 5000 '
+            f'--req "{request}"')
+    return [ExecuteProcess(cmd=['bash', '-c', move], name='gui_camera', output='screen')]
 
 
 def generate_launch_description():
@@ -87,6 +110,7 @@ def generate_launch_description():
 
         gz_sim(False, IfCondition(gui)),
         gz_sim(True, UnlessCondition(gui)),
+        OpaqueFunction(function=gui_camera, condition=IfCondition(gui)),
 
         # Gazebo publishes the clock on every simulation step (1 kHz); as Noetic's gazebo_ros, publish it at 100 Hz,
         # what sim time nodes can process cheaply
