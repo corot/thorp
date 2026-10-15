@@ -368,12 +368,14 @@ capabilities of the trees not ported yet are skipped. Before each capability tes
 Gazebo model back to its pose at the start of the session, once `tray_objects.py` released the objects it fixed to the
 tray (its `release` service), instead of Gazebo Classic's world reset; the session also does it at its end, leaving the
 world as it found it. `--world` loads a `thorp_world` file before each test, so the objects have the ids the tests name:
-`test/playground.yaml` for the playground's fixed objects. A setup step `unless` the robot is at a table is spared when
-the session starts with it there, as on the playground world:
+`test/playground.yaml` for the playground's fixed objects, and `test/playground_test.yaml` for its test objects
+(`object_type:=test`): two in front of the robot and one on the table's far side, few enough to make `pickup_objects`
+and `cleanup_table` quick. A setup step `unless` the robot is at a table is spared when the session starts with it
+there, as on `object_manip.launch.py`'s tabletop. With every stack up (`llm_playground.launch.py object_type:=test`):
 
 ```bash
 cd ~/colcon_ws/thorp/src/thorp/thorp_bt_cpp
-python3 -m pytest test/ -v --stack manipulation,perception --world test/playground.yaml
+python3 -m pytest test/ -v --stack navigation,manipulation,perception,target_detection --world test/playground_test.yaml
 ```
 
 With the manipulation and perception stacks up (`object_manip.launch.py executive:=llm`), 192 tests pass; skipped are
@@ -573,18 +575,20 @@ into the `aws_robomaker_small_house_world` checkout in `src/third_party`), the G
 configuration, the controllers configuration and `gazebo_ground_truth`, now fed by Gazebo's odometry publisher. The
 `empty`, `playground` and `fun_house` worlds step the physics every 2 ms, as DART's contacts at 1 kHz halved the real
 time factor. `thorp_gazebo.launch.py` also runs what Noetic's `sim_common.launch.xml` and `thorp_gazebo.launch.xml` did:
-velocity commands multiplexer and depth image and point cloud to laser scan. `spawn_gazebo_models.py` populates the
-world with tables and objects through Gazebo's create service, bridged to ROS with the remove and set pose services: the
-playground modes (`playground_fixed`, `playground_cubes`, `playground_rows`, `playground_random`) put a table in front
-of the robot, and `fun_house_objects` spawns random tables with objects in open spaces of any map, checked on Nav2's
-global costmap instead of Move Base Flex's check pose service. Objects are placed relative to their tables by the
-script, as Gazebo can't place them relative to a model created on the same step. Its `-d` option, to delete previously
-spawned models, is dropped; it didn't work on Noetic. The Stage and STDR simulations are dropped, with no Jazzy release
-of either simulator, and so is `scripts/gazebo_link_state.py`: `gz model -m thorp -l <link> -p` shows the same.
-`fill_tray.py`, new, fills the tray, in Gazebo and in the planning scene, with one object per slot but on the last rows,
-as if placed there, to test placing on a nearly full tray; its hidden objects, heavy and only in Gazebo, make placing
-stall on the first free slots. The `cats` mode spawns 3 black and 3 orange cats in open spaces, 3 m apart, and the
-cannon's `rocket`.
+velocity commands multiplexer and depth image and point cloud to laser scan. With the GUI, it points the camera at the
+robot's initial pose, from 2 m to its right and 1 m up, through the GUI's `/gui/move_to/pose` service, so the worlds
+keep Gazebo's default GUI: a world's `<gui>` replaces it whole, to set the camera pose. `spawn_gazebo_models.py`
+populates the world with tables and objects through Gazebo's create service, bridged to ROS with the remove and set pose
+services: the playground modes (`playground_fixed`, `playground_test`, `playground_cubes`, `playground_rows`,
+`playground_random`) put a table in front of the robot, and `fun_house_objects` spawns random tables with objects in
+open spaces of any map, checked on Nav2's global costmap instead of Move Base Flex's check pose service. Objects are
+placed relative to their tables by the script, as Gazebo can't place them relative to a model created on the same step.
+Its `-d` option, to delete previously spawned models, is dropped; it didn't work on Noetic. The Stage and STDR
+simulations are dropped, with no Jazzy release of either simulator, and so is `scripts/gazebo_link_state.py`: `gz model
+-m thorp -l <link> -p` shows the same. `fill_tray.py`, new, fills the tray, in Gazebo and in the planning scene, with
+one object per slot but on the last rows, as if placed there, to test placing on a nearly full tray; its hidden objects,
+heavy and only in Gazebo, make placing stall on the first free slots. The `cats` mode spawns 3 black and 3 orange cats
+in open spaces, 3 m apart, and the cannon's `rocket`.
 
 The cat models carry contact sensors, all publishing on `/cats/contacts` through the world's Contact system (loaded by
 the `fun_house` world), and an odometry publisher, with each cat's pose on `/cats/odometry`, named after it: the world's

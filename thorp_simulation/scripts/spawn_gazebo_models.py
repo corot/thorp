@@ -3,6 +3,7 @@
 """
 Populate the Gazebo world with tables and objects, or cats:
  - playground_fixed: a table with a sample of objects at reachable locations, in front of the robot
+ - playground_test: a table with two objects in front of the robot, and one on the far side, out of its reach
  - playground_cubes: a table with cubes at reachable locations, ready to stack
  - playground_rows: a table with 5 rows of 8 cubes
  - playground_random: a random table with random objects, in front of the robot
@@ -80,6 +81,11 @@ PLAYGROUND_OBJS = [('square',    'square',    (-0.22,  0.15,  0.5, 0.0, 0.0, 0.4
                    ('clover',    'clover',    (-0.11, -0.037, 0.5, 0.0, 0.0, 1.4)),
                    ('pentagon',  'pentagon',  (-0.12, -0.10,  0.5, 0.0, 0.0, 1.08)),
                    ('rectangle', 'rectangle', (-0.16, -0.16,  0.5, 0.0, 0.0, 1.1))]
+
+# few objects, for quick tests: two the arm reaches from the near side, and one only from the far side
+PLAYGROUND_TEST = [('star',     'star',     (-0.17, 0.017, 0.5, 0.0, 0.0, 0.2)),
+                   ('triangle', 'triangle', (-0.13, 0.1,   0.5, 0.0, 0.0, 0.1)),
+                   ('cube',     'cube',     (0.17, -0.05,  0.5, 0.0, 0.0, 0.85))]
 
 # cubes at reachable locations, ready to stack
 PLAYGROUND_CUBES = [('cube 1', 'cube', (-0.14, -0.16, 0.5, 0.0, 0.0, 1.1)),
@@ -317,8 +323,9 @@ class ModelsSpawner(Node):
             surf_pose = create_2d_pose(0.45, 0.0, pi / 2.0)
             self.spawn_model(surf_name + '_0', surf_name, surf_pose)
             self.spawn_objects(surface, 0, surf_pose)
-        elif mode in ('playground_fixed', 'playground_cubes', 'playground_rows'):
+        elif mode in ('playground_fixed', 'playground_test', 'playground_cubes', 'playground_rows'):
             objs = {'playground_fixed': PLAYGROUND_OBJS,  # a sample of objects mostly at reachable locations
+                    'playground_test': PLAYGROUND_TEST,  # few objects, on both sides
                     'playground_cubes': PLAYGROUND_CUBES,  # cubes at reachable locations, ready to stack
                     'playground_rows': N_ROWS_OF_CUBES}[mode]  # rows of cubes
             surf_pose = create_2d_pose(0.45, 0.0, 0.0)
@@ -332,7 +339,7 @@ class ModelsSpawner(Node):
 def main():
     args = rclpy.utilities.remove_ros_args(sys.argv)
     if len(args) < 2:
-        print("Usage: spawn_gazebo_models.py playground_fixed | playground_cubes | playground_rows | "
+        print("Usage: spawn_gazebo_models.py playground_fixed | playground_test | playground_cubes | playground_rows | "
               "playground_random | fun_house_objects | cats [-l] | playground_cat")
         sys.exit(-1)
     rclpy.init()

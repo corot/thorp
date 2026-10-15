@@ -427,7 +427,7 @@ capabilities:
     outputs:
       nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's navigate_to_pose; only set when the drive failed"}
     test:
-      inputs: {pose: '2.5;2.5;1.57;map'}
+      inputs: {pose: '-1.0;-1.0;0.0;map'}
       expect: any
       timeout: 300
 
@@ -637,7 +637,7 @@ capabilities:
       goto_pose_error: {type: uint16_t, when: failure, description: "error code from Nav2's navigate_to_pose"}
     test:
       # the first pose is off the playground map, so it has to be dropped
-      inputs: {poses: ['2.0;5.0;1.57;map', '2.5;2.5;1.57;map']}
+      inputs: {poses: ['2.0;5.0;1.57;map', '-1.0;-1.0;0.0;map']}
       expect: any
       timeout: 300
 
@@ -655,7 +655,7 @@ capabilities:
       robot_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "robot pose while following"}
       nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's navigate_through_poses"}
     test:
-      inputs: {waypoints: ['-2.0;1.0;1.57;map', '2.5;2.5;1.57;map']}
+      inputs: {waypoints: ['-1.0;-1.0;0.0;map', '-1.5;0.0;1.57;map']}
       expect: any
       timeout: 600
 

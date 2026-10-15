@@ -39,7 +39,7 @@ def generate_launch_description():
         DeclareLaunchArgument('initial_pose_x', default_value='-0.5'),
         DeclareLaunchArgument('initial_pose_y', default_value='0.0'),
         DeclareLaunchArgument('initial_pose_a', default_value='0.0'),
-        DeclareLaunchArgument('object_type', default_value='fixed', choices=['fixed', 'cubes', 'rows', 'random']),
+        DeclareLaunchArgument('object_type', default_value='fixed', choices=['fixed', 'test', 'cubes', 'rows', 'random']),
 
         IncludeLaunchDescription(
             PathJoinSubstitution([includes, 'apps_common.launch.py']),

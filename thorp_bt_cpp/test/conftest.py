@@ -23,6 +23,12 @@ Then, from the package directory:
     python3 -m pytest test/test_bt_server.py -v
     python3 -m pytest test/ -v -k pickup
     python3 -m pytest test/ -v --stack manipulation,perception --world test/playground.yaml
+
+The LLM playground with its few test objects is quicker, for every stack:
+
+    ros2 launch thorp_apps llm_playground.launch.py object_type:=test
+    python3 -m pytest test/ -v --stack navigation,manipulation,perception,target_detection \
+        --world test/playground_test.yaml
 """
 
 import json

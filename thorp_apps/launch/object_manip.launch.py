@@ -24,7 +24,7 @@ def generate_launch_description():
         DeclareLaunchArgument('start_delay', default_value='0.0'),
         DeclareLaunchArgument('rviz', default_value='true'),
         # App-specific parameters
-        DeclareLaunchArgument('object_type', default_value='fixed', choices=['fixed', 'cubes', 'random']),
+        DeclareLaunchArgument('object_type', default_value='fixed', choices=['fixed', 'test', 'cubes', 'random']),
 
         # The exit command ends the tree, and with it the whole app
         IncludeLaunchDescription(
