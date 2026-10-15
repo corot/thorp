@@ -6,6 +6,7 @@ Plain data in, text out, so it can be tested without ROS. A snapshot is what wor
 None), support (a table id, 'gripper', 'tray' or None), slot, status, provenance, inspected and reachable.
 """
 
+import json
 from typing import Any, Dict, List, Optional
 
 GRIPPER = 'gripper'
@@ -75,6 +76,20 @@ def changes(before: Optional[Dict[str, Any]], after: Optional[Dict[str, Any]]) -
     return said
 
 
+def call_line(subtree: str, inputs: Dict[str, Any], result: Dict[str, Any]) -> str:
+    """One line for the operator per capability call: what was asked, how it went, and what it changed in the world."""
+    outputs = result.get('outputs') or {}
+    if result.get('succeeded'):
+        outcome = 'succeeded'
+    else:
+        reason = outputs.get('error_name') or outputs.get('error') or result.get('error')
+        outcome = 'failed ({})'.format(reason) if reason else 'failed'
+    line = '{} {}: {}'.format(subtree, json.dumps(inputs or {}), outcome)
+    if result.get('world_changes'):
+        line += '; world: ' + '; '.join(result['world_changes'])
+    return line
+
+
 def _described(entity_id, entity):
     notes = [entity['color']] if entity.get('color') else []
     if entity['status'] != OK:
@@ -100,5 +115,6 @@ def _where(entity):
 
 def _found(entity_id, entity):
     if entity['kind'] == 'table':
-        return '{} found at ({:.2f}, {:.2f})'.format(entity_id, entity['pose']['x'], entity['pose']['y'])
+        return '{} found at ({:.2f}, {:.2f}){}'.format(entity_id, entity['pose']['x'], entity['pose']['y'],
+                                                       ', and inspected' if entity['inspected'] else '')
     return '{} found on {}'.format(entity_id, entity['support'] or 'nothing known')

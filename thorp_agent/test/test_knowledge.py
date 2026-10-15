@@ -92,10 +92,26 @@ def test_inspections_new_tables_and_missing_objects_are_changes():
     after = copy.deepcopy(before)
     after['entities']['table 2']['inspected'] = True
     after['entities']['table 3'] = table(5.0, 1.0)
+    after['entities']['table 4'] = table(5.0, 3.0, inspected=True)
     after['entities']['clover 1']['status'] = 'missing'
     assert knowledge.changes(before, after) == ['clover 1 now missing', 'table 2 inspected',
-                                                'table 3 found at (5.00, 1.00)']
+                                                'table 3 found at (5.00, 1.00)',
+                                                'table 4 found at (5.00, 3.00), and inspected']
 
 
 def test_nothing_changed_says_nothing():
     assert knowledge.changes(playground(), playground()) == []
+
+
+def test_a_call_line_tells_the_call_its_outcome_and_the_world_changes():
+    result = {'succeeded': True, 'outputs': {}, 'world_changes': ['star 1: table 1 -> gripper']}
+    assert knowledge.call_line('pickup_object', {'object_name': 'star 1'}, result) == \
+        'pickup_object {"object_name": "star 1"}: succeeded; world: star 1: table 1 -> gripper'
+
+
+def test_a_failed_call_line_says_why():
+    failed = {'succeeded': False, 'outputs': {'error': -230, 'error_name': 'NOT_AT_TABLE'}, 'world_changes': []}
+    assert knowledge.call_line('pickup_object', {'object_name': 'cube 1'}, failed) == \
+        'pickup_object {"object_name": "cube 1"}: failed (NOT_AT_TABLE)'
+    refused = {'succeeded': False, 'refused': True, 'error': "missing input 'pose'"}
+    assert knowledge.call_line('reach_table', {}, refused) == "reach_table {}: failed (missing input 'pose')"

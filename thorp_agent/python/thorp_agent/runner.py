@@ -29,9 +29,10 @@ def wait(future, timeout):
 
 
 class SubtreeRunner(object):
-    def __init__(self, node, action_name=DEFAULT_ACTION, connect_timeout=30.0, dry_run=False, world=None):
+    def __init__(self, node, action_name=DEFAULT_ACTION, connect_timeout=30.0, dry_run=False, world=None, trace=None):
         self.node = node
         self.dry_run = dry_run
+        self.trace = trace  # called with a line per call, telling it and what it changed in the world
         self.action_name = action_name
         self.error_names = errors.ros_table()
         # read after every run, so the agent is told where things stand rather than inferring it from what it has
@@ -52,6 +53,12 @@ class SubtreeRunner(object):
         one that gets {"succeeded": false, "error": -200} can read the code, decide the object was not found and try
         something else, which is the whole point of putting it in charge.
         """
+        result = self._run(subtree, inputs, output_keys, timeout)
+        if self.trace:
+            self.trace(knowledge.call_line(subtree, inputs, result))
+        return result
+
+    def _run(self, subtree, inputs, output_keys, timeout):
         goal = RunSubtree.Goal()
         goal.subtree = subtree
         goal.json = json.dumps(inputs or {})

@@ -75,6 +75,8 @@ Then talk to the robot:
 ros2 run thorp_agent agent.py
 ```
 
+The terminal shows what the agent is told of the world: the summary each request starts with, after `[world]`, and a
+`[call]` line per capability call, with how it went and what it changed in the world; `-p show_world:=false` hides them.
 `--ros-args -p dry_run:=true` prints each goal instead of sending it, so an agent can be watched planning a chain of
 calls with the robot not moving, and `-p ask:="what can you do?"` asks one question and exits; `agent.launch.py` takes
 the same arguments, but gives the node no stdin.

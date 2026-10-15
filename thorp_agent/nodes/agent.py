@@ -9,6 +9,7 @@ reaches the agent after a summary of what thorp_world knows then. Ctrl-D or 'qui
     ros2 run thorp_agent agent.py
     ros2 run thorp_agent agent.py --ros-args -p dry_run:=true         # show the goals, send nothing
     ros2 run thorp_agent agent.py --ros-args -p ask:='pick up cube 1'  # one question, then exit
+    ros2 run thorp_agent agent.py --ros-args -p show_world:=false      # don't print what the world tells the agent
 """
 
 import os
@@ -48,13 +49,16 @@ def talk(node):
     verbose = node.declare_parameter('verbose', False).value
     question = node.declare_parameter('ask', '').value
     action = node.declare_parameter('action', DEFAULT_ACTION).value
+    # the world summary each request starts with, and a line per capability call with what it changed in the world
+    show_world = node.declare_parameter('show_world', True).value
 
     specs = capabilities.tool_specs(path)
     node.get_logger().info('Offering {} capabilities: {}'.format(len(specs),
                                                                   ', '.join(spec['name'] for spec in specs)))
 
     world = None if dry_run else World(node)
-    runner = SubtreeRunner(node, action_name=action, dry_run=dry_run, world=world)
+    runner = SubtreeRunner(node, action_name=action, dry_run=dry_run, world=world,
+                           trace=(lambda line: print('[call] ' + line)) if show_world else None)
     # Each capability's own test timeout is what the suite found it needs, so reuse it rather than inventing a
     # number: cover_room_by_room wants 900 s and detect_table wants 30
     document = capabilities.load(path)
@@ -77,7 +81,7 @@ def talk(node):
                        verbose=verbose)
 
     if question:
-        print(agent.invoke(request(question, world)))
+        print(agent.invoke(request(question, world, show_world)))
         return
 
     print('Thorp is listening{}. Ctrl-D to quit.'.format(' (dry run)' if dry_run else ''))
@@ -91,16 +95,22 @@ def talk(node):
         if not said:
             continue
         try:
-            print(agent.invoke(request(said, world)))
+            print(agent.invoke(request(said, world, show_world)))
         except Exception as e:  # a bad key, a rate limit, a tool blowing up mid-chain
             print('agent failed: {}: {}'.format(type(e).__name__, e))
 
 
-def request(said, world):
-    """The operator's words, after what thorp_world knows now, so each turn starts from the world as it is"""
+def request(said, world, show=False):
+    """
+    The operator's words, after what thorp_world knows now, so each turn starts from the world as it is; printed, if
+    show, as the agent gets them.
+    """
     if world is None:
         return said
-    return 'What thorp_world knows now:\n{}\n\nThe operator says: {}'.format(knowledge.summary(world.known()), said)
+    summary = knowledge.summary(world.known())
+    if show:
+        print('[world]\n' + summary)
+    return 'What thorp_world knows now:\n{}\n\nThe operator says: {}'.format(summary, said)
 
 
 if __name__ == '__main__':
