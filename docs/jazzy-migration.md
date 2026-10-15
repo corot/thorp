@@ -378,8 +378,8 @@ cd ~/colcon_ws/thorp/src/thorp/thorp_bt_cpp
 python3 -m pytest test/ -v --stack navigation,manipulation,perception,target_detection --world test/playground_test.yaml
 ```
 
-With the manipulation and perception stacks up (`object_manip.launch.py executive:=llm`), 192 tests pass; skipped are
-the capabilities needing other stacks, the apps, and `test_world_nodes.py`, that needs its own world and transforms.
+On the LLM playground with the test objects, 218 tests pass in under six minutes; skipped are the apps, the capabilities
+needing the exploration stack, and `test_world_nodes.py`, that needs its own world and transforms.
 `scripts/test_bt_server.py`, a duplicate of `test/test_bt_server.py`, is removed. `show_bt_node_on_rviz.py` shows the
 running tree's action or subtree as an RViz overlay text, on `rviz/executive_progress_overlay`, and `groot/thorp.btproj`
 opens the ported trees on Groot2.
