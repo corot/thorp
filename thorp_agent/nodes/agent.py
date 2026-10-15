@@ -13,6 +13,7 @@ reaches the agent after a summary of what thorp_world knows then. Ctrl-D or 'qui
 """
 
 import os
+import readline  # noqa: F401 -- line editing and history for input()
 import sys
 import threading
 
