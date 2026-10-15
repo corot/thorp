@@ -5,31 +5,20 @@ entities:
 - id: table 1
   kind: table
   type: table
-  size: [0.549, 0.544, 0.001]
+  size: [0.548, 0.543, 0.001]
   color: white
-  pose: {x: 0.448, y: 0.002, z: 0.479, yaw: 1.5708}
+  pose: {x: 0.447, y: 0.002, z: 0.479, yaw: 1.5708}
   support: null
   slot: null
   provenance: observed
   stamp: 0.0
   status: ok
-- id: star 1
+- id: clover 1
   kind: object
-  type: star
-  size: [0.016, 0.011, 0.031]
-  color: red
-  pose: {x: 0.277, y: 0.017, z: 0.493, yaw: 0.17}
-  support: table 1
-  slot: null
-  provenance: observed
-  stamp: 0.0
-  status: ok
-- id: triangle 1
-  kind: object
-  type: triangle
-  size: [0.021, 0.011, 0.025]
-  color: purple
-  pose: {x: 0.317, y: 0.101, z: 0.49, yaw: 0.06}
+  type: clover
+  size: [0.031, 0.011, 0.031]
+  color: green
+  pose: {x: 0.336, y: -0.036, z: 0.494, yaw: 1.39}
   support: table 1
   slot: null
   provenance: observed
@@ -39,8 +28,19 @@ entities:
   kind: object
   type: cube
   size: [0.025, 0.025, 0.026]
-  color: gray
-  pose: {x: 0.617, y: -0.049, z: 0.493, yaw: -0.72}
+  color: light gray
+  pose: {x: 0.316, y: 0.1, z: 0.491, yaw: -0.71}
+  support: table 1
+  slot: null
+  provenance: observed
+  stamp: 0.0
+  status: ok
+- id: square 1
+  kind: object
+  type: square
+  size: [0.032, 0.011, 0.032]
+  color: green
+  pose: {x: 0.616, y: -0.049, z: 0.497, yaw: 0.39}
   support: table 1
   slot: null
   provenance: observed

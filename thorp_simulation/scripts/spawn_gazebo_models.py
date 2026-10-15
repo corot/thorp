@@ -82,10 +82,10 @@ PLAYGROUND_OBJS = [('square',    'square',    (-0.22,  0.15,  0.5, 0.0, 0.0, 0.4
                    ('pentagon',  'pentagon',  (-0.12, -0.10,  0.5, 0.0, 0.0, 1.08)),
                    ('rectangle', 'rectangle', (-0.16, -0.16,  0.5, 0.0, 0.0, 1.1))]
 
-# few objects, for quick tests: two the arm reaches from the near side, and one only from the far side
-PLAYGROUND_TEST = [('star',     'star',     (-0.17, 0.017, 0.5, 0.0, 0.0, 0.2)),
-                   ('triangle', 'triangle', (-0.13, 0.1,   0.5, 0.0, 0.0, 0.1)),
-                   ('cube',     'cube',     (0.17, -0.05,  0.5, 0.0, 0.0, 0.85))]
+# few objects, easy to grasp, for quick tests: two the arm reaches from the near side, and one only from the far side
+PLAYGROUND_TEST = [('clover', 'clover', (-0.11, -0.037, 0.5, 0.0, 0.0, 1.4)),
+                   ('cube',   'cube',   (-0.13, 0.1,    0.5, 0.0, 0.0, 0.85)),
+                   ('square', 'square', (0.17, -0.05,   0.5, 0.0, 0.0, 0.4))]
 
 # cubes at reachable locations, ready to stack
 PLAYGROUND_CUBES = [('cube 1', 'cube', (-0.14, -0.16, 0.5, 0.0, 0.0, 1.1)),

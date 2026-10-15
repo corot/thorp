@@ -108,7 +108,7 @@ capabilities:
       NOT_AT_TABLE: the object is on a table the robot isn't at; approach_table that table first
       OUT_OF_REACH: the object is on the robot's table, but beyond the arm's reach from where the robot is
     test:
-      inputs: {object_name: "star 1"}
+      inputs: {object_name: "clover 1"}
       setup:
         - {subtree: approach_table, inputs: {table_id: "table 1"}, unless: {at_table: "table 1"}}
         - {subtree: detect_objects}
@@ -130,14 +130,14 @@ capabilities:
     errors:
       NOT_AT_TABLE: the robot isn't at a table; approach_table one first
     test:
-      # A clear spot on the near edge of the table, 8 cm short of where the star was picked; z is
-      # the star's center once there, on the 0.47 m high table, 8 mm above. In the map frame, so it
-      # stays put while the setup chain drives the robot to the table.
-      inputs: {object_name: "star 1", place_pose: "0.2;0.0;0.494;0.0;0.0;0.0;map"}
+      # A clear spot on the near edge of the table; z is the clover's center once there, on the
+      # 0.47 m high table, 8 mm above. In the map frame, so it stays put while the setup chain
+      # drives the robot to the table.
+      inputs: {object_name: "clover 1", place_pose: "0.2;0.0;0.502;0.0;0.0;0.0;map"}
       setup:
         - {subtree: approach_table, inputs: {table_id: "table 1"}, unless: {at_table: "table 1"}}
         - {subtree: detect_objects}
-        - {subtree: pickup_object, inputs: {object_name: "star 1"}}
+        - {subtree: pickup_object, inputs: {object_name: "clover 1"}}
       expect: any
       timeout: 120
 
@@ -155,11 +155,11 @@ capabilities:
       error: {type: int, when: failure, description: "error code from the place action; 0 when it worked"}
       pose_on_tray: {type: geometry_msgs::msg::PoseStamped, description: "slot the object was placed in"}
     test:
-      inputs: {object_name: "star 1"}
+      inputs: {object_name: "clover 1"}
       setup:
         - {subtree: approach_table, inputs: {table_id: "table 1"}, unless: {at_table: "table 1"}}
         - {subtree: detect_objects}
-        - {subtree: pickup_object, inputs: {object_name: "star 1"}}
+        - {subtree: pickup_object, inputs: {object_name: "clover 1"}}
       expect: any
       timeout: 120
 
