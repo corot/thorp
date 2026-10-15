@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cstdio>
 #include <limits>
 #include <map>
 #include <set>
@@ -71,17 +72,51 @@ mtc::TrajectoryExecutionInfo executedBy(const std::string& controller)
   return info;
 }
 
-/**
- * Pairs in contact where the stages without solutions failed, as MTC's comments say only that a state collides: the
- * last waypoint of each failed trajectory, where MTC's planners stop on a collision, or else the failure's own state,
- * as the current state's.
- */
-std::set<std::string> failureContacts(const mtc::Task& task)
+thorp_msgs::msg::ThorpError error(int32_t code, const std::string& text)
 {
-  std::set<std::string> pairs;
-  task.stages()->traverseRecursively([&pairs](const mtc::Stage& stage, unsigned int) {
-    if (!stage.solutions().empty())
+  thorp_msgs::msg::ThorpError error;
+  error.code = code;
+  error.text = text;
+  return error;
+}
+
+std::string toString(const geometry_msgs::msg::Point& position)
+{
+  char text[64];
+  std::snprintf(text, sizeof(text), "(%.2f, %.2f, %.2f)", position.x, position.y, position.z);
+  return text;
+}
+
+std::string trimmed(const std::string& text)
+{
+  const size_t first = text.find_first_not_of(" \t\n");
+  return first == std::string::npos ? "" : text.substr(first, text.find_last_not_of(" \t\n") - first + 1);
+}
+
+/**
+ * Why a stage found no solutions: MTC's comment on its first failure, and the pairs in contact, as MTC's comments
+ * often say only that a state collides.
+ */
+struct StageFailure
+{
+  const mtc::Stage* stage;
+  std::string comment;
+  std::set<std::string> contacts;
+};
+
+/**
+ * The failures of the stages without solutions, in task order. Contacts are checked at the last waypoint of each
+ * failed trajectory, where MTC's planners stop on a collision, or else at the failure's own state, as the current
+ * state's.
+ */
+std::vector<StageFailure> stageFailures(const mtc::Task& task)
+{
+  std::vector<StageFailure> failures;
+  task.stages()->traverseRecursively([&failures](const mtc::Stage& stage, unsigned int) {
+    if (!stage.solutions().empty() || stage.failures().empty())
       return true;
+    StageFailure& failed =
+        failures.emplace_back(StageFailure{ &stage, trimmed(stage.failures().front()->comment()), {} });
     for (const auto& failure : stage.failures())
     {
       const mtc::InterfaceState* interface_state = failure->start() ? failure->start() : failure->end();
@@ -98,11 +133,11 @@ std::set<std::string> failureContacts(const mtc::Task& task)
       scene->checkCollision(request, result,
                             has_waypoints ? sub_trajectory->trajectory()->getLastWayPoint() : scene->getCurrentState());
       for (const auto& [names, contacts] : result.contacts)
-        pairs.insert(stage.name() + ": " + names.first + " - " + names.second);
+        failed.contacts.insert(names.first + " - " + names.second);
     }
     return true;
   });
-  return pairs;
+  return failures;
 }
 
 geometry_msgs::msg::Vector3Stamped gripperDirection(double x)
@@ -325,8 +360,7 @@ void PickAndPlaceServer::executePickup(const std::shared_ptr<rclcpp_action::Serv
     goal_handle->publish_feedback(msg);
   };
   auto result = std::make_shared<PickupObject::Result>();
-  result->error.code = pickup(*goal_handle->get_goal(), feedback, [&goal_handle]() { return goal_handle->is_canceling(); });
-  result->error.text = errorText(result->error.code);
+  result->error = pickup(*goal_handle->get_goal(), feedback, [&goal_handle]() { return goal_handle->is_canceling(); });
   if (result->error.code == ThorpError::SUCCESS)
     goal_handle->succeed(result);
   else if (goal_handle->is_canceling())
@@ -343,8 +377,7 @@ void PickAndPlaceServer::executePlace(const std::shared_ptr<rclcpp_action::Serve
     goal_handle->publish_feedback(msg);
   };
   auto result = std::make_shared<PlaceObject::Result>();
-  result->error.code = place(*goal_handle->get_goal(), feedback, [&goal_handle]() { return goal_handle->is_canceling(); });
-  result->error.text = errorText(result->error.code);
+  result->error = place(*goal_handle->get_goal(), feedback, [&goal_handle]() { return goal_handle->is_canceling(); });
   if (result->error.code == ThorpError::SUCCESS)
     goal_handle->succeed(result);
   else if (goal_handle->is_canceling())
@@ -353,34 +386,25 @@ void PickAndPlaceServer::executePlace(const std::shared_ptr<rclcpp_action::Serve
     goal_handle->abort(result);
 }
 
-int32_t PickAndPlaceServer::pickup(const PickupObject::Goal& goal, const Feedback& feedback,
-                                   const Canceling& canceling)
+ThorpError PickAndPlaceServer::pickup(const PickupObject::Goal& goal, const Feedback& feedback,
+                                      const Canceling& canceling)
 {
   RCLCPP_INFO(node_->get_logger(), "Pickup object '%s' from support surface '%s'", goal.object_name.c_str(),
               goal.support_surf.c_str());
   planning_scene::PlanningScenePtr scene = getPlanningScene();
   if (!scene)
-    return ThorpError::SERVER_NOT_AVAILABLE;
+    return fail(ThorpError::SERVER_NOT_AVAILABLE, "cannot get the planning scene from move_group");
 
   std::vector<const moveit::core::AttachedBody*> attached_bodies;
   scene->getCurrentState().getAttachedBodies(attached_bodies);
   if (!attached_bodies.empty())
-  {
-    RCLCPP_ERROR(node_->get_logger(), "Already have an attached object: '%s'; clear the gripper before picking another",
-                 attached_bodies.front()->getName().c_str());
-    return ThorpError::OBJECT_ATTACHED;
-  }
+    return fail(ThorpError::OBJECT_ATTACHED, "the gripper already holds '" + attached_bodies.front()->getName() +
+                                                 "'; clear it before picking another object");
   collision_detection::World::ObjectConstPtr object = scene->getWorld()->getObject(goal.object_name);
   if (!object)
-  {
-    RCLCPP_ERROR(node_->get_logger(), "Object '%s' not found in the planning scene", goal.object_name.c_str());
-    return ThorpError::OBJECT_NOT_FOUND;
-  }
+    return fail(ThorpError::OBJECT_NOT_FOUND, "'" + goal.object_name + "' isn't in the planning scene");
   if (object->shapes_.empty())
-  {
-    RCLCPP_ERROR(node_->get_logger(), "Object '%s' has no shapes", goal.object_name.c_str());
-    return ThorpError::OBJECT_SIZE_NOT_FOUND;
-  }
+    return fail(ThorpError::OBJECT_SIZE_NOT_FOUND, "'" + goal.object_name + "' has no shape in the planning scene");
 
   // Grasp the object across its widest section, but with the open gripper clear of the support surface, and never
   // above its top; we assume objects are made of a single shape, centered on their pose
@@ -391,8 +415,8 @@ int32_t PickAndPlaceServer::pickup(const PickupObject::Goal& goal, const Feedbac
   const double base = top - object_size.z();
   Eigen::Vector3d grasp_point(object_pose.translation().x(), object_pose.translation().y(), top);
   std::vector<geometry_msgs::msg::PoseStamped> grasp_poses;
-  if (int32_t error = makeTargetPoses(*scene, grasp_point, grasp_poses); error != ThorpError::SUCCESS)
-    return error;
+  if (ThorpError error = makeTargetPoses(*scene, grasp_point, grasp_poses); error.code != ThorpError::SUCCESS)
+    return fail(error.code, "'" + goal.object_name + "' is out of reach: " + error.text);
   Eigen::Isometry3d grasp_pose;
   tf2::fromMsg(grasp_poses.front().pose, grasp_pose);
   // All the grasp poses have the same yaw, and the fingers close along the gripper's y axis
@@ -431,6 +455,7 @@ int32_t PickAndPlaceServer::pickup(const PickupObject::Goal& goal, const Feedbac
   move_to_pick->properties().configureInitFrom(mtc::Stage::PARENT);
   task.add(std::move(move_to_pick));
 
+  const mtc::Stage* grasp_ik_stage = nullptr;
   auto pick = std::make_unique<mtc::SerialContainer>("pick object");
   task.properties().exposeTo(pick->properties(), { "eef", "group" });
   pick->properties().configureInitFrom(mtc::Stage::PARENT, { "eef", "group" });
@@ -449,6 +474,7 @@ int32_t PickAndPlaceServer::pickup(const PickupObject::Goal& goal, const Feedbac
       generator->addPose(pose);
     generator->setMonitoredStage(current_state_stage);
     auto stage = std::make_unique<mtc::stages::ComputeIK>("grasp pose IK", std::move(generator));
+    grasp_ik_stage = stage.get();
     stage->setMaxIKSolutions(4);
     stage->setMinSolutionDistance(0.5);
     stage->setIKFrame(GRIPPER_LINK);
@@ -497,10 +523,11 @@ int32_t PickAndPlaceServer::pickup(const PickupObject::Goal& goal, const Feedbac
   }
   task.add(std::move(pick));
 
-  return run(task, feedback, canceling);
+  return run(task, *grasp_ik_stage, feedback, canceling);
 }
 
-int32_t PickAndPlaceServer::place(const PlaceObject::Goal& goal, const Feedback& feedback, const Canceling& canceling)
+ThorpError PickAndPlaceServer::place(const PlaceObject::Goal& goal, const Feedback& feedback,
+                                     const Canceling& canceling)
 {
   RCLCPP_INFO(node_->get_logger(), "Place object '%s' on support surface '%s' at [%.2f, %.2f, %.2f] (%s)",
               goal.object_name.c_str(), goal.support_surf.c_str(), goal.place_pose.pose.position.x,
@@ -508,31 +535,30 @@ int32_t PickAndPlaceServer::place(const PlaceObject::Goal& goal, const Feedback&
               goal.place_pose.header.frame_id.c_str());
   planning_scene::PlanningScenePtr scene = getPlanningScene();
   if (!scene)
-    return ThorpError::SERVER_NOT_AVAILABLE;
+    return fail(ThorpError::SERVER_NOT_AVAILABLE, "cannot get the planning scene from move_group");
 
   // An empty object name means whatever object we are holding
   std::vector<const moveit::core::AttachedBody*> attached_bodies;
   scene->getCurrentState().getAttachedBodies(attached_bodies);
-  if (attached_bodies.empty() || (!goal.object_name.empty() && goal.object_name != attached_bodies.front()->getName()))
-  {
-    RCLCPP_ERROR(node_->get_logger(), "Requested object not in the gripper: '%s'; attached object is '%s'",
-                 goal.object_name.c_str(), attached_bodies.empty() ? "" : attached_bodies.front()->getName().c_str());
-    return ThorpError::OBJECT_NOT_ATTACHED;
-  }
+  if (attached_bodies.empty())
+    return fail(ThorpError::OBJECT_NOT_ATTACHED, "the gripper holds nothing");
   const std::string object_name = attached_bodies.front()->getName();
+  if (!goal.object_name.empty() && goal.object_name != object_name)
+    return fail(ThorpError::OBJECT_NOT_ATTACHED,
+                "the gripper holds '" + object_name + "', not '" + goal.object_name + "'");
 
   if (!scene->knowsFrameTransform(goal.place_pose.header.frame_id))
-  {
-    RCLCPP_ERROR(node_->get_logger(), "Unknown place pose frame '%s'", goal.place_pose.header.frame_id.c_str());
-    return MoveItErrorCodes::FRAME_TRANSFORM_FAILURE;
-  }
+    return fail(MoveItErrorCodes::FRAME_TRANSFORM_FAILURE,
+                "unknown place pose frame '" + goal.place_pose.header.frame_id + "'");
   Eigen::Isometry3d place_pose;
   tf2::fromMsg(goal.place_pose.pose, place_pose);
   place_pose = scene->getFrameTransform(arm_ref_frame_).inverse() *
                scene->getFrameTransform(goal.place_pose.header.frame_id) * place_pose;
   std::vector<geometry_msgs::msg::PoseStamped> gripper_poses;
-  if (int32_t error = makeTargetPoses(*scene, place_pose.translation(), gripper_poses); error != ThorpError::SUCCESS)
-    return error;
+  if (ThorpError error = makeTargetPoses(*scene, place_pose.translation(), gripper_poses);
+      error.code != ThorpError::SUCCESS)
+    return fail(error.code, "place pose " + toString(goal.place_pose.pose.position) + " on " +
+                                goal.place_pose.header.frame_id + " is out of reach: " + error.text);
   // The place pose is the object's, so the gripper goes where it puts the object there, as it holds it; but not across
   // the fingers, as the arm, lacking a roll joint, only reaches poses yawed toward their position
   Eigen::Vector3d held_object = attached_bodies.front()->getPose().translation();
@@ -567,6 +593,7 @@ int32_t PickAndPlaceServer::place(const PlaceObject::Goal& goal, const Feedback&
   move_to_place->properties().configureInitFrom(mtc::Stage::PARENT);
   task.add(std::move(move_to_place));
 
+  const mtc::Stage* place_ik_stage = nullptr;
   auto place = std::make_unique<mtc::SerialContainer>("place object");
   task.properties().exposeTo(place->properties(), { "eef", "group" });
   place->properties().configureInitFrom(mtc::Stage::PARENT, { "eef", "group" });
@@ -585,6 +612,7 @@ int32_t PickAndPlaceServer::place(const PlaceObject::Goal& goal, const Feedback&
       generator->addPose(pose);
     generator->setMonitoredStage(place_scene_stage);
     auto stage = std::make_unique<mtc::stages::ComputeIK>("place pose IK", std::move(generator));
+    place_ik_stage = stage.get();
     stage->setMaxIKSolutions(4);
     stage->setMinSolutionDistance(0.5);
     stage->setIKFrame(GRIPPER_LINK);
@@ -645,7 +673,7 @@ int32_t PickAndPlaceServer::place(const PlaceObject::Goal& goal, const Feedback&
   }
   task.add(std::move(place));
 
-  return run(task, feedback, canceling);
+  return run(task, *place_ik_stage, feedback, canceling);
 }
 
 planning_scene::PlanningScenePtr PickAndPlaceServer::getPlanningScene()
@@ -684,8 +712,9 @@ planning_scene::PlanningScenePtr PickAndPlaceServer::getPlanningScene()
   return scene;
 }
 
-int32_t PickAndPlaceServer::makeTargetPoses(const planning_scene::PlanningScene& scene, const Eigen::Vector3d& target,
-                                            std::vector<geometry_msgs::msg::PoseStamped>& poses)
+ThorpError PickAndPlaceServer::makeTargetPoses(const planning_scene::PlanningScene& scene,
+                                               const Eigen::Vector3d& target,
+                                               std::vector<geometry_msgs::msg::PoseStamped>& poses)
 {
   double operation_height =
       (scene.getFrameTransform(arm_ref_frame_).inverse() * scene.getFrameTransform(operation_plane_frame_))
@@ -693,21 +722,17 @@ int32_t PickAndPlaceServer::makeTargetPoses(const planning_scene::PlanningScene&
           .z();
   for (int attempt = 0; attempt < attempts_; ++attempt)
   {
-    std::string error;
+    std::string reason;
     std::optional<geometry_msgs::msg::Pose> pose =
-        makeTargetPose(tf2::toMsg(target), operation_height, compensations_, attempt, error);
+        makeTargetPose(tf2::toMsg(target), operation_height, compensations_, attempt, reason);
     if (!pose)
-    {
-      RCLCPP_ERROR(node_->get_logger(), "Invalid target [%.2f, %.2f, %.2f]: %s", target.x(), target.y(), target.z(),
-                   error.c_str());
-      return ThorpError::INVALID_TARGET_POSE;
-    }
+      return error(ThorpError::OUT_OF_REACH, reason);
     geometry_msgs::msg::PoseStamped pose_stamped;
     pose_stamped.header.frame_id = arm_ref_frame_;
     pose_stamped.pose = *pose;
     poses.push_back(pose_stamped);
   }
-  return ThorpError::SUCCESS;
+  return error(ThorpError::SUCCESS, "");
 }
 
 mtc::Task PickAndPlaceServer::makeTask(const std::string& name, const planning_scene::PlanningScenePtr& scene)
@@ -722,7 +747,8 @@ mtc::Task PickAndPlaceServer::makeTask(const std::string& name, const planning_s
   return task;
 }
 
-int32_t PickAndPlaceServer::run(mtc::Task& task, const Feedback& feedback, const Canceling& canceling)
+ThorpError PickAndPlaceServer::run(mtc::Task& task, const mtc::Stage& target_stage, const Feedback& feedback,
+                                   const Canceling& canceling)
 {
   feedback("planning");
   try
@@ -731,8 +757,7 @@ int32_t PickAndPlaceServer::run(mtc::Task& task, const Feedback& feedback, const
   }
   catch (const std::exception& e)
   {
-    RCLCPP_ERROR(node_->get_logger(), "Task '%s' initialization failed: %s", task.name().c_str(), e.what());
-    return MoveItErrorCodes::FAILURE;
+    return fail(MoveItErrorCodes::FAILURE, "cannot initialize task '" + task.name() + "': " + e.what());
   }
   {
     std::lock_guard<std::mutex> lock(planning_task_mutex_);
@@ -744,16 +769,30 @@ int32_t PickAndPlaceServer::run(mtc::Task& task, const Feedback& feedback, const
     planning_task_ = nullptr;
   }
   if (canceling())
-    return MoveItErrorCodes::PREEMPTED;
+    return error(MoveItErrorCodes::PREEMPTED, "canceled while planning");
   if (task.solutions().empty())
   {
     std::ostringstream explanation;
     task.explainFailure(explanation);
     RCLCPP_ERROR(node_->get_logger(), "Task '%s' planning failed:\n%s", task.name().c_str(),
                  explanation.str().c_str());
-    for (const std::string& pair : failureContacts(task))
-      RCLCPP_ERROR(node_->get_logger(), "In collision at %s", pair.c_str());
-    return MoveItErrorCodes::PLANNING_FAILED;
+    // Each failed stage, by the contacts there if any, as they say what to move out of the way
+    int32_t code = MoveItErrorCodes::PLANNING_FAILED;
+    std::string reasons;
+    for (const StageFailure& failure : stageFailures(task))
+    {
+      std::string reason = failure.stage->name() + ": " + failure.comment;
+      if (!failure.contacts.empty())
+      {
+        reason = "in collision at " + failure.stage->name() + ":";
+        for (const std::string& pair : failure.contacts)
+          reason += (reason.back() == ':' ? " " : ", ") + pair;
+      }
+      reasons += (reasons.empty() ? "" : "; ") + reason;
+      if (failure.stage == &target_stage)
+        code = failure.contacts.empty() ? MoveItErrorCodes::NO_IK_SOLUTION : MoveItErrorCodes::GOAL_IN_COLLISION;
+    }
+    return fail(code, "no motion plan" + (reasons.empty() ? std::string(" found") : ": " + reasons));
   }
   const mtc::SolutionBase& solution = *task.solutions().front();
   task.introspection().publishSolution(solution);
@@ -802,11 +841,8 @@ int32_t PickAndPlaceServer::run(mtc::Task& task, const Feedback& feedback, const
   };
 
   if (!execute_client_->wait_for_action_server(5s))
-  {
-    RCLCPP_ERROR(node_->get_logger(), "Action server '%s' not available; is move_group's ExecuteTaskSolution "
-                 "capability loaded?", "execute_task_solution");
-    return MoveItErrorCodes::FAILURE;
-  }
+    return fail(ThorpError::SERVER_NOT_AVAILABLE, "action server 'execute_task_solution' not available; is "
+                                                  "move_group's ExecuteTaskSolution capability loaded?");
   RCLCPP_INFO(node_->get_logger(), "Executing task '%s' (cost %.3f)", task.name().c_str(), solution.cost());
   report_stage_from(0);
   auto options = rclcpp_action::Client<ExecuteTaskSolution>::SendGoalOptions();
@@ -815,10 +851,7 @@ int32_t PickAndPlaceServer::run(mtc::Task& task, const Feedback& feedback, const
   { report_stage_from(execution->sub_id + 1); };
   auto goal_future = execute_client_->async_send_goal(goal, options);
   if (goal_future.wait_for(5s) != std::future_status::ready || !goal_future.get())
-  {
-    RCLCPP_ERROR(node_->get_logger(), "Task '%s' execution goal rejected", task.name().c_str());
-    return MoveItErrorCodes::FAILURE;
-  }
+    return fail(MoveItErrorCodes::FAILURE, "move_group rejected executing task '" + task.name() + "'");
   const auto& goal_handle = goal_future.get();
   auto result_future = execute_client_->async_get_result(goal_handle);
   while (result_future.wait_for(100ms) != std::future_status::ready)
@@ -826,14 +859,14 @@ int32_t PickAndPlaceServer::run(mtc::Task& task, const Feedback& feedback, const
     if (!rclcpp::ok())
     {
       RCLCPP_WARN(node_->get_logger(), "Shutting down while executing task '%s'", task.name().c_str());
-      return MoveItErrorCodes::FAILURE;
+      return error(MoveItErrorCodes::FAILURE, "shutting down while executing stage '" + *last_stage + "'");
     }
     if (canceling())
     {
       RCLCPP_WARN(node_->get_logger(), "Task '%s' canceled; stopping execution", task.name().c_str());
       execute_client_->async_cancel_goal(goal_handle).wait_for(5s);
       result_future.wait_for(5s);
-      return MoveItErrorCodes::PREEMPTED;
+      return error(MoveItErrorCodes::PREEMPTED, "canceled while executing stage '" + *last_stage + "'");
     }
   }
   // The result is an exception if the client couldn't get it, as when shutting down
@@ -843,37 +876,21 @@ int32_t PickAndPlaceServer::run(mtc::Task& task, const Feedback& feedback, const
   }
   catch (const rclcpp_action::exceptions::UnawareGoalHandleError& e)
   {
-    RCLCPP_ERROR(node_->get_logger(), "Task '%s' execution result lost: %s", task.name().c_str(), e.what());
-    return MoveItErrorCodes::FAILURE;
+    return fail(MoveItErrorCodes::FAILURE, "lost the result of executing task '" + task.name() + "': " + e.what());
   }
   const auto& result = result_future.get();
+  if (result.result && result.result->error_code.val != MoveItErrorCodes::SUCCESS)
+    return fail(result.result->error_code.val, "executing stage '" + *last_stage + "' failed: " +
+                                                   moveit::core::errorCodeToString(result.result->error_code));
   if (result.code != rclcpp_action::ResultCode::SUCCEEDED || !result.result)
-    return MoveItErrorCodes::FAILURE;
-  if (result.result->error_code.val != MoveItErrorCodes::SUCCESS)
-    RCLCPP_ERROR(node_->get_logger(), "Task '%s' execution failed: %s", task.name().c_str(),
-                 moveit::core::errorCodeToString(result.result->error_code).c_str());
-  return result.result->error_code.val;
+    return fail(MoveItErrorCodes::FAILURE, "executing stage '" + *last_stage + "' ended without success");
+  return error(ThorpError::SUCCESS, "");
 }
 
-std::string PickAndPlaceServer::errorText(int32_t code) const
+ThorpError PickAndPlaceServer::fail(int32_t code, const std::string& text) const
 {
-  switch (code)
-  {
-    case ThorpError::OBJECT_NOT_FOUND:
-      return "object not found";
-    case ThorpError::OBJECT_SIZE_NOT_FOUND:
-      return "object shape not found";
-    case ThorpError::INVALID_TARGET_POSE:
-      return "invalid target pose";
-    case ThorpError::SERVER_NOT_AVAILABLE:
-      return "server not available";
-    case ThorpError::OBJECT_NOT_ATTACHED:
-      return "requested object is not attached";
-    case ThorpError::OBJECT_ATTACHED:
-      return "already have an object attached";
-    default:
-      return moveit::core::errorCodeToString(moveit::core::MoveItErrorCode(code));
-  }
+  RCLCPP_ERROR(node_->get_logger(), "%s", text.c_str());
+  return error(code, text);
 }
 
 }  // namespace thorp::manipulation

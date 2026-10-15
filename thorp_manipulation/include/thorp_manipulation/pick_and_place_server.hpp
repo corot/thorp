@@ -21,6 +21,7 @@
 
 #include <thorp_msgs/action/pickup_object.hpp>
 #include <thorp_msgs/action/place_object.hpp>
+#include <thorp_msgs/msg/thorp_error.hpp>
 
 #include "thorp_manipulation/arm_targets.hpp"
 
@@ -29,6 +30,7 @@ namespace thorp::manipulation
 /**
  * Pickup and place object action servers. Each goal becomes a MoveIt Task Constructor task, planned here and
  * executed by move_group's ExecuteTaskSolution capability. Objects are taken from move_group's planning scene.
+ * A failure comes with the most specific code that fits, and a one-line reason in the caller's terms.
  */
 class PickAndPlaceServer
 {
@@ -40,6 +42,7 @@ private:
   using PickupObject = thorp_msgs::action::PickupObject;
   using PlaceObject = thorp_msgs::action::PlaceObject;
   using ExecuteTaskSolution = moveit_task_constructor_msgs::action::ExecuteTaskSolution;
+  using ThorpError = thorp_msgs::msg::ThorpError;
   using Feedback = std::function<void(const std::string& stage)>;
   using Canceling = std::function<bool()>;
 
@@ -51,27 +54,33 @@ private:
   void executePickup(const std::shared_ptr<rclcpp_action::ServerGoalHandle<PickupObject>> goal_handle);
   void executePlace(const std::shared_ptr<rclcpp_action::ServerGoalHandle<PlaceObject>> goal_handle);
 
-  int32_t pickup(const PickupObject::Goal& goal, const Feedback& feedback, const Canceling& canceling);
-  int32_t place(const PlaceObject::Goal& goal, const Feedback& feedback, const Canceling& canceling);
+  ThorpError pickup(const PickupObject::Goal& goal, const Feedback& feedback, const Canceling& canceling);
+  ThorpError place(const PlaceObject::Goal& goal, const Feedback& feedback, const Canceling& canceling);
 
   planning_scene::PlanningScenePtr getPlanningScene();
 
   /**
    * Target poses for the gripper link, one per attempt, relative to the arm base.
-   * @return A ThorpError code
+   * @return SUCCESS, or OUT_OF_REACH with how far the target is, for the caller to say which target it was
    */
-  int32_t makeTargetPoses(const planning_scene::PlanningScene& scene, const Eigen::Vector3d& target,
-                          std::vector<geometry_msgs::msg::PoseStamped>& poses);
+  ThorpError makeTargetPoses(const planning_scene::PlanningScene& scene, const Eigen::Vector3d& target,
+                             std::vector<geometry_msgs::msg::PoseStamped>& poses);
 
   moveit::task_constructor::Task makeTask(const std::string& name, const planning_scene::PlanningScenePtr& scene);
 
   /**
    * Plan the task and execute its best solution.
-   * @return A MoveIt error code
+   * @param target_stage The stage computing the IK of the target poses, to tell a target that can't be reached free of
+   * collisions (GOAL_IN_COLLISION) or at all (NO_IK_SOLUTION) from a motion that can't be planned (PLANNING_FAILED)
+   * @return A MoveIt error code, or SERVER_NOT_AVAILABLE
    */
-  int32_t run(moveit::task_constructor::Task& task, const Feedback& feedback, const Canceling& canceling);
+  ThorpError run(moveit::task_constructor::Task& task, const moveit::task_constructor::Stage& target_stage,
+                 const Feedback& feedback, const Canceling& canceling);
 
-  std::string errorText(int32_t code) const;
+  /**
+   * Log a failure, and make the error to report it with.
+   */
+  ThorpError fail(int32_t code, const std::string& text) const;
 
   rclcpp::Node::SharedPtr node_;
   moveit::core::RobotModelConstPtr robot_model_;
