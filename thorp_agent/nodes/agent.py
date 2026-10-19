@@ -10,6 +10,7 @@ reaches the agent after a summary of what thorp_world knows then. Ctrl-D or 'qui
     ros2 run thorp_agent agent.py --ros-args -p dry_run:=true         # show the goals, send nothing
     ros2 run thorp_agent agent.py --ros-args -p ask:='pick up cube 1'  # one question, then exit
     ros2 run thorp_agent agent.py --ros-args -p show_world:=false      # don't print what the world tells the agent
+    ros2 run thorp_agent agent.py --ros-args -p show_llm:=false        # don't print each model call's time
 """
 
 import os
@@ -52,6 +53,8 @@ def talk(node):
     action = node.declare_parameter('action', DEFAULT_ACTION).value
     # the world summary each request starts with, and a line per capability call with what it changed in the world
     show_world = node.declare_parameter('show_world', True).value
+    # a line per model call, with how long it took and its tokens
+    show_llm = node.declare_parameter('show_llm', True).value
 
     specs = capabilities.tool_specs(path)
     node.get_logger().info('Offering {} capabilities: {}'.format(len(specs),
@@ -70,7 +73,7 @@ def talk(node):
     from thorp_agent.prompts import PROMPTS
 
     agent = ThorpAgent(ros_version=2,
-                       llm=llm.make(),
+                       llm=llm.make(trace=(lambda line: print('[llm] ' + line)) if show_llm else None),
                        tools=(tools.build(specs, runner.run, timeouts) +
                               ([tools.observer(world.observe), tools.world_query(world.known)] if world else [])),
                        prompts=PROMPTS,
