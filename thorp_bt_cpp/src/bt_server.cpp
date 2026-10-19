@@ -165,7 +165,7 @@ Server::execute(const std::shared_ptr<GoalHandle>& goal_handle)
   {
     RCLCPP_ERROR_STREAM(node_->get_logger(), "Cannot create subtree '" << goal->subtree << "': " << e.what());
     result->success = false;
-    result->json = nlohmann::json{ { "error", std::string("unknown subtree: ") + e.what() } }.dump();
+    result->json = nlohmann::json{ { "error", std::string("cannot create subtree: ") + e.what() } }.dump();
     return { Outcome::ABORTED, result };
   }
 
