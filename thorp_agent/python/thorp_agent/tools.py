@@ -131,6 +131,9 @@ def _one(spec: Dict[str, Any], call, timeout: float) -> StructuredTool:
         # an optional input left out stays out, so the tree falls back to its own value
         inputs = {k: v for k, v in plain(kwargs).items() if v is not None}
         result = call(name, inputs=inputs, output_keys=outputs, timeout=timeout)
+        if result.get('succeeded'):
+            # an error says why a call failed, so one that worked has none: any is from an attempt the tree recovered
+            (result.get('outputs') or {}).pop('error', None)
         # json rather than a python repr: the model reads this back and has to be able to quote values out of it
         # verbatim into the next call
         return json.dumps(result, sort_keys=True)

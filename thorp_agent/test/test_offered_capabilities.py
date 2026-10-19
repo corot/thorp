@@ -137,6 +137,18 @@ def test_optional_inputs_can_be_left_out_and_are_not_sent():
     assert sent == {'a': 'x'}
 
 
+def test_a_call_that_worked_reports_no_error():
+    """An error left by an attempt the tree recovered from is not the call's."""
+    pytest.importorskip('langchain_core')
+    from thorp_agent import tools
+    spec = {'name': 't', 'description': 'a test tool', 'args': {}, 'outputs': ['attached_object', 'error']}
+    stale = {'error': {'code': -6, 'name': 'TIMED_OUT', 'text': 'closing timed out'}, 'attached_object': 'cube 1'}
+    worked = tools.build([spec], lambda *_, **__: {'succeeded': True, 'outputs': dict(stale)})[0]
+    assert json.loads(worked.invoke({}))['outputs'] == {'attached_object': 'cube 1'}
+    failed = tools.build([spec], lambda *_, **__: {'succeeded': False, 'outputs': dict(stale)})[0]
+    assert json.loads(failed.invoke({}))['outputs'] == stale
+
+
 def test_a_pose_goes_back_as_a_call_returned_it_or_as_a_string():
     """bt_server seeds both forms, and a pose passed back verbatim is the object form a call returned."""
     pytest.importorskip('langchain_core')
