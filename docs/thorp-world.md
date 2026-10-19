@@ -35,7 +35,7 @@ from at that table doesn't see them, and only where the observed surface covers 
 |---|---|---|
 | `world/observe` | `thorp_msgs/ObserveWorld` | Detections report tables, or a surface with the objects on it, as the collision objects they produce, on any frame; the world transforms them to `map` at their stamp, matches them and returns their ids. |
 | `world/update` | `thorp_msgs/UpdateWorld` | Skills report an effect: an object picked, placed, stowed, disturbed or lost from the gripper; the robot docked or undocked; a table inspected. Unknown ids are refused. |
-| `world/query` | `thorp_msgs/QueryWorld` | Entities filtered by ids, kind, support or status, with each one's reachability from the arm's base (`arm_frame`, `max_arm_reach`) and the table the robot is at (`at_table_distance`). |
+| `world/query` | `thorp_msgs/QueryWorld` | Entities filtered by ids, kind, support or status, with each one's reachability, as the manipulation server measures it: how far its top is from the arm's shoulder, and how much above or below it (`arm_frame`, `max_arm_reach`, `max_arm_height`) and the table the robot is at (`at_table_distance`). |
 | `world/reach` | `thorp_msgs/QueryReach` | Which objects on a table, not missing, the arm would reach with the robot at each of some poses: the same reach as `world/query`'s, less a margin for poses reached with some tolerance. The pickup planner groups objects into pickup locations by it. |
 | `world/save`, `world/load` | `std_srvs/Trigger` | To and from `world_file`, also loaded on start if it exists. The parameter can change at any time: the capability tests point it at the world they start from. |
 | `world/state` | `thorp_msgs/WorldState` | Everything known, latched, whenever it changes. |

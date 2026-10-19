@@ -44,8 +44,11 @@ class WorldNode(Node):
         super().__init__('world')
         self.map_frame = self.declare_parameter('map_frame', 'map').value
         self.robot_frame = self.declare_parameter('robot_frame', 'base_footprint').value
-        self.arm_frame = self.declare_parameter('arm_frame', 'arm_base_link').value
+        # reach is measured from the shoulder, how far from it and how much above or below, as the manipulation
+        # server checks its targets
+        self.arm_frame = self.declare_parameter('arm_frame', 'arm_shoulder_lift_servo_link').value
         self.max_arm_reach = self.declare_parameter('max_arm_reach', 0.3).value
+        self.max_arm_height = self.declare_parameter('max_arm_height', 0.2).value
         self.tf_timeout = Duration(seconds=self.declare_parameter('tf_timeout', 0.5).value)
         self.declare_parameter('world_file', '')
         self.world = World(object_tolerance=self.declare_parameter('object_tolerance', 0.05).value,
@@ -142,7 +145,8 @@ class WorldNode(Node):
         except TransformException as e:
             response.message = f'no robot pose, so no relations: {e}'
             return response
-        response.reachable = [e.kind == OBJECT and self.world.within_reach(e.id, arm, self.max_arm_reach)
+        response.reachable = [e.kind == OBJECT and
+                              self.world.within_reach(e.id, arm, self.max_arm_reach, self.max_arm_height)
                               for e in entities]
         response.at_table = self.world.table_at(robot) or ''
         return response
@@ -156,7 +160,7 @@ class WorldNode(Node):
         except TransformException as e:
             response.success, response.message = False, f'cannot put the arm where the robot would be: {e}'
             return response
-        # the arm's base on the robot, to put where the robot would be
+        # the arm on the robot, to put where the robot would be
         offset, arm = arm_on_robot.transform, PoseStamped()
         arm.pose.position.x, arm.pose.position.y, arm.pose.position.z = \
             offset.translation.x, offset.translation.y, offset.translation.z
@@ -171,7 +175,7 @@ class WorldNode(Node):
                 arm_pose = do_transform_pose_stamped(arm, robot)
                 in_reach = ObjectsInReach(robot_pose=robot_pose, arm_pose=arm_pose)
                 for object_id, distance in self.world.reachable_from(request.table_id, to_pose(arm_pose),
-                                                                     response.reach):
+                                                                     response.reach, self.max_arm_height):
                     in_reach.objects.append(ObjectToPickup(name=object_id, distance=distance,
                                                            pose=to_msg(self.world.get(object_id), self.map_frame).pose))
                 response.in_reach.append(in_reach)

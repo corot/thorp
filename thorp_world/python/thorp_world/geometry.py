@@ -1,10 +1,10 @@
 """
-Planar geometry on tables, for matching observations and deriving relations.
+Geometry on tables, for matching observations and deriving relations.
 """
 
 import math
 
-from .entities import Entity
+from .entities import Entity, Pose
 
 
 def normalize_table_yaw(yaw):
@@ -37,3 +37,17 @@ def on_table(table: Entity, x, y, margin=0.0):
 
 def planar_distance(a, b):
     return math.hypot(a.x - b.x, a.y - b.y)
+
+
+def grasp_point(entity: Entity):
+    """Where the arm reaches for an object to pick it: its top center."""
+    return Pose(entity.pose.x, entity.pose.y, entity.pose.z + entity.size[2] / 2.0)
+
+
+def reach_distance(point, shoulder, max_distance, max_height):
+    """
+    How far a point is from the arm's shoulder, if the arm reaches it: no farther than max_distance, and no more than
+    max_height above or below the shoulder, as the manipulation server measures its targets; None otherwise.
+    """
+    distance = math.dist((point.x, point.y, point.z), (shoulder.x, shoulder.y, shoulder.z))
+    return distance if distance <= max_distance and abs(point.z - shoulder.z) <= max_height else None

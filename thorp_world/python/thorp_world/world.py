@@ -8,7 +8,7 @@ import dataclasses
 import yaml
 
 from .entities import BELIEVED, DISTURBED, GRIPPER, MISSING, OBJECT, OBSERVED, OK, TABLE, TRAY, Entity, Pose
-from .geometry import distance_to_table, normalize_table_yaw, on_table, planar_distance
+from .geometry import distance_to_table, grasp_point, normalize_table_yaw, on_table, planar_distance, reach_distance
 
 
 class World:
@@ -146,20 +146,24 @@ class World:
         nearby = [n for n in nearby if n[0] <= self.at_table_distance]
         return min(nearby)[1] if nearby else None
 
-    def within_reach(self, object_id, arm_pose, reach):
-        """Whether an object on a table is closer than reach to the arm's base."""
+    def within_reach(self, object_id, shoulder, reach, height):
+        """Whether the arm, its shoulder at a pose, reaches an object on a table; see geometry.reach_distance."""
         entity = self._object(object_id)
-        return entity.pose is not None and planar_distance(entity.pose, arm_pose) <= reach
+        return entity.pose is not None and reach_distance(grasp_point(entity), shoulder, reach, height) is not None
 
-    def reachable_from(self, table_id, arm_pose, reach):
+    def reachable_from(self, table_id, shoulder, reach, height):
         """
-        The objects on a table closer than reach to the arm's base, were it at arm_pose, as (id, distance) pairs,
-        closest first. Missing objects aren't where they were seen, so not there to reach.
+        The objects on a table the arm would reach, were its shoulder at a pose, as (id, distance) pairs, closest
+        first. Missing objects aren't where they were seen, so not there to reach.
         """
         self._table(table_id)
-        found = sorted((planar_distance(e.pose, arm_pose), e.id) for e in self._entities.values()
-                       if e.kind == OBJECT and e.support == table_id and e.pose is not None and e.status != MISSING)
-        return [(object_id, distance) for distance, object_id in found if distance <= reach]
+        found = []
+        for e in self._entities.values():
+            if e.kind == OBJECT and e.support == table_id and e.pose is not None and e.status != MISSING:
+                distance = reach_distance(grasp_point(e), shoulder, reach, height)
+                if distance is not None:
+                    found.append((distance, e.id))
+        return [(object_id, distance) for distance, object_id in sorted(found)]
 
     def to_dict(self):
         entities = []

@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
 Exercise a running thorp_world node: observe in base_footprint, update, query relations and reach, save and load.
-It expects the robot at (1, 2) on the map facing +y, and the arm base 0.1 m ahead of it; on a ROS domain nothing else
-uses:
+It expects the robot at (1, 2) on the map facing +y, and the arm's shoulder 0.1 m ahead of it and 0.5 m up; on a ROS
+domain nothing else uses:
 
     export ROS_DOMAIN_ID=61 ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
     ros2 node list --no-daemon  # must print nothing
     /opt/ros/jazzy/lib/tf2_ros/static_transform_publisher --x 1.0 --y 2.0 --yaw 1.5707963 \
         --frame-id map --child-frame-id base_footprint &
-    /opt/ros/jazzy/lib/tf2_ros/static_transform_publisher --x 0.1 --frame-id base_footprint \
-        --child-frame-id arm_base_link &
+    /opt/ros/jazzy/lib/tf2_ros/static_transform_publisher --x 0.1 --z 0.5 --frame-id base_footprint \
+        --child-frame-id arm_shoulder_lift_servo_link &
     ros2 run thorp_world world_node.py --ros-args -p world_file:=/tmp/world.yaml &
     ros2 run thorp_world check_world_node.py
 
@@ -91,7 +91,7 @@ check(f'cube in map at ({cube.pose.pose.position.x:.3f}, {cube.pose.pose.positio
 check(f'reachable: cube {by_id["cube 1"][1]}, star {by_id["star 1"][1]} (0.21 and 0.46 m from the arm)',
       by_id['cube 1'][1] and not by_id['star 1'][1])
 
-# from the far side of the table, facing -y, the arm base is at (1.1, 2.8): 0.25 m from the star
+# from the far side of the table, facing -y, the arm's shoulder is at (1.1, 2.8): 0.25 m from the star
 request = QueryReach.Request(table_id='table 1', robot_poses=[map_pose(1.0, 2.0, math.pi / 2),
                                                                map_pose(1.1, 2.9, -math.pi / 2)])
 reach = call(QueryReach, 'world/reach', request)

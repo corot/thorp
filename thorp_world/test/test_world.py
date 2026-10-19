@@ -190,10 +190,19 @@ def test_inspecting_a_table_is_remembered(world, tmp_path):
 def test_reach_is_measured_from_the_arm(world):
     world.observe_objects(table(), [cube(0.3, 0.0), cube(0.6, 0.2)], stamp=1.0)
     world.mark_picked('cube 2', stamp=2.0)
-    arm = Pose(0.1, 0.0)
-    assert world.within_reach('cube 1', arm, reach=0.3)
-    assert not world.within_reach('cube 1', arm, reach=0.15)
-    assert not world.within_reach('cube 2', arm, reach=10.0), "a carried object isn't on a table to reach"
+    shoulder = Pose(0.1, 0.0, 0.5)
+    assert world.within_reach('cube 1', shoulder, reach=0.3, height=0.2)
+    assert not world.within_reach('cube 1', shoulder, reach=0.15, height=0.2)
+    assert not world.within_reach('cube 2', shoulder, reach=10.0, height=10.0), "a carried object isn't on a table"
+
+
+def test_reach_is_to_the_top_of_the_object_and_in_three_dimensions(world):
+    world.observe_objects(table(), [cube(0.3, 0.0)], stamp=1.0)
+    top = 0.49 + 0.025 / 2.0
+    assert world.within_reach('cube 1', Pose(0.02, 0.0, top), reach=0.28, height=0.2)
+    assert not world.within_reach('cube 1', Pose(0.02, 0.0, top + 0.12), reach=0.3, height=0.2), \
+        '0.28 m away on the plane, but 0.30 m away in all'
+    assert not world.within_reach('cube 1', Pose(0.3, 0.0, top + 0.25), reach=0.3, height=0.2), 'too far below'
 
 
 def test_reach_from_elsewhere_is_of_the_objects_on_that_table(world):
@@ -202,13 +211,14 @@ def test_reach_from_elsewhere_is_of_the_objects_on_that_table(world):
     world.observe_objects(table(), [cube(0.3, 0.0), cube(0.6, 0.2)], stamp=2.0, robot_pose=AT_TABLE)
     assert world.get('cube 2').status == MISSING
     # the arm by the table's near edge: cube 2 would be in reach, but it isn't there
-    reached = world.reachable_from('table 1', Pose(0.2, 0.05), reach=0.3)
+    top = 0.49 + 0.025 / 2.0
+    reached = world.reachable_from('table 1', Pose(0.2, 0.05, top), reach=0.3, height=0.2)
     assert [object_id for object_id, _ in reached] == ['cube 1']
     assert reached[0][1] == pytest.approx(math.hypot(0.1, 0.05))
-    assert [object_id for object_id, _ in world.reachable_from('table 1', Pose(0.5, 0.1), reach=0.3)] == \
-        ['cube 3', 'cube 1'], 'closest first'
+    reached = world.reachable_from('table 1', Pose(0.5, 0.1, top), reach=0.3, height=0.2)
+    assert [object_id for object_id, _ in reached] == ['cube 3', 'cube 1'], 'closest first'
     with pytest.raises(KeyError):
-        world.reachable_from('table 9', Pose(0.2, 0.05), reach=0.3)
+        world.reachable_from('table 9', Pose(0.2, 0.05, top), reach=0.3, height=0.2)
 
 
 def test_the_world_survives_a_save_and_a_load(world, tmp_path):

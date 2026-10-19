@@ -5,7 +5,8 @@ nothing else uses, as the static transforms would reach any simulation there:
 
     export ROS_DOMAIN_ID=61 ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
     ros2 run tf2_ros static_transform_publisher --x 0.03 --frame-id map --child-frame-id base_footprint &
-    ros2 run tf2_ros static_transform_publisher --x 0.1 --frame-id base_footprint --child-frame-id arm_base_link &
+    ros2 run tf2_ros static_transform_publisher --x 0.1 --z 0.5 --frame-id base_footprint \
+        --child-frame-id arm_shoulder_lift_servo_link &
     ros2 run thorp_world world_node.py --ros-args -p world_file:=$PWD/test/world.yaml &
     ros2 run thorp_bt_cpp bt_server_node --ros-args \
         -p bt_dir:=$(ros2 pkg prefix thorp_bt_cpp)/share/thorp_bt_cpp/bt &  # the installed trees: those ported
