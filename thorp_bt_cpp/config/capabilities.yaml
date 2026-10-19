@@ -104,7 +104,7 @@ capabilities:
       object_name: {type: string, description: "id of the object to pick, as thorp_world knows it: 'cube 1'"}
       tightening: {type: float, optional: true, description: "extra gripper closure past contact, in meters; leave it out to use the gripper's configured value"}
     outputs:
-      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed: one of errors, or else the pickup action's"}
+      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed: one of errors, the pickup action's, or OBJECT_NOT_ATTACHED if the grasp missed the object"}
       attached_object: {type: string, description: "object now attached to the gripper, if any"}
       max_effort: {type: float, description: "gripper effort used, read from the gripper_max_effort parameter"}
     errors:

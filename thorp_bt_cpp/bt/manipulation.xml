@@ -36,7 +36,12 @@
               <ObjectAttached attached_object="{attached_object}"/>
             </Sequence>
             <ForceFailure>
-              <SubTree ID="clear_gripper"/>
+              <Sequence>
+                <SetError code="OBJECT_NOT_ATTACHED"
+                          text="the grasp missed the object, or it slipped out"
+                          error="{error}"/>
+                <SubTree ID="clear_gripper"/>
+              </Sequence>
             </ForceFailure>
           </Fallback>
           <ForceSuccess>

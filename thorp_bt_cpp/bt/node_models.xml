@@ -334,6 +334,11 @@
             <output_port name="output" type="double"/>
             <input_port name="input" type="double"/>
         </Action>
+        <Action ID="SetError">
+            <output_port name="error" type="thorp_msgs::msg::ThorpError_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="text" type="std::string" default="">what failed, in a line</input_port>
+            <input_port name="code" type="std::string">error code name, as ThorpError or MoveItErrorCodes define it</input_port>
+        </Action>
         <Action ID="SetPose">
             <output_port name="output" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="input" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>

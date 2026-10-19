@@ -76,6 +76,7 @@ set(BT_NODES
   src/bt/actions/select_next_target.cpp
   src/bt/actions/set_arm_config.cpp
   src/bt/actions/set_blackboard.cpp
+  src/bt/actions/set_error.cpp
   src/bt/actions/settle_on_tray.cpp
   src/bt/actions/table_as_obstacle.cpp
   src/bt/actions/track_progress.cpp
@@ -103,7 +104,7 @@ set(BT_NODES
 )
 
 # The nodes register themselves on static initialization, into the runner's factory
-add_library(bt_runner SHARED src/bt_runner.cpp src/bt_ros_logger.cpp ${BT_NODES})
+add_library(bt_runner SHARED src/bt_runner.cpp src/bt_ros_logger.cpp src/errors.cpp ${BT_NODES})
 target_include_directories(bt_runner PUBLIC include ${nav2_behavior_tree_INCLUDE_DIRS})
 target_link_libraries(bt_runner PUBLIC
   ament_index_cpp::ament_index_cpp

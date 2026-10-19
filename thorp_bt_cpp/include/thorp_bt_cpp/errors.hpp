@@ -18,4 +18,10 @@ inline thorp_msgs::msg::ThorpError makeError(int32_t code, const std::string& te
   return error;
 }
 
+/**
+ * An error code's value by its name, as ThorpError or MoveItErrorCodes define it; ThorpError's win a clash.
+ * @throw BT::RuntimeError for an unknown name
+ */
+int32_t errorCode(const std::string& name);
+
 }  // namespace thorp::bt

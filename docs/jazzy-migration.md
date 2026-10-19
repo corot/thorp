@@ -299,7 +299,9 @@ Navigation uses `nav2_behavior_tree`'s own nodes, loaded from its plugins: `Navi
 `FollowPath`, `Spin` and `BackUp`, their builders wrapped to share the root entries with subtrees as Thorp's do. Their
 error codes, `uint16`, go to `{nav_error}` keys, as trees can't mix types on a key and Thorp's nodes write their errors
 as `thorp_msgs/ThorpError`: a code to act on, and a text saying in a line what failed, that `bt_server` returns as
-`{code, text}`.
+`{code, text}`. A tree states an error of its own with `SetError`, as what a failed check means for it: the code
+named as `ThorpError` or `MoveItErrorCodes` define it, read from their message definitions, and checked when the tree
+is built.
 The runner waits for Nav2 to be active before ticking, when `lifecycle_manager_navigation` is running: `bt_navigator`
 rejects goals until activated. Thorp's `LookAtPose` turns with the `spin` behavior; `GetPosesAroundTable` discards poses
 on obstacles with the global costmap's `get_cost` service, checking the pose's cell rather than Noetic's footprint
