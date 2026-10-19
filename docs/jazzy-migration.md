@@ -181,7 +181,9 @@ the differences with the Noetic simulation). Tables and objects are collision ob
 their longest side, lying on the table plane, but with a level pose; objects carry their template mesh, their template
 name as `type.key`, and their size and color name as JSON in `type.db`, as on the `bt_server` branch. For debugging, it
 publishes the table and the clusters as point clouds, the table's outline, and why each rejected cluster was rejected.
-`xtion_fov_analyzer.py` is ported too.
+`xtion_fov_analyzer.py` is ported too. It ignores the part of the image where the stowed arm appears
+(`stowed_arm_region`, measured in simulation), as the simulated Xtion, its depth near clip at 0.35 m rather than the
+real camera's 0.45 m, sees the arm there at 0.37-0.40 m.
 
 The segmentation and template matching are rewritten into `thorp_perception` from Thorp's forks of
 `rail_segmentation` and `rail_mesh_icp`, instead of porting the forks as source dependencies: the forks carry much
@@ -678,9 +680,6 @@ Differences with the Noetic simulation:
   points seen by the cameras are about 9 mm off at the tables distance (farther and lower); the tilt goes away when
   the arm reaches forward. Tables slope 0.014 rad on `base_footprint`, which `object_detection` absorbs by measuring
   heights from the table plane. Detection and grasping still work.
-- In simulation, `xtion_fov_analyzer.py` reports the field of view blocked with the arm stowed: the Xtion sees
-  something at 0.37-0.40 m just above the cropped bottom of the image, probably the stowed arm, as the simulated
-  depth near clip is 0.35 m (0.45 m on the real camera). Maybe related to the octomap issue above.
 - MoveIt's `PlanningSceneInterface::getKnownObjectNamesInROI` takes the collision objects' shape poses, relative to
   the object pose, as absolute, so it misses objects placed with a pose; `object_detection` checks the objects' poses
   itself instead. Fixed upstream by https://github.com/moveit/moveit2/pull/3884 (open); once released on Jazzy,

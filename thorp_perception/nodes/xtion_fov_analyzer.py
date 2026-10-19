@@ -16,6 +16,9 @@ class FOVAnalyzer(Node):
         super().__init__('xtion_fov_analyzer')
         self.min_distance = self.declare_parameter('min_distance', 0.4).value
         self.crop_percentage = self.declare_parameter('crop_percentage', 0.20).value  # crop 20 % bottom
+        # Where the stowed arm, and what it holds, appears, always in view: top, left, bottom and right, as fractions of
+        # the image
+        self.stowed_arm_region = self.declare_parameter('stowed_arm_region', [0.74, 0.33, 1.0, 0.53]).value
         self.depth_image = None
         self.create_subscription(Image, 'xtion/depth_registered/image_raw', self.depth_callback,
                                  rclpy.qos.qos_profile_sensor_data)
@@ -34,10 +37,14 @@ class FOVAnalyzer(Node):
             response.success, response.message = True, "Unsupported depth image encoding"
             return response
         depth = np.frombuffer(self.depth_image.data, dtype=np.float32).reshape(self.depth_image.height, -1)
+        near = (depth > 0) & (depth < self.min_distance)
+        height, width = near.shape
+        top, left, bottom, right = self.stowed_arm_region
+        near[int(top * height):int(bottom * height), int(left * width):int(right * width)] = False
         # Crop a percentage of pixels from the bottom
-        depth = depth[:self.depth_image.height - int(self.crop_percentage * self.depth_image.height), :]
-        # Check if any value in the depth image is less than the minimum distance
-        if np.any((depth > 0) & (depth < self.min_distance)):
+        near = near[:height - int(self.crop_percentage * height), :]
+        # Check if anything is closer than the minimum distance
+        if np.any(near):
             response.success, response.message = False, f"Object detected within {self.min_distance} m"
         else:
             response.success, response.message = True, f"No objects detected within {self.min_distance} m"
