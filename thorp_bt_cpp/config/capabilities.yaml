@@ -31,11 +31,11 @@
 # An input marked `optional: true` may be left out: the tree reads it when given and otherwise
 # produces it itself, typically from a parameter. The drift test holds it to exactly that.
 #
-# `errors` names the codes (thorp_msgs/ThorpError) a capability fails with when thorp_world
-# says it can't do what it was asked, and what each means: pickup_object of an object on a table
-# the robot isn't at fails with NOT_AT_TABLE, and approaching that table is what it takes. What
-# holds now -- where each object is, which table the robot is at, what is within reach -- is
-# the world's to tell, so capabilities declare no preconditions of their own.
+# `errors` names the codes (thorp_msgs/ThorpError) a capability fails with when its checks, as
+# thorp_world's, say it can't do what it was asked, and what each means: pickup_object of an
+# object on a table the robot isn't at fails with NOT_AT_TABLE, and approaching that table is
+# what it takes. What holds now -- where each object is, which table the robot is at, what is
+# within reach -- is the world's to tell, so capabilities declare no preconditions of their own.
 #
 # An `error` output is a thorp_msgs/ThorpError: a code to act on, one of `errors` or else the
 # failing server's own (MoveIt's, Nav2's or Thorp's), and a text saying in a line what failed,
@@ -230,6 +230,9 @@ capabilities:
     outputs:
       objects: {type: std::vector<moveit_msgs::msg::CollisionObject>, description: "the objects found on the surface, each as name and color; empty when there are none"}
       surface: {type: moveit_msgs::msg::CollisionObject, description: "the support surface they were found on, as name and color"}
+      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed: one of errors"}
+    errors:
+      VIEW_BLOCKED: something close to the camera, as the arm when not stowed, blocks its view; stow_arm, then look again
     test:
       inputs: {}
       expect: any          # needs a table in view; whether there is one is the scene's business
@@ -280,6 +283,7 @@ capabilities:
       nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's navigate_to_pose or follow_path, docking"}
     errors:
       TABLE_NOT_FOUND: thorp_world knows no table by that id
+      VIEW_BLOCKED: something close to the camera, as the arm when not stowed, blocks its view of the table; stow_arm, then detect_objects
     test:
       inputs: {}
       expect: any          # the same docking as reach_table, which the scene can defeat
@@ -306,6 +310,7 @@ capabilities:
       error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed: one of errors, or else from reading the robot pose"}
     errors:
       TABLE_NOT_FOUND: thorp_world knows no table by that id
+      VIEW_BLOCKED: something close to the camera, as the arm when not stowed, blocks its view of the table; stow_arm, then detect_objects
     test:
       inputs: {table_id: "table 1"}
       expect: any

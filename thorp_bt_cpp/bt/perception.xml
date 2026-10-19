@@ -18,12 +18,24 @@
     caller can't get anywhere else: the names the detector gave the objects. Those names are
     what pickup_object, place_object and place_on_tray take as object_name.
 
-    Positioning is not part of this. The robot has to be in front of the table already.
+    Positioning is not part of this. The robot has to be in front of the table already. Nor is
+    clearing the view: with something close blocking the camera, it fails with VIEW_BLOCKED
+    rather than take what it sees for the whole table.
   -->
   <BehaviorTree ID="detect_objects">
-    <DetectObjects object_types=""
-                   objects="{objects}"
-                   surface="{surface}"/>
+    <Sequence>
+      <Fallback>
+        <CameraFOVClear/>
+        <ForceFailure>
+          <SetError code="VIEW_BLOCKED"
+                    text="something close to the camera blocks its view, as the arm when not stowed"
+                    error="{error}"/>
+        </ForceFailure>
+      </Fallback>
+      <DetectObjects object_types=""
+                     objects="{objects}"
+                     surface="{surface}"/>
+    </Sequence>
   </BehaviorTree>
 
   <!--

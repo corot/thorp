@@ -69,7 +69,8 @@
                nav_error="{nav_error}"/>
       <SubTree ID="detect_objects"
                objects="{objects}"
-               surface="{surface}"/>
+               surface="{surface}"
+               error="{error}"/>
     </Sequence>
   </BehaviorTree>
 
@@ -152,7 +153,8 @@
                inspect_pose="{inspect_pose}"/>
       <SubTree ID="detect_objects"
                objects="{objects}"
-               surface="{surface}"/>
+               surface="{surface}"
+               error="{error}"/>
     </Sequence>
   </BehaviorTree>
 
