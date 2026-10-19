@@ -48,7 +48,9 @@ PROMPTS = RobotSystemPrompts(
         'one would undo the work, as "the green one" with two green objects known.\n'
         'When a call fails, work out why from its error and the world, and try what that suggests. End your turn only '
         'when the goal is done or nothing is left to try, and then say what you tried; never end it offering options '
-        'or asking for permission.'),
+        'or asking for permission.\n'
+        'A request may follow one you left unfinished: unless it is a new goal, it is help with the unfinished one, '
+        'as a hint on why it failed or an answer to your question. Act on it, then carry on with that goal.'),
     constraints_and_guardrails=(
         'Your tools are all you can do. If there is no capability for what you are asked, say which one you would '
         'want.\n'
