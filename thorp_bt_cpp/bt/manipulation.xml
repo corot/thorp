@@ -2,20 +2,14 @@
 <root BTCPP_format="4">
   <!--
     Pick an object, by the id thorp_world and the planning scene know it by, from its table. thorp_world must say it's
-    within the arm's reach, or the pickup fails with the reason as error, without moving; picked, it's in the gripper,
-    and otherwise disturbed, as the attempt may have moved it.
+    within the arm's reach and the gripper empty, or the pickup fails with the reason as error, without moving; picked,
+    it's in the gripper, and otherwise disturbed, as the attempt may have moved it.
   -->
   <BehaviorTree ID="pickup_object">
     <Sequence>
       <ObjectPickable object_id="{object_name}"
                       table_id="{table_id}"
                       error="{error}"/>
-      <ForceSuccess>
-        <Sequence>
-          <ObjectAttached attached_object="{attached_object}"/>
-          <SubTree ID="clear_gripper"/>
-        </Sequence>
-      </ForceSuccess>
       <ReadFloatParam param_name="gripper_max_effort"
                       output_key="{max_effort}"/>
       <!-- tightening is optional: the caller's if given, else the gripper_tightening parameter -->

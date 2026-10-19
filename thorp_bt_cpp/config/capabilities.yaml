@@ -94,10 +94,10 @@ capabilities:
 
   pickup_object:
     description: >
-      Pick up an object thorp_world knows, by its id, with the arm, clearing the gripper first if
-      it is holding something, and retrying with a cleared octomap if the first attempt fails.
-      The object must be on the table the robot is at and within the arm's reach; the world
-      records it in the gripper, or as disturbed if the pickup failed.
+      Pick up an object thorp_world knows, by its id, with the arm, retrying with a cleared octomap
+      if the first attempt fails. The object must be on the table the robot is at and within the
+      arm's reach, and the gripper empty; the world records it in the gripper, or as disturbed if
+      the pickup failed.
     status: ok
     stack: [manipulation]
     inputs:
@@ -110,6 +110,7 @@ capabilities:
     errors:
       OBJECT_NOT_FOUND: thorp_world knows no object by that id
       OBJECT_NOT_ON_TABLE: the object is in the gripper or on the tray, or missing from where it was last seen
+      OBJECT_ATTACHED: the gripper holds another object; place it, or put it on the tray, first
       NOT_AT_TABLE: the object is on a table the robot isn't at; approach_table that table first
       OUT_OF_REACH: the object is on the robot's table, but beyond the arm's reach from where the robot is
     test:
@@ -667,7 +668,8 @@ capabilities:
   pickup_objects:
     description: >
       Pick up the objects of a planned sequence one at a time, stowing each on the tray and
-      recording the ones that keep failing.
+      recording the ones that keep failing. An object it can't put on the tray is dropped, and
+      lost for thorp_world.
     status: ok
     stack: [manipulation, perception]
     inputs:
@@ -675,6 +677,7 @@ capabilities:
       given_up_count: {type: unsigned int, description: "objects abandoned so far; 0 to start"}
     outputs:
       object_name: {type: string, when: maybe, description: "object last picked"}
+      dropped_object: {type: string, when: maybe, description: "object last dropped, as it couldn't be put on the tray"}
       error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why the last action failed"}
     test:
       inputs: {failures: {}, given_up_count: 0}

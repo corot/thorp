@@ -50,7 +50,7 @@ NODE_MODELS = os.path.join(SOURCE_BT_DIR, "node_models.xml")
 WORLD_ERRORS = {
     "GetTable": {"TABLE_NOT_FOUND"},
     "GetCurrentTable": {"NOT_AT_TABLE"},
-    "ObjectPickable": {"OBJECT_NOT_FOUND", "OBJECT_NOT_ON_TABLE", "NOT_AT_TABLE", "OUT_OF_REACH"},
+    "ObjectPickable": {"OBJECT_NOT_FOUND", "OBJECT_NOT_ON_TABLE", "OBJECT_ATTACHED", "NOT_AT_TABLE", "OUT_OF_REACH"},
 }
 
 

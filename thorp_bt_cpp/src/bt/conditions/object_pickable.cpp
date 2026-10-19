@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include <behaviortree_cpp/condition_node.h>
 
 #include "thorp_bt_cpp/errors.hpp"
@@ -14,9 +16,10 @@ using thorp_msgs::msg::ThorpError;
 using thorp_msgs::msg::WorldEntity;
 
 /**
- * Whether thorp_world says an object can be picked from where the robot is: on a table, and within the arm's reach.
- * Otherwise fails with the reason as error: OBJECT_NOT_FOUND, OBJECT_NOT_ON_TABLE (carried, or missing from where it
- * was seen), NOT_AT_TABLE (out of reach, on a table the robot isn't at) or OUT_OF_REACH (on the robot's table).
+ * Whether thorp_world says an object can be picked from where the robot is: on a table, within the arm's reach, and
+ * with the gripper empty. Otherwise fails with the reason as error: OBJECT_NOT_FOUND, OBJECT_NOT_ON_TABLE (carried,
+ * or missing from where it was seen), OBJECT_ATTACHED (the gripper holds another object), NOT_AT_TABLE (out of
+ * reach, on a table the robot isn't at) or OUT_OF_REACH (on the robot's table).
  */
 class ObjectPickable : public BT::RosServiceNode<thorp_msgs::srv::QueryWorld, BT::ConditionNode>
 {
@@ -39,21 +42,27 @@ public:
 private:
   void sendRequest(RequestType& request) override
   {
-    request.ids = { requireInput<std::string>(*this, "object_id") };
+    // all objects, to see also what the gripper holds
     request.kind = WorldEntity::OBJECT;
   }
 
   BT::NodeStatus onResponse(const ResponseType& response) override
   {
     const std::string object_id = requireInput<std::string>(*this, "object_id");
-    if (response.entities.empty())
+    const auto& entities = response.entities;
+    const auto found = std::find_if(entities.begin(), entities.end(), [&](const auto& e) { return e.id == object_id; });
+    if (found == entities.end())
       return fail(ThorpError::OBJECT_NOT_FOUND, "no object '" + object_id + "'");
-    const WorldEntity& object = response.entities.front();
+    const WorldEntity& object = *found;
     if (!object.has_pose || object.status == WorldEntity::MISSING)
       return fail(ThorpError::OBJECT_NOT_ON_TABLE,
                   "'" + object_id + "' is " + (object.has_pose ? "missing" : "on the " + object.support));
+    const auto held =
+        std::find_if(entities.begin(), entities.end(), [](const auto& e) { return e.support == WorldEntity::GRIPPER; });
+    if (held != entities.end())
+      return fail(ThorpError::OBJECT_ATTACHED, "the gripper holds '" + held->id + "'");
     setOutput("table_id", object.support);
-    if (response.reachable.front())
+    if (response.reachable[found - entities.begin()])
       return BT::NodeStatus::SUCCESS;
     if (response.at_table != object.support)
     {

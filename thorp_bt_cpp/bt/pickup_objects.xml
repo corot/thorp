@@ -52,9 +52,17 @@
                                      target_name="{object_name}"/>
               </IfThenElse>
             </Sequence>
-            <SubTree ID="stow_arm"
-                     error="{error}"
-                     _post="already_detected=false"/>
+            <Sequence _post="already_detected=false">
+              <SubTree ID="stow_arm"
+                       error="{error}"/>
+              <!-- an object it couldn't stow on the tray is dropped, as the next pickup needs the gripper empty -->
+              <ForceSuccess>
+                <Sequence>
+                  <ObjectAttached attached_object="{dropped_object}"/>
+                  <SubTree ID="clear_gripper"/>
+                </Sequence>
+              </ForceSuccess>
+            </Sequence>
           </RecoverAndRetry>
         </KeepRunningUntilFailure>
       </Sequence>

@@ -79,7 +79,7 @@ def test_the_current_table_is_the_one_the_robot_is_at(runner):
 
 @pytest.mark.parametrize('object_id, error', [
     ('cube 9', ThorpError.OBJECT_NOT_FOUND),
-    ('cube 2', ThorpError.OBJECT_NOT_ON_TABLE),  # in the gripper
+    ('cube 2', ThorpError.OBJECT_NOT_ON_TABLE),  # on the tray
     ('pentagon 1', ThorpError.NOT_AT_TABLE),  # on table 2
     ('star 1', ThorpError.OUT_OF_REACH),  # 0.56 m from the arm
 ])
@@ -98,6 +98,13 @@ def test_an_effect_changes_what_the_world_says(runner):
     assert succeeded
     succeeded, out = run(runner, 'test_world_pickable', object_id='cube 1')
     assert not succeeded and out['error']['code'] == ThorpError.OBJECT_NOT_ON_TABLE
+
+
+def test_nothing_is_pickable_while_the_gripper_holds_an_object(runner):
+    succeeded, _ = run(runner, 'test_world_update', effect='picked', object_id='cube 1')
+    assert succeeded
+    succeeded, out = run(runner, 'test_world_pickable', object_id='star 1')
+    assert not succeeded and out['error'] == {'code': ThorpError.OBJECT_ATTACHED, 'text': "the gripper holds 'cube 1'"}
 
 
 def test_a_table_is_visited_once_inspected(runner):
