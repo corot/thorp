@@ -552,8 +552,27 @@ ThorpError PickAndPlaceServer::place(const PlaceObject::Goal& goal, const Feedba
                 "unknown place pose frame '" + goal.place_pose.header.frame_id + "'");
   Eigen::Isometry3d place_pose;
   tf2::fromMsg(goal.place_pose.pose, place_pose);
-  place_pose = scene->getFrameTransform(arm_ref_frame_).inverse() *
-               scene->getFrameTransform(goal.place_pose.header.frame_id) * place_pose;
+  place_pose = scene->getFrameTransform(goal.place_pose.header.frame_id) * place_pose;
+  // The place pose is where the object's center goes, so above the top of the support, if it's an object in the scene
+  if (const auto support = scene->getWorld()->getObject(goal.support_surf); support && !support->shapes_.empty())
+  {
+    double top = std::numeric_limits<double>::lowest();
+    for (const Eigen::Vector3d& corner :
+         boxCorners(Eigen::Vector3d::Zero(), shapes::computeShapeExtents(support->shapes_.front().get()) / 2.0))
+      top = std::max(top, (support->global_shape_poses_.front() * corner).z());
+    if (place_pose.translation().z() < top)
+    {
+      char text[256];
+      std::snprintf(text, sizeof(text),
+                    "place pose (%.2f, %.2f, %.2f) on %s is %.1f cm below the top of '%s': the object's center goes "
+                    "half its height above it",
+                    goal.place_pose.pose.position.x, goal.place_pose.pose.position.y, goal.place_pose.pose.position.z,
+                    goal.place_pose.header.frame_id.c_str(), (top - place_pose.translation().z()) * 100.0,
+                    goal.support_surf.c_str());
+      return fail(ThorpError::INVALID_TARGET_POSE, text);
+    }
+  }
+  place_pose = scene->getFrameTransform(arm_ref_frame_).inverse() * place_pose;
   std::vector<geometry_msgs::msg::PoseStamped> gripper_poses;
   if (ThorpError error = makeTargetPoses(*scene, place_pose.translation(), gripper_poses);
       error.code != ThorpError::SUCCESS)

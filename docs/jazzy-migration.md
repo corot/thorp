@@ -264,8 +264,8 @@ objects around, as those already on the tray. Tasks plan from the measured state
 positions clamped to the joint limits:
 MTC checks the start state bounds, velocities included, and pickups failed now and then with the start state out of
 bounds, just after closing the gripper. On shutdown, a goal being executed stops waiting for its result, so the node
-exits cleanly. A failure comes with the most specific code that fits, `OUT_OF_REACH` for a target beyond the arm's
-reach, `GOAL_IN_COLLISION` or `NO_IK_SOLUTION` for a target pose with no collision-free or no IK solution at all, and
+exits cleanly. A failure comes with the most specific code that fits, `INVALID_TARGET_POSE` for a place pose below
+the top of its support, `OUT_OF_REACH` for a target beyond the arm's reach, `GOAL_IN_COLLISION` or `NO_IK_SOLUTION` for a target pose with no collision-free or no IK solution at all, and
 `PLANNING_FAILED` for a motion that can't be planned, and with a one-line reason as its text: how far the target is,
 which pairs collide, which stage failed to execute.
 `scripts/test_pick_and_place.py` picks and places a cube on a table that exist only in the planning scene.
