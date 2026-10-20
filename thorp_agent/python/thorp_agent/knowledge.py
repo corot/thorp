@@ -21,6 +21,8 @@ PLACE_CLEARANCE = 0.01
 # Smaller robot moves than these aren't worth telling
 MOVED_DISTANCE = 0.05
 MOVED_YAW = 0.1
+# An object seen again farther than this from where it was known has moved; nearer, it's detection noise
+OBJECT_MOVED_DISTANCE = 0.02
 # How close to an axis the robot's heading must be to be named by it
 AXIS_TOLERANCE = math.radians(15)
 
@@ -79,9 +81,12 @@ def changes(before: Optional[Dict[str, Any]], after: Optional[Dict[str, Any]]) -
             table_id = after.get('at_table')
             held = _held(entity, table_id, new.get(table_id)) if entity['support'] == GRIPPER else ''
             said.append('{}: {} -> {}{}'.format(entity_id, _where(was), _where(entity), held or _at(entity)))
-        elif entity['status'] != was['status']:
-            status = 'seen again' if entity['status'] == OK else 'now ' + entity['status']
-            said.append('{} {}'.format(entity_id, status))
+        else:
+            if entity['status'] != was['status']:
+                status = 'seen again' if entity['status'] == OK else 'now ' + entity['status']
+                said.append('{} {}'.format(entity_id, status))
+            if _object_moved(was, entity):
+                said.append('{} moved to ({:.2f}, {:.2f})'.format(entity_id, entity['pose']['x'], entity['pose']['y']))
     for entity_id in sorted(set(old) - set(new)):
         said.append('{} forgotten'.format(entity_id))
 
@@ -139,6 +144,12 @@ def _moved(was, now):
         return False
     return (math.hypot(now['x'] - was['x'], now['y'] - was['y']) > MOVED_DISTANCE or
             abs(math.remainder(now['yaw'] - was['yaw'], 2.0 * math.pi)) > MOVED_YAW)
+
+
+def _object_moved(was, now):
+    if not was.get('pose') or not now.get('pose'):
+        return False
+    return math.hypot(now['pose']['x'] - was['pose']['x'], now['pose']['y'] - was['pose']['y']) > OBJECT_MOVED_DISTANCE
 
 
 def _extent(table):

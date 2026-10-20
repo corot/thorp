@@ -142,6 +142,14 @@ def test_inspections_new_tables_and_missing_objects_are_changes():
                                                 'table 4 found at (5.00, 3.00), and inspected']
 
 
+def test_an_object_seen_again_elsewhere_on_its_table_moved():
+    before = playground()
+    after = copy.deepcopy(before)
+    after['entities']['cube 1']['pose'].update(x=0.34, y=-0.05)
+    after['entities']['star 1']['pose'].update(x=0.31)
+    assert knowledge.changes(before, after) == ['cube 1 moved to (0.34, -0.05)'], 'within 2 cm, detection noise'
+
+
 def test_nothing_changed_says_nothing():
     assert knowledge.changes(playground(), playground()) == []
 
