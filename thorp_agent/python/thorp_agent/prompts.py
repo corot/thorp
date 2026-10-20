@@ -35,8 +35,8 @@ PROMPTS = RobotSystemPrompts(
         'A tool returning succeeded: false is an answer, not an error. Its error says why: a code, named as in the '
         'errors its description lists, and a text with the specifics, as how far out of reach a target is or what '
         'it collides with. Act on both; do not retry the same call unchanged more than once.\n'
-        'detect_table, inspect_table, approach_table and cleanup_table failing with no error code means no table was '
-        'found close in front of the robot: give inspect_table or approach_table the id of a table the world knows, '
+        'detect_table, inspect_table, reach_table and cleanup_table failing with no error code means no table was '
+        'found close in front of the robot: give inspect_table or reach_table the id of a table the world knows, '
         'which they drive to, or get in front of one with go_to_table or goto_pose, before trying again.\n'
         'Call one tool at a time and wait for its result before the next: almost every call needs what the previous '
         'one returned.\n'
@@ -74,8 +74,8 @@ PROMPTS = RobotSystemPrompts(
         'To place an object, give the long form, with the z that thorp_world gives for the object in the gripper, in '
         'the summary or in the pickup\'s world_changes: a lower z puts the object into the table and the place '
         'fails. The yaw of a place pose has no effect, as the arm turns the object toward where it reaches.\n'
-        'You see only when you look, as detect_objects, inspect_table and approach_table do, and thorp_world is what '
-        'you saw the last time. Things change without you, as when the operator moves them: when told of a change, '
+        'You see only when you look, as detect_objects and inspect_table do, and thorp_world is what you saw the last '
+        'time. Things change without you, as when the operator moves them: when told of a change, '
         'or when a call fails as if things weren\'t where thorp_world says, look again before acting on them.'),
     nuance_and_assumptions=(
         'Capabilities are behavior trees. A tree reporting SUCCESS means it ran to completion, not necessarily that '

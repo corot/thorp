@@ -66,8 +66,8 @@
 # the scene as the session found it, and with --world, from the world thorp_world knows loaded
 # from that file, so the ids the tests name are those of the objects on the table.
 #   inputs_from: where an input comes from, when it should be a real value rather than one
-#     someone typed in: {pose: [approach_table, pickup_pose]} takes the pose approach_table
-#     parked at, and a third element indexes a list, so [cover_in_one_tour,
+#     someone typed in: {pose: [go_to_table, inspect_pose]} takes the pose go_to_table drove
+#     to, and a third element indexes a list, so [cover_in_one_tour,
 #     coverage_waypoints, 0] is the first waypoint of a coverage path. Usable on the test's own
 #     inputs and on any setup step's. This is the same threading an agent does by hand between
 #     two goals, so a chain expressible here is one ROSA can be asked to follow.
@@ -111,12 +111,12 @@ capabilities:
       OBJECT_NOT_FOUND: thorp_world knows no object by that id
       OBJECT_NOT_ON_TABLE: the object is in the gripper or on the tray, or missing from where it was last seen
       OBJECT_ATTACHED: the gripper holds another object; place it, or put it on the tray, first
-      NOT_AT_TABLE: the object is on a table the robot isn't at; approach_table that table first
-      OUT_OF_REACH: the object is on the robot's table, but beyond the arm's reach from where the robot is
+      NOT_AT_TABLE: the object is on a table the robot isn't at; reach_table that table first
+      OUT_OF_REACH: the object is on the robot's table, but beyond the arm's reach from where the robot is; reach_table another side of the table
     test:
       inputs: {object_name: "clover 1"}
       setup:
-        - {subtree: approach_table, inputs: {table_id: "table 1"}, unless: {at_table: "table 1"}}
+        - {subtree: reach_table, inputs: {table_id: "table 1"}, unless: {at_table: "table 1"}}
         - {subtree: detect_objects}
       # The scene on this bench is fixed, so "did the pickup work" has a right answer.
       expect: succeeded
@@ -134,14 +134,14 @@ capabilities:
     outputs:
       error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed: one of errors, or else the place action's"}
     errors:
-      NOT_AT_TABLE: the robot isn't at a table; approach_table one first
+      NOT_AT_TABLE: the robot isn't at a table; reach_table one first
     test:
       # A clear spot on the near edge of the table; z is the clover's center once there, on the
       # 0.47 m high table, 8 mm above. In the map frame, so it stays put while the setup chain
       # drives the robot to the table.
       inputs: {object_name: "clover 1", place_pose: "0.2;0.0;0.502;0.0;0.0;0.0;map"}
       setup:
-        - {subtree: approach_table, inputs: {table_id: "table 1"}, unless: {at_table: "table 1"}}
+        - {subtree: reach_table, inputs: {table_id: "table 1"}, unless: {at_table: "table 1"}}
         - {subtree: detect_objects}
         - {subtree: pickup_object, inputs: {object_name: "clover 1"}}
       expect: any
@@ -163,7 +163,7 @@ capabilities:
     test:
       inputs: {object_name: "clover 1"}
       setup:
-        - {subtree: approach_table, inputs: {table_id: "table 1"}, unless: {at_table: "table 1"}}
+        - {subtree: reach_table, inputs: {table_id: "table 1"}, unless: {at_table: "table 1"}}
         - {subtree: detect_objects}
         - {subtree: pickup_object, inputs: {object_name: "clover 1"}}
       expect: any
@@ -260,42 +260,13 @@ capabilities:
 
   # ------------------------------------------------------------------------- tables --------
 
-  approach_table:
-    description: >
-      Park against a table, on its side nearest to the robot, close enough for the arm to reach
-      what is on it, and detect the objects on it: the table thorp_world knows as table_id, or
-      the one in front if none is given. It goes to a viewing pose on that side first, detects
-      the table again from there and docks precisely, under the table's eaves. The step before
-      picking from or placing on a table. Its table_id and pickup_pose are what
-      reach_table takes to go back in after leave_table.
-    status: ok
-    stack: [navigation, perception]
-    inputs:
-      table_id: {type: string, optional: true, description: "id of the table to park against; leave it out to take the one in front"}
-    outputs:
-      table_id: {type: string, description: "the id of the table it parked against"}
-      table: {type: moveit_msgs::msg::CollisionObject, description: "that table"}
-      table_pose: {type: geometry_msgs::msg::PoseStamped, description: "where that table is, in the map frame"}
-      pickup_pose: {type: geometry_msgs::msg::PoseStamped, description: "the pose it parked at, for reach_table"}
-      objects: {type: std::vector<moveit_msgs::msg::CollisionObject>, description: "the objects on the table, each as id and color; empty when there are none"}
-      surface: {type: moveit_msgs::msg::CollisionObject, description: "the surface they were found on, as id and color"}
-      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed: one of errors, or else from reading the robot pose"}
-      nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's navigate_to_pose or follow_path, docking"}
-    errors:
-      TABLE_NOT_FOUND: thorp_world knows no table by that id
-      VIEW_BLOCKED: something close to the camera, as the arm when not stowed, blocks its view of the table; stow_arm, then detect_objects
-    test:
-      inputs: {}
-      expect: any          # the same docking as reach_table, which the scene can defeat
-      timeout: 180
-
   inspect_table:
     description: >
       Look a table over from a viewing pose on its side nearest to the robot, and report it and
       the objects on it, recording them in thorp_world, and the table as inspected: the table the
       world knows as table_id, or the one in front if none is given. Fails when no table is in
       view or it isn't a usable size. The objects keep their ids from here on, but the viewing
-      pose is outside arm reach: approach_table before picking one.
+      pose is outside arm reach: reach_table before picking one.
     status: ok
     stack: [navigation, perception]
     inputs:
@@ -338,28 +309,29 @@ capabilities:
 
   reach_table:
     description: >
-      Dock head-on at a table thorp_world knows, precisely and under its eaves, at a pickup
-      pose, and record that the robot is docked there. approach_table already ends this way; use
-      this to go back in after leave_table, with the table_id and pickup_pose
-      approach_table returned, without detecting the table again.
+      Park against a table, ready to pick from or place on it, on a side of the table as the
+      robot sees it from where it stands: the nearest one unless another is asked for. Docked,
+      the arm reaches only the part of the table near that side, so to work on the part far
+      from it, dock at the farthest side, or at the leftmost or rightmost one. It backs out
+      first if docked, stows the arm, drives to that side's viewing pose, detects the table
+      again from there and docks under its eaves. It doesn't look at the objects on the table:
+      detect_objects after it, to see what is there and within reach. The table is the one
+      thorp_world knows as table_id, or the one in front if none is given.
     status: ok
-    stack: [navigation, perception]
+    stack: [navigation, manipulation, perception]
     inputs:
-      table_id: {type: string, description: "id of the table to dock at"}
-      pose: {type: geometry_msgs::msg::PoseStamped, description: "pose to dock at: the pickup_pose approach_table returned"}
+      table_id: {type: string, optional: true, description: "id of the table to park against; leave it out to take the one in front"}
+      side: {type: string, optional: true, description: "nearest, farthest, leftmost or rightmost, as the robot sees the table from where it stands; nearest if left out"}
     outputs:
-      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed: one of errors, or else from reading the robot pose"}
-      nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's follow_path"}
+      table_id: {type: string, description: "the id of the table it parked against"}
+      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed: one of errors, or else from reading the robot pose or stowing the arm"}
+      nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's navigate_to_pose or follow_path, docking"}
     errors:
       TABLE_NOT_FOUND: thorp_world knows no table by that id
+      INVALID_TARGET_POSE: that side of the table has no pose to dock at free of obstacles; try another side
     test:
-      # Goes back in from where approach_table parked, so this checks the goal's contract; the
-      # drive itself is what approach_table's own test exercises.
       inputs: {table_id: "table 1"}
-      setup:
-        - {subtree: approach_table, inputs: {table_id: "table 1"}}
-      inputs_from: {pose: [approach_table, pickup_pose]}
-      expect: any
+      expect: any          # docking, which the scene can defeat
       timeout: 180
 
   leave_table:
@@ -378,7 +350,7 @@ capabilities:
     test:
       inputs: {}
       setup:
-        - {subtree: approach_table, inputs: {table_id: "table 1"}, unless: {at_table: "table 1"}}
+        - {subtree: reach_table, inputs: {table_id: "table 1"}, unless: {at_table: "table 1"}}
       expect: any
       timeout: 180
 
@@ -687,7 +659,7 @@ capabilities:
     test:
       inputs: {failures: {}, given_up_count: 0}
       setup:
-        - {subtree: approach_table, inputs: {table_id: "table 1"}, unless: {at_table: "table 1"}}
+        - {subtree: reach_table, inputs: {table_id: "table 1"}, unless: {at_table: "table 1"}}
         - {subtree: detect_objects}
       expect: any
       timeout: 600
@@ -697,6 +669,10 @@ capabilities:
 # either describe it above or say here why an agent shouldn't see it. Silence would otherwise
 # mean a capability nobody ever told the agent about.
 not_capabilities:
+  dock_at_table: >
+    Internal: drives straight in to a pose by a table and records the robot docked there, as
+    reach_table and cleanup_table do once they have chosen the pose. Not offered, as choosing
+    a docking pose takes the table's geometry; reach_table is the capability.
   test_reset_scene: >
     Test fixture: empties the gripper, stows the arm and clears the planning scene, for
     test_capabilities.py to start every test from the same robot state.

@@ -322,8 +322,11 @@ coverage path, and both exploration trees drive through the poses planned with `
 camera looks where the robot goes rather than along the planned headings. `TableVisited` asks `thorp_world` whether the
 robot looked the table over, as `validate_table` reports. `validate_table` goes on with the table it's given if
 detecting it again, after turning to face it, misses, as a far or small table can be at the detection limit; that
-livelocked `object_gatherer`, the table detected while exploring and missed once in front. `reach_table` fails if
-docking takes over a minute, and `object_gatherer` goes on exploring if a table's cleanup fails. `go_to_table`, new,
+livelocked `object_gatherer`, the table detected while exploring and missed once in front. `dock_at_table` fails if
+docking takes over a minute, and `object_gatherer` goes on exploring if a table's cleanup fails. `reach_table`, new,
+docks on a side of a table chosen as the robot sees it, nearest, farthest, leftmost or rightmost, as the arm reaches
+only the part of a table near its side; it backs out first if docked and stows the arm before driving, and leaves
+looking at the objects to `detect_objects`. `go_to_table`, new,
 drives to the viewing pose of a table `thorp_world` knows, as `validate_table` does once it has one: the agent's table
 capabilities only find a table close in front.
 

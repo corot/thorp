@@ -10,12 +10,13 @@
   <include path="pickup_objects.xml"/>
 
   <!--
-    Park against a table, on its side closest to the robot, ready to pick from or place on it: the table thorp_world
-    knows as table_id, or the one in front if none is given. It goes first to the viewing pose on that side and detects
-    the table again from there, as a view from further away sees little of it; then docks, and detects the objects on
-    it, refreshing the world and the planning scene.
+    Park against a table, on a side of it as the robot sees the table from where it stands, ready to pick from or place
+    on it: the table thorp_world knows as table_id, or the one in front if none is given, and the nearest side unless
+    another is given. Docked, the robot backs out first, as navigation can't start under a table; it stows the arm, as
+    it doesn't drive with it out; then drives to the viewing pose on that side and detects the table again from there,
+    as a view from further away sees little of it, and docks. It doesn't look at the objects on the table.
   -->
-  <BehaviorTree ID="approach_table">
+  <BehaviorTree ID="reach_table">
     <Sequence>
       <IfThenElse>
         <StringInBlackboard key="{table_id}"/>
@@ -28,6 +29,11 @@
                  table_pose="{table_pose}"
                  table_id="{table_id}"/>
       </IfThenElse>
+      <Fallback>
+        <StringInBlackboard key="{side}"/>
+        <Script code="side := 'nearest'"/>
+      </Fallback>
+      <!-- the side is chosen before anything moves, as an invalid one has to fail with the robot where it was -->
       <GetRobotPose timeout="1"
                     robot_pose="{robot_pose}"
                     error="{error}"/>
@@ -37,9 +43,24 @@
                            table="{table}"
                            table_pose="{table_pose}"
                            table_side_poses="{approach_poses}"/>
-      <GetClosestPose poses="{approach_poses}"
-                      target_pose="{robot_pose}"
-                      closest_pose="{approach_pose}"/>
+      <Fallback>
+        <GetTableSidePose poses="{approach_poses}"
+                          table_pose="{table_pose}"
+                          robot_pose="{robot_pose}"
+                          side="{side}"
+                          side_pose="{approach_pose}"/>
+        <ForceFailure>
+          <SetError code="INVALID_TARGET_POSE"
+                    text="that side of the table has no pose to dock at free of obstacles"
+                    error="{error}"/>
+        </ForceFailure>
+      </Fallback>
+      <!-- not at a table, there is nothing to back out from -->
+      <ForceSuccess>
+        <SubTree ID="leave_table"/>
+      </ForceSuccess>
+      <SubTree ID="stow_arm"
+               error="{error}"/>
       <NavigateToPose goal="{approach_pose}"
                       error_code_id="{nav_error}"/>
       <!-- if the closer detection misses, go on with the table we have -->
@@ -62,25 +83,21 @@
       <GetClosestPose poses="{pickup_poses}"
                       target_pose="{robot_pose}"
                       closest_pose="{pickup_pose}"/>
-      <SubTree ID="reach_table"
+      <SubTree ID="dock_at_table"
                table_id="{table_id}"
                pose="{pickup_pose}"
                error="{error}"
                nav_error="{nav_error}"/>
-      <SubTree ID="detect_objects"
-               objects="{objects}"
-               surface="{surface}"
-               error="{error}"/>
     </Sequence>
   </BehaviorTree>
 
   <!--
-    Dock at a table: straight to the pickup pose, under the table's eaves, precisely, recording it in thorp_world. The
+    Dock at a table at a pose: straight to it, under the table's eaves, precisely, recording it in thorp_world. The
     table access is cleared on the local costmap, so the controller doesn't take it as an obstacle. Docking that can't
     reach the pickup pose's tolerance fails after a minute, as the progress checker never stops a robot that keeps
     moving around the goal.
   -->
-  <BehaviorTree ID="reach_table">
+  <BehaviorTree ID="dock_at_table">
     <Sequence>
       <GetTable table_id="{table_id}"
                 table="{table}"
@@ -108,9 +125,9 @@
   </BehaviorTree>
 
   <!--
-    Back straight out from the table the robot is at. reach_table drives in head-on, so backing up moves away from
+    Back straight out from the table the robot is at. dock_at_table drives in head-on, so backing up moves away from
     the table; it retreats as far as the pickup planner's detach poses do, far enough to navigate around the table
-    again, and restores the table access reach_table cleared.
+    again, and restores the table access dock_at_table cleared.
   -->
   <BehaviorTree ID="leave_table">
     <Sequence>
@@ -134,7 +151,7 @@
   <!--
     Look a table over from a viewing pose and report what is on it: the table thorp_world knows as table_id, or the one
     in front if none is given. The objects are for choosing what to do; they are detected from outside arm reach, so
-    picking one still means approach_table, that detects them again from there.
+    picking one still means reach_table, and detect_objects from there.
   -->
   <BehaviorTree ID="inspect_table">
     <Sequence>
@@ -288,7 +305,7 @@
                                       pickup_pose="{pickup_pose}"/>
                 <NavigateToPose goal="{approach_pose}"
                                 error_code_id="{nav_error}"/>
-                <SubTree ID="reach_table"
+                <SubTree ID="dock_at_table"
                          table_id="{table_id}"
                          pose="{pickup_pose}"/>
                 <SubTree ID="pickup_objects"/>

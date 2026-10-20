@@ -53,6 +53,7 @@ set(BT_NODES
   src/bt/actions/get_list_front.cpp
   src/bt/actions/get_poses_around_table.cpp
   src/bt/actions/get_robot_pose.cpp
+  src/bt/actions/get_table_side_pose.cpp
   src/bt/actions/get_table.cpp
   src/bt/actions/list_slicing.cpp
   src/bt/actions/look_at_pose.cpp
