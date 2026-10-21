@@ -49,5 +49,7 @@
 
   <export>
     <build_type>ament_cmake</build_type>
+    <!-- the share's parent, so Gazebo finds the object meshes as model://thorp_perception/meshes/... -->
+    <gazebo_ros gazebo_model_path="${prefix}/.."/>
   </export>
 </package>

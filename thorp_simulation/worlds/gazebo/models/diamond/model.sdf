@@ -5,7 +5,7 @@
         <visual name='visual'>
           <geometry>
             <mesh>
-              <uri>model://diamond/model.stl</uri>
+              <uri>model://thorp_perception/meshes/diamond.stl</uri>
             </mesh>
           </geometry>
           <material>
@@ -18,7 +18,7 @@
         <collision name='collision'>
           <geometry>
             <mesh>
-              <uri>model://diamond/model.stl</uri>
+              <uri>model://thorp_perception/meshes/diamond.stl</uri>
             </mesh>
           </geometry>
           <max_contacts>10</max_contacts>

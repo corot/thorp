@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.8)
 project(thorp_perception)
 
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD 20)
 endif()
 
 # PCL's find modules use <package>_ROOT variables, also on their own policy scopes
@@ -80,6 +80,10 @@ install(DIRECTORY meshes
         DESTINATION share/${PROJECT_NAME}
         FILES_MATCHING PATTERN "*.pcd" PATTERN "*.stl"
         PATTERN "blender" EXCLUDE
+)
+# Of the Blender sources, only the mesh a simulation model uses
+install(FILES meshes/blender/coke.stl
+        DESTINATION share/${PROJECT_NAME}/meshes/blender
 )
 
 ament_package()

@@ -54,6 +54,8 @@
   <exec_depend>thorp_navigation</exec_depend>
   <exec_depend>rviz2</exec_depend>
   <exec_depend>thorp_cannon</exec_depend>
+  <!-- the objects' models use its meshes -->
+  <exec_depend>thorp_perception</exec_depend>
   <!-- the fun house world's house model -->
   <exec_depend>turtlebot3_gazebo</exec_depend>
   <!-- the small house world and its models -->

@@ -84,10 +84,7 @@ try:
             # bounding box inertia: https://en.wikipedia.org/wiki/List_of_moments_of_inertia#List_of_3D_inertia_tensors
             inertial = inertial_template.format(**variables)
             os.mkdir(model_path, 0o755)
-            # create a symbolic link from model to mesh to avoid duplicated disk usage, but use a relative
-            # path so it remains valid when cloning the repo somewhere else, e.g on building a docker image
-            rel_mesh_path = os.path.relpath(meshes_path, model_path) + '/'
-            os.symlink(rel_mesh_path + object[0] + '.stl', model_path + '/model.stl')
+            # the model's sdf refers to the mesh here, as model://thorp_perception/meshes/<name>.stl
             with open(model_path + '/model.config', "w") as f:
                 f.write(template(models_path + 'templates/model.config', {'name': object[0],
                                                                           'desc': object[1]}))

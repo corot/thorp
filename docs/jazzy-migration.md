@@ -585,6 +585,9 @@ house, the `fun_house` model, is Thorp's edit of `turtlebot3_gazebo`'s, with tha
 door narrowed by 30 cm, so the room segmentation tells apart the rooms it joins), the `small_house` world (a symlink
 into the `aws_robomaker_small_house_world` checkout in `src/third_party`), the Gazebo models, the ROS / Gazebo bridge
 configuration, the controllers configuration and `gazebo_ground_truth`, now fed by Gazebo's odometry publisher. The
+object models take their meshes from `thorp_perception`'s templates, as `model://thorp_perception/meshes/...`, as
+`thorp_perception` exports its share for Gazebo; Noetic's models linked them with relative symlinks, which point nowhere
+from an install space other than a symlink install. The
 `empty`, `playground` and `fun_house` worlds step the physics every 2 ms, as DART's contacts at 1 kHz halved the real
 time factor. `thorp_gazebo.launch.py` also runs what Noetic's `sim_common.launch.xml` and `thorp_gazebo.launch.xml` did:
 velocity commands multiplexer and depth image and point cloud to laser scan. With the GUI, it points the camera at the

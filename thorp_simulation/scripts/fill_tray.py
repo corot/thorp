@@ -66,7 +66,9 @@ class TrayFiller:
         models_path = os.path.join(get_package_share_directory('thorp_simulation'), 'worlds', 'gazebo', 'models')
         with open(os.path.join(models_path, model, 'model.sdf')) as f:
             self.sdf = f.read()
-        points, triangles = load_stl(os.path.join(models_path, model, 'model.stl'))
+        # the object models' meshes are thorp_perception's object templates
+        points, triangles = load_stl(os.path.join(get_package_share_directory('thorp_perception'), 'meshes',
+                                                  model + '.stl'))
         self.size = [max(p[k] for p in points) - min(p[k] for p in points) for k in range(3)]
         self.mesh = Mesh(vertices=[Point(x=p[0], y=p[1], z=p[2]) for p in points],
                          triangles=[MeshTriangle(vertex_indices=[3 * i, 3 * i + 1, 3 * i + 2])
