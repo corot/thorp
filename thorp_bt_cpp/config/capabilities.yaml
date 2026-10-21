@@ -309,19 +309,19 @@ capabilities:
 
   reach_table:
     description: >
-      Park against a table, ready to pick from or place on it, on a side of the table as the
-      robot sees it from where it stands: the nearest one unless another is asked for. Docked,
-      the arm reaches only the part of the table near that side, so to work on the part far
-      from it, dock at the farthest side, or at the leftmost or rightmost one. It backs out
-      first if docked, stows the arm, drives to that side's viewing pose, detects the table
-      again from there and docks under its eaves. It doesn't look at the objects on the table:
-      detect_objects after it, to see what is there and within reach. The table is the one
-      thorp_world knows as table_id, or the one in front if none is given.
+      Park against a table, ready to pick from or place on it, on its north, south, east or
+      west side: the one asked for, or else the side closest to the robot. Docked, the arm
+      reaches only the part of the table near that side, so to work on another part, dock at
+      the side nearest to it. It backs out first if docked, stows the arm, drives to that
+      side's viewing pose, detects the table again from there and docks under its eaves. It
+      doesn't look at the objects on the table: detect_objects after it, to see what is there
+      and within reach. The table is the one thorp_world knows as table_id, or the one in front
+      if none is given.
     status: ok
     stack: [navigation, manipulation, perception]
     inputs:
       table_id: {type: string, optional: true, description: "id of the table to park against; leave it out to take the one in front"}
-      side: {type: string, optional: true, description: "nearest, farthest, leftmost or rightmost, as the robot sees the table from where it stands; nearest if left out"}
+      side: {type: string, optional: true, description: "north, south, east or west, the table's side toward the map's +y, -y, +x or -x; the side closest to the robot if left out"}
     outputs:
       table_id: {type: string, description: "the id of the table it parked against"}
       error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed: one of errors, or else from reading the robot pose or stowing the arm"}

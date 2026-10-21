@@ -324,11 +324,12 @@ robot looked the table over, as `validate_table` reports. `validate_table` goes 
 detecting it again, after turning to face it, misses, as a far or small table can be at the detection limit; that
 livelocked `object_gatherer`, the table detected while exploring and missed once in front. `dock_at_table` fails if
 docking takes over a minute, and `object_gatherer` goes on exploring if a table's cleanup fails. `reach_table`, new,
-docks on a side of a table chosen as the robot sees it, nearest, farthest, leftmost or rightmost, as the arm reaches
-only the part of a table near its side; it backs out first if docked and stows the arm before driving, and leaves
-looking at the objects to `detect_objects`. `go_to_table`, new,
-drives to the viewing pose of a table `thorp_world` knows, as `validate_table` does once it has one: the agent's table
-capabilities only find a table close in front.
+docks on a side of a table named by compass on the map, north, south, east or west, or else the one closest to the
+robot, as the arm reaches only the part of a table near its side; names fixed to the map, unlike ones relative to the
+robot, mean the same side wherever the robot is. It backs out first if docked and stows the arm before driving, and
+leaves looking at the objects to `detect_objects`. `go_to_table`, new, drives to the viewing pose of a table
+`thorp_world` knows, as `validate_table` does once it has one: the agent's table capabilities only find a table close
+in front.
 
 Nodes calling actions derive from Nav2's `BtActionNode`, with their servers' names as `server_name` defaults; the
 runner puts Nav2's timeouts on the blackboard: `server_timeout` half a tick and `wait_for_service_timeout` 5 s, 60 s

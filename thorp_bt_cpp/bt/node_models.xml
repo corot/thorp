@@ -132,8 +132,7 @@
         </Action>
         <Action ID="GetTableSidePose">
             <output_port name="side_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <input_port name="side" type="std::string">nearest, farthest, leftmost or rightmost</input_port>
-            <input_port name="robot_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="side" type="std::string">north, south, east or west</input_port>
             <input_port name="table_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <input_port name="poses" type="std::vector&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;">poses around the table</input_port>
         </Action>

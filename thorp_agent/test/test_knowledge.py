@@ -39,7 +39,7 @@ def playground():
 def test_the_summary_says_where_everything_is():
     said = knowledge.summary(playground())
     assert said.splitlines() == [
-        'Robot: at (0.03, 0.00), yaw 0.01, facing +x with +y to its left; at table 1.',
+        'Robot: at (0.03, 0.00), yaw 0.01, facing east with north to its left; at table 1, on its west side.',
         'Gripper: empty.',
         'Tray: square 1 (slot 2).',
         'table 1 at (0.45, 0.00), spanning x 0.20 to 0.70 and y -0.28 to 0.28, top at z 0.476, inspected: '
@@ -58,11 +58,13 @@ def test_the_held_object_comes_with_the_z_that_places_it_on_the_table_the_robot_
     assert 'Gripper: cube 1 (2.6 cm tall).' in knowledge.summary(world)
 
 
-def test_a_heading_off_the_axes_is_given_as_vectors():
+def test_a_heading_off_the_compass_points_is_given_as_vectors():
     world = playground()
     world['robot'] = {'x': 1.0, 'y': 2.0, 'yaw': math.pi / 4}
+    world['at_table'] = None
     assert knowledge.summary(world).splitlines()[0] == \
-        'Robot: at (1.00, 2.00), yaw 0.79, facing (0.71, 0.71) with (-0.71, 0.71) to its left; at table 1.'
+        'Robot: at (1.00, 2.00), yaw 0.79, facing (0.71, 0.71) with (-0.71, 0.71) to its left; at no table.'
+    world['at_table'] = 'table 1'
     world['robot'] = None
     assert knowledge.summary(world).splitlines()[0] == 'Robot: pose unknown; at table 1.'
 
@@ -73,7 +75,8 @@ def test_lost_objects_and_the_gripper_are_summarized_too():
     world['entities']['cube 1'] = thing('gripper', 'gray')
     world['entities']['star 1'] = thing(None, 'red', status='missing')
     said = knowledge.summary(world)
-    assert 'yaw 0.01, facing +x with +y to its left; at no table.' in said and 'Gripper: cube 1 (2.6 cm tall).' in said
+    assert 'yaw 0.01, facing east with north to its left; at no table.' in said
+    assert 'Gripper: cube 1 (2.6 cm tall).' in said
     assert 'Lost, whereabouts unknown: star 1.' in said
 
 
@@ -119,8 +122,18 @@ def test_approaching_a_table_tells_the_robot_is_there_and_what_it_reaches():
     after['entities']['star 1']['status'] = 'ok'
     after['entities']['pentagon 1'] = thing('table 1', 'purple', type_='pentagon')
     assert knowledge.changes(before, after) == [
-        'the robot moved to (0.03, 0.00), yaw 0.01', 'the robot is now at table 1',
+        'the robot moved to (0.03, 0.00), yaw 0.01', 'the robot is now at table 1, on its west side',
         'pentagon 1 found on table 1 at (0.30, 0.00)', 'star 1 seen again', "within the arm's reach now: cube 1"]
+
+
+def test_docking_at_another_side_of_the_table_tells_the_side():
+    before = playground()
+    after = copy.deepcopy(before)
+    after['robot'] = {'x': 0.45, 'y': 0.5, 'yaw': -math.pi / 2}
+    assert knowledge.changes(before, after) == [
+        'the robot moved to (0.45, 0.50), yaw -1.57', 'the robot is now at table 1, on its north side']
+    assert knowledge.summary(after).splitlines()[0] == \
+        'Robot: at (0.45, 0.50), yaw -1.57, facing south with east to its left; at table 1, on its north side.'
 
 
 def test_small_robot_moves_go_unsaid():

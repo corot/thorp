@@ -23,8 +23,10 @@ MOVED_DISTANCE = 0.05
 MOVED_YAW = 0.1
 # An object seen again farther than this from where it was known has moved; nearer, it's detection noise
 OBJECT_MOVED_DISTANCE = 0.02
-# How close to an axis the robot's heading must be to be named by it
+# How close to a compass point the robot's heading must be to be named by it
 AXIS_TOLERANCE = math.radians(15)
+# The map's compass points, +x being east and +y north
+COMPASS = ((0.0, 'east'), (math.pi / 2.0, 'north'), (math.pi, 'west'), (-math.pi / 2.0, 'south'))
 
 
 def summary(snapshot: Optional[Dict[str, Any]]) -> str:
@@ -36,7 +38,8 @@ def summary(snapshot: Optional[Dict[str, Any]]) -> str:
     objects = {i: e for i, e in entities.items() if e['kind'] == 'object'}
 
     at_table = snapshot.get('at_table')
-    lines = ['Robot: {}; {}.'.format(_robot(snapshot.get('robot')), 'at ' + at_table if at_table else 'at no table')]
+    lines = ['Robot: {}; {}.'.format(_robot(snapshot.get('robot')),
+                                     _at_table(at_table, snapshot.get('robot')) if at_table else 'at no table')]
     held = sorted(i for i, e in objects.items() if e['support'] == GRIPPER)
     lines.append('Gripper: {}.'.format(', '.join(i + _held(objects[i], at_table, entities.get(at_table)) for i in held)
                                        if held else 'empty'))
@@ -63,9 +66,11 @@ def changes(before: Optional[Dict[str, Any]], after: Optional[Dict[str, Any]]) -
     said = []
     if _moved(before.get('robot'), after.get('robot')):
         said.append('the robot moved to {}'.format(_pose2d(after['robot'])))
-    if before.get('at_table') != after.get('at_table'):
-        said.append('the robot is now at {}'.format(after['at_table']) if after.get('at_table') else
-                    'the robot left {}'.format(before['at_table']))
+    # docked again on another side of the same table, the robot is at a new place too
+    was_at, now_at = (_at_table(world['at_table'], world.get('robot')) if world.get('at_table') else None
+                      for world in (before, after))
+    if now_at != was_at:
+        said.append('the robot is now ' + now_at if now_at else 'the robot left {}'.format(before['at_table']))
     old, new = before['entities'], after['entities']
     for entity_id in sorted(new):
         entity = new[entity_id]
@@ -127,13 +132,22 @@ def _robot(pose):
                                                          _direction(yaw + math.pi / 2.0))
 
 
+def _at_table(table_id, robot):
+    """The table the robot is docked at, and the side of it it's on: docked head-on, the side opposite its heading"""
+    if robot is None:
+        return 'at ' + table_id
+    away = robot['yaw'] + math.pi
+    side = min(COMPASS, key=lambda point: abs(math.remainder(away - point[0], 2.0 * math.pi)))[1]
+    return 'at {}, on its {} side'.format(table_id, side)
+
+
 def _pose2d(pose):
     return '({:.2f}, {:.2f}), yaw {:.2f}'.format(pose['x'], pose['y'], pose['yaw'])
 
 
 def _direction(angle):
-    """The map axis an angle points along, if it is close to one, or else its unit vector"""
-    for axis, name in ((0.0, '+x'), (math.pi / 2.0, '+y'), (math.pi, '-x'), (-math.pi / 2.0, '-y')):
+    """The compass point an angle points to, if it is close to one, or else its unit vector"""
+    for axis, name in COMPASS:
         if abs(math.remainder(angle - axis, 2.0 * math.pi)) < AXIS_TOLERANCE:
             return name
     return '({:.2f}, {:.2f})'.format(math.cos(angle), math.sin(angle))

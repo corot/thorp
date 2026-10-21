@@ -9,10 +9,10 @@
 namespace thorp::bt::actions
 {
 /**
- * Choose, among poses around a table, the one on a side of it as the robot sees the table from where it stands:
- * nearest, farthest, leftmost or rightmost. Sides are told by their direction from the table's center, relative to
- * the robot's line of sight, so a side without a pose, as one on an obstacle, fails rather than yield a neighbor's.
- * All poses on the same frame.
+ * Choose, among poses around a table, the one on a side of it named by compass on the map: north, south, east or
+ * west, being +y, -y, +x and -x. A pose is on the side its direction from the table's center is nearest to, so each
+ * pose is on a single side, and a side without one, as one on an obstacle, fails rather than yield a neighbor's.
+ * All poses on the map frame.
  */
 class GetTableSidePose : public BT::SyncActionNode
 {
@@ -25,8 +25,7 @@ public:
   {
     return { BT::InputPort<std::vector<geometry_msgs::msg::PoseStamped>>("poses", "poses around the table"),
              BT::InputPort<geometry_msgs::msg::PoseStamped>("table_pose"),  //
-             BT::InputPort<geometry_msgs::msg::PoseStamped>("robot_pose"),  //
-             BT::InputPort<std::string>("side", "nearest, farthest, leftmost or rightmost"),
+             BT::InputPort<std::string>("side", "north, south, east or west"),
              BT::OutputPort<geometry_msgs::msg::PoseStamped>("side_pose") };
   }
 
@@ -34,40 +33,37 @@ private:
   BT::NodeStatus tick() override
   {
     const auto poses = requireInput<std::vector<geometry_msgs::msg::PoseStamped>>(*this, "poses");
-    const auto table = requireInput<geometry_msgs::msg::PoseStamped>(*this, "table_pose").pose.position;
-    const auto robot = requireInput<geometry_msgs::msg::PoseStamped>(*this, "robot_pose").pose.position;
+    const auto table_pose = requireInput<geometry_msgs::msg::PoseStamped>(*this, "table_pose");
     const auto side = requireInput<std::string>(*this, "side");
+    if (table_pose.header.frame_id != "map")
+      throw BT::RuntimeError(name(), ": the table pose is on ", table_pose.header.frame_id,
+                             ", but sides are named on map");
 
-    // The line of sight from the robot to the table, and the direction the requested side lies in from its center
-    const double sight = std::hypot(table.x - robot.x, table.y - robot.y);
-    if (sight == 0.0)
-      throw BT::RuntimeError(name(), ": the robot is on the table's center");
-    const double sx = (table.x - robot.x) / sight, sy = (table.y - robot.y) / sight;
-    double ux, uy;
-    if (side == "nearest")
-      ux = -sx, uy = -sy;
-    else if (side == "farthest")
-      ux = sx, uy = sy;
-    else if (side == "leftmost")
-      ux = -sy, uy = sx;
-    else if (side == "rightmost")
-      ux = sy, uy = -sx;
+    double side_angle;
+    if (side == "east")
+      side_angle = 0.0;
+    else if (side == "north")
+      side_angle = M_PI / 2.0;
+    else if (side == "west")
+      side_angle = M_PI;
+    else if (side == "south")
+      side_angle = -M_PI / 2.0;
     else
-      throw BT::RuntimeError(name(), ": unknown side '", side, "'; it can be nearest, farthest, leftmost or rightmost");
+      throw BT::RuntimeError(name(), ": unknown side '", side, "'; it can be north, south, east or west");
 
+    const auto& table = table_pose.pose.position;
     const geometry_msgs::msg::PoseStamped* best = nullptr;
-    double best_cosine = SIDE_MIN_COSINE;
+    double best_offset = M_PI / 4.0;  // half the angle between sides: nearer to this side than to any other
     for (const auto& pose : poses)
     {
       const double dx = pose.pose.position.x - table.x, dy = pose.pose.position.y - table.y;
-      const double distance = std::hypot(dx, dy);
-      if (distance == 0.0)
+      if (dx == 0.0 && dy == 0.0)
         continue;
-      const double cosine = (dx * ux + dy * uy) / distance;
-      if (cosine > best_cosine)
+      const double offset = std::abs(std::remainder(std::atan2(dy, dx) - side_angle, 2.0 * M_PI));
+      if (offset < best_offset)
       {
         best = &pose;
-        best_cosine = cosine;
+        best_offset = offset;
       }
     }
     if (!best)
@@ -78,9 +74,6 @@ private:
     setOutput("side_pose", *best);
     return BT::NodeStatus::SUCCESS;
   }
-
-  /** Poses farther from a side's direction than 60 degrees are on another side, as sides are 90 degrees apart */
-  static constexpr double SIDE_MIN_COSINE = 0.5;
 
   BT_REGISTER_NODE(GetTableSidePose);
 };

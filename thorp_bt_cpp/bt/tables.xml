@@ -10,11 +10,11 @@
   <include path="pickup_objects.xml"/>
 
   <!--
-    Park against a table, on a side of it as the robot sees the table from where it stands, ready to pick from or place
-    on it: the table thorp_world knows as table_id, or the one in front if none is given, and the nearest side unless
-    another is given. Docked, the robot backs out first, as navigation can't start under a table; it stows the arm, as
-    it doesn't drive with it out; then drives to the viewing pose on that side and detects the table again from there,
-    as a view from further away sees little of it, and docks. It doesn't look at the objects on the table.
+    Park against a table, on a side of it named by compass, ready to pick from or place on it: the table thorp_world
+    knows as table_id, or the one in front if none is given, and the side given, or else the one closest to the robot.
+    Docked, the robot backs out first, as navigation can't start under a table; it stows the arm, as it doesn't drive
+    with it out; then drives to the viewing pose on that side and detects the table again from there, as a view from
+    further away sees little of it, and docks. It doesn't look at the objects on the table.
   -->
   <BehaviorTree ID="reach_table">
     <Sequence>
@@ -29,10 +29,6 @@
                  table_pose="{table_pose}"
                  table_id="{table_id}"/>
       </IfThenElse>
-      <Fallback>
-        <StringInBlackboard key="{side}"/>
-        <Script code="side := 'nearest'"/>
-      </Fallback>
       <!-- the side is chosen before anything moves, as an invalid one has to fail with the robot where it was -->
       <GetRobotPose timeout="1"
                     robot_pose="{robot_pose}"
@@ -43,18 +39,23 @@
                            table="{table}"
                            table_pose="{table_pose}"
                            table_side_poses="{approach_poses}"/>
-      <Fallback>
-        <GetTableSidePose poses="{approach_poses}"
-                          table_pose="{table_pose}"
-                          robot_pose="{robot_pose}"
-                          side="{side}"
-                          side_pose="{approach_pose}"/>
-        <ForceFailure>
-          <SetError code="INVALID_TARGET_POSE"
-                    text="that side of the table has no pose to dock at free of obstacles"
-                    error="{error}"/>
-        </ForceFailure>
-      </Fallback>
+      <IfThenElse>
+        <StringInBlackboard key="{side}"/>
+        <Fallback>
+          <GetTableSidePose poses="{approach_poses}"
+                            table_pose="{table_pose}"
+                            side="{side}"
+                            side_pose="{approach_pose}"/>
+          <ForceFailure>
+            <SetError code="INVALID_TARGET_POSE"
+                      text="that side of the table has no pose to dock at free of obstacles"
+                      error="{error}"/>
+          </ForceFailure>
+        </Fallback>
+        <GetClosestPose poses="{approach_poses}"
+                        target_pose="{robot_pose}"
+                        closest_pose="{approach_pose}"/>
+      </IfThenElse>
       <!-- not at a table, there is nothing to back out from -->
       <ForceSuccess>
         <SubTree ID="leave_table"/>
