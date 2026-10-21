@@ -6,7 +6,7 @@
 
 #include <algorithm>
 #include <chrono>
-#include <cstdio>
+#include <format>
 #include <limits>
 #include <map>
 #include <set>
@@ -82,9 +82,7 @@ thorp_msgs::msg::ThorpError error(int32_t code, const std::string& text)
 
 std::string toString(const geometry_msgs::msg::Point& position)
 {
-  char text[64];
-  std::snprintf(text, sizeof(text), "(%.2f, %.2f, %.2f)", position.x, position.y, position.z);
-  return text;
+  return std::format("({:.2f}, {:.2f}, {:.2f})", position.x, position.y, position.z);
 }
 
 std::string trimmed(const std::string& text)
@@ -561,16 +559,11 @@ ThorpError PickAndPlaceServer::place(const PlaceObject::Goal& goal, const Feedba
          boxCorners(Eigen::Vector3d::Zero(), shapes::computeShapeExtents(support->shapes_.front().get()) / 2.0))
       top = std::max(top, (support->global_shape_poses_.front() * corner).z());
     if (place_pose.translation().z() < top)
-    {
-      char text[256];
-      std::snprintf(text, sizeof(text),
-                    "place pose (%.2f, %.2f, %.2f) on %s is %.1f cm below the top of '%s': the object's center goes "
-                    "half its height above it",
-                    goal.place_pose.pose.position.x, goal.place_pose.pose.position.y, goal.place_pose.pose.position.z,
-                    goal.place_pose.header.frame_id.c_str(), (top - place_pose.translation().z()) * 100.0,
-                    goal.support_surf.c_str());
-      return fail(ThorpError::INVALID_TARGET_POSE, text);
-    }
+      return fail(ThorpError::INVALID_TARGET_POSE,
+                  std::format("place pose {} on {} is {:.1f} cm below the top of '{}': the object's center goes half "
+                              "its height above it",
+                              toString(goal.place_pose.pose.position), goal.place_pose.header.frame_id,
+                              (top - place_pose.translation().z()) * 100.0, goal.support_surf));
   }
   place_pose = scene->getFrameTransform(arm_ref_frame_).inverse() * place_pose;
   std::vector<geometry_msgs::msg::PoseStamped> gripper_poses;

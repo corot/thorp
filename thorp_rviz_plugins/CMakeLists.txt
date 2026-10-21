@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(thorp_rviz_plugins)
 
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD 20)
 endif()
 
 find_package(ament_cmake REQUIRED)

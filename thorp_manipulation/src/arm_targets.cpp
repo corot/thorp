@@ -5,7 +5,7 @@
 #include "thorp_manipulation/arm_targets.hpp"
 
 #include <cmath>
-#include <cstdio>
+#include <format>
 
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
@@ -36,18 +36,15 @@ std::optional<geometry_msgs::msg::Pose> makeTargetPose(const geometry_msgs::msg:
   double y = target.y;
   double z = target.z - operation_height;
   double d = std::sqrt(x * x + y * y + z * z);
-  char reason[96];
   if (d > MAX_DISTANCE)
   {
-    std::snprintf(reason, sizeof(reason), "%.3f m from the arm's shoulder, beyond its %.2f m reach", d, MAX_DISTANCE);
-    error = reason;
+    error = std::format("{:.3f} m from the arm's shoulder, beyond its {:.2f} m reach", d, MAX_DISTANCE);
     return std::nullopt;
   }
   if (std::abs(z) > MAX_HEIGHT)
   {
-    std::snprintf(reason, sizeof(reason), "%.3f m %s the arm's shoulder, beyond its %.2f m reach", std::abs(z),
-                  z > 0.0 ? "above" : "below", MAX_HEIGHT);
-    error = reason;
+    error = std::format("{:.3f} m {} the arm's shoulder, beyond its {:.2f} m reach", std::abs(z),
+                        z > 0.0 ? "above" : "below", MAX_HEIGHT);
     return std::nullopt;
   }
 
