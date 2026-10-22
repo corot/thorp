@@ -324,6 +324,7 @@ capabilities:
       side: {type: string, optional: true, description: "north, south, east or west, the table's side toward the map's +y, -y, +x or -x; the side closest to the robot if left out"}
     outputs:
       table_id: {type: string, description: "the id of the table it parked against"}
+      side: {type: string, description: "the side of the table it parked on, or was to"}
       error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed: one of errors, or else from reading the robot pose or stowing the arm"}
       nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's navigate_to_pose or follow_path, docking"}
     errors:
