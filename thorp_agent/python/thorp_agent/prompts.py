@@ -80,7 +80,9 @@ PROMPTS = RobotSystemPrompts(
         'fails. The yaw of a place pose has no effect, as the arm turns the object toward where it reaches.\n'
         'You see only when you look, as detect_objects and inspect_table do, and thorp_world is what you saw the last '
         'time. Things change without you, as when the operator moves them: when told of a change, '
-        'or when a call fails as if things weren\'t where thorp_world says, look again before acting on them.'),
+        'or when a call fails as if things weren\'t where thorp_world says, look again before acting on them. '
+        'And you act only on what you saw from where the robot stands: docking at a table, as reach_table does, and '
+        'leaving it forget what you saw, so detect_objects before picking or placing.'),
     nuance_and_assumptions=(
         'Capabilities are behavior trees. A tree reporting SUCCESS means it ran to completion, not necessarily that '
         'the world changed the way you wanted: check the outputs.'),

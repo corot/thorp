@@ -95,9 +95,9 @@ capabilities:
   pickup_object:
     description: >
       Pick up an object thorp_world knows, by its id, with the arm, retrying with a cleared octomap
-      if the first attempt fails. The object must be on the table the robot is at and within the
-      arm's reach, and the gripper empty; the world records it in the gripper, or as disturbed if
-      the pickup failed.
+      if the first attempt fails. The object must be on the table the robot is at, within the
+      arm's reach and seen from where the robot is, and the gripper empty; the world records it in
+      the gripper, or as disturbed if the pickup failed.
     status: ok
     stack: [manipulation]
     inputs:
@@ -113,6 +113,7 @@ capabilities:
       OBJECT_ATTACHED: the gripper holds another object; place it, or put it on the tray, first
       NOT_AT_TABLE: the object is on a table the robot isn't at; reach_table that table first
       OUT_OF_REACH: the object is on the robot's table, but beyond the arm's reach from where the robot is; reach_table another side of the table
+      NOT_IN_VIEW: the robot hasn't seen the object from where it is, as docking and leaving a table forget what it saw; detect_objects first
     test:
       inputs: {object_name: "clover 1"}
       setup:
@@ -125,7 +126,7 @@ capabilities:
   place_object:
     description: >
       Place the object currently held by the gripper at a given pose on the table the robot is
-      at, and record it there in thorp_world.
+      at, avoiding what the robot saw on it from where it is, and record it there in thorp_world.
     status: ok
     stack: [manipulation]
     inputs:
@@ -135,6 +136,7 @@ capabilities:
       error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed: one of errors, or else the place action's"}
     errors:
       NOT_AT_TABLE: the robot isn't at a table; reach_table one first
+      NOT_IN_VIEW: the robot hasn't seen the table from where it is, as docking and leaving a table forget what it saw; detect_objects first
     test:
       # A clear spot on the near edge of the table; z is the clover's center once there, on the
       # 0.47 m high table, 8 mm above. In the map frame, so it stays put while the setup chain
@@ -200,21 +202,6 @@ capabilities:
       expect: succeeded
       timeout: 60
 
-  finish_manipulation:
-    description: >
-      Stow the arm as stow_arm does, then remove from the planning scene every object but
-      those on the tray, table included. For wrapping up after manipulating at a table. An
-      object still in the gripper stays attached; clear_gripper first to drop it.
-    status: ok
-    stack: [manipulation]
-    inputs: {}
-    outputs:
-      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why moving the arm to stow failed, from move_group"}
-    test:
-      inputs: {}
-      expect: succeeded
-      timeout: 60
-
   # ---------------------------------------------------------------------- perception -------
 
   detect_objects:
@@ -223,7 +210,9 @@ capabilities:
       one to the MoveIt planning scene and returning a name and a color for each. Those
       names are what pickup_object, place_object and place_on_tray take as object_name, so
       this is the step that tells you what there is to manipulate. It doesn't move the robot:
-      it looks at whatever is in front of the camera now, so drive to the table first.
+      it looks at whatever is in front of the camera now, so drive to the table first. What it
+      sees is what picking and placing act on, until the robot docks at a table or leaves it,
+      which forgets it all but the tray.
     status: ok
     stack: [perception]
     inputs: {}
@@ -314,9 +303,9 @@ capabilities:
       reaches only the part of the table near that side, so to work on another part, dock at
       the side nearest to it. It backs out first if docked, stows the arm, drives to that
       side's viewing pose, detects the table again from there and docks under its eaves. It
-      doesn't look at the objects on the table: detect_objects after it, to see what is there
-      and within reach. The table is the one thorp_world knows as table_id, or the one in front
-      if none is given.
+      doesn't look at the objects on the table, and docking forgets what the robot saw before,
+      but the tray: detect_objects after it, to see what is there and within reach. The table
+      is the one thorp_world knows as table_id, or the one in front if none is given.
     status: ok
     stack: [navigation, manipulation, perception]
     inputs:
@@ -337,14 +326,15 @@ capabilities:
 
   leave_table:
     description: >
-      Back straight out from the table the robot is at, far enough to navigate around it again,
-      restore the table's costmap footprint, and record that the robot left it. Takes no
-      arguments: it backs out along the way the robot is facing.
+      Stow the arm, holding whatever the gripper holds, and back straight out from the table the
+      robot is at, far enough to navigate around it again; restore the table's costmap footprint,
+      and record that the robot left it. The robot forgets what it saw at the table, but the
+      tray. Takes no arguments: it backs out along the way the robot is facing.
     status: ok
-    stack: [navigation]
+    stack: [navigation, manipulation]
     inputs: {}
     outputs:
-      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed: one of errors"}
+      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed: one of errors, or else from stowing the arm"}
       nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's backup behavior"}
     errors:
       NOT_AT_TABLE: the robot isn't at a table, so there is none to leave

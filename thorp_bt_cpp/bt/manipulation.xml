@@ -2,8 +2,9 @@
 <root BTCPP_format="4">
   <!--
     Pick an object, by the id thorp_world and the planning scene know it by, from its table. thorp_world must say it's
-    within the arm's reach and the gripper empty, or the pickup fails with the reason as error, without moving; picked,
-    it's in the gripper, and otherwise disturbed, as the attempt may have moved it.
+    within the arm's reach and the gripper empty, and the robot must have seen it from where it is, or the pickup fails
+    with the reason as error, without moving; picked, it's in the gripper, and otherwise disturbed, as the attempt may
+    have moved it.
   -->
   <BehaviorTree ID="pickup_object">
     <Sequence>
@@ -128,17 +129,5 @@
         <MoveGripper position="0.07"/>
       </Fallback>
     </Parallel>
-  </BehaviorTree>
-
-  <!--
-    Stow the arm and remove from the planning scene everything but the objects on the tray.
-    The arm moves first, so it still avoids the objects it is about to forget.
-  -->
-  <BehaviorTree ID="finish_manipulation">
-    <Sequence>
-      <SubTree ID="stow_arm"
-               error="{error}"/>
-      <ClearPlanningScene keep_tray="true"/>
-    </Sequence>
   </BehaviorTree>
 </root>

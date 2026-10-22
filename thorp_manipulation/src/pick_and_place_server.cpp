@@ -400,7 +400,8 @@ ThorpError PickAndPlaceServer::pickup(const PickupObject::Goal& goal, const Feed
                                                  "'; clear it before picking another object");
   collision_detection::World::ObjectConstPtr object = scene->getWorld()->getObject(goal.object_name);
   if (!object)
-    return fail(ThorpError::OBJECT_NOT_FOUND, "'" + goal.object_name + "' isn't in the planning scene");
+    return fail(ThorpError::NOT_IN_VIEW,
+                "'" + goal.object_name + "' isn't in the planning scene: the robot hasn't seen it from where it is");
   if (object->shapes_.empty())
     return fail(ThorpError::OBJECT_SIZE_NOT_FOUND, "'" + goal.object_name + "' has no shape in the planning scene");
 
@@ -551,8 +552,14 @@ ThorpError PickAndPlaceServer::place(const PlaceObject::Goal& goal, const Feedba
   Eigen::Isometry3d place_pose;
   tf2::fromMsg(goal.place_pose.pose, place_pose);
   place_pose = scene->getFrameTransform(goal.place_pose.header.frame_id) * place_pose;
+  // A support that is neither in the scene nor part of the robot would be planned through, as nothing there to avoid
+  const auto support = scene->getWorld()->getObject(goal.support_surf);
+  if (!support && !robot_model_->hasLinkModel(goal.support_surf))
+    return fail(ThorpError::NOT_IN_VIEW,
+                "support '" + goal.support_surf +
+                    "' isn't in the planning scene: the robot hasn't seen it from where it is");
   // The place pose is where the object's center goes, so above the top of the support, if it's an object in the scene
-  if (const auto support = scene->getWorld()->getObject(goal.support_surf); support && !support->shapes_.empty())
+  if (support && !support->shapes_.empty())
   {
     double top = std::numeric_limits<double>::lowest();
     for (const Eigen::Vector3d& corner :

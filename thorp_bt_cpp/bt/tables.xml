@@ -101,10 +101,12 @@
     Dock at a table at a pose: straight to it, under the table's eaves, precisely, recording it in thorp_world. The
     table access is cleared on the local costmap, so the controller doesn't take it as an obstacle. Docking that can't
     reach the pickup pose's tolerance fails after a minute, as the progress checker never stops a robot that keeps
-    moving around the goal.
+    moving around the goal. It forgets what the robot saw before, but the tray: the planning scene is on the robot's
+    frame, so what it saw from elsewhere isn't where the scene has it, and the robot has to look from the dock.
   -->
   <BehaviorTree ID="dock_at_table">
     <Sequence>
+      <ClearPlanningScene keep_tray="true"/>
       <GetTable table_id="{table_id}"
                 table="{table}"
                 table_pose="{table_pose}"
@@ -133,12 +135,17 @@
   <!--
     Back straight out from the table the robot is at. dock_at_table drives in head-on, so backing up moves away from
     the table; it retreats as far as the pickup planner's detach poses do, far enough to navigate around the table
-    again, and restores the table access dock_at_table cleared.
+    again, and restores the table access dock_at_table cleared. The arm stows first, as it can't back out from under
+    the table with the arm out, and then the robot forgets what it saw there, but the tray, as the planning scene is on
+    its frame; in this order, the arm still avoids what is about to be forgotten.
   -->
   <BehaviorTree ID="leave_table">
     <Sequence>
       <GetCurrentTable table_id="{table_id}"
                        error="{error}"/>
+      <SubTree ID="stow_arm"
+               error="{error}"/>
+      <ClearPlanningScene keep_tray="true"/>
       <ReadDoubleParam param_name="pickup_dist_to_table"
                        output_key="{pickup_dist_to_table}"/>
       <ReadDoubleParam param_name="detach_dist_from_table"
@@ -315,7 +322,6 @@
                          table_id="{table_id}"
                          pose="{pickup_pose}"/>
                 <SubTree ID="pickup_objects"/>
-                <ClearPlanningScene keep_tray="true"/>
                 <SubTree ID="leave_table"/>
               </Sequence>
             </ForEachPickupLocation>

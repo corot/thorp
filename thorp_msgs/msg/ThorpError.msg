@@ -45,6 +45,7 @@ int32 NOT_AT_TABLE=-230         # the robot isn't at the table the action needs
 int32 OUT_OF_REACH=-231         # the object or the target pose is beyond the arm's reach from where the robot is
 int32 OBJECT_NOT_ON_TABLE=-232  # the object is carried, or missing from where it was seen
 int32 VIEW_BLOCKED=-233         # something close to the camera, as the arm when not stowed, blocks its view
+int32 NOT_IN_VIEW=-234          # not in the planning scene: the robot hasn't seen it from where it is
 
 int32  code
 string text

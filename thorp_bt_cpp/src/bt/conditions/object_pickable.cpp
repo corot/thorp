@@ -4,6 +4,7 @@
 
 #include "thorp_bt_cpp/errors.hpp"
 #include "thorp_bt_cpp/node_common.hpp"
+#include "thorp_bt_cpp/planning_scene.hpp"
 #include "thorp_bt_cpp/ros_service_node.hpp"
 
 #include <thorp_msgs/msg/thorp_error.hpp>
@@ -17,9 +18,10 @@ using thorp_msgs::msg::WorldEntity;
 
 /**
  * Whether thorp_world says an object can be picked from where the robot is: on a table, within the arm's reach, and
- * with the gripper empty. Otherwise fails with the reason as error: OBJECT_NOT_FOUND, OBJECT_NOT_ON_TABLE (carried,
- * or missing from where it was seen), OBJECT_ATTACHED (the gripper holds another object), NOT_AT_TABLE (out of
- * reach, on a table the robot isn't at) or OUT_OF_REACH (on the robot's table).
+ * with the gripper empty; and whether the robot has seen it from there, as the planning scene holds only that.
+ * Otherwise fails with the reason as error: OBJECT_NOT_FOUND, OBJECT_NOT_ON_TABLE (carried, or missing from where it
+ * was seen), OBJECT_ATTACHED (the gripper holds another object), NOT_AT_TABLE (out of reach, on a table the robot
+ * isn't at), OUT_OF_REACH (on the robot's table) or NOT_IN_VIEW (not in the planning scene).
  */
 class ObjectPickable : public BT::RosServiceNode<thorp_msgs::srv::QueryWorld, BT::ConditionNode>
 {
@@ -62,14 +64,18 @@ private:
     if (held != entities.end())
       return fail(ThorpError::OBJECT_ATTACHED, "the gripper holds '" + held->id + "'");
     setOutput("table_id", object.support);
-    if (response.reachable[found - entities.begin()])
-      return BT::NodeStatus::SUCCESS;
-    if (response.at_table != object.support)
+    if (!response.reachable[found - entities.begin()])
     {
-      const std::string robot_at = response.at_table.empty() ? "at no table" : "at '" + response.at_table + "'";
-      return fail(ThorpError::NOT_AT_TABLE, "'" + object_id + "' is on '" + object.support + "', robot " + robot_at);
+      if (response.at_table != object.support)
+      {
+        const std::string robot_at = response.at_table.empty() ? "at no table" : "at '" + response.at_table + "'";
+        return fail(ThorpError::NOT_AT_TABLE, "'" + object_id + "' is on '" + object.support + "', robot " + robot_at);
+      }
+      return fail(ThorpError::OUT_OF_REACH, "'" + object_id + "' is beyond the arm's reach");
     }
-    return fail(ThorpError::OUT_OF_REACH, "'" + object_id + "' is beyond the arm's reach");
+    if (planningScene().getObjects({ object_id }).empty())
+      return fail(ThorpError::NOT_IN_VIEW, "the robot hasn't seen '" + object_id + "' from where it is");
+    return BT::NodeStatus::SUCCESS;
   }
 
   BT::NodeStatus onFailedRequest(FailureCause failure) override

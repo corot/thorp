@@ -264,10 +264,12 @@ objects around, as those already on the tray. Tasks plan from the measured state
 positions clamped to the joint limits:
 MTC checks the start state bounds, velocities included, and pickups failed now and then with the start state out of
 bounds, just after closing the gripper. On shutdown, a goal being executed stops waiting for its result, so the node
-exits cleanly. A failure comes with the most specific code that fits, `INVALID_TARGET_POSE` for a place pose below
-the top of its support, `OUT_OF_REACH` for a target beyond the arm's reach, `GOAL_IN_COLLISION` or `NO_IK_SOLUTION` for a target pose with no collision-free or no IK solution at all, and
-`PLANNING_FAILED` for a motion that can't be planned, and with a one-line reason as its text: how far the target is,
-which pairs collide, which stage failed to execute.
+exits cleanly. A failure comes with the most specific code that fits, `NOT_IN_VIEW` for an object to pick or a place
+support not in the planning scene, as planning would go through the support, `INVALID_TARGET_POSE` for a place pose
+below the top of its support, `OUT_OF_REACH` for a target beyond the arm's reach, `GOAL_IN_COLLISION` or
+`NO_IK_SOLUTION` for a target pose with no collision-free or no IK solution at all, and `PLANNING_FAILED` for a motion
+that can't be planned, and with a one-line reason as its text: how far the target is, which pairs collide, which stage
+failed to execute.
 `scripts/test_pick_and_place.py` picks and places a cube on a table that exist only in the planning scene.
 
 The fake gripper joints state publisher (`fake_joint_pub.py`, from `turtlebot_arm_bringup`) and
@@ -327,9 +329,12 @@ docking takes over a minute, and `object_gatherer` goes on exploring if a table'
 docks on a side of a table named by compass on the map, north, south, east or west, or else the one closest to the
 robot, as the arm reaches only the part of a table near its side; names fixed to the map, unlike ones relative to the
 robot, mean the same side wherever the robot is. It backs out first if docked and stows the arm before driving, and
-leaves looking at the objects to `detect_objects`. `go_to_table`, new, drives to the viewing pose of a table
-`thorp_world` knows, as `validate_table` does once it has one: the agent's table capabilities only find a table close
-in front.
+leaves looking at the objects to `detect_objects`. The planning scene is on `base_footprint`, so what the robot saw is
+where the scene has it only from where it saw it: `dock_at_table` and `leave_table` remove every object but those on
+the tray, which moves with the robot, and `pickup_object` (through `ObjectPickable`) and `place_object` fail with
+`NOT_IN_VIEW` until the robot looks from the dock. `leave_table` stows the arm first, as the arm can't back out from
+under a table. `go_to_table`, new, drives to the viewing pose of a table `thorp_world` knows, as `validate_table` does
+once it has one: the agent's table capabilities only find a table close in front.
 
 Nodes calling actions derive from Nav2's `BtActionNode`, with their servers' names as `server_name` defaults; the
 runner puts Nav2's timeouts on the blackboard: `server_timeout` half a tick and `wait_for_service_timeout` 5 s, 60 s
