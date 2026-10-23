@@ -1,7 +1,8 @@
 """
 thorp_world's tree nodes, run through bt_server against the world in test/world.yaml, reloaded before each test.
 They need bt_server, thorp_world on that file, and transforms putting the robot docked at its table; on a ROS domain
-nothing else uses, as the static transforms would reach any simulation there:
+nothing else uses, as the static transforms would reach any simulation there. The tests serve the planning scene
+themselves, as what the robot sees from the dock:
 
     export ROS_DOMAIN_ID=61 ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
     ros2 run tf2_ros static_transform_publisher --x 0.03 --frame-id map --child-frame-id base_footprint &
@@ -17,6 +18,8 @@ import os
 
 import pytest
 from action_msgs.msg import GoalStatus
+from moveit_msgs.msg import CollisionObject
+from moveit_msgs.srv import GetPlanningScene
 from rcl_interfaces.msg import ParameterType
 from rclpy.parameter_client import AsyncParameterClient
 from std_srvs.srv import Trigger
@@ -26,6 +29,14 @@ from thorp_msgs.msg import ThorpError
 from conftest import status_name
 
 WORLD = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'world.yaml')
+# The objects in the planning scene, those the robot sees from the dock; each test starts with these
+SEEN = {'table 1', 'cube 1', 'star 1'}
+in_view = set(SEEN)
+
+
+def serve_scene(request, response):
+    response.scene.world.collision_objects = [CollisionObject(id=object_id) for object_id in sorted(in_view)]
+    return response
 
 
 @pytest.fixture(scope='module', autouse=True)
@@ -41,10 +52,16 @@ def on_the_test_world(runner):
     if not world_file or os.path.realpath(os.path.expanduser(world_file)) != os.path.realpath(WORLD):
         pytest.skip(f"thorp_world runs on '{world_file}', not on test/world.yaml beside the static transforms the "
                     "docstring tells")
+    # move_group's service, as no move_group runs beside the test world
+    service = runner.node.create_service(GetPlanningScene, '/get_planning_scene', serve_scene)
+    yield
+    runner.node.destroy_service(service)
 
 
 @pytest.fixture(autouse=True)
 def fresh_world(runner):
+    in_view.clear()
+    in_view.update(SEEN)
     client = runner.node.create_client(Trigger, 'world/load')
     assert client.wait_for_service(timeout_sec=5.0), 'thorp_world is not running'
     future = client.call_async(Trigger.Request())
@@ -92,6 +109,13 @@ def test_unpickable_objects_say_why(runner, object_id, error):
 def test_a_reachable_object_on_the_docked_table_is_pickable(runner):
     succeeded, out = run(runner, 'test_world_pickable', object_id='cube 1')
     assert succeeded and out['table_id'] == 'table 1'
+
+
+def test_a_reachable_object_not_seen_from_where_the_robot_is_is_not_pickable(runner):
+    in_view.discard('cube 1')
+    succeeded, out = run(runner, 'test_world_pickable', object_id='cube 1')
+    assert not succeeded and out['error'] == {'code': ThorpError.NOT_IN_VIEW,
+                                              'text': "the robot hasn't seen 'cube 1' from where it is"}
 
 
 def test_an_effect_changes_what_the_world_says(runner):
