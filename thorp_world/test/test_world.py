@@ -12,6 +12,7 @@ from thorp_world import (BELIEVED, DISTURBED, GRIPPER, MISSING, OBSERVED, OK, TR
 
 TABLE_SIZE = (0.55, 0.55, 0.02)
 AT_TABLE = Pose(0.03, 0.0)  # 0.145 m from table()'s near edge
+CAMERA = Pose(-0.09, 0.0, 0.88)  # the Xtion's, with the robot at AT_TABLE
 
 
 def table(x=0.45, y=0.0, yaw=0.0, size=TABLE_SIZE):
@@ -83,7 +84,7 @@ def test_objects_not_seen_where_the_view_covered_go_missing(world):
     world.observe_objects(table(), [cube(0.3, 0.0), cube(0.6, 0.2)], stamp=1.0)
     # a partial view of the near half only: the far cube may still be there
     near_half = table(0.31, 0.0, size=(0.27, 0.55, 0.02))
-    world.observe_objects(near_half, [], stamp=2.0, robot_pose=AT_TABLE)
+    world.observe_objects(near_half, [], stamp=2.0, robot_pose=AT_TABLE, camera=CAMERA)
     assert world.get('cube 1').status == MISSING
     assert world.get('cube 1').stamp == 1.0, "a missing object keeps when it was last seen"
     assert world.get('cube 2').status == OK
@@ -91,17 +92,26 @@ def test_objects_not_seen_where_the_view_covered_go_missing(world):
 
 def test_only_a_view_from_at_the_table_tells_objects_missing(world):
     world.observe_objects(table(), [cube(0.3, 0.0)], stamp=1.0)
-    world.observe_objects(table(), [], stamp=2.0, robot_pose=Pose(-0.5, 0.0))
+    world.observe_objects(table(), [], stamp=2.0, robot_pose=Pose(-0.5, 0.0), camera=Pose(-0.62, 0.0, 0.88))
     assert world.get('cube 1').status == OK, "seen from 0.675 m away, it may just have been missed"
     world.observe_objects(table(), [], stamp=3.0)
     assert world.get('cube 1').status == OK, "nor from nowhere known"
-    world.observe_objects(table(), [], stamp=4.0, robot_pose=AT_TABLE)
+    world.observe_objects(table(), [], stamp=3.5, robot_pose=AT_TABLE)
+    assert world.get('cube 1').status == OK, "nor with the camera nowhere known"
+    world.observe_objects(table(), [], stamp=4.0, robot_pose=AT_TABLE, camera=CAMERA)
     assert world.get('cube 1').status == MISSING
+
+
+def test_only_objects_within_the_detection_range_of_the_camera_go_missing(world):
+    world.observe_objects(table(), [cube(0.3, 0.0), cube(0.6, 0.2)], stamp=1.0)
+    world.observe_objects(table(), [], stamp=2.0, robot_pose=AT_TABLE, camera=CAMERA)
+    assert world.get('cube 1').status == MISSING
+    assert world.get('cube 2').status == OK, "0.82 m from the camera, it may just have been missed"
 
 
 def test_a_missing_object_seen_again_gets_its_id_back(world):
     world.observe_objects(table(), [cube(0.3, 0.0)], stamp=1.0)
-    world.observe_objects(table(), [], stamp=2.0, robot_pose=AT_TABLE)
+    world.observe_objects(table(), [], stamp=2.0, robot_pose=AT_TABLE, camera=CAMERA)
     _, ids = world.observe_objects(table(), [cube(0.3, 0.0)], stamp=3.0)
     assert ids == ['cube 1'] and world.get('cube 1').status == OK
 
@@ -111,7 +121,7 @@ def test_carried_objects_are_neither_matched_nor_missing(world):
     world.mark_picked('cube 1', stamp=2.0)
     world.mark_stowed('cube 2', stamp=3.0, slot=4)
     # another cube where the picked one was is another object
-    _, ids = world.observe_objects(table(), [cube(0.3, 0.0)], stamp=4.0, robot_pose=AT_TABLE)
+    _, ids = world.observe_objects(table(), [cube(0.3, 0.0)], stamp=4.0, robot_pose=AT_TABLE, camera=CAMERA)
     assert ids == ['cube 3']
     assert world.get('cube 1').support == GRIPPER and world.get('cube 1').status == OK
     assert world.get('cube 2').support == TRAY and world.get('cube 2').slot == 4
@@ -208,7 +218,7 @@ def test_reach_is_to_the_top_of_the_object_and_in_three_dimensions(world):
 def test_reach_from_elsewhere_is_of_the_objects_on_that_table(world):
     world.observe_objects(table(), [cube(0.3, 0.0), cube(0.4, 0.1), cube(0.6, 0.2)], stamp=1.0)
     world.observe_objects(table(2.0, 0.0), [cube(2.0, 0.0)], stamp=1.0)
-    world.observe_objects(table(), [cube(0.3, 0.0), cube(0.6, 0.2)], stamp=2.0, robot_pose=AT_TABLE)
+    world.observe_objects(table(), [cube(0.3, 0.0), cube(0.6, 0.2)], stamp=2.0, robot_pose=AT_TABLE, camera=CAMERA)
     assert world.get('cube 2').status == MISSING
     # the arm by the table's near edge: cube 2 would be in reach, but it isn't there
     top = 0.49 + 0.025 / 2.0

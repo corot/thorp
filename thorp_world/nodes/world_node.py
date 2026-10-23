@@ -49,12 +49,15 @@ class WorldNode(Node):
         self.arm_frame = self.declare_parameter('arm_frame', 'arm_shoulder_lift_servo_link').value
         self.max_arm_reach = self.declare_parameter('max_arm_reach', 0.3).value
         self.max_arm_height = self.declare_parameter('max_arm_height', 0.2).value
+        # objects not detected are missing only within detection_range of the camera, where detection is reliable
+        self.camera_frame = self.declare_parameter('camera_frame', 'xtion_rgb_optical_frame').value
         self.tf_timeout = Duration(seconds=self.declare_parameter('tf_timeout', 0.5).value)
         self.declare_parameter('world_file', '')
         self.world = World(object_tolerance=self.declare_parameter('object_tolerance', 0.05).value,
                            table_tolerance=self.declare_parameter('table_tolerance', 0.3).value,
                            table_area_ratio=self.declare_parameter('table_area_ratio', 0.8).value,
-                           at_table_distance=self.declare_parameter('at_table_distance', 0.3).value)
+                           at_table_distance=self.declare_parameter('at_table_distance', 0.3).value,
+                           detection_range=self.declare_parameter('detection_range', 0.7).value)
 
         # its own thread, as lookups at a detection's stamp wait for transforms from within service callbacks
         self.tf_buffer = Buffer()
@@ -94,10 +97,11 @@ class WorldNode(Node):
         if surface is not None:
             try:
                 robot = to_pose(self.frame_on_map(self.robot_frame, request.surface.header.stamp))
+                camera = to_pose(self.frame_on_map(self.camera_frame, request.surface.header.stamp))
             except TransformException:
-                robot = None  # objects not seen then can't be told missing
+                robot = camera = None  # objects not seen then can't be told missing
             response.surface_id, response.object_ids = \
-                self.world.observe_objects(surface, objects, self.stamp_of(request.surface.header), robot)
+                self.world.observe_objects(surface, objects, self.stamp_of(request.surface.header), robot, camera)
         response.success = True
         self.publish()
         return response

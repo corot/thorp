@@ -4,6 +4,7 @@ thorp_world's store: tables and objects in the map frame, updated by detections 
 
 import copy
 import dataclasses
+import math
 
 import yaml
 
@@ -17,18 +18,22 @@ class World:
     entities already known so that each keeps its id; skills update it with the effects they believe they had.
     """
 
-    def __init__(self, object_tolerance=0.05, table_tolerance=0.3, table_area_ratio=0.8, at_table_distance=0.3):
+    def __init__(self, object_tolerance=0.05, table_tolerance=0.3, table_area_ratio=0.8, at_table_distance=0.3,
+                 detection_range=0.7):
         """
         :param object_tolerance: how far from where it was a redetected object can be, to be the same one
         :param table_tolerance: how far off a known table's footprint a redetected table's center can be
         :param table_area_ratio: a known table takes an observation's pose and size only if its area is at least
           this ratio of the current one, as partial views give smaller tables
         :param at_table_distance: how far from a table's edge the robot can be, to be at it
+        :param detection_range: how far from the camera detection finds objects reliably; farther, not seeing an
+          object says nothing of whether it's there
         """
         self.object_tolerance = object_tolerance
         self.table_tolerance = table_tolerance
         self.table_area_ratio = table_area_ratio
         self.at_table_distance = at_table_distance
+        self.detection_range = detection_range
         self.docked_at = None
         self._entities = {}
 
@@ -66,11 +71,12 @@ class World:
             ids.append(table.id)
         return ids
 
-    def observe_objects(self, surface, observations, stamp, robot_pose=None):
+    def observe_objects(self, surface, observations, stamp, robot_pose=None, camera=None):
         """
         Record objects seen at stamp on a table, surface. Each keeps the id of the known object at about the same
-        place, or gets a new one. Seen from robot_pose at that table, objects known on it, where the observed surface
-        covers, that were not seen become missing; from further away, detection misses objects that are there.
+        place, or gets a new one. Seen from robot_pose at that table, with the camera at camera, objects known on it
+        that were not seen become missing, if the observed surface covers them and they are within detection_range of
+        the camera; from further away, detection misses objects that are there.
         :return: the table's id, and the objects' ids in the observations' order
         """
         table_id = self.observe_tables([surface], stamp)[0]
@@ -85,14 +91,16 @@ class World:
             entity.provenance, entity.stamp, entity.status = OBSERVED, stamp, OK
             ids.append(entity.id)
 
-        if robot_pose is None or self.table_at(robot_pose) != table_id:
+        if robot_pose is None or camera is None or self.table_at(robot_pose) != table_id:
             return table_id, ids
         # Compared with the surface as observed, not the table as known: a partial view says nothing of the rest
         seen = Entity('', TABLE, surface.type, tuple(surface.size),
                       pose=Pose(surface.pose.x, surface.pose.y, surface.pose.z, surface.pose.yaw))
         for entity in self._entities.values():
             if entity.kind == OBJECT and entity.support == table_id and entity.id not in ids and \
-                    entity.status != MISSING and on_table(seen, entity.pose.x, entity.pose.y):
+                    entity.status != MISSING and on_table(seen, entity.pose.x, entity.pose.y) and \
+                    math.dist((entity.pose.x, entity.pose.y, entity.pose.z), (camera.x, camera.y, camera.z)) <= \
+                    self.detection_range:
                 entity.status = MISSING
         return table_id, ids
 
