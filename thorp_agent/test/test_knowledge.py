@@ -56,6 +56,19 @@ def test_the_held_object_comes_with_its_height():
     assert 'Gripper: cube 1 (2.6 cm tall).' in knowledge.summary(world)
 
 
+def test_the_arms_shoulder_is_placed_on_the_map_as_the_robot_moves():
+    before = playground()
+    before['shoulder'] = {'x': 0.1, 'y': 0.03}
+    assert knowledge.summary(before).splitlines()[0] == (
+        "Robot: at (0.03, 0.00), yaw 0.01, facing east with north to its left, its arm's shoulder at (0.10, 0.03); "
+        'at table 1, on its west side.')
+    after = copy.deepcopy(before)
+    after['robot'] = {'x': 0.9, 'y': 0.0, 'yaw': math.pi}
+    after['shoulder'] = {'x': 0.8, 'y': -0.03}
+    assert knowledge.changes(before, after)[0] == \
+        "the robot moved to (0.90, 0.00), yaw 3.14, its arm's shoulder at (0.80, -0.03)"
+
+
 def test_a_heading_off_the_compass_points_is_given_as_vectors():
     world = playground()
     world['robot'] = {'x': 1.0, 'y': 2.0, 'yaw': math.pi / 4}

@@ -25,6 +25,8 @@ TARGET_TOPIC = 'target_object_pose'
 WORLD_QUERY = '/world/query'
 MAP_FRAME = 'map'
 ROBOT_FRAME = 'base_footprint'
+# Where the arm's reach is measured from, as thorp_world and the manipulation server do
+SHOULDER_FRAME = 'arm_shoulder_lift_servo_link'
 
 # How recently the tracker must have published for the target to count as still in view. The follower gives up after
 # 5 s of silence, so this is the shorter of the two answers.
@@ -69,7 +71,8 @@ class World(object):
             self.node.get_logger().warn('cannot query thorp_world')
             return None
         entities = {e.id: _entity(e, reachable) for e, reachable in zip(response.entities, response.reachable)}
-        return {'robot': self._robot_pose(), 'at_table': response.at_table or None, 'entities': entities}
+        return {'robot': self._robot_pose(), 'shoulder': self._shoulder(), 'at_table': response.at_table or None,
+                'entities': entities}
 
     def _robot_pose(self):
         """Where the robot is on the map, as {x, y, yaw}; None if the transform isn't there"""
@@ -79,6 +82,14 @@ class World(object):
             return None
         t, q = transform.transform.translation, transform.transform.rotation
         return {'x': round(t.x, 3), 'y': round(t.y, 3), 'yaw': round(_yaw(q), 3)}
+
+    def _shoulder(self):
+        """Where the arm's shoulder is on the map, as {x, y}; None if the transform isn't there"""
+        try:
+            t = self.tf_buffer.lookup_transform(MAP_FRAME, SHOULDER_FRAME, Time()).transform.translation
+        except TransformException:
+            return None
+        return {'x': round(t.x, 3), 'y': round(t.y, 3)}
 
     def _target_heard(self, _):
         self.target_heard = self.node.get_clock().now()

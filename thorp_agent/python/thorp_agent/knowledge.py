@@ -2,9 +2,9 @@
 What thorp_world knows, put for the agent: a summary to start each request from, and what a capability call changed.
 
 Plain data in, text out, so it can be tested without ROS. A snapshot is what world.py reads from world/query and TF:
-{'robot': {x, y, yaw} or None, 'at_table': a table id or None, 'entities': {id: entity}}, each entity a dict with kind,
-type, color, pose ({x, y, z, yaw} or None), size ([x, y, z] in its own frame, z up), support (a table id, 'gripper',
-'tray' or None), slot, status, provenance, inspected and reachable.
+{'robot': {x, y, yaw} or None, 'shoulder': the arm's, {x, y} or None, 'at_table': a table id or None, 'entities':
+{id: entity}}, each entity a dict with kind, type, color, pose ({x, y, z, yaw} or None), size ([x, y, z] in its own
+frame, z up), support (a table id, 'gripper', 'tray' or None), slot, status, provenance, inspected and reachable.
 """
 
 import json
@@ -36,7 +36,7 @@ def summary(snapshot: Optional[Dict[str, Any]]) -> str:
     objects = {i: e for i, e in entities.items() if e['kind'] == 'object'}
 
     at_table = snapshot.get('at_table')
-    lines = ['Robot: {}; {}.'.format(_robot(snapshot.get('robot')),
+    lines = ['Robot: {}; {}.'.format(_robot(snapshot.get('robot'), snapshot.get('shoulder')),
                                      _at_table(at_table, snapshot.get('robot')) if at_table else 'at no table')]
     held = sorted(i for i, e in objects.items() if e['support'] == GRIPPER)
     lines.append('Gripper: {}.'.format(', '.join(i + _held(objects[i]) for i in held) if held else 'empty'))
@@ -62,7 +62,7 @@ def changes(before: Optional[Dict[str, Any]], after: Optional[Dict[str, Any]]) -
         return []
     said = []
     if _moved(before.get('robot'), after.get('robot')):
-        said.append('the robot moved to {}'.format(_pose2d(after['robot'])))
+        said.append('the robot moved to {}{}'.format(_pose2d(after['robot']), _shoulder(after.get('shoulder'))))
     # docked again on another side of the same table, the robot is at a new place too
     was_at, now_at = (_at_table(world['at_table'], world.get('robot')) if world.get('at_table') else None
                       for world in (before, after))
@@ -120,12 +120,16 @@ def call_line(subtree: str, inputs: Dict[str, Any], result: Dict[str, Any]) -> s
     return line
 
 
-def _robot(pose):
+def _robot(pose, shoulder):
     if pose is None:
         return 'pose unknown'
     yaw = pose['yaw']
-    return 'at {}, facing {} with {} to its left'.format(_pose2d(pose), _direction(yaw),
-                                                         _direction(yaw + math.pi / 2.0))
+    return 'at {}, facing {} with {} to its left{}'.format(_pose2d(pose), _direction(yaw),
+                                                           _direction(yaw + math.pi / 2.0), _shoulder(shoulder))
+
+
+def _shoulder(shoulder):
+    return ", its arm's shoulder at ({:.2f}, {:.2f})".format(shoulder['x'], shoulder['y']) if shoulder else ''
 
 
 def _at_table(table_id, robot):
