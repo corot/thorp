@@ -57,8 +57,7 @@ def talk(node):
     show_llm = node.declare_parameter('show_llm', True).value
 
     specs = capabilities.tool_specs(path)
-    node.get_logger().info('Offering {} capabilities: {}'.format(len(specs),
-                                                                  ', '.join(spec['name'] for spec in specs)))
+    node.get_logger().info(f'Offering {len(specs)} capabilities: {", ".join(spec["name"] for spec in specs)}')
 
     world = None if dry_run else World(node)
     runner = SubtreeRunner(node, action_name=action, dry_run=dry_run, world=world,
@@ -88,7 +87,7 @@ def talk(node):
         print(agent.invoke(request(question, world, show_world)))
         return
 
-    print('Thorp is listening{}. Ctrl-D to quit.'.format(' (dry run)' if dry_run else ''))
+    print(f'Thorp is listening{" (dry run)" if dry_run else ""}. Ctrl-D to quit.')
     while rclpy.ok():
         try:
             said = input('\n> ').strip()
@@ -101,7 +100,7 @@ def talk(node):
         try:
             print(agent.invoke(request(said, world, show_world)))
         except Exception as e:  # a bad key, a rate limit, a tool blowing up mid-chain
-            print('agent failed: {}: {}'.format(type(e).__name__, e))
+            print(f'agent failed: {type(e).__name__}: {e}')
 
 
 def request(said, world, show=False):
@@ -114,7 +113,7 @@ def request(said, world, show=False):
     summary = knowledge.summary(world.known())
     if show:
         print('[world]\n' + summary)
-    return 'What thorp_world knows now:\n{}\n\nThe operator says: {}'.format(summary, said)
+    return f'What thorp_world knows now:\n{summary}\n\nThe operator says: {said}'
 
 
 if __name__ == '__main__':

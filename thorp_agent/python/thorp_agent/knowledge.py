@@ -36,23 +36,24 @@ def summary(snapshot: Optional[Dict[str, Any]]) -> str:
     objects = {i: e for i, e in entities.items() if e['kind'] == 'object'}
 
     at_table = snapshot.get('at_table')
-    lines = ['Robot: {}; {}.'.format(_robot(snapshot.get('robot'), snapshot.get('shoulder')),
-                                     _at_table(at_table, snapshot.get('robot')) if at_table else 'at no table')]
+    robot = snapshot.get('robot')
+    where = _at_table(at_table, robot) if at_table else 'at no table'
+    lines = [f'Robot: {_robot(robot, snapshot.get("shoulder"))}; {where}.']
     held = sorted(i for i, e in objects.items() if e['support'] == GRIPPER)
-    lines.append('Gripper: {}.'.format(', '.join(i + _held(objects[i]) for i in held) if held else 'empty'))
+    lines.append(f'Gripper: {", ".join(i + _held(objects[i]) for i in held) if held else "empty"}.')
     stowed = sorted((i for i, e in objects.items() if e['support'] == TRAY),
                     key=lambda i: (objects[i]['slot'] is None, objects[i]['slot'] or 0, i))
-    lines.append('Tray: {}.'.format(', '.join(_on_tray(i, objects[i]['slot']) for i in stowed) if stowed else 'empty'))
+    lines.append(f'Tray: {", ".join(_on_tray(i, objects[i]["slot"]) for i in stowed) if stowed else "empty"}.')
     for table in tables:
         known = entities[table]
         on_it = sorted(i for i, e in objects.items() if e['support'] == table)
-        lines.append('{} at ({:.2f}, {:.2f}){}, {}: {}.'.format(
-            table, known['pose']['x'], known['pose']['y'], _extent(known),
-            'inspected' if known['inspected'] else 'not inspected',
-            ', '.join(_described(i, objects[i]) for i in on_it) if on_it else 'no objects known'))
+        inspected = 'inspected' if known['inspected'] else 'not inspected'
+        contents = ', '.join(_described(i, objects[i]) for i in on_it) if on_it else 'no objects known'
+        lines.append(f'{table} at ({known["pose"]["x"]:.2f}, {known["pose"]["y"]:.2f}){_extent(known)}, {inspected}: '
+                     f'{contents}.')
     lost = sorted(i for i, e in objects.items() if e['support'] is None)
     if lost:
-        lines.append('Lost, whereabouts unknown: {}.'.format(', '.join(lost)))
+        lines.append(f'Lost, whereabouts unknown: {", ".join(lost)}.')
     return '\n'.join(lines)
 
 
@@ -62,12 +63,12 @@ def changes(before: Optional[Dict[str, Any]], after: Optional[Dict[str, Any]]) -
         return []
     said = []
     if _moved(before.get('robot'), after.get('robot')):
-        said.append('the robot moved to {}{}'.format(_pose2d(after['robot']), _shoulder(after.get('shoulder'))))
+        said.append(f'the robot moved to {_pose2d(after["robot"])}{_shoulder(after.get("shoulder"))}')
     # docked again on another side of the same table, the robot is at a new place too
     was_at, now_at = (_at_table(world['at_table'], world.get('robot')) if world.get('at_table') else None
                       for world in (before, after))
     if now_at != was_at:
-        said.append('the robot is now ' + now_at if now_at else 'the robot left {}'.format(before['at_table']))
+        said.append('the robot is now ' + now_at if now_at else f'the robot left {before["at_table"]}')
     old, new = before['entities'], after['entities']
     for entity_id in sorted(new):
         entity = new[entity_id]
@@ -77,25 +78,25 @@ def changes(before: Optional[Dict[str, Any]], after: Optional[Dict[str, Any]]) -
         was = old[entity_id]
         if entity['kind'] == 'table':
             if entity['inspected'] and not was['inspected']:
-                said.append('{} inspected'.format(entity_id))
+                said.append(f'{entity_id} inspected')
             continue
         if (entity['support'], entity['slot']) != (was['support'], was['slot']):
             held = _held(entity) if entity['support'] == GRIPPER else ''
-            said.append('{}: {} -> {}{}'.format(entity_id, _where(was), _where(entity), held or _at(entity)))
+            said.append(f'{entity_id}: {_where(was)} -> {_where(entity)}{held or _at(entity)}')
         else:
             if entity['status'] != was['status']:
                 status = 'seen again' if entity['status'] == OK else 'now ' + entity['status']
-                said.append('{} {}'.format(entity_id, status))
+                said.append(f'{entity_id} {status}')
             if _object_moved(was, entity):
-                said.append('{} moved to ({:.2f}, {:.2f})'.format(entity_id, entity['pose']['x'], entity['pose']['y']))
+                said.append(f'{entity_id} moved to ({entity["pose"]["x"]:.2f}, {entity["pose"]["y"]:.2f})')
     for entity_id in sorted(set(old) - set(new)):
-        said.append('{} forgotten'.format(entity_id))
+        said.append(f'{entity_id} forgotten')
 
     # an object found, moved or forgotten was told already; reach changes of the rest tell the robot moved
     stayed = {i for i in set(old) & set(new) if _where(old[i]) == _where(new[i])}
     reached = {i for i in stayed if new[i].get('reachable')}
     if reached != {i for i in stayed if old[i].get('reachable')}:
-        said.append('within the arm\'s reach now: {}'.format(', '.join(sorted(reached)) if reached else 'nothing'))
+        said.append(f'within the arm\'s reach now: {", ".join(sorted(reached)) if reached else "nothing"}')
     return said
 
 
@@ -113,8 +114,8 @@ def call_line(subtree: str, inputs: Dict[str, Any], result: Dict[str, Any]) -> s
             # a bare code, as Nav2's tree nodes give, under its own key
             named = [outputs[key] for key in sorted(outputs) if key.endswith('error_name')]
             reason = (named[0] if named else error) or result.get('error')
-        outcome = 'failed ({})'.format(reason) if reason else 'failed'
-    line = '{} {}: {}'.format(subtree, json.dumps(inputs or {}), outcome)
+        outcome = f'failed ({reason})' if reason else 'failed'
+    line = f'{subtree} {json.dumps(inputs or {})}: {outcome}'
     if result.get('world_changes'):
         line += '; world: ' + '; '.join(result['world_changes'])
     return line
@@ -124,12 +125,12 @@ def _robot(pose, shoulder):
     if pose is None:
         return 'pose unknown'
     yaw = pose['yaw']
-    return 'at {}, facing {} with {} to its left{}'.format(_pose2d(pose), _direction(yaw),
-                                                           _direction(yaw + math.pi / 2.0), _shoulder(shoulder))
+    return (f'at {_pose2d(pose)}, facing {_direction(yaw)} with {_direction(yaw + math.pi / 2.0)} to its left'
+            f'{_shoulder(shoulder)}')
 
 
 def _shoulder(shoulder):
-    return ", its arm's shoulder at ({:.2f}, {:.2f})".format(shoulder['x'], shoulder['y']) if shoulder else ''
+    return f", its arm's shoulder at ({shoulder['x']:.2f}, {shoulder['y']:.2f})" if shoulder else ''
 
 
 def _at_table(table_id, robot):
@@ -138,11 +139,11 @@ def _at_table(table_id, robot):
         return 'at ' + table_id
     away = robot['yaw'] + math.pi
     side = min(COMPASS, key=lambda point: abs(math.remainder(away - point[0], 2.0 * math.pi)))[1]
-    return 'at {}, on its {} side'.format(table_id, side)
+    return f'at {table_id}, on its {side} side'
 
 
 def _pose2d(pose):
-    return '({:.2f}, {:.2f}), yaw {:.2f}'.format(pose['x'], pose['y'], pose['yaw'])
+    return f'({pose["x"]:.2f}, {pose["y"]:.2f}), yaw {pose["yaw"]:.2f}'
 
 
 def _direction(angle):
@@ -150,7 +151,7 @@ def _direction(angle):
     for axis, name in COMPASS:
         if abs(math.remainder(angle - axis, 2.0 * math.pi)) < AXIS_TOLERANCE:
             return name
-    return '({:.2f}, {:.2f})'.format(math.cos(angle), math.sin(angle))
+    return f'({math.cos(angle):.2f}, {math.sin(angle):.2f})'
 
 
 def _moved(was, now):
@@ -174,8 +175,8 @@ def _extent(table):
     c, s = math.cos(pose['yaw']), math.sin(pose['yaw'])
     xs = [pose['x'] + c * dx - s * dy for dx in (-size[0] / 2, size[0] / 2) for dy in (-size[1] / 2, size[1] / 2)]
     ys = [pose['y'] + s * dx + c * dy for dx in (-size[0] / 2, size[0] / 2) for dy in (-size[1] / 2, size[1] / 2)]
-    return ', spanning x {:.2f} to {:.2f} and y {:.2f} to {:.2f}, top at z {:.3f}'.format(
-        min(xs), max(xs), min(ys), max(ys), _top(table))
+    return (f', spanning x {min(xs):.2f} to {max(xs):.2f} and y {min(ys):.2f} to {max(ys):.2f}, '
+            f'top at z {_top(table):.3f}')
 
 
 def _top(table):
@@ -185,11 +186,11 @@ def _top(table):
 def _held(entity):
     """A note on an object in the gripper: its height"""
     size = entity.get('size')
-    return ' ({:.1f} cm tall)'.format(size[2] * 100) if size else ''
+    return f' ({size[2] * 100:.1f} cm tall)' if size else ''
 
 
 def _at(entity):
-    return ' at ({:.2f}, {:.2f})'.format(entity['pose']['x'], entity['pose']['y']) if entity.get('pose') else ''
+    return f' at ({entity["pose"]["x"]:.2f}, {entity["pose"]["y"]:.2f})' if entity.get('pose') else ''
 
 
 def _described(entity_id, entity):
@@ -197,30 +198,30 @@ def _described(entity_id, entity):
     if entity.get('pose'):
         notes.append(_at(entity).strip())
     if entity.get('size'):
-        notes.append('{:.1f} x {:.1f} x {:.1f} cm'.format(*(side * 100 for side in entity['size'])))
+        notes.append(' x '.join(f'{side * 100:.1f}' for side in entity['size']) + ' cm')
     if entity['status'] != OK:
         notes.append(entity['status'])
     elif entity['provenance'] == BELIEVED:
         notes.append('believed, not seen there')
     if entity.get('reachable'):
         notes.append('within reach')
-    return '{} ({})'.format(entity_id, ', '.join(notes)) if notes else entity_id
+    return f'{entity_id} ({", ".join(notes)})' if notes else entity_id
 
 
 def _on_tray(entity_id, slot):
-    return entity_id if slot is None else '{} (slot {})'.format(entity_id, slot)
+    return entity_id if slot is None else f'{entity_id} (slot {slot})'
 
 
 def _where(entity):
     if entity['support'] is None:
         return 'lost'
     if entity['support'] == TRAY and entity['slot'] is not None:
-        return 'tray slot {}'.format(entity['slot'])
+        return f'tray slot {entity["slot"]}'
     return entity['support']
 
 
 def _found(entity_id, entity):
     if entity['kind'] == 'table':
-        return '{} found at ({:.2f}, {:.2f}){}'.format(entity_id, entity['pose']['x'], entity['pose']['y'],
-                                                       ', and inspected' if entity['inspected'] else '')
-    return '{} found on {}{}'.format(entity_id, entity['support'] or 'nothing known', _at(entity))
+        inspected = ', and inspected' if entity['inspected'] else ''
+        return f'{entity_id} found at ({entity["pose"]["x"]:.2f}, {entity["pose"]["y"]:.2f}){inspected}'
+    return f'{entity_id} found on {entity["support"] or "nothing known"}{_at(entity)}'

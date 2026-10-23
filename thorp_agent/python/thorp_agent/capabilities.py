@@ -66,7 +66,7 @@ def offered(document: Dict[str, Any]) -> Dict[str, Any]:
 
 def _describe(field: str, meta: Dict[str, Any]) -> str:
     kind, hint = TYPES.get(meta.get('type', ''), ('string', None))
-    parts = [meta.get('description', field), '({})'.format(kind)]
+    parts = [meta.get('description', field), f'({kind})']
     if hint:
         parts.append('-- ' + hint)
     return ' '.join(parts)
@@ -77,7 +77,7 @@ def _errors(spec: Dict[str, Any]) -> str:
     errors = spec.get('errors') or {}
     if not errors:
         return ''
-    return ' It fails with ' + ', '.join('{} ({})'.format(code, ' '.join(str(meaning).split()))
+    return ' It fails with ' + ', '.join(f'{code} ({" ".join(str(meaning).split())})'
                                          for code, meaning in sorted(errors.items())) + '.'
 
 
@@ -98,7 +98,7 @@ def tool_spec(name: str, spec: Dict[str, Any]) -> Dict[str, Any]:
         for key, meta in sorted(outputs.items()):
             when = meta.get('when', 'success')
             qualifier = {'failure': ' (only when it fails)', 'maybe': ' (not always)'}.get(when, '')
-            listed.append('{}: {}{}'.format(key, meta.get('description', ''), qualifier))
+            listed.append(f'{key}: {meta.get("description", "")}{qualifier}')
         text += ' Returns ' + '; '.join(listed) + '.'
         text += ' These values are yours to pass back into later calls.'
     text += _errors(spec)

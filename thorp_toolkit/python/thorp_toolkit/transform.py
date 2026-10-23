@@ -66,8 +66,7 @@ class Transform(object):
         elif isinstance(data, dict):
             return res._from_dict(data)
         else:
-            error_msg = ("Initialization of a 'Transformation' with arg of " +
-                         "type '{}' is not supported!").format(type(data))
+            error_msg = f"Initialization of a 'Transformation' with arg of type '{type(data)}' is not supported!"
             raise TypeError(error_msg)
 
     @property

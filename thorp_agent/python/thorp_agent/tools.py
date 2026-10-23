@@ -143,4 +143,4 @@ def _one(spec: Dict[str, Any], call, timeout: float) -> StructuredTool:
     # Arguments not matching the schema go back to the model as the tool's result, so it can fix them; raised, they
     # would end the whole conversation
     return StructuredTool.from_function(func=invoke, name=name, description=spec['description'], args_schema=model,
-                                        handle_validation_error=lambda e: 'invalid arguments: {}'.format(e))
+                                        handle_validation_error=lambda e: f'invalid arguments: {e}')

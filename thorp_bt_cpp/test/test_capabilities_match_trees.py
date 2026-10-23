@@ -199,7 +199,7 @@ def derive_interfaces():
     def derive(tree_id):
         if tree_id in interfaces:
             return interfaces[tree_id]
-        assert tree_id in trees, "a <SubTree> calls '{}', which no file under bt/ defines".format(tree_id)
+        assert tree_id in trees, f"a <SubTree> calls '{tree_id}', which no file under bt/ defines"
         tree, path = trees[tree_id]
         read, produced, nodes, all_nodes = {}, {}, set(), set()
         for node in tree.iter():
@@ -259,14 +259,14 @@ def test_every_tree_is_either_described_or_excluded(declared, derived):
     accounted = set(declared["capabilities"]) | set(declared.get("not_capabilities", {}))
     missing = set(derived) - accounted
     assert not missing, (
-        "trees in bt/ that capabilities.yaml neither describes nor excludes: {}".format(sorted(missing)))
+        f"trees in bt/ that capabilities.yaml neither describes nor excludes: {sorted(missing)}")
 
 
 def test_nothing_is_described_that_does_not_exist(declared, derived):
     """The other direction: an entry left behind after its tree was renamed or deleted."""
     for section in ("capabilities", "not_capabilities"):
         stale = set(declared.get(section) or {}) - set(derived) - source_trees()
-        assert not stale, "{} names trees that no longer exist in bt/: {}".format(section, sorted(stale))
+        assert not stale, f"{section} names trees that no longer exist in bt/: {sorted(stale)}"
 
 
 @pytest.fixture
@@ -301,14 +301,13 @@ def test_declared_inputs_match_the_tree(capability_name, declared, derived, port
     required = {k for k, v in inputs.items() if not (v or {}).get("optional")}
     derived_inputs = set(interface["inputs"])
     assert required == derived_inputs, (
-        "{}: yaml says inputs {} but the tree needs {}".format(
-            capability_name, sorted(required), sorted(derived_inputs)))
+        f"{capability_name}: yaml says inputs {sorted(required)} but the tree needs {sorted(derived_inputs)}")
 
     # optional: the tree reads it when given, and produces it itself otherwise
     for key in set(inputs) - required:
         assert key in interface["reads"] and key in interface["outputs"], (
-            "{}: {} is marked optional, but the tree doesn't both read it and produce a "
-            "fallback for it".format(capability_name, key))
+            f"{capability_name}: {key} is marked optional, but the tree doesn't both read it and produce a "
+            "fallback for it")
 
 
 def test_declared_outputs_exist_in_the_tree(capability_name, declared, derived, ported):
@@ -322,7 +321,7 @@ def test_declared_outputs_exist_in_the_tree(capability_name, declared, derived, 
 
     invented = declared_outputs - derived_outputs
     assert not invented, (
-        "{}: yaml promises outputs the tree never writes: {}".format(capability_name, sorted(invented)))
+        f"{capability_name}: yaml promises outputs the tree never writes: {sorted(invented)}")
 
 
 def test_declared_types_match_the_ports(capability_name, declared, derived, ported):
@@ -337,15 +336,14 @@ def test_declared_types_match_the_ports(capability_name, declared, derived, port
             if not expected:
                 continue  # port has no declared type in node_models.xml; nothing to compare
             assert normalize_type(entry.get("type", "")) == expected, (
-                "{}.{}.{}: yaml says {!r}, the port is {!r}".format(
-                    capability_name, section, key, entry.get("type"), expected))
+                f"{capability_name}.{section}.{key}: yaml says {entry.get('type')!r}, the port is {expected!r}")
 
 
 def test_declared_errors_are_error_codes(capability_name, declared):
     """`errors` names codes the error outputs carry: ThorpError's constants."""
     for name in declared["capabilities"][capability_name].get("errors") or {}:
         assert isinstance(getattr(ThorpError, name, None), int), (
-            "{}: errors names {}, which is no ThorpError code".format(capability_name, name))
+            f"{capability_name}: errors names {name}, which is no ThorpError code")
 
 
 def test_declared_errors_match_the_world_checks(capability_name, declared, derived, ported):
@@ -360,11 +358,11 @@ def test_declared_errors_match_the_world_checks(capability_name, declared, deriv
     possible = set().union(*(WORLD_ERRORS.get(node, set()) for node in interface["all_nodes"]))
 
     undeclared = own - errors
-    assert not undeclared, "{}: its world checks fail with {}, which errors doesn't name".format(
-        capability_name, sorted(undeclared))
+    assert not undeclared, (
+        f"{capability_name}: its world checks fail with {sorted(undeclared)}, which errors doesn't name")
     invented = (errors & set().union(*WORLD_ERRORS.values())) - possible
-    assert not invented, "{}: errors names {}, which no world check in the tree fails with".format(
-        capability_name, sorted(invented))
+    assert not invented, (
+        f"{capability_name}: errors names {sorted(invented)}, which no world check in the tree fails with")
 
 
 def test_setup_steps_are_callable_capabilities(capability_name, declared):
@@ -385,23 +383,23 @@ def test_setup_steps_are_callable_capabilities(capability_name, declared):
     for step in steps:
         target = step.get("subtree")
         assert target in caps, (
-            "{}: setup calls '{}', which is not a capability".format(capability_name, target))
+            f"{capability_name}: setup calls '{target}', which is not a capability")
         check_call(capability_name, caps[target], step, seen,
-                   "setup step '{}'".format(step.get("as") or target))
+                   f"setup step '{step.get('as') or target}'")
         seen[step.get("as") or target] = set(caps[target].get("outputs") or {})
 
     check_call(capability_name, spec, test, seen, "the capability itself")
 
     for step in steps:
         unknown = set(step.get("unless") or {}) - {"at_table"}
-        assert not unknown, "{}: setup step '{}' has unless conditions the suite can't check: {}".format(
-            capability_name, step.get("as") or step.get("subtree"), sorted(unknown))
+        assert not unknown, (
+            f"{capability_name}: setup step '{step.get('as') or step.get('subtree')}' has unless conditions the "
+            f"suite can't check: {sorted(unknown)}")
 
     declared_outputs = set(spec.get("outputs") or {})
     for key in test.get("expect_outputs") or []:
         assert key in declared_outputs, (
-            "{}: expect_outputs names {}, which isn't a declared output".format(
-                capability_name, key))
+            f"{capability_name}: expect_outputs names {key}, which isn't a declared output")
 
 
 def check_call(capability_name, target_spec, block, available, what):
@@ -410,27 +408,25 @@ def check_call(capability_name, target_spec, block, available, what):
     threaded = set(block.get("inputs_from") or {})
 
     overlap = literal & threaded
-    assert not overlap, "{}: {} gives {} both literally and via inputs_from".format(
-        capability_name, what, sorted(overlap))
+    assert not overlap, f"{capability_name}: {what} gives {sorted(overlap)} both literally and via inputs_from"
 
     inputs = target_spec.get("inputs") or {}
     required = {k for k, v in inputs.items() if not (v or {}).get("optional")}
     given = literal | threaded
     assert required <= given <= set(inputs), (
-        "{}: {} passes {} but that capability takes {} (optional: {})".format(
-            capability_name, what, sorted(given), sorted(required), sorted(set(inputs) - required)))
+        f"{capability_name}: {what} passes {sorted(given)} but that capability takes {sorted(required)} "
+        f"(optional: {sorted(set(inputs) - required)})")
 
     for key, ref in (block.get("inputs_from") or {}).items():
         assert isinstance(ref, list) and len(ref) in (2, 3), (
-            "{}: {} has a malformed inputs_from for {}: {!r}".format(
-                capability_name, what, key, ref))
+            f"{capability_name}: {what} has a malformed inputs_from for {key}: {ref!r}")
         step_label, out_key = ref[0], ref[1]
         assert step_label in available, (
-            "{}: {} takes {} from '{}', which is not an earlier setup step (have: {})".format(
-                capability_name, what, key, step_label, sorted(available) or "none"))
+            f"{capability_name}: {what} takes {key} from '{step_label}', which is not an earlier setup step "
+            f"(have: {sorted(available) or 'none'})")
         assert out_key in available[step_label], (
-            "{}: {} takes {} from {}.{}, which that capability doesn't declare as an "
-            "output".format(capability_name, what, key, step_label, out_key))
+            f"{capability_name}: {what} takes {key} from {step_label}.{out_key}, which that capability doesn't "
+            "declare as an output")
 
 
 def root_never_finishes(tree):
@@ -468,4 +464,4 @@ def test_endless_trees_are_marked_as_apps(declared):
     wrongly_offered = endless & exposed
     assert not wrongly_offered, (
         "these trees can never finish, so they can't be capabilities -- mark them `kind: app`: "
-        "{}".format(sorted(wrongly_offered)))
+        f"{sorted(wrongly_offered)}")

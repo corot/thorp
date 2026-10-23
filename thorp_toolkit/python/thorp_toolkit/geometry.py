@@ -282,7 +282,7 @@ def point2d2str(point):
         f = ', ' + point.header.frame_id
     else:
         raise ValueError("Input parameter point is not a valid geometry_msgs point object")
-    return "[x: {:.2f}, y: {:.2f}{}]".format(p.x, p.y, f)
+    return f"[x: {p.x:.2f}, y: {p.y:.2f}{f}]"
 
 
 def point3d2str(point):
@@ -295,7 +295,7 @@ def point3d2str(point):
         f = ', ' + point.header.frame_id
     else:
         raise ValueError("Input parameter point is not a valid geometry_msgs point object")
-    return "[x: {:.2f}, y: {:.2f}, z: {:.2f}{}]".format(p.x, p.y, p.z, f)
+    return f"[x: {p.x:.2f}, y: {p.y:.2f}, z: {p.z:.2f}{f}]"
 
 
 def pose2d2str(pose):
@@ -308,7 +308,7 @@ def pose2d2str(pose):
         f = ', ' + pose.header.frame_id
     else:
         raise ValueError("Input parameter pose is not a valid geometry_msgs pose object")
-    return "[x: {:.2f}, y: {:.2f}, yaw: {:.2f}{}]".format(p.position.x, p.position.y, yaw(p), f)
+    return f"[x: {p.position.x:.2f}, y: {p.position.y:.2f}, yaw: {yaw(p):.2f}{f}]"
 
 
 def pose3d2str(pose):
@@ -321,8 +321,8 @@ def pose3d2str(pose):
         f = ', ' + pose.header.frame_id
     else:
         raise ValueError("Input parameter pose is not a valid geometry_msgs pose object")
-    return "[x: {:.2f}, y: {:.2f}, z: {:.2f}, roll: {:.2f}, pitch: {:.2f}, yaw: {:.2f}{}]" \
-           .format(p.position.x, p.position.y, p.position.z, roll(p), pitch(p), yaw(p), f)
+    return (f"[x: {p.position.x:.2f}, y: {p.position.y:.2f}, z: {p.position.z:.2f}, "
+            f"roll: {roll(p):.2f}, pitch: {pitch(p):.2f}, yaw: {yaw(p):.2f}{f}]")
 
 
 def translate_pose(pose, delta, axis_or_theta, relative=True):

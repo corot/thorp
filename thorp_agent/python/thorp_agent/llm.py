@@ -69,7 +69,7 @@ def make(provider=None, model=None, temperature=0.0, trace=None):
         from langchain_ollama import ChatOllama
         return ChatOllama(model=model, temperature=temperature, num_ctx=8192, callbacks=callbacks)
 
-    raise ValueError('unknown provider {!r}: try {}'.format(provider, ', '.join(DEFAULTS)))
+    raise ValueError(f'unknown provider {provider!r}: try {", ".join(DEFAULTS)}')
 
 
 class Timing(BaseCallbackHandler):
@@ -94,17 +94,16 @@ class Timing(BaseCallbackHandler):
     def on_llm_end(self, response, **kwargs):
         message = getattr(response.generations[0][0], 'message', None) if response.generations else None
         usage = getattr(message, 'usage_metadata', None) or {}
-        line = '{:.1f} s'.format(time.monotonic() - self.started)
+        line = f'{time.monotonic() - self.started:.1f} s'
         if usage:
-            line += ', {} tokens in, {} out'.format(usage.get('input_tokens'), usage.get('output_tokens'))
+            line += f', {usage.get("input_tokens")} tokens in, {usage.get("output_tokens")} out'
         self.trace(line + self._retried())
 
     def on_llm_error(self, error, **kwargs):
-        self.trace('{:.1f} s, failed: {}: {}{}'.format(time.monotonic() - self.started, type(error).__name__, error,
-                                                       self._retried()))
+        self.trace(f'{time.monotonic() - self.started:.1f} s, failed: {type(error).__name__}: {error}{self._retried()}')
 
     def _retried(self):
-        return ', retried {} time{}'.format(self.retries, '' if self.retries == 1 else 's') if self.retries else ''
+        return f', retried {self.retries} time{"" if self.retries == 1 else "s"}' if self.retries else ''
 
 
 class _RetryCounter(logging.Handler):
@@ -145,5 +144,5 @@ def _temperature(model, temperature):
 def _env(variable, provider):
     value = os.getenv(variable)
     if not value:
-        raise RuntimeError('{} is not set, so the {} provider has no credentials'.format(variable, provider))
+        raise RuntimeError(f'{variable} is not set, so the {provider} provider has no credentials')
     return value

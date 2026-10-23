@@ -150,7 +150,7 @@ class SubtreeRunner:
         self.node = node
         self.client = ActionClient(node, RunSubtree, action_name)
         if not self.client.wait_for_server(timeout_sec=10.0):
-            pytest.fail("action server '{}' not available -- is bt_server_node running?".format(action_name))
+            pytest.fail(f"action server '{action_name}' not available -- is bt_server_node running?")
         self.parameters = AsyncParameterClient(node, server_node)
 
     def wait(self, future, timeout):
@@ -160,7 +160,7 @@ class SubtreeRunner:
 
     def set_param(self, name, value):
         results = self.parameters.set_parameters([Parameter(name, value=value)])
-        assert self.wait(results, 5.0), "setting parameter {} timed out".format(name)
+        assert self.wait(results, 5.0), f"setting parameter {name} timed out"
         assert results.result().results[0].successful, results.result().results[0].reason
 
     def run(self, subtree, inputs=None, output_keys=None, raw_json=None, timeout=30.0, cancel_after=None):
@@ -170,32 +170,32 @@ class SubtreeRunner:
         goal.json = raw_json if raw_json is not None else (json.dumps(inputs) if inputs is not None else "")
         goal.output_keys = output_keys or []
 
-        print("\n--> subtree={!r} json={} output_keys={}".format(goal.subtree, goal.json, list(goal.output_keys)))
+        print(f"\n--> subtree={goal.subtree!r} json={goal.json} output_keys={list(goal.output_keys)}")
         send = self.client.send_goal_async(goal)
         if not self.wait(send, 10.0) or not send.result().accepted:
-            pytest.fail("goal for subtree '{}' not accepted".format(subtree))
+            pytest.fail(f"goal for subtree '{subtree}' not accepted")
         goal_handle = send.result()
         result_future = goal_handle.get_result_async()
 
         if cancel_after is not None:
             self.wait(result_future, cancel_after)
             if not result_future.done():
-                print("--> canceling after {}s".format(cancel_after))
+                print(f"--> canceling after {cancel_after}s")
                 self.wait(goal_handle.cancel_goal_async(), 5.0)
 
         if not self.wait(result_future, timeout):
             self.wait(goal_handle.cancel_goal_async(), 5.0)
-            pytest.fail("subtree '{}' gave no result within {}s".format(subtree, timeout))
+            pytest.fail(f"subtree '{subtree}' gave no result within {timeout}s")
 
         state = result_future.result().status
         result = result_future.result().result
         raw = result.json
-        print("<-- state={} success={} json={}".format(status_name(state), result.success, raw))
+        print(f"<-- state={status_name(state)} success={result.success} json={raw}")
 
         try:
             parsed = json.loads(raw) if raw else {}
         except ValueError as e:
-            pytest.fail("result json is not parseable: {} -- raw was {!r}".format(e, raw))
+            pytest.fail(f"result json is not parseable: {e} -- raw was {raw!r}")
         return state, parsed, result
 
 
@@ -225,7 +225,7 @@ def gazebo_model_poses():
             continue
 
         def field(section, axis):
-            match = re.search(r"^  {} \{{[^}}]*?^    {}: (\S+)".format(section, axis), block, re.M | re.S)
+            match = re.search(rf"^  {section} \{{[^}}]*?^    {axis}: (\S+)", block, re.M | re.S)
             return float(match.group(1)) if match else 0.0
 
         pose = Pose()
@@ -257,7 +257,7 @@ def world(request, runner):
         yield lambda: None
         return
     path = os.path.abspath(path)
-    assert os.path.exists(path), "no world file '{}'".format(path)
+    assert os.path.exists(path), f"no world file '{path}'"
     parameters = AsyncParameterClient(runner.node, "/world")
     load = runner.node.create_client(Trigger, "/world/load")
     if not parameters.wait_for_services(timeout_sec=5.0) or not load.wait_for_service(timeout_sec=5.0):
@@ -329,7 +329,7 @@ def reset_scene(runner, initial_model_poses, world):
         used.append(True)
         state, out, result = runner.run("test_reset_scene", inputs={}, timeout=60)
         if state != GoalStatus.STATUS_SUCCEEDED or not result.success:
-            print("--> resetting the robot failed: {}".format(out or status_name(state)))
+            print(f"--> resetting the robot failed: {out or status_name(state)}")
         if initial_model_poses and set_pose.wait_for_service(timeout_sec=2.0):
             # objects fixed to Thorp's tray don't move otherwise
             if release_tray.wait_for_service(timeout_sec=1.0):
@@ -343,10 +343,10 @@ def reset_scene(runner, initial_model_poses, world):
                 request.pose = pose
                 future = set_pose.call_async(request)
                 if not runner.wait(future, 5.0) or not future.result().success:
-                    print("--> putting {} back failed".format(name))
+                    print(f"--> putting {name} back failed")
             for costmap in ("local", "global"):
                 clear = runner.node.create_client(
-                    ClearEntireCostmap, "/{0}_costmap/clear_entirely_{0}_costmap".format(costmap))
+                    ClearEntireCostmap, f"/{costmap}_costmap/clear_entirely_{costmap}_costmap")
                 if clear.wait_for_service(timeout_sec=1.0):
                     runner.wait(clear.call_async(ClearEntireCostmap.Request()), 5.0)
             time.sleep(1.0)

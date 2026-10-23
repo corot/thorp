@@ -68,14 +68,14 @@ def test_every_argument_type_is_one_we_can_render(specs):
     unmapped = [(spec['name'], field, meta['type'])
                 for spec in specs for field, meta in spec['args'].items()
                 if meta['type'] not in capabilities.TYPES]
-    assert not unmapped, 'no rendering for: {}'.format(unmapped)
+    assert not unmapped, f'no rendering for: {unmapped}'
 
 
 def test_descriptions_say_something(specs):
     for spec in specs:
         assert len(spec['description']) > 40, spec['name']
         for field, meta in spec['args'].items():
-            assert meta['description'].strip(), '{}.{}'.format(spec['name'], field)
+            assert meta['description'].strip(), f'{spec["name"]}.{field}'
 
 
 def test_outputs_are_advertised_so_values_can_be_threaded(document, specs):
@@ -92,7 +92,7 @@ def test_every_kind_is_one_capabilities_knows(specs):
     for spec in specs:
         for field, meta in spec['args'].items():
             kind, _ = capabilities.TYPES[meta['type']]
-            assert kind in capabilities.KINDS, '{}.{} is {}'.format(spec['name'], field, kind)
+            assert kind in capabilities.KINDS, f'{spec["name"]}.{field} is {kind}'
 
 
 def test_every_kind_has_a_python_type():
@@ -111,7 +111,7 @@ def test_a_capability_taking_a_pose_says_how_to_write_one(specs):
     for spec in posed:
         for field, meta in spec['args'].items():
             if meta['type'] == capabilities.POSE:
-                assert 'x;y;yaw;frame' in meta['description'], '{}.{}'.format(spec['name'], field)
+                assert 'x;y;yaw;frame' in meta['description'], f'{spec["name"]}.{field}'
 
 
 def test_optional_inputs_are_marked_and_the_rest_are_not(document, specs):
@@ -119,7 +119,7 @@ def test_optional_inputs_are_marked_and_the_rest_are_not(document, specs):
     for spec in specs:
         for field, meta in spec['args'].items():
             declared = offered[spec['name']]['inputs'][field]
-            assert meta['optional'] == bool(declared.get('optional')), '{}.{}'.format(spec['name'], field)
+            assert meta['optional'] == bool(declared.get('optional')), f'{spec["name"]}.{field}'
 
 
 def test_optional_inputs_can_be_left_out_and_are_not_sent():
@@ -186,8 +186,8 @@ def test_errors_reach_the_agent(document, specs):
     for spec in specs:
         for code, meaning in (offered[spec['name']].get('errors') or {}).items():
             declaring += 1
-            assert '{} ({})'.format(code, ' '.join(str(meaning).split())) in spec['description'], (
-                "{} doesn't say it fails with {}".format(spec['name'], code))
+            assert f'{code} ({" ".join(str(meaning).split())})' in spec['description'], (
+                f"{spec['name']} doesn't say it fails with {code}")
     assert declaring, 'no capability declares its errors -- has `errors` gone away?'
 
 

@@ -43,7 +43,7 @@ class SubtreeRunner(object):
             return
         self.client = ActionClient(node, RunSubtree, action_name)
         if not self.client.wait_for_server(timeout_sec=connect_timeout):
-            raise RuntimeError('no RunSubtree server on {} after {}s'.format(action_name, connect_timeout))
+            raise RuntimeError(f'no RunSubtree server on {action_name} after {connect_timeout}s')
 
     def run(self, subtree, inputs=None, output_keys=None, timeout=300.0):
         """
@@ -65,7 +65,7 @@ class SubtreeRunner(object):
         goal.output_keys = sorted(output_keys or [])
 
         if self.dry_run:
-            self.node.get_logger().info('[dry run] {} {}'.format(subtree, goal.json))
+            self.node.get_logger().info(f'[dry run] {subtree} {goal.json}')
             return {'succeeded': True, 'dry_run': True, 'outputs': {}}
 
         before = self.world.known() if self.world else None
@@ -77,7 +77,7 @@ class SubtreeRunner(object):
         if response is None:
             wait(handle.cancel_goal_async(), 5.0)
             return self.observed({'succeeded': False,
-                                  'error': 'no result after {}s; the goal was canceled'.format(timeout)}, before)
+                                  'error': f'no result after {timeout}s; the goal was canceled'}, before)
 
         result = response.result
         if response.status == GoalStatus.STATUS_ABORTED:

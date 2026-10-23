@@ -85,24 +85,24 @@ def check_value(name, value, declared_type):
     if isinstance(value, str) and value.startswith("<unsupported type:"):
         # fine for a type we never claimed to handle; a bug if the yaml says otherwise
         assert declared_type not in SERIALIZED_AS, (
-            "'{}' is declared as {}, which bt_server should be able to serialize, "
-            "but it came back as {}".format(name, declared_type, value))
+            f"'{name}' is declared as {declared_type}, which bt_server should be able to serialize, "
+            f"but it came back as {value}")
         return
 
     expected = SERIALIZED_AS.get(declared_type)
     if expected is None:
         return  # type we never claimed to serialize, and it wasn't tagged; nothing to check
     if expected is float:
-        assert isinstance(value, (int, float)), "{}={!r} should be a number".format(name, value)
+        assert isinstance(value, (int, float)), f"{name}={value!r} should be a number"
     else:
         assert isinstance(value, expected), \
-            "{}={!r} should be {} for declared type {}".format(name, value, expected.__name__, declared_type)
+            f"{name}={value!r} should be {expected.__name__} for declared type {declared_type}"
 
     if declared_type == "geometry_msgs::msg::PoseStamped":
-        assert set(value) == POSE_FIELDS, "pose {} has fields {}".format(name, sorted(value))
+        assert set(value) == POSE_FIELDS, f"pose {name} has fields {sorted(value)}"
     if declared_type == "thorp_msgs::msg::ThorpError":
         assert set(value) == {"code", "text"} and isinstance(value["code"], int), \
-            "error {}={!r} should be a code and a text".format(name, value)
+            f"error {name}={value!r} should be a code and a text"
 
 
 def step_label(step):
@@ -150,16 +150,15 @@ def resolve_inputs(block, produced):
     for key, ref in (block.get("inputs_from") or {}).items():
         step_name, out_key = ref[0], ref[1]
         if step_name not in produced:
-            raise LookupError("{} has not run yet".format(step_name))
+            raise LookupError(f"{step_name} has not run yet")
         if out_key not in produced[step_name]:
-            raise LookupError("{} did not return {} (it returned {})".format(
-                step_name, out_key, sorted(produced[step_name]) or "nothing"))
+            raise LookupError(f"{step_name} did not return {out_key} "
+                              f"(it returned {sorted(produced[step_name]) or 'nothing'})")
         value = produced[step_name][out_key]
         if len(ref) > 2:
             index = ref[2]
             if not isinstance(value, list) or len(value) <= index:
-                raise LookupError("{}.{} has no element {} (it is {!r})".format(
-                    step_name, out_key, index, value))
+                raise LookupError(f"{step_name}.{out_key} has no element {index} (it is {value!r})")
             value = value[index]
         inputs[key] = value
     return inputs
@@ -181,13 +180,13 @@ def runnable(capability, available_stacks, capabilities, request):
                     "here means canceling it and guessing (pass --apps to try anyway)")
 
     if spec.get("status") == "blocked":
-        pytest.skip("blocked: {}".format(" ".join(spec.get("blocked", "no reason given").split())))
+        pytest.skip(f"blocked: {' '.join(spec.get('blocked', 'no reason given').split())}")
 
     trees = installed_trees()
     steps = list(setup_steps(spec, capabilities, world_at_start(spec, request)))
     not_ported = [tree for tree in [name] + [step for step, _, _ in steps] if tree not in trees]
     if not_ported:
-        pytest.skip("not ported to ROS 2 yet: {}".format(", ".join(not_ported)))
+        pytest.skip(f"not ported to ROS 2 yet: {', '.join(not_ported)}")
 
     # The setup steps are capabilities too, so whatever they need has to be running as well:
     # pickup_object is manipulation, but the detect_objects that gives it something to pick is
@@ -199,8 +198,7 @@ def runnable(capability, available_stacks, capabilities, request):
     needed -= {"none"}
     missing = needed - available_stacks
     if missing:
-        pytest.skip("needs {} running (pass --stack {})".format(
-            ",".join(sorted(missing)), ",".join(sorted(needed))))
+        pytest.skip(f"needs {','.join(sorted(missing))} running (pass --stack {','.join(sorted(needed))})")
 
 
 @pytest.fixture(autouse=True)
@@ -231,7 +229,7 @@ def test_capability(runner, capability, capabilities, request):
         try:
             step_inputs = resolve_inputs(step, produced)
         except LookupError as e:
-            pytest.skip("precondition not established: {} needs {}".format(step_name, e))
+            pytest.skip(f"precondition not established: {step_name} needs {e}")
         for attempt in range(1, SETUP_ATTEMPTS + 1):
             # every documented output, since a later step may want any of them
             step_state, step_out, step_result = runner.run(
@@ -240,16 +238,15 @@ def test_capability(runner, capability, capabilities, request):
                 timeout=(step_spec.get("test") or {}).get("timeout", 120))
             if step_state == GoalStatus.STATUS_SUCCEEDED and step_result.success:
                 break
-            print("--> setup step {} failed on attempt {} of {}: {}".format(
-                step_name, attempt, SETUP_ATTEMPTS, step_out or "no detail"))
+            print(f"--> setup step {step_name} failed on attempt {attempt} of {SETUP_ATTEMPTS}: "
+                  f"{step_out or 'no detail'}")
         else:
             # Which of the two failed: the action completing and the tree succeeding are
             # different things, and the action state alone reads as a success either way.
             outcome = ("the tree returned FAILURE" if step_state == GoalStatus.STATUS_SUCCEEDED
-                       else "the goal ended as {}".format(status_name(step_state)))
-            pytest.skip("precondition not established in {} attempts: {} {}{}".format(
-                SETUP_ATTEMPTS, step_name, outcome,
-                "; {}".format(step_out) if step_out else ""))
+                       else f"the goal ended as {status_name(step_state)}")
+            detail = f"; {step_out}" if step_out else ""
+            pytest.skip(f"precondition not established in {SETUP_ATTEMPTS} attempts: {step_name} {outcome}{detail}")
         produced[step_label(step)] = step_out
 
     test = spec.get("test", {})
@@ -262,7 +259,7 @@ def test_capability(runner, capability, capabilities, request):
     try:
         inputs = resolve_inputs(test, produced)
     except LookupError as e:
-        pytest.skip("precondition not established: this capability needs {}".format(e))
+        pytest.skip(f"precondition not established: this capability needs {e}")
     state, out, result = runner.run(name,
                                     inputs=inputs,
                                     output_keys=output_keys,
@@ -273,7 +270,7 @@ def test_capability(runner, capability, capabilities, request):
     # -- unknown tree, bad json, a missing input, a node that threw -- which is our problem, not
     # the robot's, so it fails regardless of `expect`.
     assert state != GoalStatus.STATUS_ABORTED, \
-        "goal was aborted: {}".format(out.get("error", out))
+        f"goal was aborted: {out.get('error', out)}"
     assert state in (GoalStatus.STATUS_SUCCEEDED, GoalStatus.STATUS_CANCELED), status_name(state)
 
     # Outputs a real run has to produce, asserted whatever `expect` says. For a tree whose
@@ -281,12 +278,11 @@ def test_capability(runner, capability, capabilities, request):
     # job from one that didn't: hunt_cat reports SUCCESS through a ForceSuccess having seen no
     # cat at all, and only cannon_tilt_angle, written by AimCannon, tells the two apart.
     absent = [key for key in test.get("expect_outputs") or [] if key not in out]
-    assert not absent, "{} produced none of {}; outputs were {}".format(
-        name, absent, out or "none")
+    assert not absent, f"{name} produced none of {absent}; outputs were {out or 'none'}"
 
     expect = test.get("expect", "any")
     if expect == "succeeded":
-        assert result.success, "tree reported FAILURE; outputs were {}".format(out)
+        assert result.success, f"tree reported FAILURE; outputs were {out}"
     elif expect == "failed":
         assert not result.success, "tree unexpectedly succeeded"
     elif expect == "runs":
@@ -295,16 +291,16 @@ def test_capability(runner, capability, capabilities, request):
         # can be checked is that it accepted the goal, got far enough to put something on the
         # blackboard, and stopped cleanly when canceled.
         assert state == GoalStatus.STATUS_CANCELED, \
-            "expected to still be running at the cancel, but ended as {}".format(status_name(state))
-        assert out, "ran for {}s without producing any of {}".format(test.get("cancel_after"), output_keys)
+            f"expected to still be running at the cancel, but ended as {status_name(state)}"
+        assert out, f"ran for {test.get('cancel_after')}s without producing any of {output_keys}"
     elif not result.success:
         # `expect: any` means the outcome isn't asserted, not that nobody should hear about
         # it: the test passes, and a tree failing every run would otherwise leave nothing red
         # anywhere. A warning lands in pytest's summary -- visible, not fatal.
-        warnings.warn("{} returned FAILURE; not asserted because expect: any. outputs: {}".format(
-            name, out or "none"), UserWarning)
+        warnings.warn(f"{name} returned FAILURE; not asserted because expect: any. outputs: {out or 'none'}",
+                      UserWarning)
     else:
-        print("outcome not asserted (expect: any): success={}".format(result.success))
+        print(f"outcome not asserted (expect: any): success={result.success}")
 
     # whatever did come back has to match what the capability promises
     for key, value in out.items():
@@ -327,5 +323,4 @@ def test_capability(runner, capability, capabilities, request):
                           if declared[k].get("type") not in SERIALIZED_AS}
         missing_outputs = guaranteed - set(out) - unserializable
         assert not missing_outputs, \
-            "capability claims {} on success but the run didn't produce them".format(
-                sorted(missing_outputs))
+            f"capability claims {sorted(missing_outputs)} on success but the run didn't produce them"

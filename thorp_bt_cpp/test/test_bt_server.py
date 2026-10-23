@@ -87,7 +87,7 @@ def test_discovery_mode_reports_what_the_run_added(runner):
     assert state == GoalStatus.STATUS_SUCCEEDED, status_name(state)
 
     produced = {"moved_pose", "a_float", "an_int", "a_string", "a_bool", "a_path"}
-    assert produced <= set(out), "missing {}".format(sorted(produced - set(out)))
+    assert produced <= set(out), f"missing {sorted(produced - set(out))}"
     assert "start_pose" not in out and "offset_x" not in out, "seeded inputs shouldn't be echoed"
 
 
@@ -231,7 +231,7 @@ def test_a_pose_we_emitted_can_be_seeded_back(runner):
     assert result.success
     for field in ("x", "y", "z", "frame"):
         assert out["moved_pose"][field] == emitted[field], \
-            "{} changed on the way round: {} -> {}".format(field, emitted[field], out["moved_pose"][field])
+            f"{field} changed on the way round: {emitted[field]} -> {out['moved_pose'][field]}"
 
 
 def test_a_badly_shaped_input_aborts_rather_than_killing_the_server(runner):
