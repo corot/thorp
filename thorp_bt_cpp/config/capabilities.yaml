@@ -125,23 +125,25 @@ capabilities:
 
   place_object:
     description: >
-      Place the object currently held by the gripper at a given pose on the table the robot is
-      at, avoiding what the robot saw on it from where it is, and record it there in thorp_world.
+      Place the object currently held by the gripper at a position on the table the robot is at,
+      resting on the table's top, avoiding what the robot saw on it from where it is, and record
+      it there in thorp_world.
     status: ok
     stack: [manipulation]
     inputs:
       object_name: {type: string, description: "id of the object in the gripper, as pickup_object reports it in attached_object"}
-      place_pose: {type: geometry_msgs::msg::PoseStamped, description: "where the object's center goes, as 'x;y;yaw;frame' or 'x;y;z;roll;pitch;yaw;frame'; z is the surface height plus half the object's height, plus a few millimeters, and the short form leaves z at 0, which is the floor"}
+      x: {type: double, description: "map x of where the object's center goes"}
+      y: {type: double, description: "map y of where the object's center goes"}
     outputs:
+      place_pose: {type: geometry_msgs::msg::PoseStamped, description: "the pose it placed the object at, its height worked out from the table's top and the object's"}
       error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed: one of errors, or else the place action's"}
     errors:
       NOT_AT_TABLE: the robot isn't at a table; reach_table one first
       NOT_IN_VIEW: the robot hasn't seen the table from where it is, as docking and leaving a table forget what it saw; detect_objects first
+      INVALID_TARGET_POSE: the position isn't over the table; the summary says what it spans
     test:
-      # A clear spot on the near edge of the table; z is the clover's center once there, on the
-      # 0.47 m high table, 8 mm above. In the map frame, so it stays put while the setup chain
-      # drives the robot to the table.
-      inputs: {object_name: "clover 1", place_pose: "0.2;0.0;0.502;0.0;0.0;0.0;map"}
+      # A clear spot on the near edge of the table
+      inputs: {object_name: "clover 1", x: 0.2, y: 0.0}
       setup:
         - {subtree: reach_table, inputs: {table_id: "table 1"}, unless: {at_table: "table 1"}}
         - {subtree: detect_objects}

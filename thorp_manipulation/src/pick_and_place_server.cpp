@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <format>
 #include <limits>
 #include <map>
@@ -558,12 +559,12 @@ ThorpError PickAndPlaceServer::place(const PlaceObject::Goal& goal, const Feedba
     return fail(ThorpError::NOT_IN_VIEW,
                 "support '" + goal.support_surf +
                     "' isn't in the planning scene: the robot hasn't seen it from where it is");
-  // The place pose is where the object's center goes, so above the top of the support, if it's an object in the scene
+  // The place pose is where the object's center goes, so over the top of the support, if it's an object in the scene
   if (support && !support->shapes_.empty())
   {
+    const Eigen::Vector3d half_size = shapes::computeShapeExtents(support->shapes_.front().get()) / 2.0;
     double top = std::numeric_limits<double>::lowest();
-    for (const Eigen::Vector3d& corner :
-         boxCorners(Eigen::Vector3d::Zero(), shapes::computeShapeExtents(support->shapes_.front().get()) / 2.0))
+    for (const Eigen::Vector3d& corner : boxCorners(Eigen::Vector3d::Zero(), half_size))
       top = std::max(top, (support->global_shape_poses_.front() * corner).z());
     if (place_pose.translation().z() < top)
       return fail(ThorpError::INVALID_TARGET_POSE,
@@ -571,6 +572,14 @@ ThorpError PickAndPlaceServer::place(const PlaceObject::Goal& goal, const Feedba
                               "its height above it",
                               toString(goal.place_pose.pose.position), goal.place_pose.header.frame_id,
                               (top - place_pose.translation().z()) * 100.0, goal.support_surf));
+    const Eigen::Vector3d on_support = support->global_shape_poses_.front().inverse() * place_pose.translation();
+    const double off = std::hypot(std::max(0.0, std::abs(on_support.x()) - half_size.x()),
+                                  std::max(0.0, std::abs(on_support.y()) - half_size.y()));
+    if (off > 0.0)
+      return fail(ThorpError::INVALID_TARGET_POSE,
+                  std::format("place pose {} on {} is {:.1f} cm off '{}': the object's center goes over its top",
+                              toString(goal.place_pose.pose.position), goal.place_pose.header.frame_id, off * 100.0,
+                              goal.support_surf));
   }
   place_pose = scene->getFrameTransform(arm_ref_frame_).inverse() * place_pose;
   std::vector<geometry_msgs::msg::PoseStamped> gripper_poses;

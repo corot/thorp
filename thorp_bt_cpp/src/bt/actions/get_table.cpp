@@ -3,11 +3,10 @@
 #include "thorp_bt_cpp/errors.hpp"
 #include "thorp_bt_cpp/node_common.hpp"
 #include "thorp_bt_cpp/ros_service_node.hpp"
+#include "thorp_bt_cpp/world.hpp"
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
-#include <nlohmann/json.hpp>
 #include <moveit_msgs/msg/collision_object.hpp>
-#include <shape_msgs/msg/solid_primitive.hpp>
 #include <thorp_msgs/msg/thorp_error.hpp>
 #include <thorp_msgs/msg/world_entity.hpp>
 #include <thorp_msgs/srv/query_world.hpp>
@@ -56,20 +55,7 @@ private:
       return BT::NodeStatus::FAILURE;
     }
     const WorldEntity& entity = response.entities.front();
-    CollisionObject table;
-    table.id = entity.id;
-    table.header = entity.pose.header;
-    table.pose = entity.pose.pose;
-    table.operation = CollisionObject::ADD;
-    table.primitives.resize(1);
-    table.primitives[0].type = shape_msgs::msg::SolidPrimitive::BOX;
-    table.primitives[0].dimensions = { entity.size.x, entity.size.y, entity.size.z };
-    table.primitive_poses.resize(1);
-    table.primitive_poses[0].orientation.w = 1.0;
-    // as detections describe tables
-    table.type.db =
-        nlohmann::json{ { "size", { entity.size.x, entity.size.y, entity.size.z } }, { "color", entity.color } }.dump();
-    setOutput("table", table);
+    setOutput("table", tableObject(entity));
     setOutput("table_pose", entity.pose);
     return BT::NodeStatus::SUCCESS;
   }

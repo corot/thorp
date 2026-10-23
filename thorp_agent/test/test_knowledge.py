@@ -50,11 +50,9 @@ def test_the_summary_says_where_everything_is():
         'no objects known.']
 
 
-def test_the_held_object_comes_with_the_z_that_places_it_on_the_table_the_robot_is_at():
+def test_the_held_object_comes_with_its_height():
     world = playground()
     world['entities']['cube 1'] = thing('gripper', 'gray')
-    assert 'Gripper: cube 1 (2.6 cm tall; to place it on table 1, its z is 0.499).' in knowledge.summary(world)
-    world['at_table'] = None
     assert 'Gripper: cube 1 (2.6 cm tall).' in knowledge.summary(world)
 
 
@@ -89,8 +87,7 @@ def test_a_pickup_moves_the_object_to_the_gripper():
     before = playground()
     after = copy.deepcopy(before)
     after['entities']['cube 1'] = thing('gripper', 'gray')
-    assert knowledge.changes(before, after) == [
-        'cube 1: table 1 -> gripper (2.6 cm tall; to place it on table 1, its z is 0.499)'], 'its reach goes unsaid'
+    assert knowledge.changes(before, after) == ['cube 1: table 1 -> gripper (2.6 cm tall)'], 'its reach goes unsaid'
 
 
 def test_a_place_tells_where_the_object_went():

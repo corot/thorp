@@ -266,7 +266,7 @@ MTC checks the start state bounds, velocities included, and pickups failed now a
 bounds, just after closing the gripper. On shutdown, a goal being executed stops waiting for its result, so the node
 exits cleanly. A failure comes with the most specific code that fits, `NOT_IN_VIEW` for an object to pick or a place
 support not in the planning scene, as planning would go through the support, `INVALID_TARGET_POSE` for a place pose
-below the top of its support, `OUT_OF_REACH` for a target beyond the arm's reach, `GOAL_IN_COLLISION` or
+below the top of its support or off it, `OUT_OF_REACH` for a target beyond the arm's reach, `GOAL_IN_COLLISION` or
 `NO_IK_SOLUTION` for a target pose with no collision-free or no IK solution at all, and `PLANNING_FAILED` for a motion
 that can't be planned, and with a one-line reason as its text: how far the target is, which pairs collide, which stage
 failed to execute.
@@ -333,8 +333,11 @@ leaves looking at the objects to `detect_objects`. The planning scene is on `bas
 where the scene has it only from where it saw it: `dock_at_table` and `leave_table` remove every object but those on
 the tray, which moves with the robot, and `pickup_object` (through `ObjectPickable`) and `place_object` fail with
 `NOT_IN_VIEW` until the robot looks from the dock. `leave_table` stows the arm first, as the arm can't back out from
-under a table. `go_to_table`, new, drives to the viewing pose of a table `thorp_world` knows, as `validate_table` does
-once it has one: the agent's table capabilities only find a table close in front.
+under a table. `place_object` takes the x and y where the object goes on the table the robot is at, and `GetPlacePose`
+works out the place pose's height, from `thorp_world`'s table and the held object, as `DragAndDrop` does, with
+`placing_height_on_table` to clear the table's top. `go_to_table`, new, drives to the viewing pose of a table
+`thorp_world` knows, as `validate_table` does once it has one: the agent's table capabilities only find a table close
+in front.
 
 Nodes calling actions derive from Nav2's `BtActionNode`, with their servers' names as `server_name` defaults; the
 runner puts Nav2's timeouts on the blackboard: `server_timeout` half a tick and `wait_for_service_timeout` 5 s, 60 s

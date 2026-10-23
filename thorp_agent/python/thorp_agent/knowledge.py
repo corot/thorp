@@ -16,8 +16,6 @@ TRAY = 'tray'
 OK = 'ok'
 BELIEVED = 'believed'
 
-# A place pose is checked for collisions before the object is lowered onto the table, so it must clear the top
-PLACE_CLEARANCE = 0.01
 # Smaller robot moves than these aren't worth telling
 MOVED_DISTANCE = 0.05
 MOVED_YAW = 0.1
@@ -41,8 +39,7 @@ def summary(snapshot: Optional[Dict[str, Any]]) -> str:
     lines = ['Robot: {}; {}.'.format(_robot(snapshot.get('robot')),
                                      _at_table(at_table, snapshot.get('robot')) if at_table else 'at no table')]
     held = sorted(i for i, e in objects.items() if e['support'] == GRIPPER)
-    lines.append('Gripper: {}.'.format(', '.join(i + _held(objects[i], at_table, entities.get(at_table)) for i in held)
-                                       if held else 'empty'))
+    lines.append('Gripper: {}.'.format(', '.join(i + _held(objects[i]) for i in held) if held else 'empty'))
     stowed = sorted((i for i, e in objects.items() if e['support'] == TRAY),
                     key=lambda i: (objects[i]['slot'] is None, objects[i]['slot'] or 0, i))
     lines.append('Tray: {}.'.format(', '.join(_on_tray(i, objects[i]['slot']) for i in stowed) if stowed else 'empty'))
@@ -83,8 +80,7 @@ def changes(before: Optional[Dict[str, Any]], after: Optional[Dict[str, Any]]) -
                 said.append('{} inspected'.format(entity_id))
             continue
         if (entity['support'], entity['slot']) != (was['support'], was['slot']):
-            table_id = after.get('at_table')
-            held = _held(entity, table_id, new.get(table_id)) if entity['support'] == GRIPPER else ''
+            held = _held(entity) if entity['support'] == GRIPPER else ''
             said.append('{}: {} -> {}{}'.format(entity_id, _where(was), _where(entity), held or _at(entity)))
         else:
             if entity['status'] != was['status']:
@@ -182,15 +178,10 @@ def _top(table):
     return table['pose']['z'] + table['size'][2] / 2.0
 
 
-def _held(entity, table_id, table):
-    """A note on an object in the gripper: its height, and the z that rests it on the table the robot is at"""
+def _held(entity):
+    """A note on an object in the gripper: its height"""
     size = entity.get('size')
-    if not size:
-        return ''
-    note = '{:.1f} cm tall'.format(size[2] * 100)
-    if table and table.get('size') and 'z' in table['pose']:
-        note += '; to place it on {}, its z is {:.3f}'.format(table_id, _top(table) + size[2] / 2.0 + PLACE_CLEARANCE)
-    return ' ({})'.format(note)
+    return ' ({:.1f} cm tall)'.format(size[2] * 100) if size else ''
 
 
 def _at(entity):

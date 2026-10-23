@@ -58,11 +58,21 @@
     </Sequence>
   </BehaviorTree>
 
-  <!-- Place the held object at a pose on the table the robot is at, failing with NOT_AT_TABLE if it's at none -->
+  <!--
+    Place the held object at a position on the table the robot is at, resting on its top, failing with NOT_AT_TABLE if
+    it's at none
+  -->
   <BehaviorTree ID="place_object">
     <Sequence>
       <GetCurrentTable table_id="{table_id}"
+                       table="{table}"
+                       table_pose="{table_pose}"
                        error="{error}"/>
+      <GetPlacePose x="{x}"
+                    y="{y}"
+                    table="{table}"
+                    table_pose="{table_pose}"
+                    place_pose="{place_pose}"/>
       <RecoverAndRetry>
         <PlaceObject object_name="{object_name}"
                      place_pose="{place_pose}"
