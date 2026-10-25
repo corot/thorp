@@ -51,6 +51,9 @@ constexpr double RELEASE_MARGIN = 0.015;
 constexpr double WIDEST_SECTION_MARGIN = 0.002;
 // Height of the open gripper over the surface supporting the object to grasp
 constexpr double SUPPORT_CLEARANCE = 0.005;
+// How far above its support a placed object is released: contacts with the support are allowed only from the place
+// pose on, so the object must clear the support there
+constexpr double PLACE_CLEARANCE = 0.01;
 
 template <typename T>
 T param(const rclcpp::Node::SharedPtr& node, const std::string& name, const T& default_value)
@@ -559,19 +562,11 @@ ThorpError PickAndPlaceServer::place(const PlaceObject::Goal& goal, const Feedba
     return fail(ThorpError::NOT_IN_VIEW,
                 "support '" + goal.support_surf +
                     "' isn't in the planning scene: the robot hasn't seen it from where it is");
-  // The place pose is where the object's center goes, so over the top of the support, if it's an object in the scene
+  // The place pose is where the object's center goes, so over the top of the support, if it's an object in the scene,
+  // and at least half the object's height above it
   if (support && !support->shapes_.empty())
   {
     const Eigen::Vector3d half_size = shapes::computeShapeExtents(support->shapes_.front().get()) / 2.0;
-    double top = std::numeric_limits<double>::lowest();
-    for (const Eigen::Vector3d& corner : boxCorners(Eigen::Vector3d::Zero(), half_size))
-      top = std::max(top, (support->global_shape_poses_.front() * corner).z());
-    if (place_pose.translation().z() < top)
-      return fail(ThorpError::INVALID_TARGET_POSE,
-                  std::format("place pose {} on {} is {:.1f} cm below the top of '{}': the object's center goes half "
-                              "its height above it",
-                              toString(goal.place_pose.pose.position), goal.place_pose.header.frame_id,
-                              (top - place_pose.translation().z()) * 100.0, goal.support_surf));
     const Eigen::Vector3d on_support = support->global_shape_poses_.front().inverse() * place_pose.translation();
     const double off = std::hypot(std::max(0.0, std::abs(on_support.x()) - half_size.x()),
                                   std::max(0.0, std::abs(on_support.y()) - half_size.y()));
@@ -580,6 +575,24 @@ ThorpError PickAndPlaceServer::place(const PlaceObject::Goal& goal, const Feedba
                   std::format("place pose {} on {} is {:.1f} cm off '{}': the object's center goes over its top",
                               toString(goal.place_pose.pose.position), goal.place_pose.header.frame_id, off * 100.0,
                               goal.support_surf));
+    // the support's top right under the place pose, as a support can tilt a bit
+    const double top =
+        (support->global_shape_poses_.front() * Eigen::Vector3d(on_support.x(), on_support.y(), half_size.z())).z();
+    const auto& held_shapes = attached_bodies.front()->getShapes();
+    const double resting =
+        top + (held_shapes.empty() ? 0.0 : shapes::computeShapeExtents(held_shapes.front().get()).z() / 2.0);
+    if (place_pose.translation().z() < resting)
+    {
+      // the z to give, on the place pose's frame
+      Eigen::Vector3d above = place_pose.translation();
+      above.z() = resting + PLACE_CLEARANCE;
+      above = scene->getFrameTransform(goal.place_pose.header.frame_id).inverse() * above;
+      return fail(ThorpError::INVALID_TARGET_POSE,
+                  std::format("place pose {} on {} is {:.1f} cm too low over '{}': resting on it, the object's center "
+                              "goes at z {:.3f}",
+                              toString(goal.place_pose.pose.position), goal.place_pose.header.frame_id,
+                              (resting - place_pose.translation().z()) * 100.0, goal.support_surf, above.z()));
+    }
   }
   place_pose = scene->getFrameTransform(arm_ref_frame_).inverse() * place_pose;
   std::vector<geometry_msgs::msg::PoseStamped> gripper_poses;

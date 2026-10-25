@@ -16,6 +16,8 @@ TRAY = 'tray'
 OK = 'ok'
 BELIEVED = 'believed'
 
+# How far above the table a placed object is released, as the manipulation server rests it
+PLACE_CLEARANCE = 0.01
 # Smaller robot moves than these aren't worth telling
 MOVED_DISTANCE = 0.05
 MOVED_YAW = 0.1
@@ -40,7 +42,8 @@ def summary(snapshot: Optional[Dict[str, Any]]) -> str:
     where = _at_table(at_table, robot) if at_table else 'at no table'
     lines = [f'Robot: {_robot(robot, snapshot.get("shoulder"))}; {where}.']
     held = sorted(i for i, e in objects.items() if e['support'] == GRIPPER)
-    lines.append(f'Gripper: {", ".join(i + _held(objects[i]) for i in held) if held else "empty"}.')
+    held_notes = ', '.join(i + _held(objects[i], at_table, entities.get(at_table)) for i in held)
+    lines.append(f'Gripper: {held_notes or "empty"}.')
     stowed = sorted((i for i, e in objects.items() if e['support'] == TRAY),
                     key=lambda i: (objects[i]['slot'] is None, objects[i]['slot'] or 0, i))
     lines.append(f'Tray: {", ".join(_on_tray(i, objects[i]["slot"]) for i in stowed) if stowed else "empty"}.')
@@ -81,7 +84,8 @@ def changes(before: Optional[Dict[str, Any]], after: Optional[Dict[str, Any]]) -
                 said.append(f'{entity_id} inspected')
             continue
         if (entity['support'], entity['slot']) != (was['support'], was['slot']):
-            held = _held(entity) if entity['support'] == GRIPPER else ''
+            table_id = after.get('at_table')
+            held = _held(entity, table_id, new.get(table_id)) if entity['support'] == GRIPPER else ''
             said.append(f'{entity_id}: {_where(was)} -> {_where(entity)}{held or _at(entity)}')
         else:
             if entity['status'] != was['status']:
@@ -183,10 +187,15 @@ def _top(table):
     return table['pose']['z'] + table['size'][2] / 2.0
 
 
-def _held(entity):
-    """A note on an object in the gripper: its height"""
+def _held(entity, table_id, table):
+    """A note on an object in the gripper: its height, and the z that rests it on the table the robot is at"""
     size = entity.get('size')
-    return f' ({size[2] * 100:.1f} cm tall)' if size else ''
+    if not size:
+        return ''
+    note = f'{size[2] * 100:.1f} cm tall'
+    if table and table.get('size') and 'z' in table['pose']:
+        note += f'; to place it on {table_id}, its z is {_top(table) + size[2] / 2.0 + PLACE_CLEARANCE:.3f}'
+    return f' ({note})'
 
 
 def _at(entity):

@@ -3,12 +3,7 @@
 #include "thorp_bt_cpp/errors.hpp"
 #include "thorp_bt_cpp/node_common.hpp"
 #include "thorp_bt_cpp/ros_service_node.hpp"
-#include "thorp_bt_cpp/world.hpp"
 
-#include <algorithm>
-
-#include <geometry_msgs/msg/pose_stamped.hpp>
-#include <moveit_msgs/msg/collision_object.hpp>
 #include <thorp_msgs/msg/thorp_error.hpp>
 #include <thorp_msgs/msg/world_entity.hpp>
 #include <thorp_msgs/srv/query_world.hpp>
@@ -18,8 +13,8 @@ namespace thorp::bt::actions
 using thorp_msgs::msg::ThorpError;
 
 /**
- * The table the robot is at, as thorp_world tells: the one it docked at, or else the closest; its id, and the table
- * as GetTable gives it. Fails with NOT_AT_TABLE if it's at none.
+ * The table the robot is at, as thorp_world tells: the one it docked at, or else the closest. Fails with NOT_AT_TABLE
+ * if it's at none.
  */
 class GetCurrentTable : public BT::RosServiceNode<thorp_msgs::srv::QueryWorld, BT::SyncActionNode>
 {
@@ -33,9 +28,7 @@ public:
   {
     BT::PortsList ports = BT::RosServiceNode<ServiceType, ParentType>::providedPorts();
     ports["service_name"].setDefaultValue("world/query");
-    ports.insert({ BT::OutputPort<std::string>("table_id"),                        //
-                   BT::OutputPort<moveit_msgs::msg::CollisionObject>("table"),     //
-                   BT::OutputPort<geometry_msgs::msg::PoseStamped>("table_pose"),  //
+    ports.insert({ BT::OutputPort<std::string>("table_id"),  //
                    BT::OutputPort<ThorpError>("error") });
     return ports;
   }
@@ -43,7 +36,6 @@ public:
 private:
   void sendRequest(RequestType& request) override
   {
-    request.kind = thorp_msgs::msg::WorldEntity::TABLE;
   }
 
   BT::NodeStatus onResponse(const ResponseType& response) override
@@ -56,14 +48,6 @@ private:
       return BT::NodeStatus::FAILURE;
     }
     setOutput("table_id", response.at_table);
-    const auto& entities = response.entities;
-    const auto table =
-        std::find_if(entities.begin(), entities.end(), [&](const auto& e) { return e.id == response.at_table; });
-    if (table != entities.end())
-    {
-      setOutput("table", tableObject(*table));
-      setOutput("table_pose", table->pose);
-    }
     return BT::NodeStatus::SUCCESS;
   }
 
