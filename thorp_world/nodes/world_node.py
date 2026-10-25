@@ -55,7 +55,7 @@ class WorldNode(Node):
         self.declare_parameter('world_file', '')
         self.world = World(object_tolerance=self.declare_parameter('object_tolerance', 0.05).value,
                            table_tolerance=self.declare_parameter('table_tolerance', 0.3).value,
-                           table_area_ratio=self.declare_parameter('table_area_ratio', 0.8).value,
+                           table_side_ratio=self.declare_parameter('table_side_ratio', 0.9).value,
                            at_table_distance=self.declare_parameter('at_table_distance', 0.3).value,
                            detection_range=self.declare_parameter('detection_range', 0.7).value)
 

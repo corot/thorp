@@ -22,13 +22,14 @@ passed from one call to the next, and the agent can reason on what is where with
 
 Observations are matched against what is known: an object is the known object closest to it, within a tolerance,
 whatever type detection gives it this time, as it sometimes misidentifies one; the object keeps the type it was first
-seen as. A table is the known table its center falls on. A table's pose and size are replaced only by views at least
-about as large, as partial views give smaller tables. Objects known on a table become missing only when a detection
-from at that table doesn't see them, only where the observed surface covers them, and only within `detection_range`
-of the camera (0.7 m): from further away, as from `inspect_table`'s viewing pose or across the table from a dock,
-detection misses objects that are there. On the LLM playground, it found most objects up to 1.2 m from the camera,
-but missed the smallest, the star and the triangle, from 0.80 m, and the thin blue circle at 0.73 m; within 0.7 m,
-which covers what the arm reaches from a dock, it misses objects others partly hide, and once in a while others.
+seen as. A table is the known table its center falls on. A table's pose and size are replaced only by views about as
+long on each side, as partial views give shorter tables: from a dock off the middle of a long table, the robot saw 82%
+of its length, which a test on the area took for the whole table. Objects known on a table become missing only when a
+detection from at that table doesn't see them, only where the observed surface covers them, and only within
+`detection_range` of the camera (0.7 m): from further away, as from `inspect_table`'s viewing pose or across the table
+from a dock, detection misses objects that are there. On the LLM playground, it found most objects up to 1.2 m from the
+camera, but missed the smallest, the star and the triangle, from 0.80 m, and the thin blue circle at 0.73 m; within
+0.7 m, which covers what the arm reaches from a dock, it misses objects others partly hide, and once in a while others.
 
 ## Node
 

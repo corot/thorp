@@ -18,20 +18,20 @@ class World:
     entities already known so that each keeps its id; skills update it with the effects they believe they had.
     """
 
-    def __init__(self, object_tolerance=0.05, table_tolerance=0.3, table_area_ratio=0.8, at_table_distance=0.3,
+    def __init__(self, object_tolerance=0.05, table_tolerance=0.3, table_side_ratio=0.9, at_table_distance=0.3,
                  detection_range=0.7):
         """
         :param object_tolerance: how far from where it was a redetected object can be, to be the same one
         :param table_tolerance: how far off a known table's footprint a redetected table's center can be
-        :param table_area_ratio: a known table takes an observation's pose and size only if its area is at least
-          this ratio of the current one, as partial views give smaller tables
+        :param table_side_ratio: a known table takes an observation's pose and size only if each of its sides is at
+          least this ratio of the known one's, as partial views give shorter tables, a long one along its length
         :param at_table_distance: how far from a table's edge the robot can be, to be at it
         :param detection_range: how far from the camera detection finds objects reliably; farther, not seeing an
           object says nothing of whether it's there
         """
         self.object_tolerance = object_tolerance
         self.table_tolerance = table_tolerance
-        self.table_area_ratio = table_area_ratio
+        self.table_side_ratio = table_side_ratio
         self.at_table_distance = at_table_distance
         self.detection_range = detection_range
         self.docked_at = None
@@ -65,7 +65,7 @@ class World:
             if table is None:
                 table = Entity(self._new_id(obs.type), TABLE, obs.type, tuple(obs.size), obs.color, pose)
                 self._entities[table.id] = table
-            elif obs.size[0] * obs.size[1] >= self.table_area_ratio * table.size[0] * table.size[1]:
+            elif all(seen >= self.table_side_ratio * known for seen, known in zip(obs.size[:2], table.size[:2])):
                 table.pose, table.size, table.color = pose, tuple(obs.size), obs.color
             table.provenance, table.stamp, table.status = OBSERVED, stamp, OK
             ids.append(table.id)

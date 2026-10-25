@@ -74,6 +74,14 @@ def test_a_partial_view_does_not_shrink_a_known_table(world):
     assert known.stamp == 2.0, "it was seen, though"
 
 
+def test_a_view_short_along_a_long_table_does_not_shrink_it(world):
+    """Seen from a dock off its middle, a long table looks 18% shorter, its area too, but no narrower"""
+    world.observe_tables([table(size=(0.825, 0.55, 0.02))], stamp=1.0)
+    world.observe_tables([table(0.52, 0.0, size=(0.676, 0.543, 0.02))], stamp=2.0)
+    known = world.get('table 1')
+    assert known.size == (0.825, 0.55, 0.02) and known.pose.x == pytest.approx(0.45)
+
+
 def test_a_fuller_view_replaces_a_partial_one(world):
     world.observe_tables([table(0.35, 0.0, size=(0.55, 0.2, 0.02))], stamp=1.0)
     world.observe_tables([table()], stamp=2.0)
