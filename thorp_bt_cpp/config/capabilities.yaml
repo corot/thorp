@@ -131,7 +131,7 @@ capabilities:
     stack: [manipulation]
     inputs:
       object_name: {type: string, description: "id of the object in the gripper, as pickup_object reports it in attached_object"}
-      place_pose: {type: geometry_msgs::msg::PoseStamped, description: "where the object's center goes, as 'x;y;z;roll;pitch;yaw;frame', with the z the summary gives for the object in the gripper; the short form, 'x;y;yaw;frame', leaves z at 0, which is the floor"}
+      place_pose: {type: geometry_msgs::msg::PoseStamped, description: "where the object's center goes, with the z the summary gives for the object in the gripper"}
     outputs:
       error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed: one of errors, or else the place action's"}
     errors:
@@ -398,7 +398,7 @@ capabilities:
     status: ok
     stack: [navigation]
     inputs:
-      pose: {type: geometry_msgs::msg::PoseStamped, description: "where to drive to, as 'x;y;yaw;frame'"}
+      pose: {type: geometry_msgs::msg::PoseStamped, description: "where to drive to"}
     outputs:
       nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's navigate_to_pose; only set when the drive failed"}
     test:
@@ -606,7 +606,7 @@ capabilities:
     status: ok
     stack: [navigation]
     inputs:
-      poses: {type: std::vector<geometry_msgs::msg::PoseStamped>, description: "candidate poses, tried in order, each as 'x;y;yaw;frame'"}
+      poses: {type: std::vector<geometry_msgs::msg::PoseStamped>, description: "candidate poses, tried in order"}
     outputs:
       next_pose: {type: geometry_msgs::msg::PoseStamped, description: "the pose actually reached"}
       goto_pose_error: {type: uint16_t, when: failure, description: "error code from Nav2's navigate_to_pose"}
@@ -624,7 +624,7 @@ capabilities:
     status: ok
     stack: [navigation]
     inputs:
-      waypoints: {type: std::vector<geometry_msgs::msg::PoseStamped>, description: "waypoints to follow in order, each as 'x;y;yaw;frame', as cover_in_one_tour and cover_room_by_room return them in coverage_waypoints"}
+      waypoints: {type: std::vector<geometry_msgs::msg::PoseStamped>, description: "waypoints to follow in order, as cover_in_one_tour and cover_room_by_room return them in coverage_waypoints"}
     outputs:
       next_waypoint: {type: unsigned long, when: maybe, description: "index of the waypoint being driven to"}
       robot_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "robot pose while following"}

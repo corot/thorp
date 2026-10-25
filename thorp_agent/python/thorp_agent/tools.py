@@ -6,10 +6,10 @@ is most of what is worth testing here.
 """
 
 import json
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional
 
 from langchain_core.tools import StructuredTool
-from pydantic import BaseModel, Field, create_model
+from pydantic import BaseModel, ConfigDict, Field, create_model
 
 from .capabilities import TYPES
 
@@ -17,13 +17,16 @@ from .capabilities import TYPES
 class Pose(BaseModel):
     """A pose as bt_server emits one, which is also a shape seeding accepts back."""
 
-    x: float
-    y: float
-    z: float = 0.0
-    roll: float = 0.0
-    pitch: float = 0.0
-    yaw: float = 0.0
-    frame: str = 'map'
+    # a field the model names wrong is told back to it, not dropped unseen
+    model_config = ConfigDict(extra='forbid')
+
+    x: float = Field(description='meters')
+    y: float = Field(description='meters')
+    z: float = Field(default=0.0, description='meters')
+    roll: float = Field(default=0.0, description='radians')
+    pitch: float = Field(default=0.0, description='radians')
+    yaw: float = Field(default=0.0, description="radians, counterclockwise from the frame's +x")
+    frame: str = Field(default='map', description='the frame the pose is on')
 
 
 PY_TYPES = {
@@ -32,11 +35,11 @@ PY_TYPES = {
     'number': float,
     'string': str,
     'object': Dict[str, Any],
-    'pose': Union[str, Pose],
+    'pose': Pose,
     'array-of-string': List[str],
     'array-of-integer': List[int],
     'array-of-object': List[Dict[str, Any]],
-    'array-of-pose': List[Union[str, Pose]],
+    'array-of-pose': List[Pose],
     'counts': Dict[str, int],
 }
 

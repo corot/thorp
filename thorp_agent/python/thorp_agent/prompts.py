@@ -65,7 +65,7 @@ PROMPTS = RobotSystemPrompts(
         'of, go_to_table with its id; with no table known yet, goto_pose to the start pose, which faces the table, '
         'unless the robot is there already.'),
     about_your_capabilities=(
-        "Poses are given as 'x;y;yaw;frame' or 'x;y;z;roll;pitch;yaw;frame', in meters and radians, and 'map' is "
+        "Poses are objects of x, y and z, in meters, roll, pitch and yaw, in radians, and frame, and 'map' is "
         'the frame you want unless you have a reason otherwise. Everything handed back to you is already in the map '
         'frame. The map\'s +x is east and its +y north. Yaw turns counterclockwise from east, so facing yaw, the '
         'robot\'s left is yaw + pi/2.\n'
@@ -75,7 +75,7 @@ PROMPTS = RobotSystemPrompts(
         'reach_table takes a table\'s side by compass, and the summary says which side of its table the robot is at. '
         'A side the operator gives as the robot sees it, as the far one, is a compass side from where the robot '
         'stands: at the south side, the far side is the north one.\n'
-        'To place an object, give the long form, with the z that thorp_world gives for the object in the gripper, in '
+        'To place an object, give its pose with the z that thorp_world gives for the object in the gripper, in '
         'the summary or in the pickup\'s world_changes: a lower z puts the object into the table and the place '
         'fails, saying the z to give. The yaw of a place pose has no effect, as the arm turns the object toward where '
         'it reaches. The arm reaches only 30 cm from its shoulder, which the summary places on the map, a '

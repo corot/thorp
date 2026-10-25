@@ -10,9 +10,8 @@ from typing import Any, Dict, List
 
 import yaml
 
-# How a capability's C++ type is described to the agent. Poses are offered as strings, as the ';' form is far easier
-# for a model to emit without mistakes, but also taken in the object form calls return, as bt_server's seeding
-# accepts both and values are passed back verbatim.
+# How a capability's C++ type is described to the agent. Poses are offered as objects of named fields, the form calls
+# return and bt_server's seeding takes, so a model passes one back verbatim and can't put a value in another's place.
 POSE = 'geometry_msgs::msg::PoseStamped'
 # Collision objects come in lists, as their ids and colors
 COLLISION_OBJECT = 'moveit_msgs::msg::CollisionObject'
@@ -29,10 +28,9 @@ TYPES = {
     'double': ('number', None),
     'std::string': ('string', None),
     'string': ('string', None),
-    POSE: ('pose', "a pose as 'x;y;yaw;frame' or 'x;y;z;roll;pitch;yaw;frame', e.g. '1.5;0.0;1.57;map', or as "
-                   'an earlier call returned it. Frames other than map are rarely what you want'),
-    'std::vector<' + POSE + '>': ('array-of-pose', "poses, each as 'x;y;yaw;frame' or as an earlier call "
-                                                   'returned it'),
+    POSE: ('pose', 'a pose, as calls return them: an object of its position, x, y and z, its orientation, roll, '
+                   'pitch and yaw, and its frame. Frames other than map are rarely what you want'),
+    'std::vector<' + POSE + '>': ('array-of-pose', 'poses, each an object, as calls return them'),
     'std::vector<' + COLLISION_OBJECT + '>': ('array-of-object', 'one name and color per object'),
     'std::map<std::string, unsigned int>': ('counts', None),
     'std::map<std::string, uint32_t>': ('counts', None),

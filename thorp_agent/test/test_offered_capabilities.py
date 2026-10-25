@@ -111,7 +111,7 @@ def test_a_capability_taking_a_pose_says_how_to_write_one(specs):
     for spec in posed:
         for field, meta in spec['args'].items():
             if meta['type'] == capabilities.POSE:
-                assert 'x;y;yaw;frame' in meta['description'], f'{spec["name"]}.{field}'
+                assert 'an object of its position, x, y and z' in meta['description'], f'{spec["name"]}.{field}'
 
 
 def test_optional_inputs_are_marked_and_the_rest_are_not(document, specs):
@@ -149,8 +149,7 @@ def test_a_call_that_worked_reports_no_error():
     assert json.loads(failed.invoke({}))['outputs'] == stale
 
 
-def test_a_pose_goes_back_as_a_call_returned_it_or_as_a_string():
-    """bt_server seeds both forms, and a pose passed back verbatim is the object form a call returned."""
+def test_a_pose_goes_as_an_object_a_call_returned_or_with_its_fields_left_out_at_their_defaults():
     pytest.importorskip('langchain_core')
     from thorp_agent import tools
     spec = {'name': 't', 'description': 'a test tool taking a pose', 'outputs': [],
@@ -160,8 +159,21 @@ def test_a_pose_goes_back_as_a_call_returned_it_or_as_a_string():
     tool = tools.build([spec], lambda name, inputs, **_: sent.update(inputs) or {})[0]
     tool.invoke({'pose': returned})
     assert sent == {'pose': returned}
-    tool.invoke({'pose': '1.5;0.0;1.57;map'})
-    assert sent == {'pose': '1.5;0.0;1.57;map'}
+    tool.invoke({'pose': {'x': 0.61, 'y': 0.0, 'z': 0.501}})
+    assert sent == {'pose': {'x': 0.61, 'y': 0.0, 'z': 0.501, 'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0, 'frame': 'map'}}
+
+
+def test_a_pose_as_a_string_or_with_a_field_named_wrong_goes_back_to_the_model():
+    """A string's values go by position, and a misnamed field would be dropped unseen"""
+    pytest.importorskip('langchain_core')
+    from thorp_agent import tools
+    spec = {'name': 't', 'description': 'a test tool taking a pose', 'outputs': [],
+            'args': {'pose': {'type': capabilities.POSE, 'optional': False, 'description': 'a pose'}}}
+    sent = []
+    tool = tools.build([spec], lambda name, inputs, **_: sent.append(inputs) or {})[0]
+    assert 'invalid arguments' in tool.invoke({'pose': '0.61;0.0;0.501;map'})
+    assert 'invalid arguments' in tool.invoke({'pose': {'x': 0.61, 'y': 0.0, 'theta': 1.57}})
+    assert not sent
 
 
 def test_bad_arguments_go_back_to_the_model():
