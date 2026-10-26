@@ -65,10 +65,10 @@
         </visual>
       </link>
     </model>
-    <!-- turtlebot3_gazebo's house, edited for Thorp -->
+    <!-- turtlebot3_gazebo's house, edited for Thorp, placed with the robot's start at the origin -->
     <include>
       <uri>model://fun_house</uri>
-      <pose>7.4 5.6 0 0 0 0</pose>
+      <pose>-1.1 -0.4 0 0 0 0</pose>
     </include>
   </world>
 </sdf>

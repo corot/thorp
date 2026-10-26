@@ -79,8 +79,6 @@ def generate_launch_description():
         # The cat stays still; the controller only sends it off the map once toppled
         Node(package='thorp_simulation', executable='cats_controller.py', name='cats_controller', output='screen',
              respawn=True, parameters=[{'prowling_speed': 0.0,
-                                        'outside_x': 5.0,
-                                        'outside_y': 5.0,
                                         'use_sim_time': simulation}],
              condition=IfCondition(simulation)),
     ])

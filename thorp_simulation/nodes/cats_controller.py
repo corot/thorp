@@ -38,8 +38,9 @@ class CatsController(Node):
         self.declare_parameter('target_models', ['cat_orange', 'cat_black'])
         self.declare_parameter('prowling_speed', 0.1)
         self.declare_parameter('hit_sock_duration', 1.5)
+        # Where toppled cats go, in a row along x: beyond every world's map and the cameras' range, on the ground plane
         self.declare_parameter('outside_x', 0.0)
-        self.declare_parameter('outside_y', 0.0)
+        self.declare_parameter('outside_y', -20.0)
         self.declare_parameter('hit_tilt_threshold', math.pi / 3.0)
         self.target_models = self.get_parameter('target_models').value
         self.prowling_step = self.get_parameter('prowling_speed').value * UPDATE_PERIOD

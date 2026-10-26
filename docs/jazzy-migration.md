@@ -597,8 +597,10 @@ object models take their meshes from `thorp_perception`'s templates, as `model:/
 `thorp_perception` exports its share for Gazebo; Noetic's models linked them with relative symlinks, which point nowhere
 from an install space other than a symlink install. The
 `empty`, `playground` and `fun_house` worlds step the physics every 2 ms, as DART's contacts at 1 kHz halved the real
-time factor. `thorp_gazebo.launch.py` also runs what Noetic's `sim_common.launch.xml` and `thorp_gazebo.launch.xml` did:
-velocity commands multiplexer and depth image and point cloud to laser scan. With the GUI, it points the camera at the
+time factor. The `fun_house` world and map put the origin at the robot's start, as `small_house`'s already is, so the
+apps start Thorp at (0, 0, 0); toppled cats go to (0, -20) by default, beyond every map. `thorp_gazebo.launch.py` also
+runs what Noetic's `sim_common.launch.xml` and `thorp_gazebo.launch.xml` did: velocity commands multiplexer and depth
+image and point cloud to laser scan. With the GUI, it points the camera at the
 robot's initial pose, from 2 m to its right and 1 m up, through the GUI's `/gui/move_to/pose` service, so the worlds
 keep Gazebo's default GUI: a world's `<gui>` replaces it whole, to set the camera pose. `spawn_gazebo_models.py`
 populates the world with tables and objects through Gazebo's create service, bridged to ROS with the remove and set pose

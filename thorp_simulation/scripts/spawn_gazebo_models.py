@@ -109,10 +109,10 @@ OBJS_MIN_DIST = 0.08
 CATS_MIN_DIST = 3.0
 CATS_CLEARANCE = 0.3
 
-PREFERRED_LOCATIONS = [(12.5, 7.5),
-                       (8.4, 9.6),
-                       (4.6, 9.8),
-                       (5.8, 6.5)]
+PREFERRED_LOCATIONS = [(4.0, 1.5),
+                       (-0.1, 3.6),
+                       (-3.9, 3.8),
+                       (-2.7, 0.5)]
 
 
 class ModelsSpawner(Node):

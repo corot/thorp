@@ -30,8 +30,8 @@ def generate_launch_description():
         DeclareLaunchArgument('rviz', default_value='true'),
         DeclareLaunchArgument('world_name', default_value='fun_house'),
         DeclareLaunchArgument('localization', default_value='gazebo', description='amcl, static or gazebo'),
-        DeclareLaunchArgument('initial_pose_x', default_value='8.5'),
-        DeclareLaunchArgument('initial_pose_y', default_value='6.0'),
+        DeclareLaunchArgument('initial_pose_x', default_value='0.0'),
+        DeclareLaunchArgument('initial_pose_y', default_value='0.0'),
         DeclareLaunchArgument('initial_pose_a', default_value='0.0'),
 
         IncludeLaunchDescription(
@@ -71,8 +71,6 @@ def generate_launch_description():
         Node(package='thorp_simulation', executable='cats_controller.py', name='cats_controller', output='screen',
              respawn=True, parameters=[{'prowling_speed': 0.2,
                                         'hit_sock_duration': 1.0,
-                                        'outside_x': 1.0,
-                                        'outside_y': -5.0,
                                         'use_sim_time': simulation}],
              condition=IfCondition(simulation)),
     ])

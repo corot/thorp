@@ -98,7 +98,7 @@ def test_room_exploration_sees_the_room(simple_rooms):
 
 def test_whole_map_exploration():
     planner = make_planner(load_map('fun_house'))
-    poses = planner.plan_room_exploration((8.5, 6.0), 0)
+    poses = planner.plan_room_exploration((0.0, 0.0), 0)
     assert len(poses) > 10
     assert all(planner.grid.clearance[planner.grid.to_cell(x, y)] >= 0.4 for x, y, _ in poses)
 
