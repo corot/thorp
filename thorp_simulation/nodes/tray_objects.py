@@ -71,15 +71,32 @@ class TrayObjects(Node):
         self.released = set()  # detached, but not yet off the tray
         self.joints = {}  # model name: attach and detach publishers of its joint system on Thorp's model
         self.models = set()  # names of the world's models; the poses topic also has some other entities
-        self.others = set()
+        self.following = False  # subscribed to the poses, once the models already in the world are known
 
         self.gz_node = GzNode()
-        topic = f'/world/{self.world}/pose/info'
-        if not self.gz_node.subscribe(Pose_V, topic, self.poses_cb):
-            raise RuntimeError(f'Subscribing to {topic} failed')
+        self.gz_subscribe(Scene, f"/world/{self.world}/scene/info", self.scene_cb)  # models added
         self.create_timer(0.2, self.check)
         self.create_service(Trigger, '~/release', self.release)
-        self.get_logger().info('Fixing the objects resting on the tray to Thorp')
+        self.get_logger().info("Fixing the objects resting on the tray to Thorp")
+
+    def gz_subscribe(self, msg_type, topic, callback):
+        if not self.gz_node.subscribe(msg_type, topic, callback):
+            raise RuntimeError(f"Subscribing to {topic} failed")
+
+    def scene_cb(self, msg):
+        with self.lock:
+            self.models |= {model.name for model in msg.model}
+
+    def follow(self):
+        """
+        Get the models already in the world, then subscribe to the poses: a gz request times out while the process's
+        Python subscriptions are getting messages
+        """
+        ok, scene = self.gz_node.request(f"/world/{self.world}/scene/info", Empty(), Empty, Scene, 1000)
+        if ok:
+            self.scene_cb(scene)
+            self.gz_subscribe(Pose_V, f"/world/{self.world}/pose/info", self.poses_cb)
+            self.following = True
 
     def poses_cb(self, msg):
         poses = {p.name: (p.id, (p.position.x, p.position.y, p.position.z,
@@ -93,8 +110,12 @@ class TrayObjects(Node):
         return tf.transform.translation.x, tf.transform.translation.y, tf.transform.translation.z
 
     def check(self):
+        if not self.following:
+            self.follow()
+            return
         with self.lock:
             poses = dict(self.poses)
+            models = set(self.models)
         if ROBOT_MODEL not in poses:
             return
         try:
@@ -103,12 +124,10 @@ class TrayObjects(Node):
             gripper = self.lookup('gripper_link')
         except TransformException:
             return
-        if not poses.keys() <= self.models | self.others:
-            self.update_models(poses.keys())
         robot_id, robot = poses[ROBOT_MODEL]
         now = self.get_clock().now()
         for name, (_, pose) in poses.items():
-            if name == ROBOT_MODEL or name in self.fixed or name not in self.models:
+            if name == ROBOT_MODEL or name in self.fixed or name not in models:
                 continue
             position = to_robot_frame(pose, robot)
             dx, dy, dz = (position[i] - self.tray[i] for i in range(3))
@@ -128,18 +147,12 @@ class TrayObjects(Node):
             if (now - since).nanoseconds * 1e-9 >= STILL_TIME:
                 self.fix(robot_id, name)
 
-    def update_models(self, names):
-        ok, scene = self.gz_node.request(f'/world/{self.world}/scene/info', Empty(), Empty, Scene, 1000)
-        if ok:
-            self.models = {model.name for model in scene.model}
-            self.others = set(names) - self.models
-
     def release(self, request, response):
         """ Detach the objects fixed to the tray """
         for name in self.fixed:
             self.joints[name][1].publish(Empty())
         response.success = True
-        response.message = f'released {", ".join(sorted(self.fixed)) or "nothing"}'
+        response.message = f"released {", ".join(sorted(self.fixed)) or "nothing"}"
         self.get_logger().info(response.message.capitalize())
         self.released |= self.fixed
         self.fixed.clear()
@@ -152,7 +165,7 @@ class TrayObjects(Node):
         self.candidates.pop(name, None)
         if name in self.joints:
             self.joints[name][0].publish(Empty())
-            self.get_logger().info(f'{name} fixed to the tray again')
+            self.get_logger().info(f"{name} fixed to the tray again")
             return
         request = EntityPlugin_V()
         request.entity.id = robot_id
@@ -162,19 +175,19 @@ class TrayObjects(Node):
         plugin.filename = 'gz-sim-detachable-joint-system'
         # each system needs its own topics, as Thorp's model gets one per object
         topic = '/thorp/tray/' + ''.join(c if c.isalnum() else '_' for c in name)
-        plugin.innerxml = (f'<parent_link>{PARENT_LINK}</parent_link><child_model>{name}</child_model>'
-                           f'<child_link>{CHILD_LINK}</child_link><detach_topic>{topic}/detach</detach_topic>'
-                           f'<attach_topic>{topic}/attach</attach_topic><output_topic>{topic}/state</output_topic>')
+        plugin.innerxml = (f"<parent_link>{PARENT_LINK}</parent_link><child_model>{name}</child_model>"
+                           f"<child_link>{CHILD_LINK}</child_link><detach_topic>{topic}/detach</detach_topic>"
+                           f"<attach_topic>{topic}/attach</attach_topic><output_topic>{topic}/state</output_topic>")
         # Requested only once: the reply can go missing with the system added anyway, and a second joint between the
         # same models crashes the physics
         self.joints[name] = (self.gz_node.advertise(f'{topic}/attach', Empty),
                              self.gz_node.advertise(f'{topic}/detach', Empty))
-        service = f'/world/{self.world}/entity/system/add'
+        service = f"/world/{self.world}/entity/system/add"
         ok, response = self.gz_node.request(service, request, EntityPlugin_V, Boolean, 1000)
         if ok and response.data:
-            self.get_logger().info(f'{name} fixed to the tray')
+            self.get_logger().info(f"{name} fixed to the tray")
         else:
-            self.get_logger().warning(f'Fixing {name} to the tray not confirmed; not retrying')
+            self.get_logger().warning(f"Fixing {name} to the tray not confirmed; not retrying")
 
 
 def main():
