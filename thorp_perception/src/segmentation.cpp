@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 #include <pcl/features/normal_3d_omp.h>
 #include <pcl/filters/crop_box.h>
@@ -121,11 +122,31 @@ std::optional<Surface> findSurface(const PointCloud::ConstPtr& cloud, const Segm
     error = "surface shortest side below the minimum of " + std::to_string(min_side) + " m";
     return std::nullopt;
   }
-  Eigen::Vector2f longest = sides[0].second - sides[0].first;
-  surface.yaw = std::atan2(longest.y(), longest.x());
-  surface.length = longest.norm();
-  surface.width = (sides[2].second - sides[2].first).norm();
-  surface.center = (surface.corners[0] + surface.corners[1] + surface.corners[2] + surface.corners[3]) / 4.0f;
+  // Size and center from the hull's extent along the longest side and across it: a partial view isn't rectangular,
+  // so a rectangle as long as the longest side, centered on the corners, sticks out past the edges seen
+  Eigen::Vector2f along = (sides[0].second - sides[0].first).normalized();
+  Eigen::Vector2f across(-along.y(), along.x());
+  Eigen::Vector2f min = Eigen::Vector2f::Constant(std::numeric_limits<float>::max());
+  Eigen::Vector2f max = Eigen::Vector2f::Constant(std::numeric_limits<float>::lowest());
+  for (const auto& point : polygon)
+  {
+    const Eigen::Vector2f extent(point.dot(along), point.dot(across));
+    min = min.cwiseMin(extent);
+    max = max.cwiseMax(extent);
+  }
+  // x along the longest side of the extent, as for tables
+  if (max.y() - min.y() > max.x() - min.x())
+  {
+    std::swap(along, across);
+    across = -across;
+    const Eigen::Vector2f old_min = min, old_max = max;
+    min = Eigen::Vector2f(old_min.y(), -old_max.x());
+    max = Eigen::Vector2f(old_max.y(), -old_min.x());
+  }
+  surface.yaw = std::atan2(along.y(), along.x());
+  surface.length = max.x() - min.x();
+  surface.width = max.y() - min.y();
+  surface.center = along * (min.x() + max.x()) / 2.0f + across * (min.y() + max.y()) / 2.0f;
   return surface;
 }
 

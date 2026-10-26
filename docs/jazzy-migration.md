@@ -189,9 +189,10 @@ The segmentation and template matching are rewritten into `thorp_perception` fro
 `rail_segmentation` and `rail_mesh_icp`, instead of porting the forks as source dependencies: the forks carry much
 dead RAIL code, and running all in one node drops the RAIL messages, the segmentation service and the template
 matching action. The README records the source commits and licenses. Only what Thorp used is kept: a single crop box
-instead of segmentation zones, the table as the largest quadrilateral in the surface's convex hull (now centered on
-that quadrilateral rather than on the points' bounding box), and the 2D non-linear ICP; RAIL's color features,
-images and object recognition fields are dropped. The ORK and darknet YOLO pipelines are dropped too.
+instead of segmentation zones, the table as the largest quadrilateral in the surface's convex hull, its longest side
+giving the table's yaw, but sized and centered by the points' extent along that side and across it, as a partial view
+of a table isn't rectangular, and the 2D non-linear ICP; RAIL's color features, images and object recognition fields
+are dropped. The ORK and darknet YOLO pipelines are dropped too.
 
 `target_detection.launch.py`, for the cat hunter, replaces the COB pipeline: `yolo_ros`, a source dependency, detects
 and tracks objects on the Kinect images, with YOLO11m's segmentation model, and locates them with its depth images

@@ -39,11 +39,11 @@ struct Surface
 {
   PointCloud::Ptr cloud;
   Eigen::Vector4f plane;       // a, b, c, d of ax + by + cz + d = 0, with (a, b, c) the unit normal, pointing up
-  Eigen::Vector2f center;      // of the quadrilateral
-  double yaw;                  // of the quadrilateral's longest side
-  double length;               // longest side
-  double width;                // longer of the two shortest sides
-  std::vector<Eigen::Vector2f> corners;
+  Eigen::Vector2f center;      // of the points' extent along the yaw and across it
+  double yaw;                  // along the quadrilateral's longest side, or across it if the points extend more so
+  double length;               // points' extent along the yaw
+  double width;                // points' extent across it
+  std::vector<Eigen::Vector2f> corners;  // of the largest quadrilateral inscribed in the points' convex hull
 
   /// Distance from a point to the surface plane, positive above it
   float distance(const Eigen::Vector3f& point) const
