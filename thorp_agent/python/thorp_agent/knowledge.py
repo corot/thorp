@@ -2,9 +2,10 @@
 What thorp_world knows, put for the agent: a summary to start each request from, and what a capability call changed.
 
 Plain data in, text out, so it can be tested without ROS. A snapshot is what world.py reads from world/query and TF:
-{'robot': {x, y, yaw} or None, 'shoulder': the arm's, {x, y} or None, 'at_table': a table id or None, 'entities':
-{id: entity}}, each entity a dict with kind, type, color, pose ({x, y, z, yaw} or None), size ([x, y, z] in its own
-frame, z up), support (a table id, 'gripper', 'tray' or None), slot, status, provenance, inspected and reachable.
+{'robot': {x, y, yaw} or None, 'shoulder': the arm's, {x, y} or None, 'at_table': a table id or None, 'docked':
+whether the robot is docked at it, 'entities': {id: entity}}, each entity a dict with kind, type, color, pose ({x, y,
+z, yaw} or None), size ([x, y, z] in its own frame, z up), support (a table id, 'gripper', 'tray' or None), slot,
+status, provenance, inspected and reachable.
 """
 
 import json
@@ -25,8 +26,12 @@ MOVED_YAW = 0.1
 OBJECT_MOVED_DISTANCE = 0.02
 # How close to a compass point the robot's heading must be to be named by it
 AXIS_TOLERANCE = math.radians(15)
+# A table the robot faces, this close to its heading and this far at most, is the one the operator's near and far,
+# left and right refer to, if the robot is at none
+FACING_ANGLE = math.radians(45)
+FACING_DISTANCE = 3.0
 # The map's compass points, +x being east and +y north
-COMPASS = ((0.0, 'east'), (math.pi / 2.0, 'north'), (math.pi, 'west'), (-math.pi / 2.0, 'south'))
+COMPASS =((0.0, 'east'), (math.pi / 2.0, 'north'), (math.pi, 'west'), (-math.pi / 2.0, 'south'))
 
 
 def summary(snapshot: Optional[Dict[str, Any]]) -> str:
@@ -39,8 +44,11 @@ def summary(snapshot: Optional[Dict[str, Any]]) -> str:
 
     at_table = snapshot.get('at_table')
     robot = snapshot.get('robot')
-    where = _at_table(at_table, robot) if at_table else 'at no table'
+    where = _at_table(at_table, snapshot.get('docked'), robot) if at_table else 'at no table'
     lines = [f'Robot: {_robot(robot, snapshot.get("shoulder"))}; {where}.']
+    viewpoint = _viewpoint(robot, at_table or _faced_table(robot, entities, tables), entities)
+    if viewpoint:
+        lines.append(viewpoint)
     held = sorted(i for i, e in objects.items() if e['support'] == GRIPPER)
     held_notes = ', '.join(i + _held(objects[i], at_table, entities.get(at_table)) for i in held)
     lines.append(f'Gripper: {held_notes or "empty"}.')
@@ -68,8 +76,8 @@ def changes(before: Optional[Dict[str, Any]], after: Optional[Dict[str, Any]]) -
     if _moved(before.get('robot'), after.get('robot')):
         said.append(f'the robot moved to {_pose2d(after["robot"])}{_shoulder(after.get("shoulder"))}')
     # docked again on another side of the same table, the robot is at a new place too
-    was_at, now_at = (_at_table(world['at_table'], world.get('robot')) if world.get('at_table') else None
-                      for world in (before, after))
+    was_at, now_at = (_at_table(world['at_table'], world.get('docked'), world.get('robot'))
+                      if world.get('at_table') else None for world in (before, after))
     if now_at != was_at:
         said.append('the robot is now ' + now_at if now_at else f'the robot left {before["at_table"]}')
     old, new = before['entities'], after['entities']
@@ -137,13 +145,45 @@ def _shoulder(shoulder):
     return f", its arm's shoulder at ({shoulder['x']:.2f}, {shoulder['y']:.2f})" if shoulder else ''
 
 
-def _at_table(table_id, robot):
-    """The table the robot is docked at, and the side of it it's on: docked head-on, the side opposite its heading"""
+def _at_table(table_id, docked, robot):
+    """The table the robot is at, and the side of it it's on: facing the table, the side opposite its heading"""
+    at = f'{"docked at" if docked else "at"} {table_id}'
     if robot is None:
-        return 'at ' + table_id
-    away = robot['yaw'] + math.pi
-    side = min(COMPASS, key=lambda point: abs(math.remainder(away - point[0], 2.0 * math.pi)))[1]
-    return f'at {table_id}, on its {side} side'
+        return at
+    return f'{at}, on its {_compass_point(robot["yaw"] + math.pi)} side'
+
+
+def _faced_table(robot, entities, tables):
+    """The closest table the robot faces, if any"""
+    if robot is None:
+        return None
+    faced = []
+    for table in tables:
+        pose = entities[table]['pose']
+        distance = math.hypot(pose['x'] - robot['x'], pose['y'] - robot['y'])
+        bearing = math.atan2(pose['y'] - robot['y'], pose['x'] - robot['x'])
+        if distance <= FACING_DISTANCE and abs(math.remainder(bearing - robot['yaw'], 2.0 * math.pi)) <= FACING_ANGLE:
+            faced.append((distance, table))
+    return min(faced)[1] if faced else None
+
+
+def _viewpoint(robot, table_id, entities):
+    """
+    A table's sides as the robot sees it from where it stands, named by compass: the near side faces the robot, and
+    left and right are as seen looking across the table to its far side
+    """
+    if robot is None or table_id is None:
+        return None
+    pose = entities[table_id]['pose']
+    far = math.atan2(pose['y'] - robot['y'], pose['x'] - robot['x'])
+    near, left, right = (_compass_point(far + turn) for turn in (math.pi, math.pi / 2.0, -math.pi / 2.0))
+    return (f"From where the robot stands, {table_id}'s near side is its {near} side, its far side the "
+            f'{_compass_point(far)} one, its left the {left} one and its right the {right} one.')
+
+
+def _compass_point(angle):
+    """The compass point nearest to the direction of an angle"""
+    return min(COMPASS, key=lambda point: abs(math.remainder(angle - point[0], 2.0 * math.pi)))[1]
 
 
 def _pose2d(pose):

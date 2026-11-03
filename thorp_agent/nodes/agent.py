@@ -79,8 +79,8 @@ def talk(node):
                        # ROSA sets the model's streaming itself, and reports token usage only without it
                        streaming=False,
                        show_token_usage=True,
-                       # a runaway loop is where the money goes; a whole chain is under ten calls
-                       max_iterations=20,
+                       # a runaway loop is where the money goes; a long task, with some retries, is a few dozen calls
+                       max_iterations=50,
                        verbose=verbose)
 
     if question:

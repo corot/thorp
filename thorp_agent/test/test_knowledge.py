@@ -28,7 +28,7 @@ def thing(support, color='red', status='ok', provenance='observed', slot=None, r
 
 
 def playground():
-    return {'robot': {'x': 0.03, 'y': 0.0, 'yaw': 0.01}, 'at_table': 'table 1',
+    return {'robot': {'x': 0.03, 'y': 0.0, 'yaw': 0.01}, 'at_table': 'table 1', 'docked': True,
             'entities': {'table 1': table(0.45, 0.0, inspected=True), 'table 2': table(3.0, 2.0),
                          'cube 1': thing('table 1', 'gray', reachable=True),
                          'star 1': thing('table 1', 'red', status='missing'),
@@ -39,7 +39,9 @@ def playground():
 def test_the_summary_says_where_everything_is():
     said = knowledge.summary(playground())
     assert said.splitlines() == [
-        'Robot: at (0.03, 0.00), yaw 0.01, facing east with north to its left; at table 1, on its west side.',
+        'Robot: at (0.03, 0.00), yaw 0.01, facing east with north to its left; docked at table 1, on its west side.',
+        "From where the robot stands, table 1's near side is its west side, its far side the east one, its left the "
+        'north one and its right the south one.',
         'Gripper: empty.',
         'Tray: square 1 (slot 2).',
         'table 1 at (0.45, 0.00), spanning x 0.20 to 0.70 and y -0.28 to 0.28, top at z 0.476, inspected: '
@@ -63,12 +65,25 @@ def test_the_arms_shoulder_is_placed_on_the_map_as_the_robot_moves():
     before['shoulder'] = {'x': 0.1, 'y': 0.03}
     assert knowledge.summary(before).splitlines()[0] == (
         "Robot: at (0.03, 0.00), yaw 0.01, facing east with north to its left, its arm's shoulder at (0.10, 0.03); "
-        'at table 1, on its west side.')
+        'docked at table 1, on its west side.')
     after = copy.deepcopy(before)
     after['robot'] = {'x': 0.9, 'y': 0.0, 'yaw': math.pi}
     after['shoulder'] = {'x': 0.8, 'y': -0.03}
     assert knowledge.changes(before, after)[0] == \
         "the robot moved to (0.90, 0.00), yaw 3.14, its arm's shoulder at (0.80, -0.03)"
+
+
+def test_the_tables_sides_are_named_as_the_robot_sees_the_table_it_is_at_or_faces():
+    world = playground()
+    world['robot'] = {'x': 0.9, 'y': 0.0, 'yaw': math.pi}
+    assert knowledge.summary(world).splitlines()[1] == (
+        "From where the robot stands, table 1's near side is its east side, its far side the west one, its left the "
+        'south one and its right the north one.')
+    world['at_table'] = None
+    world['robot'] = {'x': -0.5, 'y': 0.0, 'yaw': 0.0}
+    assert "table 1's near side is its west side" in knowledge.summary(world).splitlines()[1]
+    world['robot'] = {'x': -0.5, 'y': 0.0, 'yaw': math.pi}
+    assert knowledge.summary(world).splitlines()[1].startswith('Gripper'), 'facing away from every table'
 
 
 def test_a_heading_off_the_compass_points_is_given_as_vectors():
@@ -79,7 +94,7 @@ def test_a_heading_off_the_compass_points_is_given_as_vectors():
         'Robot: at (1.00, 2.00), yaw 0.79, facing (0.71, 0.71) with (-0.71, 0.71) to its left; at no table.'
     world['at_table'] = 'table 1'
     world['robot'] = None
-    assert knowledge.summary(world).splitlines()[0] == 'Robot: pose unknown; at table 1.'
+    assert knowledge.summary(world).splitlines()[0] == 'Robot: pose unknown; docked at table 1.'
 
 
 def test_lost_objects_and_the_gripper_are_summarized_too():
@@ -127,15 +142,17 @@ def test_approaching_a_table_tells_the_robot_is_there_and_what_it_reaches():
     before = playground()
     before['robot'] = {'x': -0.5, 'y': 0.0, 'yaw': 0.0}
     before['at_table'] = None
+    before['docked'] = False
     before['entities']['cube 1']['reachable'] = False
     after = copy.deepcopy(before)
     after['robot'] = {'x': 0.03, 'y': 0.0, 'yaw': 0.01}
     after['at_table'] = 'table 1'
+    after['docked'] = True
     after['entities']['cube 1']['reachable'] = True
     after['entities']['star 1']['status'] = 'ok'
     after['entities']['pentagon 1'] = thing('table 1', 'purple', type_='pentagon')
     assert knowledge.changes(before, after) == [
-        'the robot moved to (0.03, 0.00), yaw 0.01', 'the robot is now at table 1, on its west side',
+        'the robot moved to (0.03, 0.00), yaw 0.01', 'the robot is now docked at table 1, on its west side',
         'pentagon 1 found on table 1 at (0.30, 0.00)', 'star 1 seen again', "within the arm's reach now: cube 1"]
 
 
@@ -144,9 +161,22 @@ def test_docking_at_another_side_of_the_table_tells_the_side():
     after = copy.deepcopy(before)
     after['robot'] = {'x': 0.45, 'y': 0.5, 'yaw': -math.pi / 2}
     assert knowledge.changes(before, after) == [
-        'the robot moved to (0.45, 0.50), yaw -1.57', 'the robot is now at table 1, on its north side']
+        'the robot moved to (0.45, 0.50), yaw -1.57', 'the robot is now docked at table 1, on its north side']
     assert knowledge.summary(after).splitlines()[0] == \
-        'Robot: at (0.45, 0.50), yaw -1.57, facing south with east to its left; at table 1, on its north side.'
+        'Robot: at (0.45, 0.50), yaw -1.57, facing south with east to its left; docked at table 1, on its north side.'
+
+
+def test_leaving_a_table_tells_the_robot_is_no_longer_docked_and_then_no_longer_there():
+    docked = playground()
+    backed_out = copy.deepcopy(docked)
+    backed_out['robot'] = {'x': -0.1, 'y': 0.0, 'yaw': 0.01}
+    backed_out['docked'] = False
+    assert knowledge.changes(docked, backed_out) == [
+        'the robot moved to (-0.10, 0.00), yaw 0.01', 'the robot is now at table 1, on its west side']
+    away = copy.deepcopy(backed_out)
+    away['robot'] = {'x': -1.0, 'y': 0.0, 'yaw': 0.01}
+    away['at_table'] = None
+    assert knowledge.changes(backed_out, away)[1] == 'the robot left table 1'
 
 
 def test_small_robot_moves_go_unsaid():

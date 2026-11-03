@@ -72,7 +72,7 @@ class World(object):
             return None
         entities = {e.id: _entity(e, reachable) for e, reachable in zip(response.entities, response.reachable)}
         return {'robot': self._robot_pose(), 'shoulder': self._shoulder(), 'at_table': response.at_table or None,
-                'entities': entities}
+                'docked': bool(response.docked_at), 'entities': entities}
 
     def _robot_pose(self):
         """Where the robot is on the map, as {x, y, yaw}; None if the transform isn't there"""
