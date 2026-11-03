@@ -1,7 +1,8 @@
 THORP
 =====
 
-> **`jazzy` branch:** ROS 2 Jazzy port in progress; see [docs/jazzy-migration.md](docs/jazzy-migration.md).
+> **`lyrical` branch:** ROS 2 port, moving from Jazzy to Lyrical; see [docs/lyrical-migration.md](docs/lyrical-migration.md),
+> and [docs/jazzy-migration.md](docs/jazzy-migration.md) for the port from ROS 1.
 > The rest of this README describes the ROS 1 version, kept on the `noetic` branch.
 
 Software for a low-cost mobile manipulation: a TurtleBot2 with an arm, a second 3D camera, and some extra junk.
