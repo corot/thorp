@@ -11,10 +11,10 @@ controller_manager:
       type: joint_trajectory_controller/JointTrajectoryController
 
     gripper_controller:
-      type: position_controllers/GripperActionController
+      type: parallel_gripper_action_controller/GripperActionController
 
     cannon_joint_controller:
-      type: position_controllers/JointGroupPositionController
+      type: forward_command_controller/ForwardCommandController
 
 # Publish servo joint states; wheel joint states come from Gazebo
 joint_state_broadcaster:
@@ -47,8 +47,8 @@ arm_controller:
       arm_elbow_flex_joint: {trajectory: 0.0, goal: 0.1}
       arm_wrist_flex_joint: {trajectory: 0.0, goal: 0.1}
 
-# Gripper command action, on gripper_controller/gripper_cmd; goals are gripper_joint angles. Simulated servos report
-# no effort, so the gripper can only stop by reaching the goal or stalling (e.g. when grasping something)
+# Parallel gripper command action, on gripper_controller/gripper_cmd; goals are gripper_joint angles. Simulated
+# servos report no effort, so the gripper can only stop by reaching the goal or stalling (e.g. when grasping something)
 gripper_controller:
   ros__parameters:
     joint: gripper_joint
@@ -63,3 +63,4 @@ gripper_controller:
 cannon_joint_controller:
   ros__parameters:
     joints: [cannon_joint]
+    interface_name: position

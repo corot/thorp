@@ -8,7 +8,7 @@ moveit_simple_controller_manager:
     default: true
     joints: [arm_shoulder_pan_joint, arm_shoulder_lift_joint, arm_elbow_flex_joint, arm_wrist_flex_joint]
   gripper_controller:
-    type: GripperCommand
+    type: ParallelGripperCommand
     action_ns: gripper_cmd
     default: true
     joints: [gripper_joint]
