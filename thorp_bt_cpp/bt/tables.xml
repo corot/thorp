@@ -12,9 +12,10 @@
   <!--
     Park against a table, on a side of it named by compass, ready to pick from or place on it: the table thorp_world
     knows as table_id, or the one in front if none is given, and the side given, or else the one closest to the robot.
-    Docked, the robot backs out first, as navigation can't start under a table; it stows the arm, as it doesn't drive
-    with it out; then drives to the viewing pose on that side and detects the table again from there, as a view from
-    further away sees little of it, and docks. It doesn't look at the objects on the table.
+    Docked at that side already, it does nothing; docked anywhere else, it fails with DOCKED, as it can't drive from
+    under a table. It stows the arm, as it doesn't drive with it out; then drives to the viewing pose on that side and
+    detects the table again from there, as a view from further away sees little of it, and docks. It doesn't look at
+    the objects on the table.
   -->
   <BehaviorTree ID="reach_table">
     <Sequence>
@@ -61,39 +62,50 @@
                     error="{error}"/>
         </ForceFailure>
       </Fallback>
-      <!-- not at a table, there is nothing to back out from -->
-      <ForceSuccess>
-        <SubTree ID="leave_table"/>
-      </ForceSuccess>
-      <SubTree ID="stow_arm"
-               error="{error}"/>
-      <NavigateToPose goal="{approach_pose}"
-                      error_code_id="{nav_error}"/>
-      <!-- if the closer detection misses, go on with the table we have -->
-      <ForceSuccess>
-        <SubTree ID="detect_table"
-                 table="{table}"
-                 table_pose="{table_pose}"
-                 table_id="{table_id}"/>
-      </ForceSuccess>
-      <ReadDoubleParam param_name="pickup_dist_to_table"
-                       output_key="{pickup_dist_to_table}"/>
-      <GetPosesAroundTable distance="{pickup_dist_to_table}"
-                           split_long_sides="true"
-                           table="{table}"
-                           table_pose="{table_pose}"
-                           table_side_poses="{pickup_poses}"/>
-      <GetRobotPose timeout="1"
-                    robot_pose="{robot_pose}"
-                    error="{error}"/>
-      <GetClosestPose poses="{pickup_poses}"
-                      target_pose="{robot_pose}"
-                      closest_pose="{pickup_pose}"/>
-      <SubTree ID="dock_at_table"
-               table_id="{table_id}"
-               pose="{pickup_pose}"
-               error="{error}"
-               nav_error="{nav_error}"/>
+      <Fallback>
+        <!-- docked at that side of that table already, there is nowhere to go -->
+        <Sequence>
+          <RobotDocked table_id="{docked_at}"/>
+          <ScriptCondition code="docked_at == table_id"/>
+          <GetTableSide pose="{robot_pose}"
+                        table_pose="{table_pose}"
+                        side="{docked_side}"/>
+          <ScriptCondition code="docked_side == side"/>
+        </Sequence>
+        <Sequence>
+          <SubTree ID="not_docked"
+                   error="{error}"/>
+          <SubTree ID="stow_arm"
+                   error="{error}"/>
+          <NavigateToPose goal="{approach_pose}"
+                          error_code_id="{nav_error}"/>
+          <!-- if the closer detection misses, go on with the table we have -->
+          <ForceSuccess>
+            <SubTree ID="detect_table"
+                     table="{table}"
+                     table_pose="{table_pose}"
+                     table_id="{table_id}"/>
+          </ForceSuccess>
+          <ReadDoubleParam param_name="pickup_dist_to_table"
+                           output_key="{pickup_dist_to_table}"/>
+          <GetPosesAroundTable distance="{pickup_dist_to_table}"
+                               split_long_sides="true"
+                               table="{table}"
+                               table_pose="{table_pose}"
+                               table_side_poses="{pickup_poses}"/>
+          <GetRobotPose timeout="1"
+                        robot_pose="{robot_pose}"
+                        error="{error}"/>
+          <GetClosestPose poses="{pickup_poses}"
+                          target_pose="{robot_pose}"
+                          closest_pose="{pickup_pose}"/>
+          <SubTree ID="dock_at_table"
+                   table_id="{table_id}"
+                   pose="{pickup_pose}"
+                   error="{error}"
+                   nav_error="{nav_error}"/>
+        </Sequence>
+      </Fallback>
     </Sequence>
   </BehaviorTree>
 
@@ -168,6 +180,8 @@
   -->
   <BehaviorTree ID="inspect_table">
     <Sequence>
+      <SubTree ID="not_docked"
+               error="{error}"/>
       <IfThenElse>
         <StringInBlackboard key="{table_id}"/>
         <GetTable table_id="{table_id}"
@@ -194,6 +208,8 @@
   -->
   <BehaviorTree ID="go_to_table">
     <Sequence>
+      <SubTree ID="not_docked"
+               error="{error}"/>
       <GetTable table_id="{table_id}"
                 table="{table}"
                 table_pose="{table_pose}"
@@ -217,6 +233,8 @@
 
   <BehaviorTree ID="validate_table">
     <Sequence>
+      <SubTree ID="not_docked"
+               error="{error}"/>
       <GetRobotPose timeout="1"
                     error="{error}"
                     robot_pose="{robot_pose}"/>
@@ -279,6 +297,8 @@
                     error="{error}"/>
         </ForceFailure>
       </Fallback>
+      <SubTree ID="not_docked"
+               error="{error}"/>
       <IfThenElse>
         <StringInBlackboard key="{table_id}"/>
         <GetTable table_id="{table_id}"
@@ -332,7 +352,13 @@
                 <SubTree ID="dock_at_table"
                          table_id="{table_id}"
                          pose="{pickup_pose}"/>
-                <SubTree ID="pickup_objects"/>
+                <!-- docking is only a step here, so it leaves the table even if picking fails -->
+                <Fallback>
+                  <SubTree ID="pickup_objects"/>
+                  <ForceFailure>
+                    <SubTree ID="leave_table"/>
+                  </ForceFailure>
+                </Fallback>
                 <SubTree ID="leave_table"/>
               </Sequence>
             </ForEachPickupLocation>

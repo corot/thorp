@@ -185,6 +185,14 @@ def test_the_robot_is_at_a_table_when_close_to_it(world):
     assert world.table_at(Pose(0.03, 0.15)) == 'table 1'
 
 
+def test_the_robot_is_docked_only_at_the_table_it_docked_at_while_still_there(world):
+    world.observe_tables([table()], stamp=1.0)
+    assert world.docked_table(AT_TABLE) is None, 'at the table, but not docked'
+    world.dock('table 1')
+    assert world.docked_table(AT_TABLE) == 'table 1'
+    assert world.docked_table(Pose(-0.5, 0.0)) is None, 'driven away without undocking'
+
+
 def test_losing_an_object_not_in_the_gripper_changes_nothing(world):
     world.observe_objects(table(), [cube(0.3, 0.0)], stamp=1.0)
     world.mark_lost('cube 1', stamp=2.0)

@@ -141,14 +141,21 @@ class World:
     def undock(self):
         self.docked_at = None
 
+    def docked_table(self, robot_pose):
+        """The table the robot docked at, while it's still within at_table_distance of it"""
+        docked = self._entities.get(self.docked_at)
+        if docked is not None and distance_to_table(docked, robot_pose.x, robot_pose.y) <= self.at_table_distance:
+            return docked.id
+        return None
+
     def table_at(self, robot_pose):
         """
         The table the robot is at: the one it docked at, if it's still within at_table_distance, or else the closest
         one that close, as the robot may stand at a table without docking.
         """
-        docked = self._entities.get(self.docked_at)
-        if docked is not None and distance_to_table(docked, robot_pose.x, robot_pose.y) <= self.at_table_distance:
-            return docked.id
+        docked = self.docked_table(robot_pose)
+        if docked is not None:
+            return docked
         nearby = [(distance_to_table(t, robot_pose.x, robot_pose.y), t.id)
                   for t in self._entities.values() if t.kind == TABLE]
         nearby = [n for n in nearby if n[0] <= self.at_table_distance]

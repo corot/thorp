@@ -11,3 +11,4 @@ string message
 WorldEntity[] entities
 bool[] reachable    # per entity: on a table, within the arm's reach from its base
 string at_table     # the table the robot is at: the one it docked at, or else the closest; empty if none
+string docked_at    # the table the robot docked at, while it's still at it; empty if none

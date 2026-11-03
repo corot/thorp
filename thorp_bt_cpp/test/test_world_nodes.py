@@ -95,6 +95,15 @@ def test_the_current_table_is_the_one_the_robot_is_at(runner):
     assert succeeded and out['table_id'] == 'table 1'
 
 
+def test_the_robot_is_docked_until_it_leaves(runner):
+    succeeded, out = run(runner, 'test_world_docked')
+    assert succeeded and out['table_id'] == 'table 1'
+    succeeded, _ = run(runner, 'test_world_update', effect='undocked')
+    assert succeeded
+    succeeded, _ = run(runner, 'test_world_docked')
+    assert not succeeded, 'still at the table, but no longer docked'
+
+
 @pytest.mark.parametrize('object_id, error', [
     ('cube 9', ThorpError.OBJECT_NOT_FOUND),
     ('cube 2', ThorpError.OBJECT_NOT_ON_TABLE),  # on the tray

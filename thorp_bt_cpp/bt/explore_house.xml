@@ -5,6 +5,8 @@
   <!-- Explore the whole house, with the given strategy or else the exploration_method parameter's; fails on others -->
   <BehaviorTree ID="explore_house">
     <Sequence>
+      <SubTree ID="not_docked"
+               error="{error}"/>
       <Fallback>
         <StringInBlackboard key="{exploration_method}"/>
         <ReadStringParam param_name="exploration_method"

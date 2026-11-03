@@ -316,7 +316,8 @@ objects `thorp_world` knows on the table by what the world says the arm reaches 
 travel optimized order rather than sorting it again by object count as Noetic did (a TODO there questioned it), and
 showing the plan on RViz as Noetic's did, on the executive's `pickup_plan` and `pickup_poses`; `PoseAsPath` makes a
 straight path from a start pose, for docking. `cleanup_table` validates the table in front when given none, so the
-`cleanup_table` app runs it as is; it fails at once, with `OBJECT_ATTACHED`, if the gripper holds an object.
+`cleanup_table` app runs it as is; it fails at once, with `OBJECT_ATTACHED`, if the gripper holds an object, and it
+leaves each table side it docked at even if picking there fails, as `object_gatherer` goes on exploring then.
 
 Exploration calls the exploration planner's services: `SegmentRooms`, `PlanRoomSequence` and `PlanRoomExploration` pass
 only room ids and poses, as the planner keeps the map and the rooms, instead of Noetic's map images on the blackboard.
@@ -329,13 +330,16 @@ livelocked `object_gatherer`, the table detected while exploring and missed once
 docking takes over a minute, and `object_gatherer` goes on exploring if a table's cleanup fails. `reach_table`, new,
 docks on a side of a table named by compass on the map, north, south, east or west, or else the one closest to the
 robot, as the arm reaches only the part of a table near its side; names fixed to the map, unlike ones relative to the
-robot, mean the same side wherever the robot is. It backs out first if docked and stows the arm before driving, and
-leaves looking at the objects to `detect_objects`. The planning scene is on `base_footprint`, so what the robot saw is
-where the scene has it only from where it saw it: `dock_at_table` and `leave_table` remove every object but those on
-the tray, which moves with the robot, and `pickup_object` (through `ObjectPickable`) and `place_object` fail with
-`NOT_IN_VIEW` until the robot looks from the dock. `leave_table` stows the arm first, as the arm can't back out from
-under a table. `go_to_table`, new, drives to the viewing pose of a table `thorp_world` knows, as `validate_table` does
-once it has one: the agent's table capabilities only find a table close in front.
+robot, mean the same side wherever the robot is. It stows the arm before driving, and leaves looking at the objects to
+`detect_objects`; docked at that side already, it does nothing. Navigation can't start under a table, so every tree that
+drives the robot, `reach_table` and `cleanup_table` included, fails at once with `DOCKED` while `thorp_world` records
+the robot docked (`RobotDocked`), and `leave_table` is the way out: backing out is the caller's step, not one hidden in
+the next capability. The planning scene is on `base_footprint`, so what the robot saw is where the scene has it only
+from where it saw it: `dock_at_table` and `leave_table` remove every object but those on the tray, which moves with the
+robot, and `pickup_object` (through `ObjectPickable`) and `place_object` fail with `NOT_IN_VIEW` until the robot looks
+from the dock. `leave_table` stows the arm first, as the arm can't back out from under a table. `go_to_table`, new,
+drives to the viewing pose of a table `thorp_world` knows, as `validate_table` does once it has one: the agent's table
+capabilities only find a table close in front.
 
 Nodes calling actions derive from Nav2's `BtActionNode`, with their servers' names as `server_name` defaults; the
 runner puts Nav2's timeouts on the blackboard: `server_timeout` half a tick and `wait_for_service_timeout` 5 s, 60 s

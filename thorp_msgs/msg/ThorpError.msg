@@ -46,6 +46,7 @@ int32 OUT_OF_REACH=-231         # the object or the target pose is beyond the ar
 int32 OBJECT_NOT_ON_TABLE=-232  # the object is carried, or missing from where it was seen
 int32 VIEW_BLOCKED=-233         # something close to the camera, as the arm when not stowed, blocks its view
 int32 NOT_IN_VIEW=-234          # not in the planning scene: the robot hasn't seen it from where it is
+int32 DOCKED=-235               # the robot is docked at a table, and can't drive from under it
 
 int32  code
 string text

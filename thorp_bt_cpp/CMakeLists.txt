@@ -95,6 +95,7 @@ set(BT_NODES
   src/bt/conditions/object_pickable.cpp
   src/bt/conditions/objects_detected.cpp
   src/bt/conditions/pose_on_tray.cpp
+  src/bt/conditions/robot_docked.cpp
   src/bt/conditions/table_valid_size.cpp
   src/bt/conditions/table_visited.cpp
   src/bt/conditions/target_reachable.cpp

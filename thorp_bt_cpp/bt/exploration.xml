@@ -8,6 +8,8 @@
   -->
   <BehaviorTree ID="cover_in_one_tour">
     <Sequence>
+      <SubTree ID="not_docked"
+               error="{error}"/>
       <Fallback>
         <Inverter>
           <IsPoseListEmpty list="{coverage_waypoints}"/>
@@ -33,6 +35,8 @@
   -->
   <BehaviorTree ID="cover_room_by_room">
     <Sequence>
+      <SubTree ID="not_docked"
+               error="{error}"/>
       <Fallback>
         <Inverter>
           <IsUIntListEmpty list="{room_sequence}"/>

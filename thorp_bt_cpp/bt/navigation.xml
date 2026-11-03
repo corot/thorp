@@ -1,11 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root BTCPP_format="4">
   <!--
+    Fail with DOCKED if the robot is docked at a table, as thorp_world tells: it can't drive from under it, so the
+    trees that drive the robot check this first, and leave_table is the way out
+  -->
+  <BehaviorTree ID="not_docked">
+    <Fallback>
+      <Inverter>
+        <RobotDocked/>
+      </Inverter>
+      <ForceFailure>
+        <SetError code="DOCKED"
+                  text="the robot is docked at a table, and can't drive from under it: leave_table first"
+                  error="{error}"/>
+      </ForceFailure>
+    </Fallback>
+  </BehaviorTree>
+
+  <!--
     Go through a list of waypoints with Nav2's navigate_through_poses, reaching only the last one's heading. If that
     fails, go to the next waypoint alone, skipping it if unreachable, and resume from the one after.
   -->
   <BehaviorTree ID="follow_waypoints">
     <Sequence>
+      <SubTree ID="not_docked"
+               error="{error}"/>
       <RetryUntilSuccessful num_attempts="-1">
         <Fallback>
           <Parallel failure_count="1"
@@ -39,6 +58,8 @@
 
   <BehaviorTree ID="goto_pose">
     <Sequence>
+      <SubTree ID="not_docked"
+               error="{error}"/>
       <PublishPose pose="{pose}"/>
       <NavigateToPose goal="{pose}"
                       error_code_id="{nav_error}"/>
@@ -51,6 +72,8 @@
   -->
   <BehaviorTree ID="look_at_pose">
     <Sequence>
+      <SubTree ID="not_docked"
+               error="{error}"/>
       <GetRobotPose timeout="1"
                     robot_pose="{robot_pose}"
                     error="{error}"/>
@@ -64,19 +87,23 @@
 
   <!-- Go to the first pose of the list we can reach, dropping those we can't -->
   <BehaviorTree ID="reach_first_pose">
-    <RetryUntilSuccessful num_attempts="-1">
-      <Fallback>
-        <Sequence>
-          <GetPoseListFront list="{poses}"
-                            element="{next_pose}"/>
-          <NavigateToPose goal="{next_pose}"
-                          error_code_id="{goto_pose_error}"/>
-        </Sequence>
-        <Inverter>
-          <PopPoseFromList element="{next_pose}"
-                           list="{poses}"/>
-        </Inverter>
-      </Fallback>
-    </RetryUntilSuccessful>
+    <Sequence>
+      <SubTree ID="not_docked"
+               error="{error}"/>
+      <RetryUntilSuccessful num_attempts="-1">
+        <Fallback>
+          <Sequence>
+            <GetPoseListFront list="{poses}"
+                              element="{next_pose}"/>
+            <NavigateToPose goal="{next_pose}"
+                            error_code_id="{goto_pose_error}"/>
+          </Sequence>
+          <Inverter>
+            <PopPoseFromList element="{next_pose}"
+                             list="{poses}"/>
+          </Inverter>
+        </Fallback>
+      </RetryUntilSuccessful>
+    </Sequence>
   </BehaviorTree>
 </root>

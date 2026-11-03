@@ -273,6 +273,7 @@ capabilities:
     errors:
       TABLE_NOT_FOUND: thorp_world knows no table by that id
       VIEW_BLOCKED: something close to the camera, as the arm when not stowed, blocks its view of the table; stow_arm, then detect_objects
+      DOCKED: the robot is docked at a table, and can't drive from under it; leave_table first
     test:
       inputs: {table_id: "table 1"}
       expect: any
@@ -293,6 +294,7 @@ capabilities:
       nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's navigate_to_pose"}
     errors:
       TABLE_NOT_FOUND: thorp_world knows no table by that id
+      DOCKED: the robot is docked at a table, and can't drive from under it; leave_table first
     test:
       inputs: {table_id: "table 1"}
       expect: any
@@ -303,9 +305,10 @@ capabilities:
       Park against a table, ready to pick from or place on it, on its north, south, east or
       west side: the one asked for, or else the side closest to the robot. Docked, the arm
       reaches only the part of the table near that side, so to work on another part, dock at
-      the side nearest to it. It backs out first if docked, stows the arm, drives to that
-      side's viewing pose, detects the table again from there and docks under its eaves. It
-      doesn't look at the objects on the table, and docking forgets what the robot saw before,
+      the side nearest to it. Docked at that side already, it does nothing; docked anywhere
+      else, it fails with DOCKED: leave_table first. It stows the arm, drives to that side's
+      viewing pose, detects the table again from there and docks under its eaves. It doesn't
+      look at the objects on the table, and docking forgets what the robot saw before,
       but the tray: detect_objects after it, to see what is there and within reach. The table
       is the one thorp_world knows as table_id, or the one in front if none is given.
     status: ok
@@ -321,6 +324,7 @@ capabilities:
     errors:
       TABLE_NOT_FOUND: thorp_world knows no table by that id
       INVALID_TARGET_POSE: that side of the table has no pose to dock at free of obstacles; try another side
+      DOCKED: the robot is docked at another side or table; leave_table first
     test:
       inputs: {table_id: "table 1"}
       expect: any          # docking, which the scene can defeat
@@ -331,7 +335,8 @@ capabilities:
       Stow the arm, holding whatever the gripper holds, and back straight out from the table the
       robot is at, far enough to navigate around it again; restore the table's costmap footprint,
       and record that the robot left it. The robot forgets what it saw at the table, but the
-      tray. Takes no arguments: it backs out along the way the robot is facing.
+      tray. Takes no arguments: it backs out along the way the robot is facing. Docked, this is
+      the way out: every capability that drives the robot fails with DOCKED until it leaves.
     status: ok
     stack: [navigation, manipulation]
     inputs: {}
@@ -355,10 +360,13 @@ capabilities:
     stack: [navigation, perception]
     inputs: {}
     outputs:
+      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed: one of errors"}
       table_id: {type: string, description: "the table's id in thorp_world"}
       table: {type: moveit_msgs::msg::CollisionObject, description: "the validated table"}
       table_pose: {type: geometry_msgs::msg::PoseStamped, description: "pose of the table"}
       inspect_pose: {type: geometry_msgs::msg::PoseStamped, description: "viewpoint used to inspect it"}
+    errors:
+      DOCKED: the robot is docked at a table, and can't drive from under it; leave_table first
     test:
       inputs: {}
       expect: any
@@ -370,7 +378,8 @@ capabilities:
       sequence of pickup locations around it: the table thorp_world knows as table_id, or the
       one in front if none is given, as validate_table does. Either way it looks for the objects
       from where the robot stands, so start it close in front of the table: go_to_table gets
-      there. It fails at once if the gripper holds an object.
+      there. It fails at once if the gripper holds an object, or if the robot is docked at a
+      table, and it ends with the robot off the table, whether it succeeds or fails.
     status: ok
     stack: [navigation, manipulation, perception]
     inputs:
@@ -383,6 +392,7 @@ capabilities:
     errors:
       TABLE_NOT_FOUND: thorp_world knows no table by that id
       OBJECT_ATTACHED: the gripper holds an object; place it, or put it on the tray, first
+      DOCKED: the robot is docked at a table, and can't drive from under it; leave_table first
     test:
       inputs: {table_id: "table 1", given_up_count: 0}
       expect: any
@@ -402,7 +412,10 @@ capabilities:
     inputs:
       pose: {type: geometry_msgs::msg::PoseStamped, description: "where to drive to"}
     outputs:
+      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed: one of errors"}
       nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's navigate_to_pose; only set when the drive failed"}
+    errors:
+      DOCKED: the robot is docked at a table, and can't drive from under it; leave_table first
     test:
       inputs: {pose: '-1.0;-1.0;0.0;map'}
       expect: any
@@ -422,6 +435,8 @@ capabilities:
     outputs:
       robot_pose: {type: geometry_msgs::msg::PoseStamped, description: "where the robot was before turning"}
       error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed, from reading the robot pose or from Nav2's spin behavior"}
+    errors:
+      DOCKED: the robot is docked at a table, and can't drive from under it; leave_table first
     test:
       inputs: {pose: "-0.5;1.5;0.0;map"}    # the cat llm_playground spawns
       expect: succeeded
@@ -454,7 +469,10 @@ capabilities:
     inputs:
       exploration_method: {type: string, optional: true, description: "cover_in_one_tour or cover_room_by_room; leave it out to use the configured one"}
     outputs:
+      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed: one of errors"}
       exploration_method: {type: string, description: "strategy actually used"}
+    errors:
+      DOCKED: the robot is docked at a table, and can't drive from under it; leave_table first
     test:
       inputs: {}
       expect: any
@@ -524,6 +542,8 @@ capabilities:
       robot_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "robot pose at the last check"}
       error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why reading the robot pose failed"}
       follow_error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why following failed, from opennav_following"}
+    errors:
+      DOCKED: the robot is docked at a table, and can't drive from under it; leave_table first
     test:
       inputs: {}
       setup:
@@ -547,6 +567,8 @@ capabilities:
       robot_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "robot pose at the last check"}
       error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why reading the robot pose failed"}
       follow_error: {type: thorp_msgs::msg::ThorpError, when: maybe, description: "why following failed, from opennav_following, if it lost the target"}
+    errors:
+      DOCKED: the robot is docked at a table, and can't drive from under it; leave_table first
     test:
       inputs: {}
       setup:
@@ -569,6 +591,8 @@ capabilities:
       coverage_waypoints: {type: std::vector<geometry_msgs::msg::PoseStamped>, description: "the poses left to drive through; empty once done"}
       robot_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "robot pose when planning started"}
       error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why reading the robot pose failed"}
+    errors:
+      DOCKED: the robot is docked at a table, and can't drive from under it; leave_table first
     test:
       inputs: {}
       expect: any
@@ -583,11 +607,14 @@ capabilities:
     stack: [navigation, exploration]
     inputs: {}
     outputs:
+      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed: one of errors"}
       rooms: {type: std::vector<unsigned int>, when: maybe, description: "ids of the rooms segmented"}
       room_sequence: {type: std::vector<unsigned int>, description: "rooms left to visit, in order; empty once done"}
       room_number: {type: unsigned int, description: "room currently being covered"}
       coverage_waypoints: {type: std::vector<geometry_msgs::msg::PoseStamped>, description: "waypoints for the current room"}
       robot_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "robot pose when planning started"}
+    errors:
+      DOCKED: the robot is docked at a table, and can't drive from under it; leave_table first
     test:
       inputs: {}
       expect: any
@@ -610,8 +637,11 @@ capabilities:
     inputs:
       poses: {type: std::vector<geometry_msgs::msg::PoseStamped>, description: "candidate poses, tried in order"}
     outputs:
+      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed: one of errors"}
       next_pose: {type: geometry_msgs::msg::PoseStamped, description: "the pose actually reached"}
       goto_pose_error: {type: uint16_t, when: failure, description: "error code from Nav2's navigate_to_pose"}
+    errors:
+      DOCKED: the robot is docked at a table, and can't drive from under it; leave_table first
     test:
       # the first pose is off the playground map, so it has to be dropped
       inputs: {poses: ['2.0;5.0;1.57;map', '-1.0;-1.0;0.0;map']}
@@ -628,9 +658,12 @@ capabilities:
     inputs:
       waypoints: {type: std::vector<geometry_msgs::msg::PoseStamped>, description: "waypoints to follow in order, as cover_in_one_tour and cover_room_by_room return them in coverage_waypoints"}
     outputs:
+      error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed: one of errors"}
       next_waypoint: {type: unsigned long, when: maybe, description: "index of the waypoint being driven to"}
       robot_pose: {type: geometry_msgs::msg::PoseStamped, when: maybe, description: "robot pose while following"}
       nav_error: {type: uint16_t, when: failure, description: "error code from Nav2's navigate_through_poses"}
+    errors:
+      DOCKED: the robot is docked at a table, and can't drive from under it; leave_table first
     test:
       inputs: {waypoints: ['-1.0;-1.0;0.0;map', '-1.5;0.0;1.57;map']}
       expect: any
@@ -667,6 +700,9 @@ not_capabilities:
     Internal: drives straight in to a pose by a table and records the robot docked there, as
     reach_table and cleanup_table do once they have chosen the pose. Not offered, as choosing
     a docking pose takes the table's geometry; reach_table is the capability.
+  not_docked: >
+    Internal: fails with DOCKED if the robot is docked at a table, as the trees that drive the
+    robot check first; leave_table is the capability that undocks.
   test_reset_scene: >
     Test fixture: empties the gripper, stows the arm and clears the planning scene, for
     test_capabilities.py to start every test from the same robot state.
@@ -697,6 +733,8 @@ not_capabilities:
     Test fixture: UpdateWorld, against test/world.yaml.
   test_world_visited: >
     Test fixture: TableVisited, against test/world.yaml.
+  test_world_docked: >
+    Test fixture: RobotDocked, against test/world.yaml.
   test_server_counts: >
     Test fixture: bumps a count in a map and writes it back, to check a map round-trips.
   aim_at_cats: >

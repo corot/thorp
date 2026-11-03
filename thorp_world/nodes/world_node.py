@@ -153,6 +153,7 @@ class WorldNode(Node):
                               self.world.within_reach(e.id, arm, self.max_arm_reach, self.max_arm_height)
                               for e in entities]
         response.at_table = self.world.table_at(robot) or ''
+        response.docked_at = self.world.docked_table(robot) or ''
         return response
 
     def reach(self, request, response):

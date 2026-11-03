@@ -320,6 +320,11 @@
         <Action ID="RestoreTableAccess">
             <input_port name="table_name" type="std::string">id of the table to restore access to, as cleared</input_port>
         </Action>
+        <Condition ID="RobotDocked">
+            <output_port name="table_id" type="std::string"/>
+            <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
+            <input_port name="service_name" type="std::string" default="world/query">name of the ROS service</input_port>
+        </Condition>
         <Action ID="SegmentRooms">
             <output_port name="rooms" type="std::vector&lt;unsigned int, std::allocator&lt;unsigned int&gt; &gt;"/>
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
