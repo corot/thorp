@@ -316,7 +316,7 @@ objects `thorp_world` knows on the table by what the world says the arm reaches 
 travel optimized order rather than sorting it again by object count as Noetic did (a TODO there questioned it), and
 showing the plan on RViz as Noetic's did, on the executive's `pickup_plan` and `pickup_poses`; `PoseAsPath` makes a
 straight path from a start pose, for docking. `cleanup_table` validates the table in front when given none, so the
-`cleanup_table` app runs it as is.
+`cleanup_table` app runs it as is; it fails at once, with `OBJECT_ATTACHED`, if the gripper holds an object.
 
 Exploration calls the exploration planner's services: `SegmentRooms`, `PlanRoomSequence` and `PlanRoomExploration` pass
 only room ids and poses, as the planner keeps the map and the rooms, instead of Noetic's map images on the blackboard.

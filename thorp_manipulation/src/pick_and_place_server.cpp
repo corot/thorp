@@ -561,7 +561,7 @@ ThorpError PickAndPlaceServer::place(const PlaceObject::Goal& goal, const Feedba
   if (!support && !robot_model_->hasLinkModel(goal.support_surf))
     return fail(ThorpError::NOT_IN_VIEW,
                 "support '" + goal.support_surf +
-                    "' isn't in the planning scene: the robot hasn't seen it from where it is");
+                    "' isn't in the planning scene: the robot hasn't seen it, and what is on it, from where it is");
   // The place pose is where the object's center goes, so over the top of the support, if it's an object in the scene,
   // and at least half the object's height above it
   if (support && !support->shapes_.empty())

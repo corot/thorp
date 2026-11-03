@@ -136,7 +136,7 @@ capabilities:
       error: {type: thorp_msgs::msg::ThorpError, when: failure, description: "why it failed: one of errors, or else the place action's"}
     errors:
       NOT_AT_TABLE: the robot isn't at a table; reach_table one first
-      NOT_IN_VIEW: the robot hasn't seen the table from where it is, as docking and leaving a table forget what it saw; detect_objects first
+      NOT_IN_VIEW: the robot hasn't seen the table, and what is on it, from where it is, as docking and leaving a table forget what it saw; detect_objects first, as detect_table only finds the table
       INVALID_TARGET_POSE: the pose isn't over the table, or is too low, so the object would go into it; the text says the z that rests it on the table
     test:
       # A clear spot on the near edge of the table; z is the clover's center once there, on the
@@ -235,7 +235,8 @@ capabilities:
       detected again keeps its id. Only one surface is reported, however many are in view. This
       is the step that tells you a table is there and where to stand relative to it; it does
       not move the robot, and it fails when nothing in view is a large enough surface. It only
-      sees a table close in front; for one known but farther away, go_to_table first.
+      sees a table close in front; for one known but farther away, go_to_table first. It doesn't
+      give picking and placing a view of the table: detect_objects does, with what is on it.
     status: ok
     stack: [perception]
     inputs: {}
@@ -369,7 +370,7 @@ capabilities:
       sequence of pickup locations around it: the table thorp_world knows as table_id, or the
       one in front if none is given, as validate_table does. Either way it looks for the objects
       from where the robot stands, so start it close in front of the table: go_to_table gets
-      there.
+      there. It fails at once if the gripper holds an object.
     status: ok
     stack: [navigation, manipulation, perception]
     inputs:
@@ -381,6 +382,7 @@ capabilities:
       nav_error: {type: uint16_t, when: maybe, description: "error code from the last Nav2 action"}
     errors:
       TABLE_NOT_FOUND: thorp_world knows no table by that id
+      OBJECT_ATTACHED: the gripper holds an object; place it, or put it on the tray, first
     test:
       inputs: {table_id: "table 1", given_up_count: 0}
       expect: any
