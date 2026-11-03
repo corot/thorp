@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.10)
 project(thorp_toolkit)
 
 if(NOT CMAKE_CXX_STANDARD)
@@ -18,6 +18,8 @@ find_package(tf2_ros REQUIRED)
 find_package(tf2_eigen REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
+# CMake has no FindBoost module anymore: use Boost's own config
+cmake_policy(SET CMP0167 NEW)
 find_package(Boost REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED
@@ -44,8 +46,8 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   tf2_eigen::tf2_eigen
   tf2_geometry_msgs::tf2_geometry_msgs
   Eigen3::Eigen
-  Boost::boost
 )
+target_link_libraries(${PROJECT_NAME} PRIVATE Boost::boost)
 
 install(TARGETS ${PROJECT_NAME}
         EXPORT export_${PROJECT_NAME}
@@ -86,5 +88,5 @@ endif()
 
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(rclcpp angles std_msgs geometry_msgs visualization_msgs rviz_2d_overlay_msgs
-                          tf2 tf2_ros tf2_eigen tf2_geometry_msgs Eigen3 Boost)
+                          tf2 tf2_ros tf2_eigen tf2_geometry_msgs Eigen3)
 ament_package()

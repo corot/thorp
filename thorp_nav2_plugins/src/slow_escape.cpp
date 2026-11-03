@@ -13,7 +13,7 @@
 
 #include <nav2_costmap_2d/cost_values.hpp>
 #include <nav2_costmap_2d/footprint.hpp>
-#include <nav2_util/node_utils.hpp>
+#include <nav2_ros_common/node_utils.hpp>
 #include <nav2_util/robot_utils.hpp>
 #include <pluginlib/class_list_macros.hpp>
 #include <tf2/utils.hpp>
@@ -38,15 +38,14 @@ constexpr double LETHAL_WEIGHT = 1000.0;
 
 void SlowEscape::onConfigure()
 {
-  auto node = std::dynamic_pointer_cast<nav2_util::LifecycleNode>(node_.lock());
+  auto node = std::dynamic_pointer_cast<nav2::LifecycleNode>(node_.lock());
   if (!node)
     throw std::runtime_error("Failed to lock node");
 
-  nav2_util::declare_parameter_if_not_declared(node, behavior_name_ + ".v_max", rclcpp::ParameterValue(0.1));
-  nav2_util::declare_parameter_if_not_declared(node, behavior_name_ + ".w_max", rclcpp::ParameterValue(0.15));
-  nav2_util::declare_parameter_if_not_declared(node, behavior_name_ + ".vel_projection_time",
-                                               rclcpp::ParameterValue(0.5));
-  nav2_util::declare_parameter_if_not_declared(node, behavior_name_ + ".max_search_depth", rclcpp::ParameterValue(30));
+  nav2::declare_parameter_if_not_declared(node, behavior_name_ + ".v_max", rclcpp::ParameterValue(0.1));
+  nav2::declare_parameter_if_not_declared(node, behavior_name_ + ".w_max", rclcpp::ParameterValue(0.15));
+  nav2::declare_parameter_if_not_declared(node, behavior_name_ + ".vel_projection_time", rclcpp::ParameterValue(0.5));
+  nav2::declare_parameter_if_not_declared(node, behavior_name_ + ".max_search_depth", rclcpp::ParameterValue(30));
   node->get_parameter(behavior_name_ + ".v_max", v_max_);
   node->get_parameter(behavior_name_ + ".w_max", w_max_);
   node->get_parameter(behavior_name_ + ".vel_projection_time", vel_projection_time_);

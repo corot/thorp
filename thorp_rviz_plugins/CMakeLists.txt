@@ -8,7 +8,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(nav2_msgs REQUIRED)
 find_package(pluginlib REQUIRED)
-find_package(Qt5 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Widgets)
 find_package(rclcpp REQUIRED)
 find_package(rviz_common REQUIRED)
 find_package(std_msgs REQUIRED)
@@ -27,7 +27,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 target_link_libraries(${PROJECT_NAME} PUBLIC
   pluginlib::pluginlib
-  Qt5::Widgets
+  Qt6::Widgets
   rclcpp::rclcpp
   rviz_common::rviz_common
   ${nav2_msgs_TARGETS}

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.10)
 project(thorp_perception)
 
 if(NOT CMAKE_CXX_STANDARD)
@@ -8,6 +8,8 @@ endif()
 # PCL's find modules use <package>_ROOT variables, also on their own policy scopes
 cmake_policy(SET CMP0074 NEW)
 set(CMAKE_POLICY_DEFAULT_CMP0144 NEW)
+# geometric_shapes finds Boost, and CMake has no FindBoost module anymore: use Boost's own config
+cmake_policy(SET CMP0167 NEW)
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -37,7 +39,7 @@ add_executable(object_detection src/object_detection_node.cpp
                                 src/segmentation.cpp
                                 src/template_matcher.cpp)
 target_include_directories(object_detection PRIVATE include)
-target_include_directories(object_detection SYSTEM PRIVATE ${PCL_INCLUDE_DIRS} ${pcl_conversions_INCLUDE_DIRS})
+target_include_directories(object_detection SYSTEM PRIVATE ${PCL_INCLUDE_DIRS})
 target_link_libraries(object_detection
   rclcpp::rclcpp
   rclcpp_action::rclcpp_action
@@ -50,6 +52,7 @@ target_link_libraries(object_detection
   ${shape_msgs_TARGETS}
   ${visualization_msgs_TARGETS}
   ${PCL_LIBRARIES}
+  pcl_conversions::pcl_conversions
   nlohmann_json::nlohmann_json
   OpenMP::OpenMP_CXX
   tf2::tf2

@@ -19,7 +19,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
 
-#include <ament_index_cpp/get_package_share_directory.hpp>
+#include <ament_index_cpp/get_package_share_path.hpp>
 #include <geometric_shapes/mesh_operations.h>
 #include <geometric_shapes/shape_messages.h>
 #include <geometric_shapes/shape_operations.h>
@@ -30,11 +30,11 @@
 #include <pcl/common/transforms.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <sensor_msgs/msg/point_cloud2.hpp>
-#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Quaternion.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
-#include <tf2_ros/buffer.h>
-#include <tf2_ros/transform_listener.h>
+#include <tf2_ros/buffer.hpp>
+#include <tf2_ros/transform_listener.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
 #include <thorp_msgs/action/detect_objects.hpp>
@@ -210,7 +210,7 @@ public:
     max_matching_error_ = param(node_, "max_matching_error", 4e-6);
     redetect_tolerance_ = param(node_, "redetect_tolerance", 0.01);
     tabletop_volume_height_ = param(node_, "tabletop_volume_height", 0.2);
-    meshes_path_ = ament_index_cpp::get_package_share_directory("thorp_perception") + "/meshes";
+    meshes_path_ = (ament_index_cpp::get_package_share_path("thorp_perception") / "meshes").string();
 
     matcher_ = std::make_unique<TemplateMatcher>(param(node_, "templates_path", meshes_path_), icp);
     RCLCPP_INFO(node_->get_logger(), "Loaded %zu object templates", matcher_->size());

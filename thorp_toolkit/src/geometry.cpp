@@ -114,20 +114,6 @@ geometry_msgs::msg::TransformStamped toTransform(const geometry_msgs::msg::PoseS
   return tf;
 }
 
-geometry_msgs::msg::Pose2D toPose2D(const geometry_msgs::msg::Pose& pose)
-{
-  geometry_msgs::msg::Pose2D pose_2d;
-  pose_2d.x = pose.position.x;
-  pose_2d.y = pose.position.y;
-  pose_2d.theta = yaw(pose);
-  return pose_2d;
-}
-
-geometry_msgs::msg::Pose toPose3D(const geometry_msgs::msg::Pose2D& pose)
-{
-  return createPose(pose.x, pose.y, pose.theta);
-}
-
 geometry_msgs::msg::Point32 toPoint(const geometry_msgs::msg::Point& point)
 {
   geometry_msgs::msg::Point32 point32;

@@ -8,7 +8,7 @@
 #include <geometry_msgs/msg/pose_array.hpp>
 #include <moveit_msgs/msg/collision_object.hpp>
 #include <nav2_costmap_2d/cost_values.hpp>
-#include <nav2_msgs/srv/get_cost.hpp>
+#include <nav2_msgs/srv/get_costs.hpp>
 #include <shape_msgs/msg/solid_primitive.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
@@ -112,17 +112,16 @@ private:
     geometry_msgs::msg::PoseStamped map_pose;
     if (!ttk::TF2::instance().transformPose("map", pose, map_pose))
       return false;
-    nav2_msgs::srv::GetCost::Request request;
+    nav2_msgs::srv::GetCosts::Request request;
     request.use_footprint = false;
-    request.x = map_pose.pose.position.x;
-    request.y = map_pose.pose.position.y;
-    request.theta = ttk::yaw(map_pose);
+    request.poses = { map_pose };
     const auto response =
-        callService<nav2_msgs::srv::GetCost>(rosNode(*this), "/global_costmap/get_cost_global_costmap", request);
-    if (!response)
+        callService<nav2_msgs::srv::GetCosts>(rosNode(*this), "/global_costmap/get_cost_global_costmap", request);
+    if (!response || !response->success || response->costs.empty())
       return false;
-    RCLCPP_DEBUG(logger(*this), "Pose [%.2f, %.2f] cost: %g", request.x, request.y, response->cost);
-    return response->cost >= nav2_costmap_2d::LETHAL_OBSTACLE;
+    RCLCPP_DEBUG(logger(*this), "Pose [%.2f, %.2f] cost: %g", map_pose.pose.position.x, map_pose.pose.position.y,
+                 response->costs.front());
+    return response->costs.front() >= nav2_costmap_2d::LETHAL_OBSTACLE;
   }
 
   BT_REGISTER_NODE(GetPosesAroundTable);

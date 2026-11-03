@@ -5,7 +5,7 @@
 #include <regex>
 #include <utility>
 
-#include <ament_index_cpp/get_package_share_directory.hpp>
+#include <ament_index_cpp/get_package_share_path.hpp>
 #include <behaviortree_cpp/exceptions.h>
 
 namespace thorp::bt
@@ -24,7 +24,7 @@ const std::map<std::string, int32_t>& codes()
     for (const auto& [package, message] :
          { std::pair{ "thorp_msgs", "ThorpError" }, std::pair{ "moveit_msgs", "MoveItErrorCodes" } })
     {
-      std::ifstream file(ament_index_cpp::get_package_share_directory(package) + "/msg/" + message + ".msg");
+      std::ifstream file(ament_index_cpp::get_package_share_path(package) / "msg" / (std::string(message) + ".msg"));
       std::string line;
       std::smatch match;
       while (std::getline(file, line))

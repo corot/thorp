@@ -1,5 +1,6 @@
 #include "thorp_bt_cpp/bt_runner.hpp"
 
+#include <filesystem>
 #include <fstream>
 #include <mutex>
 #include <set>
@@ -46,7 +47,8 @@ void Runner::registerNav2Nodes()
 {
   static std::once_flag registered;
   std::call_once(registered, [] {
-    const std::string lib_dir = ament_index_cpp::get_package_prefix("nav2_behavior_tree") + "/lib/";
+    std::filesystem::path prefix;
+    ament_index_cpp::get_package_prefix("nav2_behavior_tree", prefix);
     for (const auto* plugin : { "nav2_navigate_to_pose_action_bt_node", "nav2_navigate_through_poses_action_bt_node",
                                 "nav2_follow_path_action_bt_node", "nav2_spin_action_bt_node",
                                 "nav2_back_up_action_bt_node" })
@@ -54,7 +56,7 @@ void Runner::registerNav2Nodes()
       std::set<std::string> known;
       for (const auto& [id, builder] : bt_factory_.builders())
         known.insert(id);
-      bt_factory_.registerFromPlugin(lib_dir + BT::SharedLibrary::getOSName(plugin));
+      bt_factory_.registerFromPlugin((prefix / "lib" / BT::SharedLibrary::getOSName(plugin)).string());
 
       std::vector<std::string> added;
       for (const auto& [id, builder] : bt_factory_.builders())

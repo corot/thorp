@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.10)
 project(thorp_costmap_layers)
 
 if(NOT CMAKE_CXX_STANDARD)
@@ -8,6 +8,8 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav2_costmap_2d REQUIRED)
+find_package(nav2_ros_common REQUIRED)
+find_package(nav2_util REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
@@ -31,6 +33,8 @@ target_link_libraries(semantic_layer PUBLIC
   ${cpp_typesupport_target}
   ${geometry_msgs_TARGETS}
   nav2_costmap_2d::nav2_costmap_2d_core
+  nav2_ros_common::nav2_ros_common
+  nav2_util::nav2_util_core
   pluginlib::pluginlib
   rclcpp::rclcpp
   tf2::tf2

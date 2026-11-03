@@ -11,13 +11,12 @@
 #include <vector>
 
 #include <angles/angles.h>
-#include <tf2/utils.h>
-#include <tf2/transform_datatypes.h>
-#include <tf2/LinearMath/Transform.h>
+#include <tf2/utils.hpp>
+#include <tf2/transform_datatypes.hpp>
+#include <tf2/LinearMath/Transform.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 #include <geometry_msgs/msg/pose.hpp>
-#include <geometry_msgs/msg/pose2_d.hpp>
 #include <geometry_msgs/msg/point.hpp>
 #include <geometry_msgs/msg/point32.hpp>
 #include <geometry_msgs/msg/point_stamped.hpp>
@@ -737,13 +736,6 @@ geometry_msgs::msg::TransformStamped toTransform(const geometry_msgs::msg::PoseS
 geometry_msgs::msg::PoseArray toPoseArray(const std::vector<geometry_msgs::msg::PoseStamped>& poses, double z_delta = 0.0,
                                      const std::string& default_frame_id = "map");
 
-/**
- * Extract a 2D pose from a geometry_msgs/Pose msg.
- * @param pose 3D pose msg.
- * @return 2D pose msg.
- */
-geometry_msgs::msg::Pose2D toPose2D(const geometry_msgs::msg::Pose& pose);
-geometry_msgs::msg::Pose toPose3D(const geometry_msgs::msg::Pose2D& pose);
 geometry_msgs::msg::Point32 toPoint(const geometry_msgs::msg::Point& point);
 geometry_msgs::msg::Point toPoint(const geometry_msgs::msg::Point32& point);
 

@@ -5,8 +5,9 @@
 #include <limits>
 
 #include <nav2_costmap_2d/cost_values.hpp>
+#include <nav2_util/raytrace_line_2d.hpp>
 #include <pluginlib/class_list_macros.hpp>
-#include <tf2/utils.h>
+#include <tf2/utils.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 using nav2_costmap_2d::LETHAL_OBSTACLE;
@@ -64,28 +65,19 @@ void SemanticLayer::onInitialize()
   if (!node)
     throw std::runtime_error("Failed to lock node");
 
-  declareParameter("enabled", rclcpp::ParameterValue(true));
-  declareParameter("fixed_frame", rclcpp::ParameterValue(fixed_frame_));
-  declareParameter("object_types", rclcpp::ParameterValue(std::vector<std::string>{}));
-  node->get_parameter(getFullName("enabled"), enabled_);
-  node->get_parameter(getFullName("fixed_frame"), fixed_frame_);
-  std::vector<std::string> type_names;
-  node->get_parameter(getFullName("object_types"), type_names);
+  enabled_ = node->declare_or_get_parameter(getFullName("enabled"), true);
+  fixed_frame_ = node->declare_or_get_parameter(getFullName("fixed_frame"), fixed_frame_);
+  const auto type_names = node->declare_or_get_parameter(getFullName("object_types"), std::vector<std::string>{});
   for (const auto& type_name : type_names)
   {
     ObjectType type;
-    declareParameter(type_name + ".cost", rclcpp::ParameterValue(type.cost));
-    declareParameter(type_name + ".fill", rclcpp::ParameterValue(type.fill));
-    declareParameter(type_name + ".length_padding", rclcpp::ParameterValue(type.length_padding));
-    declareParameter(type_name + ".width_padding", rclcpp::ParameterValue(type.width_padding));
-    declareParameter(type_name + ".precedence", rclcpp::ParameterValue(type.precedence));
-    declareParameter(type_name + ".use_maximum", rclcpp::ParameterValue(type.use_maximum));
-    node->get_parameter(getFullName(type_name + ".cost"), type.cost);
-    node->get_parameter(getFullName(type_name + ".fill"), type.fill);
-    node->get_parameter(getFullName(type_name + ".length_padding"), type.length_padding);
-    node->get_parameter(getFullName(type_name + ".width_padding"), type.width_padding);
-    node->get_parameter(getFullName(type_name + ".precedence"), type.precedence);
-    node->get_parameter(getFullName(type_name + ".use_maximum"), type.use_maximum);
+    type.cost = node->declare_or_get_parameter(getFullName(type_name + ".cost"), type.cost);
+    type.fill = node->declare_or_get_parameter(getFullName(type_name + ".fill"), type.fill);
+    type.length_padding =
+        node->declare_or_get_parameter(getFullName(type_name + ".length_padding"), type.length_padding);
+    type.width_padding = node->declare_or_get_parameter(getFullName(type_name + ".width_padding"), type.width_padding);
+    type.precedence = node->declare_or_get_parameter(getFullName(type_name + ".precedence"), type.precedence);
+    type.use_maximum = node->declare_or_get_parameter(getFullName(type_name + ".use_maximum"), type.use_maximum);
     object_types_[type_name] = type;
     RCLCPP_INFO(logger_, "%s: object type %s: cost %g, fill %d, padding %g x %g, precedence %d", name_.c_str(),
                 type_name.c_str(), type.cost, type.fill, type.length_padding, type.width_padding, type.precedence);
@@ -94,18 +86,20 @@ void SemanticLayer::onInitialize()
   matchSize();
   current_ = true;
 
-  // rclcpp matches service callbacks by their exact parameter types
+  // Nav2 takes service callbacks with their exact parameter types
   // NOLINTBEGIN(performance-unnecessary-value-param)
   update_srv_ = node->create_service<srv::UpdateObjects>(
       "~/" + name_ + "/update_objects",
-      [this](const std::shared_ptr<srv::UpdateObjects::Request> request,
+      [this](const std::shared_ptr<rmw_request_id_t> /*header*/,
+             const std::shared_ptr<srv::UpdateObjects::Request> request,
              std::shared_ptr<srv::UpdateObjects::Response> response) { updateObjects(request, response); },
-      rclcpp::ServicesQoS(), callback_group_);
+      callback_group_);
   query_srv_ = node->create_service<srv::QueryObjects>(
       "~/" + name_ + "/query_objects",
-      [this](const std::shared_ptr<srv::QueryObjects::Request> request,
+      [this](const std::shared_ptr<rmw_request_id_t> /*header*/,
+             const std::shared_ptr<srv::QueryObjects::Request> request,
              std::shared_ptr<srv::QueryObjects::Response> response) { queryObjects(request, response); },
-      rclcpp::ServicesQoS(), callback_group_);
+      callback_group_);
   // NOLINTEND(performance-unnecessary-value-param)
 }
 
@@ -317,7 +311,7 @@ void SemanticLayer::updateCosts(nav2_costmap_2d::Costmap2D& master_grid, int min
       }
       else
       {
-        raytraceLine(outline, mx0, my0, mx1, my1);
+        nav2_util::raytraceLine(outline, mx0, my0, mx1, my1, getSizeInCellsX());
       }
     }
     if (type.fill && fill_polygon.size() >= 3)

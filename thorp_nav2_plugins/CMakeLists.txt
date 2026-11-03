@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.10)
 project(thorp_nav2_plugins)
 
 if(NOT CMAKE_CXX_STANDARD)
@@ -13,6 +13,7 @@ find_package(nav2_behavior_tree REQUIRED)
 find_package(nav2_behaviors REQUIRED)
 find_package(nav2_core REQUIRED)
 find_package(nav2_costmap_2d REQUIRED)
+find_package(nav2_ros_common REQUIRED)
 find_package(nav2_util REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(pluginlib REQUIRED)
@@ -43,6 +44,7 @@ target_link_libraries(thorp_slow_escape_behavior PUBLIC
   ${nav_msgs_TARGETS}
   nav2_costmap_2d::nav2_costmap_2d_client
   nav2_costmap_2d::nav2_costmap_2d_core
+  nav2_ros_common::nav2_ros_common
   nav2_util::nav2_util_core
   pluginlib::pluginlib
   rclcpp::rclcpp

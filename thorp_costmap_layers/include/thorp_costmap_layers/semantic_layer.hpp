@@ -8,6 +8,7 @@
 #include <vector>
 
 #include <nav2_costmap_2d/costmap_layer.hpp>
+#include <nav2_ros_common/service_server.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <thorp_costmap_layers/msg/object.hpp>
@@ -78,8 +79,8 @@ private:
   std::map<std::string, Object> objects_;
   std::vector<std::array<double, 4>> removed_boxes_;  ///< areas to clear on the next update
 
-  rclcpp::Service<srv::UpdateObjects>::SharedPtr update_srv_;
-  rclcpp::Service<srv::QueryObjects>::SharedPtr query_srv_;
+  nav2::ServiceServer<srv::UpdateObjects>::SharedPtr update_srv_;
+  nav2::ServiceServer<srv::QueryObjects>::SharedPtr query_srv_;
 };
 
 }  // namespace thorp_costmap_layers

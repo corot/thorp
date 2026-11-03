@@ -13,7 +13,6 @@ from rclpy.executors import SingleThreadedExecutor
 from rclpy.time import Time
 from tf_transformations import quaternion_from_euler, euler_from_quaternion
 
-import std_msgs.msg as std_msgs
 import geometry_msgs.msg as geometry_msgs
 
 from .common import node
@@ -230,35 +229,8 @@ def get_size_from_co(co):
     raise Exception("Collision object contain no meshes nor primitives")
 
 
-def to_pose2d(pose):
-    if isinstance(pose, geometry_msgs.PoseStamped):
-        p = pose.pose
-    elif isinstance(pose, geometry_msgs.Pose):
-        p = pose
-    else:
-        raise ValueError("Input parameter pose is not a valid geometry_msgs pose object")
-    return geometry_msgs.Pose2D(x=p.position.x, y=p.position.y, theta=yaw(p))
-
-
-def to_pose3d(pose, timestamp=None, frame=None):
-    """ timestamp is a builtin_interfaces/Time msg; zero if not provided """
-    if isinstance(pose, geometry_msgs.Pose2D):
-        p = geometry_msgs.Pose(position=geometry_msgs.Point(x=pose.x, y=pose.y, z=0.0),
-                               orientation=quaternion_msg_from_yaw(pose.theta))
-        if not frame:
-            return p
-        header = std_msgs.Header(frame_id=frame)
-        if timestamp:
-            header.stamp = timestamp
-        return geometry_msgs.PoseStamped(header=header, pose=p)
-    raise ValueError("Input parameter pose is not a geometry_msgs.Pose2D object")
-
-
 def to_transform(pose, child_frame=None):
-    if isinstance(pose, geometry_msgs.Pose2D):
-        return geometry_msgs.Transform(translation=geometry_msgs.Vector3(x=pose.x, y=pose.y, z=0.0),
-                                       rotation=quaternion_msg_from_yaw(pose.theta))
-    elif isinstance(pose, geometry_msgs.Pose):
+    if isinstance(pose, geometry_msgs.Pose):
         return geometry_msgs.Transform(translation=geometry_msgs.Vector3(x=pose.position.x, y=pose.position.y,
                                                                          z=pose.position.z),
                                        rotation=pose.orientation)
@@ -368,9 +340,7 @@ def rotate_pose(pose, theta, euler):
 def transform_pose(pose, tf):
     """ Transform the given pose with the given transform """
     # do_transform_pose expects a stamped pose, but it ignores the header
-    if isinstance(pose, geometry_msgs.Pose2D):
-        p = to_pose3d(pose, frame='dummy')  # just force to_pose3d return a stamped pose
-    elif isinstance(pose, geometry_msgs.Pose):
+    if isinstance(pose, geometry_msgs.Pose):
         p = geometry_msgs.PoseStamped(pose=pose)
     elif isinstance(pose, geometry_msgs.PoseStamped):
         p = pose
