@@ -21,8 +21,8 @@ import rclpy
 import yaml
 from ament_index_python.packages import get_package_share_directory
 from geometry_msgs.msg import Point, PoseStamped
-from gz.msgs10.pose_v_pb2 import Pose_V
-from gz.transport13 import Node as GzNode
+from gz.msgs.pose_v_pb2 import Pose_V
+from gz.transport import Node as GzNode
 from moveit_msgs.msg import AllowedCollisionEntry, CollisionObject, ObjectColor, PlanningScene, PlanningSceneComponents
 from moveit_msgs.srv import ApplyPlanningScene, GetPlanningScene
 from ros_gz_interfaces.srv import SpawnEntity

@@ -20,13 +20,13 @@ from rclpy.time import Time
 from std_srvs.srv import Trigger
 from tf2_ros import Buffer, TransformException, TransformListener
 
-from gz.msgs10.boolean_pb2 import Boolean
-from gz.msgs10.empty_pb2 import Empty
-from gz.msgs10.entity_pb2 import Entity
-from gz.msgs10.entity_plugin_v_pb2 import EntityPlugin_V
-from gz.msgs10.pose_v_pb2 import Pose_V
-from gz.msgs10.scene_pb2 import Scene
-from gz.transport13 import Node as GzNode
+from gz.msgs.boolean_pb2 import Boolean
+from gz.msgs.empty_pb2 import Empty
+from gz.msgs.entity_pb2 import Entity
+from gz.msgs.entity_plugin_v_pb2 import EntityPlugin_V
+from gz.msgs.pose_v_pb2 import Pose_V
+from gz.msgs.scene_pb2 import Scene
+from gz.transport import Node as GzNode
 
 ROBOT_MODEL = 'thorp'
 # tray_link is merged into base_footprint in Gazebo, as joined to it by fixed joints
