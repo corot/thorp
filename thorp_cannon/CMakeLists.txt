@@ -15,7 +15,7 @@ find_package(gz-msgs REQUIRED)
 find_package(gz_transport_vendor REQUIRED)
 find_package(gz-transport REQUIRED)
 
-# Gazebo Harmonic system simulating cannon firing
+# Gazebo Jetty system simulating cannon firing
 add_library(thorp_cannon_system SHARED src/cannon_system.cpp)
 target_link_libraries(thorp_cannon_system
   gz-sim::gz-sim

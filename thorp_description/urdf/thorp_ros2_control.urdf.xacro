@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <robot name="thorp_ros2_control" xmlns:xacro="http://ros.org/wiki/xacro">
 
-  <!-- ros2_control interfaces for the arm, gripper and cannon servos, simulated on Gazebo Harmonic.
+  <!-- ros2_control interfaces for the arm, gripper and cannon servos, simulated on Gazebo Jetty.
        Initial values put the arm on its stowed pose. ros2_control_params is the controllers configuration
        file passed to Gazebo's controller manager -->
   <xacro:macro name="thorp_ros2_control" params="ros2_control_params">

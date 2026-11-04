@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <robot name="thorp_gazebo" xmlns:xacro="http://ros.org/wiki/xacro">
 
-  <!-- Gazebo Harmonic configuration: sensors, systems and surface properties.
+  <!-- Gazebo Jetty configuration: sensors, systems and surface properties.
        Gazebo topics are named as the ROS topics they are bridged to by thorp_simulation. -->
 
   <!-- Kobuki base: diff drive, odometry, wheel joint states and IMU, on the same topics as the kobuki_gazebo plugin.
@@ -44,7 +44,7 @@
       <always_on>true</always_on>
       <update_rate>50</update_rate>
       <topic>/mobile_base/sensors/imu_data</topic>
-      <gz_frame_id>gyro_link</gz_frame_id>
+      <frame_id>gyro_link</frame_id>
     </sensor>
   </gazebo>
 
@@ -77,7 +77,7 @@
         <always_on>true</always_on>
         <update_rate>10.0</update_rate>
         <topic>/${name}</topic>
-        <gz_frame_id>${name}_rgb_optical_frame</gz_frame_id>
+        <frame_id>${name}_rgb_optical_frame</frame_id>
         <camera>
           <horizontal_fov>${58.0*M_PI/180.0}</horizontal_fov>  <!-- kinect: 57, xtion: 58 -->
           <image>
@@ -110,7 +110,7 @@
         <update_rate>20</update_rate>
         <visualize>${visualize}</visualize>
         <topic>${topic}</topic>
-        <gz_frame_id>${link}</gz_frame_id>
+        <frame_id>${link}</frame_id>
         <lidar>
           <scan>
             <horizontal>

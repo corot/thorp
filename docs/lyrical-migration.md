@@ -42,10 +42,10 @@ README says.
 
 | # | Block | Status |
 |---|-------|--------|
-| 1 | Workspace: branch, this document, `thorp-lyrical.repos`, dependencies from Lyrical binaries | in progress |
-| 2 | Build: every package compiles on Lyrical, with no new warnings | in progress |
-| 3 | `thorp_description`: the same URDF as on Jazzy | |
-| 4 | Simulation on Gazebo Jetty: spawn, sensors, controllers, cannon, tray objects | |
+| 1 | Workspace: branch, this document, `thorp-lyrical.repos`, dependencies from Lyrical binaries | done |
+| 2 | Build: every package compiles on Lyrical, with no new warnings | done |
+| 3 | `thorp_description`: the same URDF as on Jazzy | done, see below |
+| 4 | Simulation on Gazebo Jetty: spawn, sensors, controllers, cannon, tray objects | done |
 | 5 | Navigation on Nav2 1.5: localization, costmaps and their layers, controllers, behaviors | |
 | 6 | Manipulation on MoveIt 2.15: pick and place, the parallel gripper | |
 | 7 | Perception: tables and objects, YOLO on Python 3.14 | |
@@ -69,6 +69,12 @@ README says.
 | `ament_index_cpp` returns `std::filesystem::path`s; the string versions are deprecated | Paths |
 | CMake 4 warns of compatibility below 3.10, and has no FindBoost module | `cmake_minimum_required(VERSION 3.10)`; packages that find Boost, or `geometric_shapes`, which finds it, set CMP0167 to use Boost's own config; `thorp_toolkit` links Boost privately, as only its sources use it, and doesn't export it |
 | Gazebo Jetty's Python modules have no version: `gz.msgs`, `gz.transport` | `tray_objects` and `fill_tray` import them so |
+| Gazebo Jetty is gz-sim 10 | `thorp_gazebo.launch.py` runs `gz sim --force-version 10` |
+| SDF 1.12 names a sensor's frame with `<frame_id>`; Jetty still reads `<gz_frame_id>`, deprecated, and the parser warns of it | Sensors use `<frame_id>` |
+| The controller spawner gives the controllers the parameter files of its own node, if it has any, instead of the controller manager's | It gets `controllers.yaml` with `--param-file` |
+| ros2_control limits joint commands to the URDF's joint limits | The gripper and the cannon, commanded by steps, move at their joints' velocity limits; `gz_ros2_control` logs, throttled, an error for each clamped command |
+| `tf2_ros`' listener and broadcasters take node interfaces; the constructors taking a node are deprecated | `thorp_toolkit` passes them its node's interfaces |
+| xacro 2.1 resolves macro arguments in the caller's scope | No change in Thorp's model: every argument that names a parameter of the macro it calls would be a recursive definition in the macro's scope, so Jazzy's xacro resolved them in the caller's too. Not diffed against a Jazzy URDF, as none is left to compare with |
 
 ## Open
 

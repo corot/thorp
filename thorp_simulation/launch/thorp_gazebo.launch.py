@@ -1,5 +1,5 @@
 """
-Thorp simulation on Gazebo Harmonic:
+Thorp simulation on Gazebo Jetty:
 - Gazebo, with the given world
 - Thorp model, spawned from robot_description
 - robot state publisher
@@ -76,7 +76,7 @@ def generate_launch_description():
         args = ['-r', '-s', '--headless-rendering'] if server_only else ['-r']
         # Not through gz_sim.launch.py, as its shell doesn't pass launch's signals on to Gazebo, left running when
         # launch shuts down other than with Ctrl-C
-        return ExecuteProcess(cmd=['gz', 'sim'] + args + [world_file, '--force-version', '8'], name='gazebo',
+        return ExecuteProcess(cmd=['gz', 'sim'] + args + [world_file, '--force-version', '10'], name='gazebo',
                               output='screen', additional_env=gz_env, on_exit=shutdown_unless_shutting_down,
                               condition=condition)
 
@@ -134,10 +134,11 @@ def generate_launch_description():
              parameters=[PathJoinSubstitution([FindPackageShare('thorp_description'), 'config', 'tray.yaml']),
                          sim_time]),
 
-        # Controllers run on Gazebo's controller manager, available once Thorp is spawned
+        # Controllers run on Gazebo's controller manager, available once Thorp is spawned. The spawner passes each one
+        # its parameters from the controllers file; without it, it would pass them only its own node's
         Node(package='controller_manager', executable='spawner', output='screen',
              arguments=['joint_state_broadcaster', 'arm_controller', 'gripper_controller',
-                        'cannon_joint_controller',
+                        'cannon_joint_controller', '--param-file', controllers_file,
                         '--controller-manager-timeout', '60'],
              parameters=[sim_time]),
 

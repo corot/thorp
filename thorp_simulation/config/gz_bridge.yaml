@@ -1,4 +1,4 @@
-# ros_gz_bridge configuration for Thorp simulation on Gazebo Harmonic
+# ros_gz_bridge configuration for Thorp simulation on Gazebo Jetty
 # Gazebo topic names are set on thorp_description/urdf/thorp_gazebo.urdf.xacro
 
 # Clock, base, joint states and cannon trigger
