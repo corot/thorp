@@ -1,4 +1,4 @@
-#include <nav2_behavior_tree/bt_action_node.hpp>
+#include "thorp_bt_cpp/ros_action_node.hpp"
 
 #include "thorp_bt_cpp/node_common.hpp"
 
@@ -10,11 +10,11 @@ namespace thorp::bt::conditions
  * Check whether the gripper holds something by closing it: it stalls short of closed if an object prevents it from
  * closing fully. A held object stays pressed with the closing force.
  */
-class GripperBusy : public nav2_behavior_tree::BtActionNode<control_msgs::action::ParallelGripperCommand>
+class GripperBusy : public BT::RosActionNode<control_msgs::action::ParallelGripperCommand>
 {
 public:
   GripperBusy(const std::string& name, const std::string& action_name, const BT::NodeConfig& config)
-    : BtActionNode(name, action_name, config)
+    : RosActionNode(name, action_name, config)
   {
   }
 
@@ -24,15 +24,16 @@ public:
   }
 
 private:
-  void on_tick() override
+  Goal getGoal() override
   {
-    goal_.command.name = { GRIPPER_JOINT };
-    goal_.command.position = { requireInput<double>(*this, "closed_position") };
+    Goal goal;
+    goal.command.name = { GRIPPER_JOINT };
+    goal.command.position = { requireInput<double>(*this, "closed_position") };
+    return goal;
   }
 
-  BT::NodeStatus on_success() override
+  BT::NodeStatus onSucceeded(const Result& result) override
   {
-    const auto& result = *result_.result;
     if (result.state.position.empty())
     {
       RCLCPP_ERROR(logger(*this), "Closing gripper reported no position");
@@ -49,7 +50,7 @@ private:
     return BT::NodeStatus::FAILURE;
   }
 
-  BT::NodeStatus on_aborted() override
+  BT::NodeStatus onAborted(const Result& /*result*/) override
   {
     RCLCPP_ERROR(logger(*this), "Closing gripper failed");
     return BT::NodeStatus::FAILURE;

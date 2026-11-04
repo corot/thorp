@@ -4,9 +4,9 @@
   <BehaviorTree ID="patrol_2_points">
     <Repeat num_cycles="10">
       <Sequence>
-        <NavigateToPose goal="0;map;2.5;2.5;0;0;0;0.7071;0.7071"
+        <NavigateToPose goal="2.5;2.5;1.5708;map"
                         error_code_id="{nav_error}"/>
-        <NavigateToPose goal="0;map;-4.0;-4.5;0;0;0;-0.7071;0.7071"
+        <NavigateToPose goal="-4.0;-4.5;-1.5708;map"
                         error_code_id="{nav_error}"/>
       </Sequence>
     </Repeat>

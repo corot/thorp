@@ -3,7 +3,7 @@
 
 #include <tinyxml2.h>
 
-#include <nav2_behavior_tree/bt_action_node.hpp>
+#include "thorp_bt_cpp/ros_action_node.hpp"
 
 #include "thorp_bt_cpp/errors.hpp"
 #include "thorp_bt_cpp/node_common.hpp"
@@ -19,11 +19,11 @@ namespace thorp::bt::actions
 /**
  * Move the arm to one of the named configurations (group states) in the SRDF, through move_group.
  */
-class SetArmConfig : public nav2_behavior_tree::BtActionNode<moveit_msgs::action::MoveGroup>
+class SetArmConfig : public BT::RosActionNode<moveit_msgs::action::MoveGroup>
 {
 public:
   SetArmConfig(const std::string& name, const std::string& action_name, const BT::NodeConfig& config)
-    : BtActionNode(name, action_name, config)
+    : RosActionNode(name, action_name, config)
   {
   }
 
@@ -37,10 +37,10 @@ private:
   /** A named configuration: its group and the joint values */
   using NamedState = std::pair<std::string, std::map<std::string, double>>;
 
-  void on_tick() override
+  Goal getGoal() override
   {
     const auto configuration = requireInput<std::string>(*this, "configuration");
-    const auto& named_states = namedStates(node_);
+    const auto& named_states = namedStates(rosNode(*this));
     const auto state = named_states.find(configuration);
     if (state == named_states.end())
     {
@@ -57,39 +57,40 @@ private:
       joint_constraint.weight = 1.0;
       constraints.joint_constraints.push_back(joint_constraint);
     }
-    goal_ = moveit_msgs::action::MoveGroup::Goal();
-    goal_.request.group_name = state->second.first;
-    goal_.request.goal_constraints.push_back(constraints);
+    Goal goal;
+    goal.request.group_name = state->second.first;
+    goal.request.goal_constraints.push_back(constraints);
     // The OMPL configuration's default planner; unnamed, MoveIt warns as OMPL doesn't report it
-    goal_.request.pipeline_id = "ompl";
-    goal_.request.planner_id = "RRTConnect";
+    goal.request.pipeline_id = "ompl";
+    goal.request.planner_id = "RRTConnect";
     // Workspace bounds only matter to planar or floating joints, that the arm lacks; MoveIt warns if there are none
-    goal_.request.workspace_parameters.header.frame_id = "base_footprint";
-    goal_.request.workspace_parameters.min_corner.x = goal_.request.workspace_parameters.min_corner.y =
-        goal_.request.workspace_parameters.min_corner.z = -1.0;
-    goal_.request.workspace_parameters.max_corner.x = goal_.request.workspace_parameters.max_corner.y =
-        goal_.request.workspace_parameters.max_corner.z = 1.0;
-    goal_.request.allowed_planning_time = 5.0;
-    goal_.request.num_planning_attempts = 1;
-    goal_.request.max_velocity_scaling_factor = 1.0;
-    goal_.request.max_acceleration_scaling_factor = 1.0;
+    goal.request.workspace_parameters.header.frame_id = "base_footprint";
+    goal.request.workspace_parameters.min_corner.x = goal.request.workspace_parameters.min_corner.y =
+        goal.request.workspace_parameters.min_corner.z = -1.0;
+    goal.request.workspace_parameters.max_corner.x = goal.request.workspace_parameters.max_corner.y =
+        goal.request.workspace_parameters.max_corner.z = 1.0;
+    goal.request.allowed_planning_time = 5.0;
+    goal.request.num_planning_attempts = 1;
+    goal.request.max_velocity_scaling_factor = 1.0;
+    goal.request.max_acceleration_scaling_factor = 1.0;
+    return goal;
   }
 
-  BT::NodeStatus on_success() override
+  BT::NodeStatus onSucceeded(const Result& result) override
   {
-    if (result_.result->error_code.val != moveit_msgs::msg::MoveItErrorCodes::SUCCESS)
+    if (result.error_code.val != moveit_msgs::msg::MoveItErrorCodes::SUCCESS)
     {
-      return on_aborted();
+      return onAborted(result);
     }
     return BT::NodeStatus::SUCCESS;
   }
 
-  BT::NodeStatus on_aborted() override
+  BT::NodeStatus onAborted(const Result& result) override
   {
     const std::string text = "cannot move the arm to '" + requireInput<std::string>(*this, "configuration") +
-                             "': " + moveit::core::errorCodeToString(result_.result->error_code);
+                             "': " + moveit::core::errorCodeToString(result.error_code);
     RCLCPP_ERROR(logger(*this), "%s", text.c_str());
-    setOutput("error", makeError(result_.result->error_code.val, text));
+    setOutput("error", makeError(result.error_code.val, text));
     return BT::NodeStatus::FAILURE;
   }
 

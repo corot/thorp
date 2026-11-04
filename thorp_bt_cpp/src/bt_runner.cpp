@@ -1,14 +1,8 @@
 #include "thorp_bt_cpp/bt_runner.hpp"
 
-#include <filesystem>
 #include <fstream>
-#include <mutex>
-#include <set>
-
-#include <ament_index_cpp/get_package_prefix.hpp>
 
 // bt tools
-#include <behaviortree_cpp/utils/shared_library.h>
 #include <behaviortree_cpp/xml_parsing.h>
 
 #include <std_srvs/srv/trigger.hpp>
@@ -30,56 +24,16 @@ Runner::Runner(const rclcpp::Node::SharedPtr& node) : node_(node)
 BT::Blackboard::Ptr Runner::makeBlackboard(const rclcpp::Node::SharedPtr& node)
 {
   using std::chrono::milliseconds;
-  const double tick_rate = node->get_parameter_or("tick_rate", 10.0);
   auto blackboard = BT::Blackboard::create();
   blackboard->set<rclcpp::Node::SharedPtr>("node", node);
-  // Nav2's BT nodes wait for replies from servers within a tick, for up to half the tick period
-  blackboard->set<milliseconds>("bt_loop_duration", milliseconds(static_cast<int>(1000.0 / tick_rate)));
-  blackboard->set<milliseconds>("server_timeout", milliseconds(static_cast<int>(500.0 / tick_rate)));
-  blackboard->set<milliseconds>("cancel_timeout", milliseconds(1000));
   // Tree creation fails if a server is not available after this long
   blackboard->set<milliseconds>("wait_for_service_timeout",
                                 milliseconds(node->get_parameter_or("wait_for_service_timeout", 5000)));
   return blackboard;
 }
 
-void Runner::registerNav2Nodes()
-{
-  static std::once_flag registered;
-  std::call_once(registered, [] {
-    std::filesystem::path prefix;
-    ament_index_cpp::get_package_prefix("nav2_behavior_tree", prefix);
-    for (const auto* plugin : { "nav2_navigate_to_pose_action_bt_node", "nav2_navigate_through_poses_action_bt_node",
-                                "nav2_follow_path_action_bt_node", "nav2_spin_action_bt_node",
-                                "nav2_back_up_action_bt_node" })
-    {
-      std::set<std::string> known;
-      for (const auto& [id, builder] : bt_factory_.builders())
-        known.insert(id);
-      bt_factory_.registerFromPlugin((prefix / "lib" / BT::SharedLibrary::getOSName(plugin)).string());
-
-      std::vector<std::string> added;
-      for (const auto& [id, builder] : bt_factory_.builders())
-        if (!known.count(id))
-          added.push_back(id);
-      for (const auto& id : added)
-      {
-        const BT::TreeNodeManifest manifest = bt_factory_.manifests().at(id);
-        const BT::NodeBuilder builder = bt_factory_.builders().at(id);
-        bt_factory_.unregisterBuilder(id);
-        bt_factory_.registerBuilder(manifest, [builder](const std::string& name, const BT::NodeConfig& config) {
-          shareRootEntries(config.blackboard);
-          return builder(name, config);
-        });
-      }
-    }
-  });
-}
-
 bool Runner::loadTree()
 {
-  registerNav2Nodes();
-
   // on simulation, wait for the simulated time to start before loading and running the tree
   if (!node_->get_clock()->wait_until_started(rclcpp::Duration::from_seconds(60)))
   {

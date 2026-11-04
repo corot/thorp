@@ -1,6 +1,6 @@
 #include <unordered_set>
 
-#include <nav2_behavior_tree/bt_action_node.hpp>
+#include "thorp_bt_cpp/ros_action_node.hpp"
 
 #include "thorp_bt_cpp/node_common.hpp"
 #include "thorp_bt_cpp/planning_scene.hpp"
@@ -16,11 +16,11 @@ namespace thorp::bt::actions
 /**
  * Detect the objects on the table in front of the robot, keeping only those of the given types, if any.
  */
-class DetectObjects : public nav2_behavior_tree::BtActionNode<thorp_msgs::action::DetectObjects>
+class DetectObjects : public BT::RosActionNode<thorp_msgs::action::DetectObjects>
 {
 public:
   DetectObjects(const std::string& name, const std::string& action_name, const BT::NodeConfig& config)
-    : BtActionNode(name, action_name, config)
+    : RosActionNode(name, action_name, config)
   {
   }
 
@@ -32,12 +32,14 @@ public:
   }
 
 private:
-  void on_tick() override
+  Goal getGoal() override
   {
-    goal_.clear_scene = false;
+    Goal goal;
+    goal.clear_scene = false;
+    return goal;
   }
 
-  BT::NodeStatus on_success() override
+  BT::NodeStatus onSucceeded(const Result& result) override
   {
     std::unordered_set<std::string> valid_targets;
     auto object_types_csv = requireInput<std::string>(*this, "object_types");
@@ -53,7 +55,7 @@ private:
     }
 
     std::vector<moveit_msgs::msg::CollisionObject> objects;
-    for (const auto& object : result_.result->objects)
+    for (const auto& object : result.objects)
     {
       const auto obj_type = object.id.substr(0, object.id.find(' '));  // remove index
       if (valid_targets.empty() || valid_targets.find(obj_type) != valid_targets.end())
@@ -64,11 +66,11 @@ private:
 
     RCLCPP_INFO_STREAM(logger(*this), objects.size() << " object(s) detected: " << objectIds(objects));
     setOutput("objects", objects);
-    setOutput("surface", result_.result->surface);
+    setOutput("surface", result.surface);
     return BT::NodeStatus::SUCCESS;
   }
 
-  BT::NodeStatus on_aborted() override
+  BT::NodeStatus onAborted(const Result& /*result*/) override
   {
     RCLCPP_ERROR(logger(*this), "Object detection failed");
     return BT::NodeStatus::FAILURE;

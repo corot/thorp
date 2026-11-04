@@ -1,4 +1,4 @@
-#include <nav2_behavior_tree/bt_action_node.hpp>
+#include "thorp_bt_cpp/ros_action_node.hpp"
 
 #include "thorp_bt_cpp/node_common.hpp"
 
@@ -9,11 +9,11 @@ namespace thorp::bt::actions
 /**
  * Move the gripper to the given gripper_joint angle; the default opens it fully.
  */
-class MoveGripper : public nav2_behavior_tree::BtActionNode<control_msgs::action::ParallelGripperCommand>
+class MoveGripper : public BT::RosActionNode<control_msgs::action::ParallelGripperCommand>
 {
 public:
   MoveGripper(const std::string& name, const std::string& action_name, const BT::NodeConfig& config)
-    : BtActionNode(name, action_name, config)
+    : RosActionNode(name, action_name, config)
   {
   }
 
@@ -23,15 +23,17 @@ public:
   }
 
 private:
-  void on_tick() override
+  Goal getGoal() override
   {
-    goal_.command.name = { GRIPPER_JOINT };
-    goal_.command.position = { requireInput<double>(*this, "position") };
+    Goal goal;
+    goal.command.name = { GRIPPER_JOINT };
+    goal.command.position = { requireInput<double>(*this, "position") };
+    return goal;
   }
 
-  BT::NodeStatus on_aborted() override
+  BT::NodeStatus onAborted(const Result& /*result*/) override
   {
-    RCLCPP_ERROR(logger(*this), "Move gripper to %g failed", goal_.command.position.front());
+    RCLCPP_ERROR(logger(*this), "Move gripper to %g failed", requireInput<double>(*this, "position"));
     return BT::NodeStatus::FAILURE;
   }
 

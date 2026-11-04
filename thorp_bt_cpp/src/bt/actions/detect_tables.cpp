@@ -1,4 +1,4 @@
-#include <nav2_behavior_tree/bt_action_node.hpp>
+#include "thorp_bt_cpp/ros_action_node.hpp"
 
 #include "thorp_bt_cpp/node_common.hpp"
 
@@ -15,11 +15,11 @@ namespace thorp::bt::actions
  * Detect the table in front of the robot, if its shortest side reaches the table_min_side parameter.
  * The table is a box collision object, with x along its longest side; its pose is also provided on the map frame.
  */
-class DetectTables : public nav2_behavior_tree::BtActionNode<thorp_msgs::action::DetectTables>
+class DetectTables : public BT::RosActionNode<thorp_msgs::action::DetectTables>
 {
 public:
   DetectTables(const std::string& name, const std::string& action_name, const BT::NodeConfig& config)
-    : BtActionNode(name, action_name, config)
+    : RosActionNode(name, action_name, config)
   {
   }
 
@@ -31,20 +31,22 @@ public:
   }
 
 private:
-  void on_tick() override
+  Goal getGoal() override
   {
-    goal_.min_side = node_->get_parameter_or("table_min_side", 0.3);
+    Goal goal;
+    goal.min_side = node_->get_parameter_or("table_min_side", 0.3);
+    return goal;
   }
 
-  BT::NodeStatus on_success() override
+  BT::NodeStatus onSucceeded(const Result& result) override
   {
-    if (result_.result->tables.empty())
+    if (result.tables.empty())
     {
       // No tables detected
       return BT::NodeStatus::FAILURE;
     }
 
-    const auto& table = result_.result->tables.front();
+    const auto& table = result.tables.front();
     geometry_msgs::msg::PoseStamped table_pose;
     table_pose.header = table.header;
     table_pose.pose = table.pose;
@@ -63,7 +65,7 @@ private:
     return BT::NodeStatus::SUCCESS;
   }
 
-  BT::NodeStatus on_aborted() override
+  BT::NodeStatus onAborted(const Result& /*result*/) override
   {
     RCLCPP_ERROR(logger(*this), "Table detection failed");
     return BT::NodeStatus::FAILURE;

@@ -11,12 +11,11 @@
             <input_port name="dist_tolerance" type="double"/>
         </Condition>
         <Action ID="BackUp">
-            <input_port name="backup_dist" type="double" default="0.150000">Distance to backup</input_port>
-            <input_port name="backup_speed" type="double" default="0.025000">Speed at which to backup</input_port>
-            <input_port name="time_allowance" type="double" default="10.000000">Allowed time for reversing</input_port>
-            <output_port name="error_code_id" type="unsigned short">The back up behavior server error code</output_port>
-            <input_port name="server_timeout" type="std::chrono::milliseconds"/>
-            <input_port name="server_name" type="std::string">Action server name</input_port>
+            <output_port name="error_code_id" type="unsigned short">the action's error code</output_port>
+            <input_port name="action_name" type="std::string" default="">name of the action server; the node's default if empty</input_port>
+            <input_port name="time_allowance" type="double" default="10.000000">time to back up within (s)</input_port>
+            <input_port name="backup_speed" type="double" default="0.025000">speed to back up at (m/s)</input_port>
+            <input_port name="backup_dist" type="double" default="0.150000">distance to back up (m)</input_port>
         </Action>
         <Condition ID="CameraFOVClear">
             <input_port name="timeout" type="unsigned int" default="100">timeout to connect to server (milliseconds)</input_port>
@@ -41,18 +40,16 @@
             <input_port name="object_name" type="std::string"/>
         </Action>
         <Action ID="DetectObjects">
-            <input_port name="object_types" type="std::string"/>
-            <output_port name="objects" type="std::vector&lt;moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+            <input_port name="action_name" type="std::string" default="">name of the action server; the node's default if empty</input_port>
             <output_port name="surface" type="moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <input_port name="server_timeout" type="std::chrono::milliseconds"/>
-            <input_port name="server_name" type="std::string">Action server name</input_port>
+            <output_port name="objects" type="std::vector&lt;moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
+            <input_port name="object_types" type="std::string"/>
         </Action>
         <Action ID="DetectTables">
-            <output_port name="table" type="moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <output_port name="table_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="action_name" type="std::string" default="">name of the action server; the node's default if empty</input_port>
             <output_port name="table_id" type="std::string">as thorp_world calls it</output_port>
-            <input_port name="server_timeout" type="std::chrono::milliseconds"/>
-            <input_port name="server_name" type="std::string">Action server name</input_port>
+            <output_port name="table_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <output_port name="table" type="moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Action ID="DragAndDrop">
             <output_port name="place_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
@@ -75,21 +72,18 @@
             <input_port name="key" type="float"/>
         </Condition>
         <Action ID="FollowObject">
-            <input_port name="pose_topic" type="std::string" default="target_object_pose">Topic with the object's pose</input_port>
-            <input_port name="tracked_frame" type="std::string" default="">Object's TF frame, if no pose topic is given</input_port>
-            <input_port name="max_duration" type="double" default="0.000000">Seconds to follow the object; forever if 0</input_port>
+            <input_port name="action_name" type="std::string" default="">name of the action server; the node's default if empty</input_port>
             <output_port name="error" type="thorp_msgs::msg::ThorpError_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <input_port name="server_timeout" type="std::chrono::milliseconds"/>
-            <input_port name="server_name" type="std::string">Action server name</input_port>
+            <input_port name="max_duration" type="double" default="0.000000">Seconds to follow the object; forever if 0</input_port>
+            <input_port name="tracked_frame" type="std::string" default="">Object's TF frame, if no pose topic is given</input_port>
+            <input_port name="pose_topic" type="std::string" default="target_object_pose">Topic with the object's pose</input_port>
         </Action>
         <Action ID="FollowPath">
-            <input_port name="path" type="nav_msgs::msg::Path_&lt;std::allocator&lt;void&gt; &gt;">Path to follow</input_port>
-            <input_port name="controller_id" type="std::string"/>
-            <input_port name="goal_checker_id" type="std::string"/>
-            <input_port name="progress_checker_id" type="std::string"/>
-            <output_port name="error_code_id" type="unsigned short">The follow path error code</output_port>
-            <input_port name="server_timeout" type="std::chrono::milliseconds"/>
-            <input_port name="server_name" type="std::string">Action server name</input_port>
+            <output_port name="error_code_id" type="unsigned short">the action's error code</output_port>
+            <input_port name="action_name" type="std::string" default="">name of the action server; the node's default if empty</input_port>
+            <input_port name="goal_checker_id" type="std::string" default="">goal checker plugin; the default if empty</input_port>
+            <input_port name="controller_id" type="std::string" default="">controller plugin; the default if empty</input_port>
+            <input_port name="path" type="nav_msgs::msg::Path_&lt;std::allocator&lt;void&gt; &gt;">path to follow</input_port>
         </Action>
         <Decorator ID="ForEachPickupLocation">
             <output_port name="element" type="thorp_msgs::msg::PickupLocation_&lt;std::allocator&lt;void&gt; &gt;"/>
@@ -148,9 +142,8 @@
             <input_port name="pop" type="bool" default="false">Remove the returned element</input_port>
         </Action>
         <Action ID="GripperBusy">
+            <input_port name="action_name" type="std::string" default="">name of the action server; the node's default if empty</input_port>
             <input_port name="closed_position" type="double" default="0.450000">gripper_joint angle fully closed</input_port>
-            <input_port name="server_timeout" type="std::chrono::milliseconds"/>
-            <input_port name="server_name" type="std::string">Action server name</input_port>
         </Action>
         <Condition ID="IsBoolTrue">
             <input_port name="input" type="bool"/>
@@ -162,11 +155,10 @@
             <input_port name="list" type="std::vector&lt;unsigned int, std::allocator&lt;unsigned int&gt; &gt;"/>
         </Condition>
         <Action ID="LookAtPose">
-            <input_port name="robot_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <input_port name="target_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="error" type="thorp_msgs::msg::ThorpError_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <input_port name="server_timeout" type="std::chrono::milliseconds"/>
-            <input_port name="server_name" type="std::string">Action server name</input_port>
+            <input_port name="action_name" type="std::string" default="">name of the action server; the node's default if empty</input_port>
+            <input_port name="target_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="robot_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Action ID="MonitorTarget">
             <output_port name="target_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
@@ -174,27 +166,22 @@
             <input_port name="topic_name" type="std::string" default="target_object_pose">Target pose topic</input_port>
         </Action>
         <Action ID="MoveGripper">
+            <input_port name="action_name" type="std::string" default="">name of the action server; the node's default if empty</input_port>
             <input_port name="position" type="double" default="-0.360000">gripper_joint angle</input_port>
-            <input_port name="server_timeout" type="std::chrono::milliseconds"/>
-            <input_port name="server_name" type="std::string">Action server name</input_port>
         </Action>
         <Action ID="NavigateThroughPoses">
-            <input_port name="goals" type="std::vector&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;">Destinations to plan through</input_port>
-            <input_port name="behavior_tree" type="std::string">Behavior tree to run</input_port>
-            <output_port name="error_code_id" type="unsigned short">The navigate through poses error code</output_port>
-            <input_port name="server_timeout" type="std::chrono::milliseconds"/>
-            <input_port name="server_name" type="std::string">Action server name</input_port>
+            <input_port name="action_name" type="std::string" default="">name of the action server; the node's default if empty</input_port>
+            <output_port name="error_code_id" type="unsigned short">the action's error code</output_port>
+            <input_port name="goals" type="std::vector&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;">poses to navigate through</input_port>
         </Action>
         <Action ID="NavigateToPose">
-            <input_port name="goal" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;">Destination to plan to</input_port>
-            <input_port name="behavior_tree" type="std::string">Behavior tree to run</input_port>
-            <output_port name="error_code_id" type="unsigned short">Navigate to pose error code</output_port>
-            <input_port name="server_timeout" type="std::chrono::milliseconds"/>
-            <input_port name="server_name" type="std::string">Action server name</input_port>
+            <input_port name="action_name" type="std::string" default="">name of the action server; the node's default if empty</input_port>
+            <output_port name="error_code_id" type="unsigned short">the action's error code</output_port>
+            <input_port name="goal" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;">pose to navigate to</input_port>
         </Action>
         <Action ID="NextPoseOnTray">
-            <input_port name="after" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;">a pose on a slot, as this node outputs</input_port>
             <output_port name="pose_on_tray" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="after" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;">a pose on a slot, as this node outputs</input_port>
         </Action>
         <Condition ID="ObjectAttached">
             <output_port name="attached_object" type="std::string"/>
@@ -212,26 +199,24 @@
             <input_port name="objects" type="std::vector&lt;moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
         </Condition>
         <Action ID="PickupObject">
-            <input_port name="object_name" type="std::string"/>
-            <output_port name="feedback" type="std::optional&lt;thorp_msgs::action::PickupObject_Feedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
-            <input_port name="support_surf" type="std::string"/>
-            <input_port name="max_effort" type="float"/>
-            <input_port name="tightening" type="float"/>
+            <input_port name="action_name" type="std::string" default="">name of the action server; the node's default if empty</input_port>
             <output_port name="error" type="thorp_msgs::msg::ThorpError_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <input_port name="server_timeout" type="std::chrono::milliseconds"/>
-            <input_port name="server_name" type="std::string">Action server name</input_port>
+            <input_port name="tightening" type="float"/>
+            <input_port name="max_effort" type="float"/>
+            <input_port name="support_surf" type="std::string"/>
+            <output_port name="feedback" type="std::optional&lt;thorp_msgs::action::PickupObject_Feedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
+            <input_port name="object_name" type="std::string"/>
         </Action>
         <Condition ID="PickupPlanCompleted">
             <input_port name="list" type="std::vector&lt;thorp_msgs::msg::PickupLocation_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;thorp_msgs::msg::PickupLocation_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
         </Condition>
         <Action ID="PlaceObject">
-            <input_port name="object_name" type="std::string"/>
-            <output_port name="feedback" type="std::optional&lt;thorp_msgs::action::PlaceObject_Feedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
-            <input_port name="support_surf" type="std::string"/>
-            <input_port name="place_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="action_name" type="std::string" default="">name of the action server; the node's default if empty</input_port>
             <output_port name="error" type="thorp_msgs::msg::ThorpError_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <input_port name="server_timeout" type="std::chrono::milliseconds"/>
-            <input_port name="server_name" type="std::string">Action server name</input_port>
+            <input_port name="place_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="support_surf" type="std::string"/>
+            <output_port name="feedback" type="std::optional&lt;thorp_msgs::action::PlaceObject_Feedback_&lt;std::allocator&lt;void&gt; &gt; &gt;"/>
+            <input_port name="object_name" type="std::string"/>
         </Action>
         <Action ID="PlanPickupLocations">
             <output_port name="pickup_plan" type="std::vector&lt;thorp_msgs::msg::PickupLocation_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;thorp_msgs::msg::PickupLocation_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
@@ -271,17 +256,17 @@
         <Condition ID="PoseInBlackboard">
             <input_port name="key" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Condition>
-        <Condition ID="PoseOnTray">
-            <input_port name="pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
-        </Condition>
         <Action ID="PoseListSlicing">
             <input_port name="end" type="unsigned long"/>
             <input_port name="start" type="unsigned long"/>
             <inout_port name="list" type="std::vector&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
         </Action>
-        <Action ID="PublishPose">
+        <Condition ID="PoseOnTray">
             <input_port name="pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+        </Condition>
+        <Action ID="PublishPose">
             <input_port name="topic" type="std::string" default="~/nav_goal">topic to publish on</input_port>
+            <input_port name="pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
         </Action>
         <Action ID="PushPoseToList">
             <input_port name="element" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
@@ -337,10 +322,9 @@
             <input_port name="objects" type="std::vector&lt;moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;moveit_msgs::msg::CollisionObject_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"/>
         </Action>
         <Action ID="SetArmConfig">
-            <input_port name="configuration" type="std::string"/>
+            <input_port name="action_name" type="std::string" default="">name of the action server; the node's default if empty</input_port>
             <output_port name="error" type="thorp_msgs::msg::ThorpError_&lt;std::allocator&lt;void&gt; &gt;"/>
-            <input_port name="server_timeout" type="std::chrono::milliseconds"/>
-            <input_port name="server_name" type="std::string">Action server name</input_port>
+            <input_port name="configuration" type="std::string"/>
         </Action>
         <Action ID="SetBool">
             <output_port name="output" type="bool"/>
@@ -370,17 +354,6 @@
         <Action ID="SettleOnTray">
             <input_port name="object_name" type="std::string"/>
         </Action>
-        <Action ID="Spin">
-            <input_port name="spin_dist" type="double" default="1.570000">Spin distance</input_port>
-            <input_port name="time_allowance" type="double" default="10.000000">Allowed time for spinning</input_port>
-            <input_port name="is_recovery" type="bool" default="true">True if recovery</input_port>
-            <output_port name="error_code_id" type="unsigned short">The spin behavior error code</output_port>
-            <input_port name="server_timeout" type="std::chrono::milliseconds"/>
-            <input_port name="server_name" type="std::string">Action server name</input_port>
-        </Action>
-        <Condition ID="StringInBlackboard">
-            <input_port name="key" type="std::string"/>
-        </Condition>
         <Decorator ID="StoreResult">
             <output_port name="result" type="bool"/>
         </Decorator>

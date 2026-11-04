@@ -16,7 +16,8 @@ namespace thorp::bt
 {
 /**
  * Copy the entries every node may need from the root blackboard into a subtree's one, so nodes find them there:
- * the ROS node and Nav2's timeouts. Subtree blackboards see only their remapped ports.
+ * the ROS node and how long action client nodes wait for their servers. Subtree blackboards see only their remapped
+ * ports.
  */
 inline void shareRootEntries(const BT::Blackboard::Ptr& blackboard)
 {
@@ -27,10 +28,7 @@ inline void shareRootEntries(const BT::Blackboard::Ptr& blackboard)
     return;
   }
   blackboard->set("node", root->get<rclcpp::Node::SharedPtr>("node"));
-  for (const auto& key : { "bt_loop_duration", "server_timeout", "cancel_timeout", "wait_for_service_timeout" })
-  {
-    blackboard->set(key, root->get<milliseconds>(key));
-  }
+  blackboard->set("wait_for_service_timeout", root->get<milliseconds>("wait_for_service_timeout"));
 }
 
 /**
@@ -38,8 +36,8 @@ inline void shareRootEntries(const BT::Blackboard::Ptr& blackboard)
  * You need to add this struct as a static attribute to each of your custom BT nodes, so they get registered
  * on static initialization.
  * The instantiation of the builder will happen later, when loading each tree from files.
- * Extra arguments are passed to the node constructor after its name, e.g. the default action name for Nav2's
- * BtActionNode; the builder keeps copies of them, as it runs long after registration.
+ * Extra arguments are passed to the node constructor after its name, e.g. the default action name for a
+ * RosActionNode; the builder keeps copies of them, as it runs long after registration.
  */
 template <typename T, typename... Args>
 struct NodeRegister
@@ -63,7 +61,7 @@ struct NodeRegister
 #define BT_REGISTER_NODE(ClassName) inline static NodeRegister<ClassName> reg_{ #ClassName };
 
 /**
- * Macro to register a ClassName node derived from Nav2's BtActionNode, with its default action name.
+ * Macro to register a ClassName node derived from RosActionNode, with its default action name.
  * To be called inside the node class.
  */
 #define BT_REGISTER_ACTION_NODE(ClassName, action_name)                                                               \

@@ -13,7 +13,6 @@ find_package(ament_index_cpp REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(behaviortree_cpp REQUIRED)
-find_package(nav2_behavior_tree REQUIRED)
 find_package(nav2_costmap_2d REQUIRED)
 find_package(nav2_msgs REQUIRED)
 find_package(geometric_shapes REQUIRED)
@@ -38,6 +37,7 @@ find_package(thorp_toolkit REQUIRED)
 
 # Custom behavior tree nodes; listed one by one, as the package is ported in stages
 set(BT_NODES
+  src/bt/actions/back_up.cpp
   src/bt/actions/cannon_control.cpp
   src/bt/actions/clear_list.cpp
   src/bt/actions/clear_octomap.cpp
@@ -49,6 +49,7 @@ set(BT_NODES
   src/bt/actions/drag_and_drop.cpp
   src/bt/actions/expand_pickup_location.cpp
   src/bt/actions/follow_object.cpp
+  src/bt/actions/follow_path.cpp
   src/bt/actions/get_closest_pose.cpp
   src/bt/actions/get_current_table.cpp
   src/bt/actions/get_from_list.cpp
@@ -61,6 +62,8 @@ set(BT_NODES
   src/bt/actions/look_at_pose.cpp
   src/bt/actions/monitor_target.cpp
   src/bt/actions/move_gripper.cpp
+  src/bt/actions/navigate_through_poses.cpp
+  src/bt/actions/navigate_to_pose.cpp
   src/bt/actions/next_pose_on_tray.cpp
   src/bt/actions/pickup_object.cpp
   src/bt/actions/place_object.cpp
@@ -109,13 +112,12 @@ set(BT_NODES
 
 # The nodes register themselves on static initialization, into the runner's factory
 add_library(bt_runner SHARED src/bt_runner.cpp src/bt_ros_logger.cpp src/errors.cpp ${BT_NODES})
-target_include_directories(bt_runner PUBLIC include ${nav2_behavior_tree_INCLUDE_DIRS})
+target_include_directories(bt_runner PUBLIC include)
 target_link_libraries(bt_runner PUBLIC
   ament_index_cpp::ament_index_cpp
   rclcpp::rclcpp
   rclcpp_action::rclcpp_action
   behaviortree_cpp::behaviortree_cpp
-  ${nav2_behavior_tree_LIBRARIES}
   nav2_costmap_2d::nav2_costmap_2d_core
   ${nav2_msgs_TARGETS}
   geometric_shapes::geometric_shapes

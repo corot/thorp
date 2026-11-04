@@ -4,9 +4,7 @@
 
 #include <behaviortree_cpp/behavior_tree.h>
 
-// Nav2's string conversions, as for geometry_msgs::msg::PoseStamped ('stamp;frame;x;y;z;qx;qy;qz;qw' or 'json:{...}'),
-// used by Nav2's BT nodes; every translation unit must see the same conversions, so all Thorp nodes include them
-#include <nav2_behavior_tree/bt_utils.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
 
 #include <thorp_toolkit/geometry.hpp>
 
@@ -36,3 +34,17 @@ inline geometry_msgs::msg::PoseStamped parsePose(BT::StringView str)
 }
 
 }  // namespace thorp::bt
+
+namespace BT
+{
+/**
+ * Poses written in trees, in Thorp's short forms; every translation unit must see the same conversions, so all Thorp
+ * nodes include this
+ */
+template <>
+inline geometry_msgs::msg::PoseStamped convertFromString(StringView str)
+{
+  return thorp::bt::parsePose(str);
+}
+
+}  // namespace BT

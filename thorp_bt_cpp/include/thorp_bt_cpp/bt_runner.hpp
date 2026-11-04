@@ -26,16 +26,10 @@ public:
   static BT::BehaviorTreeFactory bt_factory_;
 
   /**
-   * Blackboard with the entries every tree needs: the ROS node, as "node", and the timeouts Nav2's BT nodes read.
-   * Trees must be created on it, as nodes read these entries on construction.
+   * Blackboard with the entries every tree needs: the ROS node, as "node", and how long action client nodes wait for
+   * their servers. Trees must be created on it, as nodes read these entries on construction.
    */
   static BT::Blackboard::Ptr makeBlackboard(const rclcpp::Node::SharedPtr& node);
-
-  /**
-   * Register, once, the nodes the trees use from nav2_behavior_tree: navigation to poses, path following and the
-   * spin and backup behaviors. Their builders get the root blackboard entries shared with subtrees, as Thorp's do.
-   */
-  static void registerNav2Nodes();
 
 private:
   /** If there's navigation, wait for it to be active */

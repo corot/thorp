@@ -23,7 +23,6 @@ Server::Server(const rclcpp::Node::SharedPtr& node) : node_(node)
 
 bool Server::loadTrees()
 {
-  Runner::registerNav2Nodes();
   if (!node_->get_parameter("bt_dir", bt_dir_))
   {
     RCLCPP_ERROR_STREAM(node_->get_logger(), "Missing required parameter: bt_dir");
