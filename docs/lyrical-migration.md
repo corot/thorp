@@ -47,9 +47,9 @@ README says.
 | 3 | `thorp_description`: the same URDF as on Jazzy | done, see below |
 | 4 | Simulation on Gazebo Jetty: spawn, sensors, controllers, cannon, tray objects | done |
 | 5 | Navigation on Nav2 1.5: localization, costmaps and their layers, controllers, behaviors | done |
-| 6 | Manipulation on MoveIt 2.15: pick and place, the parallel gripper | |
-| 7 | Perception: tables and objects, YOLO on Python 3.14 | |
-| 8 | Behavior trees, `thorp_world` and the apps: capability tests on simulation | |
+| 6 | Manipulation on MoveIt 2.15: pick and place, the parallel gripper | done |
+| 7 | Perception: tables and objects, YOLO on Python 3.14 | done |
+| 8 | Behavior trees, `thorp_world` and the apps: capability tests on simulation | done |
 | 9 | `thorp_agent`: ROSA and LangChain on Python 3.14 | |
 
 ## Changes
@@ -81,12 +81,15 @@ README says.
 | `RemovePassedGoals` takes and updates the waypoints' statuses | `navigate_through_poses.xml` passes them the navigator's `waypoint_statuses` |
 | Regulated pure pursuit's `desired_linear_vel` is deprecated | `max_linear_vel` |
 | The rotation shim, Smac and graceful controllers aren't pulled in by other packages | `thorp_navigation` depends on them |
+| ROS Python modules are built against numpy 2; numpy 1.26, which `yolo_ros` requires, predates Python 3.14, and its 3D detection node dies with it in `np.histogram` | `yolo_ros` comes from Thorp's fork, whose `lyrical` branch requires numpy 2. It keeps the last Python version, as its C++ rewrite has neither YOLOE nor `set_classes` |
 | xacro 2.1 resolves macro arguments in the caller's scope | No change in Thorp's model: every argument that names a parameter of the macro it calls would be a recursive definition in the macro's scope, so Jazzy's xacro resolved them in the caller's too. Not diffed against a Jazzy URDF, as none is left to compare with |
 
 ## Open
 
-- AMCL's estimate drifts from Gazebo's ground truth on the playground, half a metre after crossing it; the apps
-  localize with ground truth. Not measured on Jazzy.
+- AMCL's estimate drifts from Gazebo's ground truth on the playground, up to half a metre after crossing it. On
+  Gazebo Jetty the wheel odometry over-counts turns by about a tenth, as the wheels slip turning in place, while it
+  keeps within 1% driving straight. `patrol_2_points`, localizing with AMCL, reaches its first goal and then fails
+  planning with `START_OCCUPIED`; the other apps localize with ground truth. Neither was measured on Jazzy.
 
 ## Known issues
 
@@ -96,6 +99,8 @@ README says.
 - `ros_gz_bridge`'s `parameter_bridge` crashes (SIGSEGV) when shutting down.
 - `gz_ros2_control` logs, throttled, an error for every gripper and cannon command clamped to the joints' velocity
   limits.
+- On shutdown, `yolo_ros`' nodes exit with code 1, as they don't catch rclpy's `ExternalShutdownException`, and
+  `tf2_ros`' Python transform listener can print a traceback from its destructor, run after rclpy shut down.
 
 - The range sensor layer's fix that clears the cone on readings above the maximum range lives on the user's
   `navigation2` fork, built from source on Jazzy. Lyrical builds without it, on Nav2's binary `nav2_costmap_2d`, until
