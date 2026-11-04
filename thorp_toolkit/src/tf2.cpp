@@ -67,9 +67,9 @@ std::mutex TF2::mutex_;
 
 TF2::TF2()
   : buffer_(node()->get_clock())
-  , listener_(buffer_, node())
-  , bcaster_(node())
-  , sbcaster_(node())
+  , listener_(buffer_, *node())
+  , bcaster_(*node())
+  , sbcaster_(*node())
 {
 }
 
