@@ -61,6 +61,7 @@ README says.
 | ros2_controllers has no `gripper_controllers` nor `position_controllers` | The gripper runs on `parallel_gripper_controller`, whose `control_msgs/ParallelGripperCommand` action MoveIt drives with its `ParallelGripperCommand` controller type, and `MoveGripper` and `GripperBusy` too; the cannon on `forward_command_controller`, with the same topic and message |
 | Nav2 1.5 plugins run on `nav2::LifecycleNode`, with its parameter helpers in `nav2_ros_common`: layers declare parameters with `declare_or_get_parameter`, serve as `nav2::ServiceServer`, and raytrace with `nav2_util`'s `raytraceLine` | The semantic layer and the slow escape behavior use them |
 | Nav2's costmaps answer `GetCosts`, for several poses, instead of `GetCost` | `GetPosesAroundTable` asks it for one |
+| `tinyxml2_vendor` is deprecated | `thorp_bt_cpp` finds the system's `tinyxml2` |
 | `nav2_behavior_tree`'s CMake config finds `nav2_common`, which its package doesn't depend on | `thorp_bt_cpp` and `thorp_nav2_plugins` depend on it |
 | rviz runs on Qt6 | `thorp_rviz_plugins` too |
 | `pcl_conversions` exports a CMake target instead of include directories | `thorp_perception` links it |
