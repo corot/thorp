@@ -46,7 +46,7 @@ README says.
 | 2 | Build: every package compiles on Lyrical, with no new warnings | done |
 | 3 | `thorp_description`: the same URDF as on Jazzy | done, see below |
 | 4 | Simulation on Gazebo Jetty: spawn, sensors, controllers, cannon, tray objects | done |
-| 5 | Navigation on Nav2 1.5: localization, costmaps and their layers, controllers, behaviors | |
+| 5 | Navigation on Nav2 1.5: localization, costmaps and their layers, controllers, behaviors | done |
 | 6 | Manipulation on MoveIt 2.15: pick and place, the parallel gripper | |
 | 7 | Perception: tables and objects, YOLO on Python 3.14 | |
 | 8 | Behavior trees, `thorp_world` and the apps: capability tests on simulation | |
@@ -74,9 +74,28 @@ README says.
 | The controller spawner gives the controllers the parameter files of its own node, if it has any, instead of the controller manager's | It gets `controllers.yaml` with `--param-file` |
 | ros2_control limits joint commands to the URDF's joint limits | The gripper and the cannon, commanded by steps, move at their joints' velocity limits; `gz_ros2_control` logs, throttled, an error for each clamped command |
 | `tf2_ros`' listener and broadcasters take node interfaces; the constructors taking a node are deprecated | `thorp_toolkit` passes them its node's interfaces |
+| Nav2 publishes and takes stamped velocity commands by default | `nav2.yaml` and `velocity_smoother.yaml` set `enable_stamped_cmd_vel: false` for every node, as `twist_mux`, the bridge and the base take unstamped ones |
+| The rotation shim controller configures its primary controller in its own namespace, `primary_controller`, which takes the `plugin` parameter | MPPI's parameters are under `MPPI.primary_controller` |
+| MPPI's motion models are plugins | `diff_drive` is `mppi::DiffDriveMotionModel` |
+| The BT navigator takes `error_code_name_prefixes`, and refuses to start with `error_code_names` | The prefixes of the same two codes, `compute_path` and `follow_path` |
+| `RemovePassedGoals` takes and updates the waypoints' statuses | `navigate_through_poses.xml` passes them the navigator's `waypoint_statuses` |
+| Regulated pure pursuit's `desired_linear_vel` is deprecated | `max_linear_vel` |
+| The rotation shim, Smac and graceful controllers aren't pulled in by other packages | `thorp_navigation` depends on them |
 | xacro 2.1 resolves macro arguments in the caller's scope | No change in Thorp's model: every argument that names a parameter of the macro it calls would be a recursive definition in the macro's scope, so Jazzy's xacro resolved them in the caller's too. Not diffed against a Jazzy URDF, as none is left to compare with |
 
 ## Open
+
+- AMCL's estimate drifts from Gazebo's ground truth on the playground, half a metre after crossing it; the apps
+  localize with ground truth. Not measured on Jazzy.
+
+## Known issues
+
+- Shutting down a simulation with navigation takes 15 s: on shutdown, the planner and controller servers deactivate
+  their costmaps, which wait for their update threads, sleeping on simulated time that stopped with Gazebo; launch
+  kills them. Without simulated time they exit in under a second.
+- `ros_gz_bridge`'s `parameter_bridge` crashes (SIGSEGV) when shutting down.
+- `gz_ros2_control` logs, throttled, an error for every gripper and cannon command clamped to the joints' velocity
+  limits.
 
 - The range sensor layer's fix that clears the cone on readings above the maximum range lives on the user's
   `navigation2` fork, built from source on Jazzy. Lyrical builds without it, on Nav2's binary `nav2_costmap_2d`, until

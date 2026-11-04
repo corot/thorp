@@ -2,6 +2,7 @@
 
 /**:
   ros__parameters:
+    enable_stamped_cmd_vel: false
     smoothing_frequency: 50.0  # commands go out on this timer, so they wait up to a period
     scale_velocities: false
     feedback: OPEN_LOOP

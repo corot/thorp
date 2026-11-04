@@ -12,7 +12,9 @@
         <GoalCheckerSelector selected_goal_checker="{selected_goal_checker}" default_goal_checker="general_goal_checker" topic_name="goal_checker_selector"/>
         <PlannerSelector selected_planner="{selected_planner}" default_planner="Smac2D" topic_name="planner_selector"/>
         <RateController hz="10.0">
-          <RemovePassedGoals input_goals="{goals}" output_goals="{goals}" radius="0.5"/>
+          <RemovePassedGoals input_goals="{goals}" output_goals="{goals}" radius="0.5"
+                             input_waypoint_statuses="{waypoint_statuses}"
+                             output_waypoint_statuses="{waypoint_statuses}"/>
         </RateController>
         <RateController hz="0.333">
           <RecoveryNode number_of_retries="1" name="ComputePathThroughPoses">
